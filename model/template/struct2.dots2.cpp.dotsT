@@ -1,0 +1,28 @@
+// Generated file, do not change.
+
+//#include "dots/cpp_config.h"
+#include "{{name}}.dots.h"
+
+#include "dots/io/Transceiver.h"
+
+namespace dots
+{
+namespace types
+{
+
+{% if not options.substruct_only %}
+
+void {{name}}::publish(const PropSet &properties) const
+{
+    dots::publish(*this, properties);
+}
+
+void {{name}}::remove() const
+{
+    dots::remove(*this);
+}
+{% endif %}
+
+} // namespace types
+} // namespace dots
+

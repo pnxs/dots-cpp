@@ -1,0 +1,366 @@
+#pragma once
+// Generated file, do not change.
+
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+
+#include "dots/dots_base.h"
+#include <ostream>
+{% for imp in imports %}
+#include "{{imp}}.dots.h"
+{% endfor %}
+{% for inc in includes %}
+#include "{{inc}}"
+{% endfor %}
+{#
+
+// types:
+<FOR_TYPE>
+//<TYPE>
+#}
+
+namespace dots
+{
+namespace att
+{
+// properties of class {{name}}
+enum class {{name}}_Att : uint32_t
+{
+{% for attr in attributes %}
+{{attr.name}} = {{attr.tag}},
+{% endfor %}
+};
+}
+
+namespace types
+{
+
+// set of class {{name}} attributes (implemented as bitset)
+class {{name}}_PropSet : public property_set
+{
+    typedef dots::att::{{name}}_Att Att;
+    typedef {{name}}_PropSet PropSet;
+
+    // forbidden construction from wrong enum via int conversion
+    {{name}}_PropSet(int val) = delete;
+
+    constexpr property_set getVal() const { return *this; }
+
+public:
+    // default constructor (empty set)
+    constexpr {{name}}_PropSet() {}
+    // construct from typeless base
+    constexpr explicit {{name}}_PropSet(property_set val) : property_set(val) {}
+    // construct from full set
+    constexpr {{name}}_PropSet(const AllProperties& val) : property_set(val) {}
+{#-    {{name}}_Attset({{name}}_Att att) : property_set(property_set(1) << (int)att) {} #}
+    // construct from attribute enum
+    constexpr {{name}}_PropSet(Att att) : property_set(1 << (int)att) {}
+
+    constexpr bool operator == (const PropSet &rhs) const { return getVal() == rhs.getVal(); }
+    constexpr bool operator != (const PropSet &rhs) const { return getVal() != rhs.getVal(); }
+
+    // set union
+    constexpr PropSet operator + (const PropSet &rhs) const
+    { return PropSet(getVal() | rhs.getVal()); }
+
+    PropSet &operator += (const PropSet &rhs) { *this = *this + rhs; return *this; }
+
+    // set complement
+    constexpr PropSet operator - (const PropSet &rhs) const
+    { return PropSet(getVal() & ~rhs.getVal()); }
+
+    PropSet &operator -= (const PropSet &rhs) { *this = *this - rhs; return *this; }
+
+    // complement
+    constexpr PropSet operator ~() const { return PropSet(~getVal()); }
+
+    // set intersection
+    constexpr PropSet operator & (const PropSet &rhs) const
+    { return PropSet(getVal() & rhs.getVal()); }
+
+    constexpr bool subsetOf(const PropSet &rhs) const
+    { return (*this & rhs) == *this; }
+
+    constexpr bool test(Att att) const { return property_set::test((int)att); }
+    Att set(Att att, bool val = true) { property_set::set((int)att, val); return att; }
+    constexpr bool operator[] (Att att) const { return property_set::operator[]((int)att); }
+{% for attr in attributes %}
+    constexpr bool {{attr.name}}() const { return test(Att::{{attr.name}}); }
+{% endfor %}
+{% for attr in attributes %}
+    Att {{attr.name}}(bool val) { return set(Att::{{attr.name}}, val); }
+{% endfor %}
+
+//    inline string toString() const;
+};
+
+static inline
+constexpr {{name}}_PropSet operator + (const att::{{name}}_Att e1, const {{name}}_PropSet &e2)
+{
+    return {{name}}_PropSet(e1) + e2;
+}
+
+static inline
+constexpr {{name}}_PropSet operator - (const AllProperties e1, att::{{name}}_Att e2)
+{
+    return {{name}}_PropSet(e1) - {{name}}_PropSet(e2);
+}
+
+struct {{name}}_Key;
+
+{% for comment_line in structComment %}
+/// {{comment_line}}
+{% endfor %}
+///
+{% for attr in attributes %}
+/// @param {{attr.name}} {{attr.comment}}
+{% endfor %}
+///
+/// @code
+/// Structure {
+{% for attr in attributes %}
+///    {{attr.tag}}: {{attr.type}} {{attr.name}} // {{attr.comment}}
+{% endfor %}
+/// }
+/// @endcode
+class {{name}}
+{
+public:
+    typedef att::{{name}}_Att Att; //< type of attributes enum
+    typedef {{name}}_PropSet PropSet; //< attribute set type
+    typedef {{name}}_Key Key;
+
+    typedef dots::Cbd<{{name}}> Cbd; //< type of callback data
+
+private:
+
+    PropSet m_valid_properties;
+{% for attr in attributes %}
+    {{attr.cxx_type}} m_{{attr.name}}; // {{attr.comment}} (key: {{attr.key | lower}})
+{% endfor %}
+
+public:
+    // get valid attributes
+    //const Attset &valatt() const { return m_valatt; }
+    // get writable valid attributes
+    //Attset &refValatt() { return m_valatt; }
+
+    const PropSet& validProperties() const { return m_valid_properties; }
+    PropSet& refValidProperties() { return m_valid_properties; }
+
+    {{name}}() {}
+    ~{{name}}();
+{#
+<IFDEF> ATT_CONSTRUCTOR
+
+    // construct from all attributes
+    {{name}}(<!NL>
+<FOR_ATT> "", ""
+const <CXX_TYPE> &_<ATT>
+) : m_valatt(ATTSET_ALL),<NL>        <!NL>
+<FOR_ATT> "", ""
+m_<ATT>(_<ATT>)
+{}
+
+<ENDIF>
+#}
+    inline
+    {{name}}(const Key &key); // construct from Key
+    inline
+    {{name}} &operator = (const Key &key); // fill key attrib. from key
+
+    // getter methods
+{% for attr in attributes %}
+    const {{attr.cxx_type}} &{{attr.name}}() const {
+#ifdef DOTS_GET_FAIL_ON_NOT_VALID
+        if (not validProperties().{{attr.name}}()) {
+            throw std::runtime_error("get {{name}}::" "{{attr.name}}" " not valid");
+        }
+#endif
+#ifdef DOTS_GET_WARN_ON_NOT_VALID
+        if (not validProperties().{{attr.name}}()) {
+            LOG_WARN_S("get {{name}}::" "{{attr.name}}" " not valid");
+        }
+#endif
+        return m_{{attr.name}};
+}
+{% endfor %}
+
+    // setter methods
+{% for attr in attributes %}
+    //Att set{{attr.Name}}(const {{attr.cxx_type}} &val_) { m_{{attr.name}} = val_; return refValidProperties().{{attr.name}}(true); }
+    {{name}}& set{{attr.Name}}(const {{attr.cxx_type}} &val_) { m_{{attr.name}} = val_; refValidProperties().{{attr.name}}(true); return *this; }
+{% endfor %}
+
+    // writable access
+{% for attr in attributes %}
+    {{attr.cxx_type}} &ref{{attr.Name}}() { refValidProperties().{{attr.name}}(true); return m_{{attr.name}}; }
+{% endfor %}
+
+    // ask valid
+{% for attr in attributes %}
+    bool has{{attr.Name}}() const { return validProperties().{{attr.name}}(); }
+{% endfor %}
+
+    bool operator == (const {{name}} &rhs) const
+    {
+        return {{ keys | expand_list("m_{0} == rhs.m_{0}", "", " && ", " &&") }} true;
+    }
+
+    bool operator != (const {{name}} &rhs) const { return !(*this == rhs); }
+
+    bool operator < (const {{name}} &rhs) const
+    {
+{% for key in keys %}
+        if(m_{{key}} != rhs.m_{{key}}) return m_{{key}} < rhs.m_{{key}};
+{% endfor %}
+        return false;
+    }
+
+    // compute attributes, that are different in '*this' and 'rhs'
+    inline PropSet diff(const {{name}} &rhs, PropSet what = PROPERTY_SET_ALL) const;
+    // copy attributes from 'rhs' to '*this'
+    inline void copy(const {{name}} &rhs, PropSet what = PROPERTY_SET_ALL);
+    // swap attributes between '*this' and 'rhs'
+    inline void swap({{name}} &rhs, PropSet what = PROPERTY_SET_ALL);
+    // deep merge attributes valid in 'what' from 'rhs' into '*this'
+    inline void merge(const {{name}} &rhs, const {{name}} &what);
+    // reset attributes to invalid
+    inline void clear(PropSet what = PROPERTY_SET_ALL);
+
+{% if not options.substruct_only %}
+    // publish: send object to group communication layer
+    void publish(const PropSet &properties) const;
+    void publish() const { publish(validProperties()); }
+    void remove() const; // send remove request
+
+    // publish single attribute methods
+
+{% for attr in attributes %}
+    static inline void publish{{attr.Name}}(const Key &key, const {{attr.cxx_type}} &val);
+{% endfor %}
+{% endif %}
+
+    // attribute set containing all key fields
+    static constexpr PropSet _keys()
+    {
+        return {{ keys | expand_list("Att::{0}", "", " + ", " +") }} PropSet();
+    }
+
+    static const StructDescriptorData _dd();
+    static const type::StructDescriptor *_td(); // return type descriptor of this class
+
+    static constexpr bool isSubstructOnly()
+    {
+        return {{ options.substruct_only | default('false') | lower }};
+    }
+
+    static constexpr bool isCached()
+    {
+        return {{ options.cached | lower }};
+    }
+
+    // In each method, 'what' parameter defines a subset of attributes used for the operation.
+    // Default value 'ATTSET_ALL' means 'all attributes'
+};
+
+// struct containing all key atributes of {{name}}
+struct {{name}}_Key
+{
+{% for attr in attributes %}
+    {% if attr.key %}
+    {{attr.cxx_type}} {{attr.name}};
+    {% endif %}
+{% endfor %}
+
+    {{name}}_Key(const {{name}} &s) {{ keys | expand_list("{0}(s.{0}())", ": ", ", ", "") }} {}
+
+    {{name}}_Key( {% for attr in keyAttributes %}
+        const {{attr.cxx_type}} &_{{attr.name}} {% if not loop.last %}, {% endif %}
+{% endfor %} ) {{ keys | expand_list("{0}(_{0})", ": ", ", ", "") }} {}
+
+    bool operator == (const {{name}}_Key &rhs) const
+    {
+        return {{ keys | expand_list("{0} == rhs.{0}", "", " && ", " &&") }} true;
+    }
+
+    bool operator != (const {{name}}_Key &rhs) const { return !(*this == rhs); }
+
+    bool operator < (const {{name}}_Key &rhs) const
+    {
+{% for key in keys %}
+        if({{key}} != rhs.{{key}}) return {{key}} < rhs.{{key}};
+{% endfor %}
+        return false;
+    }
+};
+
+
+// construct from Key
+{{name}}::{{name}}(const Key &key)
+{
+{% for ka in keyAttributes %}
+    set{{ka.Name}}(key.{{ka.name}});
+{% endfor %}
+}
+
+{{name}} &{{name}}::operator = (const Key &key)
+{
+{% for ka in keyAttributes %}
+    set{{ka.Name}}(key.{{ka.name}});
+{% endfor %}
+
+    return *this;
+}
+
+{{name}}::PropSet {{name}}::diff(const {{name}} &rhs, PropSet what) const
+{
+    return {{name}}::PropSet(_td()->diff(this, &rhs, what));
+}
+
+void {{name}}::copy(const {{name}} &rhs, PropSet what)
+{
+    _td()->copy(this, &rhs, what);
+}
+
+void {{name}}::swap({{name}} &rhs, PropSet what)
+{
+    _td()->swap(this, &rhs, what);
+}
+
+void {{name}}::merge(const {{name}} &rhs, const {{name}} &what)
+{
+    _td()->merge(this, &rhs, &what);
+}
+
+void {{name}}::clear(PropSet what)
+{
+    return _td()->clear(this, what);
+}
+
+{% if not options.substruct_only %}
+// publish single attribute methods
+{% for attr in attributes %}
+void {{name}}::publish{{attr.Name}}(const Key &key, const {{attr.cxx_type}} &val)
+{
+{{name}} tmp(key);
+tmp.set{{attr.Name}}(val);
+tmp.publish();
+}
+{% endfor %}
+{% endif %}
+
+{% for attr in attributes %}
+// m_{{attr.name}}: alias: {{attr.name}}, vector: {{attr.vector | lower}}, key: {{attr.key | lower}}, tag: {{attr.tag}}, idx: {{loop.index0}}, comment: {{attr.comment}}
+{% endfor %}
+
+} // namespace types
+} // namespace dots
+
+#if (!defined DOTS_TYPES_NO_USING) && (!defined {{name}}_NO_USING)
+using dots::types::{{name}};
+using dots::att::{{name}}_Att;
+#endif
+{% if not options.internal %}
+//#include "dots-io/Transceiver.h"
+{% endif %}

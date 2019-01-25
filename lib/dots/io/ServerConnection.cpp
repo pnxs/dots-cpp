@@ -1,0 +1,378 @@
+#include "ServerConnection.h"
+
+#include "DotsTransportHeader.dots.h"
+#include "DotsMsgConnect.dots.h"
+#include "DotsMember.dots.h"
+#include "DotsDescriptorRequest.dots.h"
+#include "dots/io/serialization/CborNativeSerialization.h"
+#include "dots/io/serialization/AsciiSerialization.h"
+#include "Transmitter.h"
+
+namespace dots
+{
+
+bool ServerConnection::start(const string &name, const string &host, int port, DotsSocketPtr dotsSocket)
+{
+    if (running())
+    {
+        LOG_WARN_S("already connected");
+        return true;
+    }
+
+    m_dotsSocket = dotsSocket;
+
+    if (not socket().connect(host, port))
+    {
+        LOG_ERROR_S("Unable to connect to dotsd");
+        return false;
+    }
+
+    socket().setReceiveCallback(FUN(*this, handleReceivedMessage));
+
+    m_running = true;
+    m_clientName = name;
+
+    handleConnected(name);
+
+    return true;
+}
+
+void ServerConnection::stop()
+{
+    if (not running()) return;
+
+    disconnect();
+
+    m_running = false;
+}
+
+bool ServerConnection::running()
+{
+    return m_running;
+}
+
+void ServerConnection::disconnect()
+{
+    socket().disconnect();
+}
+
+DotsSocket& ServerConnection::socket()
+{
+    return *m_dotsSocket.get();
+}
+
+void ServerConnection::handleConnected(const string &name)
+{
+    switch(m_connectionState)
+    {
+        case DotsConnectionState::connecting:
+#if 0
+            // Connection established, send ConnectReqest (with e.g. credentials)
+            {
+                DotsMsgConnect cm;
+                cm.setClientName(name);
+                cm.setPreloadCache(true);
+
+                LOG_INFO_S("publish DotsMsgConnect");
+                publishNs("SYS", cm._td(), &cm);
+            }
+#endif
+            break;
+        case DotsConnectionState::suspended:
+            // When a connection is reestablished, continue operation
+            break;
+        case DotsConnectionState::early_subscribe:
+        case DotsConnectionState::connected:
+        case DotsConnectionState::closed:
+            // Do nothing
+            break;
+    }
+
+}
+
+
+void ServerConnection::handleDisconnected()
+{
+    switch(m_connectionState)
+    {
+        case DotsConnectionState::connecting:
+            // Connect failed
+            setConnectionState(DotsConnectionState::closed);
+            break;
+        case DotsConnectionState::early_subscribe:
+            // Connect failed
+            setConnectionState(DotsConnectionState::closed);
+            break;
+        case DotsConnectionState::connected:
+            // Connection interrupted, try to reestablish
+            setConnectionState(DotsConnectionState::suspended);
+            break;
+        case DotsConnectionState::suspended:
+        case DotsConnectionState::closed:
+            // Do nothing
+            break;
+    }
+}
+
+void ServerConnection::handleReceivedMessage(const Message &msg)
+{
+    try {
+        if (msg.header().hasNameSpace() && msg.header().nameSpace() == "SYS")
+        {
+            onControlMessage(msg);
+        } else
+        {
+            onRegularMessage(msg);
+        }
+    }
+    catch (const std::exception& e) {
+        LOG_ERROR_S("exception in receive: " << e.what());
+        stop();
+    }
+}
+
+void ServerConnection::onControlMessage(const Message &msg)
+{
+    const auto& typeName = msg.header().dotsHeader().typeName();
+    const auto& data = msg.data();
+    const auto& dotsHeader = msg.header().dotsHeader();
+
+    switch(m_connectionState)
+    {
+        case DotsConnectionState::connecting:
+            if (typeName == "DotsMsgHello")
+            {
+                processHello(decodeInto_cbor<DotsMsgHello>(msg.data()));
+            }
+            else if (typeName == "DotsMsgConnectResponse")
+            {
+                processConnectResponse(decodeInto_cbor<DotsMsgConnectResponse>(data));
+            }
+            break;
+        case DotsConnectionState::early_subscribe:
+            if (typeName == "DotsMsgConnectResponse")
+            {
+                processEarlySubscribe(decodeInto_cbor<DotsMsgConnectResponse>(data));
+            }
+            // No break here: falltrough
+            // process all messages, put non-cache messages into buffer
+        case DotsConnectionState::connected:
+        {
+            if (typeName == "DotsCacheInfo") {
+                //TODO: implement handling of DotsCacheInfo
+                //for now let trough like an normal object
+                // return;
+            }
+
+            ReceiveMessageData rmd = {
+                    .data = &data[0],
+                    .length = data.size(),
+                    .sender = dotsHeader.sender(),
+                    .group = msg.header().destinationGroup(),
+                    .sentTime = dotsHeader.sentTime(),
+                    .header = dotsHeader,
+                    .isFromMyself = (dotsHeader.sender() == m_serversideClientname)
+            };
+
+            onReceiveMessage(rmd);
+        }
+
+            break;
+        case DotsConnectionState::suspended:
+            // buffer outgoing messages
+            break;
+        case DotsConnectionState::closed:
+            // Do nothing
+            break;
+    }
+
+}
+
+void ServerConnection::onRegularMessage(const Message &msg)
+{
+    const auto& typeName = msg.header().dotsHeader().typeName();
+    const auto& data = msg.data();
+    const auto& dotsHeader = msg.header().dotsHeader();
+
+    switch(m_connectionState)
+    {
+        case DotsConnectionState::connecting:
+            break;
+        case DotsConnectionState::early_subscribe:
+        case DotsConnectionState::connected:
+        {
+            LOG_DATA_S("dispatch message " << typeName);
+
+            ReceiveMessageData rmd = {
+                .data = &data[0],
+                .length = data.size(),
+                .sender = dotsHeader.sender(),
+                .group = msg.header().destinationGroup(),
+                .sentTime = dotsHeader.sentTime(),
+                .header = dotsHeader,
+                .isFromMyself = (dotsHeader.sender() == m_serversideClientname)
+            };
+
+            onReceiveMessage(rmd);
+        }
+            break;
+        case DotsConnectionState::suspended:
+            // buffer outgoing messages
+            break;
+        case DotsConnectionState::closed:
+            // Do nothing
+            break;
+    }
+}
+
+void ServerConnection::setConnectionState(DotsConnectionState state)
+{
+    LOG_DEBUG_S("change connection state to " << to_string(state));
+    m_connectionState = state;
+    switch(m_connectionState)
+    {
+        case DotsConnectionState::connected:
+            onConnected();
+            break;
+        case DotsConnectionState::early_subscribe:
+            onEarlyConnect();
+            break;
+        default:
+            break;
+    }
+}
+
+int ServerConnection::send(const DotsTransportHeader &header, const vector<uint8_t> &data)
+{
+    return socket().send(header, data);
+}
+
+Transmitter &ServerConnection::transmitter()
+{
+    return m_transmitter;
+}
+
+void ServerConnection::publishNs(const string& nameSpace, const type::StructDescriptor* td, CTypeless data, property_set what, bool remove)
+{
+    DotsTransportHeader header;
+    transmitter().prepareHeader(header, td, what, remove); //< Modifies header and what
+    if (not nameSpace.empty()) {
+        header.setNameSpace(nameSpace);
+    }
+
+    // prepareBuffer
+    transmitter().prepareBuffer(td, data, header, what);
+
+    // Send to peer or group
+
+    LOG_DEBUG_S("publish ns=" << nameSpace << " type=" << td->name());
+    LOG_DATA_S("data:" << to_ascii(td, data, what));
+    //LOG_INFO_S("publish data-size: " << b.size());
+    //LOG_INFO_S("data: " << b.toString());
+    //vector<uint8_t > v(b.data(), b.data() + b.size());
+    //LOG_INFO_S("publish data: " <<cbor::hexlify(&v[0], v.size()));
+    this->send(header, transmitter().buffer());
+}
+
+void ServerConnection::publish(const type::StructDescriptor *td, CTypeless data, property_set what, bool remove)
+{
+    publishNs(string(), td, data, what, remove);
+}
+
+void ServerConnection::processConnectResponse(const DotsMsgConnectResponse& cr)
+{
+    string serverName = cr.hasServerName() ? cr.serverName() : "<unknown>";
+    LOG_DEBUG_S("connectResponse: serverName=" << serverName << " accepted=" << cr.accepted());
+    if (cr.hasClientId()) {
+        m_serversideClientname = cr.clientId();
+    }
+    if (cr.hasPreload() && cr.preload() &&
+            (not cr.hasPreloadFinished() ||
+            (cr.hasPreloadFinished() && not cr.preloadFinished())))
+    {
+        setConnectionState(DotsConnectionState::early_subscribe);
+    }
+    else
+    {
+        setConnectionState(DotsConnectionState::connected);
+    }
+}
+
+void ServerConnection::processEarlySubscribe(const DotsMsgConnectResponse &cr)
+{
+    if (cr.hasPreloadFinished() and cr.preloadFinished())
+    {
+        setConnectionState(DotsConnectionState::connected);
+    } else{
+        LOG_ERROR_S("invalid DotsMsgConnectResponse");
+    }
+}
+
+
+void ServerConnection::processHello(const DotsMsgHello &hello)
+{
+    const auto requiredAttrs = DotsMsgHello::PropSet(DotsMsgHello::Att::authChallenge) + DotsMsgHello::Att::serverName;
+    if (hello.validProperties() & requiredAttrs)
+    {
+        LOG_DEBUG_S("received hello from '" << hello.serverName() << "' authChallenge=" << hello.authChallenge());
+        LOG_DATA_S("send DotsMsgConnect");
+        requestConnection(m_clientName, ConnectMode::preload);
+    }
+    else
+    {
+        LOG_WARN_S("Invalid hello from server valatt:" << hello.validProperties().to_string());
+    }
+}
+
+void ServerConnection::joinGroup(const GroupName &groupName)
+{
+    DotsMember member;
+    member.setGroupName(groupName);
+    member.setEvent(DotsMemberEvent::join);
+
+    LOG_DEBUG_S("send DotsMember (join " << groupName << ")");
+    publishNs("SYS", member._td(), &member);
+}
+
+void ServerConnection::requestConnection(const ServerConnection::ClientName& name, ServerConnection::ConnectMode mode)
+{
+    DotsMsgConnect cm;
+    cm.setClientName(name);
+    switch (mode)
+    {
+        case ConnectMode::direct: cm.setPreloadCache(false); break;
+        case ConnectMode::preload: cm.setPreloadCache(true); break;
+    }
+    publishNs("SYS", cm._td(), &cm);
+}
+
+void ServerConnection::requestDescriptors(const DescriptorList &whiteList, const DescriptorList &blackList)
+{
+    DotsDescriptorRequest req;
+
+    if (not whiteList.empty())
+    {
+        for (auto& e : whiteList)
+            req.refWhitelist().push_back(e);
+    }
+    if (not blackList.empty())
+    {
+        for (auto& e : blackList)
+            req.refBlacklist().push_back(e);
+    }
+
+    publish(req._td(), &req);
+}
+
+void ServerConnection::leaveGroup(const ServerConnection::GroupName &groupName)
+{
+    DotsMember member;
+    member.setGroupName(groupName);
+    member.setEvent(DotsMemberEvent::leave);
+
+    LOG_INFO_S("send DotsMember (leave " << groupName << ")");
+    publishNs("SYS", member._td(), &member);
+}
+
+
+}

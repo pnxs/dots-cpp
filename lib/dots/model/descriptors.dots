@@ -1,0 +1,52 @@
+
+struct DotsStructFlags [internal,cached=false] {
+    1: bool cached; // if the struct is cached by the server (or generally in the containers).
+    2: bool internal; // if the struct is an DOTS-internal type.
+    3: bool persistent; // if the struct should be saved to non-volatile memory.
+    4: bool cleanup; // if an object of this struct should be removed, if the creator disconnectes from the server.
+    5: bool local;
+    6: bool substructOnly; // when a struct is marked as 'substruct_only', it cannot be published directly.
+}
+
+enum DotsStructScope {
+    1: program, // Ony for client-internal use
+    2: server, // Will only be routed to clients, connected to the same server
+    3: site,   // Route to clients within the same site
+    4: global  // No limitation
+}
+
+// Descriptor for enumerations
+struct EnumDescriptorData [internal,cached=false] {
+    1: [key] string name;
+    2: vector<EnumElementDescriptor> elements;
+    4: uint32 publisherId; // client ID of the publisher of this type
+}
+
+struct EnumElementDescriptor [internal,cached=false] {
+    1: int32 enum_value;
+    2: string name;
+    3: uint32 tag;
+}
+
+struct StructPropertyData [internal,cached=false] {
+    1: string name; // name of attribute
+    2: uint32 tag; // unique attribute tag
+    3: bool isKey; // is this property a key or keypart
+    4: string type; // name of type... or
+    5: uint32 typeId; //... id of type
+}
+
+// Descriptor for structs
+struct StructDescriptorData [internal,cached=false] {
+    1: [key] string name; // name of the struct
+    2: vector<StructPropertyData> properties; // list of struct-properties
+    3: StructDocumentation documentation; // struct documentation
+    4: DotsStructScope scope; // scope for which the struct is valid
+    5: DotsStructFlags flags; // struct flags
+    6: uint32 publisherId; // client ID of the publisher of this type
+}
+
+struct StructDocumentation [internal,cached=false] {
+    1: string description;
+    2: string comment;
+}
