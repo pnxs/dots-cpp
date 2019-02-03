@@ -71,7 +71,7 @@ add_library(dots SHARED
         type/UuidDescriptor.cpp
         type/Vector.cpp
         type/VectorDescriptor.cpp
-
+		type/Struct.cpp
 )
 
 if (WITH_QT5)
