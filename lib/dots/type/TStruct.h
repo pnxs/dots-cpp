@@ -2,8 +2,14 @@
 #include <string_view>
 #include <type_traits>
 #include "StructDescriptor.h"
-#include "Registry.h"
 #include "Struct.h"
+#include "Registry.h"
+
+namespace dots
+{
+	template<class T>
+	struct Cbd;
+}
 
 namespace dots::type
 {
@@ -13,6 +19,8 @@ namespace dots::type
     template <typename Derived>
     struct TStruct : Struct
     {
+		using Cbd = dots::Cbd<Derived>;
+
         TStruct() : Struct(_Descriptor())
         {
 	        /* do nothing */
