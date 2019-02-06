@@ -24,6 +24,21 @@ namespace dots::type
         TStruct& operator = (const TStruct& rhs) = default;
         TStruct& operator = (TStruct&& rhs) = default;
 
+		bool operator == (const Derived& rhs) const
+		{
+			return _applyKeyPropertyPairs(rhs, [](const auto&... propertyPairs) { return ((propertyPairs.first == propertyPairs.second) && ...); });
+		}
+
+		bool operator != (const Derived& rhs) const
+		{
+			return !(*this == rhs);
+		}
+
+		bool operator < (const Derived& rhs) const
+		{
+			return _applyKeyPropertyPairs(rhs, [](const auto&... propertyPairs) { return ((propertyPairs.first < propertyPairs.second) && ...); });
+		}
+
 		auto _properties()
 		{
 			return std::apply([this](auto&&... args)
