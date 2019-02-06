@@ -76,6 +76,21 @@ namespace dots::type
 			return value();
 		}
 
+		bool operator == (const T& rhs) const
+		{
+			return isValid() && _value == rhs;
+		}
+
+		bool operator != (const T& rhs) const
+		{
+			return !(*this == rhs);
+		}
+
+		bool operator < (const T& rhs) const
+		{
+			return isValid() && _value < rhs;
+		}
+
 		bool operator == (const Derived& rhs) const
 		{
 			return isValid() && rhs.isValid() && _value == rhs._value;
