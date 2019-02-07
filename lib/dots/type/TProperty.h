@@ -1,6 +1,7 @@
 #pragma once
 #include <string_view>
 #include <type_traits>
+#include <iostream>
 #include "Struct.h"
 #include "StructDescriptor.h"
 
@@ -281,4 +282,19 @@ namespace dots::type
 
         std::aligned_storage<sizeof(T)> _value;
     };
+
+	template <typename T, typename Derived, typename Previous, typename DerivedStruct>
+	std::ostream& operator << (std::ostream& os, const TProperty<T, Derived, Previous, DerivedStruct>& property)
+	{
+		if (property.isValid())
+		{
+			os << *property;
+		}
+		else
+		{
+			os << "<invalid-property>";
+		}
+
+		return os;
+	}
 }
