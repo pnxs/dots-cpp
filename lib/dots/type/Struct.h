@@ -20,7 +20,7 @@ namespace dots::type
         Struct(const StructDescriptor& descriptor);
         Struct(const Struct& other) = default;
         Struct(Struct&& other) = default;
-        ~Struct() = default;
+        virtual ~Struct() = default;
 
         Struct& operator = (const Struct& rhs) = default;
         Struct& operator = (Struct&& rhs) = default;
