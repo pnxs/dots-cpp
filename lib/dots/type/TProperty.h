@@ -111,6 +111,11 @@ namespace dots::type
 			return validPropertySet().test(Tag());
 		}
 
+		static constexpr bool IsPartOf(const property_set& propertySet)
+		{
+			return propertySet.test(Tag());
+		}
+
         static constexpr std::string_view Name()
         {
             return Derived::Description.name;
