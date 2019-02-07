@@ -29,14 +29,14 @@ namespace dots::type
         }
 
 		template <typename U>
-		Derived& operator = (U&& rhs) &
+		T& operator = (U&& rhs) &
 		{
 			constructOrAssign(std::forward<U>(rhs));
 			return static_cast<Derived&>(*this);
 		}
 
 		template <typename... Args>
-		Derived& operator () (Args&&... args) &
+		T& operator () (Args&&... args) &
 		{
 			if (isValid())
 			{
