@@ -25,11 +25,6 @@ namespace dots::type
 				rawValue().~T();
 	        }
         }
-		TProperty(const TProperty& other) = default;
-		TProperty(TProperty&& other) = default;
-
-		TProperty& operator = (const TProperty& rhs) = default;
-        TProperty& operator = (TProperty&& rhs) = default;		
 
 		template <typename U>
 		Derived& operator = (U&& rhs) &
@@ -163,6 +158,11 @@ namespace dots::type
     	friend DerivedStruct;
 
 		TProperty() = default;
+		TProperty(const TProperty& other) = default;
+		TProperty(TProperty&& other) = default;
+
+		TProperty& operator = (const TProperty& rhs) = default;
+		TProperty& operator = (TProperty&& rhs) = default;
 
 		property_set& validPropertySet()
 		{
