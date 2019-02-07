@@ -25,7 +25,7 @@ namespace dots::type
         Struct& operator = (const Struct& rhs) = default;
         Struct& operator = (Struct&& rhs) = default;
 
-        const StructDescriptor& descriptor() const;
+        const StructDescriptor& _descriptor() const;
 
 		property_set& _validPropertySet();
 		const property_set& _validPropertySet() const;

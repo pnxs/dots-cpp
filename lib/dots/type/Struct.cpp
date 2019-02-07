@@ -77,7 +77,7 @@ namespace dots::type
         /* do nothing */
     }
 
-    const StructDescriptor& Struct::descriptor() const
+    const StructDescriptor& Struct::_descriptor() const
     {
         return *_desc;
     }
