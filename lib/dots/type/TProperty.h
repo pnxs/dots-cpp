@@ -22,10 +22,7 @@ namespace dots::type
 		
         ~TProperty()
         {
-	        if (isValid())
-	        {
-				rawValue().~T();
-	        }
+			destroy();
         }
 
 		template <typename U>
@@ -216,6 +213,15 @@ namespace dots::type
 			validPropertySet().set(Tag(), true);
 
 			return rawValue();
+		}
+
+		void destroy()
+		{
+			if (isValid())
+			{
+				rawValue().~T();
+				validPropertySet().set(Tag(), false);
+			}
 		}
 
 		T& validValue()
