@@ -41,6 +41,11 @@ namespace dots::type
 		template <typename... Args>
 		Derived& operator () (Args&&... args) &
 		{
+			if (isValid())
+			{
+				throw std::runtime_error{ std::string{ "attempt to construct already valid property: " } + DerivedStruct::Description.name.data() + "." + Name().data() };
+			}
+
 			if constexpr (sizeof...(Args) == 0)
 			{
 				construct(T{});
