@@ -20,6 +20,14 @@ namespace dots::type
 
 		using value_t = T;
 		using struct_t = DerivedStruct;
+
+		struct init_t
+		{
+			using property_t = TProperty;
+			template <typename... Args>
+			init_t(Args&&... args) : value(std::forward<Args>(args)...) {}
+			T value;
+		};
 		
         ~TProperty()
         {
@@ -52,6 +60,11 @@ namespace dots::type
 			}
 
 			return static_cast<Derived&>(*this);
+		}
+
+		T& operator () (init_t&& init) &
+		{
+			return (*this)(std::move(init.value));
 		}
 
 		T& operator * ()
