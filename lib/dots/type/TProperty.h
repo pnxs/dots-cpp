@@ -1,5 +1,6 @@
 #pragma once
 #include <string_view>
+#include <type_traits>
 #include "Struct.h"
 #include "StructDescriptor.h"
 
@@ -17,7 +18,13 @@ namespace dots::type
 		using value_t = T;
 		using struct_t = DerivedStruct;
 		
-        ~TProperty() = default;
+        ~TProperty()
+        {
+	        if (isValid())
+	        {
+				rawValue().~T();
+	        }
+        }
 		TProperty(const TProperty& other) = default;
 		TProperty(TProperty&& other) = default;
 
@@ -27,9 +34,7 @@ namespace dots::type
 		template <typename U>
 		Derived& operator = (U&& rhs) &
 		{
-			_value = std::forward<U>(rhs);
-			validPropertySet().set(Tag(), true);
-
+			constructOrAssign(std::forward<U>(rhs));
 			return static_cast<Derived&>(*this);
 		}
 
@@ -38,47 +43,49 @@ namespace dots::type
 		{
 			if constexpr (sizeof...(Args) == 0)
 			{
-				return (*this) = T{};
+				constructOrAssign(T{});
 			}
 			else
 			{
-				return (*this) = T(std::forward<Args>(args)...);
+				constructOrAssign(std::forward<Args>(args)...);
 			}
+
+			return static_cast<Derived&>(*this);
 		}
 
 		T& operator * ()
 		{
-			return value();
+			return validValue();
 		}
 
 		const T& operator * () const
 		{
-			return value();
+			return validValue();
 		}
 
 		T* operator -> ()
 		{
-			return &value();
+			return &validValue();
 		}
 
 		const T* operator -> () const
 		{
-			return value();
+			return &validValue();
 		}
 
 		operator T& ()
 		{
-			return value();
+			return validValue();
 		}
 
 		operator const T& () const
 		{
-			return value();
+			return validValue();
 		}
 
 		bool operator == (const T& rhs) const
 		{
-			return isValid() && _value == rhs;
+			return isValid() && validValue() == rhs;
 		}
 
 		bool operator != (const T& rhs) const
@@ -88,12 +95,12 @@ namespace dots::type
 
 		bool operator < (const T& rhs) const
 		{
-			return isValid() && _value < rhs;
+			return isValid() && validValue() < rhs;
 		}
 
 		bool operator == (const Derived& rhs) const
 		{
-			return isValid() && rhs.isValid() && _value == rhs._value;
+			return isValid() && rhs.isValid() && validValue() == rhs._value;
 		}
 
 		bool operator != (const Derived& rhs) const
@@ -103,7 +110,7 @@ namespace dots::type
 
 		bool operator < (const Derived& rhs) const
 		{
-			return !rhs.isValid() || isValid() && _value < rhs._value;
+			return !rhs.isValid() || isValid() && validValue() < rhs._value;
 		}
 
 		bool isValid() const
@@ -150,21 +157,7 @@ namespace dots::type
 		
     	friend DerivedStruct;
 
-		template <typename, typename, typename, typename>
-		friend std::ostream& operator<< (std::ostream& stream, const TProperty& property);
-
 		TProperty() = default;
-
-		T& value()
-		{
-			
-			return _value;
-		}
-
-		const T& value() const
-		{
-			return const_cast<TProperty&>(*this).value();
-		}
 
 		property_set& validPropertySet()
 		{
@@ -184,6 +177,48 @@ namespace dots::type
 		const Struct& instance() const
 		{
 			return const_cast<TProperty&>(*this).instance();
+		}
+
+		template <typename... Args>
+		T& constructOrAssign(Args&&... args)
+		{
+			if (isValid())
+			{
+				rawValue() = T(std::forward<Args>(args)...);
+			}
+			else
+			{
+				::new (static_cast<void *>(::std::addressof(_value))) T(std::forward<Args>(args)...);
+			}
+
+			validPropertySet().set(Tag(), true);
+
+			return rawValue();
+		}
+
+		T& validValue()
+		{
+			if (!isValid())
+			{
+				throw std::runtime_error{ std::string{ "attempt to access invalid property: " } + DerivedStruct::Description.name.data() + "." + Name().data() };
+			}
+
+			return rawValue();
+		}
+
+		const T& validValue() const
+		{
+			return const_cast<TProperty&>(*this).validValue();
+		}
+
+		T& rawValue()
+		{
+			return reinterpret_cast<T&>(*&_value);
+		}
+
+		const T& rawValue() const
+		{
+			return const_cast<TProperty&>(*this).rawValue();
 		}
 
 		static Derived& Get(Struct& instance)
@@ -216,6 +251,6 @@ namespace dots::type
 			return alignedOffset;
 		}
 
-        value_t _value;
+        std::aligned_storage<sizeof(T)> _value;
     };
 }
