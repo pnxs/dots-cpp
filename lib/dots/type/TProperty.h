@@ -45,6 +45,7 @@ namespace dots::type
 
 			if constexpr (sizeof...(Args) == 0)
 			{
+				static_assert(std::is_default_constructible_v<T>);
 				construct(T{});
 			}
 			else
