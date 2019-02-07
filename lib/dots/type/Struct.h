@@ -41,6 +41,7 @@ namespace dots::type
 			std::string_view type;
 		};
 
+		static constexpr uint8_t Uncached      = 0b0000'0000;
 		static constexpr uint8_t Cached        = 0b0000'0001;
 		static constexpr uint8_t Internal      = 0b0000'0010;
 		static constexpr uint8_t Persistent    = 0b0000'0100;
