@@ -43,11 +43,11 @@ namespace dots::type
 		{
 			if constexpr (sizeof...(Args) == 0)
 			{
-				constructOrAssign(T{});
+				construct(T{});
 			}
 			else
 			{
-				constructOrAssign(std::forward<Args>(args)...);
+				construct(std::forward<Args>(args)...);
 			}
 
 			return static_cast<Derived&>(*this);
@@ -184,13 +184,27 @@ namespace dots::type
 		{
 			if (isValid())
 			{
-				rawValue() = T(std::forward<Args>(args)...);
+				return assign(std::forward<Args>(args)...);
 			}
 			else
 			{
-				::new (static_cast<void *>(::std::addressof(_value))) T(std::forward<Args>(args)...);
+				return construct(std::forward<Args>(args)...);
 			}
+		}
 
+		template <typename... Args>
+		T& assign(Args&&... args)
+		{
+			rawValue() = T(std::forward<Args>(args)...);
+			validPropertySet().set(Tag(), true);
+
+			return rawValue();
+		}
+
+		template <typename... Args>
+		T& construct(Args&&... args)
+		{
+			::new (static_cast<void *>(::std::addressof(_value))) T(std::forward<Args>(args)...);
 			validPropertySet().set(Tag(), true);
 
 			return rawValue();
