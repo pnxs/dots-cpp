@@ -181,6 +181,36 @@ namespace dots::type
 			return *structDescriptor;
         }
 
+		static constexpr bool _IsCached()
+		{
+			return Derived::Description.flags & Cached;
+		}
+
+		static constexpr bool _IsInternal()
+		{
+			return Derived::Description.flags & Internal;
+		}
+
+		static constexpr bool _IsPersistent()
+		{
+			return Derived::Description.flags & Persistent;
+		}
+
+		static constexpr bool _IsCleanup()
+		{
+			return Derived::Description.flags & Cleanup;
+		}
+
+		static constexpr bool _IsLocal()
+		{
+			return Derived::Description.flags & Local;
+		}
+
+		static constexpr bool _IsSubstructOnly()
+		{
+			return Derived::Description.flags & SubstructOnly;
+		}
+
     protected:
 		
 		template <typename... PropertyDescriptions>
