@@ -15,6 +15,8 @@ namespace dots::type
     template <typename T, typename Derived, typename Previous, typename DerivedStruct>
     struct TProperty
     {
+		static_assert(std::conjunction_v<std::negation<std::is_pointer<T>>, std::negation<std::is_reference<T>>>);
+
 		using value_t = T;
 		using struct_t = DerivedStruct;
 		
