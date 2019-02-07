@@ -79,8 +79,17 @@ namespace dots::type
 
     const StructDescriptor& Struct::descriptor() const
     {
-        return *_descriptor;
+        return *_desc;
     }
+
+	property_set& Struct::_validPropertySet()
+	{
+		return _validPropSet;
+	}
+	const property_set& Struct::_validPropertySet() const
+	{
+		return _validPropSet;
+	}
 
 	const StructDescriptor* Struct::MakeStructDescriptor(const StructDescriptorData& structDescriptorData)
 	{
@@ -159,5 +168,5 @@ namespace dots::type
 		}
 
 		return MakeStructDescriptor(structDescriptorData);
-    }	
+    }
 }

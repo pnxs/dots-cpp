@@ -27,7 +27,10 @@ namespace dots::type
 
         const StructDescriptor& descriptor() const;
 
-    protected:
+		property_set& _validPropertySet();
+		const property_set& _validPropertySet() const;
+
+    protected:		
 
 		struct PropertyDescription
 		{
@@ -58,7 +61,7 @@ namespace dots::type
 
     private:
 
-		property_set _validProperties;
-        const StructDescriptor* _descriptor;        
+		property_set _validPropSet;
+        const StructDescriptor* _desc;        
     };
 }
