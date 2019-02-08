@@ -1,6 +1,7 @@
 #pragma once
 #include <string_view>
 #include <type_traits>
+#include "dots/io/Subscription.h"
 #include "StructDescriptor.h"
 #include "Struct.h"
 #include "Registry.h"
@@ -160,6 +161,22 @@ namespace dots::type
 			return std::apply(std::forward<Callable>(callable), _keyPropertyPairs(other));
 		}
 
+		void _publish(const property_set& what = PROPERTY_SET_ALL, bool remove = false) const
+		{
+			static_assert(!_IsSubstructOnly(), "a substruct-only type cannot be published");
+
+			registerTypeUsage<Derived, PublishedType>();
+			Struct::_publish();
+		}
+
+		void _remove() const
+		{
+			static_assert(!_IsSubstructOnly(), "a substruct-only type cannot be removed");
+
+			registerTypeUsage<Derived, PublishedType>();
+			Struct::_remove();
+		}
+
         static const StructDescriptor& _Descriptor()
         {
 			static const StructDescriptor* structDescriptor = Descriptor::registry().findStructDescriptor(Derived::Description.name.data());
@@ -221,6 +238,9 @@ namespace dots::type
 		}
 
     private:
+
+		using Struct::_publish;
+		using Struct::_remove;
 
 		template <typename, typename, typename, typename>
 		friend struct TProperty;

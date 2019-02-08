@@ -1,6 +1,7 @@
 #include "Struct.h"
 #include "StructDescriptor.h"
 #include "Registry.h"
+#include "dots/io/Transceiver.h"
 #include <StructDescriptorData.dots.h>
 
 struct StructProperties
@@ -91,7 +92,17 @@ namespace dots::type
 		return _validPropSet;
 	}
 
-	const StructDescriptor* Struct::MakeStructDescriptor(const StructDescriptorData& structDescriptorData)
+    void Struct::_publish(const property_set& what/* = PROPERTY_SET_ALL*/, bool remove/* = false*/) const
+    {
+		onPublishObject->publish(&_descriptor(), this, what, remove);
+    }
+
+    void Struct::_remove() const
+    {
+		_publish(PROPERTY_SET_NONE, true);
+    }
+
+    const StructDescriptor* Struct::MakeStructDescriptor(const StructDescriptorData& structDescriptorData)
 	{
 		// Check if type is already registred
 		{

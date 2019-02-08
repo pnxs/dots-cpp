@@ -2,7 +2,6 @@
 #include <string_view>
 #include <array>
 #include "property_set.h"
-#include "Property.h"
 
 namespace dots::types
 {
@@ -29,6 +28,9 @@ namespace dots::type
 
 		property_set& _validPropertySet();
 		const property_set& _validPropertySet() const;
+
+		void _publish(const property_set& what = PROPERTY_SET_ALL, bool remove = false) const;
+		void _remove() const;
 
     protected:		
 

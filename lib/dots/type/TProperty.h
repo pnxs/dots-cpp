@@ -132,6 +132,31 @@ namespace dots::type
 			return validPropertySet().test(Tag());
 		}
 
+		void publish() const
+        {
+	        if (!isValid())
+	        {
+				throw std::runtime_error{ std::string{ "attempt to publish invalid property: " } + DerivedStruct::Description.name.data() + "." + Name().data() };
+	        }
+
+			instance()._publish(PropertySet());
+        }
+
+		template <typename... Args>
+		static void Publish(Args&&... args)
+        {
+			DerivedStruct derivedStruct{ init_t{ std::forward<Args>(args)... } };
+			Get(derivedStruct).publish();
+        }
+
+		static constexpr property_set PropertySet()
+        {
+			property_set propertySet;
+			propertySet.set(Tag());
+
+			return propertySet;
+        }
+
 		static constexpr bool IsPartOf(const property_set& propertySet)
 		{
 			return propertySet.test(Tag());
