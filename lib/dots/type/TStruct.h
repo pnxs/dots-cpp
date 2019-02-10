@@ -23,16 +23,10 @@ namespace dots::type
 		using Cbd = dots::Cbd<Derived>;
 
 		template <typename... PropertyInitializers>
-        TStruct(PropertyInitializers&&... propertyInitializers) : Struct(_Descriptor())
-        {
+		TStruct(PropertyInitializers&&... propertyInitializers) : Struct(_Descriptor())
+		{
 			(strip_t<decltype(propertyInitializers)>::property_t::Get(*this)(std::forward<decltype(propertyInitializers)>(propertyInitializers)), ...);
-        }
-        TStruct(const TStruct& other) = default;
-        TStruct(TStruct&& other) = default;
-        ~TStruct() = default;
-
-        TStruct& operator = (const TStruct& rhs) = default;
-        TStruct& operator = (TStruct&& rhs) = default;
+		}
 
 		bool operator == (const Derived& rhs) const
 		{
@@ -256,6 +250,13 @@ namespace dots::type
 		}
 
     protected:
+
+		TStruct(const TStruct& other) = default;
+		TStruct(TStruct&& other) = default;
+		~TStruct() = default;
+
+		TStruct& operator = (const TStruct& rhs) = default;
+		TStruct& operator = (TStruct&& rhs) = default;
 		
 		template <typename... PropertyDescriptions>
 		static constexpr StructDescription MakeStructDescription(const std::string_view& name, uint8_t flags, PropertyDescriptions&&... propertyDescriptions)
