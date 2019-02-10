@@ -65,7 +65,7 @@ namespace dots::type
 
 		void swap(Derived& other, const property_set& what = PROPERTY_SET_ALL)
 		{
-			_applyPropertyPairs(other, [&](auto&... propertyPairs)
+			_applyPropertyPairs(other, [&](const auto&... propertyPairs)
 			{
 				auto swap = [&](auto& propertyThis, auto& propertyOther)
 				{
