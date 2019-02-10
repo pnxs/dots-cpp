@@ -95,7 +95,7 @@ namespace dots::type
 		{
 			return std::apply([this, &other](auto&&... args)
 			{
-				return std::make_tuple(std::pair(strip_t<decltype(args)>::Get(*this), strip_t<decltype(args)>::Get(other))...);
+				return std::make_tuple(std::pair<strip_t<decltype(args)>&, const strip_t<decltype(args)>&>(strip_t<decltype(args)>::Get(*this), strip_t<decltype(args)>::Get(other))...);
 			}, typename Derived::_properties_t{});
 		}
 
@@ -103,7 +103,7 @@ namespace dots::type
 		{
 			return std::apply([this, &other](auto&&... args)
 			{
-				return std::make_tuple(std::pair(strip_t<decltype(args)>::Get(*this), strip_t<decltype(args)>::Get(other))...);
+				return std::make_tuple(std::pair<const strip_t<decltype(args)>&, const strip_t<decltype(args)>&>(strip_t<decltype(args)>::Get(*this), strip_t<decltype(args)>::Get(other))...);
 			}, typename Derived::_properties_t{});
 		}
 
@@ -111,7 +111,7 @@ namespace dots::type
 		{
 			return std::apply([this, &other](auto&&... args)
 			{
-				return std::make_tuple(std::pair(strip_t<decltype(args)>::Get(*this), strip_t<decltype(args)>::Get(other))...);
+				return std::make_tuple(std::pair<strip_t<decltype(args)>&, const strip_t<decltype(args)>&>(strip_t<decltype(args)>::Get(*this), strip_t<decltype(args)>::Get(other))...);
 			}, typename Derived::_key_properties_t{});
 		}
 
@@ -119,7 +119,7 @@ namespace dots::type
 		{
 			return std::apply([this, &other](auto&&... args)
 			{
-				return std::make_tuple(std::pair(strip_t<decltype(args)>::Get(*this), strip_t<decltype(args)>::Get(other))...);
+				return std::make_tuple(std::pair<const strip_t<decltype(args)>&, const strip_t<decltype(args)>&>(strip_t<decltype(args)>::Get(*this), strip_t<decltype(args)>::Get(other))...);
 			}, typename Derived::_key_properties_t{});
 		}
 
