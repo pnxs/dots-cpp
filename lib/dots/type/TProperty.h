@@ -94,7 +94,7 @@ namespace dots::type
 
 		bool operator == (const T& rhs) const
 		{
-			return isValid() && validValue() == rhs;
+			return isValid() && rawValue() == rhs;
 		}
 
 		bool operator != (const T& rhs) const
@@ -104,12 +104,12 @@ namespace dots::type
 
 		bool operator < (const T& rhs) const
 		{
-			return isValid() && validValue() < rhs;
+			return isValid() && rawValue() < rhs;
 		}
 
 		bool operator == (const Derived& rhs) const
 		{
-			return isValid() && rhs.isValid() && validValue() == rhs._value;
+			return isValid() && rhs.isValid() && rawValue() == rhs.rawValue();
 		}
 
 		bool operator != (const Derived& rhs) const
@@ -119,7 +119,7 @@ namespace dots::type
 
 		bool operator < (const Derived& rhs) const
 		{
-			return !rhs.isValid() || isValid() && validValue() < rhs._value;
+			return !rhs.isValid() || isValid() && rawValue() < rhs.rawValue();
 		}
 
 		template <bool AssertValidity = true>
