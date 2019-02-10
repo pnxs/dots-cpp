@@ -27,22 +27,17 @@ namespace dots::type
 			template <typename... Args>
 			init_t(Args&&... args) : value(std::forward<Args>(args)...) {}
 			T value;
-		};
-		
-        ~TProperty()
-        {
-			destroy();
-        }
+		};		
 
-		template <typename U>
-		T& operator = (U&& rhs) &
+		template <typename U, std::enable_if_t<!std::disjunction_v<std::is_same<std::remove_reference_t<U>, TProperty>, std::is_same<std::remove_reference_t<U>, Derived>>, int> = 0>
+		Derived& operator = (U&& rhs)
 		{
 			constructOrAssign(std::forward<U>(rhs));
 			return static_cast<Derived&>(*this);
 		}
 
 		template <typename... Args>
-		T& operator () (Args&&... args) &
+		T& operator () (Args&&... args)
 		{
 			if (isValid())
 			{
@@ -62,7 +57,7 @@ namespace dots::type
 			return static_cast<Derived&>(*this);
 		}
 
-		T& operator () (init_t&& init) &
+		T& operator () (init_t&& init) 
 		{
 			return (*this)(std::move(init.value));
 		}
@@ -215,6 +210,65 @@ namespace dots::type
 
     protected:
 
+		TProperty() = default;
+
+		TProperty(const TProperty& other)
+		{
+			*this = other;
+		}
+
+		TProperty(TProperty&& other)
+		{
+			*this = std::move(other);
+		}
+
+		~TProperty()
+		{
+			destroy();
+		}
+
+		TProperty& operator = (const TProperty& rhs)
+		{
+			if (isValid())
+			{
+				if (rhs.isValid())
+				{
+					rawValue() = rhs.rawValue();
+				}
+				else
+				{
+					destroy();
+				}
+			}
+			else if (rhs.isValid())
+			{
+				(*this)(rawValue());
+			}
+
+			return *this;
+		}
+
+		TProperty& operator = (TProperty&& rhs)
+		{
+			if (isValid())
+			{
+				if (rhs.isValid())
+				{
+					rawValue() = rhs.template extract<false>();
+				}
+				else
+				{
+					destroy();
+				}
+			}
+			else if (rhs.isValid())
+			{
+				(*this)(rhs.template extract<false>());
+			}
+
+			return *this;
+		}
+
 		static constexpr Struct::PropertyDescription MakePropertyDescription(uint32_t tag, const std::string_view& type, const std::string_view& name, bool isKey)
 		{
 			return Struct::PropertyDescription{ CalculateOffset(), tag, isKey, name, type };
@@ -223,16 +277,7 @@ namespace dots::type
     private:
 
 		template <typename>
-		friend struct TStruct;
-		
-    	friend DerivedStruct;
-
-		TProperty() = default;
-		TProperty(const TProperty& other) = default;
-		TProperty(TProperty&& other) = default;
-
-		TProperty& operator = (const TProperty& rhs) = default;
-		TProperty& operator = (TProperty&& rhs) = default;
+		friend struct TStruct;	
 
 		property_set& validPropertySet()
 		{
