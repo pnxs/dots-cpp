@@ -30,7 +30,17 @@ namespace dots::type
 
 		bool operator == (const Derived& rhs) const
 		{
-			return _applyKeyPropertyPairs(rhs, [](const auto&... propertyPairs) { return ((propertyPairs.first == propertyPairs.second) && ...); });
+			return _applyKeyPropertyPairs(rhs, [](const auto&... propertyPairs)
+			{
+				if constexpr (sizeof...(propertyPairs) == 0)
+				{
+					return true;
+				}
+				else
+				{
+					return ((propertyPairs.first == propertyPairs.second) && ...);
+				}
+			});
 		}
 
 		bool operator != (const Derived& rhs) const
@@ -40,12 +50,22 @@ namespace dots::type
 
 		bool operator < (const Derived& rhs) const
 		{
-			return _applyKeyPropertyPairs(rhs, [](const auto&... propertyPairs) { return ((propertyPairs.first < propertyPairs.second) && ...); });
+			return _applyKeyPropertyPairs(rhs, [](const auto&... propertyPairs)
+			{
+				if constexpr (sizeof...(propertyPairs) == 0)
+				{
+					return false;
+				}
+				else
+				{
+					return ((propertyPairs.first < propertyPairs.second) && ...);
+				}
+			});
 		}
 
 		void swap(Derived& other, const property_set& what = PROPERTY_SET_ALL)
 		{
-			_applyPropertyPairs(other, [&](const auto&... propertyPairs)
+			_applyPropertyPairs(other, [&](auto&... propertyPairs)
 			{
 				auto swap = [&](auto& propertyThis, auto& propertyOther)
 				{
@@ -91,6 +111,14 @@ namespace dots::type
 			}, typename Derived::_key_properties_t{});
 		}
 
+		auto _propertyPairs(Derived& other)
+		{
+			return std::apply([this, &other](auto&&... args)
+			{
+				return std::make_tuple(std::pair<strip_t<decltype(args)>&, strip_t<decltype(args)>&>(strip_t<decltype(args)>::Get(*this), strip_t<decltype(args)>::Get(other))...);
+			}, typename Derived::_properties_t{});
+		}
+
 		auto _propertyPairs(const Derived& other)
 		{
 			return std::apply([this, &other](auto&&... args)
@@ -105,6 +133,14 @@ namespace dots::type
 			{
 				return std::make_tuple(std::pair<const strip_t<decltype(args)>&, const strip_t<decltype(args)>&>(strip_t<decltype(args)>::Get(*this), strip_t<decltype(args)>::Get(other))...);
 			}, typename Derived::_properties_t{});
+		}
+
+		auto _keyPropertyPairs(Derived& other)
+		{
+			return std::apply([this, &other](auto&&... args)
+			{
+				return std::make_tuple(std::pair<strip_t<decltype(args)>&, strip_t<decltype(args)>&>(strip_t<decltype(args)>::Get(*this), strip_t<decltype(args)>::Get(other))...);
+			}, typename Derived::_key_properties_t{});
 		}
 
 		auto _keyPropertyPairs(const Derived& other)
@@ -213,7 +249,14 @@ namespace dots::type
 		{
 			constexpr property_set KeyPropertySet = std::apply([](auto&&... args)
 			{
-				return (strip_t<decltype(args)>::PropertySet() | ... );
+				if constexpr (sizeof...(args) == 0)
+				{
+					return property_set{};
+				}
+				else
+				{
+					return (strip_t<decltype(args)>::PropertySet() | ...);
+				}
 			}, typename Derived::_key_properties_t{});
 
 			return KeyPropertySet;
