@@ -184,6 +184,12 @@ namespace dots::type
 		}
 
 		template <typename Callable>
+		auto _applyPropertyPairs(Derived& other, Callable&& callable)
+		{
+			return std::apply(std::forward<Callable>(callable), _propertyPairs(other));
+		}
+
+		template <typename Callable>
 		auto _applyPropertyPairs(const Derived& other, Callable&& callable)
 		{
 			return std::apply(std::forward<Callable>(callable), _propertyPairs(other));
@@ -193,6 +199,12 @@ namespace dots::type
 		auto _applyPropertyPairs(const Derived& other, Callable&& callable) const
 		{
 			return std::apply(std::forward<Callable>(callable), _propertyPairs(other));
+		}
+
+		template <typename Callable>
+		auto _applyKeyPropertyPairs(Derived& other, Callable&& callable)
+		{
+			return std::apply(std::forward<Callable>(callable), _keyPropertyPairs(other));
 		}
 
 		template <typename Callable>
