@@ -54,7 +54,7 @@ namespace dots::type
 				construct(std::forward<Args>(args)...);
 			}
 
-			return static_cast<Derived&>(*this);
+			return rawValue();
 		}
 
 		T& operator () (init_t&& init) 
