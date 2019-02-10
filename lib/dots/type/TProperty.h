@@ -127,6 +127,37 @@ namespace dots::type
 			return !rhs.isValid() || isValid() && validValue() < rhs._value;
 		}
 
+		template <bool AssertValidity = true>
+		T&& extract()
+        {
+	        if constexpr (AssertValidity)
+			{
+				throw std::runtime_error{ std::string{ "attempt to extract invalid property: " } +DerivedStruct::Description.name.data() + "." + Name().data() };
+			}
+
+			validPropertySet().set(Tag(), false);
+			return std::move(rawValue());
+        }
+
+		void swap(Derived& other)
+        {
+	        if (isValid())
+	        {
+		        if (other.isValid())
+		        {
+					std::swap(rawValue(), other.rawValue());
+		        }
+				else
+				{
+					other(extract<false>());
+				}
+	        }
+			else if (other.isValid())
+			{
+				(*this)(other.template extract<false>());
+			}
+        }
+
 		bool isValid() const
 		{
 			return validPropertySet().test(Tag());

@@ -49,6 +49,22 @@ namespace dots::type
 			return _applyKeyPropertyPairs(rhs, [](const auto&... propertyPairs) { return ((propertyPairs.first < propertyPairs.second) && ...); });
 		}
 
+		void swap(Derived& other, const property_set& what = PROPERTY_SET_ALL)
+		{
+			_applyPropertyPairs(other, [&](const auto&... propertyPairs)
+			{
+				auto swap = [&](auto& propertyThis, auto& propertyOther)
+				{
+					if (strip_t<decltype(propertyThis)>::IsPartOf(what))
+					{
+						propertyThis.swap(propertyOther);
+					}
+				};
+
+				(swap(propertyPairs.first, propertyPairs.second), ...);
+			});
+		}
+
 		auto _properties()
 		{
 			return std::apply([this](auto&&... args)
