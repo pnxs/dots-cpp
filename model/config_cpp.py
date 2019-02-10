@@ -1,4 +1,4 @@
-struct_templates = ("struct.dots.h.dotsT", "struct.dots.cpp.dotsT", "struct2.dots2.cpp.dotsT")
+struct_templates = ["struct.dots.h.dotsT"]
 enum_templates   = ("enum.dots.h.dotsT", "enum.dots.cpp.dotsT")
 vector_format    = "dots::Vector<%s>"
 

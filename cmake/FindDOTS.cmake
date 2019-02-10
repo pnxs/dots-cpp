@@ -41,9 +41,7 @@ function(GENERATE_DOTS_TYPES OUT_SOURCES OUT_HEADERS)
             endif()
         endforeach()
         #message("Output: ${GENERATED_FILES}")
-        set(DOTS_TEMPLATES ${DOTS_TEMPLATE_PATH}/struct.dots.cpp.dotsT
-                           ${DOTS_TEMPLATE_PATH}/struct.dots.h.dotsT
-                           ${DOTS_TEMPLATE_PATH}/struct2.dots2.cpp.dotsT
+        set(DOTS_TEMPLATES ${DOTS_TEMPLATE_PATH}/struct.dots.h.dotsT
                            ${DOTS_TEMPLATE_PATH}/enum.dots.cpp.dotsT
                            ${DOTS_TEMPLATE_PATH}/enum.dots.h.dotsT)
 
