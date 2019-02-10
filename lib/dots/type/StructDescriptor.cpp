@@ -2,6 +2,7 @@
 #include "StructDescriptor.h"
 #include "Registry.h"
 
+#include "StructDescriptorData.dots.h"
 #include "DotsStructFlags.dots.h"
 
 namespace dots
@@ -11,19 +12,19 @@ namespace type
 
 
 StructDescriptor::StructDescriptor(const DescriptorData& sd, std::size_t sizeOf, std::size_t alignOf)
-:Descriptor(sd.name(), DotsType::Struct, sizeOf, alignOf)
+:Descriptor(sd.name, DotsType::Struct, sizeOf, alignOf)
 {
     m_descriptorData = std::make_unique<DescriptorData>(sd);
-    m_descriptorData->setFlags(sd.hasFlags() ? sd.flags() : dots::types::DotsStructFlags());
+    m_descriptorData->flags(sd.flags.isValid() ? sd.flags : dots::types::DotsStructFlags());
 
-    auto& flags = m_descriptorData->refFlags();
+    auto& flags = *m_descriptorData->flags;
 
-    if (not flags.hasCleanup())    flags.setCleanup(false);
-    if (not flags.hasPersistent()) flags.setPersistent(false);
-    if (not flags.hasLocal())      flags.setLocal(false);
-    if (not flags.hasCached())     flags.setCached(false);
-    if (not flags.hasInternal())   flags.setInternal(false);
-    if (not flags.hasSubstructOnly()) flags.setSubstructOnly(false);
+    if (not flags.cleanup.isValid())    flags.cleanup(false);
+    if (not flags.persistent.isValid()) flags.persistent(false);
+    if (not flags.local.isValid())      flags.local(false);
+    if (not flags.cached.isValid())     flags.cached(false);
+    if (not flags.internal.isValid())   flags.internal(false);
+    if (not flags.substructOnly.isValid()) flags.substructOnly(false);
 }
 
 void StructDescriptor::construct(void *obj) const

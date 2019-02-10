@@ -82,16 +82,16 @@ public:
         C<T>(); // Create static container
         registerTypeUsage<T, SubscribedType>();
 
-        static_assert(not T::isSubstructOnly(), "It is not allowed to subscribe a struct, that is marked with 'substruct_only'!");
+        static_assert(not T::_IsSubstructOnly(), "It is not allowed to subscribe a struct, that is marked with 'substruct_only'!");
 
-        auto ret = addReceiver(T::_td(), &rC<T>(), bind(&wrapper<T>, _1, callback));
+        auto ret = addReceiver(&T::_Descriptor(), &rC<T>(), bind(&wrapper<T>, _1, callback));
 
         if (C<T>().empty())
             return ret;
 
         DotsHeader dh;
-        dh.setTypeName(T::_td()->name());
-        dh.setRemoveObj(false);
+        dh.typeName(T::_Descriptor().name());
+        dh.removeObj(false);
 
         for (const auto& e : C<T>())
         {

@@ -21,17 +21,17 @@ namespace dots
  */
 typedef DotsMt Mt;
 
-struct CloneInformation: public DotsCloneInformation
+struct CloneInformation: public types::DotsCloneInformation
 {
 
     CloneInformation() {
-        setLastOperation(DotsMt::create);
+        lastOperation(DotsMt::create);
     }
 
     CloneInformation(const TimePoint& created)
     {
-        setLastOperation(DotsMt::create);
-        setCreated(created);
+        lastOperation(DotsMt::create);
+		DotsCloneInformation::created(created);
     }
 };
 
@@ -46,7 +46,7 @@ public:
             :T(data), _clone_metainfo(info)
     {}
 
-    Clone& operator=(const typename T::Key& key)
+    Clone& operator=(const T& key)
     {
         T::operator=(key);
         return *this;
@@ -56,7 +56,7 @@ public:
 
 struct TypelessCbd
 {
-    const DotsHeader& header;
+    const types::DotsHeader& header;
     const type::StructDescriptor* td;
     Typeless data;
     std::shared_ptr<void> dataPtr;
@@ -71,7 +71,6 @@ template<class T>
 struct Cbd
 {
 private:
-    typedef typename T::PropSet PropSet;
     const CloneInformation& information;
 
     const T& data;
@@ -79,11 +78,11 @@ public:
     const DotsHeader& header;
     const Mt mt;
 
-    Cbd(const Clone<T>& clone, const DotsHeader& header, Mt mt)
+    Cbd(const Clone<T>& clone, const types::DotsHeader& header, Mt mt)
             : information(clone._clone_metainfo), data(clone), header(header), mt(mt)
     {}
 
-    Cbd(const T& data, const CloneInformation& information, const DotsHeader& header, Mt mt)
+    Cbd(const T& data, const CloneInformation& information, const types::DotsHeader& header, Mt mt)
             : information(information), data(data), header(header), mt(mt)
     {
     }
@@ -94,9 +93,6 @@ public:
 
     bool isOwnUpdate() const { return header.isFromMyself(); }
 
-    [[deprecated("use newProperties instead.")]] const PropSet newAttrs() const { return newProperties(); }
-    [[deprecated("use updatedProperties instead.")]] const PropSet updatedAttrs() const { return updatedProperties(); }
-
     /**
      * @return contained DOTS object
      */
@@ -105,12 +101,12 @@ public:
     /**
      * @return Set of properties, that are transmitted within this update
      */
-    const PropSet newProperties() const { return PropSet(header.attributes()); }
+    const property_set newProperties() const { return header.attributes; }
 
     /**
      * @return Set of properties, that are updated and valid within this update
      */
-    const PropSet updatedProperties() const { return newProperties() & data.validProperties(); }
+    const property_set updatedProperties() const { return newProperties() & data._validPropertySet(); }
 };
 
 template<class T>
@@ -118,7 +114,6 @@ class Container
 {
 protected:
     typedef std::set<Clone<T>> container_type;
-    typedef typename T::Key key_type;
     container_type m_container;
 
     mutable Clone<T> m_keyHelper;
@@ -136,13 +131,13 @@ public:
     const_iterator cbegin() const { return m_container.cbegin(); }
     const_iterator cend() const { return m_container.cend(); }
 
-    const_iterator findIter(const key_type& key) const
+    const_iterator findIter(const T& key) const
     {
         m_keyHelper = key;
         return m_container.find(m_keyHelper);
     }
 
-    const Clone<T>* find(const key_type& key) const
+    const Clone<T>* find(const T& key) const
     {
         auto iter = findIter(key);
         return (iter != end()) ? &*iter : nullptr;
@@ -159,7 +154,7 @@ public:
     ContainerBase(const type::StructDescriptor* td);
 
     virtual size_t typelessSize() const = 0;
-    virtual bool processTypeless(const DotsHeader& header, Typeless data, const signal_type& signal) = 0;
+    virtual bool processTypeless(const types::DotsHeader& header, Typeless data, const signal_type& signal) = 0;
 
     const type::StructDescriptor* td() const;
 };
@@ -174,7 +169,7 @@ class ContainerEx: public ContainerBase, public Container<T>
 private:
     bool insert(const DotsHeader& header, T& data, const signal_type& signal)
     {
-        auto rc = this->m_container.insert({data, header.sentTime()});
+		auto rc = this->m_container.insert({ data, *header.sentTime });
 
         const auto& item = *rc.first;
         bool inserted = rc.second;
@@ -182,7 +177,7 @@ private:
         if (not inserted)
         {
             // Update element with received attributes
-            Writeable(item).swap(data, typename T::PropSet(data.validProperties() - T::_keys()));
+            Writeable(item).swap(data, data._validPropertySet() - T::_KeyPropertySet());
         }
 
         Cbd<T> cbd(item, header, inserted ? Mt::create : Mt::update );
@@ -193,7 +188,7 @@ private:
         return inserted;
     }
 
-    bool remove(const DotsHeader& header, const T& data, const signal_type& signal)
+    bool remove(const types::DotsHeader& header, const T& data, const signal_type& signal)
     {
         auto iter = this->findIter(data);
 
@@ -213,7 +208,7 @@ private:
     }
 
 public:
-    ContainerEx(): ContainerBase(T::_td())
+    ContainerEx(): ContainerBase(&T::_Descriptor())
     {
     }
 
@@ -224,12 +219,12 @@ public:
      * @param signal
      * @return true if container changed size (items)
      */
-    bool process(const DotsHeader& header, T& data, const signal_type& signal)
+    bool process(const types::DotsHeader& header, T& data, const signal_type& signal)
     {
         //TODO: convert to if constexpr when C++17 can be used.
-        if (T::isCached())
+        if (T::_IsCached())
         {
-            if (header.removeObj())
+            if (header.removeObj)
             {
                 return remove(header, data, signal);
             }
@@ -240,7 +235,7 @@ public:
         }
         else
         {
-            Clone<T> item = {data, header.sentTime()};
+            Clone<T> item{data, *header.sentTime};
             Cbd<T> cbd(item, header, Mt::create);
             // Call user-code
             signal(&cbd);
@@ -249,7 +244,7 @@ public:
 
     size_t typelessSize() const final { return this->size(); }
 
-    bool processTypeless(const DotsHeader& header, Typeless data, const signal_type& signal) final
+    bool processTypeless(const types::DotsHeader& header, Typeless data, const signal_type& signal) final
     {
         return process(header, *reinterpret_cast<T*>(data), signal);
     }

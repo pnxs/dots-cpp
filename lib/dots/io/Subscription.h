@@ -37,7 +37,7 @@ private:
 };
 
 template<class T, class S>
-S RegisterTypeUsage<T, S>::m_obj(T::_td());
+S RegisterTypeUsage<T, S>::m_obj(&T::_Descriptor());
 
 /**
  * Registeres usage of type T in the given Chained-List

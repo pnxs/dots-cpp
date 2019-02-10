@@ -31,7 +31,7 @@ T decodeInto_cbor(const std::vector<uint8_t> &data)
 {
     T obj;
 
-    from_cbor(data.data(), data.size(), obj._td(), &obj);
+    from_cbor(data.data(), data.size(), &T::_Descriptor(), &obj);
     return obj;
 }
 

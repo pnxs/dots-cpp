@@ -117,7 +117,7 @@ void ServerConnection::handleDisconnected()
 void ServerConnection::handleReceivedMessage(const Message &msg)
 {
     try {
-        if (msg.header().hasNameSpace() && msg.header().nameSpace() == "SYS")
+        if (msg.header().nameSpace.isValid() && msg.header().nameSpace == "SYS")
         {
             onControlMessage(msg);
         } else
@@ -133,9 +133,9 @@ void ServerConnection::handleReceivedMessage(const Message &msg)
 
 void ServerConnection::onControlMessage(const Message &msg)
 {
-    const auto& typeName = msg.header().dotsHeader().typeName();
+    const auto& typeName = *msg.header().dotsHeader->typeName;
     const auto& data = msg.data();
-    const auto& dotsHeader = msg.header().dotsHeader();
+    const auto& dotsHeader = *msg.header().dotsHeader;
 
     switch(m_connectionState)
     {
@@ -167,11 +167,11 @@ void ServerConnection::onControlMessage(const Message &msg)
             ReceiveMessageData rmd = {
                     .data = &data[0],
                     .length = data.size(),
-                    .sender = dotsHeader.sender(),
-                    .group = msg.header().destinationGroup(),
-                    .sentTime = dotsHeader.sentTime(),
+                    .sender = dotsHeader.sender,
+                    .group = msg.header().destinationGroup,
+                    .sentTime = dotsHeader.sentTime,
                     .header = dotsHeader,
-                    .isFromMyself = (dotsHeader.sender() == m_serversideClientname)
+                    .isFromMyself = (dotsHeader.sender == m_serversideClientname)
             };
 
             onReceiveMessage(rmd);
@@ -190,9 +190,9 @@ void ServerConnection::onControlMessage(const Message &msg)
 
 void ServerConnection::onRegularMessage(const Message &msg)
 {
-    const auto& typeName = msg.header().dotsHeader().typeName();
+    const auto& typeName = *msg.header().dotsHeader->typeName;
     const auto& data = msg.data();
-    const auto& dotsHeader = msg.header().dotsHeader();
+    const auto& dotsHeader = *msg.header().dotsHeader;
 
     switch(m_connectionState)
     {
@@ -206,11 +206,11 @@ void ServerConnection::onRegularMessage(const Message &msg)
             ReceiveMessageData rmd = {
                 .data = &data[0],
                 .length = data.size(),
-                .sender = dotsHeader.sender(),
-                .group = msg.header().destinationGroup(),
-                .sentTime = dotsHeader.sentTime(),
+                .sender = dotsHeader.sender,
+                .group = msg.header().destinationGroup,
+                .sentTime = dotsHeader.sentTime,
                 .header = dotsHeader,
-                .isFromMyself = (dotsHeader.sender() == m_serversideClientname)
+                .isFromMyself = (dotsHeader.sender == m_serversideClientname)
             };
 
             onReceiveMessage(rmd);
@@ -257,7 +257,7 @@ void ServerConnection::publishNs(const string& nameSpace, const type::StructDesc
     DotsTransportHeader header;
     transmitter().prepareHeader(header, td, what, remove); //< Modifies header and what
     if (not nameSpace.empty()) {
-        header.setNameSpace(nameSpace);
+        header.nameSpace(nameSpace);
     }
 
     // prepareBuffer
@@ -281,14 +281,14 @@ void ServerConnection::publish(const type::StructDescriptor *td, CTypeless data,
 
 void ServerConnection::processConnectResponse(const DotsMsgConnectResponse& cr)
 {
-    string serverName = cr.hasServerName() ? cr.serverName() : "<unknown>";
-    LOG_DEBUG_S("connectResponse: serverName=" << serverName << " accepted=" << cr.accepted());
-    if (cr.hasClientId()) {
-        m_serversideClientname = cr.clientId();
+    string serverName = cr.serverName.isValid() ? *cr.serverName : "<unknown>";
+    LOG_DEBUG_S("connectResponse: serverName=" << serverName << " accepted=" << *cr.accepted);
+    if (cr.clientId.isValid()) {
+        m_serversideClientname = cr.clientId;
     }
-    if (cr.hasPreload() && cr.preload() &&
-            (not cr.hasPreloadFinished() ||
-            (cr.hasPreloadFinished() && not cr.preloadFinished())))
+    if (cr.preload.isValid() && cr.preload &&
+            (not cr.preloadFinished.isValid() ||
+            (cr.preloadFinished.isValid() && not cr.preloadFinished)))
     {
         setConnectionState(DotsConnectionState::early_subscribe);
     }
@@ -300,7 +300,7 @@ void ServerConnection::processConnectResponse(const DotsMsgConnectResponse& cr)
 
 void ServerConnection::processEarlySubscribe(const DotsMsgConnectResponse &cr)
 {
-    if (cr.hasPreloadFinished() and cr.preloadFinished())
+    if (cr.preloadFinished.isValid() and cr.preloadFinished)
     {
         setConnectionState(DotsConnectionState::connected);
     } else{
@@ -311,39 +311,38 @@ void ServerConnection::processEarlySubscribe(const DotsMsgConnectResponse &cr)
 
 void ServerConnection::processHello(const DotsMsgHello &hello)
 {
-    const auto requiredAttrs = DotsMsgHello::PropSet(DotsMsgHello::Att::authChallenge) + DotsMsgHello::Att::serverName;
-    if (hello.validProperties() & requiredAttrs)
+    if (hello.authChallenge.isValid() && hello.serverName.isValid())
     {
-        LOG_DEBUG_S("received hello from '" << hello.serverName() << "' authChallenge=" << hello.authChallenge());
+        LOG_DEBUG_S("received hello from '" << *hello.serverName << "' authChallenge=" << hello.authChallenge);
         LOG_DATA_S("send DotsMsgConnect");
         requestConnection(m_clientName, ConnectMode::preload);
     }
     else
     {
-        LOG_WARN_S("Invalid hello from server valatt:" << hello.validProperties().to_string());
+        LOG_WARN_S("Invalid hello from server valatt:" << hello._validPropertySet().to_string());
     }
 }
 
 void ServerConnection::joinGroup(const GroupName &groupName)
 {
     DotsMember member;
-    member.setGroupName(groupName);
-    member.setEvent(DotsMemberEvent::join);
+    member.groupName(groupName);
+    member.event(DotsMemberEvent::join);
 
     LOG_DEBUG_S("send DotsMember (join " << groupName << ")");
-    publishNs("SYS", member._td(), &member);
+    publishNs("SYS", &member._Descriptor(), &member);
 }
 
 void ServerConnection::requestConnection(const ServerConnection::ClientName& name, ServerConnection::ConnectMode mode)
 {
     DotsMsgConnect cm;
-    cm.setClientName(name);
+    cm.clientName(name);
     switch (mode)
     {
-        case ConnectMode::direct: cm.setPreloadCache(false); break;
-        case ConnectMode::preload: cm.setPreloadCache(true); break;
+        case ConnectMode::direct: cm.preloadCache(false); break;
+        case ConnectMode::preload: cm.preloadCache(true); break;
     }
-    publishNs("SYS", cm._td(), &cm);
+    publishNs("SYS", &cm._Descriptor(), &cm);
 }
 
 void ServerConnection::requestDescriptors(const DescriptorList &whiteList, const DescriptorList &blackList)
@@ -352,26 +351,28 @@ void ServerConnection::requestDescriptors(const DescriptorList &whiteList, const
 
     if (not whiteList.empty())
     {
+		req.whitelist();
         for (auto& e : whiteList)
-            req.refWhitelist().push_back(e);
+            req.whitelist->push_back(e);
     }
     if (not blackList.empty())
     {
+		req.blacklist();
         for (auto& e : blackList)
-            req.refBlacklist().push_back(e);
+            req.blacklist->push_back(e);
     }
 
-    publish(req._td(), &req);
+    publish(&req._Descriptor(), &req);
 }
 
 void ServerConnection::leaveGroup(const ServerConnection::GroupName &groupName)
 {
     DotsMember member;
-    member.setGroupName(groupName);
-    member.setEvent(DotsMemberEvent::leave);
+    member.groupName(groupName);
+    member.event(DotsMemberEvent::leave);
 
     LOG_INFO_S("send DotsMember (leave " << groupName << ")");
-    publishNs("SYS", member._td(), &member);
+    publishNs("SYS", &member._Descriptor(), &member);
 }
 
 

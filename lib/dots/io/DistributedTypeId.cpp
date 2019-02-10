@@ -30,9 +30,9 @@ DistributedTypeId::TypeId DistributedTypeId::createTypeId(const type::Descriptor
 {
     registerTypeId(m_nextTypeId, td);
 
-    DotsTypes dotsType(m_nextTypeId);
-    dotsType.setName(td->name());
-    dotsType.publish();
+	DotsTypes dotsType(DotsTypes::id_t::init_t{ m_nextTypeId });
+    dotsType.name(td->name());
+    dotsType._publish();
 
     LOG_DEBUG_S("create DotsTypes(" << m_nextTypeId << ", " << td->name() << ")");
 
@@ -92,9 +92,9 @@ DistributedTypeId::TypeId DistributedTypeId::findTypeId(const string &name) cons
 void DistributedTypeId::handleDotsType(const DotsTypes::Cbd &cbd)
 {
     if (cbd.isCreate()) {
-        auto td = type::Descriptor::registry().findDescriptor(cbd().name());
+        auto td = type::Descriptor::registry().findDescriptor(cbd().name);
         if (td) {
-            registerTypeId(cbd().id(), td);
+            registerTypeId(cbd().id, td);
         }
     }
 

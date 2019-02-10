@@ -6,10 +6,9 @@
 #include "VectorDescriptor.h"
 #include "EnumDescriptor.h"
 #include "UuidDescriptor.h"
+#include "Vector.h"
+#include "StructDescriptor.h"
 #include <dots/functional/signal.h>
-
-#include "StructDescriptorData.dots.h"
-#include "EnumDescriptorData.dots.h"
 
 #include <unordered_map>
 #include <string>
@@ -37,22 +36,22 @@ template<>
 struct is_base<void*>: public std::true_type {};
 
 template<class T>
-struct is_chrono: public false_type{};
+struct is_chrono: public std::false_type{};
 
-template<> struct is_chrono<Duration>: public true_type{};
-template<> struct is_chrono<TimePoint>: public true_type{};
-template<> struct is_chrono<SteadyTimePoint>: public true_type{};
-
-template<class T>
-struct is_vector: public false_type{};
+template<> struct is_chrono<Duration>: public std::true_type{};
+template<> struct is_chrono<TimePoint>: public std::true_type{};
+template<> struct is_chrono<SteadyTimePoint>: public std::true_type{};
 
 template<class T>
-struct is_vector<dots::Vector<T>> : public true_type{};
+struct is_vector: public std::false_type{};
 
 template<class T>
-struct is_uuid: public false_type{};
+struct is_vector<dots::Vector<T>> : public std::true_type{};
 
-template<> struct is_uuid<dots::uuid>: public true_type{};
+template<class T>
+struct is_uuid: public std::false_type{};
+
+template<> struct is_uuid<dots::uuid>: public std::true_type{};
 
 template<class T>
 struct is_struct: public std::integral_constant<bool, std::is_class<T>::value && !is_base<T>::value && !is_chrono<T>::value && !is_vector<T>::value && !is_uuid<T>::value> {};
@@ -84,7 +83,7 @@ template<class T>
 inline
 const StructDescriptor* getDescriptor(const T* val = 0, ENABLE_IF(is_struct<T>)* = 0)
 {
-    return T::_td();
+    return &T::_Descriptor();
 }
 
 template <class T>
