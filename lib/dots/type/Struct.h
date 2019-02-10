@@ -26,6 +26,8 @@ namespace dots::type
 
         const StructDescriptor& _descriptor() const;
 
+		const property_set& _keyPropertySet() const;
+
 		property_set& _validPropertySet();
 		const property_set& _validPropertySet() const;
 

@@ -83,7 +83,12 @@ namespace dots::type
         return *_desc;
     }
 
-	property_set& Struct::_validPropertySet()
+    const property_set& Struct::_keyPropertySet() const
+    {
+		return _desc->keys();
+    }
+
+    property_set& Struct::_validPropertySet()
 	{
 		return _validPropSet;
 	}
