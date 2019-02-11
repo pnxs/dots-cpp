@@ -24,8 +24,8 @@ public:
     {
         DotsTestStruct ts;
 
-        ts.setIndKeyfField(1);
-        ts.publish();
+        ts.indKeyfField(1);
+        ts._publish();
     }
 
 private:
@@ -33,23 +33,23 @@ private:
     {
         LOG_INFO_P("timer expired");
         DotsTestStruct ts;
-        ts.setIndKeyfField(1);
-        ts.setFloatField(m_value++);
-        ts.publish();
+        ts.indKeyfField(1);
+        ts.floatField(m_value++);
+        ts._publish();
 
         DotsTestVectorStruct tvs;
-        auto& intList = tvs.refIntList();
-        auto& stringList = tvs.refStringList();
-        auto& ssList = tvs.refSubStructList();
+        auto& intList = tvs.intList();
+        auto& stringList = tvs.stringList();
+        auto& ssList = tvs.subStructList();
 
         intList.push_back(1);
         stringList.push_back("Hallo");
 
         DotsTestSubStruct subStruct;
-        subStruct.setFlag1(true);
+        subStruct.flag1(true);
 
         ssList.push_back(subStruct);
-        tvs.publish();
+        tvs._publish();
 
         if (m_value == 1000) {
             dots::Application::instance()->exit();
@@ -61,7 +61,7 @@ private:
     void handleTestStruct(const DotsTestStruct::Cbd& cbd)
     {
         //TODO: implement replacement for toString()
-        LOG_INFO_S("received subscribed TestStruct:" << dots::to_ascii(cbd()._td(), &cbd()));
+        LOG_INFO_S("received subscribed TestStruct:" << dots::to_ascii(&cbd()._Descriptor(), &cbd()));
     }
 
     dots::Subscription m_subs;
