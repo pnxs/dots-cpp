@@ -91,7 +91,7 @@ public:
     bool isUpdate() const { return mt == Mt::update; }
     bool isRemove() const { return mt == Mt::remove; }
 
-    bool isOwnUpdate() const { return header.isFromMyself(); }
+    bool isOwnUpdate() const { return header.isFromMyself; }
 
     /**
      * @return contained DOTS object
