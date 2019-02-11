@@ -121,7 +121,7 @@ void DotsAsioSocket::readHeader()
         try
         {
             // Decode header
-			m_header = {};
+			m_header = DotsTransportHeader{};
 
             from_cbor(&m_headerBuffer[0], m_headerSize, &m_header._Descriptor(), &m_header);
 

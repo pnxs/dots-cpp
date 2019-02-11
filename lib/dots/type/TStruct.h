@@ -23,7 +23,7 @@ namespace dots::type
 		using Cbd = dots::Cbd<Derived>;
 
 		template <typename... PropertyInitializers>
-		TStruct(PropertyInitializers&&... propertyInitializers) : Struct(_Descriptor())
+		explicit TStruct(PropertyInitializers&&... propertyInitializers) : Struct(_Descriptor())
 		{
 			(strip_t<decltype(propertyInitializers)>::property_t::Get(*this)(std::forward<decltype(propertyInitializers)>(propertyInitializers)), ...);
 		}
