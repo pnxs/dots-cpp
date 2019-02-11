@@ -330,4 +330,11 @@ namespace dots::type
 		template <typename T>
 		using strip_t = std::remove_pointer_t<std::decay_t<T>>;
     };
+
+	template <typename Derived>
+	std::ostream& operator << (std::ostream& os, const TStruct<Derived>& instance)
+	{
+		os << instance._Descriptor().to_string(instance);
+		return os;
+	}
 }
