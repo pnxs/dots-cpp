@@ -235,6 +235,32 @@ namespace dots::type
 			Struct::_remove();
 		}
 
+		property_set _diffPropertySet(const Derived& other) const
+		{
+			property_set symmetricDiff = _validPropertySet().value() ^ other._validPropertySet().value();
+			property_set intersection = _validPropertySet() & other._validPropertySet();
+			
+			if (!intersection.empty())
+			{
+				_applyPropertyPairs(other, [&](const auto&... propertyPairs)
+				{
+					auto check_inequality = [&](auto& propertyThis, auto& propertyOther)
+					{
+						using property_t = strip_t<decltype(propertyThis)>;
+
+						if (property_t::IsPartOf(intersection) && property_t::Descriptor().equal(&*propertyThis, &*propertyOther))
+						{
+							symmetricDiff |= property_t::PropertySet();
+						}
+					};
+
+					return (check_inequality(propertyPairs.first, propertyPairs.second), ...);
+				});
+			}
+
+			return symmetricDiff;
+		}
+
         static const StructDescriptor& _Descriptor()
         {
 			static const StructDescriptor* structDescriptor = Descriptor::registry().findStructDescriptor(Derived::Description.name.data());
