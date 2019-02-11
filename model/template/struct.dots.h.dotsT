@@ -55,7 +55,7 @@ namespace dots::types
 
 {% endfor %}
         );
-        using _key_properties_t = std::tuple<{% for property in attributes %}{% if property.key %}{% if not loop.first %}, {% endif %}{{property.name}}_t*{% endif %}{% endfor %}>;
+        using _key_properties_t = std::tuple<{% for property in keyAttributes %}{{property.name}}_t*{% if not loop.last %}, {% endif %}{% endfor %}>;
         using _properties_t     = std::tuple<{% for property in attributes %}{{property.name}}_t*{% if not loop.last %}, {% endif %}{% endfor %}>;
 
 		using TStruct::TStruct;
