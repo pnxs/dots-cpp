@@ -2,6 +2,7 @@
 #include <string_view>
 #include <type_traits>
 #include <iostream>
+#include "Registry.h"
 #include "Struct.h"
 #include "StructDescriptor.h"
 
@@ -174,6 +175,12 @@ namespace dots::type
 			DerivedStruct derivedStruct{ init_t{ std::forward<Args>(args)... } };
 			Get(derivedStruct).publish();
         }
+
+		static const type::Descriptor& Descriptor()
+		{
+			static const type::Descriptor* descriptor = type::getDescriptor<T>(nullptr);
+			return *descriptor;
+		}
 
 		static constexpr property_set PropertySet()
         {

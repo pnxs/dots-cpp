@@ -243,7 +243,7 @@ namespace dots::type
 			{
 				std::vector<PropertyDescription> propertyDescriptions = std::apply([](auto&&... args)
 				{
-					(type::getDescriptor<typename strip_t<decltype(args)>::value_t>(nullptr), ...);
+					(strip_t<decltype(args)>::Descriptor(), ...);
 
 					return std::vector<PropertyDescription>{
 						PropertyDescription{
