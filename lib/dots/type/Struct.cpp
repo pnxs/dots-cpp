@@ -78,6 +78,36 @@ namespace dots::type
         /* do nothing */
     }
 
+    Struct::Struct(const Struct& other) :
+		_validPropSet{},
+		_desc(other._desc)
+    {
+	    /* do nothing */
+    }
+
+    Struct::Struct(Struct&& other) :
+		_validPropSet{},
+		_desc(other._desc)
+    {
+		/* do nothing */
+    }
+
+    Struct& Struct::operator = (const Struct& rhs)
+    {
+		_validPropSet = {};
+		_desc = rhs._desc;
+
+		return *this;
+    }
+
+    Struct& Struct::operator = (Struct&& rhs)
+    {
+		_validPropSet = {};
+		_desc = rhs._desc;
+
+		return *this;
+    }
+
     const StructDescriptor& Struct::_descriptor() const
     {
         return *_desc;

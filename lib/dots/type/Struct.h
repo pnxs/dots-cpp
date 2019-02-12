@@ -17,12 +17,12 @@ namespace dots::type
     struct Struct
     {
         Struct(const StructDescriptor& descriptor);
-        Struct(const Struct& other) = default;
-        Struct(Struct&& other) = default;
+        Struct(const Struct& other);
+        Struct(Struct&& other);
         virtual ~Struct() = default;
 
-        Struct& operator = (const Struct& rhs) = default;
-        Struct& operator = (Struct&& rhs) = default;
+        Struct& operator = (const Struct& rhs);
+        Struct& operator = (Struct&& rhs);
 
         const StructDescriptor& _descriptor() const;
 
