@@ -18,7 +18,7 @@ static size_t evalPropertyOffset(const dots::type::Descriptor* td, size_t start)
 
 static size_t evalMaxPropertyAlignment(const StructDescriptorData &sd)
 {
-	size_t maxAlign = alignof(dots::property_set);
+	size_t maxAlign = alignof(dots::type::Struct);
 
 	for (auto &p : *sd.properties)
 	{

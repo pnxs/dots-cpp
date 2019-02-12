@@ -23,7 +23,7 @@ static size_t evalPropertyOffset(const dots::type::Descriptor* td, size_t start)
 
 static size_t evalMaxPropertyAlignment(const StructDescriptorData &sd)
 {
-    size_t maxAlign = alignof(dots::property_set);
+    size_t maxAlign = alignof(dots::type::Struct);
 
     for (auto &p : *sd.properties)
     {
@@ -37,10 +37,10 @@ static size_t evalMaxPropertyAlignment(const StructDescriptorData &sd)
 
 static StructProperties getStructProperties(const StructDescriptorData &sd)
 {
-    size_t sizeOf = sizeof(dots::property_set);
-    size_t alignOf = alignof(dots::property_set);
+    size_t sizeOf = sizeof(dots::type::Struct);
+    size_t alignOf = alignof(dots::type::Struct);
 
-    size_t lastPropertyOffset = sizeof(dots::property_set);
+    size_t lastPropertyOffset = sizeof(dots::type::Struct);
 
     for (auto &p : *sd.properties)
     {
@@ -98,7 +98,7 @@ const StructDescriptor * StructDescriptor::createFromStructDescriptorData(const 
 
     auto newstruct = new StructDescriptor(sd, structProperties.size, structProperties.alignment);
 
-    std::size_t lastOffset = sizeof(dots::property_set);
+    std::size_t lastOffset = sizeof(dots::type::Struct);
 
 
     for (const StructPropertyData &p : *newstruct->descriptorData().properties)
