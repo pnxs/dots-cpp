@@ -401,7 +401,7 @@ namespace dots::type
 			return alignedOffset;
 		}
 
-        std::aligned_storage<sizeof(T)> _value;
+		std::aligned_storage_t<sizeof(T), alignof(T)> _value;
     };
 
 	template <typename T, typename Derived, typename Previous, typename DerivedStruct>
