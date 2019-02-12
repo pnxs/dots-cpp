@@ -19,7 +19,7 @@ namespace dots::type
         Struct(const StructDescriptor& descriptor);
         Struct(const Struct& other);
         Struct(Struct&& other);
-        virtual ~Struct() = default;
+        ~Struct() = default;
 
         Struct& operator = (const Struct& rhs);
         Struct& operator = (Struct&& rhs);
