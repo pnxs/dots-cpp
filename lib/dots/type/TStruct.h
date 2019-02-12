@@ -267,17 +267,18 @@ namespace dots::type
 
 			if (structDescriptor == nullptr)
 			{
-				std::vector<PropertyDescription> propertyDescriptions = std::apply([](auto&&... args)
+				// allocate space for descriptor to avoid recursive descriptor construction issues
+				StructDescriptor* structDescriptorAddr = reinterpret_cast<StructDescriptor*>(std::malloc(sizeof(StructDescriptor)));
+				structDescriptor = structDescriptorAddr;
+
+				// create descriptors of property types if they not already exist
+				std::apply([](auto&&... args)
 				{
 					(strip_t<decltype(args)>::Descriptor(), ...);
-
-					return std::vector<PropertyDescription>{
-						PropertyDescription{
-							strip_t<decltype(args)>::Description
-						}... };
 				}, typename Derived::_properties_t{});
-				
-				structDescriptor = MakeStructDescriptor(Derived::Description);
+
+				// create descriptor of derived type				
+				MakeStructDescriptor(structDescriptorAddr, Derived::Description);
 			}
 
 			return *structDescriptor;

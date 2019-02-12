@@ -61,8 +61,8 @@ namespace dots::type
 			size_t numProperties;
 		};
 
-		static const StructDescriptor* MakeStructDescriptor(const types::StructDescriptorData& structDescriptorData);
-		static const StructDescriptor* MakeStructDescriptor(const StructDescription& structDescription);
+		static const StructDescriptor* MakeStructDescriptor(StructDescriptor* structDescriptorAddr, const types::StructDescriptorData& structDescriptorData);
+		static const StructDescriptor* MakeStructDescriptor(StructDescriptor* structDescriptorAddr, const StructDescription& structDescription);
 
     private:
 

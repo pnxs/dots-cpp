@@ -107,7 +107,7 @@ namespace dots::type
 		_publish(PROPERTY_SET_NONE, true);
     }
 
-    const StructDescriptor* Struct::MakeStructDescriptor(const StructDescriptorData& structDescriptorData)
+    const StructDescriptor* Struct::MakeStructDescriptor(StructDescriptor* newstruct, const StructDescriptorData& structDescriptorData)
 	{
 		// Check if type is already registred
 		{
@@ -115,11 +115,8 @@ namespace dots::type
 			if (structDescriptor) return structDescriptor;
 		}
 
-
 		auto structProperties = getStructProperties(structDescriptorData);
-
-
-		auto newstruct = new StructDescriptor(structDescriptorData, structProperties.size, structProperties.alignment);
+		::new (static_cast<void *>(newstruct)) StructDescriptor(structDescriptorData, structProperties.size, structProperties.alignment);
 
 		std::size_t lastOffset = sizeof(Struct);
 
@@ -159,7 +156,7 @@ namespace dots::type
 		return newstruct;
 	}
 
-	const StructDescriptor* Struct::MakeStructDescriptor(const StructDescription& structDescription)
+	const StructDescriptor* Struct::MakeStructDescriptor(StructDescriptor* structDescriptorAddr, const StructDescription& structDescription)
     {
 		StructDescriptorData structDescriptorData;
 		structDescriptorData.name(structDescription.name.data());
@@ -185,6 +182,6 @@ namespace dots::type
 			properties.emplace_back(structPropertyData);
 		}
 
-		return MakeStructDescriptor(structDescriptorData);
+		return MakeStructDescriptor(structDescriptorAddr, structDescriptorData);
     }
 }
