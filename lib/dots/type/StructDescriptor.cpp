@@ -239,32 +239,32 @@ const StructDescriptor::DescriptorData &StructDescriptor::descriptorData() const
 
 bool StructDescriptor::cached() const
 {
-    return m_descriptorData->flags().cached();
+    return m_descriptorData->flags->cached;
 }
 
 bool StructDescriptor::cleanup() const
 {
-    return m_descriptorData->flags().cleanup();
+    return m_descriptorData->flags->cleanup;
 }
 
 bool StructDescriptor::local() const
 {
-    return m_descriptorData->flags().local();
+    return m_descriptorData->flags->local;
 }
 
 bool StructDescriptor::persistent() const
 {
-    return m_descriptorData->flags().persistent();
+    return m_descriptorData->flags->persistent;
 }
 
 bool StructDescriptor::internal() const
 {
-    return m_descriptorData->flags().internal();
+    return m_descriptorData->flags->internal;
 }
 
 bool StructDescriptor::substructOnly() const
 {
-    return m_descriptorData->flags().substructOnly();
+    return m_descriptorData->flags->substructOnly;
 }
 
 
