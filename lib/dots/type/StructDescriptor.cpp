@@ -15,9 +15,7 @@ StructDescriptor::StructDescriptor(const DescriptorData& sd, std::size_t sizeOf,
 :Descriptor(sd.name, DotsType::Struct, sizeOf, alignOf)
 {
     m_descriptorData = std::make_unique<DescriptorData>(sd);
-    m_descriptorData->flags(sd.flags.isValid() ? sd.flags : dots::types::DotsStructFlags());
-
-    auto& flags = *m_descriptorData->flags;
+    auto& flags = sd.flags.isValid() ? *m_descriptorData->flags : m_descriptorData->flags();
 
     if (not flags.cleanup.isValid())    flags.cleanup(false);
     if (not flags.persistent.isValid()) flags.persistent(false);
