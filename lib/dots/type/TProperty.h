@@ -249,7 +249,7 @@ namespace dots::type
 			}
 			else if (rhs.isValid())
 			{
-				(*this)(rawValue());
+				(*this)(rhs.rawValue());
 			}
 
 			return *this;
