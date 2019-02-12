@@ -298,7 +298,7 @@ namespace dots::type
 
 		Struct& instance()
 		{
-			return *reinterpret_cast<Struct*>(this - Offset());
+			return *reinterpret_cast<Struct*>(reinterpret_cast<char*>(this) - Offset());
 		}
 
 		const Struct& instance() const
@@ -363,7 +363,7 @@ namespace dots::type
 
 		T& rawValue()
 		{
-			return reinterpret_cast<T&>(*&_value);
+			return reinterpret_cast<T&>(*::std::addressof(_value));
 		}
 
 		const T& rawValue() const
