@@ -158,14 +158,14 @@ void Server::updateServerStatus()
     {
         DotsDaemonStatus ds(m_daemonStatus);
 
-        ds.received(m_connectionManager.receiveStatistics());
+        ds.received = m_connectionManager.receiveStatistics();
 
         if (m_daemonStatus._diffPropertySet(ds))
         {
             LOG_DEBUG_S("updateServerStatus");
 
-            ds.resourceUsage(static_cast<DotsResourceUsage&&>(dots::ResourceUsage()));
-            ds.cache(m_connectionManager.cacheStatus());
+            ds.resourceUsage = static_cast<DotsResourceUsage&&>(dots::ResourceUsage());
+            ds.cache = m_connectionManager.cacheStatus();
 
             ds._publish();
             m_daemonStatus = ds;
