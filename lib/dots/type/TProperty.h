@@ -373,7 +373,7 @@ namespace dots::type
 
 		static Derived& Get(Struct& instance)
 		{
-			return *reinterpret_cast<Derived*>(&instance + Offset());
+			return *reinterpret_cast<Derived*>(reinterpret_cast<char*>(&instance) + Offset());
 		}
 
 		static const Derived& Get(const Struct& instance)
