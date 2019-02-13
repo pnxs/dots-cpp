@@ -178,7 +178,11 @@ namespace dots::type
 
 		static const type::Descriptor& Descriptor()
 		{
-			static const type::Descriptor* descriptor = type::getDescriptor<T>(nullptr);
+			static const type::Descriptor* descriptor = []()
+			{
+				type::getDescriptor<T>(nullptr);
+				return Registry::fromWireName(Type().data());
+			}();
 			return *descriptor;
 		}
 
@@ -199,6 +203,11 @@ namespace dots::type
         {
             return Derived::Description.name;
         }
+
+		static constexpr std::string_view Type()
+		{
+			return Derived::Description.type;
+		}
 
         static constexpr size_t Offset()
         {
