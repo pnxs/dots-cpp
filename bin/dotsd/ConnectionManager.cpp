@@ -423,7 +423,6 @@ void ConnectionManager::publishNs(const string &nameSpace,
 {
     DotsTransportHeader header;
     m_transmitter.prepareHeader(header, td, properties, remove);
-    header.dotsHeader();
     header.dotsHeader->serverSentTime(pnxs::SystemNow());
     header.dotsHeader->sender(serverInfo().id());
     if (not nameSpace.empty()) header.nameSpace(nameSpace);

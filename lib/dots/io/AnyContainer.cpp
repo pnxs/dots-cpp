@@ -164,14 +164,14 @@ Mt AnyContainer::process(const DotsHeader &header, Typeless data, const signal_t
         mt = inserted ? Mt::create : Mt::update;
 
         // update element info
-        Writable(e.information).lastOperation(mt);
+        Writable(e.information).lastOperation = mt;
         if (mt == Mt::create) {
-            Writable(e.information).created(header.sentTime);
-            Writable(e.information).createdFrom(header.sender);
+            Writable(e.information).created = header.sentTime;
+            Writable(e.information).createdFrom = header.sender;
         }
-        Writable(e.information).lastUpdateFrom(header.sender);
-        Writable(e.information).modified(header.sentTime);
-        Writable(e.information).localUpdateTime(now);
+        Writable(e.information).lastUpdateFrom = header.sender;
+        Writable(e.information).modified = header.sentTime;
+        Writable(e.information).localUpdateTime = now;
 
         if (signal)
         {
