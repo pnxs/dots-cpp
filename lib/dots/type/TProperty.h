@@ -179,25 +179,23 @@ namespace dots::type
 				}
 				else
 				{
-					other(extract<false>());
+					other(extractUnchecked());
 				}
 			}
 			else if (other.isValid())
 			{
-				(*this)(other.template extract<false>());
+				(*this)(other.extractUnchecked());
 			}
 		}
 
-		template <bool AssertValidity = true>
 		T&& extract()
 		{
-			if constexpr (AssertValidity)
+			if (!isValid())
 			{
 				throw std::runtime_error{ std::string{ "attempt to extract invalid property: " } + DerivedStruct::Description.name.data() + "." + Name().data() };
 			}
 
-			validPropertySet().set(Tag(), false);
-			return std::move(valueUnchecked());
+			return extractUnchecked();
 		}
 
 		void destroy()
@@ -320,7 +318,7 @@ namespace dots::type
 			{
 				if (rhs.isValid())
 				{
-					valueUnchecked() = rhs.template extract<false>();
+					valueUnchecked() = rhs.extractUnchecked();
 				}
 				else
 				{
@@ -329,7 +327,7 @@ namespace dots::type
 			}
 			else if (rhs.isValid())
 			{
-				(*this)(rhs.template extract<false>());
+				(*this)(rhs.extractUnchecked());
 			}
 
 			return *this;
@@ -373,6 +371,12 @@ namespace dots::type
 		const T& valueUnchecked() const
 		{
 			return const_cast<TProperty&>(*this).valueUnchecked();
+		}
+
+		T&& extractUnchecked()
+		{
+			validPropertySet().set(Tag(), false);
+			return std::move(valueUnchecked());
 		}
 
 		static Derived& Get(Struct& instance)
