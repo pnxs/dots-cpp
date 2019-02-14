@@ -113,6 +113,21 @@ namespace dots::type
 			return validPropertySet().test(Tag());
 		}
 
+		T& validValue()
+		{
+			if (!isValid())
+			{
+				throw std::runtime_error{ std::string{ "attempt to access invalid property: " } +DerivedStruct::Description.name.data() + "." + Name().data() };
+			}
+
+			return rawValue();
+		}
+
+		const T& validValue() const
+		{
+			return const_cast<TProperty&>(*this).validValue();
+		}
+
 		template <typename... Args>
 		T& construct(Args&&... args)
 		{
@@ -348,21 +363,6 @@ namespace dots::type
 		const Struct& instance() const
 		{
 			return const_cast<TProperty&>(*this).instance();
-		}
-
-		T& validValue()
-		{
-			if (!isValid())
-			{
-				throw std::runtime_error{ std::string{ "attempt to access invalid property: " } + DerivedStruct::Description.name.data() + "." + Name().data() };
-			}
-
-			return rawValue();
-		}
-
-		const T& validValue() const
-		{
-			return const_cast<TProperty&>(*this).validValue();
 		}
 
 		T& rawValue()
