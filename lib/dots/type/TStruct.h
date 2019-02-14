@@ -224,7 +224,7 @@ namespace dots::type
 			static_assert(!_IsSubstructOnly(), "a substruct-only type cannot be published");
 
 			registerTypeUsage<Derived, PublishedType>();
-			Struct::_publish();
+			Struct::_publish(what, remove);
 		}
 
 		void _remove() const
