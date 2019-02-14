@@ -157,6 +157,19 @@ namespace dots::type
 		}
 
 		template <typename... Args>
+		T& constructOrValue(Args&&... args)
+		{
+			if (isValid())
+			{
+				return valueUnchecked();
+			}
+			else
+			{
+				return construct(std::forward<Args>(args)...);
+			}
+		}
+
+		template <typename... Args>
 		T& constructOrAssign(Args&&... args)
 		{
 			if (isValid())
