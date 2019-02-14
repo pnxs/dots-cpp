@@ -128,7 +128,7 @@ namespace dots::type
         {
 	        if constexpr (AssertValidity)
 			{
-				throw std::runtime_error{ std::string{ "attempt to extract invalid property: " } +DerivedStruct::Description.name.data() + "." + Name().data() };
+				throw std::runtime_error{ std::string{ "attempt to extract invalid property: " } + DerivedStruct::Description.name.data() + "." + Name().data() };
 			}
 
 			validPropertySet().set(Tag(), false);
@@ -153,6 +153,46 @@ namespace dots::type
 				(*this)(other.template extract<false>());
 			}
         }
+
+		template <typename... Args>
+		T& constructOrAssign(Args&&... args)
+		{
+			if (isValid())
+			{
+				return assign(std::forward<Args>(args)...);
+			}
+			else
+			{
+				return construct(std::forward<Args>(args)...);
+			}
+		}
+
+		template <typename... Args>
+		T& assign(Args&&... args)
+		{
+			rawValue() = T(std::forward<Args>(args)...);
+			validPropertySet().set(Tag(), true);
+
+			return rawValue();
+		}
+
+		template <typename... Args>
+		T& construct(Args&&... args)
+		{
+			::new (static_cast<void *>(::std::addressof(_value))) T(std::forward<Args>(args)...);
+			validPropertySet().set(Tag(), true);
+
+			return rawValue();
+		}
+
+		void destroy()
+		{
+			if (isValid())
+			{
+				rawValue().~T();
+				validPropertySet().set(Tag(), false);
+			}
+		}
 
 		bool isValid() const
 		{
@@ -313,46 +353,6 @@ namespace dots::type
 		const Struct& instance() const
 		{
 			return const_cast<TProperty&>(*this).instance();
-		}
-
-		template <typename... Args>
-		T& constructOrAssign(Args&&... args)
-		{
-			if (isValid())
-			{
-				return assign(std::forward<Args>(args)...);
-			}
-			else
-			{
-				return construct(std::forward<Args>(args)...);
-			}
-		}
-
-		template <typename... Args>
-		T& assign(Args&&... args)
-		{
-			rawValue() = T(std::forward<Args>(args)...);
-			validPropertySet().set(Tag(), true);
-
-			return rawValue();
-		}
-
-		template <typename... Args>
-		T& construct(Args&&... args)
-		{
-			::new (static_cast<void *>(::std::addressof(_value))) T(std::forward<Args>(args)...);
-			validPropertySet().set(Tag(), true);
-
-			return rawValue();
-		}
-
-		void destroy()
-		{
-			if (isValid())
-			{
-				rawValue().~T();
-				validPropertySet().set(Tag(), false);
-			}
 		}
 
 		T& validValue()
