@@ -50,32 +50,32 @@ namespace dots::type
 
 		T& operator * ()
 		{
-			return validValue();
+			return value();
 		}
 
 		const T& operator * () const
 		{
-			return validValue();
+			return value();
 		}
 
 		T* operator -> ()
 		{
-			return &validValue();
+			return &value();
 		}
 
 		const T* operator -> () const
 		{
-			return &validValue();
+			return &value();
 		}
 
 		operator T& ()
 		{
-			return validValue();
+			return value();
 		}
 
 		operator const T& () const
 		{
-			return validValue();
+			return value();
 		}
 
 		bool operator == (const T& rhs) const
@@ -112,8 +112,8 @@ namespace dots::type
 		{
 			return validPropertySet().test(Tag());
 		}
-
-		T& validValue()
+		
+		T& value()
 		{
 			if (!isValid())
 			{
@@ -123,9 +123,9 @@ namespace dots::type
 			return rawValue();
 		}
 
-		const T& validValue() const
+		const T& value() const
 		{
-			return const_cast<TProperty&>(*this).validValue();
+			return const_cast<TProperty&>(*this).value();
 		}
 
 		template <typename... Args>
@@ -138,7 +138,7 @@ namespace dots::type
 
 			if (isValid())
 			{
-				throw std::runtime_error{ std::string{ "attempt to construct already valid property: " } +DerivedStruct::Description.name.data() + "." + Name().data() };
+				throw std::runtime_error{ std::string{ "attempt to construct already valid property: " } + DerivedStruct::Description.name.data() + "." + Name().data() };
 			}
 
 			::new (static_cast<void *>(::std::addressof(_value))) T(std::forward<Args>(args)...);
@@ -193,7 +193,7 @@ namespace dots::type
 		{
 			if constexpr (AssertValidity)
 			{
-				throw std::runtime_error{ std::string{ "attempt to extract invalid property: " } +DerivedStruct::Description.name.data() + "." + Name().data() };
+				throw std::runtime_error{ std::string{ "attempt to extract invalid property: " } + DerivedStruct::Description.name.data() + "." + Name().data() };
 			}
 
 			validPropertySet().set(Tag(), false);
