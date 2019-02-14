@@ -132,9 +132,9 @@ namespace dots::type
 		onPublishObject->publish(&_descriptor(), this, what, remove);
     }
 
-    void Struct::_remove() const
+    void Struct::_remove(const property_set& what/* = PROPERTY_SET_ALL*/) const
     {
-		_publish(PROPERTY_SET_NONE, true);
+		_publish(what, true);
     }
 
     const StructDescriptor* Struct::MakeStructDescriptor(StructDescriptor* newstruct, const StructDescriptorData& structDescriptorData)

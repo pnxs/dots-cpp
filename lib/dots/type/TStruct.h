@@ -227,12 +227,12 @@ namespace dots::type
 			Struct::_publish(what, remove);
 		}
 
-		void _remove() const
+		void _remove(const property_set& what = PROPERTY_SET_ALL) const
 		{
 			static_assert(!_IsSubstructOnly(), "a substruct-only type cannot be removed");
 
 			registerTypeUsage<Derived, PublishedType>();
-			Struct::_remove();
+			Struct::_remove(what);
 		}
 
 		property_set _diffPropertySet(const Derived& other) const

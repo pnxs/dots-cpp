@@ -32,7 +32,7 @@ namespace dots::type
 		const property_set& _validPropertySet() const;
 
 		void _publish(const property_set& what = PROPERTY_SET_ALL, bool remove = false) const;
-		void _remove() const;
+		void _remove(const property_set& what = PROPERTY_SET_ALL) const;
 
     protected:		
 
