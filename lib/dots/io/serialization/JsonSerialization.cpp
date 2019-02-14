@@ -193,6 +193,7 @@ void to_json(const dots::type::StructDescriptor *td, const void *data, PrettyWri
 // ---------------- Deserialization ------------------------
 static void read_atomic_types_from_json(const type::Descriptor* td, void* data, const rapidjson::Document::ValueType& value)
 {
+    // TODO: replace with inplace construction
     switch (td->dotsType()) {
         case type::DotsType::int8:            *(int8_t *)data = value.GetInt(); break;
         case type::DotsType::int16:           *(int16_t *)data = value.GetInt(); break;
