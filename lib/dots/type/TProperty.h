@@ -40,22 +40,7 @@ namespace dots::type
 		template <typename... Args>
 		T& operator () (Args&&... args)
 		{
-			if (isValid())
-			{
-				throw std::runtime_error{ std::string{ "attempt to construct already valid property: " } + DerivedStruct::Description.name.data() + "." + Name().data() };
-			}
-
-			if constexpr (sizeof...(Args) == 0)
-			{
-				static_assert(std::is_default_constructible_v<T>);
-				construct(T{});
-			}
-			else
-			{
-				construct(std::forward<Args>(args)...);
-			}
-
-			return rawValue();
+			return construct(std::forward<Args>(args)...);
 		}
 
 		T& operator () (init_t&& init) 
@@ -179,6 +164,16 @@ namespace dots::type
 		template <typename... Args>
 		T& construct(Args&&... args)
 		{
+			if constexpr (sizeof...(Args) == 0)
+			{
+				static_assert(std::is_default_constructible_v<T>);
+			}
+
+			if (isValid())
+			{
+				throw std::runtime_error{ std::string{ "attempt to construct already valid property: " } + DerivedStruct::Description.name.data() + "." + Name().data() };
+			}			
+
 			::new (static_cast<void *>(::std::addressof(_value))) T(std::forward<Args>(args)...);
 			validPropertySet().set(Tag(), true);
 
