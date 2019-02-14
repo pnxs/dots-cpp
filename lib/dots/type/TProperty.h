@@ -108,36 +108,38 @@ namespace dots::type
 			return !rhs.isValid() || isValid() && rawValue() < rhs.rawValue();
 		}
 
-		template <bool AssertValidity = true>
-		T&& extract()
-        {
-	        if constexpr (AssertValidity)
+		bool isValid() const
+		{
+			return validPropertySet().test(Tag());
+		}
+
+		template <typename... Args>
+		T& construct(Args&&... args)
+		{
+			if constexpr (sizeof...(Args) == 0)
 			{
-				throw std::runtime_error{ std::string{ "attempt to extract invalid property: " } + DerivedStruct::Description.name.data() + "." + Name().data() };
+				static_assert(std::is_default_constructible_v<T>);
 			}
 
-			validPropertySet().set(Tag(), false);
-			return std::move(rawValue());
-        }
-
-		void swap(Derived& other)
-        {
-	        if (isValid())
-	        {
-		        if (other.isValid())
-		        {
-					std::swap(rawValue(), other.rawValue());
-		        }
-				else
-				{
-					other(extract<false>());
-				}
-	        }
-			else if (other.isValid())
+			if (isValid())
 			{
-				(*this)(other.template extract<false>());
+				throw std::runtime_error{ std::string{ "attempt to construct already valid property: " } +DerivedStruct::Description.name.data() + "." + Name().data() };
 			}
-        }
+
+			::new (static_cast<void *>(::std::addressof(_value))) T(std::forward<Args>(args)...);
+			validPropertySet().set(Tag(), true);
+
+			return rawValue();
+		}
+
+		template <typename... Args>
+		T& assign(Args&&... args)
+		{
+			rawValue() = T(std::forward<Args>(args)...);
+			validPropertySet().set(Tag(), true);
+
+			return rawValue();
+		}
 
 		template <typename... Args>
 		T& constructOrAssign(Args&&... args)
@@ -152,32 +154,35 @@ namespace dots::type
 			}
 		}
 
-		template <typename... Args>
-		T& assign(Args&&... args)
+		void swap(Derived& other)
 		{
-			rawValue() = T(std::forward<Args>(args)...);
-			validPropertySet().set(Tag(), true);
-
-			return rawValue();
-		}
-
-		template <typename... Args>
-		T& construct(Args&&... args)
-		{
-			if constexpr (sizeof...(Args) == 0)
-			{
-				static_assert(std::is_default_constructible_v<T>);
-			}
-
 			if (isValid())
 			{
-				throw std::runtime_error{ std::string{ "attempt to construct already valid property: " } + DerivedStruct::Description.name.data() + "." + Name().data() };
-			}			
+				if (other.isValid())
+				{
+					std::swap(rawValue(), other.rawValue());
+				}
+				else
+				{
+					other(extract<false>());
+				}
+			}
+			else if (other.isValid())
+			{
+				(*this)(other.template extract<false>());
+			}
+		}
 
-			::new (static_cast<void *>(::std::addressof(_value))) T(std::forward<Args>(args)...);
-			validPropertySet().set(Tag(), true);
+		template <bool AssertValidity = true>
+		T&& extract()
+		{
+			if constexpr (AssertValidity)
+			{
+				throw std::runtime_error{ std::string{ "attempt to extract invalid property: " } +DerivedStruct::Description.name.data() + "." + Name().data() };
+			}
 
-			return rawValue();
+			validPropertySet().set(Tag(), false);
+			return std::move(rawValue());
 		}
 
 		void destroy()
@@ -187,11 +192,6 @@ namespace dots::type
 				rawValue().~T();
 				validPropertySet().set(Tag(), false);
 			}
-		}
-
-		bool isValid() const
-		{
-			return validPropertySet().test(Tag());
 		}
 
 		void publish() const
