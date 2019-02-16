@@ -27,19 +27,17 @@ StructDescriptor::StructDescriptor(const DescriptorData& sd, std::size_t sizeOf,
 
 void StructDescriptor::construct(void *obj) const
 {
-    validProperties(obj) = property_set();
-
-    for(auto& pd : m_properties) // Iterate over PropertyDescriptors
-    {
-        pd.td()->construct(pd.address(obj));
-    }
+	::new (obj) Struct(*this);
 }
 
 void StructDescriptor::destruct(void *obj) const
 {
     for(auto& pd : m_properties) // Iterate over PropertyDescriptors
     {
-        pd.td()->destruct(pd.address(obj));
+		if (validProperties(obj).test(pd.tag()))
+		{
+			pd.td()->destruct(pd.address(obj));
+		}
     }
 }
 
