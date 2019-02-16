@@ -343,7 +343,6 @@ void ConnectionManager::handleDescriptorRequest(const DotsDescriptorRequest::Cbd
         LOG_DEBUG_S("sending descriptor for type '" << td->name() << "' to " << cbd.header.sender);
         traversal.traverseDescriptorData(td, [&](auto td, auto body) {
             DotsTransportHeader thead;
-            thead.dotsHeader();
             m_transmitter.prepareHeader(thead, td, td->validProperties(body), false);
             thead.dotsHeader->sentTime = pnxs::SystemNow();
             thead.dotsHeader->sender(this->serverInfo().id());
