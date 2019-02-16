@@ -345,7 +345,7 @@ void ConnectionManager::handleDescriptorRequest(const DotsDescriptorRequest::Cbd
             DotsTransportHeader thead;
             thead.dotsHeader();
             m_transmitter.prepareHeader(thead, td, td->validProperties(body), false);
-            thead.dotsHeader->sentTime(pnxs::SystemNow());
+            thead.dotsHeader->sentTime = pnxs::SystemNow();
             thead.dotsHeader->sender(this->serverInfo().id());
 
             // prepareBuffer
@@ -508,7 +508,7 @@ string ConnectionManager::clientId2Name(ClientId id) const
         {
             auto client = static_cast<DotsClient *>(iter->data);
             if (client->name.isValid())
-                return client->name();
+                return client->name;
         }
     }
 

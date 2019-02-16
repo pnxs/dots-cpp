@@ -125,10 +125,10 @@ Mt AnyContainer::process(const DotsHeader &header, Typeless data, const signal_t
             if (signal)
             {
                 // Update container-information because it's signalled to the user-code.
-                Writeable(iter->information).lastOperation(Mt::remove);
-                Writeable(iter->information).lastUpdateFrom(header.sender);
-                Writeable(iter->information).modified(header.sentTime);
-                Writeable(iter->information).localUpdateTime(now);
+                Writeable(iter->information).lastOperation = Mt::remove;
+                Writeable(iter->information).lastUpdateFrom = header.sender;
+                Writeable(iter->information).modified = header.sentTime;
+                Writeable(iter->information).localUpdateTime = now;
 
                 (*signal)({iter->data, *iter, header, td(), mt});
             }

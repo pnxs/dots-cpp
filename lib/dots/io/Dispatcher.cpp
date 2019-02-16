@@ -71,7 +71,7 @@ void Dispatcher::dispatchMessage(const ReceiveMessageData &rmd)
 
             header.sender = rmd.sender;
             header.sentTime = rmd.sentTime;
-            header.isFromMyself =rmd.isFromMyself;
+            header.isFromMyself = rmd.isFromMyself;
 
             if (typelessSignal)
             {

@@ -139,7 +139,7 @@ void Connection::onReceivedMessage(const Message &msg)
     dotsHeader.serverSentTime = pnxs::SystemNow();
 
     if (not dotsHeader.sentTime.isValid()) {
-        dotsHeader.sentTime = dotsHeader.serverSentTime();
+        dotsHeader.sentTime = dotsHeader.serverSentTime;
     }
 
     Message modifiedMessage(modifiedHeader, msg.data());
@@ -254,7 +254,7 @@ bool Connection::onControlMessage(const Message &msg)
             {
                 auto structDescriptorData = dots::decodeInto_cbor<StructDescriptorData>(data);
                 structDescriptorData.publisherId(id());
-                LOG_DEBUG_S("received struct descriptor: " << structDescriptorData.name());
+                LOG_DEBUG_S("received struct descriptor: " << structDescriptorData.name);
                 type::StructDescriptor::createFromStructDescriptorData(structDescriptorData);
                 m_connectionManager.deliverMessage(msg);
                 handled = true;
@@ -386,7 +386,7 @@ void Connection::sendNs(const string &nameSpace,
     DotsTransportHeader header;
     m_transmitter.prepareHeader(header, td, properties, remove);
     if (not nameSpace.empty()) header.nameSpace(nameSpace);
-    header.dotsHeader().sender(m_connectionManager.serverInfo().id());
+    header.dotsHeader->sender(m_connectionManager.serverInfo().id());
 
     // prepareBuffer
     m_transmitter.prepareBuffer(td, data, header, properties);
@@ -439,8 +439,8 @@ void Connection::sendContainerContent(const AnyContainer &container)
         DotsTransportHeader thead;
         m_transmitter.prepareHeader(thead, td, td->validProperties(e.data), false);
 
-        auto& dotsHeader = thead.dotsHeader();
-        dotsHeader.sentTime(e.information.modified);
+        auto& dotsHeader = *thead.dotsHeader;
+        dotsHeader.sentTime = e.information.modified;
         dotsHeader.serverSentTime(pnxs::SystemNow());
         dotsHeader.sender(e.information.lastUpdateFrom);
         dotsHeader.fromCache(--remainingCacheObjects);
