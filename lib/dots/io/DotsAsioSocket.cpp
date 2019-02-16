@@ -22,7 +22,7 @@ void DotsAsioSocket::setReceiveCallback(DotsSocket::receive_callback cb)
 int DotsAsioSocket::send(const DotsTransportHeader &header, const vector<uint8_t> &data)
 {
     DotsTransportHeader _header(header);
-    _header.payloadSize(data.size());
+    _header.payloadSize = data.size();
 
     auto headerBuffer = to_cbor(_header);
 
