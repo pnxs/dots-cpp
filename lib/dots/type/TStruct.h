@@ -25,7 +25,7 @@ namespace dots::type
 		template <typename... PropertyInitializers>
 		explicit TStruct(PropertyInitializers&&... propertyInitializers) : Struct(_Descriptor())
 		{
-			(strip_t<decltype(propertyInitializers)>::property_t::Get(*this)(std::forward<decltype(propertyInitializers)>(propertyInitializers)), ...);
+			(strip_t<decltype(propertyInitializers)>::property_t::Get(*this).construct(std::forward<decltype(propertyInitializers)>(propertyInitializers)), ...);
 		}
 
 		bool operator == (const Derived& rhs) const

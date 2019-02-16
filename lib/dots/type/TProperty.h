@@ -147,6 +147,11 @@ namespace dots::type
 			return valueUnchecked();
 		}
 
+		T& construct(init_t&& init)
+		{
+			return construct(std::move(init.value));
+		}
+
 		template <typename... Args>
 		T& assign(Args&&... args)
 		{
@@ -192,12 +197,12 @@ namespace dots::type
 				}
 				else
 				{
-					other(extractUnchecked());
+					other.construct(extractUnchecked());
 				}
 			}
 			else if (other.isValid())
 			{
-				(*this)(other.extractUnchecked());
+				construct(other.extractUnchecked());
 			}
 		}
 
@@ -319,7 +324,7 @@ namespace dots::type
 			}
 			else if (rhs.isValid())
 			{
-				(*this)(rhs.valueUnchecked());
+				construct(rhs.valueUnchecked());
 			}
 
 			return *this;
@@ -340,7 +345,7 @@ namespace dots::type
 			}
 			else if (rhs.isValid())
 			{
-				(*this)(rhs.extractUnchecked());
+				construct(rhs.extractUnchecked());
 			}
 
 			return *this;
