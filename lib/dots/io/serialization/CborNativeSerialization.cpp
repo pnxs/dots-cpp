@@ -191,6 +191,7 @@ void read_cbor(const type::Descriptor* td, void* data, cbor::decoder& decoder)
 
 void from_cbor_recursive(const type::StructDescriptor* sd, void* data, cbor::decoder& decoder)
 {
+	sd->construct(data);
     property_set& validProperties = sd->validProperties(data);
     validProperties.clear();
 
@@ -235,6 +236,7 @@ static void read_from_array_recursive(const type::VectorDescriptor* vd, void* da
 {
     size_t arrayLength = decoder.read_array();
     auto propertyDescriptor = vd->vtd();
+	vd->construct(data);
     vd->resize(data, arrayLength);
 
     for (size_t i = 0; i < arrayLength; ++i)
