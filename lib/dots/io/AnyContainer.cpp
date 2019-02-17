@@ -98,13 +98,13 @@ Mt AnyContainer::process(const DotsHeader &header, Typeless data, const signal_t
             {
                 mt = Mt::create;
                 // update element info
-                element.information.lastOperation(mt);
+                element.information.lastOperation = mt;
 
-                element.information.created(header.sentTime);
+                element.information.created = header.sentTime;
                 element.information.createdFrom(header.sender);
 
                 element.information.lastUpdateFrom(header.sender);
-                element.information.modified(header.sentTime);
+                element.information.modified = header.sentTime;
                 element.information.localUpdateTime(now);
 
                 (*signal)({element.data, element, header, td(), mt});
