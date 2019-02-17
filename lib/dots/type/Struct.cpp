@@ -129,7 +129,7 @@ namespace dots::type
 
     void Struct::_publish(const property_set& what/* = PROPERTY_SET_ALL*/, bool remove/* = false*/) const
     {
-		onPublishObject->publish(&_descriptor(), this, what, remove);
+		onPublishObject->publish(&_descriptor(), this, what == PROPERTY_SET_ALL ? _validPropSet : what, remove);
     }
 
     void Struct::_remove(const property_set& what/* = PROPERTY_SET_ALL*/) const
