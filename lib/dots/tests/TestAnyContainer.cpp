@@ -296,7 +296,7 @@ TEST(TestAnyContainer, updateInstance)
         auto iter = container.find({&f, pnxs::TimePoint()});
         EXPECT_TRUE(iter != container.end());
         auto result = static_cast<const DotsTestStruct*>(iter->data);
-        EXPECT_EQ(result->_validPropertySet(), DotsTestStruct::indKeyfField_t::PropertySet());
+        EXPECT_EQ(result->_validPropertySet(), DotsTestStruct::indKeyfField_t::Set());
         //EXPECT_EQ(result->validProperties(), DotsTestStruct::PropSet(DotsTestStruct::Att::indKeyfField) + DotsTestStruct::PropSet(DotsTestStruct::Att::stringField));
     }
 
@@ -320,7 +320,7 @@ TEST(TestAnyContainer, updateInstance)
         auto iter = container.find({&f, pnxs::TimePoint()});
         EXPECT_TRUE(iter != container.end());
         auto result = static_cast<const DotsTestStruct*>(iter->data);
-        EXPECT_EQ(result->_validPropertySet(), DotsTestStruct::indKeyfField_t::PropertySet() + DotsTestStruct::stringField_t::PropertySet());
+        EXPECT_EQ(result->_validPropertySet(), DotsTestStruct::indKeyfField_t::Set() + DotsTestStruct::stringField_t::Set());
         EXPECT_EQ(result->stringField, "Hello");
     }
 
@@ -344,9 +344,9 @@ TEST(TestAnyContainer, updateInstance)
         EXPECT_TRUE(iter != container.end());
         auto result = static_cast<const DotsTestStruct*>(iter->data);
         EXPECT_EQ(result->_validPropertySet(),
-                  DotsTestStruct::indKeyfField_t::PropertySet() +
-                  DotsTestStruct::stringField_t::PropertySet() +
-                  DotsTestStruct::floatField_t::PropertySet());
+                  DotsTestStruct::indKeyfField_t::Set() +
+                  DotsTestStruct::stringField_t::Set() +
+                  DotsTestStruct::floatField_t::Set());
         EXPECT_EQ(result->stringField, "Hello");
         EXPECT_EQ(result->floatField, 3.0f);
     }
@@ -357,7 +357,7 @@ TEST(TestAnyContainer, updateInstance)
         dts.indKeyfField(1);
 
         // Set Float-Field to Valid, but it's not set. We've expect, that the property will be set to not-set in container
-        dh.attributes = dts._validPropertySet() + DotsTestStruct::floatField_t::PropertySet();
+        dh.attributes = dts._validPropertySet() + DotsTestStruct::floatField_t::Set();
         container.process(dh, &dts);
     }
     ASSERT_EQ(container.size(), 1u);
@@ -371,8 +371,8 @@ TEST(TestAnyContainer, updateInstance)
         EXPECT_TRUE(iter != container.end());
         auto result = static_cast<const DotsTestStruct*>(iter->data);
         EXPECT_EQ(result->_validPropertySet(),
-                  DotsTestStruct::indKeyfField_t::PropertySet() +
-                      DotsTestStruct::stringField_t::PropertySet());
+                  DotsTestStruct::indKeyfField_t::Set() +
+                      DotsTestStruct::stringField_t::Set());
         EXPECT_EQ(result->stringField, "Hello");
     }
 }

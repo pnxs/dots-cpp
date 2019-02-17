@@ -232,7 +232,7 @@ namespace dots::type
 				throw std::runtime_error{ std::string{ "attempt to publish invalid property: " } + DerivedStruct::Description.name.data() + "." + Name().data() };
 	        }
 
-			instance()._publish(PropertySet());
+			instance()._publish(Set());
         }
 
 		template <typename... Args>
@@ -252,7 +252,7 @@ namespace dots::type
 			return *descriptor;
 		}
 
-		static constexpr property_set PropertySet()
+		static constexpr property_set Set()
         {
 			property_set propertySet;
 			propertySet.set(Tag());

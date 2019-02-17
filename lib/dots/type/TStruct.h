@@ -250,7 +250,7 @@ namespace dots::type
 
 						if (property_t::IsPartOf(intersection) && property_t::Descriptor().equal(&*propertyThis, &*propertyOther))
 						{
-							symmetricDiff |= property_t::PropertySet();
+							symmetricDiff |= property_t::Set();
 						}
 					};
 
@@ -294,7 +294,7 @@ namespace dots::type
 				}
 				else
 				{
-					return (strip_t<decltype(args)>::PropertySet() | ...);
+					return (strip_t<decltype(args)>::Set() | ...);
 				}
 			}, typename Derived::_key_properties_t{});
 
