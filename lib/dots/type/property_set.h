@@ -69,6 +69,16 @@ public:
         return test(pos);
     }
 
+	constexpr property_set operator + (const property_set& rhs) const
+	{
+		return value() | rhs.value();
+	}
+
+	constexpr property_set operator - (const property_set &rhs) const
+	{
+		return property_set(*this & ~rhs);
+	}
+
     constexpr property_set operator|(const property_set& rhs) const
     {
         return m_bitset | rhs.m_bitset;
