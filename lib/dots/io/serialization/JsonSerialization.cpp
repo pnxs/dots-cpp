@@ -193,30 +193,29 @@ void to_json(const dots::type::StructDescriptor *td, const void *data, PrettyWri
 // ---------------- Deserialization ------------------------
 static void read_atomic_types_from_json(const type::Descriptor* td, void* data, const rapidjson::Document::ValueType& value)
 {
-    // TODO: replace with inplace construction
     switch (td->dotsType()) {
-        case type::DotsType::int8:            *(int8_t *)data = value.GetInt(); break;
-        case type::DotsType::int16:           *(int16_t *)data = value.GetInt(); break;
-        case type::DotsType::int32:           *(int32_t *)data = value.GetInt(); break;
-        case type::DotsType::int64:           *(long long *)data = value.GetInt64(); break;
-        case type::DotsType::uint8:           *(uint8_t *)data = value.GetUint(); break;
-        case type::DotsType::uint16:          *(uint16_t *) data = value.GetUint(); break;
-        case type::DotsType::uint32:          *(uint32_t *) data = value.GetUint(); break;
-        case type::DotsType::uint64:          *(unsigned long long *)data = value.GetUint64(); break;
-        case type::DotsType::boolean:         *(bool *)data = value.GetBool(); break;
-        case type::DotsType::float16:         *(float *)data = value.GetFloat(); break;
-        case type::DotsType::float32:         *(float *) data = value.GetFloat(); break;
-        case type::DotsType::float64:         *(double *) data = value.GetDouble(); break;
-        case type::DotsType::string:          *(std::string*) data = value.GetString(); break;
-        case type::DotsType::property_set:    *(dots::property_set*)data = property_set(value.GetUint()); break;
-        case type::DotsType::timepoint:       *(pnxs::TimePoint*)data = pnxs::TimePoint(value.GetDouble()); break;
-        case type::DotsType::steady_timepoint:*(pnxs::SteadyTimePoint*)data = pnxs::SteadyTimePoint(value.GetDouble()); break;
-        case type::DotsType::duration:        *(pnxs::Duration*)data = pnxs::Duration(value.GetDouble()); break;
+        case type::DotsType::int8:            ::new (data) int8_t  (value.GetInt()); break;
+        case type::DotsType::int16:           ::new (data) int16_t  (value.GetInt()); break;
+        case type::DotsType::int32:           ::new (data) int32_t  (value.GetInt()); break;
+        case type::DotsType::int64:           ::new (data) long long  (value.GetInt64()); break;
+        case type::DotsType::uint8:           ::new (data) uint8_t  (value.GetUint()); break;
+        case type::DotsType::uint16:          ::new (data) uint16_t (value.GetUint()); break;
+        case type::DotsType::uint32:          ::new (data) uint32_t (value.GetUint()); break;
+        case type::DotsType::uint64:          ::new (data) unsigned long long  (value.GetUint64()); break;
+        case type::DotsType::boolean:         ::new (data) bool  (value.GetBool()); break;
+        case type::DotsType::float16:         ::new (data) float  (value.GetFloat()); break;
+        case type::DotsType::float32:         ::new (data) float (value.GetFloat()); break;
+        case type::DotsType::float64:         ::new (data) double (value.GetDouble()); break;
+        case type::DotsType::string:          ::new (data) std::string (value.GetString()); break;
+        case type::DotsType::property_set:    ::new (data) dots::property_set (property_set(value.GetUint())); break;
+        case type::DotsType::timepoint:       ::new (data) pnxs::TimePoint (pnxs::TimePoint(value.GetDouble())); break;
+        case type::DotsType::steady_timepoint: ::new (data) pnxs::SteadyTimePoint (pnxs::SteadyTimePoint(value.GetDouble())); break;
+        case type::DotsType::duration:        ::new (data) pnxs::Duration (pnxs::Duration(value.GetDouble())); break;
         case type::DotsType::uuid:
         {
             dots::uuid uuid;
             uuid.fromString(value.GetString());
-            *(dots::uuid *) data = uuid;
+            ::new (data) dots::uuid(uuid);
         }
         break;
         case type::DotsType::Enum:
@@ -264,6 +263,7 @@ void read_from_json_array_recursive(const type::VectorDescriptor* vd, void* data
     }
     size_t arrayLength = value.Size();
     auto propertyDescriptor = vd->vtd();
+	vd->construct(data);
     vd->resize(data, arrayLength);
 
     auto item = value.Begin();
@@ -276,6 +276,7 @@ void read_from_json_array_recursive(const type::VectorDescriptor* vd, void* data
 
 void from_json_recursive(const type::StructDescriptor* sd, void* data, const rapidjson::Document::ConstObject& object)
 {
+	sd->construct(data);
     property_set& validProperties = sd->validProperties(data);
     validProperties.clear();
 
