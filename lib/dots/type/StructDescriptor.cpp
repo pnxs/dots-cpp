@@ -103,15 +103,20 @@ void StructDescriptor::swap(void *lhs, void *rhs) const
 
 void StructDescriptor::copy(void *lhs, const void *rhs, property_set properties) const
 {
-    validProperties(lhs) &= ~properties;
     properties &= validProperties(rhs);
-    validProperties(lhs) |= properties;
+	auto& p = validProperties(lhs);
 
     for (auto& pd : m_properties)
     {
         if (properties[pd.tag()])
-        {
+		{
+			if (!validProperties(lhs)[pd.tag()])
+			{
+				pd.td()->construct(pd.address(lhs));
+			}
+
             pd.copy(lhs, rhs);
+			validProperties(lhs).set(pd.tag());
         }
     }
 }
