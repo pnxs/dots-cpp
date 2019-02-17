@@ -2,6 +2,7 @@
 #include <string_view>
 #include <type_traits>
 #include "dots/io/Subscription.h"
+#include "TPropertyInitializer.h"
 #include "StructDescriptor.h"
 #include "Struct.h"
 #include "Registry.h"
@@ -25,6 +26,7 @@ namespace dots::type
 		template <typename... PropertyInitializers>
 		explicit TStruct(PropertyInitializers&&... propertyInitializers) : Struct(_Descriptor())
 		{
+			static_assert(std::conjunction_v<is_t_property_initializer_t<PropertyInitializers>...>, "a struct can only be constructed by its property initializers");
 			(strip_t<decltype(propertyInitializers)>::property_t::Get(*this).construct(std::forward<decltype(propertyInitializers)>(propertyInitializers)), ...);
 		}
 

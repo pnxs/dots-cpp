@@ -1,5 +1,6 @@
 #pragma once
 #include <utility>
+#include <type_traits>
 
 namespace dots::type
 {
@@ -12,4 +13,16 @@ namespace dots::type
 		TPropertyInitializer(Args&&... args) : value(std::forward<Args>(args)...) {}
 		value_t value;
 	};
+
+	template <typename T>
+	struct is_t_property_initializer : std::false_type {};
+
+	template <typename P>
+	struct is_t_property_initializer<TPropertyInitializer<P>> : std::true_type {};
+
+	template <typename T>
+	using is_t_property_initializer_t = typename is_t_property_initializer<T>::type;
+
+	template <typename T>
+	constexpr bool is_t_property_initializer_v = is_t_property_initializer_t<T>::value;
 }
