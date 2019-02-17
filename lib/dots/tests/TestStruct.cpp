@@ -2,6 +2,7 @@
 #include "dots/type/EnumDescriptor.h"
 #include "dots/type/Registry.h"
 #include "DotsTestStruct.dots.h"
+#include "StructDescriptorData.dots.h"
 #include <gtest/gtest.h>
 
 //using namespace rttr;
@@ -37,41 +38,41 @@ TEST(TestStruct, construct)
     //auto testStructType = type::get_by_name("dots::types::DotsTestStruct");
     //ASSERT_EQ(testStructType.is_valid(), true);
 
-    auto sd = DotsTestStruct::_dd();
+    auto sd = DotsTestStruct::_Descriptor().descriptorData();
 
-    EXPECT_EQ(sd.name(), "DotsTestStruct");
-    EXPECT_EQ(sd.properties().size(), 7u);
+    EXPECT_EQ(sd.name, "DotsTestStruct");
+    EXPECT_EQ(sd.properties->size(), 7u);
 
-    EXPECT_EQ(sd.properties().at(0).name(), "stringField");
-    EXPECT_EQ(sd.properties().at(0).type(), "string");
-    EXPECT_EQ(sd.properties().at(0).tag(), 1u);
-    EXPECT_EQ(sd.properties().at(0).isKey(), false);
+    EXPECT_EQ(sd.properties->at(0).name, "stringField");
+    EXPECT_EQ(sd.properties->at(0).type, "string");
+    EXPECT_EQ(sd.properties->at(0).tag, 1u);
+    EXPECT_EQ(sd.properties->at(0).isKey, false);
 
-    EXPECT_EQ(sd.properties().at(1).name(), "indKeyfField");
-    EXPECT_EQ(sd.properties().at(1).type(), "int32");
-    EXPECT_EQ(sd.properties().at(1).tag(), 2u);
-    EXPECT_EQ(sd.properties().at(1).isKey(), true);
+    EXPECT_EQ(sd.properties->at(1).name, "indKeyfField");
+    EXPECT_EQ(sd.properties->at(1).type, "int32");
+    EXPECT_EQ(sd.properties->at(1).tag, 2u);
+    EXPECT_EQ(sd.properties->at(1).isKey, true);
 
-    EXPECT_EQ(sd.properties().at(2).name(), "floatField");
-    EXPECT_EQ(sd.properties().at(2).type(), "float32");
-    EXPECT_EQ(sd.properties().at(2).tag(), 3u);
+    EXPECT_EQ(sd.properties->at(2).name, "floatField");
+    EXPECT_EQ(sd.properties->at(2).type, "float32");
+    EXPECT_EQ(sd.properties->at(2).tag, 3u);
 
-    EXPECT_EQ(sd.properties().at(3).name(), "enumField");
-    EXPECT_EQ(sd.properties().at(3).type(), "DotsTestEnum");
-    EXPECT_EQ(sd.properties().at(3).tag(), 4u);
+    EXPECT_EQ(sd.properties->at(3).name, "enumField");
+    EXPECT_EQ(sd.properties->at(3).type, "DotsTestEnum");
+    EXPECT_EQ(sd.properties->at(3).tag, 4u);
 
     auto newStruct = StructDescriptor::createFromStructDescriptorData(sd);
     EXPECT_TRUE(newStruct != nullptr);
 
     DotsTestStruct ts;
-    ts.setStringField("Hello World");
-    ts.setIndKeyfField(42);
-    ts.setFloatField(3.141);
-    ts.setEnumField(DotsTestEnum::value4);
-    ts.setTp(pnxs::SystemNow());
+    ts.stringField("Hello World");
+    ts.indKeyfField(42);
+    ts.floatField(3.141);
+    ts.enumField(DotsTestEnum::value4);
+    ts.tp(pnxs::SystemNow());
 
-    auto& subStruct = ts.refSubStruct();
-    subStruct.setFlag1(true);
+    auto& subStruct = ts.subStruct();
+    subStruct.flag1(true);
 
     auto structInstance = newStruct->New();
 

@@ -27,11 +27,11 @@ TEST(TestEnumDescriptor, construct)
 
     auto ed = Registry::toEnumDescriptorData(t);
 
-    EXPECT_TRUE(ed.hasName());
-    EXPECT_TRUE(ed.hasElements());
+    EXPECT_TRUE(ed.name.isValid());
+    EXPECT_TRUE(ed.elements.isValid());
 
     ASSERT_FALSE(type::get_by_name("DotsTestEnumA").is_valid());
-    ed.setName("DotsTestEnumA");
+    ed.name = "DotsTestEnumA";
 
     auto newEnum = EnumDescriptor::createFromEnumDescriptorData(ed);
     EXPECT_TRUE(newEnum != nullptr);
@@ -78,7 +78,7 @@ TEST(TestEnumDescriptor, construct)
     auto edA = Registry::toEnumDescriptorData(nt);
 
     EXPECT_EQ(edA.name(), "DotsTestEnumA");
-    ASSERT_TRUE(edA.hasElements());
+    ASSERT_TRUE(edA.elements.isValid());
     ASSERT_EQ(edA.elements().size(), 5);
 
     EXPECT_EQ(edA.elements().at(0).name(), "value1");

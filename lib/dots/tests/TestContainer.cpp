@@ -28,14 +28,14 @@ TEST(TestContainer, storeAndRemove)
     auto& container = dots::rC<DotsTestStruct>();
     ASSERT_EQ(container.size(), 0u);
 
-    dts.setIndKeyfField(1);
+    dts.indKeyfField(1);
 
     DotsHeader dh;
-    dh.setTypeName(dts._td()->name());
-    dh.setRemoveObj(false);
-    dh.setSender(0);
-    dh.setSentTime(pnxs::SystemNow());
-    dh.setAttributes(dts.validProperties());
+    dh.typeName(dts._Descriptor().name());
+    dh.removeObj(false);
+    dh.sender(0);
+    dh.sentTime(pnxs::SystemNow());
+    dh.attributes(dts._validPropertySet());
 
     // Process a DotsTestStruct 'create' in container
     container.process(dh, dts, sig);
@@ -43,14 +43,14 @@ TEST(TestContainer, storeAndRemove)
     ASSERT_EQ(container.size(), 1u);
 
     // Modify Key property, so that it will be another instance
-    dts.setIndKeyfField(2);
+    dts.indKeyfField = 2;
 
     container.process(dh, dts, sig);
 
     EXPECT_EQ(container.size(), 2u);
 
-    dts.setIndKeyfField(2); // Set field again, because the container moves the values into it.
-    dh.setRemoveObj(true);
+    dts.indKeyfField = 2; // Set field again, because the container moves the values into it.
+    dh.removeObj = true;
 
     // Remove DotsTestStruct with Key==2 from container
     container.process(dh, dts, sig);
@@ -84,16 +84,16 @@ TEST(TestContainer, storeUpdateAndRemoveSignal)
         DotsTestStruct dts;
 
         // Add 1st element
-        dts.setIndKeyfField(1);
-        dts.setStringField("Hello");
+        dts.indKeyfField(1);
+        dts.stringField("Hello");
 
         // Fill DotsHeader data
         DotsHeader dh;
-        dh.setTypeName(dts._td()->name());
-        dh.setRemoveObj(false);
-        dh.setSender(0);
-        dh.setSentTime(t1);
-        dh.setAttributes(dts.validProperties());
+        dh.typeName(dts._Descriptor().name());
+        dh.removeObj(false);
+        dh.sender(0);
+        dh.sentTime(t1);
+        dh.attributes(dts._validPropertySet());
 
         // Expect call of signal-handler with:
         // data is heap pointer
@@ -113,8 +113,8 @@ TEST(TestContainer, storeUpdateAndRemoveSignal)
 
             EXPECT_EQ(cbd.mt, dots::Mt::create);
 
-            ASSERT_TRUE(testStruct.hasStringField());
-            EXPECT_EQ(testStruct.stringField(), "Hello");
+            ASSERT_TRUE(testStruct.stringField.isValid());
+            EXPECT_EQ(testStruct.stringField, "Hello");
         };
         container.process(dh, dts, sig);
         ASSERT_EQ(container.size(), 1u);
@@ -127,16 +127,16 @@ TEST(TestContainer, storeUpdateAndRemoveSignal)
         DotsTestStruct dts;
 
         // Add 2nd
-        dts.setIndKeyfField(2);
-        dts.setStringField("World");
+        dts.indKeyfField(2);
+        dts.stringField("World");
 
         // Fill DotsHeader data
         DotsHeader dh;
-        dh.setTypeName(dts._td()->name());
-        dh.setRemoveObj(false);
-        dh.setSender(1);
-        dh.setSentTime(t2);
-        dh.setAttributes(dts.validProperties());
+        dh.typeName(dts._Descriptor().name());
+        dh.removeObj(false);
+        dh.sender(1);
+        dh.sentTime(t2);
+        dh.attributes(dts._validPropertySet());
 
         expectCheck = [&](const DotsTestStruct::Cbd& cbd)
         {
@@ -160,15 +160,16 @@ TEST(TestContainer, storeUpdateAndRemoveSignal)
         DotsTestStruct dts;
 
         // Remove
-        DotsTestStruct removeObj(2);
+        DotsTestStruct removeObj;
+        removeObj.indKeyfField = 2;
 
         // Fill DotsHeader data
         DotsHeader dh;
-        dh.setTypeName(dts._td()->name());
-        dh.setRemoveObj(true);
-        dh.setSender(1);
-        dh.setSentTime(t2);
-        dh.setAttributes(dts.validProperties());
+        dh.typeName(dts._Descriptor().name());
+        dh.removeObj(true);
+        dh.sender(1);
+        dh.sentTime(t2);
+        dh.attributes(dts._validPropertySet());
 
         expectCheck = [&](const DotsTestStruct::Cbd& cbd)
         {
@@ -184,8 +185,8 @@ TEST(TestContainer, storeUpdateAndRemoveSignal)
             EXPECT_EQ(cbd.mt, dots::Mt::remove);
 
             auto& testStruct = cbd();
-            ASSERT_TRUE(testStruct.hasStringField());
-            EXPECT_EQ(testStruct.stringField(), "World");
+            ASSERT_TRUE(testStruct.stringField.isValid());
+            EXPECT_EQ(testStruct.stringField, "World");
         };
         container.process(dh, removeObj, sig);
         EXPECT_EQ(container.size(), 1u);
@@ -198,16 +199,16 @@ TEST(TestContainer, storeUpdateAndRemoveSignal)
         DotsTestStruct dts;
 
         // Update 1st
-        dts.setIndKeyfField(1);
-        dts.setFloatField(3);
+        dts.indKeyfField(1);
+        dts.floatField(3.0f);
 
         // Fill DotsHeader data
         DotsHeader dh;
-        dh.setTypeName(dts._td()->name());
-        dh.setRemoveObj(false);
-        dh.setSender(2);
-        dh.setSentTime(t3);
-        dh.setAttributes(dts.validProperties());
+        dh.typeName(dts._Descriptor().name());
+        dh.removeObj(false);
+        dh.sender(2);
+        dh.sentTime(t3);
+        dh.attributes(dts._validPropertySet());
 
         expectCheck = [&](const DotsTestStruct::Cbd& cbd)
         {
@@ -223,10 +224,10 @@ TEST(TestContainer, storeUpdateAndRemoveSignal)
             EXPECT_EQ(cbd.mt, dots::Mt::update);
 
             auto& testStruct = cbd();
-            ASSERT_TRUE(testStruct.hasStringField());
-            EXPECT_EQ(testStruct.stringField(), "Hello");
-            ASSERT_TRUE(testStruct.hasFloatField());
-            EXPECT_EQ(testStruct.floatField(), 3);
+            ASSERT_TRUE(testStruct.stringField.isValid());
+            EXPECT_EQ(testStruct.stringField, "Hello");
+            ASSERT_TRUE(testStruct.floatField.isValid());
+            EXPECT_EQ(testStruct.floatField, 3.0f);
         };
         container.process(dh, dts, sig);
         EXPECT_EQ(container.size(), 1u);
