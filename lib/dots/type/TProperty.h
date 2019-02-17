@@ -5,6 +5,7 @@
 #include "Registry.h"
 #include "Struct.h"
 #include "StructDescriptor.h"
+#include "TPropertyInitializer.h"
 
 namespace dots::type
 {
@@ -21,14 +22,7 @@ namespace dots::type
 
 		using value_t = T;
 		using struct_t = DerivedStruct;
-
-		struct init_t
-		{
-			using property_t = TProperty;
-			template <typename... Args>
-			init_t(Args&&... args) : value(std::forward<Args>(args)...) {}
-			T value;
-		};		
+		using init_t = TPropertyInitializer<TProperty>;
 
 		template <typename U, std::enable_if_t<!std::disjunction_v<std::is_same<std::remove_reference_t<U>, TProperty>, std::is_same<std::remove_reference_t<U>, Derived>>, int> = 0>
 		Derived& operator = (U&& rhs)
