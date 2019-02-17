@@ -9,8 +9,16 @@ namespace dots::type
 	{
 		using property_t = P;
 		using value_t = typename P::value_t;
+
 		template <typename... Args>
 		TPropertyInitializer(Args&&... args) : value(std::forward<Args>(args)...) {}
+		TPropertyInitializer(const TPropertyInitializer& other) = default;
+		TPropertyInitializer(TPropertyInitializer&& other) = default;
+		~TPropertyInitializer() = default;
+
+		TPropertyInitializer& operator = (const TPropertyInitializer& rhs) = default;
+		TPropertyInitializer& operator = (TPropertyInitializer&& rhs) = default;
+
 		value_t value;
 	};
 
