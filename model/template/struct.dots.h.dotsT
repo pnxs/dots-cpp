@@ -3,7 +3,6 @@
 
 #include <dots/dots_base.h>
 #include <dots/type/TStruct.h>
-#include <dots/type/TProperty.h>
 {% for imp in imports %}
 #include "{{imp}}.dots.h"
 {% endfor %}

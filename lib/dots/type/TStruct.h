@@ -2,6 +2,7 @@
 #include <string_view>
 #include <type_traits>
 #include "dots/io/Subscription.h"
+#include "TProperty.h"
 #include "TPropertyInitializer.h"
 #include "StructDescriptor.h"
 #include "Struct.h"
@@ -15,9 +16,6 @@ namespace dots
 
 namespace dots::type
 {
-	template <typename, typename, typename, typename>
-	struct TProperty;
-
     template <typename Derived>
     struct TStruct : Struct
     {
