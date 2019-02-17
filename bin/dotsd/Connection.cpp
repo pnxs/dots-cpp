@@ -320,7 +320,7 @@ void Connection::setConnectionState(const DotsConnectionState& state)
     LOG_DEBUG_S("change connection state to " << state);
     m_connectionState = state;
 
-	DotsClient{ DotsClient::id_t::init_t{ id() }, DotsClient::connectionState_t::init_t{ state } }._publish();
+	DotsClient{ DotsClient::id_t_i{ id() }, DotsClient::connectionState_t_i{ state } }._publish();
 }
 
 void Connection::send(const Message &msg)

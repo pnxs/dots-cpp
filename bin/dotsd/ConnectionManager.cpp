@@ -292,7 +292,7 @@ void ConnectionManager::cleanup()
     }
 
     for (auto& id : clientsToRemove) {
-		DotsClient client(DotsClient::id_t::init_t{ id });
+		DotsClient client(DotsClient::id_t_i{ id });
         client._remove();
     }
 }
@@ -483,7 +483,7 @@ Connection::ConnectionId ConnectionManager::getUniqueClientId()
 void ConnectionManager::addClient(Connection* connection)
 {
     // Send DotsClient when Client is added to network.
-    DotsClient client(DotsClient::id_t::init_t{ connection->id() });
+    DotsClient client(DotsClient::id_t_i{ connection->id() });
     client.name(connection->clientName());
     client.connectionState(connection->state());
     client._publish();
@@ -500,7 +500,7 @@ string ConnectionManager::clientId2Name(ClientId id) const
     auto containerPtr = m_containerPool.getConstContainer("DotsClient");
     if (containerPtr)
     {
-		DotsClient searchKey(DotsClient::id_t::init_t{ id });
+		DotsClient searchKey(DotsClient::id_t_i{ id });
 
         auto iter = containerPtr->find({&searchKey, pnxs::TimePoint()});
         if (iter != containerPtr->end())

@@ -52,7 +52,7 @@ Application::Application(const string& name, int& argc, char*argv[])
     }
     LOG_DEBUG_S("run one done");
 
-	DotsClient{ DotsClient::id_t::init_t{ transceiver().connection().clientId() }, DotsClient::running_t::init_t{ true } }._publish();
+	DotsClient{ DotsClient::id_t_i{ transceiver().connection().clientId() }, DotsClient::running_t_i{ true } }._publish();
 }
 
 Application::~Application()

@@ -30,7 +30,7 @@ DistributedTypeId::TypeId DistributedTypeId::createTypeId(const type::Descriptor
 {
     registerTypeId(m_nextTypeId, td);
 
-	DotsTypes dotsType(DotsTypes::id_t::init_t{ m_nextTypeId });
+	DotsTypes dotsType(DotsTypes::id_t_i{ m_nextTypeId });
     dotsType.name(td->name());
     dotsType._publish();
 
