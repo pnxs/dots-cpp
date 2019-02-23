@@ -15,9 +15,9 @@ namespace dots::type
 	template <typename>
 	struct TStruct;
 
-    template <typename T, typename Derived, typename Previous, typename DerivedStruct>
-    struct TProperty
-    {
+	template <typename T, typename Derived, typename Previous, typename DerivedStruct>
+	struct TProperty
+	{
 		static_assert(std::conjunction_v<std::negation<std::is_pointer<T>>, std::negation<std::is_reference<T>>>);
 
 		using value_t = T;
@@ -37,7 +37,7 @@ namespace dots::type
 			return construct(std::forward<Args>(args)...);
 		}
 
-		T& operator () (init_t&& init) 
+		T& operator () (init_t&& init)
 		{
 			return (*this)(std::move(init.value));
 		}
@@ -106,7 +106,7 @@ namespace dots::type
 		{
 			return validPropertySet().test(Tag());
 		}
-		
+
 		T& value()
 		{
 			if (!isValid())
@@ -135,7 +135,7 @@ namespace dots::type
 				throw std::runtime_error{ std::string{ "attempt to construct already valid property: " } + DerivedStruct::Description.name.data() + "." + Name().data() };
 			}
 
-			::new (static_cast<void *>(::std::addressof(_value))) T(std::forward<Args>(args)...);
+			::new (static_cast<void *>(::std::addressof(valueUnchecked()))) T(std::forward<Args>(args)...);
 			validPropertySet().set(Tag(), true);
 
 			return valueUnchecked();
@@ -220,21 +220,21 @@ namespace dots::type
 		}
 
 		void publish() const
-        {
-	        if (!isValid())
-	        {
+		{
+			if (!isValid())
+			{
 				throw std::runtime_error{ std::string{ "attempt to publish invalid property: " } + DerivedStruct::Description.name.data() + "." + Name().data() };
-	        }
+			}
 
 			instance()._publish(Set());
-        }
+		}
 
 		template <typename... Args>
 		static void Publish(Args&&... args)
-        {
+		{
 			DerivedStruct derivedStruct{ init_t{ std::forward<Args>(args)... } };
 			Get(derivedStruct).publish();
-        }
+		}
 
 		static const type::Descriptor& Descriptor()
 		{
@@ -247,46 +247,49 @@ namespace dots::type
 		}
 
 		static constexpr property_set Set()
-        {
+		{
 			property_set propertySet;
 			propertySet.set(Tag());
 
 			return propertySet;
-        }
+		}
 
 		static constexpr bool IsPartOf(const property_set& propertySet)
 		{
 			return propertySet.test(Tag());
 		}
 
-        static constexpr std::string_view Name()
-        {
-            return Derived::Description.name;
-        }
+		static constexpr std::string_view Name()
+		{
+			return Derived::Description.name;
+		}
 
 		static constexpr std::string_view Type()
 		{
 			return Derived::Description.type;
 		}
 
-        static constexpr size_t Offset()
-        {
-            return Derived::Description.offset;
-        }
+		static constexpr size_t Offset()
+		{
+			return Derived::Description.offset;
+		}
 
-        static constexpr uint32_t Tag()
-        {
-            return Derived::Description.tag;
-        }
+		static constexpr uint32_t Tag()
+		{
+			return Derived::Description.tag;
+		}
 
-        static constexpr bool IsKey()
-        {
-            return Derived::Description.isKey;
-        }
+		static constexpr bool IsKey()
+		{
+			return Derived::Description.isKey;
+		}
 
-    protected:
+	protected:
 
-		TProperty() = default;
+		TProperty()
+		{
+			/* do nothing */
+		}
 
 		TProperty(const TProperty& other)
 		{
@@ -350,10 +353,10 @@ namespace dots::type
 			return Struct::PropertyDescription{ CalculateOffset(), tag, isKey, name, type };
 		}
 
-    private:
+	private:
 
 		template <typename>
-		friend struct TStruct;	
+		friend struct TStruct;
 
 		property_set& validPropertySet()
 		{
@@ -377,7 +380,8 @@ namespace dots::type
 
 		T& valueUnchecked()
 		{
-			return reinterpret_cast<T&>(*::std::addressof(_value));
+			// deliberately use storage instead of value for ISO C++ conformance
+			return reinterpret_cast<T&>(*::std::addressof(_storage));
 		}
 
 		const T& valueUnchecked() const
@@ -421,8 +425,12 @@ namespace dots::type
 			return alignedOffset;
 		}
 
-		std::aligned_storage_t<sizeof(T), alignof(T)> _value;
-    };
+		union
+		{
+			std::aligned_storage_t<sizeof(T), alignof(T)> _storage;
+			T _value;
+		};
+	};
 
 	template <typename T, typename Derived, typename Previous, typename DerivedStruct>
 	std::ostream& operator << (std::ostream& os, const TProperty<T, Derived, Previous, DerivedStruct>& property)
