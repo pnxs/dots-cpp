@@ -132,6 +132,18 @@ TEST(TestStruct, construct)
 	EXPECT_EQ(uuidCnt, 1);
 }
 
+TEST(TestStruct, size_descriptor)
+{
+	DotsTestStruct dts;
+	EXPECT_EQ(dts._descriptor().sizeOf(), sizeof(dts));
+}
+
+TEST(TestStruct, alignment_descriptor)
+{
+	DotsTestStruct dts;
+	EXPECT_EQ(dts._descriptor().alignOf(), alignof(dts));
+}
+
 TEST(TestStruct, offsets_static)
 {
 	DotsTestStruct dts;
