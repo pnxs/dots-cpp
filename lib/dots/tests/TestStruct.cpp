@@ -146,6 +146,20 @@ TEST(TestStruct, offsets_static)
 	EXPECT_EQ(DotsTestStruct::uuid_t::Offset(), determine_offset(dts.uuid));
 }
 
+TEST(TestStruct, offsets_descriptor)
+{
+	DotsTestStruct dts;
+
+	auto determine_offset = [&](const auto& property) { return reinterpret_cast<size_t>(&property) - reinterpret_cast<size_t>(&dts); };
+	EXPECT_EQ(dts._descriptor().properties()[0].offset(), determine_offset(dts.stringField));
+	EXPECT_EQ(dts._descriptor().properties()[1].offset(), determine_offset(dts.indKeyfField));
+	EXPECT_EQ(dts._descriptor().properties()[2].offset(), determine_offset(dts.floatField));
+	EXPECT_EQ(dts._descriptor().properties()[3].offset(), determine_offset(dts.enumField));
+	EXPECT_EQ(dts._descriptor().properties()[4].offset(), determine_offset(dts.tp));
+	EXPECT_EQ(dts._descriptor().properties()[5].offset(), determine_offset(dts.subStruct));
+	EXPECT_EQ(dts._descriptor().properties()[6].offset(), determine_offset(dts.uuid));
+}
+
 TEST(TestStruct, flags)
 {
 	EXPECT_TRUE(DotsTestStruct::_IsCached());
