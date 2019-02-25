@@ -1,6 +1,7 @@
 #pragma once
 #include <string_view>
 #include <array>
+#include "StructProperty.h"
 #include "property_set.h"
 
 namespace dots::types
@@ -34,16 +35,7 @@ namespace dots::type
 		void _publish(const property_set& what = PROPERTY_SET_ALL, bool remove = false) const;
 		void _remove(const property_set& what = PROPERTY_SET_ALL) const;
 
-    protected:		
-
-		struct PropertyDescription
-		{
-			size_t offset;
-			uint32_t tag;
-			bool isKey;
-			std::string_view name;
-			std::string_view type;
-		};
+    protected:
 
 		static constexpr uint8_t Uncached      = 0b0000'0000;
 		static constexpr uint8_t Cached        = 0b0000'0001;
@@ -55,9 +47,12 @@ namespace dots::type
 
 		struct StructDescription
 		{
+			constexpr StructDescription(const std::string_view& name, uint8_t flags, const std::array<StructProperty, 32>& propertyDescriptions, size_t numProperties) :
+				name(name), flags(flags), propertyDescriptions(propertyDescriptions), numProperties(numProperties) {}
+
 			std::string_view name;
 			uint8_t flags;
-			std::array<PropertyDescription, 32> propertyDescriptions;
+			std::array<StructProperty, 32> propertyDescriptions;
 			size_t numProperties;
 		};
 

@@ -5,6 +5,7 @@
 #include "Registry.h"
 #include "Struct.h"
 #include "StructDescriptor.h"
+#include "StructProperty.h"
 #include "TPropertyInitializer.h"
 
 namespace dots::type
@@ -259,29 +260,29 @@ namespace dots::type
 			return propertySet.test(Tag());
 		}
 
-		static constexpr std::string_view Name()
+		static constexpr const std::string_view& Name()
 		{
-			return Derived::Description.name;
+			return Derived::Description.name();
 		}
 
-		static constexpr std::string_view Type()
+		static constexpr const std::string_view& Type()
 		{
-			return Derived::Description.type;
+			return Derived::Description.type();
 		}
 
 		static constexpr size_t Offset()
 		{
-			return Derived::Description.offset;
+			return Derived::Description.offset();
 		}
 
 		static constexpr uint32_t Tag()
 		{
-			return Derived::Description.tag;
+			return Derived::Description.tag();
 		}
 
 		static constexpr bool IsKey()
 		{
-			return Derived::Description.isKey;
+			return Derived::Description.isKey();
 		}
 
 	protected:
@@ -348,9 +349,9 @@ namespace dots::type
 			return *this;
 		}
 
-		static constexpr Struct::PropertyDescription MakePropertyDescription(uint32_t tag, const std::string_view& type, const std::string_view& name, bool isKey)
+		static constexpr StructProperty MakePropertyDescription(uint32_t tag, const std::string_view& type, const std::string_view& name, bool isKey)
 		{
-			return Struct::PropertyDescription{ CalculateOffset(), tag, isKey, name, type };
+			return StructProperty{ CalculateOffset(), tag, isKey, name, type };
 		}
 
 	private:
