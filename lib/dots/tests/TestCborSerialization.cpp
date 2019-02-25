@@ -416,7 +416,7 @@ TEST(TestCborSerialization, deserializeCustomType)
 
     for (auto& property : descriptor->properties())
     {
-        auto iter = expectProperties.find(property.name());
+        auto iter = expectProperties.find(property.name().data());
         if (iter != expectProperties.end()) expectProperties.erase(iter);
         else FAIL() << "unexpected property " << property.name();
 

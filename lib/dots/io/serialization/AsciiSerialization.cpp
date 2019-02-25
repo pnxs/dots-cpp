@@ -391,7 +391,7 @@ static void to_ascii_recursive(const dots::type::StructDescriptor *td, const voi
 
         //std::cout << "cbor write property '" << prop.name() << "' tag: " << tag << ":\n";
 
-        const auto name = prop.name();
+        const std::string name = prop.name().data();
 
         if (highlight.test(tag)) {
             writer.BeginHighlight();
