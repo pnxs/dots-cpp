@@ -1,0 +1,15 @@
+
+image: pnxs/dots_devenv:18.10
+
+variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+
+stages:
+    - build
+
+ubuntu:
+    stage: build
+    script:
+        - cmake -Bbuild -H. -DBUILD_XDOTS=OFF
+        - make -Cbuild -j4
+
