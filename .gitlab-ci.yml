@@ -13,3 +13,9 @@ ubuntu:
         - cmake -Bbuild -H. -DBUILD_XDOTS=OFF
         - make -Cbuild -j4
 
+run_unittests:
+    stage: test
+    script:
+        - ./build/bin/dotsd/tests/dotsd-unittests
+        - ./build/lib/dots/tests/dots-unittests
+
