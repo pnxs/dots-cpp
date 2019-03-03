@@ -1,6 +1,8 @@
 #pragma once
+#include <string_view>
 #include <functional>
 #include <type_traits>
+#include <iostream>
 #include "StructProperty.h"
 #include "Struct.h"
 #include "property_set.h"
@@ -332,4 +334,19 @@ namespace dots::type
 			return const_cast<Property&>(*this).derived();
 		}
     };
+
+	template <typename T, typename Derived>
+	std::ostream& operator << (std::ostream& os, const Property<T, Derived>& property)
+	{
+		if (property.isValid())
+		{
+			os << *property;
+		}
+		else
+		{
+			os << "<invalid-property>";
+		}
+
+		return os;
+	}
 }

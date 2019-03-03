@@ -1,7 +1,5 @@
 #pragma once
-#include <string_view>
 #include <type_traits>
-#include <iostream>
 #include "Registry.h"
 #include "Property.h"
 #include "TPropertyInitializer.h"
@@ -220,19 +218,4 @@ namespace dots::type
 			T _value;
 		};
 	};
-
-	template <typename T, typename Derived, typename Previous, typename DerivedStruct>
-	std::ostream& operator << (std::ostream& os, const TProperty<T, Derived, Previous, DerivedStruct>& property)
-	{
-		if (property.isValid())
-		{
-			os << *property;
-		}
-		else
-		{
-			os << "<invalid-property>";
-		}
-
-		return os;
-	}
 }
