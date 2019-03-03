@@ -3,231 +3,39 @@
 #include <type_traits>
 #include <iostream>
 #include "Registry.h"
-#include "Struct.h"
-#include "StructDescriptor.h"
-#include "StructProperty.h"
+#include "Property.h"
 #include "TPropertyInitializer.h"
 
 namespace dots::type
 {
 	class Descriptor;
-	class StructProperty;
 
 	template <typename>
 	struct TStruct;
 
 	template <typename T, typename Derived, typename Previous, typename DerivedStruct>
-	struct TProperty
+	struct TProperty : Property<T, Derived>
 	{
-		static_assert(std::conjunction_v<std::negation<std::is_pointer<T>>, std::negation<std::is_reference<T>>>);
-
-		using value_t = T;
 		using struct_t = DerivedStruct;
 		using init_t = TPropertyInitializer<TProperty>;
 
 		template <typename U, std::enable_if_t<!std::disjunction_v<std::is_same<std::remove_reference_t<U>, TProperty>, std::is_same<std::remove_reference_t<U>, Derived>>, int> = 0>
 		Derived& operator = (U&& rhs)
 		{
-			constructOrAssign(std::forward<U>(rhs));
+			Property<T, Derived>::constructOrAssign(std::forward<U>(rhs));
 			return static_cast<Derived&>(*this);
 		}
 
-		template <typename... Args>
-		T& operator () (Args&&... args)
-		{
-			return construct(std::forward<Args>(args)...);
-		}
+		using Property<T, Derived>::operator();
 
 		T& operator () (init_t&& init)
 		{
 			return (*this)(std::move(init.value));
 		}
 
-		T& operator * ()
-		{
-			return value();
-		}
-
-		const T& operator * () const
-		{
-			return value();
-		}
-
-		T* operator -> ()
-		{
-			return &value();
-		}
-
-		const T* operator -> () const
-		{
-			return &value();
-		}
-
-		operator T& ()
-		{
-			return value();
-		}
-
-		operator const T& () const
-		{
-			return value();
-		}
-
-		bool operator == (const T& rhs) const
-		{
-			return isValid() && valueUnchecked() == rhs;
-		}
-
-		bool operator != (const T& rhs) const
-		{
-			return !(*this == rhs);
-		}
-
-		bool operator < (const T& rhs) const
-		{
-			return isValid() && valueUnchecked() < rhs;
-		}
-
-		bool operator == (const Derived& rhs) const
-		{
-			return isValid() && rhs.isValid() && valueUnchecked() == rhs.valueUnchecked();
-		}
-
-		bool operator != (const Derived& rhs) const
-		{
-			return !(*this == rhs);
-		}
-
-		bool operator < (const Derived& rhs) const
-		{
-			return !rhs.isValid() || isValid() && valueUnchecked() < rhs.valueUnchecked();
-		}
-
-		bool isValid() const
-		{
-			return validPropertySet().test(Tag());
-		}
-
-		T& value()
-		{
-			if (!isValid())
-			{
-				throw std::runtime_error{ std::string{ "attempt to access invalid property: " } +DerivedStruct::Description.name.data() + "." + Name().data() };
-			}
-
-			return valueUnchecked();
-		}
-
-		const T& value() const
-		{
-			return const_cast<TProperty&>(*this).value();
-		}
-
-		template <typename... Args>
-		T& construct(Args&&... args)
-		{
-			if constexpr (sizeof...(Args) == 0)
-			{
-				static_assert(std::is_default_constructible_v<T>);
-			}
-
-			if (isValid())
-			{
-				throw std::runtime_error{ std::string{ "attempt to construct already valid property: " } + DerivedStruct::Description.name.data() + "." + Name().data() };
-			}
-
-			::new (static_cast<void *>(::std::addressof(valueUnchecked()))) T(std::forward<Args>(args)...);
-			validPropertySet().set(Tag(), true);
-
-			return valueUnchecked();
-		}
-
 		T& construct(init_t&& init)
 		{
-			return construct(std::move(init.value));
-		}
-
-		template <typename... Args>
-		T& assign(Args&&... args)
-		{
-			valueUnchecked() = T(std::forward<Args>(args)...);
-			validPropertySet().set(Tag(), true);
-
-			return valueUnchecked();
-		}
-
-		template <typename... Args>
-		T& constructOrValue(Args&&... args)
-		{
-			if (isValid())
-			{
-				return valueUnchecked();
-			}
-			else
-			{
-				return construct(std::forward<Args>(args)...);
-			}
-		}
-
-		template <typename... Args>
-		T& constructOrAssign(Args&&... args)
-		{
-			if (isValid())
-			{
-				return assign(std::forward<Args>(args)...);
-			}
-			else
-			{
-				return construct(std::forward<Args>(args)...);
-			}
-		}
-
-		void swap(Derived& other)
-		{
-			if (isValid())
-			{
-				if (other.isValid())
-				{
-					std::swap(valueUnchecked(), other.valueUnchecked());
-				}
-				else
-				{
-					other.construct(extractUnchecked());
-				}
-			}
-			else if (other.isValid())
-			{
-				construct(other.extractUnchecked());
-			}
-		}
-
-		T&& extract()
-		{
-			if (!isValid())
-			{
-				throw std::runtime_error{ std::string{ "attempt to extract invalid property: " } + DerivedStruct::Description.name.data() + "." + Name().data() };
-			}
-
-			return extractUnchecked();
-		}
-
-		void destroy()
-		{
-			if (isValid())
-			{
-				valueUnchecked().~T();
-				validPropertySet().set(Tag(), false);
-			}
-		}
-
-		void publish() const
-		{
-			if (!isValid())
-			{
-				throw std::runtime_error{ std::string{ "attempt to publish invalid property: " } + DerivedStruct::Description.name.data() + "." + Name().data() };
-			}
-
-			instance()._publish(Set());
+			return Property<T, Derived>::construct(std::move(init.value));
 		}
 
 		template <typename... Args>
@@ -304,25 +112,25 @@ namespace dots::type
 
 		~TProperty()
 		{
-			destroy();
+			Property<T, Derived>::destroy();
 		}
 
 		TProperty& operator = (const TProperty& rhs)
 		{
-			if (isValid())
+			if (Property<T, Derived>::isValid())
 			{
 				if (rhs.isValid())
 				{
-					valueUnchecked() = rhs.valueUnchecked();
+					_value = rhs._value;
 				}
 				else
 				{
-					destroy();
+					Property<T, Derived>::destroy();
 				}
 			}
 			else if (rhs.isValid())
 			{
-				construct(rhs.valueUnchecked());
+				construct(rhs._value);
 			}
 
 			return *this;
@@ -330,15 +138,15 @@ namespace dots::type
 
 		TProperty& operator = (TProperty&& rhs)
 		{
-			if (isValid())
+			if (Property<T, Derived>::isValid())
 			{
 				if (rhs.isValid())
 				{
-					valueUnchecked() = rhs.extractUnchecked();
+					_value = rhs.extractUnchecked();
 				}
 				else
 				{
-					destroy();
+					Property<T, Derived>::destroy();
 				}
 			}
 			else if (rhs.isValid())
@@ -359,41 +167,21 @@ namespace dots::type
 		template <typename>
 		friend struct TStruct;
 
-		property_set& validPropertySet()
+		friend struct Property<T, Derived>;
+
+		T* valueAddress()
 		{
-			return const_cast<property_set&>(instance()._validPropertySet());
+			return &_value;
 		}
 
-		const property_set& validPropertySet() const
+		const T* valueAddress() const
 		{
-			return const_cast<TProperty&>(*this).validPropertySet();
+			return const_cast<TProperty&>(*this).valueAddress();
 		}
 
-		Struct& instance()
+		static constexpr const StructProperty* descriptorAddress()
 		{
-			return *reinterpret_cast<Struct*>(reinterpret_cast<char*>(this) - Offset());
-		}
-
-		const Struct& instance() const
-		{
-			return const_cast<TProperty&>(*this).instance();
-		}
-
-		T& valueUnchecked()
-		{
-			// deliberately use storage instead of value for ISO C++ conformance
-			return reinterpret_cast<T&>(*::std::addressof(_storage));
-		}
-
-		const T& valueUnchecked() const
-		{
-			return const_cast<TProperty&>(*this).valueUnchecked();
-		}
-
-		T&& extractUnchecked()
-		{
-			validPropertySet().set(Tag(), false);
-			return std::move(valueUnchecked());
+			return &Derived::Description;
 		}
 
 		static Derived& Get(Struct& instance)
@@ -420,7 +208,7 @@ namespace dots::type
 				}
 			}();
 
-			constexpr size_t alignment = alignof(value_t);
+			constexpr size_t alignment = alignof(T);
 			constexpr size_t alignedOffset = currentOffset + (alignment - currentOffset % alignment) % alignment;
 
 			return alignedOffset;
