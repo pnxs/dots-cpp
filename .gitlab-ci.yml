@@ -32,6 +32,8 @@ run_unittests:
     script:
         - pwd
         - find
-        - ./build/bin/dotsd/tests/dotsd-unittests
-        - ./build/lib/dots/tests/dots-unittests
+        - ./build/lib/dots/tests/dots-unittests --gtest_output="xml:report.xml"
+    artifacts:
+        reports:
+            junit: report.xml
 
