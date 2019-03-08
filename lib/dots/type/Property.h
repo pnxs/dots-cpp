@@ -68,7 +68,7 @@ namespace dots::type
 
 		bool operator == (const Property& rhs) const
 		{
-			return isValid() && rhs.isValid() && valueUnchecked() == rhs.valueUnchecked();
+			return rhs.isValid() && *this == *rhs;
 		}
 
 		bool operator != (const Property& rhs) const
