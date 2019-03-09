@@ -53,7 +53,7 @@ namespace dots::type
 
 		bool operator == (const T& rhs) const
 		{
-			return isValid() && valueEqual(rhs);
+			return equal(rhs);
 		}
 
 		bool operator != (const T& rhs) const
@@ -63,7 +63,7 @@ namespace dots::type
 
 		bool operator < (const T& rhs) const
 		{
-			return isValid() && valueLess(rhs);
+			return less(rhs);
 		}
 
 		bool operator == (const Property& rhs) const
@@ -239,6 +239,16 @@ namespace dots::type
 				valueDestroy();
 				validPropertySet().set(tag(), false);
 			}
+		}
+
+		bool equal(const T& rhs) const
+		{
+			return isValid() && valueEqual(rhs);
+		}
+
+		bool less(const T& rhs) const
+		{
+			return isValid() && valueLess(rhs);
 		}
 
 		void publish() const
