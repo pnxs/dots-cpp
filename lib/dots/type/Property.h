@@ -78,7 +78,7 @@ namespace dots::type
 
 		bool operator < (const Property& rhs) const
 		{
-			return !rhs.isValid() || isValid() && valueLess(rhs.valueReference());
+			return !rhs.isValid() || *this < *rhs;
 		}
 
 		constexpr size_t offset() const
