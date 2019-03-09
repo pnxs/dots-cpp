@@ -145,6 +145,11 @@ namespace dots::type
 		template <typename... Args>
 		T& assign(Args&&... args)
 		{
+			if (!isValid())
+			{
+				throw std::runtime_error{ std::string{ "attempt to assign invalid property: " } + name().data() + "." + name().data() };
+			}
+
 			valueAssign(T(std::forward<Args>(args)...));
 			validPropertySet().set(tag(), true);
 
