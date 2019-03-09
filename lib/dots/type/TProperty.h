@@ -17,14 +17,9 @@ namespace dots::type
 		using struct_t = DerivedStruct;
 		using init_t = TPropertyInitializer<TProperty>;
 
-		template <typename U, std::enable_if_t<!std::disjunction_v<std::is_same<std::remove_reference_t<U>, TProperty>, std::is_same<std::remove_reference_t<U>, Derived>>, int> = 0>
-		Derived& operator = (U&& rhs)
-		{
-			Property<T, Derived>::constructOrAssign(std::forward<U>(rhs));
-			return static_cast<Derived&>(*this);
-		}
-
+		using Property<T, Derived>::operator=;
 		using Property<T, Derived>::operator();
+		using Property<T, Derived>::construct;
 
 		T& operator () (init_t&& init)
 		{

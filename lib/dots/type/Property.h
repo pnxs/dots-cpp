@@ -15,6 +15,13 @@ namespace dots::type
 		static_assert(std::conjunction_v<std::negation<std::is_pointer<T>>, std::negation<std::is_reference<T>>>);
 		using value_t = T;
 
+		template <typename U, std::enable_if_t<!std::disjunction_v<std::is_same<std::remove_reference_t<U>, Property>, std::is_same<std::remove_reference_t<U>, Derived>>, int> = 0>
+		Derived& operator = (U&& rhs)
+		{
+			Property<T, Derived>::constructOrAssign(std::forward<U>(rhs));
+			return static_cast<Derived&>(*this);
+		}
+
 		template <typename... Args>
 		T& operator () (Args&&... args)
 		{
