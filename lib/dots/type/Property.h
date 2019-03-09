@@ -56,7 +56,17 @@ namespace dots::type
 			return equal(rhs);
 		}
 
+		bool operator == (const Property& rhs) const
+		{
+			return equal(rhs);
+		}
+
 		bool operator != (const T& rhs) const
+		{
+			return !(*this == rhs);
+		}
+
+		bool operator != (const Property& rhs) const
 		{
 			return !(*this == rhs);
 		}
@@ -66,87 +76,14 @@ namespace dots::type
 			return less(rhs);
 		}
 
-		bool operator == (const Property& rhs) const
-		{
-			return equal(rhs);
-		}
-
-		bool operator != (const Property& rhs) const
-		{
-			return !(*this == rhs);
-		}
-
 		bool operator < (const Property& rhs) const
 		{
 			return less(rhs);
 		}
 
-		constexpr size_t offset() const
-		{
-			return structProperty().offset();
-		}
-
-		constexpr uint32_t tag() const
-		{
-			return structProperty().tag();
-		}
-
-		constexpr bool isKey() const
-		{
-			return structProperty().isKey();
-		}
-        
-		constexpr const std::string_view& name() const
-        {
-            return structProperty().name();
-        }
-
-		constexpr const std::string_view& type() const
-		{
-			return structProperty().type();
-		}
-
-		constexpr property_set set() const
-		{
-			property_set propertySet;
-			propertySet.set(tag());
-
-			return propertySet;
-		}
-
-		constexpr bool isPartOf(const property_set& propertySet) const
-		{
-			return propertySet.test(tag());
-		}
-
-		constexpr const StructProperty& structProperty() const
-		{
-			return static_cast<const Derived&>(*this).derivedDescriptor();
-		}
-
-		const Descriptor& td() const
-		{
-			return *structProperty().td();
-		}
-
 		bool isValid() const
 		{
 			return validPropertySet().test(tag());
-		}
-
-		T& value()
-		{
-			if (!isValid())
-			{
-				throw std::runtime_error{ std::string{ "attempt to access invalid property: " } + name().data() + "." + name().data() };
-			}
-
-			return valueReference();
-		}
-
-		const T& value() const
-		{
-			return const_cast<Property&>(*this).value();
 		}
 
 		template <typename... Args>
@@ -159,7 +96,7 @@ namespace dots::type
 
 			if (isValid())
 			{
-				throw std::runtime_error{ std::string{ "attempt to construct already valid property: " } + name().data() + "." + name().data() };
+				throw std::runtime_error{ std::string{ "attempt to construct already valid property: " } +name().data() + "." + name().data() };
 			}
 
 			valueConstruct(std::forward<Args>(args)...);
@@ -168,13 +105,28 @@ namespace dots::type
 			return valueReference();
 		}
 
-		template <typename... Args>
-		T& assign(Args&&... args)
+		void destroy()
 		{
-			valueAssign(T(std::forward<Args>(args)...));
-			validPropertySet().set(tag(), true);
+			if (isValid())
+			{
+				valueDestroy();
+				validPropertySet().set(tag(), false);
+			}
+		}
+
+		T& value()
+		{
+			if (!isValid())
+			{
+				throw std::runtime_error{ std::string{ "attempt to access invalid property: " } +name().data() + "." + name().data() };
+			}
 
 			return valueReference();
+		}
+
+		const T& value() const
+		{
+			return const_cast<Property&>(*this).value();
 		}
 
 		template <typename... Args>
@@ -188,6 +140,15 @@ namespace dots::type
 			{
 				return construct(std::forward<Args>(args)...);
 			}
+		}
+
+		template <typename... Args>
+		T& assign(Args&&... args)
+		{
+			valueAssign(T(std::forward<Args>(args)...));
+			validPropertySet().set(tag(), true);
+
+			return valueReference();
 		}
 
 		template <typename... Args>
@@ -232,15 +193,6 @@ namespace dots::type
 			return extractUnchecked();
 		}
 
-		void destroy()
-		{
-			if (isValid())
-			{
-				valueDestroy();
-				validPropertySet().set(tag(), false);
-			}
-		}
-
 		bool equal(const T& rhs) const
 		{
 			return isValid() && valueEqual(rhs);
@@ -269,6 +221,54 @@ namespace dots::type
 			}
 
 			instance()._publish(set());
+		}
+
+		constexpr const StructProperty& structProperty() const
+		{
+			return static_cast<const Derived&>(*this).derivedDescriptor();
+		}
+
+		const Descriptor& td() const
+		{
+			return *structProperty().td();
+		}
+
+		constexpr size_t offset() const
+		{
+			return structProperty().offset();
+		}
+
+		constexpr uint32_t tag() const
+		{
+			return structProperty().tag();
+		}
+
+		constexpr bool isKey() const
+		{
+			return structProperty().isKey();
+		}
+
+		constexpr const std::string_view& name() const
+		{
+			return structProperty().name();
+		}
+
+		constexpr const std::string_view& type() const
+		{
+			return structProperty().type();
+		}
+
+		constexpr property_set set() const
+		{
+			property_set propertySet;
+			propertySet.set(tag());
+
+			return propertySet;
+		}
+
+		constexpr bool isPartOf(const property_set& propertySet) const
+		{
+			return propertySet.test(tag());
 		}
 
 	protected:
