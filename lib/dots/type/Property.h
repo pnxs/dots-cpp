@@ -68,7 +68,7 @@ namespace dots::type
 
 		bool operator == (const Property& rhs) const
 		{
-			return rhs.isValid() && *this == *rhs;
+			return equal(rhs);
 		}
 
 		bool operator != (const Property& rhs) const
@@ -78,7 +78,7 @@ namespace dots::type
 
 		bool operator < (const Property& rhs) const
 		{
-			return !rhs.isValid() || *this < *rhs;
+			return less(rhs);
 		}
 
 		constexpr size_t offset() const
@@ -246,9 +246,19 @@ namespace dots::type
 			return isValid() && valueEqual(rhs);
 		}
 
+		bool equal(const Property& rhs) const
+		{
+			return rhs.isValid() && equal(*rhs);
+		}
+
 		bool less(const T& rhs) const
 		{
 			return isValid() && valueLess(rhs);
+		}
+
+		bool less(const Property& rhs) const
+		{
+			return !rhs.isValid() || less(*rhs);
 		}
 
 		void publish() const
