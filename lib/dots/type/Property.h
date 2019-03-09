@@ -53,7 +53,7 @@ namespace dots::type
 
 		bool operator == (const T& rhs) const
 		{
-			return isValid() && valueUnchecked() == rhs;
+			return isValid() && valueEqual(rhs);
 		}
 
 		bool operator != (const T& rhs) const
@@ -63,7 +63,7 @@ namespace dots::type
 
 		bool operator < (const T& rhs) const
 		{
-			return isValid() && valueUnchecked() < rhs;
+			return isValid() && valueLess(rhs);
 		}
 
 		bool operator == (const Property& rhs) const
@@ -78,7 +78,7 @@ namespace dots::type
 
 		bool operator < (const Property& rhs) const
 		{
-			return !rhs.isValid() || isValid() && valueUnchecked() < rhs.valueUnchecked();
+			return !rhs.isValid() || isValid() && valueLess(rhs.valueReference());
 		}
 
 		constexpr size_t offset() const
@@ -121,7 +121,7 @@ namespace dots::type
 
 		constexpr const StructProperty& structProperty() const
 		{
-			return *derived().descriptorAddress();
+			return static_cast<const Derived&>(*this).derivedDescriptor();
 		}
 
 		const Descriptor& td() const
@@ -141,7 +141,7 @@ namespace dots::type
 				throw std::runtime_error{ std::string{ "attempt to access invalid property: " } + name().data() + "." + name().data() };
 			}
 
-			return valueUnchecked();
+			return valueReference();
 		}
 
 		const T& value() const
@@ -162,19 +162,19 @@ namespace dots::type
 				throw std::runtime_error{ std::string{ "attempt to construct already valid property: " } + name().data() + "." + name().data() };
 			}
 
-			::new (static_cast<void *>(::std::addressof(valueUnchecked()))) T(std::forward<Args>(args)...);
+			valueConstruct(std::forward<Args>(args)...);
 			validPropertySet().set(tag(), true);
 
-			return valueUnchecked();
+			return valueReference();
 		}
 
 		template <typename... Args>
 		T& assign(Args&&... args)
 		{
-			valueUnchecked() = T(std::forward<Args>(args)...);
+			valueAssign(T(std::forward<Args>(args)...));
 			validPropertySet().set(tag(), true);
 
-			return valueUnchecked();
+			return valueReference();
 		}
 
 		template <typename... Args>
@@ -182,7 +182,7 @@ namespace dots::type
 		{
 			if (isValid())
 			{
-				return valueUnchecked();
+				return valueReference();
 			}
 			else
 			{
@@ -209,7 +209,7 @@ namespace dots::type
 			{
 				if (other.isValid())
 				{
-					std::swap(valueUnchecked(), other.valueUnchecked());
+					valueSwap(other.valueReference());
 				}
 				else
 				{
@@ -236,7 +236,7 @@ namespace dots::type
 		{
 			if (isValid())
 			{
-				valueUnchecked().~T();
+				valueDestroy();
 				validPropertySet().set(tag(), false);
 			}
 		}
@@ -251,31 +251,6 @@ namespace dots::type
 			instance()._publish(set());
 		}
 
-        bool equal(const void* rhs) const
-        {
-            return td().equal(&valueUnchecked(), rhs);
-        }
-
-        bool lessThan(const void* rhs) const
-        {
-            return td().lessThan(&valueUnchecked(), rhs);
-        }
-
-        void copy(const void* rhs)
-        {
-            return td().copy(&valueUnchecked(), rhs);
-        }
-
-        void swap(void* rhs)
-        {
-            return td().swap(&valueUnchecked(), rhs);
-        }
-
-        void clear()
-        {
-            return td().clear(&valueUnchecked());
-        }
-
 	protected:
 
 		constexpr Property() = default;
@@ -289,10 +264,67 @@ namespace dots::type
 		T&& extractUnchecked()
 		{
 			validPropertySet().set(tag(), false);
-			return std::move(valueUnchecked());
+			return std::move(valueReference());
 		}
 
     private:
+
+		constexpr T& valueReference()
+		{
+			return static_cast<Derived&>(*this).derivedValue();
+		}
+
+		constexpr const T& valueReference() const
+		{
+			return const_cast<Property&>(*this).valueReference();
+		}
+
+		template <typename... Args>
+		constexpr T& valueConstruct(Args&&... args)
+		{
+			::new (static_cast<void *>(::std::addressof(valueReference()))) T(std::forward<Args>(args)...);
+			return valueReference();
+		}
+
+		constexpr void valueDestroy()
+		{
+			valueReference().~T();
+		}
+
+		constexpr T& valueAssign(const T& rhs)
+		{
+			return valueReference() = rhs;
+		}
+
+		constexpr T& valueMove(T&& rhs)
+		{
+			return valueReference() = std::move(rhs);
+		}
+
+		void valueSwap(T& rhs)
+		{
+			std::swap(valueReference(), rhs);
+		}
+
+		constexpr bool valueEqual(const T& rhs) const
+		{
+			return valueReference() == rhs;
+		}
+
+		constexpr bool valueLess(const T& rhs) const
+		{
+			return valueReference() < rhs;
+		}
+
+		Struct& instance()
+		{
+			return *reinterpret_cast<Struct*>(reinterpret_cast<char*>(&valueReference()) - offset());
+		}
+
+		const Struct& instance() const
+		{
+			return const_cast<Property&>(*this).instance();
+		}
 
 		property_set& validPropertySet()
 		{
@@ -302,36 +334,6 @@ namespace dots::type
 		const property_set& validPropertySet() const
 		{
 			return const_cast<Property&>(*this).validPropertySet();
-		}
-
-		Struct& instance()
-		{
-			return *reinterpret_cast<Struct*>(reinterpret_cast<char*>(&valueUnchecked()) - offset());
-		}
-
-		const Struct& instance() const
-		{
-			return const_cast<Property&>(*this).instance();
-		}
-
-		T& valueUnchecked()
-		{
-			return *derived().valueAddress();
-		}
-
-		const T& valueUnchecked() const
-		{
-			return *derived().valueAddress();
-		}
-
-		Derived& derived()
-		{
-			return static_cast<Derived&>(*this);
-		}
-
-		const Derived& derived() const
-		{
-			return const_cast<Property&>(*this).derived();
 		}
     };
 

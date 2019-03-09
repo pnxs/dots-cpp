@@ -167,19 +167,19 @@ namespace dots::type
 
 		friend struct Property<T, Derived>;
 
-		T* valueAddress()
+		T& derivedValue()
 		{
-			return &_value;
+			return _value;
 		}
 
-		const T* valueAddress() const
+		const T& derivedValue() const
 		{
-			return const_cast<TProperty&>(*this).valueAddress();
+			return const_cast<TProperty&>(*this).derivedValue();
 		}
 
-		static constexpr const StructProperty* descriptorAddress()
+		static constexpr const StructProperty& derivedDescriptor()
 		{
-			return &Derived::Description;
+			return Derived::Description;
 		}
 
 		static Derived& Get(Struct& instance)
