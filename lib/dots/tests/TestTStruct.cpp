@@ -149,8 +149,6 @@ TEST(TestTStruct, less_CompareLessToOtherStruct)
 	dts2.stringField("bar");
 	dts2.floatField(2.7183f);
 
-	dts1.swap(dts2, DotsTestStruct::floatField_t::Set());
-
 	EXPECT_LT(dts1, dts2);
 }
 
