@@ -177,7 +177,7 @@ private:
         if (not inserted)
         {
             // Update element with received attributes
-            Writeable(item).swap(data, data._validPropertySet() - T::_KeyPropertySet());
+            Writeable(item)._swap(data, data._validPropertySet() - T::_KeyPropertySet());
         }
 
         Cbd<T> cbd(item, header, inserted ? Mt::create : Mt::update );

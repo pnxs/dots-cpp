@@ -178,7 +178,7 @@ TEST(TestTStruct, swap_ExpectedPropertiesAfterCompleteSwap)
 	dts2.indKeyfField(2);
 	dts2.stringField("bar");
 
-	dts1.swap(dts2);
+	dts1._swap(dts2);
 
 	EXPECT_EQ(dts1.indKeyfField, 2);
 	EXPECT_EQ(dts1.stringField, "bar");
@@ -202,7 +202,7 @@ TEST(TestTStruct, swap_ExpectedPropertiesAfterPartialSwap)
 	dts2.stringField("bar");
 	dts2.floatField(2.7183f);
 
-	dts1.swap(dts2, DotsTestStruct::floatField_t::Set());
+	dts1._swap(dts2, DotsTestStruct::floatField_t::Set());
 
 	EXPECT_EQ(dts1.indKeyfField, 1);
 	EXPECT_EQ(dts1.stringField, "foo");

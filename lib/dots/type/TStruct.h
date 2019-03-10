@@ -63,7 +63,7 @@ namespace dots::type
 			});
 		}
 
-		void swap(Derived& other, const property_set& what = PROPERTY_SET_ALL)
+		void _swap(Derived& other, const property_set& what = PROPERTY_SET_ALL)
 		{
 			_applyPropertyPairs(other, [&](const auto&... propertyPairs)
 			{
