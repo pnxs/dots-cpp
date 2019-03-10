@@ -5,19 +5,19 @@
 #include "StructDescriptorData.dots.h"
 #include <gtest/gtest.h>
 
-TEST(TestTStruct, size_descriptor)
+TEST(TestTStruct, SizeInDescriptorMatchesActualSize)
 {
 	DotsTestStruct dts;
 	EXPECT_EQ(dts._descriptor().sizeOf(), sizeof(dts));
 }
 
-TEST(TestTStruct, alignment_descriptor)
+TEST(TestTStruct, AlignmentInDescriptorMatchesActualAlignment)
 {
 	DotsTestStruct dts;
 	EXPECT_EQ(dts._descriptor().alignOf(), alignof(dts));
 }
 
-TEST(TestTStruct, offsets_static)
+TEST(TestTStruct, PropertyOffsetsMatchActualOffsets)
 {
 	DotsTestStruct dts;
 
@@ -31,7 +31,7 @@ TEST(TestTStruct, offsets_static)
 	EXPECT_EQ(DotsTestStruct::uuid_t::Offset(), determine_offset(dts.uuid));
 }
 
-TEST(TestTStruct, offsets_descriptor)
+TEST(TestTStruct, PropertyOffsetsInDescriptorMatchActualOffsets)
 {
 	DotsTestStruct dts;
 
@@ -45,7 +45,7 @@ TEST(TestTStruct, offsets_descriptor)
 	EXPECT_EQ(dts._descriptor().properties()[6].offset(), determine_offset(dts.uuid));
 }
 
-TEST(TestTStruct, flags)
+TEST(TestTStruct, FlagsHaveExpectedValues)
 {
 	EXPECT_TRUE(DotsTestStruct::_IsCached());
 	EXPECT_FALSE(DotsTestStruct::_IsInternal());
@@ -55,12 +55,12 @@ TEST(TestTStruct, flags)
 	EXPECT_FALSE(DotsTestStruct::_IsSubstructOnly());
 }
 
-TEST(TestTStruct, keyPropertySet)
+TEST(TestTStruct, KeyPropertySetHasExpectedValue)
 {
 	EXPECT_EQ(DotsTestStruct::_KeyPropertySet(), DotsTestStruct::indKeyfField_t::Set());
 }
 
-TEST(TestTStruct, initializerConstruct)
+TEST(TestTStruct, ctor_EqualPropertiesAfterInitializerConstruction)
 {
 	DotsTestStruct dts1{
 		DotsTestStruct::indKeyfField_t_i{ 1 },
@@ -73,7 +73,7 @@ TEST(TestTStruct, initializerConstruct)
 	EXPECT_EQ(dts1.floatField, 3.1415f);
 }
 
-TEST(TestTStruct, copyConstruct)
+TEST(TestTStruct, ctor_EqualPropertiesAfterCopyConstruction)
 {
 	DotsTestStruct dts1;
 	dts1.indKeyfField(1);
@@ -87,21 +87,7 @@ TEST(TestTStruct, copyConstruct)
 	EXPECT_EQ(dts1.floatField, dts2.floatField);
 }
 
-TEST(TestTStruct, copyAssign)
-{
-	DotsTestStruct dts1;
-	dts1.indKeyfField(1);
-	dts1.stringField("foo");
-	dts1.floatField(3.1415f);
-
-	DotsTestStruct dts2 = dts1;
-
-	EXPECT_EQ(dts1.indKeyfField, dts2.indKeyfField);
-	EXPECT_EQ(dts1.stringField, dts2.stringField);
-	EXPECT_EQ(dts1.floatField, dts2.floatField);
-}
-
-TEST(TestTStruct, moveConstruct)
+TEST(TestTStruct, ctor_ExpecterPropertiesAfterMoveConstruction)
 {
 	DotsTestStruct dts1;
 	dts1.indKeyfField(1);
@@ -119,7 +105,21 @@ TEST(TestTStruct, moveConstruct)
 	EXPECT_EQ(dts2.floatField, 3.1415f);
 }
 
-TEST(TestTStruct, moveAssign)
+TEST(TestTStruct, assignment_EqualPropertiesAfterCopyAssignment)
+{
+	DotsTestStruct dts1;
+	dts1.indKeyfField(1);
+	dts1.stringField("foo");
+	dts1.floatField(3.1415f);
+
+	DotsTestStruct dts2 = dts1;
+
+	EXPECT_EQ(dts1.indKeyfField, dts2.indKeyfField);
+	EXPECT_EQ(dts1.stringField, dts2.stringField);
+	EXPECT_EQ(dts1.floatField, dts2.floatField);
+}
+
+TEST(TestTStruct, assignment_ExpectedPropertiesAfterMoveAssignment)
 {
 	DotsTestStruct dts1;
 	dts1.indKeyfField(1);
@@ -137,7 +137,7 @@ TEST(TestTStruct, moveAssign)
 	EXPECT_EQ(dts2.floatField, 3.1415f);
 }
 
-TEST(TestTStruct, less)
+TEST(TestTStruct, less_CompareLessToOtherStruct)
 {
 	DotsTestStruct dts1;
 	dts1.indKeyfField(1);
@@ -154,7 +154,7 @@ TEST(TestTStruct, less)
 	EXPECT_LT(dts1, dts2);
 }
 
-TEST(TestTStruct, equal)
+TEST(TestTStruct, equal_CompareEqualToOtherStruct)
 {
 	DotsTestStruct dts1;
 	dts1.indKeyfField(1);
@@ -169,7 +169,7 @@ TEST(TestTStruct, equal)
 	EXPECT_TRUE(DotsTestStruct::_Descriptor().equal(&dts1, &dts2));
 }
 
-TEST(TestTStruct, swap)
+TEST(TestTStruct, swap_ExpectedPropertiesAfterCompleteSwap)
 {
 	DotsTestStruct dts1;
 	dts1.indKeyfField(1);
@@ -192,7 +192,7 @@ TEST(TestTStruct, swap)
 	EXPECT_EQ(dts2.floatField, 3.1415f);
 }
 
-TEST(TestTStruct, swapSpecific)
+TEST(TestTStruct, swap_ExpectedPropertiesAfterPartialSwap)
 {
 	DotsTestStruct dts1;
 	dts1.indKeyfField(1);
