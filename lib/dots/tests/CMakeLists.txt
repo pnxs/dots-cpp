@@ -15,6 +15,7 @@ add_executable(dots-unittests
         TestRegistry.cpp
         TestRttrVariantTypes.cpp
         TestStruct.cpp
+		TestTStruct.cpp
         TestVectorDescriptor.cpp
         TestJsonStore.cpp
         TestFileReader.cpp
