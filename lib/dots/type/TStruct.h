@@ -30,17 +30,7 @@ namespace dots::type
 
 		bool operator == (const Derived& rhs) const
 		{
-			return _applyKeyPropertyPairs(rhs, [](const auto&... propertyPairs)
-			{
-				if constexpr (sizeof...(propertyPairs) == 0)
-				{
-					return true;
-				}
-				else
-				{
-					return ((propertyPairs.first == propertyPairs.second) && ...);
-				}
-			});
+			return _equal(rhs);
 		}
 
 		bool operator != (const Derived& rhs) const
@@ -50,17 +40,65 @@ namespace dots::type
 
 		bool operator < (const Derived& rhs) const
 		{
-			return _applyKeyPropertyPairs(rhs, [](const auto&... propertyPairs)
+			return _less(rhs);
+		}
+
+		Derived& _assign(const Derived& other, const property_set& what = PROPERTY_SET_ALL)
+		{
+			_applyPropertyPairs(other, [&](const auto&... propertyPairs)
 			{
-				if constexpr (sizeof...(propertyPairs) == 0)
+				auto assign = [&](auto& propertyThis, auto& propertyOther)
 				{
-					return false;
-				}
-				else
-				{
-					return ((propertyPairs.first < propertyPairs.second) && ...);
-				}
+					if (strip_t<decltype(propertyThis)>::IsPartOf(what))
+					{
+						propertyThis = propertyOther;
+					}
+					else
+					{
+						propertyThis.destroy();
+					}
+				};
+
+				(assign(propertyPairs.first, propertyPairs.second), ...);
 			});
+
+			return static_cast<Derived&>(*this);
+		}
+
+		Derived& _copy(const Derived& other, const property_set& what = PROPERTY_SET_ALL)
+		{
+			_applyPropertyPairs(other, [&](const auto&... propertyPairs)
+			{
+				auto copy = [&](auto& propertyThis, auto& propertyOther)
+				{
+					if (strip_t<decltype(propertyThis)>::IsPartOf(what))
+					{
+						propertyThis = propertyOther;
+					}
+				};
+
+				(copy(propertyPairs.first, propertyPairs.second), ...);
+			});
+
+			return static_cast<Derived&>(*this);
+		}
+
+		Derived& _merge(const Derived& other, const property_set& what = PROPERTY_SET_ALL)
+		{
+			_applyPropertyPairs(other, [&](const auto&... propertyPairs)
+			{
+				auto merge = [&](auto& propertyThis, auto& propertyOther)
+				{
+					if (strip_t<decltype(propertyOther)>::IsPartOf(what) && propertyOther.isValid())
+					{
+						propertyThis = propertyOther;
+					}
+				};
+
+				(merge(propertyPairs.first, propertyPairs.second), ...);
+			});
+
+			return static_cast<Derived&>(*this);
 		}
 
 		void _swap(Derived& other, const property_set& what = PROPERTY_SET_ALL)
@@ -76,6 +114,52 @@ namespace dots::type
 				};
 
 				(swap(propertyPairs.first, propertyPairs.second), ...);
+			});
+		}
+
+		void _clear(const property_set& what = PROPERTY_SET_ALL)
+		{
+			_applyProperties([&](auto&... properties)
+			{
+				auto destroy = [&](auto& property)
+				{
+					if (strip_t<decltype(property)>::IsPartOf(what))
+					{
+						property.destroy();
+					}
+				};
+
+				(destroy(properties), ...);
+			});
+		}
+
+		bool _equal(const Derived& rhs) const
+		{
+			return _applyKeyPropertyPairs(rhs, [](const auto&... propertyPairs)
+			{
+				if constexpr (sizeof...(propertyPairs) == 0)
+				{
+					return true;
+				}
+				else
+				{
+					return ((propertyPairs.first == propertyPairs.second) && ...);
+				}
+			});
+		}
+
+		bool _less(const Derived& rhs) const
+		{
+			return _applyKeyPropertyPairs(rhs, [](const auto&... propertyPairs)
+			{
+				if constexpr (sizeof...(propertyPairs) == 0)
+				{
+					return false;
+				}
+				else
+				{
+					return ((propertyPairs.first < propertyPairs.second) && ...);
+				}
 			});
 		}
 
