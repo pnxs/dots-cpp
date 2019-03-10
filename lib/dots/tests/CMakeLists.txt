@@ -11,10 +11,13 @@ add_executable(dots-unittests
         TestFileStore.cpp
         TestJsonSerialization.cpp
         TestPropertySet.cpp
+		TestPropertyProxy.cpp
+		TestPropertyProxyVoid.cpp
         TestRecord.cpp
         TestRegistry.cpp
         TestRttrVariantTypes.cpp
         TestStruct.cpp
+		TestTProperty.cpp
 		TestTStruct.cpp
         TestVectorDescriptor.cpp
         TestJsonStore.cpp
