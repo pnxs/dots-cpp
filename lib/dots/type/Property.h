@@ -384,14 +384,14 @@ namespace dots::type
 		constexpr Property& operator = (const Property& rhs) = default;
 		constexpr Property& operator = (Property&& rhs) = default;
 
+	private:
+
 		template <bool IsTypeless_ = IsTypeless, std::enable_if_t<!IsTypeless_, int> = 0>
 		value_t&& extractUnchecked()
 		{
 			validPropertySet().set(tag(), false);
 			return std::move(valueReference());
 		}
-
-	private:
 
 		constexpr value_t& valueReference()
 		{
