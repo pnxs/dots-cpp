@@ -432,6 +432,8 @@ namespace dots::type
 
     private:
 
+		using Struct::_clear;
+
 		using Struct::_publish;
 		using Struct::_remove;
 

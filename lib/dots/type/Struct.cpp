@@ -129,6 +129,25 @@ namespace dots::type
 		return _desc->keys();
 	}
 
+	property_set Struct::_diffPropertySet(const Struct& other) const
+	{
+		property_set symmetricDiff = _validPropertySet().value() ^ other._validPropertySet().value();
+		property_set intersection = _validPropertySet() & other._validPropertySet();
+
+		if (!intersection.empty())
+		{
+			for (const auto&[propertyThis, propertyOther] : _propertyPairRange(other, intersection))
+			{
+				if (propertyThis.td().equal(&*propertyThis, &*propertyOther))
+				{
+					symmetricDiff |= propertyThis.set();
+				}
+			}
+		}
+		
+		return symmetricDiff;
+	}
+
 	property_iterator Struct::_begin(const property_set& propertySet)
 	{
 		return property_iterator{ *this, _descriptor().properties().begin(), propertySet };
@@ -217,6 +236,85 @@ namespace dots::type
     const_reverse_property_pair_range_const Struct::_propertyPairRangeReversed(const Struct& rhs, const property_set& propertySet/* = PROPERTY_SET_ALL*/) const
     {
 		return const_reverse_property_pair_range_const{ const_reverse_property_pair_iterator_const{ _rbegin(propertySet), rhs._rbegin(propertySet) }, const_reverse_property_pair_iterator_const{ _rend(propertySet), rhs._rend(propertySet) } };
+    }
+
+    Struct& Struct::_assign(const Struct& other, const property_set& propertySet/* = PROPERTY_SET_ALL*/)
+    {
+		property_set assignPropertySet = other._validPropertySet() & propertySet;
+
+		for (const auto&[propertyThis, propertyOther] : _propertyPairRange(other))
+		{
+			if (propertyThis.isPartOf(assignPropertySet))
+			{
+				propertyThis.constructOrAssign(propertyOther);
+			}
+			else
+			{
+				propertyThis.destroy();
+			}
+		}
+
+		return *this;
+    }
+
+    Struct& Struct::_copy(const Struct& other, const property_set& propertySet/* = PROPERTY_SET_ALL*/)
+    {
+		property_set copyPropertySet = (_validPropertySet() | other._validPropertySet()) & propertySet;
+
+		for (const auto&[propertyThis, propertyOther] : _propertyPairRange(other, copyPropertySet))
+		{
+			propertyThis.constructOrAssign(propertyOther);
+		}
+
+		return *this;
+    }
+
+    Struct& Struct::_merge(const Struct& other, const property_set& propertySet/* = PROPERTY_SET_ALL*/)
+    {
+		property_set mergePropertySet = other._validPropertySet() & propertySet;
+		return _copy(other, mergePropertySet);
+    }
+
+    void Struct::_swap(Struct& other, const property_set& propertySet/* = PROPERTY_SET_ALL*/)
+    {
+		for (const auto&[propertyThis, propertyOther] : _propertyPairRange(other, propertySet))
+		{
+			propertyThis.swap(propertyOther);
+		}
+    }
+
+    void Struct::_clear(const property_set& propertySet/* = PROPERTY_SET_ALL*/)
+    {
+		for (auto& property : _propertyRange(propertySet))
+		{
+			property.destroy();
+		}
+    }
+
+    bool Struct::_equal(const Struct& rhs) const
+    {
+		for (const auto&[propertyThis, propertyOther] : _propertyPairRange(rhs))
+		{
+			if (propertyThis != propertyOther)
+			{
+				return false;
+			}
+		}
+
+		return true;
+    }
+
+    bool Struct::_less(const Struct& rhs) const
+    {
+		for (const auto&[propertyThis, propertyOther] : _propertyPairRange(rhs))
+		{
+			if (!(propertyThis < propertyOther))
+			{
+				return false;
+			}
+		}
+
+		return true;
     }
 
     void Struct::_publish(const property_set& what/* = PROPERTY_SET_ALL*/, bool remove/* = false*/) const

@@ -54,6 +54,7 @@ namespace dots::type
 		property_set& _validPropertySet();
 		const property_set& _validPropertySet() const;
 		const property_set& _keyPropertySet() const;
+		property_set _diffPropertySet(const Struct& other) const;
 
 		property_iterator _begin(const property_set& propertySet = PROPERTY_SET_ALL);
 		const_property_iterator _begin(const property_set& propertySet = PROPERTY_SET_ALL) const;
@@ -80,6 +81,15 @@ namespace dots::type
 		reverse_property_pair_range _propertyPairRangeReversed(Struct& rhs, const property_set& propertySet = PROPERTY_SET_ALL);
 		reverse_property_pair_range_const _propertyPairRangeReversed(const Struct& rhs, const property_set& propertySet = PROPERTY_SET_ALL);
 		const_reverse_property_pair_range_const _propertyPairRangeReversed(const Struct& rhs, const property_set& propertySet = PROPERTY_SET_ALL) const;
+
+		Struct& _assign(const Struct& other, const property_set& propertySet = PROPERTY_SET_ALL);
+		Struct& _copy(const Struct& other, const property_set& propertySet = PROPERTY_SET_ALL);
+		Struct& _merge(const Struct& other, const property_set& propertySet = PROPERTY_SET_ALL);
+		void _swap(Struct& other, const property_set& propertySet = PROPERTY_SET_ALL);
+		void _clear(const property_set& propertySet = PROPERTY_SET_ALL);
+
+		bool _equal(const Struct& rhs) const;
+		bool _less(const Struct& rhs) const;
 
 		void _publish(const property_set& what = PROPERTY_SET_ALL, bool remove = false) const;
 		void _remove(const property_set& what = PROPERTY_SET_ALL) const;

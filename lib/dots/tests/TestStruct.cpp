@@ -131,3 +131,189 @@ TEST(TestStruct, construct)
 	EXPECT_EQ(subStructCnt, 1);
 	EXPECT_EQ(uuidCnt, 1);
 }
+
+TEST(TestStruct, assign_ExpectedPropertiesAfterCompleteAssign)
+{
+	DotsTestStruct sut;
+	sut.indKeyfField(1);
+	sut.stringField("foo");
+	sut.floatField(3.1415f);
+
+	DotsTestStruct other;
+	other.indKeyfField(2);
+	other.stringField("bar");
+	other.floatField(2.7183f);
+
+	static_cast<dots::type::Struct&>(sut)._assign(other);
+
+	EXPECT_EQ(sut.indKeyfField, 2);
+	EXPECT_EQ(sut.stringField, "bar");
+	EXPECT_EQ(sut.floatField, 2.7183f);
+}
+
+TEST(TestStruct, assign_ExpectedPropertiesAfterPartialAssign)
+{
+	DotsTestStruct sut;
+	sut.indKeyfField(1);
+	sut.stringField("foo");
+	sut.floatField(3.1415f);
+
+	DotsTestStruct other;
+	other.indKeyfField(2);
+	other.stringField("bar");
+
+	static_cast<dots::type::Struct&>(sut)._assign(other, ~DotsTestStruct::floatField_t::Set());
+
+	EXPECT_EQ(sut.indKeyfField, 2);
+	EXPECT_EQ(sut.stringField, "bar");
+	EXPECT_FALSE(sut.floatField.isValid());
+}
+
+TEST(TestStruct, copy_ExpectedPropertiesAfterCompleteCopy)
+{
+	DotsTestStruct sut;
+	sut.indKeyfField(1);
+	sut.stringField("foo");
+	sut.floatField(3.1415f);
+
+	DotsTestStruct other;
+	other.indKeyfField(2);
+	other.stringField("bar");
+	other.floatField(2.7183f);
+
+	static_cast<dots::type::Struct&>(sut)._copy(other);
+
+	EXPECT_EQ(sut.indKeyfField, 2);
+	EXPECT_EQ(sut.stringField, "bar");
+	EXPECT_EQ(sut.floatField, 2.7183f);
+}
+
+TEST(TestStruct, copy_ExpectedPropertiesAfterPartialCopy)
+{
+	DotsTestStruct sut;
+	sut.indKeyfField(1);
+	sut.stringField("foo");
+	sut.floatField(3.1415f);
+
+	DotsTestStruct other;
+	other.indKeyfField(2);
+	other.stringField("bar");
+
+	static_cast<dots::type::Struct&>(sut)._copy(other, ~DotsTestStruct::floatField_t::Set());
+
+	EXPECT_EQ(sut.indKeyfField, 2);
+	EXPECT_EQ(sut.stringField, "bar");
+	EXPECT_EQ(sut.floatField, 3.1415f);
+}
+
+TEST(TestStruct, merge_ExpectedPropertiesAfterCompleteMerge)
+{
+	DotsTestStruct sut;
+	sut.indKeyfField(1);
+	sut.stringField("foo");
+	sut.floatField(3.1415f);
+
+	DotsTestStruct other;
+	other.indKeyfField(2);
+	other.stringField("bar");
+
+	static_cast<dots::type::Struct&>(sut)._merge(other);
+
+	EXPECT_EQ(sut.indKeyfField, 2);
+	EXPECT_EQ(sut.stringField, "bar");
+	EXPECT_EQ(sut.floatField, 3.1415f);
+}
+
+TEST(TestStruct, merge_ExpectedPropertiesAfterPartialMerge)
+{
+	DotsTestStruct sut;
+	sut.indKeyfField(1);
+	sut.stringField("foo");
+	sut.floatField(3.1415f);
+
+	DotsTestStruct other;
+	other.indKeyfField(2);
+	other.stringField("bar");
+	other.floatField(2.7183f);
+
+	static_cast<dots::type::Struct&>(sut)._merge(other, ~DotsTestStruct::stringField_t::Set());
+
+	EXPECT_EQ(sut.indKeyfField, 2);
+	EXPECT_EQ(sut.stringField, "foo");
+	EXPECT_EQ(sut.floatField, 2.7183f);
+}
+
+TEST(TestStruct, swap_ExpectedPropertiesAfterCompleteSwap)
+{
+	DotsTestStruct dts1;
+	dts1.indKeyfField(1);
+	dts1.stringField("foo");
+	dts1.floatField(3.1415f);
+
+	DotsTestStruct dts2;
+	dts2.indKeyfField(2);
+	dts2.stringField("bar");
+
+	static_cast<dots::type::Struct&>(dts1)._swap(dts2);
+
+	EXPECT_EQ(dts1.indKeyfField, 2);
+	EXPECT_EQ(dts1.stringField, "bar");
+	EXPECT_FALSE(dts1.floatField.isValid());
+
+	EXPECT_EQ(dts2.indKeyfField, 1);
+	EXPECT_EQ(dts2.stringField, "foo");
+	EXPECT_TRUE(dts2.floatField.isValid());
+	EXPECT_EQ(dts2.floatField, 3.1415f);
+}
+
+TEST(TestStruct, swap_ExpectedPropertiesAfterPartialSwap)
+{
+	DotsTestStruct dts1;
+	dts1.indKeyfField(1);
+	dts1.stringField("foo");
+	dts1.floatField(3.1415f);
+
+	DotsTestStruct dts2;
+	dts2.indKeyfField(2);
+	dts2.stringField("bar");
+	dts2.floatField(2.7183f);
+
+	static_cast<dots::type::Struct&>(dts1)._swap(dts2, DotsTestStruct::floatField_t::Set());
+
+	EXPECT_EQ(dts1.indKeyfField, 1);
+	EXPECT_EQ(dts1.stringField, "foo");
+	EXPECT_EQ(dts1.floatField, 2.7183f);
+
+	EXPECT_EQ(dts2.indKeyfField, 2);
+	EXPECT_EQ(dts2.stringField, "bar");
+	EXPECT_EQ(dts2.floatField, 3.1415f);
+}
+
+TEST(TestStruct, clear_AllPropertiesInvalidAfterCompleteClear)
+{
+	DotsTestStruct sut;
+	sut.indKeyfField(1);
+	sut.stringField("foo");
+	sut.floatField(3.1415f);
+
+	static_cast<dots::type::Struct&>(sut)._clear();
+
+	EXPECT_FALSE(sut.indKeyfField.isValid());
+	EXPECT_FALSE(sut.stringField.isValid());
+	EXPECT_FALSE(sut.floatField.isValid());
+}
+
+TEST(TestStruct, clear_OnlyClearedPropertiesInvalidAfterPartialClear)
+{
+	DotsTestStruct sut;
+	sut.indKeyfField(1);
+	sut.stringField("foo");
+	sut.floatField(3.1415f);
+
+	static_cast<dots::type::Struct&>(sut)._clear(~DotsTestStruct::stringField_t::Set());
+
+	EXPECT_FALSE(sut.indKeyfField.isValid());
+	EXPECT_TRUE(sut.stringField.isValid());
+	EXPECT_EQ(sut.stringField, "foo");
+	EXPECT_FALSE(sut.floatField.isValid());
+}
