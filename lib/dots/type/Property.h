@@ -95,6 +95,30 @@ namespace dots::type
 			return validPropertySet().test(tag());
 		}
 
+		value_t& construct(const Derived& rhs)
+		{
+			if (!rhs.isValid())
+			{
+				throw std::runtime_error{ std::string{ "attempt to construct from invalid property: " } + name().data() + "." + name().data() };
+			}
+			
+			construct(rhs.valueReference());
+
+			return *this;
+		}
+
+		value_t& construct(Derived&& rhs)
+		{
+			if (!rhs.isValid())
+			{
+				throw std::runtime_error{ std::string{ "attempt to construct from invalid property: " } + name().data() + "." + name().data() };
+			}
+
+			construct(rhs.extractUnchecked());
+
+			return *this;
+		}
+
 		template <typename... Args>
 		value_t& construct(Args&&... args)
 		{
@@ -149,6 +173,34 @@ namespace dots::type
 			{
 				return construct(std::forward<Args>(args)...);
 			}
+		}
+
+		value_t& assign(const Derived& rhs)
+		{
+			if (rhs.isValid())
+			{
+				assign(rhs.valueReference());
+			}
+			else
+			{
+				destroy();
+			}
+
+			return *this;
+		}
+
+		value_t& assign(Derived&& rhs)
+		{
+			if (rhs.isValid())
+			{
+				assign(rhs.extractUnchecked());
+			}
+			else
+			{
+				destroy();
+			}
+
+			return *this;
 		}
 
 		template <typename... Args>
@@ -269,11 +321,6 @@ namespace dots::type
 			return static_cast<const Derived&>(*this).derivedDescriptor();
 		}
 
-		const Descriptor& td() const
-		{
-			return *structProperty().td();
-		}
-
 		constexpr size_t offset() const
 		{
 			return structProperty().offset();
@@ -297,6 +344,11 @@ namespace dots::type
 		constexpr const std::string_view& type() const
 		{
 			return structProperty().type();
+		}
+
+		const Descriptor& td() const
+		{
+			return *structProperty().td();
 		}
 
 		constexpr property_set set() const
