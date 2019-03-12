@@ -45,6 +45,45 @@ TEST(TestTStruct, PropertyOffsetsInDescriptorMatchActualOffsets)
 	EXPECT_EQ(dts._descriptor().properties()[6].offset(), determine_offset(dts.uuid));
 }
 
+TEST(TestTStruct, PropertiesHaveExpectedTags)
+{
+	DotsTestStruct dts;
+
+	EXPECT_EQ(DotsTestStruct::stringField_t::Tag(), 1);
+	EXPECT_EQ(DotsTestStruct::indKeyfField_t::Tag(), 2);
+	EXPECT_EQ(DotsTestStruct::floatField_t::Tag(), 3);
+	EXPECT_EQ(DotsTestStruct::enumField_t::Tag(), 4);
+	EXPECT_EQ(DotsTestStruct::tp_t::Tag(), 5);
+	EXPECT_EQ(DotsTestStruct::subStruct_t::Tag(), 6);
+	EXPECT_EQ(DotsTestStruct::uuid_t::Tag(), 7);
+}
+
+TEST(TestTStruct, PropertiesHaveExpectedNames)
+{
+	DotsTestStruct dts;
+
+	EXPECT_EQ(DotsTestStruct::stringField_t::Name(), "stringField");
+	EXPECT_EQ(DotsTestStruct::indKeyfField_t::Name(), "indKeyfField");
+	EXPECT_EQ(DotsTestStruct::floatField_t::Name(), "floatField");
+	EXPECT_EQ(DotsTestStruct::enumField_t::Name(), "enumField");
+	EXPECT_EQ(DotsTestStruct::tp_t::Name(), "tp");
+	EXPECT_EQ(DotsTestStruct::subStruct_t::Name(), "subStruct");
+	EXPECT_EQ(DotsTestStruct::uuid_t::Name(), "uuid");
+}
+
+TEST(TestTStruct, PropertiesHaveExpectedSet)
+{
+	DotsTestStruct dts;
+
+	EXPECT_EQ(DotsTestStruct::stringField_t::Set(), dots::property_set{ 0x1 << 1 });
+	EXPECT_EQ(DotsTestStruct::indKeyfField_t::Set(), dots::property_set{ 0x1 << 2 });
+	EXPECT_EQ(DotsTestStruct::floatField_t::Set(), dots::property_set{ 0x1 << 3 });
+	EXPECT_EQ(DotsTestStruct::enumField_t::Set(), dots::property_set{ 0x1 << 4 });
+	EXPECT_EQ(DotsTestStruct::tp_t::Set(), dots::property_set{ 0x1 << 5 });
+	EXPECT_EQ(DotsTestStruct::subStruct_t::Set(), dots::property_set{ 0x1 << 6 });
+	EXPECT_EQ(DotsTestStruct::uuid_t::Set(), dots::property_set{ 0x1 << 7 });
+}
+
 TEST(TestTStruct, FlagsHaveExpectedValues)
 {
 	EXPECT_TRUE(DotsTestStruct::_IsCached());
