@@ -1,6 +1,8 @@
 #include "Struct.h"
 #include "StructDescriptor.h"
 #include "Registry.h"
+#include "PropertyIterator.h"
+#include "PropertyPairIterator.h"
 #include "dots/io/Transceiver.h"
 #include <StructDescriptorData.dots.h>
 
@@ -113,12 +115,7 @@ namespace dots::type
         return *_desc;
     }
 
-    const property_set& Struct::_keyPropertySet() const
-    {
-		return _desc->keys();
-    }
-
-    property_set& Struct::_validPropertySet()
+	property_set& Struct::_validPropertySet()
 	{
 		return _validPropSet;
 	}
@@ -126,6 +123,101 @@ namespace dots::type
 	{
 		return _validPropSet;
 	}
+
+	const property_set& Struct::_keyPropertySet() const
+	{
+		return _desc->keys();
+	}
+
+	property_iterator Struct::_begin(const property_set& propertySet)
+	{
+		return property_iterator{ *this, _descriptor().properties().begin(), propertySet };
+	}
+
+	const_property_iterator Struct::_begin(const property_set& propertySet) const
+	{
+		return const_property_iterator{ *this, _descriptor().properties().begin(), propertySet };
+	}
+
+    property_iterator Struct::_end(const property_set& propertySet)
+	{
+		return property_iterator{ *this, _descriptor().properties().end(), propertySet };
+	}
+
+	const_property_iterator Struct::_end(const property_set& propertySet) const
+	{
+		return const_property_iterator{ *this, _descriptor().properties().end(), propertySet };
+	}
+
+	reverse_property_iterator Struct::_rbegin(const property_set& propertySet)
+	{
+		return reverse_property_iterator{ *this, _descriptor().properties().rbegin(), propertySet };
+	}
+
+	const_reverse_property_iterator Struct::_rbegin(const property_set& propertySet) const
+	{
+		return const_reverse_property_iterator{ *this, _descriptor().properties().rbegin(), propertySet };
+	}
+
+	reverse_property_iterator Struct::_rend(const property_set& propertySet)
+	{
+		return reverse_property_iterator{ *this, _descriptor().properties().rend(), propertySet };
+	}
+
+	const_reverse_property_iterator Struct::_rend(const property_set& propertySet) const
+	{
+		return const_reverse_property_iterator{ *this, _descriptor().properties().rend(), propertySet };
+	}
+
+    property_range Struct::_propertyRange(const property_set& propertySet)
+    {
+		return property_range{ _begin(propertySet), _end(propertySet) };
+    }
+
+    const_property_range Struct::_propertyRange(const property_set& propertySet) const
+    {
+		return const_property_range{ _begin(propertySet), _end(propertySet) };
+    }
+
+    reverse_property_range Struct::_propertyRangeReversed(const property_set& propertySet)
+    {
+		return reverse_property_range{ _rbegin(propertySet), _rend(propertySet) };
+    }
+
+    const_reverse_property_range Struct::_propertyRangeReversed(const property_set& propertySet) const
+    {
+		return const_reverse_property_range{ _rbegin(propertySet), _rend(propertySet) };
+    }
+
+    property_pair_range Struct::_propertyPairRange(Struct& rhs, const property_set& propertySet/* = PROPERTY_SET_ALL*/)
+    {
+		return property_pair_range{ property_pair_iterator{ _begin(propertySet), rhs._begin(propertySet) }, property_pair_iterator{ _end(propertySet), rhs._end(propertySet) } };
+    }
+
+    property_pair_range_const Struct::_propertyPairRange(const Struct& rhs, const property_set& propertySet/* = PROPERTY_SET_ALL*/)
+    {
+		return property_pair_range_const{ property_pair_iterator_const{ _begin(propertySet), rhs._begin(propertySet) }, property_pair_iterator_const{ _end(propertySet), rhs._end(propertySet) } };
+    }
+
+    const_property_pair_range_const Struct::_propertyPairRange(const Struct& rhs, const property_set& propertySet/* = PROPERTY_SET_ALL*/) const
+    {
+		return const_property_pair_range_const{ const_property_pair_iterator_const{ _begin(propertySet), rhs._begin(propertySet) }, const_property_pair_iterator_const{ _end(propertySet), rhs._end(propertySet) } };
+    }
+
+    reverse_property_pair_range Struct::_propertyPairRangeReversed(Struct& rhs, const property_set& propertySet/* = PROPERTY_SET_ALL*/)
+    {
+		return reverse_property_pair_range{ reverse_property_pair_iterator{ _rbegin(propertySet), rhs._rbegin(propertySet) }, reverse_property_pair_iterator{ _rend(propertySet), rhs._rend(propertySet) } };
+    }
+
+    reverse_property_pair_range_const Struct::_propertyPairRangeReversed(const Struct& rhs, const property_set& propertySet/* = PROPERTY_SET_ALL*/)
+    {
+		return reverse_property_pair_range_const{ reverse_property_pair_iterator_const{ _rbegin(propertySet), rhs._rbegin(propertySet) }, reverse_property_pair_iterator_const{ _rend(propertySet), rhs._rend(propertySet) } };
+    }
+
+    const_reverse_property_pair_range_const Struct::_propertyPairRangeReversed(const Struct& rhs, const property_set& propertySet/* = PROPERTY_SET_ALL*/) const
+    {
+		return const_reverse_property_pair_range_const{ const_reverse_property_pair_iterator_const{ _rbegin(propertySet), rhs._rbegin(propertySet) }, const_reverse_property_pair_iterator_const{ _rend(propertySet), rhs._rend(propertySet) } };
+    }
 
     void Struct::_publish(const property_set& what/* = PROPERTY_SET_ALL*/, bool remove/* = false*/) const
     {
@@ -213,5 +305,45 @@ namespace dots::type
 		}
 
 		return MakeStructDescriptor(structDescriptorAddr, structDescriptorData);
+    }
+
+	property_iterator begin(Struct& instance)
+    {
+		return instance._begin();
+    }
+
+	const_property_iterator begin(const Struct& instance)
+    {
+		return instance._begin();
+    }
+
+	property_iterator end(Struct& instance)
+    {
+		return instance._end();
+    }
+
+	const_property_iterator end(const Struct& instance)
+    {
+		return instance._end();
+    }
+
+	reverse_property_iterator rbegin(Struct& instance)
+    {
+		return instance._rbegin();
+    }
+
+	const_reverse_property_iterator rbegin(const Struct& instance)
+    {
+		return instance._rbegin();
+    }
+
+	reverse_property_iterator rend(Struct& instance)
+    {
+		return instance._rend();
+    }
+
+	const_reverse_property_iterator rend(const Struct& instance)
+    {
+		return instance._rend();
     }
 }
