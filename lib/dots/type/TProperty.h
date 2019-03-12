@@ -110,20 +110,13 @@ namespace dots::type
 
 		TProperty& operator = (const TProperty& rhs)
 		{
-			if (Property<T, Derived>::isValid())
+			if (rhs.isValid())
 			{
-				if (rhs.isValid())
-				{
-					_value = rhs._value;
-				}
-				else
-				{
-					Property<T, Derived>::destroy();
-				}
+				Property<T, Derived>::constructOrAssign(static_cast<const Derived&>(rhs));
 			}
-			else if (rhs.isValid())
+			else
 			{
-				construct(rhs._value);
+				Property<T, Derived>::destroy();
 			}
 
 			return *this;
@@ -131,20 +124,13 @@ namespace dots::type
 
 		TProperty& operator = (TProperty&& rhs)
 		{
-			if (Property<T, Derived>::isValid())
+			if (rhs.isValid())
 			{
-				if (rhs.isValid())
-				{
-					_value = rhs.extractUnchecked();
-				}
-				else
-				{
-					Property<T, Derived>::destroy();
-				}
+				Property<T, Derived>::constructOrAssign(static_cast<Derived&&>(rhs));
 			}
-			else if (rhs.isValid())
+			else
 			{
-				construct(rhs.extractUnchecked());
+				Property<T, Derived>::destroy();
 			}
 
 			return *this;
