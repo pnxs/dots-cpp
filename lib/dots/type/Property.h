@@ -445,7 +445,7 @@ namespace dots::type
 
 					if constexpr (std::is_same_v<std::remove_reference_t<std::common_type_t<Args...>>, value_t>)
 					{
-						value_t& rhs = static_cast<value_t&>(std::get<0>(std::forward_as_tuple(args...)));
+						const value_t& rhs = static_cast<const value_t&>(std::get<0>(std::forward_as_tuple(args...)));
 						td().copy(&valueReference(), &rhs);
 					}
 				}
