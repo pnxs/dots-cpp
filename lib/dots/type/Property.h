@@ -351,6 +351,16 @@ namespace dots::type
 			return *structProperty().td();
 		}
 
+		bool hasType(DotsType type) const
+		{
+			return td().dotsType() == type;
+		}
+
+		bool hasFundamentalType() const
+		{
+			return dots::type::isDotsBaseType(td().dotsType());
+		}
+
 		constexpr property_set set() const
 		{
 			property_set propertySet;
