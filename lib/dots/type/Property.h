@@ -65,7 +65,7 @@ namespace dots::type
 			return equal(rhs);
 		}
 
-		bool operator == (const Property& rhs) const
+		bool operator == (const Derived& rhs) const
 		{
 			return equal(rhs);
 		}
@@ -75,7 +75,7 @@ namespace dots::type
 			return !(*this == rhs);
 		}
 
-		bool operator != (const Property& rhs) const
+		bool operator != (const Derived& rhs) const
 		{
 			return !(*this == rhs);
 		}
@@ -85,7 +85,7 @@ namespace dots::type
 			return less(rhs);
 		}
 
-		bool operator < (const Property& rhs) const
+		bool operator < (const Derived& rhs) const
 		{
 			return less(rhs);
 		}
@@ -230,7 +230,7 @@ namespace dots::type
 			}
 		}
 
-		void swap(Property& other)
+		void swap(Derived& other)
 		{
 			if (isValid())
 			{
@@ -281,7 +281,7 @@ namespace dots::type
 			return isValid() && valueEqual(rhs);
 		}
 
-		bool equal(const Property& rhs) const
+		bool equal(const Derived& rhs) const
 		{
 			return rhs.isValid() && equal(*rhs);
 		}
@@ -291,7 +291,7 @@ namespace dots::type
 			return isValid() && valueLess(rhs);
 		}
 
-		bool less(const Property& rhs) const
+		bool less(const Derived& rhs) const
 		{
 			return !rhs.isValid() || less(*rhs);
 		}
