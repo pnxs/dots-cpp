@@ -136,7 +136,7 @@ namespace dots::type
 
 		if (!intersection.empty())
 		{
-			for (const auto&[propertyThis, propertyOther] : _propertyPairRange(other, intersection))
+			for (const auto&[propertyThis, propertyOther] : _propertyRange(other, intersection))
 			{
 				if (propertyThis.td().equal(&*propertyThis, &*propertyOther))
 				{
@@ -208,32 +208,32 @@ namespace dots::type
 		return const_reverse_property_range{ _rbegin(propertySet), _rend(propertySet) };
     }
 
-    property_pair_range Struct::_propertyPairRange(Struct& rhs, const property_set& propertySet/* = PROPERTY_SET_ALL*/)
+    property_pair_range Struct::_propertyRange(Struct& rhs, const property_set& propertySet/* = PROPERTY_SET_ALL*/)
     {
 		return property_pair_range{ property_pair_iterator{ _begin(propertySet), rhs._begin(propertySet) }, property_pair_iterator{ _end(propertySet), rhs._end(propertySet) } };
     }
 
-    property_pair_range_const Struct::_propertyPairRange(const Struct& rhs, const property_set& propertySet/* = PROPERTY_SET_ALL*/)
+    property_pair_range_const Struct::_propertyRange(const Struct& rhs, const property_set& propertySet/* = PROPERTY_SET_ALL*/)
     {
 		return property_pair_range_const{ property_pair_iterator_const{ _begin(propertySet), rhs._begin(propertySet) }, property_pair_iterator_const{ _end(propertySet), rhs._end(propertySet) } };
     }
 
-    const_property_pair_range_const Struct::_propertyPairRange(const Struct& rhs, const property_set& propertySet/* = PROPERTY_SET_ALL*/) const
+    const_property_pair_range_const Struct::_propertyRange(const Struct& rhs, const property_set& propertySet/* = PROPERTY_SET_ALL*/) const
     {
 		return const_property_pair_range_const{ const_property_pair_iterator_const{ _begin(propertySet), rhs._begin(propertySet) }, const_property_pair_iterator_const{ _end(propertySet), rhs._end(propertySet) } };
     }
 
-    reverse_property_pair_range Struct::_propertyPairRangeReversed(Struct& rhs, const property_set& propertySet/* = PROPERTY_SET_ALL*/)
+    reverse_property_pair_range Struct::_propertyRangeReversed(Struct& rhs, const property_set& propertySet/* = PROPERTY_SET_ALL*/)
     {
 		return reverse_property_pair_range{ reverse_property_pair_iterator{ _rbegin(propertySet), rhs._rbegin(propertySet) }, reverse_property_pair_iterator{ _rend(propertySet), rhs._rend(propertySet) } };
     }
 
-    reverse_property_pair_range_const Struct::_propertyPairRangeReversed(const Struct& rhs, const property_set& propertySet/* = PROPERTY_SET_ALL*/)
+    reverse_property_pair_range_const Struct::_propertyRangeReversed(const Struct& rhs, const property_set& propertySet/* = PROPERTY_SET_ALL*/)
     {
 		return reverse_property_pair_range_const{ reverse_property_pair_iterator_const{ _rbegin(propertySet), rhs._rbegin(propertySet) }, reverse_property_pair_iterator_const{ _rend(propertySet), rhs._rend(propertySet) } };
     }
 
-    const_reverse_property_pair_range_const Struct::_propertyPairRangeReversed(const Struct& rhs, const property_set& propertySet/* = PROPERTY_SET_ALL*/) const
+    const_reverse_property_pair_range_const Struct::_propertyRangeReversed(const Struct& rhs, const property_set& propertySet/* = PROPERTY_SET_ALL*/) const
     {
 		return const_reverse_property_pair_range_const{ const_reverse_property_pair_iterator_const{ _rbegin(propertySet), rhs._rbegin(propertySet) }, const_reverse_property_pair_iterator_const{ _rend(propertySet), rhs._rend(propertySet) } };
     }
@@ -242,7 +242,7 @@ namespace dots::type
     {
 		property_set assignPropertySet = other._validPropertySet() & propertySet;
 
-		for (auto&[propertyThis, propertyOther] : _propertyPairRange(other))
+		for (auto&[propertyThis, propertyOther] : _propertyRange(other))
 		{
 			if (propertyThis.isPartOf(assignPropertySet))
 			{
@@ -261,7 +261,7 @@ namespace dots::type
     {
 		property_set copyPropertySet = (_validPropertySet() | other._validPropertySet()) & propertySet;
 
-		for (auto&[propertyThis, propertyOther] : _propertyPairRange(other, copyPropertySet))
+		for (auto&[propertyThis, propertyOther] : _propertyRange(other, copyPropertySet))
 		{
 			propertyThis.constructOrAssign(propertyOther);
 		}
@@ -277,7 +277,7 @@ namespace dots::type
 
     void Struct::_swap(Struct& other, const property_set& propertySet/* = PROPERTY_SET_ALL*/)
     {
-		for (auto&[propertyThis, propertyOther] : _propertyPairRange(other, propertySet))
+		for (auto&[propertyThis, propertyOther] : _propertyRange(other, propertySet))
 		{
 			propertyThis.swap(propertyOther);
 		}
@@ -293,7 +293,7 @@ namespace dots::type
 
     bool Struct::_equal(const Struct& rhs) const
     {
-		for (const auto&[propertyThis, propertyOther] : _propertyPairRange(rhs))
+		for (const auto&[propertyThis, propertyOther] : _propertyRange(rhs))
 		{
 			if (propertyThis != propertyOther)
 			{
@@ -306,7 +306,7 @@ namespace dots::type
 
     bool Struct::_less(const Struct& rhs) const
     {
-		for (const auto&[propertyThis, propertyOther] : _propertyPairRange(rhs))
+		for (const auto&[propertyThis, propertyOther] : _propertyRange(rhs))
 		{
 			if (!(propertyThis < propertyOther))
 			{

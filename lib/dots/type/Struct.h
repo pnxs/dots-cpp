@@ -86,13 +86,13 @@ namespace dots::type
 		reverse_property_range _propertyRangeReversed(const property_set& propertySet = PROPERTY_SET_ALL);
 		const_reverse_property_range _propertyRangeReversed(const property_set& propertySet = PROPERTY_SET_ALL) const;
 
-		property_pair_range _propertyPairRange(Struct& rhs, const property_set& propertySet = PROPERTY_SET_ALL);
-		property_pair_range_const _propertyPairRange(const Struct& rhs, const property_set& propertySet = PROPERTY_SET_ALL);
-		const_property_pair_range_const _propertyPairRange(const Struct& rhs, const property_set& propertySet = PROPERTY_SET_ALL) const;
+		property_pair_range _propertyRange(Struct& rhs, const property_set& propertySet = PROPERTY_SET_ALL);
+		property_pair_range_const _propertyRange(const Struct& rhs, const property_set& propertySet = PROPERTY_SET_ALL);
+		const_property_pair_range_const _propertyRange(const Struct& rhs, const property_set& propertySet = PROPERTY_SET_ALL) const;
 
-		reverse_property_pair_range _propertyPairRangeReversed(Struct& rhs, const property_set& propertySet = PROPERTY_SET_ALL);
-		reverse_property_pair_range_const _propertyPairRangeReversed(const Struct& rhs, const property_set& propertySet = PROPERTY_SET_ALL);
-		const_reverse_property_pair_range_const _propertyPairRangeReversed(const Struct& rhs, const property_set& propertySet = PROPERTY_SET_ALL) const;
+		reverse_property_pair_range _propertyRangeReversed(Struct& rhs, const property_set& propertySet = PROPERTY_SET_ALL);
+		reverse_property_pair_range_const _propertyRangeReversed(const Struct& rhs, const property_set& propertySet = PROPERTY_SET_ALL);
+		const_reverse_property_pair_range_const _propertyRangeReversed(const Struct& rhs, const property_set& propertySet = PROPERTY_SET_ALL) const;
 
 		Struct& _assign(const Struct& other, const property_set& propertySet = PROPERTY_SET_ALL);
 		Struct& _copy(const Struct& other, const property_set& propertySet = PROPERTY_SET_ALL);
