@@ -9,10 +9,10 @@ namespace dots::type
 	struct PropertyPairIterator
 	{
 		// custom iterator traits
-		using inner_lhs_iterator_t = LhsIterator;
-		using inner_rhs_iterator_t = RhsIterator;
-		using inner_lhs_value_t    = typename inner_lhs_iterator_t::value_type;
-		using inner_rhs_value_t    = typename inner_rhs_iterator_t::value_type;
+		using inner_lhs_iterator_t          = LhsIterator;
+		using inner_rhs_iterator_t          = RhsIterator;
+		using inner_lhs_value_t             = typename inner_lhs_iterator_t::value_type;
+		using inner_rhs_value_t             = typename inner_rhs_iterator_t::value_type;
 		using inner_lhs_iterator_category_t = typename inner_lhs_iterator_t::iterator_category;
 		using inner_rhs_iterator_category_t = typename inner_rhs_iterator_t::iterator_category;
 		static_assert(std::is_same_v<inner_lhs_iterator_category_t, inner_rhs_iterator_category_t>, "iterator types must have same category");
@@ -20,8 +20,8 @@ namespace dots::type
 		// STL iterator traits
 		using iterator_category = typename inner_lhs_iterator_t::iterator_category;
 		using value_type        = std::pair<inner_lhs_value_t, inner_rhs_value_t>;
-		using reference         = std::pair<inner_lhs_value_t&, inner_rhs_value_t&>;
-		using pointer           = std::pair<inner_lhs_value_t*, inner_rhs_value_t*>;
+		using reference         = std::pair<inner_lhs_value_t, inner_rhs_value_t>&;
+		using pointer           = std::pair<inner_lhs_value_t, inner_rhs_value_t>*;
 
 		PropertyPairIterator(inner_lhs_iterator_t innerIteratorLhs, inner_rhs_iterator_t innerIteratorRhs) :
 			_innerIteratorLhs(std::move(innerIteratorLhs)),
@@ -108,7 +108,7 @@ namespace dots::type
 
 		inner_lhs_iterator_t _innerIteratorLhs;
 		inner_rhs_iterator_t _innerIteratorRhs;
-		std::optional<reference> _proxyPair;
+		std::optional<value_type> _proxyPair;
 	};
 
 	struct property_pair_iterator : PropertyPairIterator<property_iterator, property_iterator>
