@@ -99,7 +99,7 @@ namespace dots::type
 		{
 			if (!rhs.isValid())
 			{
-				throw std::runtime_error{ std::string{ "attempt to construct from invalid property: " } + name().data() + "." + name().data() };
+				throw std::runtime_error{ std::string{ "attempt to construct from invalid property: " } + qualifiedName() };
 			}
 			
 			construct(rhs.valueReference());
@@ -111,7 +111,7 @@ namespace dots::type
 		{
 			if (!rhs.isValid())
 			{
-				throw std::runtime_error{ std::string{ "attempt to construct from invalid property: " } + name().data() + "." + name().data() };
+				throw std::runtime_error{ std::string{ "attempt to construct from invalid property: " } + qualifiedName() };
 			}
 
 			construct(rhs.extractUnchecked());
@@ -129,7 +129,7 @@ namespace dots::type
 
 			if (isValid())
 			{
-				throw std::runtime_error{ std::string{ "attempt to construct already valid property: " } + name().data() + "." + name().data() };
+				throw std::runtime_error{ std::string{ "attempt to construct already valid property: " } + qualifiedName() };
 			}
 
 			valueConstruct(std::forward<Args>(args)...);
@@ -151,7 +151,7 @@ namespace dots::type
 		{
 			if (!isValid())
 			{
-				throw std::runtime_error{ std::string{ "attempt to access invalid property: " } + name().data() + "." + name().data() };
+				throw std::runtime_error{ std::string{ "attempt to access invalid property: " } + qualifiedName() };
 			}
 
 			return valueReference();
@@ -208,7 +208,7 @@ namespace dots::type
 		{
 			if (!isValid())
 			{
-				throw std::runtime_error{ std::string{ "attempt to assign invalid property: " } + name().data() + "." + name().data() };
+				throw std::runtime_error{ std::string{ "attempt to assign invalid property: " } + qualifiedName() };
 			}
 
 			valueAssign(std::forward<Args>(args)...);
@@ -270,7 +270,7 @@ namespace dots::type
 		{
 			if (!isValid())
 			{
-				throw std::runtime_error{ std::string{ "attempt to extract invalid property: " } + name().data() + "." + name().data() };
+				throw std::runtime_error{ std::string{ "attempt to extract invalid property: " } +qualifiedName()  };
 			}
 
 			return extractUnchecked();
@@ -300,7 +300,7 @@ namespace dots::type
 		{
 			if (!isValid())
 			{
-				throw std::runtime_error{ std::string{ "attempt to publish invalid property: " } + name().data() + "." + name().data() };
+				throw std::runtime_error{ std::string{ "attempt to publish invalid property: " } + qualifiedName() };
 			}
 
 			instance()._publish(set());
@@ -339,6 +339,11 @@ namespace dots::type
 		constexpr const std::string_view& name() const
 		{
 			return structProperty().name();
+		}
+
+		std::string qualifiedName() const
+		{
+			return instance()._descriptor().name() + "." + name().data();
 		}
 
 		constexpr const std::string_view& typeName() const
