@@ -19,16 +19,7 @@ namespace dots::type
 		using reference         = std::conditional_t<IsConst, const value_type&, value_type&>;
 		using pointer           = std::conditional_t<IsConst, const value_type*, value_type*>;
 
-		PropertyIterator(struct_t& instance, inner_iterator_t innerIterator, const property_set& set = PROPERTY_SET_ALL) :
-			_instance(&instance),
-			_innerIterator(std::move(innerIterator)),
-			_set(set)
-		{
-			if (!emplaceProxy().isPartOf(_set))
-			{
-				++(*this);
-			}
-		}
+		PropertyIterator(struct_t& instance, inner_iterator_t innerIterator, const property_set& set = PROPERTY_SET_ALL);
 		PropertyIterator(const PropertyIterator& other) = default;
 		PropertyIterator(PropertyIterator&& other) = default;
 		~PropertyIterator() = default;
@@ -36,126 +27,29 @@ namespace dots::type
 		PropertyIterator& operator = (const PropertyIterator& rhs) = default;
 		PropertyIterator& operator = (PropertyIterator&& rhs) = default;
 
-		void swap(PropertyIterator& other) noexcept
-		{
-			std::swap(_instance, other._instance);
-			std::swap(_innerIterator, other._innerIterator);
-		}
+		void swap(PropertyIterator& other) noexcept;
+		void swap(PropertyIterator&& other);
 
-		void swap(PropertyIterator&& other)
-		{
-			_instance = other._instance;
-			other._instance = nullptr;
-			_innerIterator = std::move(other._innerIterator);
-		}
+		PropertyIterator& operator ++ ();
+		PropertyIterator& operator -- ();
 
-		PropertyIterator& operator ++ ()
-		{
-			while (!hasReachedEnd())
-			{
-				++_innerIterator;
+		PropertyIterator operator ++ (int);
+		PropertyIterator operator -- (int);
 
-				if (emplaceProxy().isPartOf(_set))
-				{
-					break;
-				}
-			}
-			
-			return *this;
-		}
+		reference operator * ();
+		const reference operator * () const;
 
-		PropertyIterator& operator -- ()
-		{
-			while (!hasReachedEnd())
-			{
-				--_innerIterator;
+		pointer operator -> ();
+		const pointer operator -> () const;
 
-				if (emplaceProxy().isPartOf(_set))
-				{
-					break;
-				}
-			}
-
-			return *this;
-		}
-
-		PropertyIterator operator ++ (int)
-		{
-			PropertyIterator copy = *this;
-			++(*this);
-
-			return copy;
-		}
-
-		PropertyIterator operator -- (int)
-		{
-			PropertyIterator copy = *this;
-			--(*this);
-
-			return copy;
-		}
-
-		reference operator * ()
-		{
-			if (hasReachedEnd())
-			{
-				throw std::logic_error{ "attempt to access past-end property" };
-			}
-
-			return *_proxy;
-		}
-
-		const reference operator * () const
-		{
-			return *const_cast<PropertyIterator&>(*this);
-		}
-
-		pointer operator -> ()
-		{
-			return &*(*this);
-		}
-
-		const pointer operator -> () const
-		{
-			return &*(*this);
-		}
-
-		bool operator == (const PropertyIterator& other) const
-		{
-			return _innerIterator == other._innerIterator;
-		}
-
-		bool operator != (const PropertyIterator& other) const
-		{
-			return !(*this == other);
-		}
+		bool operator == (const PropertyIterator& other) const;
+		bool operator != (const PropertyIterator& other) const;
 
 	private:
 
-		bool hasReachedEnd() const
-		{
-			if constexpr (IsReverse)
-			{
-				return _innerIterator == _instance->_descriptor().properties().rend();
-			}
-			else
-			{
-				return _innerIterator == _instance->_descriptor().properties().end();
-			}
-		}
+		bool hasReachedEnd() const;
 
-		reference emplaceProxy()
-		{
-			// TODO: implement better solution
-			if constexpr (IsConst)
-			{
-				return _proxy.emplace(const_cast<char*>(_innerIterator->address(_instance)), *_innerIterator);
-			}
-			else
-			{
-				return _proxy.emplace(_innerIterator->address(_instance), *_innerIterator);
-			}
-		}
+		reference emplaceProxy();
 
 		struct_t* _instance;
 		inner_iterator_t _innerIterator;
@@ -163,35 +57,20 @@ namespace dots::type
 		std::optional<base_value_type> _proxy;
 	};
 
-	struct property_iterator : PropertyIterator<false, false>
-	{
-		using PropertyIterator::PropertyIterator;
-	};
+	extern template	struct PropertyIterator<false, false>;
+	extern template	struct PropertyIterator<false, true>;
+	extern template	struct PropertyIterator<true, false>;
+	extern template	struct PropertyIterator<true, true>;
 
-	struct const_property_iterator : PropertyIterator<false, true>
-	{
-		using PropertyIterator::PropertyIterator;
-	};
-
-	struct reverse_property_iterator : PropertyIterator<true, false>
-	{
-		using PropertyIterator::PropertyIterator;
-	};
-
-	struct const_reverse_property_iterator : PropertyIterator<true, true>
-	{
-		using PropertyIterator::PropertyIterator;
-	};
+	using property_iterator               = PropertyIterator<false, false>;
+	using const_property_iterator         = PropertyIterator<false, true>;
+	using reverse_property_iterator       = PropertyIterator<true, false>;
+	using const_reverse_property_iterator = PropertyIterator<true, true>;
 
 	template <typename Iterator>
 	struct PropertyRange
 	{
-		PropertyRange(Iterator begin, Iterator end) :
-			_begin(std::move(begin)),
-			_end(std::move(end))
-		{
-			/* do nothing */
-		}
+		PropertyRange(Iterator begin, Iterator end);
 		PropertyRange(const PropertyRange& other) = default;
 		PropertyRange(PropertyRange&& other) = default;
 		~PropertyRange() = default;
@@ -199,15 +78,8 @@ namespace dots::type
 		PropertyRange& operator = (const PropertyRange& rhs) = default;
 		PropertyRange& operator = (PropertyRange&& rhs) = default;
 
-		Iterator begin() const
-		{
-			return _begin;
-		}
-
-		Iterator end() const
-		{
-			return _end;
-		}
+		Iterator begin() const;
+		Iterator end() const;
 
 	private:
 
@@ -215,23 +87,13 @@ namespace dots::type
 		Iterator _end;
 	};
 
-	struct property_range : PropertyRange<property_iterator>
-	{
-		using PropertyRange::PropertyRange;
-	};
+	extern template	struct PropertyRange<property_iterator>;
+	extern template	struct PropertyRange<const_property_iterator>;
+	extern template	struct PropertyRange<reverse_property_iterator>;
+	extern template	struct PropertyRange<const_reverse_property_iterator>;
 
-	struct const_property_range : PropertyRange<const_property_iterator>
-	{
-		using PropertyRange::PropertyRange;
-	};
-
-	struct reverse_property_range : PropertyRange<reverse_property_iterator>
-	{
-		using PropertyRange::PropertyRange;
-	};
-
-	struct const_reverse_property_range : PropertyRange<const_reverse_property_iterator>
-	{
-		using PropertyRange::PropertyRange;
-	};
+	using property_range               = PropertyRange<property_iterator>;
+	using const_property_range         = PropertyRange<const_property_iterator>;
+	using reverse_property_range       = PropertyRange<reverse_property_iterator>;
+	using const_reverse_property_range = PropertyRange<const_reverse_property_iterator>;
 }

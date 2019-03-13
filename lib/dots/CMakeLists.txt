@@ -63,6 +63,9 @@ add_library(dots SHARED
         type/ChronoDescriptor.cpp
         type/Descriptor.cpp
         type/EnumDescriptor.cpp
+		type/PropertyIterator.cpp
+		type/PropertyPairIterator.cpp
+		type/EnumDescriptor.cpp
         type/Registry.cpp
         type/StandardTypes.cpp
         type/StructDescriptor.cpp

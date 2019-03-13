@@ -23,12 +23,7 @@ namespace dots::type
 		using reference         = std::pair<inner_lhs_value_t, inner_rhs_value_t>&;
 		using pointer           = std::pair<inner_lhs_value_t, inner_rhs_value_t>*;
 
-		PropertyPairIterator(inner_lhs_iterator_t innerIteratorLhs, inner_rhs_iterator_t innerIteratorRhs) :
-			_innerIteratorLhs(std::move(innerIteratorLhs)),
-			_innerIteratorRhs(std::move(innerIteratorRhs))
-		{
-			/* do nothing */
-		}
+		PropertyPairIterator(inner_lhs_iterator_t innerIteratorLhs, inner_rhs_iterator_t innerIteratorRhs);
 		PropertyPairIterator(const PropertyPairIterator& other) = default;
 		PropertyPairIterator(PropertyPairIterator&& other) = default;
 		~PropertyPairIterator() = default;
@@ -36,73 +31,23 @@ namespace dots::type
 		PropertyPairIterator& operator = (const PropertyPairIterator& rhs) = default;
 		PropertyPairIterator& operator = (PropertyPairIterator&& rhs) = default;
 
-		void swap(PropertyPairIterator& other) noexcept
-		{
-			std::swap(_innerIteratorLhs, other._innerIteratorLhs);
-			std::swap(_innerIteratorRhs, other._innerIteratorRhs);
-		}
+		void swap(PropertyPairIterator& other) noexcept;
+		void swap(PropertyPairIterator&& other);
 
-		void swap(PropertyPairIterator&& other)
-		{
-			_innerIteratorLhs = std::move(other._innerIteratorLhs);
-			_innerIteratorRhs = std::move(other._innerIteratorRhs);
-		}
+		PropertyPairIterator& operator ++ ();
+		PropertyPairIterator& operator -- ();
 
-		PropertyPairIterator& operator ++ ()
-		{
-			++_innerIteratorLhs;
-			++_innerIteratorRhs;
+		PropertyPairIterator operator ++ (int);
+		PropertyPairIterator operator -- (int);
 
-			return *this;
-		}
+		reference operator * ();
+		const reference operator * () const;
 
-		PropertyPairIterator& operator -- ()
-		{
-			--_innerIteratorLhs;
-			--_innerIteratorRhs;
+		pointer operator -> ();
+		const pointer operator -> () const;
 
-			return *this;
-		}
-
-		PropertyPairIterator operator ++ (int)
-		{
-			return PropertyPairIterator{ _innerIteratorLhs++, _innerIteratorRhs++ };
-		}
-
-		PropertyPairIterator operator -- (int)
-		{
-			return PropertyPairIterator{ _innerIteratorLhs--, _innerIteratorRhs-- };
-		}
-
-		reference operator * ()
-		{
-			return _proxyPair.emplace(*_innerIteratorLhs, *_innerIteratorRhs);
-		}
-
-		const reference operator * () const
-		{
-			return *const_cast<PropertyPairIterator&>(*this);
-		}
-
-		pointer operator -> ()
-		{
-			return &*(*this);
-		}
-
-		const pointer operator -> () const
-		{
-			return &*(*this);
-		}
-
-		bool operator == (const PropertyPairIterator& other) const
-		{
-			return _innerIteratorLhs == other._innerIteratorLhs && _innerIteratorRhs == other._innerIteratorRhs;
-		}
-
-		bool operator != (const PropertyPairIterator& other) const
-		{
-			return !(*this == other);
-		}
+		bool operator == (const PropertyPairIterator& other) const;
+		bool operator != (const PropertyPairIterator& other) const;
 
 	private:
 
@@ -111,45 +56,24 @@ namespace dots::type
 		std::optional<value_type> _proxyPair;
 	};
 
-	struct property_pair_iterator : PropertyPairIterator<property_iterator, property_iterator>
-	{
-		using PropertyPairIterator::PropertyPairIterator;
-	};
+	extern template	struct PropertyPairIterator<property_iterator, property_iterator>;
+	extern template	struct PropertyPairIterator<property_iterator, const_property_iterator>;
+	extern template	struct PropertyPairIterator<const_property_iterator, const_property_iterator>;
+	extern template	struct PropertyPairIterator<reverse_property_iterator, reverse_property_iterator>;
+	extern template	struct PropertyPairIterator<reverse_property_iterator, const_reverse_property_iterator>;
+	extern template	struct PropertyPairIterator<const_reverse_property_iterator, const_reverse_property_iterator>;
 
-	struct property_pair_iterator_const : PropertyPairIterator<property_iterator, const_property_iterator>
-	{
-		using PropertyPairIterator::PropertyPairIterator;
-	};
-
-	struct const_property_pair_iterator_const : PropertyPairIterator<const_property_iterator, const_property_iterator>
-	{
-		using PropertyPairIterator::PropertyPairIterator;
-	};
-
-	struct reverse_property_pair_iterator : PropertyPairIterator<reverse_property_iterator, reverse_property_iterator>
-	{
-		using PropertyPairIterator::PropertyPairIterator;
-	};
-
-	struct reverse_property_pair_iterator_const : PropertyPairIterator<reverse_property_iterator, const_reverse_property_iterator>
-	{
-		using PropertyPairIterator::PropertyPairIterator;
-	};
-
-	struct const_reverse_property_pair_iterator_const : PropertyPairIterator<const_reverse_property_iterator, const_reverse_property_iterator>
-	{
-		using PropertyPairIterator::PropertyPairIterator;
-	};
+	using property_pair_iterator                     = PropertyPairIterator<property_iterator, property_iterator>;
+	using property_pair_iterator_const               = PropertyPairIterator<property_iterator, const_property_iterator>;
+	using const_property_pair_iterator_const         = PropertyPairIterator<const_property_iterator, const_property_iterator>;
+	using reverse_property_pair_iterator             = PropertyPairIterator<reverse_property_iterator, reverse_property_iterator>;
+	using reverse_property_pair_iterator_const       = PropertyPairIterator<reverse_property_iterator, const_reverse_property_iterator>;
+	using const_reverse_property_pair_iterator_const = PropertyPairIterator<const_reverse_property_iterator, const_reverse_property_iterator>;
 
 	template <typename Iterator>
 	struct PropertyPairRange
 	{
-		PropertyPairRange(Iterator begin, Iterator end) :
-			_begin(std::move(begin)),
-			_end(std::move(end))
-		{
-			/* do nothing */
-		}
+		PropertyPairRange(Iterator begin, Iterator end);
 		PropertyPairRange(const PropertyPairRange& other) = default;
 		PropertyPairRange(PropertyPairRange&& other) = default;
 		~PropertyPairRange() = default;
@@ -157,15 +81,9 @@ namespace dots::type
 		PropertyPairRange& operator = (const PropertyPairRange& rhs) = default;
 		PropertyPairRange& operator = (PropertyPairRange&& rhs) = default;
 
-		Iterator begin() const
-		{
-			return _begin;
-		}
+		Iterator begin() const;
 
-		Iterator end() const
-		{
-			return _end;
-		}
+		Iterator end() const;
 
 	private:
 
@@ -173,33 +91,17 @@ namespace dots::type
 		Iterator _end;
 	};
 
-	struct property_pair_range : PropertyPairRange<property_pair_iterator>
-	{
-		using PropertyPairRange::PropertyPairRange;
-	};
+	extern template	struct PropertyPairRange<property_pair_iterator>;
+	extern template	struct PropertyPairRange<property_pair_iterator_const>;
+	extern template	struct PropertyPairRange<const_property_pair_iterator_const>;
+	extern template	struct PropertyPairRange<reverse_property_pair_iterator>;
+	extern template	struct PropertyPairRange<reverse_property_pair_iterator_const>;
+	extern template	struct PropertyPairRange<const_reverse_property_pair_iterator_const>;
 
-	struct property_pair_range_const : PropertyPairRange<property_pair_iterator_const>
-	{
-		using PropertyPairRange::PropertyPairRange;
-	};
-
-	struct const_property_pair_range_const : PropertyPairRange<const_property_pair_iterator_const>
-	{
-		using PropertyPairRange::PropertyPairRange;
-	};
-
-	struct reverse_property_pair_range : PropertyPairRange<reverse_property_pair_iterator>
-	{
-		using PropertyPairRange::PropertyPairRange;
-	};
-
-	struct reverse_property_pair_range_const : PropertyPairRange<reverse_property_pair_iterator_const>
-	{
-		using PropertyPairRange::PropertyPairRange;
-	};
-
-	struct const_reverse_property_pair_range_const : PropertyPairRange<const_reverse_property_pair_iterator_const>
-	{
-		using PropertyPairRange::PropertyPairRange;
-	};
+	using property_pair_range                     = PropertyPairRange<property_pair_iterator>;
+	using property_pair_range_const               = PropertyPairRange<property_pair_iterator_const>;
+	using const_property_pair_range_const         = PropertyPairRange<const_property_pair_iterator_const>;
+	using reverse_property_pair_range             = PropertyPairRange<reverse_property_pair_iterator>;
+	using reverse_property_pair_range_const       = PropertyPairRange<reverse_property_pair_iterator_const>;
+	using const_reverse_property_pair_range_const = PropertyPairRange<const_reverse_property_pair_iterator_const>;
 }
