@@ -15,29 +15,41 @@ namespace dots::type
 	struct StructDescription;
 	struct PropertyDescription;
 
-	struct property_iterator;
-	struct const_property_iterator;
-	struct reverse_property_iterator;
-	struct const_reverse_property_iterator;
+	template <bool, bool>
+	struct PropertyIterator;
 
-	struct property_pair_iterator;
-	struct property_pair_iterator_const;
-	struct const_property_pair_iterator_const;
-	struct reverse_property_pair_iterator;
-	struct reverse_property_pair_iterator_const;
-	struct const_reverse_property_pair_iterator_const;
+	using property_iterator               = PropertyIterator<false, false>;
+	using const_property_iterator         = PropertyIterator<false, true>;
+	using reverse_property_iterator       = PropertyIterator<true, false>;
+	using const_reverse_property_iterator = PropertyIterator<true, true>;
 
-	struct property_range;
-	struct const_property_range;
-	struct reverse_property_range;
-	struct const_reverse_property_range;
+	template <typename>
+	struct PropertyRange;
 
-	struct property_pair_range;
-	struct property_pair_range_const;
-	struct const_property_pair_range_const;
-	struct reverse_property_pair_range;
-	struct reverse_property_pair_range_const;
-	struct const_reverse_property_pair_range_const;
+	using property_range               = PropertyRange<property_iterator>;
+	using const_property_range         = PropertyRange<const_property_iterator>;
+	using reverse_property_range       = PropertyRange<reverse_property_iterator>;
+	using const_reverse_property_range = PropertyRange<const_reverse_property_iterator>;
+
+	template <typename, typename>
+	struct PropertyPairIterator;
+
+	using property_pair_iterator                     = PropertyPairIterator<property_iterator, property_iterator>;
+	using property_pair_iterator_const               = PropertyPairIterator<property_iterator, const_property_iterator>;
+	using const_property_pair_iterator_const         = PropertyPairIterator<const_property_iterator, const_property_iterator>;
+	using reverse_property_pair_iterator             = PropertyPairIterator<reverse_property_iterator, reverse_property_iterator>;
+	using reverse_property_pair_iterator_const       = PropertyPairIterator<reverse_property_iterator, const_reverse_property_iterator>;
+	using const_reverse_property_pair_iterator_const = PropertyPairIterator<const_reverse_property_iterator, const_reverse_property_iterator>;
+
+	template <typename>
+	struct PropertyPairRange;
+
+	using property_pair_range                     = PropertyPairRange<property_pair_iterator>;
+	using property_pair_range_const               = PropertyPairRange<property_pair_iterator_const>;
+	using const_property_pair_range_const         = PropertyPairRange<const_property_pair_iterator_const>;
+	using reverse_property_pair_range             = PropertyPairRange<reverse_property_pair_iterator>;
+	using reverse_property_pair_range_const       = PropertyPairRange<reverse_property_pair_iterator_const>;
+	using const_reverse_property_pair_range_const = PropertyPairRange<const_reverse_property_pair_iterator_const>;
 
     struct Struct
     {
