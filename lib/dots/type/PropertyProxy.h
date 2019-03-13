@@ -77,6 +77,12 @@ namespace dots::type
 			return PropertyProxy<T>{ reinterpret_cast<T&>(*_value), &_descriptor };
 		}
 
+		template <typename T>
+		PropertyProxy<T> typed() const
+		{
+			return const_cast<PropertyProxy&>(*this).typed<T>();
+		}
+
 	private:
 
 		friend struct Property<void, PropertyProxy<void>>;
