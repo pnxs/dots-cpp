@@ -238,6 +238,56 @@ namespace dots::type
 		return const_reverse_property_pair_range_const{ const_reverse_property_pair_iterator_const{ _rbegin(propertySet), rhs._rbegin(propertySet) }, const_reverse_property_pair_iterator_const{ _rend(propertySet), rhs._rend(propertySet) } };
     }
 
+    property_range Struct::_validPropertyRange(const property_set& propertySet/* = PROPERTY_SET_ALL*/)
+    {
+		return _validPropertyRange(_validPropertySet() & propertySet);
+    }
+
+    const_property_range Struct::_validPropertyRange(const property_set& propertySet/* = PROPERTY_SET_ALL*/) const
+    {
+		return _validPropertyRange(_validPropertySet() & propertySet);
+    }
+
+    reverse_property_range Struct::_validPropertyRangeReversed(const property_set& propertySet/* = PROPERTY_SET_ALL*/)
+    {
+		return _validPropertyRangeReversed(_validPropertySet() & propertySet);
+    }
+
+    const_reverse_property_range Struct::_validPropertyRangeReversed(const property_set& propertySet/* = PROPERTY_SET_ALL*/) const
+    {
+		return _validPropertyRangeReversed(_validPropertySet() & propertySet);
+    }
+
+    property_pair_range Struct::_validPropertyRange(Struct& rhs, const property_set& propertySet/* = PROPERTY_SET_ALL*/)
+    {
+		return _validPropertyRange(rhs, _validPropertySet() & rhs._validPropertySet() & propertySet);
+    }
+
+    property_pair_range_const Struct::_validPropertyRange(const Struct& rhs, const property_set& propertySet/* = PROPERTY_SET_ALL*/)
+    {
+		return _validPropertyRange(rhs, _validPropertySet() & rhs._validPropertySet() & propertySet);
+    }
+
+    const_property_pair_range_const Struct::_validPropertyRange(const Struct& rhs, const property_set& propertySet/* = PROPERTY_SET_ALL*/) const
+    {
+		return _validPropertyRange(rhs, _validPropertySet() & rhs._validPropertySet() & propertySet);
+    }
+
+    reverse_property_pair_range Struct::_validPropertyRangeReversed(Struct& rhs, const property_set& propertySet/* = PROPERTY_SET_ALL*/)
+    {
+		return _validPropertyRangeReversed(rhs, _validPropertySet() & rhs._validPropertySet() & propertySet);
+    }
+
+    reverse_property_pair_range_const Struct::_validPropertyRangeReversed(const Struct& rhs, const property_set& propertySet/* = PROPERTY_SET_ALL*/)
+    {
+		return _validPropertyRangeReversed(rhs, _validPropertySet() & rhs._validPropertySet() & propertySet);
+    }
+
+    const_reverse_property_pair_range_const Struct::_validPropertyRangeReversed(const Struct& rhs, const property_set& propertySet/* = PROPERTY_SET_ALL*/) const
+    {
+		return _validPropertyRangeReversed(rhs, _validPropertySet() & rhs._validPropertySet() & propertySet);
+    }
+
     Struct& Struct::_assign(const Struct& other, const property_set& propertySet/* = PROPERTY_SET_ALL*/)
     {
 		property_set assignPropertySet = other._validPropertySet() & propertySet;
