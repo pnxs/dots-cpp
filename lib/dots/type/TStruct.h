@@ -437,7 +437,7 @@ namespace dots::type
 		using Struct::_publish;
 		using Struct::_remove;
 
-		template <typename, typename, typename, typename>
+		template <typename, typename>
 		friend struct TProperty;
 
 		template <typename T>

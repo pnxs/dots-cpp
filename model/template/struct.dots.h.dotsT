@@ -30,8 +30,10 @@ namespace dots::types
     struct {{name}} : dots::type::TStruct<{{name}}>
     {
 {% for property in attributes %}
-        struct {{property.name}}_t : dots::type::TProperty<{{property.cxx_type}}, {{property.name}}_t, {% if loop.first %}void{% else %}{{loop.previtem.name}}_t{% endif %}, {{name}}>
+        struct {{property.name}}_t : dots::type::TProperty<{{property.cxx_type}}, {{property.name}}_t>
         {
+			using struct_t = {{name}};
+			using previous_t = {% if loop.first %}void{% else %}{{loop.previtem.name}}_t{% endif %};
 			static constexpr auto Description = MakePropertyDescription({{property.tag}}, "{{property.type}}", "{{property.name}}", {% if property.key %}true{% else %}false{% endif %});
 		
 			{{property.name}}_t& operator = (const {{property.name}}_t& rhs) = default;

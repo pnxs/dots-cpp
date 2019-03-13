@@ -11,10 +11,9 @@ namespace dots::type
 	template <typename>
 	struct TStruct;
 
-	template <typename T, typename Derived, typename Previous, typename DerivedStruct>
+	template <typename T, typename Derived>
 	struct TProperty : Property<T, Derived>
 	{
-		using struct_t = DerivedStruct;
 		using init_t = TPropertyInitializer<TProperty>;
 
 		using Property<T, Derived>::operator=;
@@ -34,7 +33,7 @@ namespace dots::type
 		template <typename... Args>
 		static void Publish(Args&&... args)
 		{
-			DerivedStruct derivedStruct{ init_t{ std::forward<Args>(args)... } };
+			typename Derived::struct_t derivedStruct{ init_t{ std::forward<Args>(args)... } };
 			Get(derivedStruct).publish();
 		}
 
@@ -177,13 +176,15 @@ namespace dots::type
 		{
 			constexpr size_t currentOffset = []()
 			{
-				if constexpr (std::is_same_v<Previous, void>)
+				using previous_t = typename Derived::previous_t;
+
+				if constexpr (std::is_same_v<previous_t, void>)
 				{
 					return sizeof(Struct);
 				}
 				else
 				{
-					return Previous::Offset() + sizeof(typename Previous::value_t);
+					return previous_t::Offset() + sizeof(typename previous_t::value_t);
 				}
 			}();
 
