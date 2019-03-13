@@ -8,13 +8,14 @@ namespace dots::type
 	struct PropertyIterator
 	{
 		// custom iterator traits
+		using base_value_type   = PropertyProxy<void>;
 		using struct_t          = std::conditional_t<IsConst, const Struct, Struct>;
 		using inner_container_t = std::remove_reference_t<decltype(std::declval<struct_t>()._descriptor().properties())>;
 		using inner_iterator_t  = std::conditional_t<IsReverse, typename inner_container_t::const_reverse_iterator, typename inner_container_t::const_iterator>;
 
 		// STL iterator traits
 		using iterator_category = typename  inner_iterator_t::iterator_category;
-		using value_type        = std::conditional_t<IsConst, const PropertyProxy<void>, PropertyProxy<void>>;
+		using value_type        = std::conditional_t<IsConst, const base_value_type, base_value_type>;
 		using reference         = std::conditional_t<IsConst, const value_type&, value_type&>;
 		using pointer           = std::conditional_t<IsConst, const value_type*, value_type*>;
 
@@ -159,7 +160,7 @@ namespace dots::type
 		struct_t* _instance;
 		inner_iterator_t _innerIterator;
 		property_set _set;
-		std::optional<value_type> _proxy;
+		std::optional<base_value_type> _proxy;
 	};
 
 	struct property_iterator : PropertyIterator<false, false>
