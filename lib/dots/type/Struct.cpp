@@ -242,7 +242,7 @@ namespace dots::type
     {
 		property_set assignPropertySet = other._validPropertySet() & propertySet;
 
-		for (const auto&[propertyThis, propertyOther] : _propertyPairRange(other))
+		for (auto&[propertyThis, propertyOther] : _propertyPairRange(other))
 		{
 			if (propertyThis.isPartOf(assignPropertySet))
 			{
@@ -261,7 +261,7 @@ namespace dots::type
     {
 		property_set copyPropertySet = (_validPropertySet() | other._validPropertySet()) & propertySet;
 
-		for (const auto&[propertyThis, propertyOther] : _propertyPairRange(other, copyPropertySet))
+		for (auto&[propertyThis, propertyOther] : _propertyPairRange(other, copyPropertySet))
 		{
 			propertyThis.constructOrAssign(propertyOther);
 		}
@@ -277,7 +277,7 @@ namespace dots::type
 
     void Struct::_swap(Struct& other, const property_set& propertySet/* = PROPERTY_SET_ALL*/)
     {
-		for (const auto&[propertyThis, propertyOther] : _propertyPairRange(other, propertySet))
+		for (auto&[propertyThis, propertyOther] : _propertyPairRange(other, propertySet))
 		{
 			propertyThis.swap(propertyOther);
 		}
