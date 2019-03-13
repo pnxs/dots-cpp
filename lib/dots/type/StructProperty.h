@@ -57,7 +57,7 @@ namespace dots::type
 			return _name;
 	    }
 
-		constexpr const std::string_view& type() const
+		constexpr const std::string_view& typeName() const
 		{
 			return _type;
 		}

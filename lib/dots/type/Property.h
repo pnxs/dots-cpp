@@ -341,7 +341,7 @@ namespace dots::type
 			return structProperty().name();
 		}
 
-		constexpr const std::string_view& type() const
+		constexpr const std::string_view& typeName() const
 		{
 			return structProperty().type();
 		}

@@ -42,7 +42,7 @@ namespace dots::type
 			static const type::Descriptor* descriptor = []()
 			{
 				type::getDescriptor<T>(nullptr);
-				return Registry::fromWireName(Type().data());
+				return Registry::fromWireName(TypeName().data());
 			}();
 			return *descriptor;
 		}
@@ -65,9 +65,9 @@ namespace dots::type
 			return Derived::Description.name();
 		}
 
-		static constexpr const std::string_view& Type()
+		static constexpr const std::string_view& TypeName()
 		{
-			return Derived::Description.type();
+			return Derived::Description.typeName();
 		}
 
 		static constexpr size_t Offset()

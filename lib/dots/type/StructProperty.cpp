@@ -61,7 +61,7 @@ namespace dots::type
 	{
 		if (_typeDescriptor == nullptr)
 		{
-			_typeDescriptor = Registry::fromWireName(type().data());
+			_typeDescriptor = Registry::fromWireName(typeName().data());
 		}
 
 		return _typeDescriptor;

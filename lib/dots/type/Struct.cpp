@@ -398,7 +398,7 @@ namespace dots::type
 			structPropertyData.name(propertyDescription.name().data());
 			structPropertyData.tag(propertyDescription.tag());
 			structPropertyData.isKey(propertyDescription.isKey());
-			structPropertyData.type(propertyDescription.type().data());
+			structPropertyData.type(propertyDescription.typeName().data());
 			properties.emplace_back(structPropertyData);
 		}
 
