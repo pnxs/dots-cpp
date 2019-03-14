@@ -35,7 +35,7 @@ TEST(TestContainer, storeAndRemove)
     dh.removeObj(false);
     dh.sender(0);
     dh.sentTime(pnxs::SystemNow());
-    dh.attributes(dts._validPropertySet());
+    dh.attributes(dts._validProperties());
 
     // Process a DotsTestStruct 'create' in container
     container.process(dh, dts, sig);
@@ -93,7 +93,7 @@ TEST(TestContainer, storeUpdateAndRemoveSignal)
         dh.removeObj(false);
         dh.sender(0);
         dh.sentTime(t1);
-        dh.attributes(dts._validPropertySet());
+        dh.attributes(dts._validProperties());
 
         // Expect call of signal-handler with:
         // data is heap pointer
@@ -136,7 +136,7 @@ TEST(TestContainer, storeUpdateAndRemoveSignal)
         dh.removeObj(false);
         dh.sender(1);
         dh.sentTime(t2);
-        dh.attributes(dts._validPropertySet());
+        dh.attributes(dts._validProperties());
 
         expectCheck = [&](const DotsTestStruct::Cbd& cbd)
         {
@@ -169,7 +169,7 @@ TEST(TestContainer, storeUpdateAndRemoveSignal)
         dh.removeObj(true);
         dh.sender(1);
         dh.sentTime(t2);
-        dh.attributes(dts._validPropertySet());
+        dh.attributes(dts._validProperties());
 
         expectCheck = [&](const DotsTestStruct::Cbd& cbd)
         {
@@ -208,7 +208,7 @@ TEST(TestContainer, storeUpdateAndRemoveSignal)
         dh.removeObj(false);
         dh.sender(2);
         dh.sentTime(t3);
-        dh.attributes(dts._validPropertySet());
+        dh.attributes(dts._validProperties());
 
         expectCheck = [&](const DotsTestStruct::Cbd& cbd)
         {

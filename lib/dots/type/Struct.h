@@ -63,56 +63,56 @@ namespace dots::type
 
         const StructDescriptor& _descriptor() const;
 
-		property_set& _validPropertySet();
-		const property_set& _validPropertySet() const;
-		const property_set& _keyPropertySet() const;
-		property_set _diffPropertySet(const Struct& other) const;
+		property_set& _validProperties();
+		const property_set& _validProperties() const;
+		const property_set& _keyProperties() const;
+		property_set _diffProperties(const Struct& other) const;
 
-		property_iterator _begin(const property_set& propertySet = PROPERTY_SET_ALL);
-		const_property_iterator _begin(const property_set& propertySet = PROPERTY_SET_ALL) const;
+		property_iterator _begin(const property_set& includedProperties = PROPERTY_SET_ALL);
+		const_property_iterator _begin(const property_set& includedProperties = PROPERTY_SET_ALL) const;
 
-		property_iterator _end(const property_set& propertySet = PROPERTY_SET_ALL);
-		const_property_iterator _end(const property_set& propertySet = PROPERTY_SET_ALL) const;
+		property_iterator _end(const property_set& includedProperties = PROPERTY_SET_ALL);
+		const_property_iterator _end(const property_set& includedProperties = PROPERTY_SET_ALL) const;
 
-		reverse_property_iterator _rbegin(const property_set& propertySet = PROPERTY_SET_ALL);
-		const_reverse_property_iterator _rbegin(const property_set& propertySet = PROPERTY_SET_ALL) const;
+		reverse_property_iterator _rbegin(const property_set& includedProperties = PROPERTY_SET_ALL);
+		const_reverse_property_iterator _rbegin(const property_set& includedProperties = PROPERTY_SET_ALL) const;
 
-		reverse_property_iterator _rend(const property_set& propertySet = PROPERTY_SET_ALL);
-		const_reverse_property_iterator _rend(const property_set& propertySet = PROPERTY_SET_ALL) const;
+		reverse_property_iterator _rend(const property_set& includedProperties = PROPERTY_SET_ALL);
+		const_reverse_property_iterator _rend(const property_set& includedProperties = PROPERTY_SET_ALL) const;
 
-		property_range _propertyRange(const property_set& propertySet = PROPERTY_SET_ALL);
-		const_property_range _propertyRange(const property_set& propertySet = PROPERTY_SET_ALL) const;
+		property_range _propertyRange(const property_set& includedProperties = PROPERTY_SET_ALL);
+		const_property_range _propertyRange(const property_set& includedProperties = PROPERTY_SET_ALL) const;
 
-		reverse_property_range _propertyRangeReversed(const property_set& propertySet = PROPERTY_SET_ALL);
-		const_reverse_property_range _propertyRangeReversed(const property_set& propertySet = PROPERTY_SET_ALL) const;
+		reverse_property_range _propertyRangeReversed(const property_set& includedProperties = PROPERTY_SET_ALL);
+		const_reverse_property_range _propertyRangeReversed(const property_set& includedProperties = PROPERTY_SET_ALL) const;
 
-		property_pair_range _propertyRange(Struct& rhs, const property_set& propertySet = PROPERTY_SET_ALL);
-		property_pair_range_const _propertyRange(const Struct& rhs, const property_set& propertySet = PROPERTY_SET_ALL);
-		const_property_pair_range_const _propertyRange(const Struct& rhs, const property_set& propertySet = PROPERTY_SET_ALL) const;
+		property_pair_range _propertyRange(Struct& rhs, const property_set& includedProperties = PROPERTY_SET_ALL);
+		property_pair_range_const _propertyRange(const Struct& rhs, const property_set& includedProperties = PROPERTY_SET_ALL);
+		const_property_pair_range_const _propertyRange(const Struct& rhs, const property_set& includedProperties = PROPERTY_SET_ALL) const;
 
-		reverse_property_pair_range _propertyRangeReversed(Struct& rhs, const property_set& propertySet = PROPERTY_SET_ALL);
-		reverse_property_pair_range_const _propertyRangeReversed(const Struct& rhs, const property_set& propertySet = PROPERTY_SET_ALL);
-		const_reverse_property_pair_range_const _propertyRangeReversed(const Struct& rhs, const property_set& propertySet = PROPERTY_SET_ALL) const;
+		reverse_property_pair_range _propertyRangeReversed(Struct& rhs, const property_set& includedProperties = PROPERTY_SET_ALL);
+		reverse_property_pair_range_const _propertyRangeReversed(const Struct& rhs, const property_set& includedProperties = PROPERTY_SET_ALL);
+		const_reverse_property_pair_range_const _propertyRangeReversed(const Struct& rhs, const property_set& includedProperties = PROPERTY_SET_ALL) const;
 
-		property_range _validPropertyRange(const property_set& propertySet = PROPERTY_SET_ALL);
-		const_property_range _validPropertyRange(const property_set& propertySet = PROPERTY_SET_ALL) const;
+		property_range _validPropertyRange(const property_set& includedProperties = PROPERTY_SET_ALL);
+		const_property_range _validPropertyRange(const property_set& includedProperties = PROPERTY_SET_ALL) const;
 
-		reverse_property_range _validPropertyRangeReversed(const property_set& propertySet = PROPERTY_SET_ALL);
-		const_reverse_property_range _validPropertyRangeReversed(const property_set& propertySet = PROPERTY_SET_ALL) const;
+		reverse_property_range _validPropertyRangeReversed(const property_set& includedProperties = PROPERTY_SET_ALL);
+		const_reverse_property_range _validPropertyRangeReversed(const property_set& includedProperties = PROPERTY_SET_ALL) const;
 
-		property_pair_range _validPropertyRange(Struct& rhs, const property_set& propertySet = PROPERTY_SET_ALL);
-		property_pair_range_const _validPropertyRange(const Struct& rhs, const property_set& propertySet = PROPERTY_SET_ALL);
-		const_property_pair_range_const _validPropertyRange(const Struct& rhs, const property_set& propertySet = PROPERTY_SET_ALL) const;
+		property_pair_range _validPropertyRange(Struct& rhs, const property_set& includedProperties = PROPERTY_SET_ALL);
+		property_pair_range_const _validPropertyRange(const Struct& rhs, const property_set& includedProperties = PROPERTY_SET_ALL);
+		const_property_pair_range_const _validPropertyRange(const Struct& rhs, const property_set& includedProperties = PROPERTY_SET_ALL) const;
 
-		reverse_property_pair_range _validPropertyRangeReversed(Struct& rhs, const property_set& propertySet = PROPERTY_SET_ALL);
-		reverse_property_pair_range_const _validPropertyRangeReversed(const Struct& rhs, const property_set& propertySet = PROPERTY_SET_ALL);
-		const_reverse_property_pair_range_const _validPropertyRangeReversed(const Struct& rhs, const property_set& propertySet = PROPERTY_SET_ALL) const;
+		reverse_property_pair_range _validPropertyRangeReversed(Struct& rhs, const property_set& includedProperties = PROPERTY_SET_ALL);
+		reverse_property_pair_range_const _validPropertyRangeReversed(const Struct& rhs, const property_set& includedProperties = PROPERTY_SET_ALL);
+		const_reverse_property_pair_range_const _validPropertyRangeReversed(const Struct& rhs, const property_set& includedProperties = PROPERTY_SET_ALL) const;
 
-		Struct& _assign(const Struct& other, const property_set& propertySet = PROPERTY_SET_ALL);
-		Struct& _copy(const Struct& other, const property_set& propertySet = PROPERTY_SET_ALL);
-		Struct& _merge(const Struct& other, const property_set& propertySet = PROPERTY_SET_ALL);
-		void _swap(Struct& other, const property_set& propertySet = PROPERTY_SET_ALL);
-		void _clear(const property_set& propertySet = PROPERTY_SET_ALL);
+		Struct& _assign(const Struct& other, const property_set& includedProperties = PROPERTY_SET_ALL);
+		Struct& _copy(const Struct& other, const property_set& includedProperties = PROPERTY_SET_ALL);
+		Struct& _merge(const Struct& other, const property_set& includedProperties = PROPERTY_SET_ALL);
+		void _swap(Struct& other, const property_set& includedProperties = PROPERTY_SET_ALL);
+		void _clear(const property_set& includedProperties = PROPERTY_SET_ALL);
 
 		bool _equal(const Struct& rhs) const;
 		bool _less(const Struct& rhs) const;

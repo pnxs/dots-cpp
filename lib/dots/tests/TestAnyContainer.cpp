@@ -27,7 +27,7 @@ TEST(TestAnyContainer, storeAndRemove)
     dh.removeObj(false);
     dh.sender(0);
     dh.sentTime(pnxs::SystemNow());
-    dh.attributes(dts._validPropertySet());
+    dh.attributes(dts._validProperties());
 
     // Process a DotsTestStruct 'create' in container
     container.process(dh, &dts);
@@ -85,7 +85,7 @@ TEST(TestAnyContainer, storeUpdateAndRemoveSignal)
         dh.removeObj(false);
         dh.sender(0);
         dh.sentTime(t1);
-        dh.attributes(dts._validPropertySet());
+        dh.attributes(dts._validProperties());
 
         // Expect call of signal-handler with:
         // data is heap pointer
@@ -129,7 +129,7 @@ TEST(TestAnyContainer, storeUpdateAndRemoveSignal)
         dh.removeObj(false);
         dh.sender(1);
         dh.sentTime(t2);
-        dh.attributes(dts._validPropertySet());
+        dh.attributes(dts._validProperties());
 
         expectCheck = [&](const dots::AnyContainerCbd &cbd)
         {
@@ -163,7 +163,7 @@ TEST(TestAnyContainer, storeUpdateAndRemoveSignal)
         dh.removeObj(true);
         dh.sender(1);
         dh.sentTime(t2);
-        dh.attributes(dts._validPropertySet());
+        dh.attributes(dts._validProperties());
 
 
         expectCheck = [&](const dots::AnyContainerCbd &cbd)
@@ -203,7 +203,7 @@ TEST(TestAnyContainer, storeUpdateAndRemoveSignal)
         dh.removeObj(false);
         dh.sender(2);
         dh.sentTime(t3);
-        dh.attributes(dts._validPropertySet());
+        dh.attributes(dts._validProperties());
 
         expectCheck = [&](const dots::AnyContainerCbd &cbd)
         {
@@ -244,7 +244,7 @@ TEST(TestAnyContainer, find)
     dh.removeObj(false);
     dh.sender(0);
     dh.sentTime(pnxs::SystemNow());
-    dh.attributes(dts._validPropertySet());
+    dh.attributes(dts._validProperties());
 
     container.process(dh, &dts);
 
@@ -283,7 +283,7 @@ TEST(TestAnyContainer, updateInstance)
         DotsTestStruct dts;
         dts.indKeyfField(1);
 
-        dh.attributes(dts._validPropertySet());
+        dh.attributes(dts._validProperties());
         container.process(dh, &dts);
     }
     ASSERT_EQ(container.size(), 1u);
@@ -296,7 +296,7 @@ TEST(TestAnyContainer, updateInstance)
         auto iter = container.find({&f, pnxs::TimePoint()});
         EXPECT_TRUE(iter != container.end());
         auto result = static_cast<const DotsTestStruct*>(iter->data);
-        EXPECT_EQ(result->_validPropertySet(), DotsTestStruct::indKeyfField_t::Set());
+        EXPECT_EQ(result->_validProperties(), DotsTestStruct::indKeyfField_t::Set());
         //EXPECT_EQ(result->validProperties(), DotsTestStruct::PropSet(DotsTestStruct::Att::indKeyfField) + DotsTestStruct::PropSet(DotsTestStruct::Att::stringField));
     }
 
@@ -307,7 +307,7 @@ TEST(TestAnyContainer, updateInstance)
         dts.stringField("Hello");
 
 
-        dh.attributes = dts._validPropertySet();
+        dh.attributes = dts._validProperties();
         container.process(dh, &dts);
     }
     ASSERT_EQ(container.size(), 1u);
@@ -320,7 +320,7 @@ TEST(TestAnyContainer, updateInstance)
         auto iter = container.find({&f, pnxs::TimePoint()});
         EXPECT_TRUE(iter != container.end());
         auto result = static_cast<const DotsTestStruct*>(iter->data);
-        EXPECT_EQ(result->_validPropertySet(), DotsTestStruct::indKeyfField_t::Set() + DotsTestStruct::stringField_t::Set());
+        EXPECT_EQ(result->_validProperties(), DotsTestStruct::indKeyfField_t::Set() + DotsTestStruct::stringField_t::Set());
         EXPECT_EQ(result->stringField, "Hello");
     }
 
@@ -330,7 +330,7 @@ TEST(TestAnyContainer, updateInstance)
         dts.indKeyfField(1);
         dts.floatField(3);
 
-        dh.attributes = dts._validPropertySet();
+        dh.attributes = dts._validProperties();
         container.process(dh, &dts);
     }
     ASSERT_EQ(container.size(), 1u);
@@ -343,7 +343,7 @@ TEST(TestAnyContainer, updateInstance)
         auto iter = container.find({&f, pnxs::TimePoint()});
         EXPECT_TRUE(iter != container.end());
         auto result = static_cast<const DotsTestStruct*>(iter->data);
-        EXPECT_EQ(result->_validPropertySet(),
+        EXPECT_EQ(result->_validProperties(),
                   DotsTestStruct::indKeyfField_t::Set() +
                   DotsTestStruct::stringField_t::Set() +
                   DotsTestStruct::floatField_t::Set());
@@ -357,7 +357,7 @@ TEST(TestAnyContainer, updateInstance)
         dts.indKeyfField(1);
 
         // Set Float-Field to Valid, but it's not set. We've expect, that the property will be set to not-set in container
-        dh.attributes = dts._validPropertySet() + DotsTestStruct::floatField_t::Set();
+        dh.attributes = dts._validProperties() + DotsTestStruct::floatField_t::Set();
         container.process(dh, &dts);
     }
     ASSERT_EQ(container.size(), 1u);
@@ -370,7 +370,7 @@ TEST(TestAnyContainer, updateInstance)
         auto iter = container.find({&f, pnxs::TimePoint()});
         EXPECT_TRUE(iter != container.end());
         auto result = static_cast<const DotsTestStruct*>(iter->data);
-        EXPECT_EQ(result->_validPropertySet(),
+        EXPECT_EQ(result->_validProperties(),
                   DotsTestStruct::indKeyfField_t::Set() +
                       DotsTestStruct::stringField_t::Set());
         EXPECT_EQ(result->stringField, "Hello");
@@ -395,7 +395,7 @@ TEST(TestAnyContainer, uncachedType)
     dh.removeObj(false);
     dh.sender(0);
     dh.sentTime(pnxs::SystemNow());
-    dh.attributes(dts._validPropertySet());
+    dh.attributes(dts._validProperties());
 
     // Process a DotsTestStruct 'create' in container
     container.process(dh, &dts);
@@ -432,7 +432,7 @@ TEST(TestAnyContainer, uncachedTypeSignal)
     dh.removeObj(false);
     dh.sender(0);
     dh.sentTime(t1);
-    dh.attributes(dts._validPropertySet());
+    dh.attributes(dts._validProperties());
 
     uint32_t timesSigCalled = 0;
 

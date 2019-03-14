@@ -319,7 +319,7 @@ void ServerConnection::processHello(const DotsMsgHello &hello)
     }
     else
     {
-        LOG_WARN_S("Invalid hello from server valatt:" << hello._validPropertySet().to_string());
+        LOG_WARN_S("Invalid hello from server valatt:" << hello._validProperties().to_string());
     }
 }
 

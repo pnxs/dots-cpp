@@ -43,13 +43,13 @@ namespace dots::type
 			return _less(rhs);
 		}
 
-		Derived& _assign(const Derived& other, const property_set& what = PROPERTY_SET_ALL)
+		Derived& _assign(const Derived& other, const property_set& includedProperties = PROPERTY_SET_ALL)
 		{
 			_applyPropertyPairs(other, [&](const auto&... propertyPairs)
 			{
 				auto assign = [&](auto& propertyThis, auto& propertyOther)
 				{
-					if (strip_t<decltype(propertyThis)>::IsPartOf(what))
+					if (strip_t<decltype(propertyThis)>::IsPartOf(includedProperties))
 					{
 						propertyThis = propertyOther;
 					}
@@ -65,13 +65,13 @@ namespace dots::type
 			return static_cast<Derived&>(*this);
 		}
 
-		Derived& _copy(const Derived& other, const property_set& what = PROPERTY_SET_ALL)
+		Derived& _copy(const Derived& other, const property_set& includedProperties = PROPERTY_SET_ALL)
 		{
 			_applyPropertyPairs(other, [&](const auto&... propertyPairs)
 			{
 				auto copy = [&](auto& propertyThis, auto& propertyOther)
 				{
-					if (strip_t<decltype(propertyThis)>::IsPartOf(what))
+					if (strip_t<decltype(propertyThis)>::IsPartOf(includedProperties))
 					{
 						propertyThis = propertyOther;
 					}
@@ -83,13 +83,13 @@ namespace dots::type
 			return static_cast<Derived&>(*this);
 		}
 
-		Derived& _merge(const Derived& other, const property_set& what = PROPERTY_SET_ALL)
+		Derived& _merge(const Derived& other, const property_set& includedProperties = PROPERTY_SET_ALL)
 		{
 			_applyPropertyPairs(other, [&](const auto&... propertyPairs)
 			{
 				auto merge = [&](auto& propertyThis, auto& propertyOther)
 				{
-					if (strip_t<decltype(propertyOther)>::IsPartOf(what) && propertyOther.isValid())
+					if (strip_t<decltype(propertyOther)>::IsPartOf(includedProperties) && propertyOther.isValid())
 					{
 						propertyThis = propertyOther;
 					}
@@ -101,13 +101,13 @@ namespace dots::type
 			return static_cast<Derived&>(*this);
 		}
 
-		void _swap(Derived& other, const property_set& what = PROPERTY_SET_ALL)
+		void _swap(Derived& other, const property_set& includedProperties = PROPERTY_SET_ALL)
 		{
 			_applyPropertyPairs(other, [&](const auto&... propertyPairs)
 			{
 				auto swap = [&](auto& propertyThis, auto& propertyOther)
 				{
-					if (strip_t<decltype(propertyThis)>::IsPartOf(what))
+					if (strip_t<decltype(propertyThis)>::IsPartOf(includedProperties))
 					{
 						propertyThis.swap(propertyOther);
 					}
@@ -117,13 +117,13 @@ namespace dots::type
 			});
 		}
 
-		void _clear(const property_set& what = PROPERTY_SET_ALL)
+		void _clear(const property_set& includedProperties = PROPERTY_SET_ALL)
 		{
 			_applyProperties([&](auto&... properties)
 			{
 				auto destroy = [&](auto& property)
 				{
-					if (strip_t<decltype(property)>::IsPartOf(what))
+					if (strip_t<decltype(property)>::IsPartOf(includedProperties))
 					{
 						property.destroy();
 					}
@@ -303,26 +303,26 @@ namespace dots::type
 			return std::apply(std::forward<Callable>(callable), _keyPropertyPairs(other));
 		}
 
-		void _publish(const property_set& what = PROPERTY_SET_ALL, bool remove = false) const
+		void _publish(const property_set& includedProperties = PROPERTY_SET_ALL, bool remove = false) const
 		{
 			static_assert(!_IsSubstructOnly(), "a substruct-only type cannot be published");
 
 			registerTypeUsage<Derived, PublishedType>();
-			Struct::_publish(what, remove);
+			Struct::_publish(includedProperties, remove);
 		}
 
-		void _remove(const property_set& what = PROPERTY_SET_ALL) const
+		void _remove(const property_set& includedProperties = PROPERTY_SET_ALL) const
 		{
 			static_assert(!_IsSubstructOnly(), "a substruct-only type cannot be removed");
 
 			registerTypeUsage<Derived, PublishedType>();
-			Struct::_remove(what);
+			Struct::_remove(includedProperties);
 		}
 
-		property_set _diffPropertySet(const Derived& other) const
+		property_set _diffProperties(const Derived& other) const
 		{
-			property_set symmetricDiff = _validPropertySet().value() ^ other._validPropertySet().value();
-			property_set intersection = _validPropertySet() & other._validPropertySet();
+			property_set symmetricDiff = _validProperties().value() ^ other._validProperties().value();
+			property_set intersection = _validProperties() & other._validProperties();
 			
 			if (!intersection.empty())
 			{

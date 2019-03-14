@@ -148,7 +148,7 @@ void StructDescriptor::swap(void *lhs, void *rhs, property_set properties) const
 
 property_set &StructDescriptor::validProperties(const void *obj) const
 {
-    return const_cast<property_set&>(reinterpret_cast<const Struct*>(obj)->_validPropertySet());
+    return const_cast<property_set&>(reinterpret_cast<const Struct*>(obj)->_validProperties());
 }
 
 const property_set &StructDescriptor::propertySet() const

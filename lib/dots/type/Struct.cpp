@@ -115,24 +115,24 @@ namespace dots::type
         return *_desc;
     }
 
-	property_set& Struct::_validPropertySet()
+	property_set& Struct::_validProperties()
 	{
 		return _validPropSet;
 	}
-	const property_set& Struct::_validPropertySet() const
+	const property_set& Struct::_validProperties() const
 	{
 		return _validPropSet;
 	}
 
-	const property_set& Struct::_keyPropertySet() const
+	const property_set& Struct::_keyProperties() const
 	{
 		return _desc->keys();
 	}
 
-	property_set Struct::_diffPropertySet(const Struct& other) const
+	property_set Struct::_diffProperties(const Struct& other) const
 	{
-		property_set symmetricDiff = _validPropertySet().value() ^ other._validPropertySet().value();
-		property_set intersection = _validPropertySet() & other._validPropertySet();
+		property_set symmetricDiff = _validProperties().value() ^ other._validProperties().value();
+		property_set intersection = _validProperties() & other._validProperties();
 
 		if (!intersection.empty())
 		{
@@ -148,149 +148,149 @@ namespace dots::type
 		return symmetricDiff;
 	}
 
-	property_iterator Struct::_begin(const property_set& propertySet)
+	property_iterator Struct::_begin(const property_set& includedProperties)
 	{
-		return property_iterator{ *this, _descriptor().properties().begin(), propertySet };
+		return property_iterator{ *this, _descriptor().properties().begin(), includedProperties };
 	}
 
-	const_property_iterator Struct::_begin(const property_set& propertySet) const
+	const_property_iterator Struct::_begin(const property_set& includedProperties) const
 	{
-		return const_property_iterator{ *this, _descriptor().properties().begin(), propertySet };
+		return const_property_iterator{ *this, _descriptor().properties().begin(), includedProperties };
 	}
 
-    property_iterator Struct::_end(const property_set& propertySet)
+    property_iterator Struct::_end(const property_set& includedProperties)
 	{
-		return property_iterator{ *this, _descriptor().properties().end(), propertySet };
+		return property_iterator{ *this, _descriptor().properties().end(), includedProperties };
 	}
 
-	const_property_iterator Struct::_end(const property_set& propertySet) const
+	const_property_iterator Struct::_end(const property_set& includedProperties) const
 	{
-		return const_property_iterator{ *this, _descriptor().properties().end(), propertySet };
+		return const_property_iterator{ *this, _descriptor().properties().end(), includedProperties };
 	}
 
-	reverse_property_iterator Struct::_rbegin(const property_set& propertySet)
+	reverse_property_iterator Struct::_rbegin(const property_set& includedProperties)
 	{
-		return reverse_property_iterator{ *this, _descriptor().properties().rbegin(), propertySet };
+		return reverse_property_iterator{ *this, _descriptor().properties().rbegin(), includedProperties };
 	}
 
-	const_reverse_property_iterator Struct::_rbegin(const property_set& propertySet) const
+	const_reverse_property_iterator Struct::_rbegin(const property_set& includedProperties) const
 	{
-		return const_reverse_property_iterator{ *this, _descriptor().properties().rbegin(), propertySet };
+		return const_reverse_property_iterator{ *this, _descriptor().properties().rbegin(), includedProperties };
 	}
 
-	reverse_property_iterator Struct::_rend(const property_set& propertySet)
+	reverse_property_iterator Struct::_rend(const property_set& includedProperties)
 	{
-		return reverse_property_iterator{ *this, _descriptor().properties().rend(), propertySet };
+		return reverse_property_iterator{ *this, _descriptor().properties().rend(), includedProperties };
 	}
 
-	const_reverse_property_iterator Struct::_rend(const property_set& propertySet) const
+	const_reverse_property_iterator Struct::_rend(const property_set& includedProperties) const
 	{
-		return const_reverse_property_iterator{ *this, _descriptor().properties().rend(), propertySet };
+		return const_reverse_property_iterator{ *this, _descriptor().properties().rend(), includedProperties };
 	}
 
-    property_range Struct::_propertyRange(const property_set& propertySet)
+    property_range Struct::_propertyRange(const property_set& includedProperties)
     {
-		return property_range{ _begin(propertySet), _end(propertySet) };
+		return property_range{ _begin(includedProperties), _end(includedProperties) };
     }
 
-    const_property_range Struct::_propertyRange(const property_set& propertySet) const
+    const_property_range Struct::_propertyRange(const property_set& includedProperties) const
     {
-		return const_property_range{ _begin(propertySet), _end(propertySet) };
+		return const_property_range{ _begin(includedProperties), _end(includedProperties) };
     }
 
-    reverse_property_range Struct::_propertyRangeReversed(const property_set& propertySet)
+    reverse_property_range Struct::_propertyRangeReversed(const property_set& includedProperties)
     {
-		return reverse_property_range{ _rbegin(propertySet), _rend(propertySet) };
+		return reverse_property_range{ _rbegin(includedProperties), _rend(includedProperties) };
     }
 
-    const_reverse_property_range Struct::_propertyRangeReversed(const property_set& propertySet) const
+    const_reverse_property_range Struct::_propertyRangeReversed(const property_set& includedProperties) const
     {
-		return const_reverse_property_range{ _rbegin(propertySet), _rend(propertySet) };
+		return const_reverse_property_range{ _rbegin(includedProperties), _rend(includedProperties) };
     }
 
-    property_pair_range Struct::_propertyRange(Struct& rhs, const property_set& propertySet/* = PROPERTY_SET_ALL*/)
+    property_pair_range Struct::_propertyRange(Struct& rhs, const property_set& includedProperties/* = PROPERTY_SET_ALL*/)
     {
-		return property_pair_range{ property_pair_iterator{ _begin(propertySet), rhs._begin(propertySet) }, property_pair_iterator{ _end(propertySet), rhs._end(propertySet) } };
+		return property_pair_range{ property_pair_iterator{ _begin(includedProperties), rhs._begin(includedProperties) }, property_pair_iterator{ _end(includedProperties), rhs._end(includedProperties) } };
     }
 
-    property_pair_range_const Struct::_propertyRange(const Struct& rhs, const property_set& propertySet/* = PROPERTY_SET_ALL*/)
+    property_pair_range_const Struct::_propertyRange(const Struct& rhs, const property_set& includedProperties/* = PROPERTY_SET_ALL*/)
     {
-		return property_pair_range_const{ property_pair_iterator_const{ _begin(propertySet), rhs._begin(propertySet) }, property_pair_iterator_const{ _end(propertySet), rhs._end(propertySet) } };
+		return property_pair_range_const{ property_pair_iterator_const{ _begin(includedProperties), rhs._begin(includedProperties) }, property_pair_iterator_const{ _end(includedProperties), rhs._end(includedProperties) } };
     }
 
-    const_property_pair_range_const Struct::_propertyRange(const Struct& rhs, const property_set& propertySet/* = PROPERTY_SET_ALL*/) const
+    const_property_pair_range_const Struct::_propertyRange(const Struct& rhs, const property_set& includedProperties/* = PROPERTY_SET_ALL*/) const
     {
-		return const_property_pair_range_const{ const_property_pair_iterator_const{ _begin(propertySet), rhs._begin(propertySet) }, const_property_pair_iterator_const{ _end(propertySet), rhs._end(propertySet) } };
+		return const_property_pair_range_const{ const_property_pair_iterator_const{ _begin(includedProperties), rhs._begin(includedProperties) }, const_property_pair_iterator_const{ _end(includedProperties), rhs._end(includedProperties) } };
     }
 
-    reverse_property_pair_range Struct::_propertyRangeReversed(Struct& rhs, const property_set& propertySet/* = PROPERTY_SET_ALL*/)
+    reverse_property_pair_range Struct::_propertyRangeReversed(Struct& rhs, const property_set& includedProperties/* = PROPERTY_SET_ALL*/)
     {
-		return reverse_property_pair_range{ reverse_property_pair_iterator{ _rbegin(propertySet), rhs._rbegin(propertySet) }, reverse_property_pair_iterator{ _rend(propertySet), rhs._rend(propertySet) } };
+		return reverse_property_pair_range{ reverse_property_pair_iterator{ _rbegin(includedProperties), rhs._rbegin(includedProperties) }, reverse_property_pair_iterator{ _rend(includedProperties), rhs._rend(includedProperties) } };
     }
 
-    reverse_property_pair_range_const Struct::_propertyRangeReversed(const Struct& rhs, const property_set& propertySet/* = PROPERTY_SET_ALL*/)
+    reverse_property_pair_range_const Struct::_propertyRangeReversed(const Struct& rhs, const property_set& includedProperties/* = PROPERTY_SET_ALL*/)
     {
-		return reverse_property_pair_range_const{ reverse_property_pair_iterator_const{ _rbegin(propertySet), rhs._rbegin(propertySet) }, reverse_property_pair_iterator_const{ _rend(propertySet), rhs._rend(propertySet) } };
+		return reverse_property_pair_range_const{ reverse_property_pair_iterator_const{ _rbegin(includedProperties), rhs._rbegin(includedProperties) }, reverse_property_pair_iterator_const{ _rend(includedProperties), rhs._rend(includedProperties) } };
     }
 
-    const_reverse_property_pair_range_const Struct::_propertyRangeReversed(const Struct& rhs, const property_set& propertySet/* = PROPERTY_SET_ALL*/) const
+    const_reverse_property_pair_range_const Struct::_propertyRangeReversed(const Struct& rhs, const property_set& includedProperties/* = PROPERTY_SET_ALL*/) const
     {
-		return const_reverse_property_pair_range_const{ const_reverse_property_pair_iterator_const{ _rbegin(propertySet), rhs._rbegin(propertySet) }, const_reverse_property_pair_iterator_const{ _rend(propertySet), rhs._rend(propertySet) } };
+		return const_reverse_property_pair_range_const{ const_reverse_property_pair_iterator_const{ _rbegin(includedProperties), rhs._rbegin(includedProperties) }, const_reverse_property_pair_iterator_const{ _rend(includedProperties), rhs._rend(includedProperties) } };
     }
 
-    property_range Struct::_validPropertyRange(const property_set& propertySet/* = PROPERTY_SET_ALL*/)
+    property_range Struct::_validPropertyRange(const property_set& includedProperties/* = PROPERTY_SET_ALL*/)
     {
-		return _validPropertyRange(_validPropertySet() & propertySet);
+		return _validPropertyRange(_validProperties() & includedProperties);
     }
 
-    const_property_range Struct::_validPropertyRange(const property_set& propertySet/* = PROPERTY_SET_ALL*/) const
+    const_property_range Struct::_validPropertyRange(const property_set& includedProperties/* = PROPERTY_SET_ALL*/) const
     {
-		return _validPropertyRange(_validPropertySet() & propertySet);
+		return _validPropertyRange(_validProperties() & includedProperties);
     }
 
-    reverse_property_range Struct::_validPropertyRangeReversed(const property_set& propertySet/* = PROPERTY_SET_ALL*/)
+    reverse_property_range Struct::_validPropertyRangeReversed(const property_set& includedProperties/* = PROPERTY_SET_ALL*/)
     {
-		return _validPropertyRangeReversed(_validPropertySet() & propertySet);
+		return _validPropertyRangeReversed(_validProperties() & includedProperties);
     }
 
-    const_reverse_property_range Struct::_validPropertyRangeReversed(const property_set& propertySet/* = PROPERTY_SET_ALL*/) const
+    const_reverse_property_range Struct::_validPropertyRangeReversed(const property_set& includedProperties/* = PROPERTY_SET_ALL*/) const
     {
-		return _validPropertyRangeReversed(_validPropertySet() & propertySet);
+		return _validPropertyRangeReversed(_validProperties() & includedProperties);
     }
 
-    property_pair_range Struct::_validPropertyRange(Struct& rhs, const property_set& propertySet/* = PROPERTY_SET_ALL*/)
+    property_pair_range Struct::_validPropertyRange(Struct& rhs, const property_set& includedProperties/* = PROPERTY_SET_ALL*/)
     {
-		return _validPropertyRange(rhs, _validPropertySet() & rhs._validPropertySet() & propertySet);
+		return _validPropertyRange(rhs, _validProperties() & rhs._validProperties() & includedProperties);
     }
 
-    property_pair_range_const Struct::_validPropertyRange(const Struct& rhs, const property_set& propertySet/* = PROPERTY_SET_ALL*/)
+    property_pair_range_const Struct::_validPropertyRange(const Struct& rhs, const property_set& includedProperties/* = PROPERTY_SET_ALL*/)
     {
-		return _validPropertyRange(rhs, _validPropertySet() & rhs._validPropertySet() & propertySet);
+		return _validPropertyRange(rhs, _validProperties() & rhs._validProperties() & includedProperties);
     }
 
-    const_property_pair_range_const Struct::_validPropertyRange(const Struct& rhs, const property_set& propertySet/* = PROPERTY_SET_ALL*/) const
+    const_property_pair_range_const Struct::_validPropertyRange(const Struct& rhs, const property_set& includedProperties/* = PROPERTY_SET_ALL*/) const
     {
-		return _validPropertyRange(rhs, _validPropertySet() & rhs._validPropertySet() & propertySet);
+		return _validPropertyRange(rhs, _validProperties() & rhs._validProperties() & includedProperties);
     }
 
-    reverse_property_pair_range Struct::_validPropertyRangeReversed(Struct& rhs, const property_set& propertySet/* = PROPERTY_SET_ALL*/)
+    reverse_property_pair_range Struct::_validPropertyRangeReversed(Struct& rhs, const property_set& includedProperties/* = PROPERTY_SET_ALL*/)
     {
-		return _validPropertyRangeReversed(rhs, _validPropertySet() & rhs._validPropertySet() & propertySet);
+		return _validPropertyRangeReversed(rhs, _validProperties() & rhs._validProperties() & includedProperties);
     }
 
-    reverse_property_pair_range_const Struct::_validPropertyRangeReversed(const Struct& rhs, const property_set& propertySet/* = PROPERTY_SET_ALL*/)
+    reverse_property_pair_range_const Struct::_validPropertyRangeReversed(const Struct& rhs, const property_set& includedProperties/* = PROPERTY_SET_ALL*/)
     {
-		return _validPropertyRangeReversed(rhs, _validPropertySet() & rhs._validPropertySet() & propertySet);
+		return _validPropertyRangeReversed(rhs, _validProperties() & rhs._validProperties() & includedProperties);
     }
 
-    const_reverse_property_pair_range_const Struct::_validPropertyRangeReversed(const Struct& rhs, const property_set& propertySet/* = PROPERTY_SET_ALL*/) const
+    const_reverse_property_pair_range_const Struct::_validPropertyRangeReversed(const Struct& rhs, const property_set& includedProperties/* = PROPERTY_SET_ALL*/) const
     {
-		return _validPropertyRangeReversed(rhs, _validPropertySet() & rhs._validPropertySet() & propertySet);
+		return _validPropertyRangeReversed(rhs, _validProperties() & rhs._validProperties() & includedProperties);
     }
 
-    Struct& Struct::_assign(const Struct& other, const property_set& propertySet/* = PROPERTY_SET_ALL*/)
+    Struct& Struct::_assign(const Struct& other, const property_set& includedProperties/* = PROPERTY_SET_ALL*/)
     {
-		property_set assignPropertySet = other._validPropertySet() & propertySet;
+		property_set assignPropertySet = other._validProperties() & includedProperties;
 
 		for (auto&[propertyThis, propertyOther] : _propertyRange(other))
 		{
@@ -307,9 +307,9 @@ namespace dots::type
 		return *this;
     }
 
-    Struct& Struct::_copy(const Struct& other, const property_set& propertySet/* = PROPERTY_SET_ALL*/)
+    Struct& Struct::_copy(const Struct& other, const property_set& includedProperties/* = PROPERTY_SET_ALL*/)
     {
-		property_set copyPropertySet = (_validPropertySet() | other._validPropertySet()) & propertySet;
+		property_set copyPropertySet = (_validProperties() | other._validProperties()) & includedProperties;
 
 		for (auto&[propertyThis, propertyOther] : _propertyRange(other, copyPropertySet))
 		{
@@ -319,23 +319,23 @@ namespace dots::type
 		return *this;
     }
 
-    Struct& Struct::_merge(const Struct& other, const property_set& propertySet/* = PROPERTY_SET_ALL*/)
+    Struct& Struct::_merge(const Struct& other, const property_set& includedProperties/* = PROPERTY_SET_ALL*/)
     {
-		property_set mergePropertySet = other._validPropertySet() & propertySet;
+		property_set mergePropertySet = other._validProperties() & includedProperties;
 		return _copy(other, mergePropertySet);
     }
 
-    void Struct::_swap(Struct& other, const property_set& propertySet/* = PROPERTY_SET_ALL*/)
+    void Struct::_swap(Struct& other, const property_set& includedProperties/* = PROPERTY_SET_ALL*/)
     {
-		for (auto&[propertyThis, propertyOther] : _propertyRange(other, propertySet))
+		for (auto&[propertyThis, propertyOther] : _propertyRange(other, includedProperties))
 		{
 			propertyThis.swap(propertyOther);
 		}
     }
 
-    void Struct::_clear(const property_set& propertySet/* = PROPERTY_SET_ALL*/)
+    void Struct::_clear(const property_set& includedProperties/* = PROPERTY_SET_ALL*/)
     {
-		for (auto& property : _propertyRange(propertySet))
+		for (auto& property : _propertyRange(includedProperties))
 		{
 			property.destroy();
 		}
@@ -367,14 +367,14 @@ namespace dots::type
 		return true;
     }
 
-    void Struct::_publish(const property_set& what/* = PROPERTY_SET_ALL*/, bool remove/* = false*/) const
+    void Struct::_publish(const property_set& includedProperties/* = PROPERTY_SET_ALL*/, bool remove/* = false*/) const
     {
-		onPublishObject->publish(&_descriptor(), this, what == PROPERTY_SET_ALL ? _validPropSet : what, remove);
+		onPublishObject->publish(&_descriptor(), this, includedProperties == PROPERTY_SET_ALL ? _validPropSet : includedProperties, remove);
     }
 
-    void Struct::_remove(const property_set& what/* = PROPERTY_SET_ALL*/) const
+    void Struct::_remove(const property_set& includedProperties/* = PROPERTY_SET_ALL*/) const
     {
-		_publish(what, true);
+		_publish(includedProperties, true);
     }
 
     const StructDescriptor* Struct::MakeStructDescriptor(StructDescriptor* newstruct, const StructDescriptorData& structDescriptorData)

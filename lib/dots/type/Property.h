@@ -534,7 +534,7 @@ namespace dots::type
 
 		property_set& validPropertySet()
 		{
-			return const_cast<property_set&>(instance()._validPropertySet());
+			return const_cast<property_set&>(instance()._validProperties());
 		}
 
 		const property_set& validPropertySet() const

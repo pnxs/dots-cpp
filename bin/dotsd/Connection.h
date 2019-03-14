@@ -64,7 +64,7 @@ public:
     template<class T>
     void sendNs(const string& nameSpace, const T& data)
     {
-        sendNs(nameSpace, &data._Descriptor(), &data, data._validPropertySet(), false);
+        sendNs(nameSpace, &data._Descriptor(), &data, data._validProperties(), false);
     }
 
     /*!
@@ -75,7 +75,7 @@ public:
     template<class T>
     void send(const T& data)
     {
-        sendNs({}, &T::_Descriptor(), &data, data._validPropertySet(), false);
+        sendNs({}, &T::_Descriptor(), &data, data._validProperties(), false);
     }
 
     /*!

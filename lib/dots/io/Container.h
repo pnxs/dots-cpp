@@ -106,7 +106,7 @@ public:
     /**
      * @return Set of properties, that are updated and valid within this update
      */
-    const property_set updatedProperties() const { return newProperties() & data._validPropertySet(); }
+    const property_set updatedProperties() const { return newProperties() & data._validProperties(); }
 };
 
 template<class T>
@@ -177,7 +177,7 @@ private:
         if (not inserted)
         {
             // Update element with received attributes
-            Writeable(item)._swap(data, data._validPropertySet() - T::_KeyPropertySet());
+            Writeable(item)._swap(data, data._validProperties() - T::_KeyPropertySet());
         }
 
         Cbd<T> cbd(item, header, inserted ? Mt::create : Mt::update );

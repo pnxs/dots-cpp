@@ -22,7 +22,7 @@ using ::testing::ElementsAreArray;
 template<typename F, class T>
 void expect_publish(F& mock, const T& data)
 {
-    EXPECT_CALL(mock, publish(&T::_Descriptor(), MatcherCast<const void*>(SafeMatcherCast<const T*>(Pointee(Eq(data)))), data._validPropertySet(), false));
+    EXPECT_CALL(mock, publish(&T::_Descriptor(), MatcherCast<const void*>(SafeMatcherCast<const T*>(Pointee(Eq(data)))), data._validProperties(), false));
 }
 
 TEST(TestDistributedTypeId, createId)
