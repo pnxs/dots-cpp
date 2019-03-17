@@ -129,25 +129,6 @@ namespace dots::type
 		return _desc->keys();
 	}
 
-	property_set Struct::_diffProperties(const Struct& other) const
-	{
-		property_set symmetricDiff = _validProperties().value() ^ other._validProperties().value();
-		property_set intersection = _validProperties() & other._validProperties();
-
-		if (!intersection.empty())
-		{
-			for (const auto&[propertyThis, propertyOther] : _propertyRange(other, intersection))
-			{
-				if (propertyThis.td().equal(&*propertyThis, &*propertyOther))
-				{
-					symmetricDiff |= propertyThis.set();
-				}
-			}
-		}
-		
-		return symmetricDiff;
-	}
-
 	property_iterator Struct::_begin(const property_set& includedProperties)
 	{
 		return property_iterator{ *this, _descriptor().properties().begin(), includedProperties };
@@ -366,6 +347,25 @@ namespace dots::type
 
 		return true;
     }
+
+	property_set Struct::_diffProperties(const Struct& other) const
+	{
+		property_set symmetricDiff = _validProperties().value() ^ other._validProperties().value();
+		property_set intersection = _validProperties() & other._validProperties();
+
+		if (!intersection.empty())
+		{
+			for (const auto&[propertyThis, propertyOther] : _propertyRange(other, intersection))
+			{
+				if (propertyThis.td().equal(&*propertyThis, &*propertyOther))
+				{
+					symmetricDiff |= propertyThis.set();
+				}
+			}
+		}
+
+		return symmetricDiff;
+	}
 
     void Struct::_publish(const property_set& includedProperties/* = PROPERTY_SET_ALL*/, bool remove/* = false*/) const
     {

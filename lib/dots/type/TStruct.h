@@ -43,126 +43,6 @@ namespace dots::type
 			return _less(rhs);
 		}
 
-		Derived& _assign(const Derived& other, const property_set& includedProperties = PROPERTY_SET_ALL)
-		{
-			_applyPropertyPairs(other, [&](const auto&... propertyPairs)
-			{
-				auto assign = [&](auto& propertyThis, auto& propertyOther)
-				{
-					if (strip_t<decltype(propertyThis)>::IsPartOf(includedProperties))
-					{
-						propertyThis = propertyOther;
-					}
-					else
-					{
-						propertyThis.destroy();
-					}
-				};
-
-				(assign(propertyPairs.first, propertyPairs.second), ...);
-			});
-
-			return static_cast<Derived&>(*this);
-		}
-
-		Derived& _copy(const Derived& other, const property_set& includedProperties = PROPERTY_SET_ALL)
-		{
-			_applyPropertyPairs(other, [&](const auto&... propertyPairs)
-			{
-				auto copy = [&](auto& propertyThis, auto& propertyOther)
-				{
-					if (strip_t<decltype(propertyThis)>::IsPartOf(includedProperties))
-					{
-						propertyThis = propertyOther;
-					}
-				};
-
-				(copy(propertyPairs.first, propertyPairs.second), ...);
-			});
-
-			return static_cast<Derived&>(*this);
-		}
-
-		Derived& _merge(const Derived& other, const property_set& includedProperties = PROPERTY_SET_ALL)
-		{
-			_applyPropertyPairs(other, [&](const auto&... propertyPairs)
-			{
-				auto merge = [&](auto& propertyThis, auto& propertyOther)
-				{
-					if (strip_t<decltype(propertyOther)>::IsPartOf(includedProperties) && propertyOther.isValid())
-					{
-						propertyThis = propertyOther;
-					}
-				};
-
-				(merge(propertyPairs.first, propertyPairs.second), ...);
-			});
-
-			return static_cast<Derived&>(*this);
-		}
-
-		void _swap(Derived& other, const property_set& includedProperties = PROPERTY_SET_ALL)
-		{
-			_applyPropertyPairs(other, [&](const auto&... propertyPairs)
-			{
-				auto swap = [&](auto& propertyThis, auto& propertyOther)
-				{
-					if (strip_t<decltype(propertyThis)>::IsPartOf(includedProperties))
-					{
-						propertyThis.swap(propertyOther);
-					}
-				};
-
-				(swap(propertyPairs.first, propertyPairs.second), ...);
-			});
-		}
-
-		void _clear(const property_set& includedProperties = PROPERTY_SET_ALL)
-		{
-			_applyProperties([&](auto&... properties)
-			{
-				auto destroy = [&](auto& property)
-				{
-					if (strip_t<decltype(property)>::IsPartOf(includedProperties))
-					{
-						property.destroy();
-					}
-				};
-
-				(destroy(properties), ...);
-			});
-		}
-
-		bool _equal(const Derived& rhs) const
-		{
-			return _applyKeyPropertyPairs(rhs, [](const auto&... propertyPairs)
-			{
-				if constexpr (sizeof...(propertyPairs) == 0)
-				{
-					return true;
-				}
-				else
-				{
-					return ((propertyPairs.first == propertyPairs.second) && ...);
-				}
-			});
-		}
-
-		bool _less(const Derived& rhs) const
-		{
-			return _applyKeyPropertyPairs(rhs, [](const auto&... propertyPairs)
-			{
-				if constexpr (sizeof...(propertyPairs) == 0)
-				{
-					return false;
-				}
-				else
-				{
-					return ((propertyPairs.first < propertyPairs.second) && ...);
-				}
-			});
-		}
-
 		auto _properties()
 		{
 			return std::apply([this](auto&&... args)
@@ -303,27 +183,131 @@ namespace dots::type
 			return std::apply(std::forward<Callable>(callable), _keyPropertyPairs(other));
 		}
 
-		void _publish(const property_set& includedProperties = PROPERTY_SET_ALL, bool remove = false) const
+		Derived& _assign(const Derived& other, const property_set& includedProperties = PROPERTY_SET_ALL)
 		{
-			static_assert(!_IsSubstructOnly(), "a substruct-only type cannot be published");
+			_applyPropertyPairs(other, [&](const auto&... propertyPairs)
+			{
+				auto assign = [&](auto& propertyThis, auto& propertyOther)
+				{
+					if (strip_t<decltype(propertyThis)>::IsPartOf(includedProperties))
+					{
+						propertyThis = propertyOther;
+					}
+					else
+					{
+						propertyThis.destroy();
+					}
+				};
 
-			registerTypeUsage<Derived, PublishedType>();
-			Struct::_publish(includedProperties, remove);
+				(assign(propertyPairs.first, propertyPairs.second), ...);
+			});
+
+			return static_cast<Derived&>(*this);
 		}
 
-		void _remove(const property_set& includedProperties = PROPERTY_SET_ALL) const
+		Derived& _copy(const Derived& other, const property_set& includedProperties = PROPERTY_SET_ALL)
 		{
-			static_assert(!_IsSubstructOnly(), "a substruct-only type cannot be removed");
+			_applyPropertyPairs(other, [&](const auto&... propertyPairs)
+			{
+				auto copy = [&](auto& propertyThis, auto& propertyOther)
+				{
+					if (strip_t<decltype(propertyThis)>::IsPartOf(includedProperties))
+					{
+						propertyThis = propertyOther;
+					}
+				};
 
-			registerTypeUsage<Derived, PublishedType>();
-			Struct::_remove(includedProperties);
+				(copy(propertyPairs.first, propertyPairs.second), ...);
+			});
+
+			return static_cast<Derived&>(*this);
+		}
+
+		Derived& _merge(const Derived& other, const property_set& includedProperties = PROPERTY_SET_ALL)
+		{
+			_applyPropertyPairs(other, [&](const auto&... propertyPairs)
+			{
+				auto merge = [&](auto& propertyThis, auto& propertyOther)
+				{
+					if (strip_t<decltype(propertyOther)>::IsPartOf(includedProperties) && propertyOther.isValid())
+					{
+						propertyThis = propertyOther;
+					}
+				};
+
+				(merge(propertyPairs.first, propertyPairs.second), ...);
+			});
+
+			return static_cast<Derived&>(*this);
+		}
+
+		void _swap(Derived& other, const property_set& includedProperties = PROPERTY_SET_ALL)
+		{
+			_applyPropertyPairs(other, [&](const auto&... propertyPairs)
+			{
+				auto swap = [&](auto& propertyThis, auto& propertyOther)
+				{
+					if (strip_t<decltype(propertyThis)>::IsPartOf(includedProperties))
+					{
+						propertyThis.swap(propertyOther);
+					}
+				};
+
+				(swap(propertyPairs.first, propertyPairs.second), ...);
+			});
+		}
+
+		void _clear(const property_set& includedProperties = PROPERTY_SET_ALL)
+		{
+			_applyProperties([&](auto&... properties)
+			{
+				auto destroy = [&](auto& property)
+				{
+					if (strip_t<decltype(property)>::IsPartOf(includedProperties))
+					{
+						property.destroy();
+					}
+				};
+
+				(destroy(properties), ...);
+			});
+		}
+
+		bool _equal(const Derived& rhs) const
+		{
+			return _applyKeyPropertyPairs(rhs, [](const auto&... propertyPairs)
+			{
+				if constexpr (sizeof...(propertyPairs) == 0)
+				{
+					return true;
+				}
+				else
+				{
+					return ((propertyPairs.first == propertyPairs.second) && ...);
+				}
+			});
+		}
+
+		bool _less(const Derived& rhs) const
+		{
+			return _applyKeyPropertyPairs(rhs, [](const auto&... propertyPairs)
+			{
+				if constexpr (sizeof...(propertyPairs) == 0)
+				{
+					return false;
+				}
+				else
+				{
+					return ((propertyPairs.first < propertyPairs.second) && ...);
+				}
+			});
 		}
 
 		property_set _diffProperties(const Derived& other) const
 		{
 			property_set symmetricDiff = _validProperties().value() ^ other._validProperties().value();
 			property_set intersection = _validProperties() & other._validProperties();
-			
+
 			if (!intersection.empty())
 			{
 				_applyPropertyPairs(other, [&](const auto&... propertyPairs)
@@ -343,6 +327,22 @@ namespace dots::type
 			}
 
 			return symmetricDiff;
+		}
+
+		void _publish(const property_set& includedProperties = PROPERTY_SET_ALL, bool remove = false) const
+		{
+			static_assert(!_IsSubstructOnly(), "a substruct-only type cannot be published");
+
+			registerTypeUsage<Derived, PublishedType>();
+			Struct::_publish(includedProperties, remove);
+		}
+
+		void _remove(const property_set& includedProperties = PROPERTY_SET_ALL) const
+		{
+			static_assert(!_IsSubstructOnly(), "a substruct-only type cannot be removed");
+
+			registerTypeUsage<Derived, PublishedType>();
+			Struct::_remove(includedProperties);
 		}
 
         static const StructDescriptor& _Descriptor()

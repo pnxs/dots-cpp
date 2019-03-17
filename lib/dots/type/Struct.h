@@ -66,7 +66,6 @@ namespace dots::type
 		property_set& _validProperties();
 		const property_set& _validProperties() const;
 		const property_set& _keyProperties() const;
-		property_set _diffProperties(const Struct& other) const;
 
 		property_iterator _begin(const property_set& includedProperties = PROPERTY_SET_ALL);
 		const_property_iterator _begin(const property_set& includedProperties = PROPERTY_SET_ALL) const;
@@ -116,6 +115,8 @@ namespace dots::type
 
 		bool _equal(const Struct& rhs) const;
 		bool _less(const Struct& rhs) const;
+
+		property_set _diffProperties(const Struct& other) const;
 
 		void _publish(const property_set& what = PROPERTY_SET_ALL, bool remove = false) const;
 		void _remove(const property_set& what = PROPERTY_SET_ALL) const;
