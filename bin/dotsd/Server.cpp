@@ -160,7 +160,7 @@ void Server::updateServerStatus()
 
         ds.received = m_connectionManager.receiveStatistics();
 
-        if (m_daemonStatus._diffPropertySet(ds))
+        if (m_daemonStatus._diffProperties(ds))
         {
             LOG_DEBUG_S("updateServerStatus");
 
