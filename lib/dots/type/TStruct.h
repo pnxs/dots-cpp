@@ -368,9 +368,9 @@ namespace dots::type
 			return *structDescriptor;
         }
 
-		static constexpr property_set _KeyPropertySet()
+		static constexpr property_set _KeyProperties()
 		{
-			constexpr property_set KeyPropertySet = std::apply([](auto&&... args)
+			constexpr property_set KeyProperties = std::apply([](auto&&... args)
 			{
 				if constexpr (sizeof...(args) == 0)
 				{
@@ -382,7 +382,7 @@ namespace dots::type
 				}
 			}, typename Derived::_key_properties_t{});
 
-			return KeyPropertySet;
+			return KeyProperties;
 		}
 
 		static constexpr bool _IsCached()

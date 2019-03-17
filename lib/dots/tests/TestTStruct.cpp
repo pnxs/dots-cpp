@@ -94,9 +94,9 @@ TEST(TestTStruct, FlagsHaveExpectedValues)
 	EXPECT_FALSE(DotsTestStruct::_IsSubstructOnly());
 }
 
-TEST(TestTStruct, KeyPropertySetHasExpectedValue)
+TEST(TestTStruct, KeyPropertiesHasExpectedValue)
 {
-	EXPECT_EQ(DotsTestStruct::_KeyPropertySet(), DotsTestStruct::indKeyfField_t::Set());
+	EXPECT_EQ(DotsTestStruct::_KeyProperties(), DotsTestStruct::indKeyfField_t::Set());
 }
 
 TEST(TestTStruct, ctor_EqualPropertiesAfterInitializerConstruction)
