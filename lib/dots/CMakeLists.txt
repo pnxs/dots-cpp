@@ -60,6 +60,7 @@ add_library(dots SHARED
         io/recording/DynamicLoader.cpp
         io/recording/Player.cpp
         io/recording/FileReader.cpp
+		type/AnyStruct.cpp
         type/ChronoDescriptor.cpp
         type/Descriptor.cpp
         type/EnumDescriptor.cpp
