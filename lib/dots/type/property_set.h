@@ -11,7 +11,7 @@ class property_set
     uint32_t m_bitset = 0;
 
 public:
-    property_set() = default;
+    constexpr property_set() = default;
     constexpr property_set(uint32_t b) : m_bitset(b) {}
 
     constexpr bool empty() const { return m_bitset == 0; }
@@ -23,7 +23,7 @@ public:
         return bitset.count();
     }
 
-    uint32_t value() const
+    constexpr uint32_t value() const
     {
         return m_bitset;
     }
@@ -33,14 +33,14 @@ public:
         return ((m_bitset & (1 << pos)) != 0);
     }
 
-    void clear() { m_bitset = 0; }
+    constexpr void clear() { m_bitset = 0; }
 
-    void reset(uint32_t pos)
+    constexpr void reset(uint32_t pos)
     {
         m_bitset &= ~ (1 << pos);
     }
 
-    void set(uint32_t pos, bool v = true)
+    constexpr void set(uint32_t pos, bool v = true)
     {
         if (v) {
             m_bitset |= 1 << pos;
@@ -69,12 +69,22 @@ public:
         return test(pos);
     }
 
+	constexpr property_set operator + (const property_set& rhs) const
+	{
+		return value() | rhs.value();
+	}
+
+	constexpr property_set operator - (const property_set &rhs) const
+	{
+		return property_set(*this & ~rhs);
+	}
+
     constexpr property_set operator|(const property_set& rhs) const
     {
         return m_bitset | rhs.m_bitset;
     }
 
-    property_set& operator|=(const property_set& rhs)
+    constexpr property_set& operator|=(const property_set& rhs)
     {
         m_bitset |= rhs.m_bitset;
         return *this;
@@ -85,7 +95,7 @@ public:
         return m_bitset & rhs.m_bitset;
     }
 
-    property_set& operator&=(const property_set& rhs)
+	constexpr property_set& operator&=(const property_set& rhs)
     {
         m_bitset &= rhs.m_bitset;
         return *this;

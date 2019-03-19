@@ -87,25 +87,25 @@ Mt AnyContainer::process(const DotsHeader &header, Typeless data, const signal_t
         throw std::runtime_error("AnyContainer::process: not all key-fields of " + td()->name() + " are set. Set=" + transmitted_keyfields.to_string() + " Expected=" + td()->keys().to_string());
     }
 
-    AnyElement element(data, {header.sentTime()});
-    element.information.setModified(header.sentTime());
+    AnyElement element(data, {header.sentTime});
+    element.information.modified(header.sentTime);
 
     if (not td()->cached())
     {
-        if (not header.removeObj())
+        if (not header.removeObj)
         {
             if (signal)
             {
                 mt = Mt::create;
                 // update element info
-                Writable(element.information).setLastOperation(mt);
+                element.information.lastOperation = mt;
 
-                Writable(element.information).setCreated(header.sentTime());
-                Writable(element.information).setCreatedFrom(header.sender());
+                element.information.created = header.sentTime;
+                element.information.createdFrom(header.sender);
 
-                Writable(element.information).setLastUpdateFrom(header.sender());
-                Writable(element.information).setModified(header.sentTime());
-                Writable(element.information).setLocalUpdateTime(now);
+                element.information.lastUpdateFrom(header.sender);
+                element.information.modified = header.sentTime;
+                element.information.localUpdateTime(now);
 
                 (*signal)({element.data, element, header, td(), mt});
             }
@@ -117,7 +117,7 @@ Mt AnyContainer::process(const DotsHeader &header, Typeless data, const signal_t
         }
     }
 
-    if (header.removeObj())
+    if (header.removeObj)
     {
         auto iter = m_container.find(element);
         if (iter != m_container.end())
@@ -125,10 +125,10 @@ Mt AnyContainer::process(const DotsHeader &header, Typeless data, const signal_t
             if (signal)
             {
                 // Update container-information because it's signalled to the user-code.
-                Writeable(iter->information).setLastOperation(Mt::remove);
-                Writeable(iter->information).setLastUpdateFrom(header.sender());
-                Writeable(iter->information).setModified(header.sentTime());
-                Writeable(iter->information).setLocalUpdateTime(now);
+                Writeable(iter->information).lastOperation = Mt::remove;
+                Writeable(iter->information).lastUpdateFrom = header.sender;
+                Writeable(iter->information).modified = header.sentTime;
+                Writeable(iter->information).localUpdateTime = now;
 
                 (*signal)({iter->data, *iter, header, td(), mt});
             }
@@ -153,25 +153,25 @@ Mt AnyContainer::process(const DotsHeader &header, Typeless data, const signal_t
         if(inserted)
         {
             Writable(e.data) = td()->New(); // create new element data
-            td()->swap(e.data, data, header.attributes()); // copy arrived data to element data
+            td()->swap(e.data, data, header.attributes); // copy arrived data to element data
         }
         else
         {
             // incremental update element with received data attributes, except keys
-            td()->swap(e.data, data, header.attributes() & ~td()->keys());
+            td()->swap(e.data, data, *header.attributes & ~td()->keys());
         }
 
         mt = inserted ? Mt::create : Mt::update;
 
         // update element info
-        Writable(e.information).setLastOperation(mt);
+        Writable(e.information).lastOperation = mt;
         if (mt == Mt::create) {
-            Writable(e.information).setCreated(header.sentTime());
-            Writable(e.information).setCreatedFrom(header.sender());
+            Writable(e.information).created = header.sentTime;
+            Writable(e.information).createdFrom = header.sender;
         }
-        Writable(e.information).setLastUpdateFrom(header.sender());
-        Writable(e.information).setModified(header.sentTime());
-        Writable(e.information).setLocalUpdateTime(now);
+        Writable(e.information).lastUpdateFrom = header.sender;
+        Writable(e.information).modified = header.sentTime;
+        Writable(e.information).localUpdateTime = now;
 
         if (signal)
         {

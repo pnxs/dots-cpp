@@ -29,12 +29,12 @@ Server::Server(IoService& io_service, const string& address, const string& port,
     }
 
     {
-        StructDescriptorData::_td();
-        EnumDescriptorData::_td();
-        DotsTransportHeader::_td();
-        DotsMsgConnect::_td();
-        DotsMsgConnectResponse::_td();
-        DotsMsgHello::_td();
+        StructDescriptorData::_Descriptor();
+        EnumDescriptorData::_Descriptor();
+        DotsTransportHeader::_Descriptor();
+        DotsMsgConnect::_Descriptor();
+        DotsMsgConnectResponse::_Descriptor();
+        DotsMsgHello::_Descriptor();
     }
 
     m_acceptor.open(endpoint.protocol());
@@ -55,8 +55,8 @@ Server::Server(IoService& io_service, const string& address, const string& port,
 
     asyncAccept();
 
-    m_daemonStatus.setServerName(m_name);
-    m_daemonStatus.setStartTime(pnxs::SystemNow());
+    m_daemonStatus.serverName = m_name;
+    m_daemonStatus.startTime = pnxs::SystemNow();
 
     m_connectionManager.init();
 
@@ -158,16 +158,16 @@ void Server::updateServerStatus()
     {
         DotsDaemonStatus ds(m_daemonStatus);
 
-        ds.setReceived(m_connectionManager.receiveStatistics());
+        ds.received = m_connectionManager.receiveStatistics();
 
-        if (m_daemonStatus.diff(ds))
+        if (m_daemonStatus._diffProperties(ds))
         {
             LOG_DEBUG_S("updateServerStatus");
 
-            ds.setResourceUsage(dots::ResourceUsage());
-            ds.setCache(m_connectionManager.cacheStatus());
+            ds.resourceUsage = static_cast<DotsResourceUsage&&>(dots::ResourceUsage());
+            ds.cache = m_connectionManager.cacheStatus();
 
-            ds.publish();
+            ds._publish();
             m_daemonStatus = ds;
         }
     }

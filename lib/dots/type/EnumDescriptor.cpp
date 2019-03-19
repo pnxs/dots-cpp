@@ -1,6 +1,7 @@
 #include "EnumDescriptor.h"
 #include "Registry.h"
 #include <string.h>
+#include "EnumDescriptorData.dots.h"
 
 namespace dots
 {
@@ -14,7 +15,7 @@ enum class DummyTestEnum
 };
 
 EnumDescriptor::EnumDescriptor(const EnumDescriptorData& ed)
-:Descriptor(ed.name(), DotsType::Enum, sizeof(DummyTestEnum), alignof(DummyTestEnum))
+:Descriptor(ed.name, DotsType::Enum, sizeof(DummyTestEnum), alignof(DummyTestEnum))
 {
     m_descriptorData = std::make_shared<DescriptorData>(ed);
 }
@@ -24,15 +25,15 @@ const EnumDescriptor * EnumDescriptor::createFromEnumDescriptorData(const EnumDe
 {
     // Check if type is already registred
     {
-        auto enumDescriptor = toEnumDescriptor(Descriptor::registry().findDescriptor(ed.name()));
+        auto enumDescriptor = toEnumDescriptor(Descriptor::registry().findDescriptor(ed.name));
         if (enumDescriptor) return enumDescriptor;
     }
 
     auto newEnum = new EnumDescriptor(ed);
 
-    for (auto& e : ed.elements())
+    for (auto& e : *ed.elements)
     {
-        newEnum->m_elements[e.tag()] = e;
+        newEnum->m_elements[e.tag] = e;
     }
 
     return newEnum;
@@ -49,16 +50,16 @@ void EnumDescriptor::destruct(void *) const
 std::string EnumDescriptor::to_string(const void* lhs) const
 {
 
-    return m_elements.at(value2key(to_int(lhs))).name();
+    return m_elements.at(value2key(to_int(lhs))).name;
 }
 
 bool EnumDescriptor::from_string(void* lhs, const std::string& str) const
 {
     for (const auto& i : m_elements)
     {
-        if (i.second.name() == str)
+        if (i.second.name == str)
         {
-            from_int(lhs, i.second.enum_value());
+            from_int(lhs, i.second.enum_value);
             return true;
         }
     }
@@ -107,8 +108,8 @@ int32_t EnumDescriptor::value2key(EnumDescriptor::enum_type value) const
 
     for (const auto& item : m_elements)
     {
-        if (item.second.enum_value() == value)
-            return item.second.tag();
+        if (item.second.enum_value == value)
+            return item.second.tag;
     }
 
     return 0;
@@ -116,7 +117,7 @@ int32_t EnumDescriptor::value2key(EnumDescriptor::enum_type value) const
 
 void EnumDescriptor::clear(void *lhs) const
 {
-    from_int(lhs, m_elements.begin()->second.enum_value());
+    from_int(lhs, m_elements.begin()->second.enum_value);
 }
 
 const EnumDescriptor::DescriptorData &EnumDescriptor::descriptorData() const
@@ -130,12 +131,12 @@ void EnumDescriptor::from_key(void *p, int32_t key) const
     if (iter == m_elements.end()) {
         throw std::runtime_error("EnumDescriptor::from_key (" + name() + ") invalid key:" + std::to_string(key));
     }
-    from_int(p, iter->second.enum_value());
+    from_int(p, iter->second.enum_value);
 }
 
 int32_t EnumDescriptor::validValue() const
 {
-    return m_elements.at(0).enum_value();
+    return m_elements.at(0).enum_value;
 }
 
 }

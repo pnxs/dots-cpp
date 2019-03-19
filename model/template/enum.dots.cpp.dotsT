@@ -9,19 +9,19 @@ namespace dots
 namespace type
 {
 
-static const EnumDescriptorData _dd()
+static const types::EnumDescriptorData _dd()
 {
-    EnumDescriptorData ed;
-    ed.setName("{{name}}");
+    types::EnumDescriptorData ed;
+    ed.name("{{name}}");
 
-    auto& elements = ed.refElements();
+    auto& elements = ed.elements();
 
 {% for elem in items %}
     {
-        EnumElementDescriptor eed;
-        eed.setName("{{elem.name}}");
-        eed.setEnum_value({{elem.value}});
-        eed.setTag({{elem.tag}});
+        types::EnumElementDescriptor eed;
+        eed.name("{{elem.name}}");
+        eed.enum_value({{elem.value}});
+        eed.tag({{elem.tag}});
 
         elements.push_back(eed);
     }

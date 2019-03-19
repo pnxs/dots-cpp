@@ -1,5 +1,7 @@
 
 #include <dots/type/EnumDescriptor.h>
+#include "EnumDescriptorData.dots.h"
+#include "StructDescriptorData.dots.h"
 #include "DynamicTypeReceiver.h"
 #include "dots/type/Registry.h"
 #include "Transceiver.h"

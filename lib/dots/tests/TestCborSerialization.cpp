@@ -4,6 +4,7 @@
 #include "DotsTestStruct.dots.h"
 #include "DotsTransportHeader.dots.h"
 #include "DotsTestVectorStruct.dots.h"
+#include "EnumDescriptorData.dots.h"
 #include "dots/type/Registry.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
@@ -16,24 +17,24 @@ using ::testing::ElementsAreArray;
 TEST(TestCborSerialization, rttrDepends)
 {
     StructDescriptorData sd;
-    sd.setName("aName");
+    sd.name("aName");
 
-    auto& properties = sd.refProperties();
-    auto& documentation = sd.refDocumentation();
+    auto& properties = sd.properties();
+    auto& documentation = sd.documentation();
 
     StructPropertyData pd;
-    pd.setName("aProperty");
-    pd.setTag(1);
-    pd.setType("type");
-    pd.setIsKey(false);
+    pd.name("aProperty");
+    pd.tag(1);
+    pd.type("type");
+    pd.isKey(false);
 
     properties.push_back(pd);
-    pd.setName("anotherProperty");
-    pd.setTag(2);
+    pd.name = "anotherProperty";
+    pd.tag = 2;
     properties.push_back(pd);
 
-    documentation.setDescription("aDescription");
-    documentation.setComment("aComment");
+    documentation.description("aDescription");
+    documentation.comment("aComment");
 
     std::vector<uint8_t> expectData = {
             0xa3,                                   // map(3)
@@ -122,54 +123,54 @@ TEST(TestCborSerialization, deserialize)
 
     {
         StructDescriptorData nativeTest;
-        dots::from_cbor(inputData.data(), inputData.size(), nativeTest._td(), &nativeTest);
+        dots::from_cbor(inputData.data(), inputData.size(), &nativeTest._Descriptor(), &nativeTest);
 
-        ASSERT_TRUE(nativeTest.hasName());
-        ASSERT_TRUE(nativeTest.hasProperties());
-        ASSERT_TRUE(nativeTest.hasDocumentation());
+        ASSERT_TRUE(nativeTest.name.isValid());
+        ASSERT_TRUE(nativeTest.properties.isValid());
+        ASSERT_TRUE(nativeTest.documentation.isValid());
 
-        auto properties = StructDescriptorData::PropSet(StructDescriptorData::Att::name) + StructDescriptorData::Att::properties + StructDescriptorData::Att::documentation;
-        ASSERT_EQ(nativeTest.validProperties(), properties);
+        auto properties = StructDescriptorData::name_t::Set() + StructDescriptorData::properties_t::Set() + StructDescriptorData::documentation_t::Set();
+        ASSERT_EQ(nativeTest._validProperties(), properties);
 
-        EXPECT_EQ(nativeTest.name(), "aName");
-        ASSERT_EQ(nativeTest.properties().size(), 2u);
+        EXPECT_EQ(nativeTest.name, "aName");
+        ASSERT_EQ(nativeTest.properties->size(), 2u);
 
-        EXPECT_EQ(nativeTest.properties().at(0).name(), "aProperty");
-        EXPECT_EQ(nativeTest.properties().at(0).tag(),  1u);
-        EXPECT_EQ(nativeTest.properties().at(0).type(), "type");
-        EXPECT_EQ(nativeTest.properties().at(0).isKey(), false);
+        EXPECT_EQ(nativeTest.properties->at(0).name, "aProperty");
+        EXPECT_EQ(nativeTest.properties->at(0).tag,  1u);
+        EXPECT_EQ(nativeTest.properties->at(0).type, "type");
+        EXPECT_EQ(nativeTest.properties->at(0).isKey, false);
 
-        EXPECT_EQ(nativeTest.properties().at(1).name(), "anotherProperty");
-        EXPECT_EQ(nativeTest.properties().at(1).tag(),  2u);
-        EXPECT_EQ(nativeTest.properties().at(1).type(), "type");
-        EXPECT_EQ(nativeTest.properties().at(1).isKey(), false);
+        EXPECT_EQ(nativeTest.properties->at(1).name, "anotherProperty");
+        EXPECT_EQ(nativeTest.properties->at(1).tag,  2u);
+        EXPECT_EQ(nativeTest.properties->at(1).type, "type");
+        EXPECT_EQ(nativeTest.properties->at(1).isKey, false);
 
-        EXPECT_EQ(nativeTest.documentation().description(), "aDescription");
-        EXPECT_EQ(nativeTest.documentation().comment(), "aComment");
+        EXPECT_EQ(nativeTest.documentation->description, "aDescription");
+        EXPECT_EQ(nativeTest.documentation->comment, "aComment");
     }
 
-    ASSERT_TRUE(sd.hasName());
-    ASSERT_TRUE(sd.hasProperties());
-    ASSERT_TRUE(sd.hasDocumentation());
+    ASSERT_TRUE(sd.name.isValid());
+    ASSERT_TRUE(sd.properties.isValid());
+    ASSERT_TRUE(sd.documentation.isValid());
 
-    auto properties = StructDescriptorData::PropSet(StructDescriptorData::Att::name) + StructDescriptorData::Att::properties + StructDescriptorData::Att::documentation;
-    ASSERT_EQ(sd.validProperties(), properties);
+    auto properties = StructDescriptorData::name_t::Set() + StructDescriptorData::properties_t::Set() + StructDescriptorData::documentation_t::Set();
+    ASSERT_EQ(sd._validProperties(), properties);
 
-    EXPECT_EQ(sd.name(), "aName");
-    ASSERT_EQ(sd.properties().size(), 2u);
+    EXPECT_EQ(sd.name, "aName");
+    ASSERT_EQ(sd.properties->size(), 2u);
 
-    EXPECT_EQ(sd.properties().at(0).name(), "aProperty");
-    EXPECT_EQ(sd.properties().at(0).tag(),  1u);
-    EXPECT_EQ(sd.properties().at(0).type(), "type");
-    EXPECT_EQ(sd.properties().at(0).isKey(), false);
+    EXPECT_EQ(sd.properties->at(0).name, "aProperty");
+    EXPECT_EQ(sd.properties->at(0).tag,  1u);
+    EXPECT_EQ(sd.properties->at(0).type, "type");
+    EXPECT_EQ(sd.properties->at(0).isKey, false);
 
-    EXPECT_EQ(sd.properties().at(1).name(), "anotherProperty");
-    EXPECT_EQ(sd.properties().at(1).tag(),  2u);
-    EXPECT_EQ(sd.properties().at(1).type(), "type");
-    EXPECT_EQ(sd.properties().at(1).isKey(), false);
+    EXPECT_EQ(sd.properties->at(1).name, "anotherProperty");
+    EXPECT_EQ(sd.properties->at(1).tag,  2u);
+    EXPECT_EQ(sd.properties->at(1).type, "type");
+    EXPECT_EQ(sd.properties->at(1).isKey, false);
 
-    EXPECT_EQ(sd.documentation().description(), "aDescription");
-    EXPECT_EQ(sd.documentation().comment(), "aComment");
+    EXPECT_EQ(sd.documentation->description, "aDescription");
+    EXPECT_EQ(sd.documentation->comment, "aComment");
 }
 
 TEST(TestCborSerialization, deserializeDynamic)
@@ -215,49 +216,49 @@ TEST(TestCborSerialization, deserializeDynamic)
 
     // Register a new type StructDescriptorDataTest and deserialize into it
     //auto descriptorData = Registry::toStructDescriptorData(type::get<StructDescriptorData>());
-    auto descriptorData = StructDescriptorData::_dd();
-    descriptorData.setName("StructDescriptorDataTest");
+    auto descriptorData = StructDescriptorData::_Descriptor().descriptorData();
+    descriptorData.name = "StructDescriptorDataTest";
     auto descriptor = StructDescriptor::createFromStructDescriptorData(descriptorData);
 
     StructDescriptorData sd;
 
     dots::from_cbor(inputData.data(), inputData.size(), descriptor, &sd);
 
-    ASSERT_TRUE(sd.hasName());
-    ASSERT_TRUE(sd.hasProperties());
-    ASSERT_TRUE(sd.hasDocumentation());
+    ASSERT_TRUE(sd.name.isValid());
+    ASSERT_TRUE(sd.properties.isValid());
+    ASSERT_TRUE(sd.documentation.isValid());
 
-    auto properties = StructDescriptorData::PropSet(StructDescriptorData::Att::name) + StructDescriptorData::Att::properties + StructDescriptorData::Att::documentation;
-    ASSERT_EQ(sd.validProperties(), properties);
+    auto properties = StructDescriptorData::name_t::Set() + StructDescriptorData::properties_t::Set() + StructDescriptorData::documentation_t::Set();
+    ASSERT_EQ(sd._validProperties(), properties);
 
-    EXPECT_EQ(sd.name(), "aName");
-    ASSERT_EQ(sd.properties().size(), 2u);
+    EXPECT_EQ(sd.name, "aName");
+    ASSERT_EQ(sd.properties->size(), 2u);
 
-    EXPECT_EQ(sd.properties().at(0).name(), "aProperty");
-    EXPECT_EQ(sd.properties().at(0).tag(),  1u);
-    EXPECT_EQ(sd.properties().at(0).type(), "type");
-    EXPECT_EQ(sd.properties().at(0).isKey(), false);
+    EXPECT_EQ(sd.properties->at(0).name, "aProperty");
+    EXPECT_EQ(sd.properties->at(0).tag,  1u);
+    EXPECT_EQ(sd.properties->at(0).type, "type");
+    EXPECT_EQ(sd.properties->at(0).isKey, false);
 
-    EXPECT_EQ(sd.properties().at(1).name(), "anotherProperty");
-    EXPECT_EQ(sd.properties().at(1).tag(),  2u);
-    EXPECT_EQ(sd.properties().at(1).type(), "type");
-    EXPECT_EQ(sd.properties().at(1).isKey(), false);
+    EXPECT_EQ(sd.properties->at(1).name, "anotherProperty");
+    EXPECT_EQ(sd.properties->at(1).tag,  2u);
+    EXPECT_EQ(sd.properties->at(1).type, "type");
+    EXPECT_EQ(sd.properties->at(1).isKey, false);
 
-    EXPECT_EQ(sd.documentation().description(), "aDescription");
-    EXPECT_EQ(sd.documentation().comment(), "aComment");
+    EXPECT_EQ(sd.documentation->description, "aDescription");
+    EXPECT_EQ(sd.documentation->comment, "aComment");
 }
 
 TEST(TestCborSerialization, serializeTransportHeader)
 {
     DotsTransportHeader header;
-    header.setNameSpace("SYS");
-    header.setDestinationGroup("DotsMsgHello");
-    header.setPayloadSize(16);
-    auto& dots_header = header.refDotsHeader();
-    dots_header.setTypeName("DotsMsgHello");
-    dots_header.setAttributes(1);
-    dots_header.setRemoveObj(false);
-    dots_header.setSentTime(pnxs::TimePoint(1));
+    header.nameSpace("SYS");
+    header.destinationGroup("DotsMsgHello");
+    header.payloadSize(16);
+    auto& dots_header = header.dotsHeader();
+    dots_header.typeName("DotsMsgHello");
+    dots_header.attributes(1);
+    dots_header.removeObj(false);
+    dots_header.sentTime(pnxs::TimePoint(1));
 
     std::vector<uint8_t> expectData = {
             0xa4,                                // map(4)
@@ -323,34 +324,34 @@ TEST(TestCborSerialization, deserializeTransportHeader)
 
     auto transportHeader = dots::decodeInto_cbor<DotsTransportHeader>(data);
 
-    ASSERT_TRUE(transportHeader.hasNameSpace());
-    ASSERT_TRUE(transportHeader.hasDestinationGroup());
-    ASSERT_TRUE(transportHeader.hasPayloadSize());
-    ASSERT_TRUE(transportHeader.hasDotsHeader());
+    ASSERT_TRUE(transportHeader.nameSpace.isValid());
+    ASSERT_TRUE(transportHeader.destinationGroup.isValid());
+    ASSERT_TRUE(transportHeader.payloadSize.isValid());
+    ASSERT_TRUE(transportHeader.dotsHeader.isValid());
 
-    EXPECT_EQ(transportHeader.nameSpace(), "SYS");
-    EXPECT_EQ(transportHeader.destinationGroup(), "DotsMsgHello");
-    EXPECT_EQ(transportHeader.payloadSize(), 16u);
+    EXPECT_EQ(transportHeader.nameSpace, "SYS");
+    EXPECT_EQ(transportHeader.destinationGroup, "DotsMsgHello");
+    EXPECT_EQ(transportHeader.payloadSize, 16u);
 
-    auto& dots_header = transportHeader.dotsHeader();
+    auto& dots_header = *transportHeader.dotsHeader;
 
-    ASSERT_TRUE(dots_header.hasTypeName());
-    ASSERT_TRUE(dots_header.hasAttributes());
-    ASSERT_TRUE(dots_header.hasRemoveObj());
-    ASSERT_TRUE(dots_header.hasSentTime());
-    ASSERT_FALSE(dots_header.hasSender());
+    ASSERT_TRUE(dots_header.typeName.isValid());
+    ASSERT_TRUE(dots_header.attributes.isValid());
+    ASSERT_TRUE(dots_header.removeObj.isValid());
+    ASSERT_TRUE(dots_header.sentTime.isValid());
+    ASSERT_FALSE(dots_header.sender.isValid());
 
-    EXPECT_EQ(dots_header.typeName(), "DotsMsgHello");
-    EXPECT_EQ(dots_header.attributes(), dots::property_set(1));
-    EXPECT_EQ(dots_header.removeObj(), false);
-    EXPECT_EQ(dots_header.sentTime(), pnxs::TimePoint(1));
+    EXPECT_EQ(dots_header.typeName, "DotsMsgHello");
+    EXPECT_EQ(dots_header.attributes, dots::property_set(1));
+    EXPECT_EQ(dots_header.removeObj, false);
+    EXPECT_EQ(dots_header.sentTime, pnxs::TimePoint(1));
 }
 
 TEST(TestCborSerialization, serializeTestStruct)
 {
     DotsTestStruct testStruct;
-    testStruct.setIndKeyfField(123);
-    testStruct.setEnumField(DotsTestEnum::value3);
+    testStruct.indKeyfField(123);
+    testStruct.enumField(DotsTestEnum::value3);
 
     std::vector<uint8_t> expectData = {
             0xa2,      // map(2)
@@ -375,11 +376,11 @@ TEST(TestCborSerialization, deserializeTestStruct)
 
     auto testStruct = dots::decodeInto_cbor<DotsTestStruct>(data);
 
-    ASSERT_TRUE(testStruct.hasEnumField());
-    EXPECT_EQ(testStruct.enumField(), DotsTestEnum::value3);
+    ASSERT_TRUE(testStruct.enumField.isValid());
+    EXPECT_EQ(testStruct.enumField, DotsTestEnum::value3);
 
-    ASSERT_TRUE(testStruct.hasIndKeyfField());
-    EXPECT_EQ(testStruct.indKeyfField(), 123);
+    ASSERT_TRUE(testStruct.indKeyfField.isValid());
+    EXPECT_EQ(testStruct.indKeyfField, 123);
 
 }
 
@@ -415,7 +416,7 @@ TEST(TestCborSerialization, deserializeCustomType)
 
     for (auto& property : descriptor->properties())
     {
-        auto iter = expectProperties.find(property.name());
+        auto iter = expectProperties.find(property.name().data());
         if (iter != expectProperties.end()) expectProperties.erase(iter);
         else FAIL() << "unexpected property " << property.name();
 
@@ -443,31 +444,31 @@ TEST(TestCborSerialization, dynamicEnum)
 
     EnumDescriptorData ed;
     {
-        ed.setName("MyEnum");
-        auto &elements = ed.refElements();
+        ed.name("MyEnum");
+        auto &elements = ed.elements();
 
         EnumElementDescriptor element;
-        element.setName("myvalue1");
-        element.setEnum_value(10);
-        element.setTag(1);
+        element.name("myvalue1");
+        element.enum_value(10);
+        element.tag(1);
         elements.push_back(element);
 
-        element.setName("myvalue2");
-        element.setEnum_value(11);
-        element.setTag(2);
+        element.name = "myvalue2";
+        element.enum_value = 11;
+        element.tag = 2;
         elements.push_back(element);
     }
 
     StructDescriptorData sd;
     {
-        sd.setName("MyEnumStruct");
-        auto& properties = sd.refProperties();
+        sd.name("MyEnumStruct");
+        auto& properties = sd.properties();
 
         StructPropertyData pd;
-        pd.setName("enum");
-        pd.setTag(1);
-        pd.setIsKey(false);
-        pd.setType("MyEnum");
+        pd.name("enum");
+        pd.tag(1);
+        pd.isKey(false);
+        pd.type("MyEnum");
 
         properties.push_back(pd);
     }
@@ -501,7 +502,7 @@ TEST(TestCborSerialization, dynamicEnum)
 TEST(TestCborSerialization, serializeStringVector)
 {
     DotsTestVectorStruct ts;
-    auto& sl = ts.refStringList();
+    auto& sl = ts.stringList();
     sl.push_back("String1");
     sl.push_back("String2");
 
@@ -523,13 +524,13 @@ TEST(TestCborSerialization, serializeDynamicRegisteredIntVector)
 {
     // Register a new type StructDescriptorDataTest and deserialize into it
     //auto descriptorData = Registry::toStructDescriptorData(type::get<DotsTestVectorStruct>());
-    auto descriptorData = DotsTestVectorStruct::_dd();
-    descriptorData.setName("DotsTestVectorStruct_IntVec");
+    auto descriptorData = DotsTestVectorStruct::_Descriptor().descriptorData();
+    descriptorData.name = "DotsTestVectorStruct_IntVec";
     auto descriptor = StructDescriptor::createFromStructDescriptorData(descriptorData);
 
     DotsTestVectorStruct ts;
 
-    auto& sl = ts.refIntList();
+    auto& sl = ts.intList();
     sl.push_back(1);
     sl.push_back(2);
 
@@ -547,8 +548,8 @@ TEST(TestCborSerialization, serializeDynamicRegisteredIntVector)
 TEST(TestCborSerialization, deserializeDynamicRegisteredIntVector)
 {
     // Register a new type StructDescriptorDataTest and deserialize into it
-    auto descriptorData = DotsTestVectorStruct::_dd();
-    descriptorData.setName("DotsTestVectorStruct_IntVecDeser");
+    auto descriptorData = DotsTestVectorStruct::_Descriptor().descriptorData();
+    descriptorData.name = "DotsTestVectorStruct_IntVecDeser";
     auto descriptor = StructDescriptor::createFromStructDescriptorData(descriptorData);
 
     DotsTestVectorStruct ts;
@@ -563,22 +564,22 @@ TEST(TestCborSerialization, deserializeDynamicRegisteredIntVector)
 
     dots::from_cbor(inputData.data(), inputData.size(), descriptor, &ts);
 
-    ASSERT_TRUE(ts.hasIntList());
-    ASSERT_EQ(ts.intList().size(), 2u);
-    EXPECT_EQ(ts.intList()[0],1);
-    EXPECT_EQ(ts.intList()[1], 2);
+    ASSERT_TRUE(ts.intList.isValid());
+    ASSERT_EQ(ts.intList->size(), 2u);
+    EXPECT_EQ((*ts.intList)[0],1);
+    EXPECT_EQ((*ts.intList)[1], 2);
 }
 
 TEST(TestCborSerialization, serializeDynamicRegisteredStringVector)
 {
     // Register a new type StructDescriptorDataTest and deserialize into it
-    auto descriptorData = DotsTestVectorStruct::_dd();
-    descriptorData.setName("DotsTestVectorStruct_StringVector");
+    auto descriptorData = DotsTestVectorStruct::_Descriptor().descriptorData();
+    descriptorData.name = "DotsTestVectorStruct_StringVector";
     auto descriptor = StructDescriptor::createFromStructDescriptorData(descriptorData);
 
     DotsTestVectorStruct ts;
 
-    auto& sl = ts.refStringList();
+    auto& sl = ts.stringList();
     sl.push_back("String1");
     sl.push_back("String2");
 
@@ -598,8 +599,8 @@ TEST(TestCborSerialization, serializeDynamicRegisteredStringVector)
 TEST(TestCborSerialization, deserializeDynamicRegisteredStringVector)
 {
     // Register a new type StructDescriptorDataTest and deserialize into it
-    auto descriptorData = DotsTestVectorStruct::_dd();
-    descriptorData.setName("DotsTestVectorStruct_StringVectorDeser");
+    auto descriptorData = DotsTestVectorStruct::_Descriptor().descriptorData();
+    descriptorData.name = "DotsTestVectorStruct_StringVectorDeser";
     auto descriptor = StructDescriptor::createFromStructDescriptorData(descriptorData);
 
     DotsTestVectorStruct ts;
@@ -616,10 +617,10 @@ TEST(TestCborSerialization, deserializeDynamicRegisteredStringVector)
 
     dots::from_cbor(inputData.data(), inputData.size(), descriptor, &ts);
 
-    ASSERT_TRUE(ts.hasStringList());
-    ASSERT_EQ(ts.stringList().size(), 2u);
-    EXPECT_EQ(ts.stringList()[0], "String1");
-    EXPECT_EQ(ts.stringList()[1], "String2");
+    ASSERT_TRUE(ts.stringList.isValid());
+    ASSERT_EQ(ts.stringList->size(), 2u);
+    EXPECT_EQ((*ts.stringList)[0], "String1");
+    EXPECT_EQ((*ts.stringList)[1], "String2");
 
 }
 
@@ -628,8 +629,8 @@ TEST(TestCborSerialization, serializeUuid)
     uint8_t myUuid[] = {0x00,0x01,0x02,0x03, 0x04,0x05,0x06,0x07, 0x08,0x09,0x0a ,0x0b, 0x0c,0x0d,0x0e,0x0f };
 
     DotsTestStruct ts;
-    ts.setIndKeyfField(41);
-    ts.setUuid(myUuid);
+    ts.indKeyfField(41);
+    ts.uuid(myUuid);
 
     std::vector<uint8_t> expectData = {
             0xa2,                                   // map(2)
@@ -658,8 +659,8 @@ TEST(TestCborSerialization, deserializeUuid)
             0x50,0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f
     };
 
-    dots::from_cbor(inputData.data(), inputData.size(), ts._td(), &ts);
+    dots::from_cbor(inputData.data(), inputData.size(), &ts._Descriptor(), &ts);
 
-    ASSERT_TRUE(ts.hasIndKeyfField());
-    ASSERT_TRUE(ts.hasUuid());
+    ASSERT_TRUE(ts.indKeyfField.isValid());
+    ASSERT_TRUE(ts.uuid.isValid());
 }

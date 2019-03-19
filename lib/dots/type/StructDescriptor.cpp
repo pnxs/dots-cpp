@@ -2,6 +2,7 @@
 #include "StructDescriptor.h"
 #include "Registry.h"
 
+#include "StructDescriptorData.dots.h"
 #include "DotsStructFlags.dots.h"
 
 namespace dots
@@ -11,36 +12,32 @@ namespace type
 
 
 StructDescriptor::StructDescriptor(const DescriptorData& sd, std::size_t sizeOf, std::size_t alignOf)
-:Descriptor(sd.name(), DotsType::Struct, sizeOf, alignOf)
+:Descriptor(sd.name, DotsType::Struct, sizeOf, alignOf)
 {
     m_descriptorData = std::make_unique<DescriptorData>(sd);
-    m_descriptorData->setFlags(sd.hasFlags() ? sd.flags() : dots::types::DotsStructFlags());
+    auto& flags = sd.flags.isValid() ? *m_descriptorData->flags : m_descriptorData->flags();
 
-    auto& flags = m_descriptorData->refFlags();
-
-    if (not flags.hasCleanup())    flags.setCleanup(false);
-    if (not flags.hasPersistent()) flags.setPersistent(false);
-    if (not flags.hasLocal())      flags.setLocal(false);
-    if (not flags.hasCached())     flags.setCached(false);
-    if (not flags.hasInternal())   flags.setInternal(false);
-    if (not flags.hasSubstructOnly()) flags.setSubstructOnly(false);
+    if (not flags.cleanup.isValid())    flags.cleanup(false);
+    if (not flags.persistent.isValid()) flags.persistent(false);
+    if (not flags.local.isValid())      flags.local(false);
+    if (not flags.cached.isValid())     flags.cached(false);
+    if (not flags.internal.isValid())   flags.internal(false);
+    if (not flags.substructOnly.isValid()) flags.substructOnly(false);
 }
 
 void StructDescriptor::construct(void *obj) const
 {
-    validProperties(obj) = property_set();
-
-    for(auto& pd : m_properties) // Iterate over PropertyDescriptors
-    {
-        pd.td()->construct(pd.address(obj));
-    }
+	::new (obj) Struct(*this);
 }
 
 void StructDescriptor::destruct(void *obj) const
 {
     for(auto& pd : m_properties) // Iterate over PropertyDescriptors
     {
-        pd.td()->destruct(pd.address(obj));
+		if (validProperties(obj).test(pd.tag()))
+		{
+			pd.td()->destruct(pd.address(obj));
+		}
     }
 }
 
@@ -106,15 +103,20 @@ void StructDescriptor::swap(void *lhs, void *rhs) const
 
 void StructDescriptor::copy(void *lhs, const void *rhs, property_set properties) const
 {
-    validProperties(lhs) &= ~properties;
     properties &= validProperties(rhs);
-    validProperties(lhs) |= properties;
+	auto& p = validProperties(lhs);
 
     for (auto& pd : m_properties)
     {
         if (properties[pd.tag()])
-        {
+		{
+			if (!validProperties(lhs)[pd.tag()])
+			{
+				pd.td()->construct(pd.address(lhs));
+			}
+
             pd.copy(lhs, rhs);
+			validProperties(lhs).set(pd.tag());
         }
     }
 }
@@ -146,7 +148,7 @@ void StructDescriptor::swap(void *lhs, void *rhs, property_set properties) const
 
 property_set &StructDescriptor::validProperties(const void *obj) const
 {
-    return *(property_set*)(obj);
+    return const_cast<property_set&>(reinterpret_cast<const Struct*>(obj)->_validProperties());
 }
 
 const property_set &StructDescriptor::propertySet() const
@@ -240,32 +242,32 @@ const StructDescriptor::DescriptorData &StructDescriptor::descriptorData() const
 
 bool StructDescriptor::cached() const
 {
-    return m_descriptorData->flags().cached();
+    return m_descriptorData->flags->cached;
 }
 
 bool StructDescriptor::cleanup() const
 {
-    return m_descriptorData->flags().cleanup();
+    return m_descriptorData->flags->cleanup;
 }
 
 bool StructDescriptor::local() const
 {
-    return m_descriptorData->flags().local();
+    return m_descriptorData->flags->local;
 }
 
 bool StructDescriptor::persistent() const
 {
-    return m_descriptorData->flags().persistent();
+    return m_descriptorData->flags->persistent;
 }
 
 bool StructDescriptor::internal() const
 {
-    return m_descriptorData->flags().internal();
+    return m_descriptorData->flags->internal;
 }
 
 bool StructDescriptor::substructOnly() const
 {
-    return m_descriptorData->flags().substructOnly();
+    return m_descriptorData->flags->substructOnly;
 }
 
 

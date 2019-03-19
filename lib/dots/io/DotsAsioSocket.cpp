@@ -22,7 +22,7 @@ void DotsAsioSocket::setReceiveCallback(DotsSocket::receive_callback cb)
 int DotsAsioSocket::send(const DotsTransportHeader &header, const vector<uint8_t> &data)
 {
     DotsTransportHeader _header(header);
-    _header.setPayloadSize(data.size());
+    _header.payloadSize = data.size();
 
     auto headerBuffer = to_cbor(_header);
 
@@ -121,24 +121,24 @@ void DotsAsioSocket::readHeader()
         try
         {
             // Decode header
-            m_header.clear();
+			m_header = DotsTransportHeader{};
 
-            from_cbor(&m_headerBuffer[0], m_headerSize, m_header._td(), &m_header);
+            from_cbor(&m_headerBuffer[0], m_headerSize, &m_header._Descriptor(), &m_header);
 
-            string nameSpace = m_header.hasNameSpace() ? m_header.nameSpace() : "";
+            string nameSpace = m_header.nameSpace.isValid() ? *m_header.nameSpace : "";
             bool remove = false;
-            if (m_header.hasDotsHeader())
+            if (m_header.dotsHeader.isValid())
             {
-                remove = m_header.dotsHeader().hasRemoveObj() ? m_header.dotsHeader().removeObj() : false;
+                remove = m_header.dotsHeader->removeObj.isValid() ? m_header.dotsHeader->removeObj : false;
             }
 
             LOG_DEBUG_S("received header (size=" << bytes << "): ns=" << nameSpace << " dstGrp="
-                                                 << m_header.destinationGroup() << " remove=" << remove
-                                                 << " payloadSize=" << m_header.payloadSize());
+                                                 << *m_header.destinationGroup << " remove=" << remove
+                                                 << " payloadSize=" << m_header.payloadSize);
 
-            if (m_header.hasPayloadSize())
+            if (m_header.payloadSize.isValid())
             {
-                m_payloadSize = m_header.payloadSize();
+                m_payloadSize = m_header.payloadSize;
                 this->readPayload();
             }
             else

@@ -15,13 +15,13 @@ using std::string;
 DotsTestStruct createTestData()
 {
     DotsTestStruct dts;
-    dts.setIndKeyfField(42);
-    dts.setStringField("Hello");
-    dts.setEnumField(DotsTestEnum::value2);
-    dts.setFloatField(3.141);
-    dts.setTp(pnxs::TimePoint(1234));
-    auto& s = dts.refSubStruct();
-    s.setFlag1(true);
+    dts.indKeyfField(42);
+    dts.stringField("Hello");
+    dts.enumField(DotsTestEnum::value2);
+    dts.floatField(3.141);
+    dts.tp(pnxs::TimePoint(1234));
+    auto& s = dts.subStruct();
+    s.flag1(true);
 
     return dts;
 }
@@ -31,7 +31,7 @@ void publish_test(int loop_count)
     for (int i = 0; i < loop_count; ++i)
     {
         DotsTestStruct dts = createTestData();
-        dts.publish();
+        dts._publish();
     }
 }
 
@@ -54,10 +54,10 @@ void serializeTest(int loop_count)
 void clearCache(const string& type)
 {
     DotsClearCache cc;
-    auto& types = cc.refTypeNames();
+    auto& types = cc.typeNames();
     types.push_back(type);
 
-    cc.publish();
+    cc._publish();
 }
 
 extern "C" {

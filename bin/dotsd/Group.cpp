@@ -91,9 +91,9 @@ void Group::sendMemberMessage(const DotsMemberEvent &event, const ClientId &chan
     if (m_connections.empty()) return;
 
     DotsMember member;
-    member.setEvent(event);
-    member.setGroupName(name());
-    member.setClient(changeMember);
+    member.event(event);
+    member.groupName(name());
+    member.client(changeMember);
 
     for (const auto& c : m_connections)
     {
@@ -130,9 +130,9 @@ void Group::removeConnection(Connection *connection)
 void Group::sendLeave(Connection *connection)
 {
     DotsMember member;
-    member.setGroupName(name());
-    member.setEvent(DotsMemberEvent::leave);
-    member.setClient(connection->id());
+    member.groupName(name());
+    member.event(DotsMemberEvent::leave);
+    member.client(connection->id());
 
     if (connection->wantMemberMessages())
     {
@@ -150,8 +150,8 @@ void Group::deliverMessage(const Message &msg)
         {
             string ns;
 
-            if (msg.header().hasNameSpace()) ns = msg.header().nameSpace();
-            LOG_DATA_S("send to connection " << connection->id() << " ns=" << ns << " grp=" << msg.header().destinationGroup());
+            if (msg.header().nameSpace.isValid()) ns = *msg.header().nameSpace;
+            LOG_DATA_S("send to connection " << connection->id() << " ns=" << ns << " grp=" << msg.header().destinationGroup);
             if (connection->state() == DotsConnectionState::connected
                 or connection->state() == DotsConnectionState::suspended)
             {

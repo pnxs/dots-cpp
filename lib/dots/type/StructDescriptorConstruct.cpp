@@ -7,6 +7,8 @@
 #include "Registry.h"
 #include <iostream>
 
+#include "StructDescriptorData.dots.h"
+
 struct StructProperties
 {
     std::size_t size;
@@ -21,11 +23,11 @@ static size_t evalPropertyOffset(const dots::type::Descriptor* td, size_t start)
 
 static size_t evalMaxPropertyAlignment(const StructDescriptorData &sd)
 {
-    size_t maxAlign = alignof(dots::property_set);
+    size_t maxAlign = alignof(dots::type::Struct);
 
-    for (auto &p : sd.properties())
+    for (auto &p : *sd.properties)
     {
-        auto td = dots::type::Descriptor::registry().findDescriptor(p.type());
+        auto td = dots::type::Descriptor::registry().findDescriptor(p.type);
         size_t align = td->alignOf();
         if (align > maxAlign)
             maxAlign = align;
@@ -35,14 +37,14 @@ static size_t evalMaxPropertyAlignment(const StructDescriptorData &sd)
 
 static StructProperties getStructProperties(const StructDescriptorData &sd)
 {
-    size_t sizeOf = sizeof(dots::property_set);
-    size_t alignOf = alignof(dots::property_set);
+    size_t sizeOf = sizeof(dots::type::Struct);
+    size_t alignOf = alignof(dots::type::Struct);
 
-    size_t lastPropertyOffset = sizeof(dots::property_set);
+    size_t lastPropertyOffset = sizeof(dots::type::Struct);
 
-    for (auto &p : sd.properties())
+    for (auto &p : *sd.properties)
     {
-        std::string dots_type_name = p.type();
+        std::string dots_type_name = p.type;
         auto td = dots::type::Registry::fromWireName(dots_type_name);
         if (not td) {
             throw std::runtime_error("getStructProperties: missing type: " + dots_type_name);
@@ -65,9 +67,9 @@ static uint32_t calculateMaxTagValue(const StructDescriptorData &sd)
 {
     uint32_t maxValue = 0;
 
-    for (auto& t : sd.properties())
+    for (auto& t : *sd.properties)
     {
-        maxValue = std::max(t.tag(), maxValue);
+        maxValue = std::max(*t.tag, maxValue);
     }
 
     return maxValue;
@@ -86,7 +88,7 @@ const StructDescriptor * StructDescriptor::createFromStructDescriptorData(const 
 {
     // Check if type is already registred
     {
-        auto structDescriptor = Descriptor::registry().findStructDescriptor(sd.name());
+        auto structDescriptor = Descriptor::registry().findStructDescriptor(sd.name);
         if (structDescriptor) return structDescriptor;
     }
 
@@ -96,12 +98,12 @@ const StructDescriptor * StructDescriptor::createFromStructDescriptorData(const 
 
     auto newstruct = new StructDescriptor(sd, structProperties.size, structProperties.alignment);
 
-    std::size_t lastOffset = sizeof(dots::property_set);
+    std::size_t lastOffset = sizeof(dots::type::Struct);
 
 
-    for (const StructPropertyData &p : newstruct->descriptorData().properties())
+    for (const StructPropertyData &p : *newstruct->descriptorData().properties)
     {
-        std::string dots_type_name = p.type(); // DOTS typename
+        std::string dots_type_name = p.type; // DOTS typename
         auto td = Registry::fromWireName(dots_type_name);
 
         std::size_t offset = evalPropertyOffset(td, lastOffset);
@@ -109,23 +111,23 @@ const StructDescriptor * StructDescriptor::createFromStructDescriptorData(const 
         const Descriptor* propertyTypeDescriptor = td;
         if (propertyTypeDescriptor)
         {
-            newstruct->m_properties.push_back(StructProperty(p.name(), offset, p.tag(), p.isKey(), propertyTypeDescriptor));
-            newstruct->m_propertySet.set(p.tag());
-            if (p.isKey()) {
-                newstruct->m_keyProperties.set(p.tag());
+            newstruct->m_properties.push_back(StructProperty(p.name, offset, p.tag, p.isKey, propertyTypeDescriptor));
+            newstruct->m_propertySet.set(p.tag);
+            if (p.isKey) {
+                newstruct->m_keyProperties.set(p.tag);
             }
         }
         else
         {
             // Error, because the needed type is not found
-            throw std::runtime_error("missing type '" + dots_type_name + "' for property '" + p.name() +"'");
+            throw std::runtime_error("missing type '" + dots_type_name + "' for property '" + *p.name +"'");
         }
         lastOffset = offset + propertyTypeDescriptor->sizeOf();
     }
 
-    if (sd.hasPublisherId())
+    if (sd.publisherId.isValid())
     {
-        newstruct->m_publisherId = sd.publisherId();
+        newstruct->m_publisherId = sd.publisherId;
     }
 
 

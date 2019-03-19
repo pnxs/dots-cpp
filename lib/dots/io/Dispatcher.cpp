@@ -7,8 +7,8 @@ namespace dots
 
 Dispatcher::Dispatcher()
 {
-    m_statistics.setPackages(0);
-    m_statistics.setBytes(0);
+    m_statistics.packages(0);
+    m_statistics.bytes(0);
 }
 
 Subscription
@@ -59,19 +59,19 @@ void Dispatcher::dispatchMessage(const ReceiveMessageData &rmd)
         {
             if (not td->internal())
             {
-                m_statistics.refPackages()++;
-                m_statistics.refBytes() += rmd.length;
+                (*m_statistics.packages)++;
+                (*m_statistics.bytes) += rmd.length;
             }
 
             DotsHeader header(rmd.header);
 
-            if (not header.hasRemoveObj()) {
-                header.setRemoveObj(false);
+            if (not header.removeObj.isValid()) {
+                header.removeObj = false;
             }
 
-            header.setSender(rmd.sender);
-            header.setSentTime(rmd.sentTime);
-            header.setIsFromMyself(rmd.isFromMyself);
+            header.sender = rmd.sender;
+            header.sentTime = rmd.sentTime;
+            header.isFromMyself = rmd.isFromMyself;
 
             if (typelessSignal)
             {

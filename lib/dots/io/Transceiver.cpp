@@ -88,9 +88,9 @@ void Transceiver::onEarlySubscribe()
 
     // Send preloadClientFinished
     DotsMsgConnect cm;
-    cm.setPreloadClientFinished(true);
+    cm.preloadClientFinished(true);
 
-    connection().publishNs("SYS", cm._td(), &cm);
+    connection().publishNs("SYS", &cm._Descriptor(), &cm);
 }
 
 type::StructDescriptorSet Transceiver::getPublishedDescriptors() const

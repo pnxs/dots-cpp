@@ -18,6 +18,8 @@ namespace types
 namespace type
 {
 
+struct Struct;
+
 class StructDescriptor: public Descriptor
 {
 public:
@@ -62,6 +64,9 @@ public:
     //void merge(void *lhs, void *rhs, void* what) const;
 
 private:
+
+	friend Struct;
+
     //StructDescriptor(const rttr::type& type);
     StructDescriptor(const DescriptorData& sd, std::size_t sizeOf, std::size_t alignOf);
 

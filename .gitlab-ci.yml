@@ -1,0 +1,39 @@
+
+image: pnxs/dots_devenv:18.10
+
+variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+
+build_ubuntu:
+    stage: build
+    script:
+        - pwd
+        - cmake -Bbuild -H. -DBUILD_XDOTS=OFF
+        - make -Cbuild -j4
+    artifacts:
+        paths:
+            - ./build/bin/examples/dots-test/dots-test
+            - ./build/bin/examples/testClient/testClient
+            - ./build/bin/dots-persistd/dots-persistd
+            - ./build/bin/dots-web-connector/dots-web-connector
+            - ./build/bin/dotsd/dotsd
+            - ./build/bin/dotsd/tests/dotsd-unittests
+            - ./build/bin/utils/dots_record/dots_record
+            - ./build/bin/utils/ndots/ndots
+            - ./build/bin/utils/dotstrace/dotstrace
+            - ./build/bin/utils/dotscli/dotscli
+            - ./build/lib/dots/libdots.so.0
+            - ./build/lib/dots/tests/dots-unittests
+
+run_unittests:
+    stage: test
+    dependencies:
+        - build_ubuntu
+    script:
+        - pwd
+        - find
+        - ./build/lib/dots/tests/dots-unittests --gtest_output="xml:report.xml"
+    artifacts:
+        reports:
+            junit: report.xml
+

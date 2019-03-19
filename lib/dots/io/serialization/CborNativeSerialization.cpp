@@ -134,24 +134,24 @@ read_atomic_types_from_cbor(const type::Descriptor* td, void* data, cbor::decode
     auto ct = decoder.peekType().major();
 
     switch (td->dotsType()) {
-        case type::DotsType::int8:            *(int8_t *)data = (ct == cbor::majorType::unsignedInteger) ? decoder.read_uint() : decoder.read_int(); break;
-        case type::DotsType::int16:           *(int16_t *)data = (ct == cbor::majorType::unsignedInteger) ? decoder.read_uint() : decoder.read_int(); break;
-        case type::DotsType::int32:           *(int32_t *)data = (ct == cbor::majorType::unsignedInteger) ? decoder.read_uint() : decoder.read_int(); break;
-        case type::DotsType::int64:           *(long long *)data = (ct == cbor::majorType::unsignedInteger) ? decoder.read_ulong() : decoder.read_long(); break;
-        case type::DotsType::uint8:           *(uint8_t *)data = decoder.read_uint(); break;
-        case type::DotsType::uint16:          *(uint16_t *) data = decoder.read_uint(); break;
-        case type::DotsType::uint32:          *(uint32_t *) data = decoder.read_uint(); break;
-        case type::DotsType::uint64:          *(unsigned long long *)data = decoder.read_ulong(); break;
-        case type::DotsType::boolean:         *(bool *)data = decoder.read_bool(); break;
-        case type::DotsType::float16:         *(float *)data = decoder.read_float(); break;
-        case type::DotsType::float32:         *(float *) data = decoder.read_float(); break;
-        case type::DotsType::float64:         *(double *) data = decoder.read_double(); break;
-        case type::DotsType::string:          *(std::string*) data = decoder.read_string(); break;
-        case type::DotsType::property_set:    *(dots::property_set*)data = property_set(decoder.read_uint()); break;
-        case type::DotsType::timepoint:       *(pnxs::TimePoint*)data = pnxs::TimePoint(decoder.read_double()); break;
-        case type::DotsType::steady_timepoint:*(pnxs::SteadyTimePoint*)data = pnxs::SteadyTimePoint(decoder.read_double()); break;
-        case type::DotsType::duration:        *(pnxs::Duration*)data = pnxs::Duration(decoder.read_double()); break;
-        case type::DotsType::uuid:            *(dots::uuid*)data = dots::uuid(decoder.read_string()); break;
+        case type::DotsType::int8:            ::new (data) int8_t ((ct == cbor::majorType::unsignedInteger) ? decoder.read_uint() : decoder.read_int()); break;
+        case type::DotsType::int16:           ::new (data) int16_t ((ct == cbor::majorType::unsignedInteger) ? decoder.read_uint() : decoder.read_int()); break;
+        case type::DotsType::int32:           ::new (data) int32_t ((ct == cbor::majorType::unsignedInteger) ? decoder.read_uint() : decoder.read_int()); break;
+        case type::DotsType::int64:           ::new (data) long long ((ct == cbor::majorType::unsignedInteger) ? decoder.read_ulong() : decoder.read_long()); break;
+        case type::DotsType::uint8:           ::new (data) uint8_t (decoder.read_uint()); break;
+        case type::DotsType::uint16:          ::new (data) uint16_t (decoder.read_uint()); break;
+        case type::DotsType::uint32:          ::new (data) uint32_t (decoder.read_uint()); break;
+        case type::DotsType::uint64:          ::new (data) unsigned long long (decoder.read_ulong()); break;
+        case type::DotsType::boolean:         ::new (data) bool (decoder.read_bool()); break;
+        case type::DotsType::float16:         ::new (data) float (decoder.read_float()); break;
+        case type::DotsType::float32:         ::new (data) float (decoder.read_float()); break;
+        case type::DotsType::float64:         ::new (data) double (decoder.read_double()); break;
+        case type::DotsType::string:          ::new (data) std::string(decoder.read_string()); break;
+        case type::DotsType::property_set:    ::new (data) dots::property_set(property_set(decoder.read_uint())); break;
+        case type::DotsType::timepoint:       ::new (data) pnxs::TimePoint(pnxs::TimePoint(decoder.read_double())); break;
+        case type::DotsType::steady_timepoint: ::new (data) pnxs::SteadyTimePoint(pnxs::SteadyTimePoint(decoder.read_double())); break;
+        case type::DotsType::duration:        ::new (data) pnxs::Duration(pnxs::Duration(decoder.read_double())); break;
+        case type::DotsType::uuid:            ::new (data) dots::uuid(dots::uuid(decoder.read_string())); break;
         case type::DotsType::Enum:
         {
             auto enumDescriptor = type::toEnumDescriptor(td);
@@ -191,6 +191,7 @@ void read_cbor(const type::Descriptor* td, void* data, cbor::decoder& decoder)
 
 void from_cbor_recursive(const type::StructDescriptor* sd, void* data, cbor::decoder& decoder)
 {
+	sd->construct(data);
     property_set& validProperties = sd->validProperties(data);
     validProperties.clear();
 
@@ -235,6 +236,7 @@ static void read_from_array_recursive(const type::VectorDescriptor* vd, void* da
 {
     size_t arrayLength = decoder.read_array();
     auto propertyDescriptor = vd->vtd();
+	vd->construct(data);
     vd->resize(data, arrayLength);
 
     for (size_t i = 0; i < arrayLength; ++i)
