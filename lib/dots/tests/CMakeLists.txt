@@ -16,7 +16,6 @@ add_executable(dots-unittests
 		TestPropertySet.cpp
         TestRecord.cpp
         TestRegistry.cpp
-        TestRttrVariantTypes.cpp
         TestStruct.cpp
 		TestTProperty.cpp
 		TestTStruct.cpp
