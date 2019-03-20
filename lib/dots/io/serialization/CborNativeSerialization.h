@@ -6,7 +6,12 @@
 
 namespace dots {
 
+namespace type {
+    class Struct;
+}
+
 std::string to_cbor(DynamicInstance instance, property_set properties = PROPERTY_SET_ALL);
+std::string to_cbor(const type::Struct& instance, property_set properties = PROPERTY_SET_ALL);
 
 /**
  * Deserializes DOTS-object encoded in CBOR using a StructDescriptor and pointer

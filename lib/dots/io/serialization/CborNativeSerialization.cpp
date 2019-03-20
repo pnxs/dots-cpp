@@ -259,6 +259,12 @@ std::string to_cbor(DynamicInstance instance, property_set properties)
     return {reinterpret_cast<const char*>(out.data()), out.size()};
 }
 
+
+std::string to_cbor(const type::Struct& instance, property_set properties)
+{
+    return to_cbor({&instance._descriptor(), &instance}, properties);
+}
+
 int from_cbor(const uint8_t* cborData, std::size_t cborSize, const dots::type::StructDescriptor* td, void* data)
 {
     if (cborSize == 0) {
