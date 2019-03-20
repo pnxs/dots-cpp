@@ -59,7 +59,7 @@ namespace dots::type
         ~Struct() = default;
 
         Struct& operator = (const Struct& rhs);
-        Struct& operator = (Struct&& rhs);
+        Struct& operator = (Struct&& rhs) noexcept;
 
         const StructDescriptor& _descriptor() const;
 
