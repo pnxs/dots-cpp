@@ -102,7 +102,7 @@ namespace dots::type
 		return *this;
     }
 
-    Struct& Struct::operator = (Struct&& rhs)
+    Struct& Struct::operator = (Struct&& rhs) noexcept
     {
 		_validPropSet = {};
 		_desc = rhs._desc;
