@@ -5,7 +5,7 @@ set(TARGET_NAME dots)
 set(EXPORT_NAME DOTS)
 
 # CMake options
-list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake ${CMAKE_STAGING_PREFIX}/share/cmake/Modules)
+list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
 
 # dependencies
 find_package(Boost 1.59 REQUIRED COMPONENTS filesystem iostreams program_options)
