@@ -22,6 +22,7 @@ add_subdirectory(tests)
 
 # target
 add_library(${TARGET_NAME} SHARED)
+add_library(${EXPORT_NAME}::${EXPORT_NAME} ALIAS ${TARGET_NAME})
 
 # properties
 target_sources(${TARGET_NAME}
