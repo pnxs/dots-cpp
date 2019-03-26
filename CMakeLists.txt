@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.8)
 project(dots LANGUAGES CXX)
 
 # options
-include(cmake/DOTS.cmake)
 add_definitions(-DENABLE_LOG_DEBUG -DENABLE_LOG_DATA -DBOOST_ERROR_CODE_HEADER_ONLY -DBOOST_SYSTEM_NO_DEPRECATED)
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
 set(DOTS_TEMPLATE_PATH ${CMAKE_SOURCE_DIR}/model/template)
