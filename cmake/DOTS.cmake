@@ -52,7 +52,7 @@ macro(DOTS_BINARY BINNAME)
     endif ()
 
     add_executable(${BIN_NAME} ${SOURCE_FILES})
-    target_link_libraries(${BIN_NAME} ${optional_arg} Boost::system pthread)
+    target_link_libraries(${BIN_NAME} ${optional_arg} pthread)
     target_include_directories(${BIN_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
     install(TARGETS ${BINNAME} DESTINATION bin)

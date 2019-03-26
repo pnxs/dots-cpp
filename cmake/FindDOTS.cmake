@@ -112,7 +112,7 @@ macro(DOTS_BINARY BINNAME)
     endif ()
 
     add_executable(${BIN_NAME} ${SOURCE_FILES})
-    target_link_libraries(${BIN_NAME} ${optional_arg} ${DOTS_LIBRARIES} Boost::system pthread)
+    target_link_libraries(${BIN_NAME} ${optional_arg} ${DOTS_LIBRARIES} pthread)
     target_include_directories(${BIN_NAME} PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
     install(TARGETS ${BINNAME} DESTINATION bin)
@@ -182,6 +182,6 @@ mark_as_advanced(DOTS_INCLUDE_DIR DOTS_LIBRARIES)
 
 set(DOTS_INCLUDE_DIRS ${DOTS_INCLUDE_DIR})
 
-find_package(Boost 1.59 REQUIRED COMPONENTS filesystem iostreams program_options system)
+find_package(Boost 1.59 REQUIRED COMPONENTS filesystem iostreams program_options)
 
 find_package(dots REQUIRED)
