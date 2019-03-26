@@ -18,8 +18,8 @@ option(BUILD_UNIT_TESTS "Build the unit tests" ON)
 find_package(Sqlite3)
 
 # external projects
-add_subdirectory(import/googletest)
-add_subdirectory(import/cbor-cpp)
+add_subdirectory(import/googletest EXCLUDE_FROM_ALL)
+add_subdirectory(import/cbor-cpp EXCLUDE_FROM_ALL)
 
 # sub-projects
 add_subdirectory(lib/dots)
