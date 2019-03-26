@@ -1,4 +1,4 @@
-
+find_package(DotsCodeGenerator REQUIRED)
 set(DOTSTYPES ${CMAKE_CURRENT_SOURCE_DIR}/dotsmodel_extra.dots)
 
 GENERATE_DOTS_TYPES(GEN_DOTS_SRC GEN_DOTS_HDR ${DOTSTYPES})

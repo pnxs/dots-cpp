@@ -1,4 +1,6 @@
-
+find_package(Boost 1.59 REQUIRED COMPONENTS filesystem iostreams program_options)
+find_package(Rapidjson REQUIRED MODULE)
+find_package(cborcpp REQUIRED)
 
 if (WITH_QT5)
     find_package(Qt5 COMPONENTS Core Network Widgets REQUIRED)
@@ -123,10 +125,14 @@ target_sources(dots
 
 target_link_libraries(dots
         PRIVATE
-            rapidjson cborcpp Boost::iostreams Boost::program_options
+			cborcpp
         PUBLIC
             Boost::boost
-            pthread)
+			Boost::program_options
+			Boost::iostreams
+            pthread
+			RapidJSON::RapidJSON
+			)
 
 if (WITH_QT5)
     target_link_libraries(dots
