@@ -123,7 +123,7 @@ target_sources(dots
 
 target_link_libraries(dots
         PRIVATE
-            rapidjson cborcpp Boost::iostreams Boost::program_options Boost::system
+            rapidjson cborcpp Boost::iostreams Boost::program_options
         PUBLIC
             Boost::boost
             pthread)

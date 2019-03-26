@@ -9,7 +9,7 @@ add_executable(dotsd main.cpp
         ServerInfo.h
 )
 
-target_link_libraries(dotsd dots Boost::system pthread)
+target_link_libraries(dotsd dots pthread)
 
 install(TARGETS dotsd DESTINATION sbin)
 
