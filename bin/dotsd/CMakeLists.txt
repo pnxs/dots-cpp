@@ -43,4 +43,6 @@ target_link_libraries(${TARGET_NAME}
 install (TARGETS ${TARGET_NAME} DESTINATION sbin)
 
 # tests
-add_subdirectory(tests)
+if (BUILD_UNIT_TESTS)
+	add_subdirectory(tests)
+endif()

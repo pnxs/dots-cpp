@@ -18,7 +18,6 @@ endif()
 
 # sub-projects
 add_subdirectory(model)
-add_subdirectory(tests)
 
 # target
 add_library(${TARGET_NAME} SHARED)
@@ -156,3 +155,8 @@ install(DIRECTORY
 	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 	FILES_MATCHING PATTERN "*.h"
 )
+
+# tests
+if (BUILD_UNIT_TESTS)
+	add_subdirectory(tests)
+endif()

@@ -1,5 +1,3 @@
-if (BUILD_UNIT_TESTS)
-
 cmake_minimum_required(VERSION 3.8)
 project(dots-unittests LANGUAGES CXX)
 set(TARGET_NAME dots-unittests)
@@ -59,5 +57,3 @@ target_link_libraries(${TARGET_NAME}
 		gtest
 		gtest_main
 )
-
-endif()
