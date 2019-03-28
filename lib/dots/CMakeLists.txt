@@ -16,14 +16,16 @@ if (WITH_QT5)
     set(CMAKE_AUTOMOC ON)
 endif()
 
-# sub-projects
-add_subdirectory(model)
-
 # target
 add_library(${TARGET_NAME} SHARED)
 add_library(${EXPORT_NAME}::${EXPORT_NAME} ALIAS ${TARGET_NAME})
 
 # properties
+GENERATE_DOTS_TYPES(MODEL_SOURCES MODEL_HEADERS
+	model/dotstypes.dots
+    model/descriptors.dots
+    model/dotsmessages.dots
+)
 target_sources(${TARGET_NAME}
 	PRIVATE
 		dots_base.cpp
@@ -95,18 +97,17 @@ target_sources(${TARGET_NAME}
 		type/VectorDescriptor.cpp
 		type/Struct.cpp
 
-		$<TARGET_OBJECTS:dots-model>
-
 		$<$<BOOL:${WITH_QT5}>:io/QtCoreApplication.cpp>
 		$<$<BOOL:${WITH_QT5}>:io/DotsQtSocket.cpp>
 		$<$<BOOL:${WITH_QT5}>:qt5/QtSingleShotTimer.cpp>
+
+		${MODEL_SOURCES}
 )
 target_include_directories(${TARGET_NAME}
 	PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-        $<BUILD_INTERFACE:$<TARGET_PROPERTY:dots-model,INTERFACE_INCLUDE_DIRECTORIES>>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
         $<INSTALL_INTERFACE:include>
-    PRIVATE
 )
 target_compile_features(${TARGET_NAME}
 	PUBLIC
