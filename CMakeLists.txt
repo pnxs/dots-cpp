@@ -21,9 +21,9 @@ add_subdirectory(import/googletest EXCLUDE_FROM_ALL)
 add_subdirectory(import/cbor-cpp EXCLUDE_FROM_ALL)
 
 # sub-projects
+add_subdirectory(lib/dots-cg-cpp)
 add_subdirectory(lib/dots)
 add_subdirectory(lib/dots_model_extra)
-add_subdirectory(model)
 add_subdirectory(bin/dotsd)
 add_subdirectory(bin/dots-web-connector)
 add_subdirectory(bin/utils/dotstrace)

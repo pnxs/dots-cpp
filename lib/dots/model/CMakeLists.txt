@@ -1,4 +1,3 @@
-find_package(DotsCodeGenerator REQUIRED)
 set(DOTSTYPES
         ${CMAKE_CURRENT_SOURCE_DIR}/dotstypes.dots
         ${CMAKE_CURRENT_SOURCE_DIR}/descriptors.dots

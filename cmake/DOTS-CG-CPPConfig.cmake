@@ -1,0 +1,5 @@
+if(NOT TARGET DOTS-CG-CPP)
+	set(DOTS-CG-CPP_DIR ${CMAKE_CURRENT_LIST_DIR}/../../../share/dots-cg-cpp)
+	set(DOTS-CG "PYTHONPATH=${DOTS-CG-CPP_DIR} ${DOTS-CG-CPP_DIR}/dcg.py" CACHE INTERNAL "Internal variable containing the DOTS-CG command")
+    include("${DOTS-CG-CPP_DIR}/DOTS-CG-CPP.cmake")
+endif()
