@@ -21,6 +21,11 @@ endfunction(GET_GENERATED_DOTS_TYPES)
 
 function(GENERATE_DOTS_TYPES GENERATED_SOURCES GENERATED_HEADERS)
     foreach(MODEL ${ARGN})
+		# ensure that model path is absolute
+        if(NOT IS_ABSOLUTE "${MODEL}")
+            set(MODEL "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL}")
+        endif() 
+
 		# gather generated source and header files
 		get_filename_component(Basename ${MODEL} NAME)
         GET_GENERATED_DOTS_TYPES(GENERATED_TYPES ${MODEL})
@@ -29,12 +34,7 @@ function(GENERATE_DOTS_TYPES GENERATED_SOURCES GENERATED_HEADERS)
             if(TYPE MATCHES "\\.dots\\.h$" )
                 list(APPEND generated_headers ${CMAKE_CURRENT_BINARY_DIR}/${TYPE})
             endif()
-        endforeach()
-
-		# ensure that model path is absolute
-        if(NOT IS_ABSOLUTE "${MODEL}")
-            set(MODEL "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL}")
-        endif()        
+        endforeach()       
 
 		# create generation target for all types in model
         add_custom_command(OUTPUT ${GENERATED_TYPES}
