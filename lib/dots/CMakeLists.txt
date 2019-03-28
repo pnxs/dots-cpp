@@ -121,12 +121,12 @@ target_link_libraries(${TARGET_NAME}
 		Boost::boost
 		Boost::program_options
 		Boost::iostreams
-		RapidJSON::RapidJSON
 		pthread
 		$<$<BOOL:${WITH_QT5}>:Qt5::Widgets>
 		$<$<BOOL:${WITH_QT5}>:Qt5::Network>
 	PRIVATE
 		cborcpp
+		RapidJSON::RapidJSON
 		$<$<BOOL:${WITH_QT5}>:Qt5::Core>
 )
 
