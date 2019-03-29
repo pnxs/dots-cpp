@@ -4,10 +4,8 @@ project(libDOTS VERSION 0.1.0 LANGUAGES CXX)
 set(TARGET_NAME dots)
 set(EXPORT_NAME DOTS)
 
-# CMake options
-list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
-
 # dependencies
+list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
 find_package(Boost 1.59 REQUIRED COMPONENTS filesystem iostreams program_options)
 find_package(Rapidjson REQUIRED MODULE)
 #find_package(cborcpp REQUIRED) (uncomment when dependency is no longer part of build tree)

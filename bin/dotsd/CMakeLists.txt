@@ -2,9 +2,6 @@ cmake_minimum_required(VERSION 3.8)
 project(dotsd LANGUAGES CXX)
 set(TARGET_NAME dotsd)
 
-# CMake options
-list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
-
 # dependencies
 #find_package(DOTS REQUIRED) (uncomment when dependency is no longer part of build tree)
 
