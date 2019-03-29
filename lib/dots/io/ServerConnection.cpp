@@ -156,6 +156,7 @@ void ServerConnection::onControlMessage(const Message &msg)
             }
             // No break here: falltrough
             // process all messages, put non-cache messages into buffer
+			[[fallthrough]];
         case DotsConnectionState::connected:
         {
             if (typeName == "DotsCacheInfo") {
