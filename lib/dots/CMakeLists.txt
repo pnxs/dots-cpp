@@ -10,7 +10,7 @@ list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
 # dependencies
 find_package(Boost 1.59 REQUIRED COMPONENTS filesystem iostreams program_options)
 find_package(Rapidjson REQUIRED MODULE)
-find_package(cborcpp REQUIRED)
+#find_package(cborcpp REQUIRED) (uncomment when building outside of build tree)
 if (WITH_QT5)
     find_package(Qt5 COMPONENTS Core Network Widgets REQUIRED)
     set(CMAKE_AUTOMOC ON)
