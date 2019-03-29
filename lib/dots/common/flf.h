@@ -3,15 +3,15 @@
 namespace dots_util
 {
 
-constexpr const char * const strend(const char * const str) {
+constexpr const char * strend(const char * const str) {
     return *str ? strend(str + 1) : str;
 }
 
-constexpr const char * const fromlastslash(const char * const start, const char * const end) {
+constexpr const char * fromlastslash(const char * const start, const char * const end) {
     return (end >= start && *end != '/' && *end != '\\') ? fromlastslash(start, end - 1) : (end + 1);
 }
 
-constexpr const char * const pathlast(const char * const path) {
+constexpr const char * pathlast(const char * const path) {
     return fromlastslash(path, strend(path));
 }
 
