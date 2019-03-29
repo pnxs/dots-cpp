@@ -6,7 +6,7 @@ set(TARGET_NAME dots-test)
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
 
 # dependencies
-#find_package(DOTS REQUIRED) (uncomment when building outside of build tree)
+#find_package(DOTS REQUIRED) (uncomment when dependency is no longer part of build tree)
 
 # target
 add_executable(${TARGET_NAME} main.cpp)
