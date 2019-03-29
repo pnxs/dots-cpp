@@ -7,7 +7,6 @@ list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
 
 # dependencies
 #find_package(DOTS REQUIRED) (uncomment when building outside of build tree)
-#find_package(dots_model_extra REQUIRED) (uncomment when building outside of build tree)
 
 # target
 add_executable(${TARGET_NAME} main.cpp)
@@ -31,7 +30,6 @@ target_compile_features(${TARGET_NAME}
 target_link_libraries(${TARGET_NAME}
 	PRIVATE 
 		DOTS::DOTS
-		dots_model_extra
 )
 
 # install

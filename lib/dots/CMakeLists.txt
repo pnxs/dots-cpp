@@ -25,6 +25,7 @@ GENERATE_DOTS_TYPES(MODEL_SOURCES MODEL_HEADERS
 	model/dotstypes.dots
     model/descriptors.dots
     model/dotsmessages.dots
+	model/dotsmodel_extra.dots
 )
 target_sources(${TARGET_NAME}
 	PRIVATE
