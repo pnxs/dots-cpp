@@ -4,6 +4,9 @@ project(libDOTS VERSION 0.1.0 LANGUAGES CXX)
 set(TARGET_NAME dots)
 set(EXPORT_NAME DOTS)
 
+# options
+option(BUILD_DOTS_SHARED "Build DOTS as a shared instead of a static library" ON)
+
 # dependencies
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
 find_package(Boost 1.59 REQUIRED COMPONENTS filesystem iostreams program_options)
@@ -15,7 +18,11 @@ if (WITH_QT5)
 endif()
 
 # target
-add_library(${TARGET_NAME} SHARED)
+if (BUILD_DOTS_SHARED)
+	add_library(${TARGET_NAME} SHARED)
+else()
+	add_library(${TARGET_NAME} STATIC)
+endif()
 add_library(${EXPORT_NAME}::${EXPORT_NAME} ALIAS ${TARGET_NAME})
 
 # properties
