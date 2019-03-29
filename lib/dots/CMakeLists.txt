@@ -1,6 +1,6 @@
 # project
 cmake_minimum_required(VERSION 3.8)
-project(libDOTS LANGUAGES CXX)
+project(libDOTS VERSION 0.1.0 LANGUAGES CXX)
 set(TARGET_NAME dots)
 set(EXPORT_NAME DOTS)
 
@@ -131,6 +131,10 @@ target_link_libraries(${TARGET_NAME}
 		cborcpp
 		RapidJSON::RapidJSON
 		$<$<BOOL:${WITH_QT5}>:Qt5::Core>
+)
+set_target_properties(${TARGET_NAME} PROPERTIES
+    VERSION ${PROJECT_VERSION}
+    SOVERSION 0
 )
 
 # install
