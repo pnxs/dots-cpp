@@ -1,7 +1,17 @@
-if (BUILD_UNIT_TESTS)
+cmake_minimum_required(VERSION 3.8)
+project(dots-unittests LANGUAGES CXX)
+set(TARGET_NAME dots-unittests)
 
-add_executable(dots-unittests
-        TestAnyContainer.cpp
+# dependencies
+#find_package(DOTS REQUIRED) (uncomment when dependency is no longer part of build tree)
+
+# target
+add_executable(${TARGET_NAME} TestAnyContainer.cpp)
+
+# properties
+target_sources(${TARGET_NAME}
+	PRIVATE
+		TestAnyContainer.cpp
         TestContainer.cpp
         TestAsciiSerialization.cpp
         TestCborSerialization.cpp
@@ -22,8 +32,23 @@ add_executable(dots-unittests
         TestVectorDescriptor.cpp
         TestJsonStore.cpp
         TestFileReader.cpp
-        )
-
-target_link_libraries(dots-unittests dots dots_model_extra gmock gtest gtest_main)
-
-endif()
+)	
+target_include_directories(${TARGET_NAME}
+	PRIVATE
+		${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+target_compile_options(${TARGET_NAME}
+	PRIVATE
+		-O2 -flto -Wall -Wextra
+)
+target_compile_features(${TARGET_NAME}
+	PRIVATE
+		cxx_std_17
+)
+target_link_libraries(${TARGET_NAME}
+	PRIVATE 
+		DOTS::DOTS
+		gmock
+		gtest
+		gtest_main
+)

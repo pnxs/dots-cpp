@@ -1,143 +1,172 @@
+# project
+cmake_minimum_required(VERSION 3.8)
+project(libDOTS VERSION 0.1.0 LANGUAGES CXX)
+set(TARGET_NAME dots)
+set(EXPORT_NAME DOTS)
 
+# options
+option(BUILD_DOTS_SHARED "Build DOTS as a shared instead of a static library" OFF)
 
+# dependencies
+list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
+find_package(Boost 1.59 REQUIRED COMPONENTS filesystem iostreams program_options)
+find_package(Rapidjson REQUIRED MODULE)
+#find_package(cborcpp REQUIRED) (uncomment when dependency is no longer part of build tree)
 if (WITH_QT5)
     find_package(Qt5 COMPONENTS Core Network Widgets REQUIRED)
-
     set(CMAKE_AUTOMOC ON)
-    #set(CMAKE_AUTOUIC ON)
 endif()
 
-add_library(dots SHARED
-        dots_base.cpp
-        Uuid.cpp
-        common/logging.cpp
-        common/Stream.cpp
-        eventloop/AsioTimer.cpp
-        eventloop/Chrono.cpp
-        eventloop/event_loop.cpp
-        eventloop/Io.cpp
-        eventloop/IoService.cpp
-        eventloop/seconds.cpp
-        eventloop/string_convert.cpp
-        eventloop/Timer.cpp
-        functional/signal.cpp
+# target
+if (BUILD_DOTS_SHARED)
+	add_library(${TARGET_NAME} SHARED)
+else()
+	add_library(${TARGET_NAME} STATIC)
+endif()
+add_library(${EXPORT_NAME}::${EXPORT_NAME} ALIAS ${TARGET_NAME})
 
-        io/Socket.cpp
-        io/TcpSocket.cpp
-        io/ConstBufSeq.cpp
-        io/TcpEndpoint.cpp
-        io/TcpAcceptor.cpp
-        io/Transmitter.cpp
-        io/Transceiver.cpp
-        io/ServerConnection.cpp
-        io/TcpResolver.cpp
-        io/Subscription.cpp
-        io/Chained.cpp
-        io/DotsSocket.cpp
-        io/DotsAsioSocket.cpp
+# properties
+GENERATE_DOTS_TYPES(MODEL_SOURCES MODEL_HEADERS
+	model/dotstypes.dots
+    model/descriptors.dots
+    model/dotsmessages.dots
+	model/dotstesttypes.dots
+)
+target_sources(${TARGET_NAME}
+	PRIVATE
+		dots_base.cpp
+		Uuid.cpp
+		common/logging.cpp
+		common/Stream.cpp
+		eventloop/AsioTimer.cpp
+		eventloop/Chrono.cpp
+		eventloop/event_loop.cpp
+		eventloop/Io.cpp
+		eventloop/IoService.cpp
+		eventloop/seconds.cpp
+		eventloop/string_convert.cpp
+		eventloop/Timer.cpp
+		functional/signal.cpp
 
-        io/AnyContainer.cpp
-        io/Container.cpp
-        io/Dispatcher.cpp
-        io/TD_Traversal.cpp
-        io/Application.cpp
-        io/DynamicTypeReceiver.cpp
-        io/ResourceUsage.cpp
-        io/Message.cpp
-        io/DistributedTypeId.cpp
-        io/Filter.cpp
-        io/serialization/JsonSerialization.cpp
-        io/serialization/AsciiSerialization.cpp
-        io/serialization/CborNativeSerialization.cpp
-        io/recording/FileStore.cpp
-        io/recording/Load.cpp
-        io/recording/MmapedFile.cpp
-        io/recording/Playback.cpp
-        io/recording/Record.cpp
-        io/recording/Store.cpp
-        io/recording/ContinuousRecord.cpp
-        io/recording/JsonStore.cpp
-        io/recording/DynamicLoader.cpp
-        io/recording/Player.cpp
-        io/recording/FileReader.cpp
+		io/Socket.cpp
+		io/TcpSocket.cpp
+		io/ConstBufSeq.cpp
+		io/TcpEndpoint.cpp
+		io/TcpAcceptor.cpp
+		io/Transmitter.cpp
+		io/Transceiver.cpp
+		io/ServerConnection.cpp
+		io/TcpResolver.cpp
+		io/Subscription.cpp
+		io/Chained.cpp
+		io/DotsSocket.cpp
+		io/DotsAsioSocket.cpp
+
+		io/AnyContainer.cpp
+		io/Container.cpp
+		io/Dispatcher.cpp
+		io/TD_Traversal.cpp
+		io/Application.cpp
+		io/DynamicTypeReceiver.cpp
+		io/ResourceUsage.cpp
+		io/Message.cpp
+		io/DistributedTypeId.cpp
+		io/Filter.cpp
+		io/serialization/JsonSerialization.cpp
+		io/serialization/AsciiSerialization.cpp
+		io/serialization/CborNativeSerialization.cpp
+		io/recording/FileStore.cpp
+		io/recording/Load.cpp
+		io/recording/MmapedFile.cpp
+		io/recording/Playback.cpp
+		io/recording/Record.cpp
+		io/recording/Store.cpp
+		io/recording/ContinuousRecord.cpp
+		io/recording/JsonStore.cpp
+		io/recording/DynamicLoader.cpp
+		io/recording/Player.cpp
+		io/recording/FileReader.cpp
 		type/AnyStruct.cpp
-        type/ChronoDescriptor.cpp
-        type/Descriptor.cpp
-        type/EnumDescriptor.cpp
+		type/ChronoDescriptor.cpp
+		type/Descriptor.cpp
+		type/EnumDescriptor.cpp
 		type/PropertyIterator.cpp
 		type/PropertyPairIterator.cpp
 		type/EnumDescriptor.cpp
-        type/Registry.cpp
-        type/StandardTypes.cpp
-        type/StructDescriptor.cpp
-        type/StructDescriptorConstruct.cpp
-        type/StructProperty.cpp
-        type/UuidDescriptor.cpp
-        type/Vector.cpp
-        type/VectorDescriptor.cpp
+		type/Registry.cpp
+		type/StandardTypes.cpp
+		type/StructDescriptor.cpp
+		type/StructDescriptorConstruct.cpp
+		type/StructProperty.cpp
+		type/UuidDescriptor.cpp
+		type/Vector.cpp
+		type/VectorDescriptor.cpp
 		type/Struct.cpp
+
+		$<$<BOOL:${WITH_QT5}>:io/QtCoreApplication.cpp>
+		$<$<BOOL:${WITH_QT5}>:io/DotsQtSocket.cpp>
+		$<$<BOOL:${WITH_QT5}>:qt5/QtSingleShotTimer.cpp>
+
+		${MODEL_SOURCES}
 )
-
-if (WITH_QT5)
-target_sources(dots
-        PRIVATE
-        io/QtCoreApplication.cpp
-        io/DotsQtSocket.cpp
-        qt5/QtSingleShotTimer.cpp
-        )
-endif()
-
-set_target_properties(dots
-        PROPERTIES
-            SOVERSION 0)
-
-add_subdirectory(model)
-
-target_include_directories(dots
-    PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+target_include_directories(${TARGET_NAME}
+	PUBLIC
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
         $<INSTALL_INTERFACE:include>
 )
-
-install(TARGETS dots EXPORT dotsConfig
-        DESTINATION lib
+target_compile_features(${TARGET_NAME}
+	PUBLIC
+		cxx_std_17
+)
+target_compile_options(${TARGET_NAME}
+	PRIVATE
+		-O2 -flto -Wall -Wextra
+)
+target_link_libraries(${TARGET_NAME}
+	PUBLIC
+		Boost::boost
+		Boost::program_options
+		Boost::iostreams
+		Boost::filesystem
+		pthread
+		$<$<BOOL:${WITH_QT5}>:Qt5::Widgets>
+		$<$<BOOL:${WITH_QT5}>:Qt5::Network>
+	PRIVATE
+		cborcpp
+		RapidJSON::RapidJSON
+		$<$<BOOL:${WITH_QT5}>:Qt5::Core>
+)
+set_target_properties(${TARGET_NAME} PROPERTIES
+    SOVERSION 0
 )
 
-install(DIRECTORY .
-        DESTINATION include/dots
-        FILES_MATCHING PATTERN "*.h"
+# install
+include(GNUInstallDirs)
+set_target_properties(${TARGET_NAME} PROPERTIES EXPORT_NAME ${EXPORT_NAME})
+install(TARGETS ${TARGET_NAME}
+    EXPORT ${TARGET_NAME}-targets
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+install(EXPORT ${TARGET_NAME}-targets
+	NAMESPACE ${EXPORT_NAME}::
+	FILE
+		${EXPORT_NAME}Targets.cmake
+	DESTINATION
+		${CMAKE_INSTALL_LIBDIR}/cmake/${EXPORT_NAME}
+)
+install(FILES
+    ${CMAKE_SOURCE_DIR}/cmake/${EXPORT_NAME}Config.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${EXPORT_NAME}
+)
+install(DIRECTORY
+	.
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${TARGET_NAME}
+	FILES_MATCHING PATTERN "*.h"
 )
 
-target_include_directories(dots
-    PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-        $<BUILD_INTERFACE:$<TARGET_PROPERTY:dots-model,INTERFACE_INCLUDE_DIRECTORIES>>
-        #$<INSTALL_INTERFACE:include>
-)
-
-target_sources(dots
-    PRIVATE
-        $<TARGET_OBJECTS:dots-model>
-)
-
-
-target_link_libraries(dots
-        PRIVATE
-            rapidjson cborcpp Boost::iostreams Boost::program_options Boost::system
-        PUBLIC
-            Boost::boost
-            pthread)
-
-if (WITH_QT5)
-    target_link_libraries(dots
-            PRIVATE
-            Qt5::Core
-            PUBLIC
-            Qt5::Network Qt5::Widgets
-            )
+# tests
+if (BUILD_UNIT_TESTS)
+	add_subdirectory(tests)
 endif()
-
-install(EXPORT dotsConfig DESTINATION share/dots)
-#export(TARGETS dots FILE dotsConfig.cmake)
-
-add_subdirectory(tests)
