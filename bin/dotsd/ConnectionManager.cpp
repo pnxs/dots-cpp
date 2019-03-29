@@ -169,7 +169,7 @@ void ConnectionManager::deliverMessage(const Message &msg)
     }
 }
 
-void ConnectionManager::processMemberMessage(const DotsTransportHeader& header, const DotsMember &member, Connection *connection)
+void ConnectionManager::processMemberMessage(const DotsTransportHeader& /*header*/, const DotsMember &member, Connection *connection)
 {
     if (member.event == DotsMemberEvent::kill) {
         m_groupManager.handleKill(connection);

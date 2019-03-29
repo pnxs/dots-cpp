@@ -47,7 +47,7 @@ int main(int argc, char* argv[])
     dots::Server server(io_service, host, port, serverName);
     LOG_NOTICE_S("Listen to " << host << ":" << port);
 
-    signals.async_wait([&](auto ec, int signo) {
+    signals.async_wait([&](auto /*ec*/, int /*signo*/) {
         LOG_NOTICE_S("stopping server");
         server.stop();
     });

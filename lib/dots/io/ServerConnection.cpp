@@ -61,7 +61,7 @@ DotsSocket& ServerConnection::socket()
     return *m_dotsSocket.get();
 }
 
-void ServerConnection::handleConnected(const string &name)
+void ServerConnection::handleConnected(const string &/*name*/)
 {
     switch(m_connectionState)
     {

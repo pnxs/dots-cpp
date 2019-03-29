@@ -41,12 +41,12 @@ void StructDescriptor::destruct(void *obj) const
     }
 }
 
-std::string StructDescriptor::to_string(const void* lhs) const
+std::string StructDescriptor::to_string(const void* /*lhs*/) const
 {
     return {};
 }
 
-bool StructDescriptor::from_string(void* lhs, const std::string& str) const
+bool StructDescriptor::from_string(void* /*lhs*/, const std::string& /*str*/) const
 {
     return false;
 }
@@ -104,7 +104,6 @@ void StructDescriptor::swap(void *lhs, void *rhs) const
 void StructDescriptor::copy(void *lhs, const void *rhs, property_set properties) const
 {
     properties &= validProperties(rhs);
-	auto& p = validProperties(lhs);
 
     for (auto& pd : m_properties)
     {

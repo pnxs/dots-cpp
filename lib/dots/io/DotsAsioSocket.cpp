@@ -90,7 +90,7 @@ void DotsAsioSocket::disconnect()
 void DotsAsioSocket::readHeaderLength()
 {
     //LOG_DEBUG_S("start readHeaderLength");
-    m_socket.asyncRead(boost::asio::buffer(&m_headerSize, sizeof(m_headerSize)), [&](auto ec, auto bytes)
+    m_socket.asyncRead(boost::asio::buffer(&m_headerSize, sizeof(m_headerSize)), [&](auto ec, auto /*bytes*/)
     {
         if (ec)
         {

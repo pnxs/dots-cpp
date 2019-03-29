@@ -18,7 +18,7 @@ TEST(TestContainer, storeAndRemove)
     dots::rC<DotsTestStruct>().clear();
 
     dots::ContainerBase::signal_type sig;
-    sig.connect([&](dots::CTypeless cbd) {
+    sig.connect([&](dots::CTypeless /*cbd*/) {
         timesSigCalled++;
     });
 

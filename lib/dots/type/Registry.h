@@ -59,21 +59,21 @@ struct is_struct: public std::integral_constant<bool, std::is_class<T>::value &&
 
 
 template<class T>
-inline const Descriptor* get(const std::string& dotsName, DotsType dotsType, const T* p = 0, ENABLE_IF(is_base<T>)* = 0)
+inline const Descriptor* get(const std::string& dotsName, DotsType dotsType, const T* /*val*/ = 0, ENABLE_IF(is_base<T>)* = 0)
 {
     static const StandardTypeDescriptor<T>* td = new StandardTypeDescriptor<T>(dotsName, dotsType);
     return td;
 }
 
 template<class T>
-inline const Descriptor* get(const std::string& dotsName, const T* p = 0, ENABLE_IF(is_chrono<T>)* = 0)
+inline const Descriptor* get(const std::string& dotsName, const T* /*val*/ = 0, ENABLE_IF(is_chrono<T>)* = 0)
 {
     static const ChronoDescriptor<T> *cd = new ChronoDescriptor<T>(dotsName);
     return cd;
 }
 
 template<class T>
-inline const Descriptor* get(const std::string& dotsName, const T* p = 0, ENABLE_IF(is_uuid<T>)* = 0)
+inline const Descriptor* get(const std::string& dotsName, const T* /*val*/ = 0, ENABLE_IF(is_uuid<T>)* = 0)
 {
     static const UuidDescriptor* d = new UuidDescriptor(dotsName);
     return d;
@@ -81,28 +81,28 @@ inline const Descriptor* get(const std::string& dotsName, const T* p = 0, ENABLE
 
 template<class T>
 inline
-const StructDescriptor* getDescriptor(const T* val = 0, ENABLE_IF(is_struct<T>)* = 0)
+const StructDescriptor* getDescriptor(const T* /*val*/ = 0, ENABLE_IF(is_struct<T>)* = 0)
 {
     return &T::_Descriptor();
 }
 
 template <class T>
 inline
-const EnumDescriptor* getDescriptor(const T*val = 0, ENABLE_IF(std::is_enum<T>)* = 0)
+const EnumDescriptor* getDescriptor(const T*/*val*/ = 0, ENABLE_IF(std::is_enum<T>)* = 0)
 {
     return EnumDescriptorInit<T>::_td();
 }
 
 template <class T>
 inline
-const Descriptor* getDescriptor(const T*val = 0, ENABLE_IF(is_base<T>)* = 0)
+const Descriptor* getDescriptor(const T*/*val*/ = 0, ENABLE_IF(is_base<T>)* = 0)
 {
     return nullptr;
 }
 
 template <class T>
 inline
-const Descriptor* getDescriptor(const T*val = 0, ENABLE_IF(is_vector<T>)* = 0)
+const Descriptor* getDescriptor(const T*/*val*/ = 0, ENABLE_IF(is_vector<T>)* = 0)
 {
     typename T::value_type* tp = nullptr;
     getDescriptor(tp);
@@ -111,14 +111,14 @@ const Descriptor* getDescriptor(const T*val = 0, ENABLE_IF(is_vector<T>)* = 0)
 
 template <class T>
 inline
-const Descriptor* getDescriptor(const T*val = 0, ENABLE_IF(is_chrono<T>)* = 0)
+const Descriptor* getDescriptor(const T*/*val*/ = 0, ENABLE_IF(is_chrono<T>)* = 0)
 {
     return nullptr;
 }
 
 template <class T>
 inline
-const Descriptor* getDescriptor(const T*val = 0, ENABLE_IF(is_uuid<T>)* = 0)
+const Descriptor* getDescriptor(const T*/*val*/ = 0, ENABLE_IF(is_uuid<T>)* = 0)
 {
     dots::uuid uuid;
     return get("uuid", &uuid);
