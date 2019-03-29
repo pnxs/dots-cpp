@@ -73,7 +73,7 @@ namespace dots::type
 	}
 
 	template <typename LhsIterator, typename RhsIterator>
-	auto PropertyPairIterator<LhsIterator, RhsIterator>::operator -> () const -> const pointer
+	auto PropertyPairIterator<LhsIterator, RhsIterator>::operator -> () const -> const_pointer
 	{
 		return &*(*this);
 	}
