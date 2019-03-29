@@ -18,7 +18,7 @@ target_include_directories(${TARGET_NAME}
 )
 target_compile_options(${TARGET_NAME}
 	PRIVATE
-		-O2 -Wall -Wextra
+		-O2 -flto -Wall -Wextra
 )
 target_compile_features(${TARGET_NAME}
 	PRIVATE
