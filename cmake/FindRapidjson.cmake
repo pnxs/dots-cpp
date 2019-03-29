@@ -43,5 +43,4 @@ if(RapidJSON_FOUND AND NOT TARGET RapidJSON::RapidJSON)
     set_target_properties(RapidJSON::RapidJSON PROPERTIES
         INTERFACE_INCLUDE_DIRECTORIES "${RapidJSON_INCLUDE_DIRS}"
     )
-	message(${RapidJSON_INCLUDE_DIRS})
 endif()
