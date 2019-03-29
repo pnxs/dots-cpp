@@ -121,7 +121,7 @@ target_compile_features(${TARGET_NAME}
 )
 target_compile_options(${TARGET_NAME}
 	PRIVATE
-		$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-O2 -flto -Wall -Wextra>		
+		$<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-O2 -flto -Wall -Wextra>>		
 )
 target_link_libraries(${TARGET_NAME}
 	PUBLIC
