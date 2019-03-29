@@ -123,6 +123,7 @@ target_link_libraries(${TARGET_NAME}
 		Boost::boost
 		Boost::program_options
 		Boost::iostreams
+		Boost::filesystem
 		pthread
 		$<$<BOOL:${WITH_QT5}>:Qt5::Widgets>
 		$<$<BOOL:${WITH_QT5}>:Qt5::Network>
