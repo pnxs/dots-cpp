@@ -1,6 +1,10 @@
 #include "CborNativeSerialization.h"
 #include "StructDescriptorData.dots.h"
+#undef major
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 #include "cbor.h"
+#pragma GCC diagnostic pop
 #include "dots/type/Registry.h"
 
 #include <map>
