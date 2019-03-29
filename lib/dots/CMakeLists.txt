@@ -138,7 +138,6 @@ target_link_libraries(${TARGET_NAME}
 		$<$<BOOL:${WITH_QT5}>:Qt5::Core>
 )
 set_target_properties(${TARGET_NAME} PROPERTIES
-    VERSION ${PROJECT_VERSION}
     SOVERSION 0
 )
 
