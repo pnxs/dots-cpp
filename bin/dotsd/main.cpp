@@ -54,7 +54,11 @@ int main(int argc, char* argv[])
 
     if (vm.count("daemon"))
     {
-        daemon(0, 0);
+        if (daemon(0, 0) == -1)
+        {
+			LOG_CRIT_S("could not start daemon: " << errno);
+			return EXIT_FAILURE;
+        }
     }
 
     LOG_DEBUG_S("run mainloop");
