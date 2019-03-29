@@ -9,7 +9,6 @@ set(Boost_USE_STATIC_LIBS ON)
 
 option(WITH_QT5   "Build with Qt5 support" OFF)
 option(BUILD_XDOTS "Build the xdots utility" ON)
-option(BUILD_XDOTS_STATIC "Link the xdots-utility static" OFF)
 option(BUILD_NDOTS "Build the ndots utility" ON)
 option(BUILD_UNIT_TESTS "Build the unit tests" ON)
 
