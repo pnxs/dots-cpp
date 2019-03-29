@@ -5,7 +5,7 @@ set(TARGET_NAME dots)
 set(EXPORT_NAME DOTS)
 
 # options
-option(BUILD_DOTS_SHARED "Build DOTS as a shared instead of a static library" ON)
+option(BUILD_DOTS_SHARED "Build DOTS as a shared instead of a static library" OFF)
 
 # dependencies
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
