@@ -48,7 +48,7 @@ S RegisterTypeUsage<T, S>::m_obj(&T::_Descriptor());
 template<class T, class S>
 void registerTypeUsage() {
     RegisterTypeUsage<T, S>::get();
-};
+}
 
 class Subscription
 {

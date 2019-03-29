@@ -23,7 +23,7 @@ public:
     void asyncRead(const MutableBufferSequence& buffers, BOOST_ASIO_MOVE_ARG(ReadHandler) handler)
     {
         boost::asio::async_read(*this, buffers, handler);
-    };
+    }
 
     ssize_t receive(void *buffer, size_t length) override;
     ssize_t send(const void *buffer, size_t length) override;
