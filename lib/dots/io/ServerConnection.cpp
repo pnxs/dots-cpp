@@ -166,13 +166,13 @@ void ServerConnection::onControlMessage(const Message &msg)
             }
 
             ReceiveMessageData rmd = {
-                    .data = &data[0],
-                    .length = data.size(),
-                    .sender = dotsHeader.sender,
-                    .group = msg.header().destinationGroup,
-                    .sentTime = dotsHeader.sentTime,
-                    .header = dotsHeader,
-                    .isFromMyself = (dotsHeader.sender == m_serversideClientname)
+                    &data[0],
+                    data.size(),
+                    dotsHeader.sender,
+                    msg.header().destinationGroup,
+                    dotsHeader.sentTime,
+                    dotsHeader,
+                    (dotsHeader.sender == m_serversideClientname)
             };
 
             onReceiveMessage(rmd);
@@ -205,13 +205,13 @@ void ServerConnection::onRegularMessage(const Message &msg)
             LOG_DATA_S("dispatch message " << typeName);
 
             ReceiveMessageData rmd = {
-                .data = &data[0],
-                .length = data.size(),
-                .sender = dotsHeader.sender,
-                .group = msg.header().destinationGroup,
-                .sentTime = dotsHeader.sentTime,
-                .header = dotsHeader,
-                .isFromMyself = (dotsHeader.sender == m_serversideClientname)
+                &data[0],
+                data.size(),
+                dotsHeader.sender,
+                msg.header().destinationGroup,
+                dotsHeader.sentTime,
+                dotsHeader,
+                (dotsHeader.sender == m_serversideClientname)
             };
 
             onReceiveMessage(rmd);

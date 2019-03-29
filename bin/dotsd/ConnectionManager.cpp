@@ -140,13 +140,13 @@ void ConnectionManager::deliverMessage(const Message &msg)
         if(m_CacheEnabled)
         {
             dots::ReceiveMessageData rmd = {
-                .data = msg.data().data(),
-                .length = msg.data().size(),
-                .sender = dotsHeader.sender.isValid() ? *dotsHeader.sender : 0,
-                .group = transportHeader.destinationGroup,
-                .sentTime = dotsHeader.sentTime,
-                .header = dotsHeader,
-                .isFromMyself = isFromMySelf
+                msg.data().data(),
+                msg.data().size(),
+                dotsHeader.sender.isValid() ? *dotsHeader.sender : 0,
+                transportHeader.destinationGroup,
+                dotsHeader.sentTime,
+                dotsHeader,
+                isFromMySelf
             };
 
             m_dispatcher.dispatchMessage(rmd);
