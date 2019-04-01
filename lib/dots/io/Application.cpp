@@ -12,7 +12,7 @@ namespace po = boost::program_options;
 namespace dots
 {
 
-pnxs::TimerId addTimerAsio(const pnxs::Duration& timeout, const function<void ()> &fun, bool periodic)
+pnxs::TimerId addTimerAsio(const pnxs::Duration& timeout, const function<void ()> &fun, bool /*periodic*/)
 {
     AsioSingleShotTimer *timer = new AsioSingleShotTimer(timeout, fun);
     return timer->id();

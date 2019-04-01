@@ -239,6 +239,8 @@ public:
             Cbd<T> cbd(item, header, Mt::create);
             // Call user-code
             signal(&cbd);
+
+			return false;
         }
     }
 

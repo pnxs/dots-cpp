@@ -6,7 +6,7 @@
 
 using namespace std::placeholders;
 
-static pnxs::TimerId addTimerAsio(const pnxs::Duration& timeout, const std::function<void ()> &fun, bool periodic)
+static pnxs::TimerId addTimerAsio(const pnxs::Duration& timeout, const std::function<void ()> &fun, bool /*periodic*/)
 {
     dots::AsioSingleShotTimer *timer = new dots::AsioSingleShotTimer(timeout, fun);
     return timer->id();
@@ -36,7 +36,7 @@ void addFdEventInAsio(boost::asio::io_service& io_service, int fd, const std::fu
     g_fdhandler[fd] = std::make_shared<dots::AsioFdHandler>(io_service, fd, fun);
 }
 
-void removeFdEventInAsio(boost::asio::io_service& io_service, int fd)
+void removeFdEventInAsio(boost::asio::io_service& /*io_service*/, int fd)
 {
     auto iter = g_fdhandler.find(fd);
     if (iter != g_fdhandler.end()) {

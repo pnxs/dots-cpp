@@ -60,18 +60,6 @@ static StructProperties getStructProperties(const StructDescriptorData &sd)
 	return { sizeOf, alignOf };
 }
 
-static uint32_t calculateMaxTagValue(const StructDescriptorData &sd)
-{
-	uint32_t maxValue = 0;
-
-	for (auto& t : *sd.properties)
-	{
-		maxValue = std::max(*t.tag, maxValue);
-	}
-
-	return maxValue;
-}
-
 namespace dots::type
 {
     Struct::Struct(const StructDescriptor& descriptor) :

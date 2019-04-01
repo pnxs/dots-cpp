@@ -4,10 +4,10 @@
 namespace dots::type
 {
 	StructProperty::StructProperty(const std::string &name, std::size_t offset, int tag, bool key, const Descriptor *td) :
-		_type(td->name()),
 		_offset(offset),
 		_tag(tag),
 		_isKey(key),
+		_type(td->name()),		
 		_typeDescriptor(td)
 	{
 		_nameStr = new std::string(name);

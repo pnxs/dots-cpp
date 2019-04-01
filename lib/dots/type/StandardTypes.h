@@ -152,7 +152,7 @@ std::string to_string<dots::property_set>(const dots::property_set &p)
 
 template<>
 inline
-bool from_string<dots::property_set>(const std::string &str, dots::property_set &p)
+bool from_string<dots::property_set>(const std::string &/*str*/, dots::property_set &/*p*/)
 {
     return false;
 }

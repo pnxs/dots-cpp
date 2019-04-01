@@ -14,7 +14,7 @@ TEST(TestTStruct, SizeInDescriptorMatchesActualSize)
 TEST(TestTStruct, AlignmentInDescriptorMatchesActualAlignment)
 {
 	DotsTestStruct dts;
-	EXPECT_EQ(dts._descriptor().alignOf(), alignof(dts));
+	EXPECT_EQ(dts._descriptor().alignOf(), alignof(DotsTestStruct));
 }
 
 TEST(TestTStruct, PropertyOffsetsMatchActualOffsets)

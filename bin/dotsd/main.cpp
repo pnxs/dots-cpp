@@ -47,14 +47,18 @@ int main(int argc, char* argv[])
     dots::Server server(io_service, host, port, serverName);
     LOG_NOTICE_S("Listen to " << host << ":" << port);
 
-    signals.async_wait([&](auto ec, int signo) {
+    signals.async_wait([&](auto /*ec*/, int /*signo*/) {
         LOG_NOTICE_S("stopping server");
         server.stop();
     });
 
     if (vm.count("daemon"))
     {
-        daemon(0, 0);
+        if (daemon(0, 0) == -1)
+        {
+			LOG_CRIT_S("could not start daemon: " << errno);
+			return EXIT_FAILURE;
+        }
     }
 
     LOG_DEBUG_S("run mainloop");

@@ -236,6 +236,7 @@ bool Connection::onControlMessage(const Message &msg)
                 handled = true;
             }
             //No break here: Falltrough
+			[[fallthrough]];
         case DotsConnectionState::connected:
             if (typeName == "DotsMember")
             {

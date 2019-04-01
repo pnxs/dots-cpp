@@ -92,7 +92,7 @@ namespace dots::type
 			/* do nothing */
 		}
 
-		TProperty(const TProperty& other)
+		TProperty(const TProperty& other) : Property<T, Derived>()
 		{
 			*this = other;
 		}

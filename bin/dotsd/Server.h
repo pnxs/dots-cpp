@@ -68,11 +68,11 @@ private:
     dots::TcpAcceptor m_acceptor;
     dots::TcpSocket m_socket;
 
+	string m_name;
+
     GroupManager m_groupManager;
     ConnectionManager m_connectionManager;
-    AuthManager m_authManager;
-
-    string m_name;
+    AuthManager m_authManager;    
 
     DotsDaemonStatus m_daemonStatus;
     ClientId m_serverId = 1;

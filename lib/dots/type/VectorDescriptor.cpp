@@ -22,12 +22,12 @@ void VectorDescriptor::destruct(void* obj) const
     }
 }
 
-std::string VectorDescriptor::to_string(const void *lhs) const
+std::string VectorDescriptor::to_string(const void */*lhs*/) const
 {
     return std::string();
 }
 
-bool VectorDescriptor::from_string(void *lhs, const std::string &str) const
+bool VectorDescriptor::from_string(void */*lhs*/, const std::string &/*str*/) const
 {
     return false;
 }

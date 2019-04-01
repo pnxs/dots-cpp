@@ -22,6 +22,7 @@ namespace dots::type
 		using value_type        = std::pair<inner_lhs_value_t, inner_rhs_value_t>;
 		using reference         = std::pair<inner_lhs_value_t, inner_rhs_value_t>&;
 		using pointer           = std::pair<inner_lhs_value_t, inner_rhs_value_t>*;
+		using const_pointer     = const std::pair<inner_lhs_value_t, inner_rhs_value_t>*;
 
 		PropertyPairIterator(inner_lhs_iterator_t innerIteratorLhs, inner_rhs_iterator_t innerIteratorRhs);
 		PropertyPairIterator(const PropertyPairIterator& other) = default;
@@ -44,7 +45,7 @@ namespace dots::type
 		const reference operator * () const;
 
 		pointer operator -> ();
-		const pointer operator -> () const;
+		const_pointer operator -> () const;
 
 		bool operator == (const PropertyPairIterator& other) const;
 		bool operator != (const PropertyPairIterator& other) const;
