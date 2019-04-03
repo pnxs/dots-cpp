@@ -41,8 +41,7 @@ int DotsAsioSocket::send(const DotsTransportHeader &header, const vector<uint8_t
 bool DotsAsioSocket::connect(const string &host, int port)
 {
     TcpResolver resolver(ioService());
-    auto iter = resolver.resolve({host, "", boost::asio::ip::resolver_query_base::numeric_host
-        | boost::asio::ip::resolver_query_base::numeric_service});
+    auto iter = resolver.resolve({host, "", boost::asio::ip::resolver_query_base::numeric_service});
     decltype(iter) iterEnd;
 
     for (; iter != iterEnd; ++iter)
