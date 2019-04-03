@@ -90,11 +90,15 @@ public:
             return ret;
 
         DotsHeader dh;
-        dh.typeName(T::_Descriptor().name());
-        dh.removeObj(false);
+        dh.typeName = T::_Descriptor().name();
+        dh.removeObj = false;
+
+        auto remaining = C<T>().size();
 
         for (const auto& e : C<T>())
         {
+            dh.attributes = e._validProperties();
+            dh.fromCache = --remaining;
             callback({e, dh, Mt::create});
         }
 
