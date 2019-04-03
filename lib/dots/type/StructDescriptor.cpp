@@ -27,7 +27,12 @@ StructDescriptor::StructDescriptor(const DescriptorData& sd, std::size_t sizeOf,
 
 void StructDescriptor::construct(void *obj) const
 {
-	::new (obj) Struct(*this);
+    ::new (obj) Struct(*this);
+
+	for (auto& pd: m_properties)
+    {
+	    pd.td()->construct(pd.address(obj));
+    }
 }
 
 void StructDescriptor::destruct(void *obj) const
