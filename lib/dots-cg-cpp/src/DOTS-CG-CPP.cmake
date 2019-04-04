@@ -5,7 +5,6 @@ set(DOTS-CG_TEMPLATE_DIR ${DOTS-CG-CPP_DIR} CACHE INTERNAL "Internal helper vari
 set(DOTS-CG_TEMPLATE_LIST 
 	${DOTS-CG-CPP_DIR}/struct.dots.h.dotsT;
 	${DOTS-CG-CPP_DIR}/enum.dots.h.dotsT;
-	${DOTS-CG-CPP_DIR}/enum.dots.cpp.dotsT
 	CACHE INTERNAL "Internal helper variable containing the C++ code generation templates"
 )
 
