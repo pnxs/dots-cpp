@@ -18,7 +18,7 @@ public:
     typedef int32_t enum_type;
     typedef dots::types::EnumDescriptorData DescriptorData;
 
-    static const EnumDescriptor * createFromEnumDescriptorData(const DescriptorData &sd);
+    static const EnumDescriptor * createFromEnumDescriptorData(const DescriptorData &sd, EnumDescriptor* enumDescriptorStorage = nullptr);
 
     void construct(void *) const final override;
     void destruct(void *) const final override;

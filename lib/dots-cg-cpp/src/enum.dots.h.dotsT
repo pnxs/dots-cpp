@@ -42,6 +42,10 @@ namespace dots::type
 
             if (enumDescriptor == nullptr)
             {
+                // allocate space for descriptor to avoid recursive descriptor construction issues
+                static std::aligned_storage_t<sizeof(EnumDescriptor), alignof(EnumDescriptor)> enumDescriptorStorage;
+                enumDescriptor = reinterpret_cast<const EnumDescriptor*>(&enumDescriptorStorage);
+
                 EnumDescriptorData enumDescriptorData{ EnumDescriptorData::name_t_i{ "{{name}}" } };
                 Vector<EnumElementDescriptor>& enumeratorDescriptorData = enumDescriptorData.elements();
 
@@ -53,7 +57,7 @@ namespace dots::type
                 );
                 
                 {% endfor %}
-                enumDescriptor = EnumDescriptor::createFromEnumDescriptorData(enumDescriptorData);
+                EnumDescriptor::createFromEnumDescriptorData(enumDescriptorData, reinterpret_cast<EnumDescriptor*>(&enumDescriptorStorage));
             }
 
             return *enumDescriptor;

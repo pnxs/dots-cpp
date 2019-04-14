@@ -21,7 +21,7 @@ EnumDescriptor::EnumDescriptor(const EnumDescriptorData& ed)
 }
 
 
-const EnumDescriptor * EnumDescriptor::createFromEnumDescriptorData(const EnumDescriptorData &ed)
+const EnumDescriptor * EnumDescriptor::createFromEnumDescriptorData(const EnumDescriptorData &ed, EnumDescriptor* enumDescriptorStorage/* = nullptr*/)
 {
     // Check if type is already registred
     {
@@ -29,14 +29,21 @@ const EnumDescriptor * EnumDescriptor::createFromEnumDescriptorData(const EnumDe
         if (enumDescriptor) return enumDescriptor;
     }
 
-    auto newEnum = new EnumDescriptor(ed);
+	if (enumDescriptorStorage ==  nullptr)
+	{
+		enumDescriptorStorage = new EnumDescriptor(ed);
+	}
+	else
+	{
+		::new (static_cast<void*>(enumDescriptorStorage)) EnumDescriptor(ed);
+	}    
 
     for (auto& e : *ed.elements)
     {
-        newEnum->m_elements[e.tag] = e;
+		enumDescriptorStorage->m_elements[e.tag] = e;
     }
 
-    return newEnum;
+    return enumDescriptorStorage;
 }
 
 void EnumDescriptor::construct(void *) const
