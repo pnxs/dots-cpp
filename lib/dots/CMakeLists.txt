@@ -36,16 +36,19 @@ target_sources(${TARGET_NAME}
 	PRIVATE
 		dots_base.cpp
 		Uuid.cpp
+
+		common/Chrono.cpp
 		common/logging.cpp
 		common/Stream.cpp
+		common/string_convert.cpp
+		common/seconds.cpp
+
 		eventloop/AsioTimer.cpp
-		eventloop/Chrono.cpp
 		eventloop/event_loop.cpp
 		eventloop/Io.cpp
 		eventloop/IoService.cpp
-		eventloop/seconds.cpp
-		eventloop/string_convert.cpp
 		eventloop/Timer.cpp
+
 		functional/signal.cpp
 
 		io/Socket.cpp

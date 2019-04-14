@@ -2,7 +2,7 @@
 
 #include "property_set.h"
 #include "Descriptor.h"
-#include <dots/eventloop/string_convert.h>
+#include <dots/common/string_convert.h>
 
 namespace dots
 {

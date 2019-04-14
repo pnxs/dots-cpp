@@ -1,8 +1,8 @@
 #pragma once
 
 #include "dots/cpp_config.h"
-#include "seconds.h"
-#include "Chrono.h"
+#include <dots/common/seconds.h>
+#include <dots/common/Chrono.h>
 #include "Timer.h"
 #include <boost/asio.hpp>
 #include <boost/asio/steady_timer.hpp>
