@@ -22,12 +22,14 @@ namespace dots::type
 
 		T& operator () (init_t&& init)
 		{
-			return (*this)(std::move(init.value));
+			// note: moving the value out of the initializer should be legal but leads to a segfault when using GCC 8 with O2 and LTO
+			return (*this)(init.value);
 		}
 
 		T& construct(init_t&& init)
 		{
-			return Property<T, Derived>::construct(std::move(init.value));
+			// note: moving the value out of the initializer should be legal but leads to a segfault when using GCC 8 with O2 and LTO
+			return Property<T, Derived>::construct(init.value);
 		}
 
 		template <typename... Args>
