@@ -89,6 +89,7 @@ target_sources(${TARGET_NAME}
 		type/AnyStruct.cpp
 		type/ChronoDescriptor.cpp
 		type/Descriptor.cpp
+		type/Enum.cpp
 		type/EnumDescriptor.cpp
 		type/PropertyIterator.cpp
 		type/PropertyPairIterator.cpp

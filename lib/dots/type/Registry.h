@@ -8,6 +8,7 @@
 #include "UuidDescriptor.h"
 #include "Vector.h"
 #include "StructDescriptor.h"
+#include "Enum.h"
 #include <dots/functional/signal.h>
 
 #include <unordered_map>
@@ -88,9 +89,9 @@ const StructDescriptor* getDescriptor(const T* /*val*/ = 0, ENABLE_IF(is_struct<
 
 template <class T>
 inline
-const EnumDescriptor* getDescriptor(const T*/*val*/ = 0, ENABLE_IF(std::is_enum<T>)* = 0)
+const EnumDescriptor* getDescriptor(const T*/*val*/ = 0, std::enable_if_t<has_enum_type_v<T>, int>* = 0)
 {
-    return EnumDescriptorInit<T>::_td();
+    return &enum_type_t<T>::Descriptor();
 }
 
 template <class T>
