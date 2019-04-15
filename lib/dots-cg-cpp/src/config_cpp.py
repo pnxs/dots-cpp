@@ -1,5 +1,5 @@
 struct_templates = ["struct.dots.h.dotsT"]
-enum_templates   = ("enum.dots.h.dotsT", "enum.dots.cpp.dotsT")
+enum_templates   = ["enum.dots.h.dotsT"]
 vector_format    = "dots::Vector<%s>"
 
 type_mapping     = {

@@ -34,7 +34,7 @@ TEST(TestDistributedTypeId, createId)
 
     const Descriptor* p1 = &DotsTestStruct::_Descriptor();
     const Descriptor* p2 = &DotsTestSubStruct::_Descriptor();
-    const Descriptor* p3 = dots::type::EnumDescriptorInit<DotsTestEnum>::_td();
+    const Descriptor* p3 = &dots::type::enum_type_t<DotsTestEnum>::Descriptor();
 
     {
         DotsTypes t;
