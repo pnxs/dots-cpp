@@ -35,7 +35,9 @@ namespace dots
 		AsioEventLoop();
 		~AsioEventLoop() = default;
 
+		inline static timer_id_t m_lastTimerId = 0;		
 		boost::asio::io_service m_ioService;
+		std::map<timer_id_t, AsioTimer> m_timers;
 		std::map<int, std::shared_ptr<AsioFdHandler>> m_fdHandlers;
 	};
 }

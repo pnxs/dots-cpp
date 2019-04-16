@@ -15,13 +15,15 @@ namespace dots
 
 	auto AsioEventLoop::addTimer(const pnxs::chrono::Duration& timeout, const callback_t& cb, bool periodic) -> timer_id_t
 	{
-		AsioTimer* timer = new AsioTimer(m_ioService, timeout, cb, periodic);
-		return timer->id();
+		timer_id_t id = ++m_lastTimerId;
+		m_timers.try_emplace(id, m_ioService, id, timeout, cb, periodic);
+
+		return id;
 	}
 
 	void AsioEventLoop::removeTimer(unsigned id)
 	{
-		AsioTimer::remTimer(id);
+		m_timers.erase(id);
 	}
 
 	void AsioEventLoop::addFdEventIn(int fd, const callback_t& cb)

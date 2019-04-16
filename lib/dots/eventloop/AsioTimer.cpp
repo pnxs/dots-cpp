@@ -1,18 +1,17 @@
 #include "AsioTimer.h"
 #include <dots/functional/fun.h>
+#include <dots/eventloop/AsioEventLoop.h>
 
 namespace dots
 {
-	AsioTimer::AsioTimer(boost::asio::io_service& ioService, const pnxs::Duration& interval, const callback_t& cb, bool periodic) :
+	AsioTimer::AsioTimer(boost::asio::io_service& ioService, timer_id_t id, const pnxs::Duration& interval, const callback_t& cb, bool periodic) :
 		m_timer(ioService),
 		m_cb(cb),
-		m_id(m_lastTimerId++),
+		m_id(id),
 		m_interval(interval),
 		m_next(pnxs::SteadyNow{}),
 		m_periodic(periodic)
 	{
-		s_all[m_id] = this;
-
 		if (m_periodic)
 		{
 			startAbsolute(m_next += m_interval);
@@ -26,16 +25,7 @@ namespace dots
 	AsioTimer::~AsioTimer()
 	{
 		m_timer.cancel();
-		s_all.erase(m_id);
 	}
-
-	void AsioTimer::remTimer(timer_id_t id)
-	{
-		if (auto it = s_all.find(id); it != s_all.end())
-		{
-			delete it->second;
-		}
-	}	
 
 	void AsioTimer::startRelative(const pnxs::Duration & duration)
 	{
@@ -61,7 +51,7 @@ namespace dots
 			else
 			{
 				m_cb();
-				remTimer(m_id);
+				AsioEventLoop::Instance().removeTimer(m_id);
 			}
 		}
 	}
