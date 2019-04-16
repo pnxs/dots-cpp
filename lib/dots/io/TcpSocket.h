@@ -1,13 +1,12 @@
 #pragma once
 
-#include "Socket.h"
 #include <dots/eventloop/AsioEventLoop.h>
 
 #include <boost/asio.hpp>
 
 namespace dots {
 
-class TcpSocket: public Socket, public boost::asio::ip::tcp::socket
+class TcpSocket: public boost::asio::ip::tcp::socket
 {
 
     typedef boost::asio::ip::tcp::socket Base;
@@ -25,16 +24,17 @@ public:
         boost::asio::async_read(*this, buffers, handler);
     }
 
-    ssize_t receive(void *buffer, size_t length) override;
-    ssize_t send(const void *buffer, size_t length) override;
-    ssize_t send(const boost::asio::const_buffer *a, size_t length) override;
-    int nativeHandle() override;
-    void nonBlocking(bool mode) override;
-    void close() override;
+    ssize_t receive(void *buffer, size_t length);
+    ssize_t send(const void *buffer, size_t length);
+    ssize_t send(const boost::asio::const_buffer *a, size_t length);
+    int nativeHandle();
+    void nonBlocking(bool mode);
+    void close();
 
-    int sendBufferSize() const override;
-    void setSendBufferSize(int value) override;
+    int sendBufferSize() const;
+    void setSendBufferSize(int value);
 
+	mutable boost::system::error_code ec;
 };
 
 
