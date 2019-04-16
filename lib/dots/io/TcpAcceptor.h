@@ -1,6 +1,6 @@
 #pragma once
 #include <boost/asio/ip/tcp.hpp>
-#include <dots/eventloop/IoService.h>
+#include <dots/eventloop/AsioEventLoop.h>
 
 namespace dots
 {
@@ -11,7 +11,7 @@ class TcpAcceptor: public TcpAcceptorBase
 {
 public:
     TcpAcceptor();
-    TcpAcceptor(IoService& ioService);
+    TcpAcceptor(boost::asio::io_service& ioService);
 
 };
 

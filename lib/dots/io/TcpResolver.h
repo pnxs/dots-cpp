@@ -1,7 +1,7 @@
 #pragma once
 
 #include <boost/asio/ip/tcp.hpp>
-#include <dots/eventloop/IoService.h>
+#include <dots/eventloop/AsioEventLoop.h>
 
 namespace dots
 {
@@ -11,7 +11,7 @@ class TcpResolver: public boost::asio::ip::tcp::resolver
     typedef boost::asio::ip::tcp::resolver base;
 public:
     TcpResolver();
-    TcpResolver(IoService &ioService);
+    TcpResolver(boost::asio::io_service&ioService);
     ~TcpResolver();
 
 };

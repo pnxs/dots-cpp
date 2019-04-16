@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Socket.h"
-#include <dots/eventloop/IoService.h>
+#include <dots/eventloop/AsioEventLoop.h>
 
 #include <boost/asio.hpp>
 
@@ -15,7 +15,7 @@ class TcpSocket: public Socket, public boost::asio::ip::tcp::socket
 public:
 
     TcpSocket();
-    TcpSocket(IoService& ioService);
+    TcpSocket(boost::asio::io_service& ioService);
     TcpSocket(TcpSocket&& socket);
     ~TcpSocket();
 

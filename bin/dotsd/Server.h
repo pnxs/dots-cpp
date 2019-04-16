@@ -13,7 +13,6 @@
 namespace dots
 {
 namespace ASIO = boost::asio;
-using dots::IoService;
 
 /*!
  * This class provides the server functionality of the DOTS system.
@@ -31,7 +30,7 @@ public:
      * @param port Port to bind to
      * @param name Servername
      */
-    explicit Server(IoService& io_service, const string& address, const string& port, const string& name);
+    explicit Server(boost::asio::io_service& io_service, const string& address, const string& port, const string& name);
 
     /*!
      * Returns the AuthManager as reference
@@ -64,7 +63,7 @@ private:
 
     void updateServerStatus();
 
-    IoService& m_ioservice;
+    boost::asio::io_service& m_ioservice;
     dots::TcpAcceptor m_acceptor;
     dots::TcpSocket m_socket;
 

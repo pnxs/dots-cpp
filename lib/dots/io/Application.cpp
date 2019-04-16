@@ -11,27 +11,8 @@ namespace po = boost::program_options;
 
 namespace dots
 {
-
-pnxs::TimerId addTimerAsio(const pnxs::Duration& timeout, const function<void ()> &fun, bool /*periodic*/)
-{
-    AsioTimer *timer = new AsioTimer(timeout, fun);
-    return timer->id();
-}
-
-void remTimerAsio(pnxs::TimerId id)
-{
-    AsioTimer::remTimer(id);
-}
-
-
-Application* Application::m_instance = nullptr;
-
 Application::Application(const string& name, int& argc, char*argv[])
-    :m_ioService(dots::ioService())
 {
-    pnxs::onAddTimer = addTimerAsio;
-    pnxs::onRemTimer = remTimerAsio;
-
     m_instance = this;
 
     parseProgramOptions(argc, argv);
@@ -48,7 +29,7 @@ Application::Application(const string& name, int& argc, char*argv[])
     LOG_DEBUG_S("run until state connected...");
     while(not transceiver().connected())
     {
-        m_ioService.run_one();
+		ioService().run_one();
     }
     LOG_DEBUG_S("run one done");
 
@@ -68,7 +49,7 @@ int Application::exec()
     m_exitCode = 0;
 
     // run mainloop
-    m_ioService.run();
+	ioService().run();
 
     return m_exitCode;
 }
@@ -77,7 +58,12 @@ void Application::exit(int exitCode)
 {
     m_exitCode = exitCode;
     // stop eventloop
-    m_ioService.stop();
+	ioService().stop();
+}
+
+boost::asio::io_service& Application::ioService() const
+{
+	return AsioEventLoop::Instance().ioService();
 }
 
 Application *Application::instance()

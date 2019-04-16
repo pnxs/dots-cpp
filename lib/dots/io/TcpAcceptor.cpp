@@ -1,14 +1,14 @@
 #include "TcpAcceptor.h"
-#include <dots/eventloop/IoService.h>
+#include <dots/eventloop/AsioEventLoop.h>
 
 namespace dots
 {
 
-TcpAcceptor::TcpAcceptor(): TcpAcceptorBase(ioService())
+TcpAcceptor::TcpAcceptor(): TcpAcceptorBase(AsioEventLoop::Instance().ioService())
 {
 }
 
-TcpAcceptor::TcpAcceptor(IoService& ioService): TcpAcceptorBase(ioService)
+TcpAcceptor::TcpAcceptor(boost::asio::io_service& ioService): TcpAcceptorBase(ioService)
 {
 }
 

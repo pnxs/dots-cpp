@@ -1,16 +1,16 @@
 #include "TcpSocket.h"
 
-#include <dots/eventloop/IoService.h>
+#include <dots/eventloop/AsioEventLoop.h>
 #include "ConstBufSeq.h"
 #include <boost/asio.hpp>
 
 namespace dots {
 
 
-TcpSocket::TcpSocket(): Base(ioService())
+TcpSocket::TcpSocket(): Base(AsioEventLoop::Instance().ioService())
 {}
 
-TcpSocket::TcpSocket(IoService &ioService): Base(ioService)
+TcpSocket::TcpSocket(boost::asio::io_service&ioService): Base(ioService)
 {}
 
 TcpSocket::TcpSocket(TcpSocket&& socket): Base(std::move(socket))

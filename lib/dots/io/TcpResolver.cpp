@@ -3,11 +3,11 @@
 namespace dots
 {
 
-TcpResolver::TcpResolver(): base(ioService())
+TcpResolver::TcpResolver(): base(AsioEventLoop::Instance().ioService())
 {
 }
 
-TcpResolver::TcpResolver(IoService &ioService): base(ioService)
+TcpResolver::TcpResolver(boost::asio::io_service&ioService): base(ioService)
 {
 }
 

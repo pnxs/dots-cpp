@@ -10,7 +10,7 @@
 namespace dots
 {
 
-Server::Server(IoService& io_service, const string& address, const string& port, const string& name)
+Server::Server(boost::asio::io_service& io_service, const string& address, const string& port, const string& name)
         :m_ioservice(io_service)
         ,m_acceptor(io_service)
         ,m_socket(io_service)

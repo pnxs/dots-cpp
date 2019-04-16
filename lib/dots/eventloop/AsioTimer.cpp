@@ -1,11 +1,10 @@
 #include "AsioTimer.h"
-#include "IoService.h"
-#include "dots/functional/fun.h"
+#include <dots/functional/fun.h>
 
 namespace dots
 {
-	AsioTimer::AsioTimer(const pnxs::Duration& interval, const callback_t& cb, bool periodic) :
-		m_timer(ioService()),
+	AsioTimer::AsioTimer(boost::asio::io_service& ioService, const pnxs::Duration& interval, const callback_t& cb, bool periodic) :
+		m_timer(ioService),
 		m_cb(cb),
 		m_id(m_lastTimerId++),
 		m_interval(interval),
@@ -30,7 +29,7 @@ namespace dots
 		s_all.erase(m_id);
 	}
 
-	void AsioTimer::remTimer(unsigned int id)
+	void AsioTimer::remTimer(timer_id_t id)
 	{
 		if (auto it = s_all.find(id); it != s_all.end())
 		{

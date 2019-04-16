@@ -44,8 +44,7 @@ target_sources(${TARGET_NAME}
 		common/seconds.cpp
 
 		eventloop/AsioTimer.cpp
-		eventloop/Io.cpp
-		eventloop/IoService.cpp
+		eventloop/AsioEventLoop.cpp
 		eventloop/Timer.cpp
 
 		functional/signal.cpp

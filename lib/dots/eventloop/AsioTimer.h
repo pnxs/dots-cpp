@@ -10,9 +10,10 @@ namespace dots
 {
 	struct AsioTimer
 	{
+		using timer_id_t = uint32_t;
 		using callback_t = std::function<void()>;
 
-		AsioTimer(const pnxs::Duration& interval, const callback_t& cb, bool periodic = false);
+		AsioTimer(boost::asio::io_service& ioService, const pnxs::Duration& interval, const callback_t& cb, bool periodic = false);
 		AsioTimer(const AsioTimer& other) = delete;
 		AsioTimer(AsioTimer&& other) = delete;
 		~AsioTimer();
@@ -20,7 +21,7 @@ namespace dots
 		AsioTimer& operator = (const AsioTimer& rhs) = delete;
 		AsioTimer& operator = (AsioTimer&& rhs) = delete;
 
-		unsigned int id() { return m_id; }
+		timer_id_t id() { return m_id; }
 		static void remTimer(unsigned int id);
 
 	private:		
@@ -33,12 +34,12 @@ namespace dots
 		void startRelative(const pnxs::Duration& duration);
 		void startAbsolute(const pnxs::SteadyTimePoint& timepoint);
 
-		inline static unsigned int m_lastTimerId = 1;
+		inline static timer_id_t m_lastTimerId = 1;
 		inline static std::map<unsigned int, AsioTimer*> s_all;
 
 		timer_t m_timer;
 		callback_t m_cb;
-		unsigned int m_id;
+		timer_id_t m_id;
 		pnxs::Duration m_interval;
 		pnxs::SteadyTimePoint m_next;
 		bool m_periodic;			
