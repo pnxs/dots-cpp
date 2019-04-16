@@ -39,7 +39,7 @@ class AsioSingleShotTimer : public AsioTimer
     pnxs::SteadyTimePoint m_next;
     bool m_periodic;
 
-    static unsigned int m_lastTimerId;
+	inline static unsigned int m_lastTimerId = 1;
 
     void callCb();
 
@@ -47,7 +47,7 @@ public:
     AsioSingleShotTimer(const pnxs::Duration & interval, const function<void ()> &cb, bool periodic = false);
     ~AsioSingleShotTimer() override;
 
-    static std::map<unsigned int, AsioSingleShotTimer*> s_all;
+    inline static std::map<unsigned int, AsioSingleShotTimer*> s_all;
 
     unsigned int id() { return m_id; }
     static void remTimer(unsigned int id);

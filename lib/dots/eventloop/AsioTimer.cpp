@@ -5,9 +5,6 @@
 namespace dots
 {
 
-std::map<unsigned int, AsioSingleShotTimer*> AsioSingleShotTimer::s_all;
-unsigned int AsioSingleShotTimer::m_lastTimerId = 1;
-
 AsioTimer::AsioTimer(const function<void()> &cb)
 :m_timer(ioService())
 ,m_cb(cb)
