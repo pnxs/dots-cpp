@@ -1,5 +1,6 @@
 #include "DotsAsioSocket.h"
-#include "dots/io/serialization/CborNativeSerialization.h"
+#include <dots/eventloop/AsioEventLoop.h>
+#include <dots/io/serialization/CborNativeSerialization.h>
 
 namespace dots
 {
@@ -53,19 +54,19 @@ bool DotsAsioSocket::connect(const string &host, int port)
 				return ep.address().to_string() + ":" + std::to_string(ep.port());
 			};
 			boost::asio::ip::tcp::endpoint ep(address, port);
-            m_socket.connect(ep, m_socket.ec);
+			boost::system::error_code ec;
+            m_socket.connect(ep, ec);
 
-            if (m_socket.ec)
+            if (ec)
             {
                 LOG_ERROR_P("unable to connect to socket '%s': %s",
 							ep_to_string(ep).c_str(),
-                            m_socket.ec.message().c_str());
+					ec.message().c_str());
                 return false;
             }
 
             LOG_INFO_P("connected to socket '%s'", ep_to_string(ep).c_str());
 
-            boost::system::error_code ec;
             m_socket.set_option(boost::asio::ip::tcp::no_delay(true), ec);
             m_socket.set_option(boost::asio::ip::tcp::socket::keep_alive(true), ec);
             m_socket.set_option(boost::asio::socket_base::linger(true, 10), ec);
@@ -90,7 +91,7 @@ void DotsAsioSocket::disconnect()
 void DotsAsioSocket::readHeaderLength()
 {
     //LOG_DEBUG_S("start readHeaderLength");
-    m_socket.asyncRead(boost::asio::buffer(&m_headerSize, sizeof(m_headerSize)), [&](auto ec, auto /*bytes*/)
+    asyncRead(boost::asio::buffer(&m_headerSize, sizeof(m_headerSize)), [&](auto ec, auto /*bytes*/)
     {
         if (ec)
         {
@@ -110,7 +111,7 @@ void DotsAsioSocket::readHeaderLength()
 
 void DotsAsioSocket::readHeader()
 {
-    m_socket.asyncRead(boost::asio::buffer(&m_headerBuffer[0], m_headerSize), [&](auto ec, auto bytes)
+    asyncRead(boost::asio::buffer(&m_headerBuffer[0], m_headerSize), [&](auto ec, auto bytes)
     {
         if (ec)
         {
@@ -167,7 +168,7 @@ void DotsAsioSocket::readHeader()
 void DotsAsioSocket::readPayload()
 {
     m_buffer.resize(m_payloadSize);
-    m_socket.asyncRead(boost::asio::buffer(&m_buffer[0], m_payloadSize), [&](auto ec, auto bytes)
+    asyncRead(boost::asio::buffer(&m_buffer[0], m_payloadSize), [&](auto ec, auto bytes)
     {
         if (ec)
         {
@@ -212,7 +213,11 @@ void DotsAsioSocket::handleError(const string &text, const boost::system::error_
     }
 }
 
-DotsAsioSocket::DotsAsioSocket(TcpSocket socket)
+DotsAsioSocket::DotsAsioSocket() : DotsAsioSocket(boost::asio::ip::tcp::socket{ AsioEventLoop::Instance().ioService() })
+{
+}
+
+DotsAsioSocket::DotsAsioSocket(boost::asio::ip::tcp::socket socket)
     : m_socket(std::move(socket))
 {
     start();

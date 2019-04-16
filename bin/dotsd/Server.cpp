@@ -115,7 +115,7 @@ void Server::processAccept(boost::system::error_code ec)
         m_socket.get_option(receiveLowWatermark);
         m_socket.get_option(sendLowWatermark);
 
-        m_socket.nonBlocking(true);
+        m_socket.non_blocking(true);
 
         if (sendBufferSize.value() < m_minimumSendBufferSize) {
             LOG_DEBUG_S("try to set send-buffer-size to " << m_minimumSendBufferSize);

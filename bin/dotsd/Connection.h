@@ -6,7 +6,6 @@
 #include <memory>
 #include <dots/io/AnyContainer.h>
 #include "dots/io/Transmitter.h"
-#include "dots/io/TcpSocket.h"
 #include "DotsConnectionState.dots.h"
 #include "DotsMsgConnect.dots.h"
 #include "DotsMember.dots.h"
@@ -32,7 +31,7 @@ public:
      * @param socket TcpSocket, that is moved into this Connection.
      * @param manager
      */
-    explicit Connection(dots::TcpSocket socket, ConnectionManager &manager);
+    explicit Connection(boost::asio::ip::tcp::socket socket, ConnectionManager &manager);
     ~Connection();
 
     virtual DotsConnectionState state() const;

@@ -4,6 +4,7 @@
 #include "dots/type/Registry.h"
 #include "DotsAsioSocket.h"
 #include <dots/eventloop/AsioFdHandler.h>
+#include <dots/eventloop/AsioEventLoop.h>
 #include <boost/program_options.hpp>
 
 #include "DotsClient.dots.h"
