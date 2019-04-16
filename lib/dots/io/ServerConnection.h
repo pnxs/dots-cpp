@@ -2,7 +2,6 @@
 
 #include "dots/cpp_config.h"
 #include <dots/functional/signal.h>
-#include "TcpSocket.h"
 #include "DotsSocket.h"
 #include "Transmitter.h"
 

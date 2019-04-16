@@ -18,7 +18,6 @@ public:
     void setReceiveCallback(receive_callback cb) override;
     void setErrorCallback(error_callback cb) override;
 
-    //void start(shared_ptr<TcpSocket> socket, receive_callback& cb);
     int send(const DotsTransportHeader &header, const vector <uint8_t> &data = {}) override;
 
     bool connect(const string &host, int port) override;

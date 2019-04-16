@@ -2,7 +2,6 @@
 
 #include <cstdint>
 #include "dots/cpp_config.h"
-#include "TcpSocket.h"
 #include "DotsTransportHeader.dots.h"
 #include "Message.h"
 
@@ -26,7 +25,6 @@ public:
     virtual void setReceiveCallback(receive_callback cb) = 0;
     virtual void setErrorCallback(error_callback cb) = 0;
 
-    //void start(shared_ptr<TcpSocket> socket, receive_callback& cb);
     virtual int send(const DotsTransportHeader& header, const vector<uint8_t>& data = {}) = 0;
 
     virtual bool connect(const string &host, int port) = 0;

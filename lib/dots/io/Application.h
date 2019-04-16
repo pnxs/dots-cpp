@@ -1,5 +1,6 @@
 #pragma once
 
+#include <boost/asio.hpp>
 #include "dots/cpp_config.h"
 #include "Transceiver.h"
 
