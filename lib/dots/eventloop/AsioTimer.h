@@ -9,7 +9,7 @@
 
 namespace dots {
 
-class AsioSingleShotTimer
+class AsioTimer
 {
 	using timer_t = boost::asio::steady_timer;
 	using duration_t = timer_t::clock_type::duration;
@@ -28,10 +28,10 @@ class AsioSingleShotTimer
 
 
 public:
-    AsioSingleShotTimer(const pnxs::Duration & interval, const function<void ()> &cb, bool periodic = false);
-    ~AsioSingleShotTimer();
+    AsioTimer(const pnxs::Duration & interval, const function<void ()> &cb, bool periodic = false);
+    ~AsioTimer();
 
-    inline static std::map<unsigned int, AsioSingleShotTimer*> s_all;
+    inline static std::map<unsigned int, AsioTimer*> s_all;
 
 	void startRelative(const pnxs::Duration& duration);
 	void startAbsolute(const pnxs::SteadyTimePoint& timepoint);

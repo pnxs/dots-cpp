@@ -14,13 +14,13 @@ namespace dots
 
 pnxs::TimerId addTimerAsio(const pnxs::Duration& timeout, const function<void ()> &fun, bool /*periodic*/)
 {
-    AsioSingleShotTimer *timer = new AsioSingleShotTimer(timeout, fun);
+    AsioTimer *timer = new AsioTimer(timeout, fun);
     return timer->id();
 }
 
 void remTimerAsio(pnxs::TimerId id)
 {
-    AsioSingleShotTimer::remTimer(id);
+    AsioTimer::remTimer(id);
 }
 
 

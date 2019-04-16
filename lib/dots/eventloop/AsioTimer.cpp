@@ -5,7 +5,7 @@
 namespace dots
 {
 
-void AsioSingleShotTimer::onTimeout(const boost::system::error_code &error)
+void AsioTimer::onTimeout(const boost::system::error_code &error)
 {
     if (error != boost::asio::error::operation_aborted)
     {
@@ -23,19 +23,19 @@ void AsioSingleShotTimer::onTimeout(const boost::system::error_code &error)
 }
 
 
-void AsioSingleShotTimer::startRelative(const pnxs::Duration &duration)
+void AsioTimer::startRelative(const pnxs::Duration &duration)
 {
     m_timer.expires_from_now(std::chrono::duration_cast<duration_t>(duration));
     m_timer.async_wait(FUN(*this, onTimeout));
 }
 
-void AsioSingleShotTimer::startAbsolute(const pnxs::SteadyTimePoint& timepoint)
+void AsioTimer::startAbsolute(const pnxs::SteadyTimePoint& timepoint)
 {
     m_timer.expires_at(std::chrono::time_point_cast<duration_t>(timepoint));
     m_timer.async_wait(FUN(*this, onTimeout));
 }
 
-AsioSingleShotTimer::AsioSingleShotTimer(const pnxs::Duration &interval, const function<void()> &cb, bool periodic)
+AsioTimer::AsioTimer(const pnxs::Duration &interval, const function<void()> &cb, bool periodic)
 :m_timer(ioService())
 ,m_cb(cb)
 ,m_id(m_lastTimerId++)
@@ -55,13 +55,13 @@ AsioSingleShotTimer::AsioSingleShotTimer(const pnxs::Duration &interval, const f
     }
 }
 
-AsioSingleShotTimer::~AsioSingleShotTimer()
+AsioTimer::~AsioTimer()
 {
 	m_timer.cancel();
     s_all.erase(m_id);
 }
 
-void AsioSingleShotTimer::remTimer(unsigned int id)
+void AsioTimer::remTimer(unsigned int id)
 {
     auto iter = s_all.find(id);
     if (iter != s_all.end())

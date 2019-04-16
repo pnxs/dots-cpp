@@ -8,13 +8,13 @@ using namespace std::placeholders;
 
 static pnxs::TimerId addTimerAsio(const pnxs::Duration& timeout, const std::function<void ()> &fun, bool periodic)
 {
-    dots::AsioSingleShotTimer *timer = new dots::AsioSingleShotTimer(timeout, fun, periodic);
+    dots::AsioTimer *timer = new dots::AsioTimer(timeout, fun, periodic);
     return timer->id();
 }
 
 static void remTimerAsio(pnxs::TimerId id)
 {
-    dots::AsioSingleShotTimer::remTimer(id);
+    dots::AsioTimer::remTimer(id);
 }
 
 namespace pnxs
