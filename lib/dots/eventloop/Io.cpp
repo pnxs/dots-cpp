@@ -6,9 +6,9 @@
 
 using namespace std::placeholders;
 
-static pnxs::TimerId addTimerAsio(const pnxs::Duration& timeout, const std::function<void ()> &fun, bool /*periodic*/)
+static pnxs::TimerId addTimerAsio(const pnxs::Duration& timeout, const std::function<void ()> &fun, bool periodic)
 {
-    dots::AsioSingleShotTimer *timer = new dots::AsioSingleShotTimer(timeout, fun);
+    dots::AsioSingleShotTimer *timer = new dots::AsioSingleShotTimer(timeout, fun, periodic);
     return timer->id();
 }
 

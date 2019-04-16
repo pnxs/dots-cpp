@@ -17,13 +17,18 @@ public:
     AsioTimer( const AsioTimer & ) = delete;
     const AsioTimer & operator = ( const AsioTimer& ) = delete;
 
-    void start(const pnxs::Duration & interval);
+    void startRelative(const pnxs::Duration & duration);
+    void startAbsolute(const pnxs::SteadyTimePoint& timepoint);
     static unsigned int singleShot(const pnxs::Duration & interval, const function<void ()> &cb);
 
 private:
+
+    using timer_t = boost::asio::steady_timer;
+    using duration_t = timer_t::clock_type::duration;
+
     void onTimeout(const boost::system::error_code& error);
 
-    boost::asio::steady_timer m_timer;
+    timer_t m_timer;
     function<void ()> m_cb;
 };
 
@@ -31,13 +36,16 @@ class AsioSingleShotTimer : public AsioTimer
 {
     const function<void ()> m_cb;
     unsigned int m_id;
+    pnxs::Duration m_interval;
+    pnxs::SteadyTimePoint m_next;
+    bool m_periodic;
 
     static unsigned int m_lastTimerId;
 
     void callCb();
 
 public:
-    AsioSingleShotTimer(const pnxs::Duration & interval, const function<void ()> &cb);
+    AsioSingleShotTimer(const pnxs::Duration & interval, const function<void ()> &cb, bool periodic = false);
     ~AsioSingleShotTimer() override;
 
     static std::map<unsigned int, AsioSingleShotTimer*> s_all;

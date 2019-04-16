@@ -29,9 +29,15 @@ void AsioTimer::onTimeout(const boost::system::error_code &error)
 }
 
 
-void AsioTimer::start(const pnxs::Duration &interval)
+void AsioTimer::startRelative(const pnxs::Duration &duration)
 {
-    m_timer.expires_from_now(std::chrono::milliseconds(interval.toMs()));
+    m_timer.expires_from_now(std::chrono::duration_cast<duration_t>(duration));
+    m_timer.async_wait(FUN(*this, onTimeout));
+}
+
+void AsioTimer::startAbsolute(const pnxs::SteadyTimePoint& timepoint)
+{
+    m_timer.expires_at(std::chrono::time_point_cast<duration_t>(timepoint));
     m_timer.async_wait(FUN(*this, onTimeout));
 }
 
@@ -43,13 +49,24 @@ unsigned int AsioTimer::singleShot(const pnxs::Duration &interval, const functio
 
 
 
-AsioSingleShotTimer::AsioSingleShotTimer(const pnxs::Duration &interval, const function<void()> &cb)
+AsioSingleShotTimer::AsioSingleShotTimer(const pnxs::Duration &interval, const function<void()> &cb, bool periodic)
 :AsioTimer(std::bind(&AsioSingleShotTimer::callCb, this))
 ,m_cb(cb)
 ,m_id(m_lastTimerId++)
+,m_interval(interval)
+,m_next(pnxs::SteadyNow{})
+,m_periodic(periodic)
 {
     s_all[m_id] = this;
-    start(interval);
+
+    if (m_periodic)
+    {
+        startAbsolute(m_next += m_interval);
+    }
+    else
+    {
+        startRelative(m_interval);
+    }
 }
 
 AsioSingleShotTimer::~AsioSingleShotTimer()
@@ -68,9 +85,16 @@ void AsioSingleShotTimer::remTimer(unsigned int id)
 
 void AsioSingleShotTimer::callCb()
 {
-    //printf("t\n");
-    m_cb();
-    remTimer(m_id);
+    if (m_periodic)
+    {
+        m_cb();
+        startAbsolute(m_next += m_interval);
+    }
+    else
+    {
+        m_cb();
+        remTimer(m_id);
+    }
 }
 
 }
