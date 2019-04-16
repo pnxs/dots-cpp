@@ -13,7 +13,12 @@ namespace dots
 		using callback_t = std::function<void()>;
 
 		AsioTimer(const pnxs::Duration& interval, const callback_t& cb, bool periodic = false);
-		~AsioTimer();		
+		AsioTimer(const AsioTimer& other) = delete;
+		AsioTimer(AsioTimer&& other) = delete;
+		~AsioTimer();
+
+		AsioTimer& operator = (const AsioTimer& rhs) = delete;
+		AsioTimer& operator = (AsioTimer&& rhs) = delete;
 
 		unsigned int id() { return m_id; }
 		static void remTimer(unsigned int id);
