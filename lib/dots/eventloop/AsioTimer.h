@@ -10,7 +10,9 @@ namespace dots
 {
 	struct AsioTimer
 	{
-		AsioTimer(const pnxs::Duration& interval, const function<void()>& cb, bool periodic = false);
+		using callback_t = std::function<void()>;
+
+		AsioTimer(const pnxs::Duration& interval, const callback_t& cb, bool periodic = false);
 		~AsioTimer();		
 
 		unsigned int id() { return m_id; }
@@ -30,7 +32,7 @@ namespace dots
 		inline static std::map<unsigned int, AsioTimer*> s_all;
 
 		timer_t m_timer;
-		const function<void()> m_cb;
+		callback_t m_cb;
 		unsigned int m_id;
 		pnxs::Duration m_interval;
 		pnxs::SteadyTimePoint m_next;

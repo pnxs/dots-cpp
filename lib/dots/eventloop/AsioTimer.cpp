@@ -4,7 +4,7 @@
 
 namespace dots
 {
-	AsioTimer::AsioTimer(const pnxs::Duration& interval, const function<void()>& cb, bool periodic) :
+	AsioTimer::AsioTimer(const pnxs::Duration& interval, const callback_t& cb, bool periodic) :
 		m_timer(ioService()),
 		m_cb(cb),
 		m_id(m_lastTimerId++),
@@ -32,11 +32,22 @@ namespace dots
 
 	void AsioTimer::remTimer(unsigned int id)
 	{
-		auto iter = s_all.find(id);
-		if (iter != s_all.end())
+		if (auto it = s_all.find(id); it != s_all.end())
 		{
-			delete iter->second;
+			delete it->second;
 		}
+	}	
+
+	void AsioTimer::startRelative(const pnxs::Duration & duration)
+	{
+		m_timer.expires_from_now(std::chrono::duration_cast<duration_t>(duration));
+		m_timer.async_wait(FUN(*this, onTimeout));
+	}
+
+	void AsioTimer::startAbsolute(const pnxs::SteadyTimePoint & timepoint)
+	{
+		m_timer.expires_at(std::chrono::time_point_cast<duration_t>(timepoint));
+		m_timer.async_wait(FUN(*this, onTimeout));
 	}
 
 	void AsioTimer::onTimeout(const boost::system::error_code& error)
@@ -55,16 +66,4 @@ namespace dots
 			}
 		}
 	}
-
-	void AsioTimer::startRelative(const pnxs::Duration & duration)
-	{
-		m_timer.expires_from_now(std::chrono::duration_cast<duration_t>(duration));
-		m_timer.async_wait(FUN(*this, onTimeout));
-	}
-
-	void AsioTimer::startAbsolute(const pnxs::SteadyTimePoint & timepoint)
-	{
-		m_timer.expires_at(std::chrono::time_point_cast<duration_t>(timepoint));
-		m_timer.async_wait(FUN(*this, onTimeout));
-	}	
 }
