@@ -9,30 +9,12 @@
 
 namespace dots {
 
-class AsioTimer
+class AsioSingleShotTimer
 {
-public:
-    explicit AsioTimer(const function<void ()> &cb);
-    virtual ~AsioTimer();
-    AsioTimer( const AsioTimer & ) = delete;
-    const AsioTimer & operator = ( const AsioTimer& ) = delete;
+	using timer_t = boost::asio::steady_timer;
+	using duration_t = timer_t::clock_type::duration;
 
-    void startRelative(const pnxs::Duration & duration);
-    void startAbsolute(const pnxs::SteadyTimePoint& timepoint);
-
-private:
-
-    using timer_t = boost::asio::steady_timer;
-    using duration_t = timer_t::clock_type::duration;
-
-    void onTimeout(const boost::system::error_code& error);
-
-    timer_t m_timer;
-    function<void ()> m_cb;
-};
-
-class AsioSingleShotTimer : public AsioTimer
-{
+	timer_t m_timer;
     const function<void ()> m_cb;
     unsigned int m_id;
     pnxs::Duration m_interval;
@@ -42,12 +24,17 @@ class AsioSingleShotTimer : public AsioTimer
 	inline static unsigned int m_lastTimerId = 1;
 
     void callCb();
+	void onTimeout(const boost::system::error_code& error);
+
 
 public:
     AsioSingleShotTimer(const pnxs::Duration & interval, const function<void ()> &cb, bool periodic = false);
-    ~AsioSingleShotTimer() override;
+    ~AsioSingleShotTimer();
 
     inline static std::map<unsigned int, AsioSingleShotTimer*> s_all;
+
+	void startRelative(const pnxs::Duration& duration);
+	void startAbsolute(const pnxs::SteadyTimePoint& timepoint);
 
     unsigned int id() { return m_id; }
     static void remTimer(unsigned int id);
