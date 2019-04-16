@@ -23,16 +23,8 @@ public:
     {
         boost::asio::async_read(*this, buffers, handler);
     }
-
-    ssize_t receive(void *buffer, size_t length);
-    ssize_t send(const void *buffer, size_t length);
-    ssize_t send(const boost::asio::const_buffer *a, size_t length);
-    int nativeHandle();
-    void nonBlocking(bool mode);
     void close();
-
-    int sendBufferSize() const;
-    void setSendBufferSize(int value);
+    void nonBlocking(bool mode);
 
 	mutable boost::system::error_code ec;
 };
