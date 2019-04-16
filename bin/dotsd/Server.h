@@ -1,6 +1,5 @@
 #pragma once
 
-#include <dots/io/TcpAcceptor.h>
 #include <dots/io/TcpSocket.h>
 #include "dots/cpp_config.h"
 #include "boost/asio.hpp"
@@ -64,7 +63,7 @@ private:
     void updateServerStatus();
 
     boost::asio::io_service& m_ioservice;
-    dots::TcpAcceptor m_acceptor;
+	boost::asio::ip::tcp::acceptor m_acceptor;
     dots::TcpSocket m_socket;
 
 	string m_name;

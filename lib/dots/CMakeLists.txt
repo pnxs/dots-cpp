@@ -52,12 +52,9 @@ target_sources(${TARGET_NAME}
 		io/Socket.cpp
 		io/TcpSocket.cpp
 		io/ConstBufSeq.cpp
-		io/TcpEndpoint.cpp
-		io/TcpAcceptor.cpp
 		io/Transmitter.cpp
 		io/Transceiver.cpp
 		io/ServerConnection.cpp
-		io/TcpResolver.cpp
 		io/Subscription.cpp
 		io/Chained.cpp
 		io/DotsSocket.cpp

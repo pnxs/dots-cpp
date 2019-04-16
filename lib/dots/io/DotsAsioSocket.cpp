@@ -1,7 +1,4 @@
 #include "DotsAsioSocket.h"
-
-#include "TcpResolver.h"
-#include "TcpEndpoint.h"
 #include "dots/io/serialization/CborNativeSerialization.h"
 
 namespace dots
@@ -40,7 +37,7 @@ int DotsAsioSocket::send(const DotsTransportHeader &header, const vector<uint8_t
 
 bool DotsAsioSocket::connect(const string &host, int port)
 {
-    TcpResolver resolver(AsioEventLoop::Instance().ioService());
+	boost::asio::ip::tcp::resolver resolver(AsioEventLoop::Instance().ioService());
     auto iter = resolver.resolve({host, "", boost::asio::ip::resolver_query_base::numeric_service});
     decltype(iter) iterEnd;
 
@@ -51,18 +48,22 @@ bool DotsAsioSocket::connect(const string &host, int port)
 
         if (address.is_v4())
         {
-            TcpEndpoint ep(address, port);
+			auto ep_to_string = [](const boost::asio::ip::tcp::endpoint& ep)
+			{
+				return ep.address().to_string() + ":" + std::to_string(ep.port());
+			};
+			boost::asio::ip::tcp::endpoint ep(address, port);
             m_socket.connect(ep, m_socket.ec);
 
             if (m_socket.ec)
             {
                 LOG_ERROR_P("unable to connect to socket '%s': %s",
-                            ep.toString().c_str(),
+							ep_to_string(ep).c_str(),
                             m_socket.ec.message().c_str());
                 return false;
             }
 
-            LOG_INFO_P("connected to socket '%s'", ep.toString().c_str());
+            LOG_INFO_P("connected to socket '%s'", ep_to_string(ep).c_str());
 
             boost::system::error_code ec;
             m_socket.set_option(boost::asio::ip::tcp::no_delay(true), ec);
