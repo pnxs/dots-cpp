@@ -41,14 +41,6 @@ void AsioTimer::startAbsolute(const pnxs::SteadyTimePoint& timepoint)
     m_timer.async_wait(FUN(*this, onTimeout));
 }
 
-unsigned int AsioTimer::singleShot(const pnxs::Duration &interval, const function<void()> &cb)
-{
-    auto timer = new AsioSingleShotTimer(interval, cb);
-    return timer->id();
-}
-
-
-
 AsioSingleShotTimer::AsioSingleShotTimer(const pnxs::Duration &interval, const function<void()> &cb, bool periodic)
 :AsioTimer(std::bind(&AsioSingleShotTimer::callCb, this))
 ,m_cb(cb)

@@ -19,7 +19,6 @@ public:
 
     void startRelative(const pnxs::Duration & duration);
     void startAbsolute(const pnxs::SteadyTimePoint& timepoint);
-    static unsigned int singleShot(const pnxs::Duration & interval, const function<void ()> &cb);
 
 private:
 
