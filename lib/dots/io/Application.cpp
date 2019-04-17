@@ -1,10 +1,7 @@
 #include <dots/eventloop/Timer.h>
-#include <dots/eventloop/AsioTimer.h>
 #include "Application.h"
 #include "dots/type/Registry.h"
 #include "DotsAsioSocket.h"
-#include <dots/eventloop/AsioFdHandler.h>
-#include <dots/eventloop/AsioEventLoop.h>
 #include <boost/program_options.hpp>
 
 #include "DotsClient.dots.h"
@@ -30,7 +27,7 @@ Application::Application(const string& name, int& argc, char*argv[])
     LOG_DEBUG_S("run until state connected...");
     while(not transceiver().connected())
     {
-		ioService().run_one();
+		eventLoop().runOne();
     }
     LOG_DEBUG_S("run one done");
 
@@ -50,7 +47,7 @@ int Application::exec()
     m_exitCode = 0;
 
     // run mainloop
-	ioService().run();
+	eventLoop().run();
 
     return m_exitCode;
 }
@@ -59,12 +56,17 @@ void Application::exit(int exitCode)
 {
     m_exitCode = exitCode;
     // stop eventloop
-	ioService().stop();
+	eventLoop().stop();
+}
+
+AsioEventLoop& Application::eventLoop() const
+{
+	return AsioEventLoop::Instance();
 }
 
 boost::asio::io_service& Application::ioService() const
 {
-	return AsioEventLoop::Instance().ioService();
+	return eventLoop().ioService();
 }
 
 Application *Application::instance()

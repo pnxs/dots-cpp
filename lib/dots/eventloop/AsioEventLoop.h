@@ -22,6 +22,14 @@ namespace dots
 		const boost::asio::io_service& ioService() const;
 		boost::asio::io_service& ioService();
 
+		void run();
+		void runOne();
+
+		void poll();
+		void pollOne();
+
+		void stop();
+
 		timer_id_t addTimer(const pnxs::chrono::Duration& timeout, const callback_t& cb, bool periodic);
 		void removeTimer(timer_id_t id);
 

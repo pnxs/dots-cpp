@@ -13,6 +13,31 @@ namespace dots
 		return m_ioService;
 	}
 
+	void AsioEventLoop::run()
+	{
+		m_ioService.run();
+	}
+
+	void AsioEventLoop::runOne()
+	{
+		m_ioService.run_one();
+	}
+
+	void AsioEventLoop::poll()
+	{
+		m_ioService.poll();
+	}
+
+	void AsioEventLoop::pollOne()
+	{
+		m_ioService.poll_one();
+	}
+
+	void AsioEventLoop::stop()
+	{
+		m_ioService.stop();
+	}
+
 	auto AsioEventLoop::addTimer(const pnxs::chrono::Duration& timeout, const callback_t& cb, bool periodic) -> timer_id_t
 	{
 		timer_id_t id = ++m_lastTimerId;
