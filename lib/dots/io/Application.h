@@ -1,38 +1,30 @@
 #pragma once
-
+#include <dots/cpp_config.h>
 #include <dots/eventloop/AsioEventLoop.h>
-#include "dots/cpp_config.h"
-#include "Transceiver.h"
+#include <dots/io/Transceiver.h>
 
 namespace dots
 {
+	struct Application
+	{
+		Application(const string& name, int& argc, char* argv[]);
+		virtual ~Application();
 
-class IoService;
+		virtual int exec();
+		virtual void exit(int exitCode = 0);
 
-class Application
-{
-public:
-    Application(const string& name, int& argc, char*argv[]);
-    virtual ~Application();
+		AsioEventLoop& eventLoop() const;
+		asio::io_service& ioService() const;
 
-    virtual int exec();
-    virtual void exit(int exitCode = 0);
+		static Application* instance();
 
-	AsioEventLoop& eventLoop() const;
-	asio::io_service& ioService() const;
+	private:
 
-    static Application* instance();
-
-private:
-    void parseProgramOptions(int argc, char*argv[]);
-
-    int m_exitCode = 0;
-
-    inline static Application* m_instance = nullptr;
-
-    std::string m_serverAddress;
-    int m_serverPort;
-};
-
-
+		void parseProgramOptions(int argc, char* argv[]);
+		
+		inline static Application* m_instance = nullptr;		
+		int m_exitCode = 0;
+		std::string m_serverAddress;
+		int m_serverPort;
+	};
 }
