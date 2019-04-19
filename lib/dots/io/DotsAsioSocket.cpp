@@ -38,7 +38,7 @@ int DotsAsioSocket::send(const DotsTransportHeader &header, const vector<uint8_t
 
 bool DotsAsioSocket::connect(const string &host, int port)
 {
-	asio::ip::tcp::resolver resolver(AsioEventLoop::Instance().ioService());
+	asio::ip::tcp::resolver resolver(AsioEventLoop::Instance().ioContext());
     auto iter = resolver.resolve({host, "", asio::ip::resolver_query_base::numeric_service});
     decltype(iter) iterEnd;
 
@@ -212,7 +212,7 @@ void DotsAsioSocket::handleError(const string &text, const asio::error_code& ec)
     }
 }
 
-DotsAsioSocket::DotsAsioSocket() : DotsAsioSocket(asio::ip::tcp::socket{ AsioEventLoop::Instance().ioService() })
+DotsAsioSocket::DotsAsioSocket() : DotsAsioSocket(asio::ip::tcp::socket{ AsioEventLoop::Instance().ioContext() })
 {
 }
 

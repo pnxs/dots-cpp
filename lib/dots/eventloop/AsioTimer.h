@@ -12,7 +12,7 @@ namespace dots
 		using timer_id_t = uint32_t;
 		using callback_t = std::function<void()>;
 
-		AsioTimer(asio::io_service& ioService, timer_id_t id, const pnxs::Duration& interval, const callback_t& cb, bool periodic = false);
+		AsioTimer(asio::io_context& ioContext, timer_id_t id, const pnxs::Duration& interval, const callback_t& cb, bool periodic = false);
 		AsioTimer(const AsioTimer& other) = delete;
 		AsioTimer(AsioTimer&& other) = delete;
 		~AsioTimer();

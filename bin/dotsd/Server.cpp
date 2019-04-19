@@ -9,14 +9,14 @@
 namespace dots
 {
 
-Server::Server(asio::io_service& io_service, const string& address, const string& port, const string& name)
-        :m_ioservice(io_service)
-        ,m_acceptor(io_service)
-        ,m_socket(io_service)
+Server::Server(asio::io_context& io_context, const string& address, const string& port, const string& name)
+        :m_ioContext(io_context)
+        ,m_acceptor(io_context)
+        ,m_socket(io_context)
         ,m_name(name)
 ,m_connectionManager(m_groupManager, *this)
 {
-    asio::ip::tcp::resolver resolver(io_service);
+    asio::ip::tcp::resolver resolver(io_context);
 	asio::ip::tcp::endpoint endpoint = *resolver.resolve({address, port});
 
     onPublishObject = &m_connectionManager;
@@ -68,7 +68,7 @@ void Server::stop()
 {
     m_acceptor.close();
     m_connectionManager.stop_all();
-    m_ioservice.stop();
+    m_ioContext.stop();
 }
     
 const ClientId& Server::id() const
@@ -110,8 +110,8 @@ void Server::processAccept(asio::error_code ec)
 
         m_socket.get_option(receiveBufferSize);
         m_socket.get_option(sendBufferSize);
-        m_socket.get_option(receiveLowWatermark);
-        m_socket.get_option(sendLowWatermark);
+        /*m_socket.get_option(receiveLowWatermark);
+        m_socket.get_option(sendLowWatermark);*/
 
         m_socket.non_blocking(true);
 
@@ -125,9 +125,9 @@ void Server::processAccept(asio::error_code ec)
         }
 
         LOG_INFO_S("network-buffers: receive:" << receiveBufferSize.value() <<
-                   " send:" << sendBufferSize.value() <<
+                   " send:" << sendBufferSize.value()/* <<
                    " receiveLowWatermark:" << receiveLowWatermark.value() <<
-                   " sendLowWatermark:" << sendLowWatermark.value());
+                   " sendLowWatermark:" << sendLowWatermark.value()*/);
 
         auto connection = std::make_shared<Connection>(std::move(m_socket), m_connectionManager);
         m_connectionManager.start(connection);
@@ -144,7 +144,7 @@ void Server::handleCleanupTimer()
 {
     m_connectionManager.cleanup();
 
-    if (not m_ioservice.stopped())
+    if (not m_ioContext.stopped())
     {
         pnxs::addTimer(1, FUN(*this, handleCleanupTimer));
     }
@@ -174,7 +174,7 @@ void Server::updateServerStatus()
         LOG_ERROR_S("exception in updateServerStatus: " << e.what());
     }
 
-    if (not m_ioservice.stopped())
+    if (not m_ioContext.stopped())
     {
         pnxs::addTimer(1, FUN(*this, updateServerStatus));
     }

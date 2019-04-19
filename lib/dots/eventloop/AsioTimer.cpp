@@ -4,8 +4,8 @@
 
 namespace dots
 {
-	AsioTimer::AsioTimer(asio::io_service& ioService, timer_id_t id, const pnxs::Duration& interval, const callback_t& cb, bool periodic) :
-		m_timer(ioService),
+	AsioTimer::AsioTimer(asio::io_context& ioContext, timer_id_t id, const pnxs::Duration& interval, const callback_t& cb, bool periodic) :
+		m_timer(ioContext),
 		m_cb(cb),
 		m_id(id),
 		m_interval(interval),

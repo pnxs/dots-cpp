@@ -59,9 +59,9 @@ namespace dots
 		return AsioEventLoop::Instance();
 	}
 
-	asio::io_service& Application::ioService() const
+	asio::io_context& Application::ioContext() const
 	{
-		return eventLoop().ioService();
+		return eventLoop().ioContext();
 	}
 
 	Application* Application::instance()

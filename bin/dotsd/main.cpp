@@ -30,11 +30,11 @@ int main(int argc, char* argv[])
 
     auto serverName = vm["server-name"].as<string>();
 
-   asio::io_service& io_service = dots::AsioEventLoop::Instance().ioService();
+   asio::io_context& io_context = dots::AsioEventLoop::Instance().ioContext();
 
     LOG_NOTICE_S("dotsd server");
 
-    asio::signal_set signals(io_service);
+    asio::signal_set signals(io_context);
 
     signals.add(SIGINT);
     signals.add(SIGTERM);
@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
     string host = vm["dots-address"].as<string>();
     string port = vm["dots-port"].as<string>();
 
-    dots::Server server(io_service, host, port, serverName);
+    dots::Server server(io_context, host, port, serverName);
     LOG_NOTICE_S("Listen to " << host << ":" << port);
 
     signals.async_wait([&](auto /*ec*/, int /*signo*/) {
@@ -60,6 +60,6 @@ int main(int argc, char* argv[])
     }
 
     LOG_DEBUG_S("run mainloop");
-    io_service.run();
+    io_context.run();
     return 0;
 }

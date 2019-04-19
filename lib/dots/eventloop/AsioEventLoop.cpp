@@ -3,45 +3,45 @@
 
 namespace dots
 {
-	const asio::io_service& AsioEventLoop::ioService() const
+	const asio::io_context& AsioEventLoop::ioContext() const
 	{
-		return m_ioService;
+		return m_ioContext;
 	}
 
-	asio::io_service& AsioEventLoop::ioService()
+	asio::io_context& AsioEventLoop::ioContext()
 	{
-		return m_ioService;
+		return m_ioContext;
 	}
 
 	void AsioEventLoop::run()
 	{
-		m_ioService.run();
+		m_ioContext.run();
 	}
 
 	void AsioEventLoop::runOne()
 	{
-		m_ioService.run_one();
+		m_ioContext.run_one();
 	}
 
 	void AsioEventLoop::poll()
 	{
-		m_ioService.poll();
+		m_ioContext.poll();
 	}
 
 	void AsioEventLoop::pollOne()
 	{
-		m_ioService.poll_one();
+		m_ioContext.poll_one();
 	}
 
 	void AsioEventLoop::stop()
 	{
-		m_ioService.stop();
+		m_ioContext.stop();
 	}
 
 	auto AsioEventLoop::addTimer(const pnxs::chrono::Duration& timeout, const callback_t& cb, bool periodic) -> timer_id_t
 	{
 		timer_id_t id = ++m_lastTimerId;
-		m_timers.try_emplace(id, m_ioService, id, timeout, cb, periodic);
+		m_timers.try_emplace(id, m_ioContext, id, timeout, cb, periodic);
 
 		return id;
 	}
@@ -53,7 +53,7 @@ namespace dots
 
 	void AsioEventLoop::addFdEventIn(int fd, const callback_t& cb)
 	{
-		m_fdHandlers[fd] = std::make_shared<AsioFdHandler>(m_ioService, fd, cb);
+		m_fdHandlers[fd] = std::make_shared<AsioFdHandler>(m_ioContext, fd, cb);
 	}
 
 	void AsioEventLoop::removeFdEventIn(int fd)

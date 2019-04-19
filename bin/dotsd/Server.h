@@ -21,12 +21,12 @@ public:
 
     /*!
      * Create a DOTS server, listening on the given address and port
-     * @param io_service Boost-ASIO io-service object
+     * @param io_context Boost-ASIO io-context object
      * @param address Address to bind to
      * @param port Port to bind to
      * @param name Servername
      */
-    explicit Server(asio::io_service& io_service, const string& address, const string& port, const string& name);
+    explicit Server(asio::io_context& io_context, const string& address, const string& port, const string& name);
 
     /*!
      * Returns the AuthManager as reference
@@ -59,7 +59,7 @@ private:
 
     void updateServerStatus();
 
-    asio::io_service& m_ioservice;
+    asio::io_context& m_ioContext;
 	asio::ip::tcp::acceptor m_acceptor;
 	asio::ip::tcp::socket m_socket;
 

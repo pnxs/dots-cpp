@@ -19,8 +19,8 @@ namespace dots
 		AsioEventLoop& operator = (const AsioEventLoop& rhs) = delete;
 		AsioEventLoop& operator = (AsioEventLoop&& rhs) = delete;
 
-		const asio::io_service& ioService() const;
-		asio::io_service& ioService();
+		const asio::io_context& ioContext() const;
+		asio::io_context& ioContext();
 
 		void run();
 		void runOne();
@@ -44,7 +44,7 @@ namespace dots
 		~AsioEventLoop() = default;
 
 		inline static timer_id_t m_lastTimerId = 0;		
-		asio::io_service m_ioService;
+		asio::io_context m_ioContext;
 		std::map<timer_id_t, AsioTimer> m_timers;
 		std::map<int, std::shared_ptr<AsioFdHandler>> m_fdHandlers;
 	};

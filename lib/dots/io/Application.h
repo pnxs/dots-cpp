@@ -21,7 +21,7 @@ namespace dots
 		virtual void exit(int exitCode = 0);
 
 		AsioEventLoop& eventLoop() const;
-		asio::io_service& ioService() const;
+		asio::io_context& ioContext() const;
 
 		static Application* instance();
 
