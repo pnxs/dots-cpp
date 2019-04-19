@@ -13,3 +13,6 @@
 [submodule "import/websocketpp"]
 	path = import/websocketpp
 	url = https://github.com/zaphoyd/websocketpp.git
+[submodule "import/asio"]
+	path = import/asio
+	url = https://github.com/chriskohlhoff/asio.git

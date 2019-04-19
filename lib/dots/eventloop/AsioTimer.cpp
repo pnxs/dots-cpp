@@ -4,7 +4,7 @@
 
 namespace dots
 {
-	AsioTimer::AsioTimer(boost::asio::io_service& ioService, timer_id_t id, const pnxs::Duration& interval, const callback_t& cb, bool periodic) :
+	AsioTimer::AsioTimer(asio::io_service& ioService, timer_id_t id, const pnxs::Duration& interval, const callback_t& cb, bool periodic) :
 		m_timer(ioService),
 		m_cb(cb),
 		m_id(id),
@@ -29,19 +29,19 @@ namespace dots
 
 	void AsioTimer::startRelative(const pnxs::Duration & duration)
 	{
-		m_timer.expires_from_now(std::chrono::duration_cast<duration_t>(duration));
+		m_timer.expires_after(std::chrono::duration_cast<duration_t>(duration));
 		m_timer.async_wait(FUN(*this, onTimeout));
-	}
+		}
 
 	void AsioTimer::startAbsolute(const pnxs::SteadyTimePoint & timepoint)
 	{
 		m_timer.expires_at(std::chrono::time_point_cast<duration_t>(timepoint));
 		m_timer.async_wait(FUN(*this, onTimeout));
-	}
+		}
 
-	void AsioTimer::onTimeout(const boost::system::error_code& error)
+	void AsioTimer::onTimeout(const asio::error_code& error)
 	{
-		if (error != boost::asio::error::operation_aborted)
+		if (error != asio::error::operation_aborted)
 		{
 			if (m_periodic)
 			{
@@ -54,5 +54,5 @@ namespace dots
 				AsioEventLoop::Instance().removeTimer(m_id);
 			}
 		}
-	}
+		}
 }

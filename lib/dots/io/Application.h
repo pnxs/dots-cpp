@@ -1,6 +1,5 @@
 #pragma once
 
-#include <boost/asio.hpp>
 #include <dots/eventloop/AsioEventLoop.h>
 #include "dots/cpp_config.h"
 #include "Transceiver.h"
@@ -20,7 +19,7 @@ public:
     virtual void exit(int exitCode = 0);
 
 	AsioEventLoop& eventLoop() const;
-	boost::asio::io_service& ioService() const;
+	asio::io_service& ioService() const;
 
     static Application* instance();
 

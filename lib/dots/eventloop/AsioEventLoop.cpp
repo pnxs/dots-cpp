@@ -3,12 +3,12 @@
 
 namespace dots
 {
-	const boost::asio::io_service& AsioEventLoop::ioService() const
+	const asio::io_service& AsioEventLoop::ioService() const
 	{
 		return m_ioService;
 	}
 
-	boost::asio::io_service& AsioEventLoop::ioService()
+	asio::io_service& AsioEventLoop::ioService()
 	{
 		return m_ioService;
 	}

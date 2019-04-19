@@ -1,7 +1,7 @@
 #pragma once
 
+#include <asio.hpp>
 #include "dots/cpp_config.h"
-#include "boost/asio.hpp"
 #include "ConnectionManager.h"
 #include "AuthManager.h"
 #include "ServerInfo.h"
@@ -10,8 +10,6 @@
 
 namespace dots
 {
-namespace ASIO = boost::asio;
-
 /*!
  * This class provides the server functionality of the DOTS system.
  */
@@ -28,7 +26,7 @@ public:
      * @param port Port to bind to
      * @param name Servername
      */
-    explicit Server(boost::asio::io_service& io_service, const string& address, const string& port, const string& name);
+    explicit Server(asio::io_service& io_service, const string& address, const string& port, const string& name);
 
     /*!
      * Returns the AuthManager as reference
@@ -57,13 +55,13 @@ private:
     void asyncAccept();
     void handleCleanupTimer();
 
-    void processAccept(boost::system::error_code ec);
+    void processAccept(asio::error_code ec);
 
     void updateServerStatus();
 
-    boost::asio::io_service& m_ioservice;
-	boost::asio::ip::tcp::acceptor m_acceptor;
-	boost::asio::ip::tcp::socket m_socket;
+    asio::io_service& m_ioservice;
+	asio::ip::tcp::acceptor m_acceptor;
+	asio::ip::tcp::socket m_socket;
 
 	string m_name;
 

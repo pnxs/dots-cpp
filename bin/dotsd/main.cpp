@@ -30,11 +30,11 @@ int main(int argc, char* argv[])
 
     auto serverName = vm["server-name"].as<string>();
 
-   boost::asio::io_service& io_service = dots::AsioEventLoop::Instance().ioService();
+   asio::io_service& io_service = dots::AsioEventLoop::Instance().ioService();
 
     LOG_NOTICE_S("dotsd server");
 
-    boost::asio::signal_set signals(io_service);
+    asio::signal_set signals(io_service);
 
     signals.add(SIGINT);
     signals.add(SIGTERM);

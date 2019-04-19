@@ -64,7 +64,7 @@ AsioEventLoop& Application::eventLoop() const
 	return AsioEventLoop::Instance();
 }
 
-boost::asio::io_service& Application::ioService() const
+asio::io_service& Application::ioService() const
 {
 	return eventLoop().ioService();
 }

@@ -26,10 +26,10 @@ int DotsAsioSocket::send(const DotsTransportHeader &header, const vector<uint8_t
 
     uint16_t headerSize = headerBuffer.size();
 
-    std::array<boost::asio::const_buffer, 3> buffers{
-        boost::asio::buffer(&headerSize, sizeof(headerSize)),
-        boost::asio::buffer(headerBuffer.data(), headerBuffer.size()),
-        boost::asio::buffer(&data[0], data.size())
+    std::array<asio::const_buffer, 3> buffers{
+        asio::buffer(&headerSize, sizeof(headerSize)),
+        asio::buffer(headerBuffer.data(), headerBuffer.size()),
+        asio::buffer(&data[0], data.size())
     };
     m_socket.write_some(buffers);
 
@@ -38,8 +38,8 @@ int DotsAsioSocket::send(const DotsTransportHeader &header, const vector<uint8_t
 
 bool DotsAsioSocket::connect(const string &host, int port)
 {
-	boost::asio::ip::tcp::resolver resolver(AsioEventLoop::Instance().ioService());
-    auto iter = resolver.resolve({host, "", boost::asio::ip::resolver_query_base::numeric_service});
+	asio::ip::tcp::resolver resolver(AsioEventLoop::Instance().ioService());
+    auto iter = resolver.resolve({host, "", asio::ip::resolver_query_base::numeric_service});
     decltype(iter) iterEnd;
 
     for (; iter != iterEnd; ++iter)
@@ -49,12 +49,12 @@ bool DotsAsioSocket::connect(const string &host, int port)
 
         if (address.is_v4())
         {
-			auto ep_to_string = [](const boost::asio::ip::tcp::endpoint& ep)
+			auto ep_to_string = [](const asio::ip::tcp::endpoint& ep)
 			{
 				return ep.address().to_string() + ":" + std::to_string(ep.port());
 			};
-			boost::asio::ip::tcp::endpoint ep(address, port);
-			boost::system::error_code ec;
+			asio::ip::tcp::endpoint ep(address, port);
+			asio::error_code ec;
             m_socket.connect(ep, ec);
 
             if (ec)
@@ -67,9 +67,9 @@ bool DotsAsioSocket::connect(const string &host, int port)
 
             LOG_INFO_P("connected to socket '%s'", ep_to_string(ep).c_str());
 
-            m_socket.set_option(boost::asio::ip::tcp::no_delay(true), ec);
-            m_socket.set_option(boost::asio::ip::tcp::socket::keep_alive(true), ec);
-            m_socket.set_option(boost::asio::socket_base::linger(true, 10), ec);
+            m_socket.set_option(asio::ip::tcp::no_delay(true), ec);
+            m_socket.set_option(asio::ip::tcp::socket::keep_alive(true), ec);
+            m_socket.set_option(asio::socket_base::linger(true, 10), ec);
 
             break;
         }
@@ -91,7 +91,7 @@ void DotsAsioSocket::disconnect()
 void DotsAsioSocket::readHeaderLength()
 {
     //LOG_DEBUG_S("start readHeaderLength");
-    asyncRead(boost::asio::buffer(&m_headerSize, sizeof(m_headerSize)), [&](auto ec, auto /*bytes*/)
+    asyncRead(asio::buffer(&m_headerSize, sizeof(m_headerSize)), [&](auto ec, auto /*bytes*/)
     {
         if (ec)
         {
@@ -111,7 +111,7 @@ void DotsAsioSocket::readHeaderLength()
 
 void DotsAsioSocket::readHeader()
 {
-    asyncRead(boost::asio::buffer(&m_headerBuffer[0], m_headerSize), [&](auto ec, auto bytes)
+    asyncRead(asio::buffer(&m_headerBuffer[0], m_headerSize), [&](auto ec, auto bytes)
     {
         if (ec)
         {
@@ -158,8 +158,7 @@ void DotsAsioSocket::readHeader()
             //LOG_ERROR_S("Bytes: " << bytes);
 
             LOG_ERROR_S(msg);
-            boost::system::error_code bmec(boost::system::errc::bad_message, boost::system::generic_category());
-            this->handleError(msg, bmec);
+            this->handleError(msg, std::make_error_code(std::errc::bad_message));
         }
 
     });
@@ -168,7 +167,7 @@ void DotsAsioSocket::readHeader()
 void DotsAsioSocket::readPayload()
 {
     m_buffer.resize(m_payloadSize);
-    asyncRead(boost::asio::buffer(&m_buffer[0], m_payloadSize), [&](auto ec, auto bytes)
+    asyncRead(asio::buffer(&m_buffer[0], m_payloadSize), [&](auto ec, auto bytes)
     {
         if (ec)
         {
@@ -193,11 +192,11 @@ void DotsAsioSocket::setErrorCallback(DotsSocket::error_callback cb)
     m_ecb = cb;
 }
 
-void DotsAsioSocket::handleError(const string &text, const boost::system::error_code &ec)
+void DotsAsioSocket::handleError(const string &text, const asio::error_code& ec)
 {
     int errorCode = 1;
 
-    if (ec == boost::asio::error::misc_errors::eof || ec == boost::system::errc::bad_file_descriptor)
+    if (ec == asio::error::misc_errors::eof || ec == asio::error::basic_errors::bad_descriptor)
     {
         LOG_DEBUG_S(text << ": client closed connection");
         errorCode = 2;
@@ -213,11 +212,11 @@ void DotsAsioSocket::handleError(const string &text, const boost::system::error_
     }
 }
 
-DotsAsioSocket::DotsAsioSocket() : DotsAsioSocket(boost::asio::ip::tcp::socket{ AsioEventLoop::Instance().ioService() })
+DotsAsioSocket::DotsAsioSocket() : DotsAsioSocket(asio::ip::tcp::socket{ AsioEventLoop::Instance().ioService() })
 {
 }
 
-DotsAsioSocket::DotsAsioSocket(boost::asio::ip::tcp::socket socket)
+DotsAsioSocket::DotsAsioSocket(asio::ip::tcp::socket socket)
     : m_socket(std::move(socket))
 {
     start();

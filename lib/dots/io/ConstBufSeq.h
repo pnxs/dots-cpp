@@ -1,17 +1,17 @@
 #pragma once
 
-#include <boost/asio/buffer.hpp>
+#include <asio.hpp>
 
 namespace dots {
 
 struct ConstBufSeq
 {
-    const boost::asio::const_buffer *arr = NULL;
+    const asio::const_buffer *arr = NULL;
     size_t len = 0;
 
-    typedef const boost::asio::const_buffer *const_iterator;
+    typedef const asio::const_buffer *const_iterator;
 
-    ConstBufSeq(const boost::asio::const_buffer *_arr, size_t _len) : arr(_arr), len(_len)
+    ConstBufSeq(const asio::const_buffer *_arr, size_t _len) : arr(_arr), len(_len)
     {}
 
     const_iterator begin() const

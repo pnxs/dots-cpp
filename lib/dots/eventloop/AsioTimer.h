@@ -3,8 +3,7 @@
 #include "dots/cpp_config.h"
 #include <dots/common/seconds.h>
 #include <dots/common/Chrono.h>
-#include <boost/asio.hpp>
-#include <boost/asio/steady_timer.hpp>
+#include <asio.hpp>
 
 namespace dots
 {
@@ -13,7 +12,7 @@ namespace dots
 		using timer_id_t = uint32_t;
 		using callback_t = std::function<void()>;
 
-		AsioTimer(boost::asio::io_service& ioService, timer_id_t id, const pnxs::Duration& interval, const callback_t& cb, bool periodic = false);
+		AsioTimer(asio::io_service& ioService, timer_id_t id, const pnxs::Duration& interval, const callback_t& cb, bool periodic = false);
 		AsioTimer(const AsioTimer& other) = delete;
 		AsioTimer(AsioTimer&& other) = delete;
 		~AsioTimer();
@@ -25,11 +24,11 @@ namespace dots
 
 	private:		
 
-		using timer_t = boost::asio::steady_timer;
+		using timer_t = asio::steady_timer;
 		using duration_t = timer_t::clock_type::duration;
 
 		void callCb();
-		void onTimeout(const boost::system::error_code& error);
+		void onTimeout(const asio::error_code& error);
 		void startRelative(const pnxs::Duration& duration);
 		void startAbsolute(const pnxs::SteadyTimePoint& timepoint);
 

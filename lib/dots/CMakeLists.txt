@@ -9,6 +9,7 @@ option(BUILD_DOTS_SHARED "Build DOTS as a shared instead of a static library" OF
 
 # dependencies
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
+find_package(ASIO REQUIRED MODULE)
 find_package(Boost 1.59 REQUIRED COMPONENTS filesystem iostreams program_options)
 find_package(Rapidjson REQUIRED MODULE)
 #find_package(cborcpp REQUIRED) (uncomment when dependency is no longer part of build tree)
@@ -120,8 +121,14 @@ target_compile_options(${TARGET_NAME}
 	PRIVATE
 		$<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-O2 -flto -Wall -Wextra -Wpedantic -Werror>>		
 )
+target_compile_definitions(${TARGET_NAME}
+	PUBLIC
+		$<BUILD_INTERFACE:ASIO_STANDALONE>
+		$<BUILD_INTERFACE:ASIO_DISABLE_EPOLL>
+)
 target_link_libraries(${TARGET_NAME}
 	PUBLIC
+		$<BUILD_INTERFACE:ASIO::ASIO>
 		Boost::boost
 		Boost::program_options
 		Boost::iostreams

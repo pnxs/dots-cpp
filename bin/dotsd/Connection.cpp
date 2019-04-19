@@ -24,7 +24,7 @@ namespace dots {
 
 using namespace std::placeholders;
 
-Connection::Connection(boost::asio::ip::tcp::socket socket, ConnectionManager &manager)
+Connection::Connection(asio::ip::tcp::socket socket, ConnectionManager &manager)
 :m_dotsSocket(std::move(socket)), m_connectionManager(manager)
 {
     // Create connection-name

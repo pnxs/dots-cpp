@@ -2,7 +2,7 @@
 #include <functional>
 #include <map>
 #include <memory>
-#include <boost/asio/io_service.hpp>
+#include <asio.hpp>
 #include <dots/eventloop/AsioTimer.h>
 #include <dots/eventloop/AsioFdHandler.h>
 
@@ -19,8 +19,8 @@ namespace dots
 		AsioEventLoop& operator = (const AsioEventLoop& rhs) = delete;
 		AsioEventLoop& operator = (AsioEventLoop&& rhs) = delete;
 
-		const boost::asio::io_service& ioService() const;
-		boost::asio::io_service& ioService();
+		const asio::io_service& ioService() const;
+		asio::io_service& ioService();
 
 		void run();
 		void runOne();
@@ -44,7 +44,7 @@ namespace dots
 		~AsioEventLoop() = default;
 
 		inline static timer_id_t m_lastTimerId = 0;		
-		boost::asio::io_service m_ioService;
+		asio::io_service m_ioService;
 		std::map<timer_id_t, AsioTimer> m_timers;
 		std::map<int, std::shared_ptr<AsioFdHandler>> m_fdHandlers;
 	};

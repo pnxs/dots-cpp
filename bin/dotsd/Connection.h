@@ -31,7 +31,7 @@ public:
      * @param socket TcpSocket, that is moved into this Connection.
      * @param manager
      */
-    explicit Connection(boost::asio::ip::tcp::socket socket, ConnectionManager &manager);
+    explicit Connection(asio::ip::tcp::socket socket, ConnectionManager &manager);
     ~Connection();
 
     virtual DotsConnectionState state() const;

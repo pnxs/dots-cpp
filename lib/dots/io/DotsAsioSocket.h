@@ -1,5 +1,5 @@
 #pragma once
-#include <boost/asio.hpp>
+#include <asio.hpp>
 #include "dots/cpp_config.h"
 #include "DotsSocket.h"
 
@@ -10,7 +10,7 @@ class DotsAsioSocket: public DotsSocket
 {
 public:
     DotsAsioSocket();
-    DotsAsioSocket(boost::asio::ip::tcp::socket socket);
+    DotsAsioSocket(asio::ip::tcp::socket socket);
 
     void start() override;
 
@@ -28,17 +28,17 @@ private:
     void readPayload();
 
 	template<typename MutableBufferSequence, typename ReadHandler>
-	void asyncRead(const MutableBufferSequence& buffers, BOOST_ASIO_MOVE_ARG(ReadHandler) handler)
+	void asyncRead(const MutableBufferSequence& buffers, ASIO_MOVE_ARG(ReadHandler) handler)
 	{
-		boost::asio::async_read(m_socket, buffers, handler);
+		asio::async_read(m_socket, buffers, handler);
 	}
 
-    void handleError(const string &text, const boost::system::error_code &error);
+    void handleError(const string &text, const asio::error_code& error);
 
     receive_callback m_cb;
     error_callback m_ecb;
 
-	boost::asio::ip::tcp::socket m_socket;
+	asio::ip::tcp::socket m_socket;
 
     uint16_t m_headerSize = 0;
     uint32_t m_payloadSize = 0;

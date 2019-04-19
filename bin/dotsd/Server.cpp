@@ -1,7 +1,6 @@
 #include "Server.h"
 #include <dots/eventloop/Timer.h>
 #include <dots/io/ResourceUsage.h>
-#include <boost/asio/socket_base.hpp>
 #include <dots/io/Transceiver.h>
 
 #include "DotsClient.dots.h"
@@ -10,15 +9,15 @@
 namespace dots
 {
 
-Server::Server(boost::asio::io_service& io_service, const string& address, const string& port, const string& name)
+Server::Server(asio::io_service& io_service, const string& address, const string& port, const string& name)
         :m_ioservice(io_service)
         ,m_acceptor(io_service)
         ,m_socket(io_service)
         ,m_name(name)
 ,m_connectionManager(m_groupManager, *this)
 {
-    ASIO::ip::tcp::resolver resolver(io_service);
-    ASIO::ip::tcp::endpoint endpoint = *resolver.resolve({address, port});
+    asio::ip::tcp::resolver resolver(io_service);
+	asio::ip::tcp::endpoint endpoint = *resolver.resolve({address, port});
 
     onPublishObject = &m_connectionManager;
 
@@ -38,9 +37,9 @@ Server::Server(boost::asio::io_service& io_service, const string& address, const
     }
 
     m_acceptor.open(endpoint.protocol());
-    m_acceptor.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
+    m_acceptor.set_option(asio::ip::tcp::acceptor::reuse_address(true));
 
-    boost::system::error_code ec;
+    asio::error_code ec;
     m_acceptor.bind(endpoint, ec);
     if (ec) {
         LOG_ERROR_S("error binding to port " << port);
@@ -89,10 +88,9 @@ void Server::asyncAccept()
  * Creates a new Connection object for a new connection (when no error on accept has been occured).
  * @param ec error-code of accept-call
  */
-void Server::processAccept(boost::system::error_code ec)
+void Server::processAccept(asio::error_code ec)
 {
-    namespace IP = boost::asio::ip;
-    using boost::asio::socket_base;
+    using asio::socket_base;
 
     if (not m_acceptor.is_open())
     {
@@ -101,9 +99,9 @@ void Server::processAccept(boost::system::error_code ec)
 
     if (not ec)
     {
-        boost::system::error_code ec;
-        m_socket.set_option(IP::tcp::no_delay(true), ec);
-        m_socket.set_option(IP::tcp::socket::keep_alive(true), ec);
+        asio::error_code ec;
+        m_socket.set_option(asio::ip::tcp::no_delay(true), ec);
+        m_socket.set_option(asio::ip::tcp::socket::keep_alive(true), ec);
 
         socket_base::receive_buffer_size receiveBufferSize;
         socket_base::send_buffer_size sendBufferSize;
