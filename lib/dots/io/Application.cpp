@@ -11,16 +11,14 @@ namespace dots
 	Application::Application(const string& name, int& argc, char* argv[])
 	{
 		m_instance = this;
-
 		parseProgramOptions(argc, argv);
 
 		// Start Transceiver
 		// Connect to dotsd
-		auto dotsSocket = std::make_shared<DotsAsioSocket>();
-		if (not transceiver().start(name, m_serverAddress, m_serverPort, dotsSocket))
+		
+		if (auto dotsSocket = std::make_shared<DotsAsioSocket>(); not transceiver().start(name, m_serverAddress, m_serverPort, dotsSocket))
 		{
 			throw std::runtime_error("unable to start transceiver");
-			//quick_exit(-1);
 		}
 
 		LOG_DEBUG_S("run until state connected...");
@@ -35,7 +33,6 @@ namespace dots
 
 	Application::~Application()
 	{
-		// stop Transceiver
 		transceiver().stop();
 	}
 
@@ -54,7 +51,6 @@ namespace dots
 	void Application::exit(int exitCode)
 	{
 		m_exitCode = exitCode;
-		// stop eventloop
 		eventLoop().stop();
 	}
 
@@ -76,6 +72,8 @@ namespace dots
 	void Application::parseProgramOptions(int argc, char* argv[])
 	{
 		namespace po = boost::program_options;
+
+		// define and parse command line options
 		po::options_description desc("Allowed options");
 		desc.add_options()
 			("dots-address", po::value<string>()->default_value("127.0.0.1"), "address to bind to")
@@ -86,12 +84,14 @@ namespace dots
 		po::store(po::basic_command_line_parser<char>(argc, argv).options(desc).allow_unregistered().run(), vm);
 		po::notify(vm);
 
-		// Check environment
-		if (getenv("DOTS_SERVER_ADDRESS")) {
+		// parse environment options
+		if (::getenv("DOTS_SERVER_ADDRESS")) 
+		{
 			m_serverAddress = getenv("DOTS_SERVER_ADDRESS");
 		}
 
-		if (getenv("DOTS_SERVER_PORT")) {
+		if (::getenv("DOTS_SERVER_PORT")) 
+		{
 			m_serverPort = atoi("DOTS_SERVER_PORT");
 		}
 

@@ -30,7 +30,7 @@ namespace dots
 		void parseProgramOptions(int argc, char* argv[]);
 		
 		inline static Application* m_instance = nullptr;		
-		int m_exitCode = 0;
+		int m_exitCode;
 		std::string m_serverAddress;
 		int m_serverPort;
 	};
