@@ -1,6 +1,7 @@
 #include "Application.h"
 #include <boost/program_options.hpp>
 #include <dots/eventloop/Timer.h>
+#include <dots/eventloop/AsioEventLoop.h>
 #include <dots/io/DotsAsioSocket.h>
 #include <dots/type/Registry.h>
 #include <DotsClient.dots.h>

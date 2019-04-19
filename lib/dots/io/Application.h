@@ -1,10 +1,17 @@
 #pragma once
 #include <dots/cpp_config.h>
-#include <dots/eventloop/AsioEventLoop.h>
 #include <dots/io/Transceiver.h>
+
+namespace asio
+{
+	class io_context;
+	typedef io_context io_service;
+}
 
 namespace dots
 {
+	struct AsioEventLoop;
+
 	struct Application
 	{
 		Application(const string& name, int& argc, char* argv[]);
