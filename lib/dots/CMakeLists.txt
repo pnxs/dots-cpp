@@ -13,10 +13,6 @@ find_package(ASIO REQUIRED MODULE)
 find_package(Boost 1.59 REQUIRED COMPONENTS filesystem iostreams program_options)
 find_package(Rapidjson REQUIRED MODULE)
 #find_package(cborcpp REQUIRED) (uncomment when dependency is no longer part of build tree)
-if (WITH_QT5)
-    find_package(Qt5 COMPONENTS Core Network Widgets REQUIRED)
-    set(CMAKE_AUTOMOC ON)
-endif()
 
 # target
 if (BUILD_DOTS_SHARED)
@@ -101,10 +97,6 @@ target_sources(${TARGET_NAME}
 		type/VectorDescriptor.cpp
 		type/Struct.cpp
 
-		$<$<BOOL:${WITH_QT5}>:io/QtCoreApplication.cpp>
-		$<$<BOOL:${WITH_QT5}>:io/DotsQtSocket.cpp>
-		$<$<BOOL:${WITH_QT5}>:qt5/QtSingleShotTimer.cpp>
-
 		${MODEL_SOURCES}
 )
 target_include_directories(${TARGET_NAME}
@@ -134,12 +126,9 @@ target_link_libraries(${TARGET_NAME}
 		Boost::iostreams
 		Boost::filesystem
 		pthread
-		$<$<BOOL:${WITH_QT5}>:Qt5::Widgets>
-		$<$<BOOL:${WITH_QT5}>:Qt5::Network>
 	PRIVATE
 		cborcpp
 		RapidJSON::RapidJSON
-		$<$<BOOL:${WITH_QT5}>:Qt5::Core>
 )
 set_target_properties(${TARGET_NAME} PROPERTIES
     SOVERSION 0

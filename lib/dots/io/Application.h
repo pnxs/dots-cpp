@@ -1,4 +1,5 @@
 #pragma once
+#include <chrono>
 #include <dots/cpp_config.h>
 #include <dots/io/Transceiver.h>
 
@@ -18,6 +19,7 @@ namespace dots
 		virtual ~Application();
 
 		virtual int exec();
+		virtual int execOne(const std::chrono::milliseconds& timeout);
 		virtual void exit(int exitCode = 0);
 
 		AsioEventLoop& eventLoop() const;

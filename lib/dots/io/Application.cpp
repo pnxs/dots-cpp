@@ -38,12 +38,16 @@ namespace dots
 
 	int Application::exec()
 	{
-		// Check if connected
-
 		m_exitCode = 0;
-
-		// run mainloop
 		eventLoop().run();
+
+		return m_exitCode;
+	}
+
+	int Application::execOne(const std::chrono::milliseconds& timeout)
+	{
+		m_exitCode = 0;
+		eventLoop().ioContext().run_one_for(std::chrono::milliseconds{ 10 });
 
 		return m_exitCode;
 	}
