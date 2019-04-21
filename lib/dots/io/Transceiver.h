@@ -20,7 +20,7 @@ class Transceiver: public Publisher
 public:
     Transceiver();
 
-    bool start(const string &name, ChannelPtr dotsSocket);
+    bool start(const string &name, ChannelPtr channel);
     void stop();
 
     Subscription addReceiver(const type::StructDescriptor* td, ContainerBase* cb, const Dispatcher::callback_type& f)

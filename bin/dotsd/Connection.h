@@ -28,10 +28,10 @@ public:
 
     /*!
      * Create a Connection from a Channel.
-     * @param socket Channel, that is moved into this Connection.
+     * @param channel Channel, that is moved into this Connection.
      * @param manager
      */
-    explicit Connection(ChannelPtr socket, ConnectionManager &manager);
+    explicit Connection(ChannelPtr channel, ConnectionManager &manager);
     ~Connection();
 
     virtual DotsConnectionState state() const;
@@ -100,7 +100,7 @@ private:
     enum class RxTx { rx, tx };
     void logRxTx(RxTx, const DotsTransportHeader& header);
 
-    void onSocketError(int ec);
+    void onChannelError(int ec);
     void onReceivedMessage(const Message &msg);
     bool onControlMessage(const Message &msg);
     bool onRegularMessage(const Message &msg);
@@ -109,7 +109,7 @@ private:
 
     dots::Transmitter m_transmitter;
 
-	ChannelPtr m_dotsSocket;
+	ChannelPtr m_channel;
     ConnectionManager& m_connectionManager;
     DotsConnectionState  m_connectionState = DotsConnectionState::connecting;
     bool m_wantMemberMessages = false;

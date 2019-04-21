@@ -24,15 +24,15 @@ namespace dots {
 
 using namespace std::placeholders;
 
-Connection::Connection(ChannelPtr socket, ConnectionManager &manager)
-:m_dotsSocket(std::move(socket)), m_connectionManager(manager)
+Connection::Connection(ChannelPtr channel, ConnectionManager &manager)
+:m_channel(std::move(channel)), m_connectionManager(manager)
 {
     // Create connection-name
     m_id = m_connectionManager.getUniqueClientId();
 
     LOG_INFO_S("connected");
 
-	m_dotsSocket->asyncReceive(FUN(*this, onReceivedMessage), FUN(*this, onSocketError));
+	m_channel->asyncReceive(FUN(*this, onReceivedMessage), FUN(*this, onChannelError));
 }
 
 void Connection::start()
@@ -49,7 +49,7 @@ void Connection::stop()
 {
     LOG_INFO_S("stopped");
     setConnectionState(DotsConnectionState::closed);
-    m_dotsSocket.reset();
+    m_channel.reset();
 }
 
 void Connection::kill()
@@ -328,7 +328,7 @@ void Connection::send(const Message &msg)
     try
     {
         logRxTx(RxTx::tx, msg.header());
-        m_dotsSocket->transmit(msg.header(), msg.data());
+        m_channel->transmit(msg.header(), msg.data());
     }
     catch(const std::exception& e)
     {
@@ -369,10 +369,10 @@ Connection::Connection(ConnectionManager &manager)
 
 }
 
-void Connection::onSocketError(int ec)
+void Connection::onChannelError(int ec)
 {
     if (ec != 2) {
-        LOG_ERROR_S("socket error: " << ec);
+        LOG_ERROR_S("channel error: " << ec);
     }
     kill();
 }

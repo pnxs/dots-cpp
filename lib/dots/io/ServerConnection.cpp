@@ -11,7 +11,7 @@
 namespace dots
 {
 
-bool ServerConnection::start(const string &name, ChannelPtr dotsSocket)
+bool ServerConnection::start(const string &name, ChannelPtr channel)
 {
     if (running())
     {
@@ -19,9 +19,8 @@ bool ServerConnection::start(const string &name, ChannelPtr dotsSocket)
         return true;
     }
 
-    m_dotsSocket = dotsSocket;
-
-    socket().asyncReceive(FUN(*this, handleReceivedMessage), nullptr);
+    m_channel = channel;
+	m_channel->asyncReceive(FUN(*this, handleReceivedMessage), nullptr);
 
     m_running = true;
     m_clientName = name;
@@ -47,12 +46,12 @@ bool ServerConnection::running()
 
 void ServerConnection::disconnect()
 {
-	m_dotsSocket.reset();
+	m_channel.reset();
 }
 
-Channel& ServerConnection::socket()
+Channel& ServerConnection::channel()
 {
-    return *m_dotsSocket.get();
+    return *m_channel.get();
 }
 
 void ServerConnection::handleConnected(const string &/*name*/)
@@ -239,7 +238,7 @@ void ServerConnection::setConnectionState(DotsConnectionState state)
 
 int ServerConnection::send(const DotsTransportHeader &header, const vector<uint8_t> &data)
 {
-    return socket().transmit(header, data);
+    return channel().transmit(header, data);
 }
 
 Transmitter &ServerConnection::transmitter()

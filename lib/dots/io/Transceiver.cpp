@@ -19,14 +19,14 @@ Transceiver::Transceiver()
 //    connection().onDisconnected
 }
 
-bool Transceiver::start(const string &name, ChannelPtr dotsSocket)
+bool Transceiver::start(const string &name, ChannelPtr channel)
 {
     LOG_DEBUG_S("start transceiver");
 
     // start communication
-    if (connection().start(name, dotsSocket))
+    if (connection().start(name, channel))
     {
-       // m_receiver.start(connection().socket());
+       // m_receiver.start(connection().channel());
         // publish types
         return true;
     }

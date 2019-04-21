@@ -14,9 +14,9 @@ namespace dots
 		// Start Transceiver
 		// Connect to dotsd
 
-		auto dotsSocket = asio::use_service<TcpService>(global_execution_context()).connect(m_serverAddress, m_serverPort);
+		auto channel = asio::use_service<TcpService>(global_execution_context()).connect(m_serverAddress, m_serverPort);
 		
-		if (not transceiver().start(name, dotsSocket))
+		if (not transceiver().start(name, channel))
 		{
 			throw std::runtime_error("unable to start transceiver");
 		}
