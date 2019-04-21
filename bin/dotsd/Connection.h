@@ -27,8 +27,8 @@ public:
     Connection &operator=(const Connection &) = delete;
 
     /*!
-     * Create a Connection from a TcpSocket.
-     * @param socket TcpSocket, that is moved into this Connection.
+     * Create a Connection from a Channel.
+     * @param socket Channel, that is moved into this Connection.
      * @param manager
      */
     explicit Connection(ChannelPtr socket, ConnectionManager &manager);

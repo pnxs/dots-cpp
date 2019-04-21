@@ -49,7 +49,7 @@ namespace dots
 				}
 
 				// note: this move is explicitly allowed according to the ASIO v1.12.2 documentation of the socket
-				handler(std::make_shared<TcpSocket>(std::move(m_socket)));
+				handler(std::make_shared<TcpChannel>(std::move(m_socket)));
 			}
 			catch (const std::exception & e)
 			{

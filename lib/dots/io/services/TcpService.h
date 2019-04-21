@@ -1,6 +1,6 @@
 #pragma once
 #include <asio.hpp>
-#include <dots/io/services/TcpSocket.h>
+#include <dots/io/services/TcpChannel.h>
 #include <dots/io/services/TcpListener.h>
 
 namespace dots

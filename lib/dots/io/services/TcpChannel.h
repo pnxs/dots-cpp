@@ -4,16 +4,16 @@
 
 namespace dots
 {
-	struct TcpSocket : Channel
+	struct TcpChannel : Channel
 	{
-		TcpSocket(asio::io_context& ioContext, const std::string& host, int port);
-		TcpSocket(asio::ip::tcp::socket&& socket);
-		TcpSocket(const TcpSocket& other) = delete;
-		TcpSocket(TcpSocket&& other) = delete;
-		virtual ~TcpSocket() = default;
+		TcpChannel(asio::io_context& ioContext, const std::string& host, int port);
+		TcpChannel(asio::ip::tcp::socket&& socket);
+		TcpChannel(const TcpChannel& other) = delete;
+		TcpChannel(TcpChannel&& other) = delete;
+		virtual ~TcpChannel() = default;
 
-		TcpSocket& operator = (const TcpSocket& rhs) = delete;
-		TcpSocket& operator = (TcpSocket&& rhs) = delete;
+		TcpChannel& operator = (const TcpChannel& rhs) = delete;
+		TcpChannel& operator = (TcpChannel&& rhs) = delete;
 
 		void asyncReceive(std::function<void(const Message&)>&& receiveHandler, std::function<void(int ec)>&& errorHandler) override;
 		int transmit(const DotsTransportHeader& header, const std::vector <uint8_t>& data = {}) override;

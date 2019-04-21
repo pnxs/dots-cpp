@@ -1,10 +1,10 @@
-#include "TcpSocket.h"
+#include "TcpChannel.h"
 #include <dots/io/Io.h>
 #include <dots/io/serialization/CborNativeSerialization.h>
 
 namespace dots
 {
-	TcpSocket::TcpSocket(asio::io_context& ioContext, const std::string& host, int port) :
+	TcpChannel::TcpChannel(asio::io_context& ioContext, const std::string& host, int port) :
 		m_socket{ ioContext }
 	{
 		connect(host, port);
@@ -12,21 +12,21 @@ namespace dots
 		m_headerBuffer.resize(1024);
 	}
 
-	TcpSocket::TcpSocket(asio::ip::tcp::socket&& socket)
+	TcpChannel::TcpChannel(asio::ip::tcp::socket&& socket)
 		: m_socket(std::move(socket))
 	{
 		m_buffer.resize(8192);
 		m_headerBuffer.resize(1024);
 	}
 
-	void TcpSocket::asyncReceive(std::function<void(const Message&)>&& receiveHandler, std::function<void(int ec)>&& errorHandler)
+	void TcpChannel::asyncReceive(std::function<void(const Message&)>&& receiveHandler, std::function<void(int ec)>&& errorHandler)
 	{
 		m_cb = std::move(receiveHandler);
 		m_ecb = std::move(errorHandler);
 		readHeaderLength();
 	}
 
-	int TcpSocket::transmit(const DotsTransportHeader& header, const vector<uint8_t>& data)
+	int TcpChannel::transmit(const DotsTransportHeader& header, const vector<uint8_t>& data)
 	{
 		DotsTransportHeader _header(header);
 		_header.payloadSize = data.size();
@@ -45,7 +45,7 @@ namespace dots
 		return 0;
 	}
 
-	bool TcpSocket::connect(const std::string& host, int port)
+	bool TcpChannel::connect(const std::string& host, int port)
 	{
 		asio::ip::tcp::resolver resolver(m_socket.get_executor().context());
 		auto iter = resolver.resolve({ host, "", asio::ip::resolver_query_base::numeric_service });
@@ -87,7 +87,7 @@ namespace dots
 		return true;
 	}
 
-	void TcpSocket::readHeaderLength()
+	void TcpChannel::readHeaderLength()
 	{
 		asyncRead(asio::buffer(&m_headerSize, sizeof(m_headerSize)), [&](auto ec, auto /*bytes*/)
 		{
@@ -107,7 +107,7 @@ namespace dots
 		});
 	}
 
-	void TcpSocket::readHeader()
+	void TcpChannel::readHeader()
 	{
 		asyncRead(asio::buffer(&m_headerBuffer[0], m_headerSize), [&](auto ec, auto bytes)
 		{
@@ -155,7 +155,7 @@ namespace dots
 		});
 	}
 
-	void TcpSocket::readPayload()
+	void TcpChannel::readPayload()
 	{
 		m_buffer.resize(m_payloadSize);
 		asyncRead(asio::buffer(&m_buffer[0], m_payloadSize), [&](auto ec, auto bytes)
@@ -178,7 +178,7 @@ namespace dots
 		});
 	}
 
-	void TcpSocket::handleError(const string& text, const asio::error_code& ec)
+	void TcpChannel::handleError(const string& text, const asio::error_code& ec)
 	{
 		int errorCode = 1;
 

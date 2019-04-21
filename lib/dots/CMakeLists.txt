@@ -66,7 +66,7 @@ target_sources(${TARGET_NAME}
 		io/services/FdHandlerService.cpp
 		io/services/TcpListener.cpp
 		io/services/TcpService.cpp
-		io/services/TcpSocket.cpp
+		io/services/TcpChannel.cpp
 		io/services/Timer.cpp
 		io/services/TimerService.cpp
 		io/recording/FileStore.cpp

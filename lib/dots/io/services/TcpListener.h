@@ -2,7 +2,7 @@
 #include <functional>
 #include <asio.hpp>
 #include <dots/io/services/Listener.h>
-#include <dots/io/services/TcpSocket.h>
+#include <dots/io/services/TcpChannel.h>
 
 namespace dots
 {
