@@ -64,7 +64,7 @@ target_sources(${TARGET_NAME}
 		io/serialization/JsonSerialization.cpp
 		io/serialization/AsciiSerialization.cpp
 		io/serialization/CborNativeSerialization.cpp
-		io/services/FdEventService.cpp
+		io/services/FdHandlerService.cpp
 		io/services/TcpService.cpp
 		io/services/TcpSocket.cpp
 		io/services/Timer.cpp

@@ -1,6 +1,6 @@
 #include <dots/io/Io.h>
 #include <dots/io/services/TimerService.h>
-#include <dots/io/services/FdEventService.h>
+#include <dots/io/services/FdHandlerService.h>
 
 namespace dots
 {
@@ -32,11 +32,11 @@ namespace dots
 
 	void add_fd_handler(int fileDescriptor, const std::function<void()>& handler)
 	{
-		asio::use_service<FdEventService>(global_execution_context()).addInEventHandler(fileDescriptor, handler);
+		asio::use_service<FdHandlerService>(global_execution_context()).addInEventHandler(fileDescriptor, handler);
 	}
 
 	void remove_fd_handler(int fileDescriptor)
 	{
-		asio::use_service<FdEventService>(global_execution_context()).removeInEventHandler(fileDescriptor);
+		asio::use_service<FdHandlerService>(global_execution_context()).removeInEventHandler(fileDescriptor);
 	}
 }
