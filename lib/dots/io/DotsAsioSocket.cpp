@@ -38,7 +38,7 @@ int DotsAsioSocket::send(const DotsTransportHeader &header, const vector<uint8_t
 
 bool DotsAsioSocket::connect(const string &host, int port)
 {
-	asio::ip::tcp::resolver resolver(IoContext::Instance());
+	asio::ip::tcp::resolver resolver(m_socket.get_executor().context());
     auto iter = resolver.resolve({host, "", asio::ip::resolver_query_base::numeric_service});
     decltype(iter) iterEnd;
 
