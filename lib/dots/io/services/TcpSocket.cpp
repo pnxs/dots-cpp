@@ -4,6 +4,21 @@
 
 namespace dots
 {
+	TcpSocket::TcpSocket(asio::io_context& ioContext, const std::string& host, int port) :
+		m_socket{ ioContext }
+	{
+		connect(host, port);
+		m_buffer.resize(8192);
+		m_headerBuffer.resize(1024);
+	}
+
+	TcpSocket::TcpSocket(asio::ip::tcp::socket&& socket)
+		: m_socket(std::move(socket))
+	{
+		m_buffer.resize(8192);
+		m_headerBuffer.resize(1024);
+	}
+
 	void TcpSocket::asyncReceive(std::function<void(const Message&)>&& receiveHandler, std::function<void(int ec)>&& errorHandler)
 	{
 		m_cb = std::move(receiveHandler);
@@ -181,20 +196,5 @@ namespace dots
 		{
 			m_ecb(errorCode);
 		}
-	}
-
-	TcpSocket::TcpSocket(asio::io_context& ioContext, const std::string& host, int port) :
-		m_socket{ ioContext }
-	{
-		connect(host, port);
-		m_buffer.resize(8192);
-		m_headerBuffer.resize(1024);
-	}
-
-	TcpSocket::TcpSocket(asio::ip::tcp::socket&& socket)
-		: m_socket(std::move(socket))
-	{
-		m_buffer.resize(8192);
-		m_headerBuffer.resize(1024);
 	}
 }
