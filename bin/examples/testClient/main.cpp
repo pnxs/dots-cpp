@@ -1,4 +1,3 @@
-#include <dots/eventloop/Timer.h>
 #include <dots/cpp_config.h>
 #include <dots/io/Application.h>
 #include <dots/io/serialization/AsciiSerialization.h>
@@ -12,7 +11,7 @@ public:
     MyClientClass()
     {
         m_subs = dots::subscribe<DotsTestStruct>(FUN(*this, handleTestStruct));
-        pnxs::addTimer(1, FUN(*this, handleTimer));
+        dots::add_timer(1, FUN(*this, handleTimer));
     }
 
     ~MyClientClass()
@@ -55,7 +54,7 @@ private:
             dots::Application::instance()->exit();
         }
 
-        pnxs::addTimer(0.001, FUN(*this, handleTimer));
+		dots::add_timer(0.001, FUN(*this, handleTimer));
     }
 
     void handleTestStruct(const DotsTestStruct::Cbd& cbd)

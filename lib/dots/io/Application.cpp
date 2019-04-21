@@ -1,7 +1,5 @@
 #include "Application.h"
 #include <boost/program_options.hpp>
-#include <dots/io/IoContext.h>
-#include <dots/io/services/TimerService.h>
 #include <dots/io/services/TcpService.h>
 #include <dots/type/Registry.h>
 #include <DotsClient.dots.h>
@@ -16,7 +14,7 @@ namespace dots
 		// Start Transceiver
 		// Connect to dotsd
 
-		auto dotsSocket = asio::use_service<TcpService>(static_cast<asio::execution_context&>(ioContext())).connect(m_serverAddress, m_serverPort);
+		auto dotsSocket = asio::use_service<TcpService>(global_execution_context()).connect(m_serverAddress, m_serverPort);
 		
 		if (not transceiver().start(name, dotsSocket))
 		{
@@ -26,7 +24,7 @@ namespace dots
 		LOG_DEBUG_S("run until state connected...");
 		while (not transceiver().connected())
 		{
-			ioContext().run_one();
+			global_io_context().run_one();
 		}
 		LOG_DEBUG_S("run one done");
 
@@ -35,13 +33,13 @@ namespace dots
 
 	Application::~Application()
 	{
-		ioContext().stop();
+		global_io_context().stop();
 	}
 
 	int Application::exec()
 	{
 		m_exitCode = 0;
-		ioContext().run();
+		global_io_context().run();
 
 		return m_exitCode;
 	}
@@ -49,7 +47,7 @@ namespace dots
 	int Application::execOne(const std::chrono::milliseconds& timeout)
 	{
 		m_exitCode = 0;
-		ioContext().run_one_for(std::chrono::milliseconds{ 10 });
+		global_io_context().run_one_for(std::chrono::milliseconds{ 10 });
 
 		return m_exitCode;
 	}
@@ -57,12 +55,7 @@ namespace dots
 	void Application::exit(int exitCode)
 	{
 		m_exitCode = exitCode;
-		ioContext().stop();
-	}
-
-	IoContext& Application::ioContext() const
-	{
-		return IoContext::Instance();
+		global_io_context().stop();
 	}
 
 	Application* Application::instance()

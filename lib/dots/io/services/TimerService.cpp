@@ -1,5 +1,4 @@
 #include "TimerService.h"
-#include <dots/eventloop/Timer.h>
 
 namespace dots
 {

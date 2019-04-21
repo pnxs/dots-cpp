@@ -41,7 +41,6 @@ target_sources(${TARGET_NAME}
 		common/seconds.cpp
 
 		eventloop/AsioTimer.cpp
-		eventloop/Timer.cpp
 
 		functional/signal.cpp
 
@@ -54,6 +53,7 @@ target_sources(${TARGET_NAME}
 		io/DotsSocket.cpp
 		io/DotsAsioSocket.cpp
 
+		io/Io.cpp
 		io/AnyContainer.cpp
 		io/Container.cpp
 		io/Dispatcher.cpp
@@ -64,7 +64,6 @@ target_sources(${TARGET_NAME}
 		io/Message.cpp
 		io/DistributedTypeId.cpp
 		io/Filter.cpp
-		io/IoContext.cpp
 		io/serialization/JsonSerialization.cpp
 		io/serialization/AsciiSerialization.cpp
 		io/serialization/CborNativeSerialization.cpp

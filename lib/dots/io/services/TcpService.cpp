@@ -1,5 +1,4 @@
 #include "TcpService.h"
-#include <dots/eventloop/Timer.h>
 
 namespace dots
 {

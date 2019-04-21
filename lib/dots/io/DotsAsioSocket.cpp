@@ -1,5 +1,5 @@
 #include "DotsAsioSocket.h"
-#include <dots/io/IoContext.h>
+#include <dots/io/Io.h>
 #include <dots/io/serialization/CborNativeSerialization.h>
 
 namespace dots
@@ -212,7 +212,7 @@ void DotsAsioSocket::handleError(const string &text, const asio::error_code& ec)
     }
 }
 
-DotsAsioSocket::DotsAsioSocket() : DotsAsioSocket(asio::ip::tcp::socket{ IoContext::Instance() })
+DotsAsioSocket::DotsAsioSocket() : DotsAsioSocket(asio::ip::tcp::socket{ global_io_context() })
 {
 }
 

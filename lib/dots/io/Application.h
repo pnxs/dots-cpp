@@ -1,12 +1,11 @@
 #pragma once
 #include <chrono>
+#include <dots/io/Io.h>
 #include <dots/cpp_config.h>
 #include <dots/io/Transceiver.h>
 
 namespace dots
 {
-	struct IoContext;
-
 	struct Application
 	{
 		Application(const string& name, int& argc, char* argv[]);
@@ -15,8 +14,6 @@ namespace dots
 		virtual int exec();
 		virtual int execOne(const std::chrono::milliseconds& timeout);
 		virtual void exit(int exitCode = 0);
-
-		IoContext& ioContext() const;
 
 		static Application* instance();
 

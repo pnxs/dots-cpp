@@ -1,5 +1,5 @@
 #include "Server.h"
-#include <dots/eventloop/Timer.h>
+#include <dots/io/Io.h>
 #include <dots/io/ResourceUsage.h>
 #include <dots/io/Transceiver.h>
 
@@ -60,8 +60,8 @@ Server::Server(asio::io_context& io_context, const string& address, const string
     m_connectionManager.init();
 
     // Start cleanup-timer
-    pnxs::addTimer(1, FUN(*this, handleCleanupTimer));
-    pnxs::addTimer(1, FUN(*this, updateServerStatus));
+    add_timer(1, FUN(*this, handleCleanupTimer));
+    add_timer(1, FUN(*this, updateServerStatus));
 }
 
 void Server::stop()
@@ -146,7 +146,7 @@ void Server::handleCleanupTimer()
 
     if (not m_ioContext.stopped())
     {
-        pnxs::addTimer(1, FUN(*this, handleCleanupTimer));
+        add_timer(1, FUN(*this, handleCleanupTimer));
     }
 }
 
@@ -176,7 +176,7 @@ void Server::updateServerStatus()
 
     if (not m_ioContext.stopped())
     {
-        pnxs::addTimer(1, FUN(*this, updateServerStatus));
+        add_timer(1, FUN(*this, updateServerStatus));
     }
 }
 

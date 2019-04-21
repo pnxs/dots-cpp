@@ -1,4 +1,3 @@
-#include <dots/eventloop/Timer.h>
 #include <dots/cpp_config.h>
 #include <dots/io/Application.h>
 #include <dots/io/serialization/CborNativeSerialization.h>
