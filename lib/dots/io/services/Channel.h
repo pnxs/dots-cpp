@@ -1,38 +1,28 @@
 #pragma once
-
 #include <cstdint>
 #include <dots/cpp_config.h>
 #include <DotsTransportHeader.dots.h>
 #include <dots/io/Message.h>
 
-class QTcpSocket;
-
 namespace dots
 {
+	struct Channel
+	{
+		using receive_callback = std::function<void(const Message&)>;
+		using error_callback = std::function<void(int ec)>;
 
-class Channel
-{
-public:
-    typedef function<void (const Message&)> receive_callback;
-    typedef function<void (int ec)> error_callback;
+		virtual ~Channel() = default;
 
-    Channel() = default;
+		virtual void start() = 0;
 
-    virtual void start() = 0;
+		virtual void setReceiveCallback(receive_callback cb) = 0;
+		virtual void setErrorCallback(error_callback cb) = 0;
 
-    virtual ~Channel() = default;
+		virtual int send(const DotsTransportHeader& header, const std::vector<uint8_t>& data = {}) = 0;
 
-    virtual void setReceiveCallback(receive_callback cb) = 0;
-    virtual void setErrorCallback(error_callback cb) = 0;
+		virtual bool connect(const std::string& host, int port) = 0;
+		virtual void disconnect() = 0;
+	};
 
-    virtual int send(const DotsTransportHeader& header, const vector<uint8_t>& data = {}) = 0;
-
-    virtual bool connect(const string &host, int port) = 0;
-    virtual void disconnect() = 0;
-};
-
-
-
-typedef shared_ptr<Channel> ChannelPtr;
-
+	typedef shared_ptr<Channel> ChannelPtr;
 }
