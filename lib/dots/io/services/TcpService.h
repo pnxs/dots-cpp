@@ -1,6 +1,6 @@
 #pragma once
 #include <asio.hpp>
-#include <dots/io/DotsAsioSocket.h>
+#include <dots/io/services/TcpSocket.h>
 
 namespace dots
 {

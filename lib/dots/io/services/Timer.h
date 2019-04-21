@@ -7,18 +7,18 @@
 
 namespace dots
 {
-	struct AsioTimer
+	struct Timer
 	{
 		using timer_id_t = uint32_t;
 		using callback_t = std::function<void()>;
 
-		AsioTimer(asio::io_context& ioContext, timer_id_t id, const pnxs::Duration& interval, const callback_t& cb, bool periodic = false);
-		AsioTimer(const AsioTimer& other) = delete;
-		AsioTimer(AsioTimer&& other) = delete;
-		~AsioTimer();
+		Timer(asio::io_context& ioContext, timer_id_t id, const pnxs::Duration& interval, const callback_t& cb, bool periodic = false);
+		Timer(const Timer& other) = delete;
+		Timer(Timer&& other) = delete;
+		~Timer();
 
-		AsioTimer& operator = (const AsioTimer& rhs) = delete;
-		AsioTimer& operator = (AsioTimer&& rhs) = delete;
+		Timer& operator = (const Timer& rhs) = delete;
+		Timer& operator = (Timer&& rhs) = delete;
 
 		timer_id_t id() { return m_id; }
 

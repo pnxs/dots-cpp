@@ -2,7 +2,7 @@
 #include <functional>
 #include <map>
 #include <asio.hpp>
-#include <dots/eventloop/AsioFdHandler.h>
+#include <dots/io/services/FdHandler.h>
 
 namespace dots
 {
@@ -26,6 +26,6 @@ namespace dots
 
 		void shutdown() noexcept override;
 
-		std::map<int, AsioFdHandler> m_inEventHandlers;
+		std::map<int, FdHandler> m_inEventHandlers;
 	};
 }

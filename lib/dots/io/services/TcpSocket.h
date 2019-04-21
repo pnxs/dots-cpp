@@ -1,16 +1,16 @@
 #pragma once
 #include <asio.hpp>
 #include "dots/cpp_config.h"
-#include "DotsSocket.h"
+#include <dots/io/DotsSocket.h>
 
 namespace dots
 {
 
-class DotsAsioSocket: public DotsSocket
+class TcpSocket: public DotsSocket
 {
 public:
-    DotsAsioSocket();
-    DotsAsioSocket(asio::ip::tcp::socket socket);
+    TcpSocket();
+    TcpSocket(asio::ip::tcp::socket socket);
 
     void start() override;
 

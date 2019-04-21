@@ -1,10 +1,10 @@
-#include "AsioTimer.h"
+#include "Timer.h"
 #include <dots/functional/fun.h>
 #include <dots/io/services/TimerService.h>
 
 namespace dots
 {
-	AsioTimer::AsioTimer(asio::io_context& ioContext, timer_id_t id, const pnxs::Duration& interval, const callback_t& cb, bool periodic) :
+	Timer::Timer(asio::io_context& ioContext, timer_id_t id, const pnxs::Duration& interval, const callback_t& cb, bool periodic) :
 		m_timer(ioContext),
 		m_cb(cb),
 		m_id(id),
@@ -22,24 +22,24 @@ namespace dots
 		}
 	}
 
-	AsioTimer::~AsioTimer()
+	Timer::~Timer()
 	{
 		m_timer.cancel();
 	}
 
-	void AsioTimer::startRelative(const pnxs::Duration & duration)
+	void Timer::startRelative(const pnxs::Duration & duration)
 	{
 		m_timer.expires_after(std::chrono::duration_cast<duration_t>(duration));
 		m_timer.async_wait(FUN(*this, onTimeout));
 		}
 
-	void AsioTimer::startAbsolute(const pnxs::SteadyTimePoint & timepoint)
+	void Timer::startAbsolute(const pnxs::SteadyTimePoint & timepoint)
 	{
 		m_timer.expires_at(std::chrono::time_point_cast<duration_t>(timepoint));
 		m_timer.async_wait(FUN(*this, onTimeout));
 		}
 
-	void AsioTimer::onTimeout(const asio::error_code& error)
+	void Timer::onTimeout(const asio::error_code& error)
 	{
 		if (error != asio::error::operation_aborted)
 		{

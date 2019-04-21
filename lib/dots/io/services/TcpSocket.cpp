@@ -1,23 +1,23 @@
-#include "DotsAsioSocket.h"
+#include "TcpSocket.h"
 #include <dots/io/Io.h>
 #include <dots/io/serialization/CborNativeSerialization.h>
 
 namespace dots
 {
 
-void DotsAsioSocket::start()
+void TcpSocket::start()
 {
     m_buffer.resize(8192);
     m_headerBuffer.resize(1024); //TODO: may be smaller...
     readHeaderLength();
 }
 
-void DotsAsioSocket::setReceiveCallback(DotsSocket::receive_callback cb)
+void TcpSocket::setReceiveCallback(DotsSocket::receive_callback cb)
 {
     m_cb = cb;
 }
 
-int DotsAsioSocket::send(const DotsTransportHeader &header, const vector<uint8_t> &data)
+int TcpSocket::send(const DotsTransportHeader &header, const vector<uint8_t> &data)
 {
     DotsTransportHeader _header(header);
     _header.payloadSize = data.size();
@@ -36,7 +36,7 @@ int DotsAsioSocket::send(const DotsTransportHeader &header, const vector<uint8_t
     return 0;
 }
 
-bool DotsAsioSocket::connect(const string &host, int port)
+bool TcpSocket::connect(const string &host, int port)
 {
 	asio::ip::tcp::resolver resolver(m_socket.get_executor().context());
     auto iter = resolver.resolve({host, "", asio::ip::resolver_query_base::numeric_service});
@@ -83,12 +83,12 @@ bool DotsAsioSocket::connect(const string &host, int port)
     return true;
 }
 
-void DotsAsioSocket::disconnect()
+void TcpSocket::disconnect()
 {
     m_socket.close();
 }
 
-void DotsAsioSocket::readHeaderLength()
+void TcpSocket::readHeaderLength()
 {
     //LOG_DEBUG_S("start readHeaderLength");
     asyncRead(asio::buffer(&m_headerSize, sizeof(m_headerSize)), [&](auto ec, auto /*bytes*/)
@@ -109,7 +109,7 @@ void DotsAsioSocket::readHeaderLength()
     });
 }
 
-void DotsAsioSocket::readHeader()
+void TcpSocket::readHeader()
 {
     asyncRead(asio::buffer(&m_headerBuffer[0], m_headerSize), [&](auto ec, auto bytes)
     {
@@ -164,7 +164,7 @@ void DotsAsioSocket::readHeader()
     });
 }
 
-void DotsAsioSocket::readPayload()
+void TcpSocket::readPayload()
 {
     m_buffer.resize(m_payloadSize);
     asyncRead(asio::buffer(&m_buffer[0], m_payloadSize), [&](auto ec, auto bytes)
@@ -187,12 +187,12 @@ void DotsAsioSocket::readPayload()
     });
 }
 
-void DotsAsioSocket::setErrorCallback(DotsSocket::error_callback cb)
+void TcpSocket::setErrorCallback(DotsSocket::error_callback cb)
 {
     m_ecb = cb;
 }
 
-void DotsAsioSocket::handleError(const string &text, const asio::error_code& ec)
+void TcpSocket::handleError(const string &text, const asio::error_code& ec)
 {
     int errorCode = 1;
 
@@ -212,11 +212,11 @@ void DotsAsioSocket::handleError(const string &text, const asio::error_code& ec)
     }
 }
 
-DotsAsioSocket::DotsAsioSocket() : DotsAsioSocket(asio::ip::tcp::socket{ global_io_context() })
+TcpSocket::TcpSocket() : TcpSocket(asio::ip::tcp::socket{ global_io_context() })
 {
 }
 
-DotsAsioSocket::DotsAsioSocket(asio::ip::tcp::socket socket)
+TcpSocket::TcpSocket(asio::ip::tcp::socket socket)
     : m_socket(std::move(socket))
 {
     start();

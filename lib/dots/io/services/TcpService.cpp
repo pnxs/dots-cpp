@@ -10,7 +10,7 @@ namespace dots
 
 	DotsSocketPtr TcpService::connect(const std::string& host, int port)
 	{
-		auto socket = std::make_shared<DotsAsioSocket>(asio::ip::tcp::socket{ static_cast<asio::io_context&>(context()) });
+		auto socket = std::make_shared<TcpSocket>(asio::ip::tcp::socket{ static_cast<asio::io_context&>(context()) });
 		
 		if (!socket->connect(host, port))
 		{

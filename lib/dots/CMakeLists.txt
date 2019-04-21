@@ -40,8 +40,6 @@ target_sources(${TARGET_NAME}
 		common/string_convert.cpp
 		common/seconds.cpp
 
-		eventloop/AsioTimer.cpp
-
 		functional/signal.cpp
 
 		io/ConstBufSeq.cpp
@@ -51,7 +49,6 @@ target_sources(${TARGET_NAME}
 		io/Subscription.cpp
 		io/Chained.cpp
 		io/DotsSocket.cpp
-		io/DotsAsioSocket.cpp
 
 		io/Io.cpp
 		io/AnyContainer.cpp
@@ -69,6 +66,8 @@ target_sources(${TARGET_NAME}
 		io/serialization/CborNativeSerialization.cpp
 		io/services/FdEventService.cpp
 		io/services/TcpService.cpp
+		io/services/TcpSocket.cpp
+		io/services/Timer.cpp
 		io/services/TimerService.cpp
 		io/recording/FileStore.cpp
 		io/recording/Load.cpp

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "dots/cpp_config.h"
-#include "dots/io/DotsAsioSocket.h"
+#include <dots/io/services/TcpSocket.h>
 
 #include <memory>
 #include <dots/io/AnyContainer.h>
@@ -109,7 +109,7 @@ private:
 
     dots::Transmitter m_transmitter;
 
-    dots::DotsAsioSocket m_dotsSocket;
+    dots::TcpSocket m_dotsSocket;
     ConnectionManager& m_connectionManager;
     DotsConnectionState  m_connectionState = DotsConnectionState::connecting;
     bool m_wantMemberMessages = false;

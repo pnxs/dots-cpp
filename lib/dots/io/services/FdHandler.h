@@ -4,7 +4,7 @@
 
 namespace dots {
 
-class AsioFdHandler
+class FdHandler
 {
     asio::posix::stream_descriptor m_sd;
     function<void()> m_handler;
@@ -19,7 +19,7 @@ class AsioFdHandler
     }
 
 public:
-    AsioFdHandler(asio::io_context& ioContext, int fd, function<void()> handler)
+    FdHandler(asio::io_context& ioContext, int fd, function<void()> handler)
             : m_sd(ioContext, fd), m_handler(handler)
     {
         start_read();
@@ -29,7 +29,7 @@ public:
     {
         m_sd.async_read_some(
                 asio::null_buffers(),
-                std::bind(&AsioFdHandler::on_read_finished, this));
+                std::bind(&FdHandler::on_read_finished, this));
     }
 
 };
