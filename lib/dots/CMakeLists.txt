@@ -41,7 +41,6 @@ target_sources(${TARGET_NAME}
 		common/seconds.cpp
 
 		eventloop/AsioTimer.cpp
-		eventloop/AsioEventLoop.cpp
 		eventloop/Timer.cpp
 
 		functional/signal.cpp
@@ -65,9 +64,13 @@ target_sources(${TARGET_NAME}
 		io/Message.cpp
 		io/DistributedTypeId.cpp
 		io/Filter.cpp
+		io/IoContext.cpp
 		io/serialization/JsonSerialization.cpp
 		io/serialization/AsciiSerialization.cpp
 		io/serialization/CborNativeSerialization.cpp
+		io/services/FdEventService.cpp
+		io/services/TcpService.cpp
+		io/services/TimerService.cpp
 		io/recording/FileStore.cpp
 		io/recording/Load.cpp
 		io/recording/MmapedFile.cpp

@@ -34,7 +34,7 @@ class ServerConnection
 {
 public:
 
-    bool start(const string &name, const string &host, int port, DotsSocketPtr dotsSocket);
+    bool start(const string &name, DotsSocketPtr dotsSocket);
     void stop();
 
     bool running();

@@ -3,15 +3,9 @@
 #include <dots/cpp_config.h>
 #include <dots/io/Transceiver.h>
 
-namespace asio
-{
-	class io_context;
-	typedef io_context io_service;
-}
-
 namespace dots
 {
-	struct AsioEventLoop;
+	struct IoContext;
 
 	struct Application
 	{
@@ -22,8 +16,7 @@ namespace dots
 		virtual int execOne(const std::chrono::milliseconds& timeout);
 		virtual void exit(int exitCode = 0);
 
-		AsioEventLoop& eventLoop() const;
-		asio::io_context& ioContext() const;
+		IoContext& ioContext() const;
 
 		static Application* instance();
 

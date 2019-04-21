@@ -3,7 +3,7 @@
 #include <boost/program_options.hpp>
 #include <iostream>
 #include <dots/eventloop/Timer.h>
-#include <dots/eventloop/AsioEventLoop.h>
+#include <dots/io/IoContext.h>
 
 namespace po = boost::program_options;
 using std::string;
@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
 
     auto serverName = vm["server-name"].as<string>();
 
-   asio::io_context& io_context = dots::AsioEventLoop::Instance().ioContext();
+   asio::io_context& io_context = dots::IoContext::Instance();
 
     LOG_NOTICE_S("dotsd server");
 

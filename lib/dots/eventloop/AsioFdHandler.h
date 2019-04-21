@@ -19,7 +19,7 @@ class AsioFdHandler
     }
 
 public:
-    AsioFdHandler(asio::io_context &ioContext, int fd, function<void()> handler)
+    AsioFdHandler(asio::io_context& ioContext, int fd, function<void()> handler)
             : m_sd(ioContext, fd), m_handler(handler)
     {
         start_read();

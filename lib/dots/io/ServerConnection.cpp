@@ -11,21 +11,15 @@
 namespace dots
 {
 
-bool ServerConnection::start(const string &name, const string &host, int port, DotsSocketPtr dotsSocket)
+bool ServerConnection::start(const string &name, DotsSocketPtr dotsSocket)
 {
     if (running())
     {
-        LOG_WARN_S("already connected");
+        LOG_WARN_S("already started");
         return true;
     }
 
     m_dotsSocket = dotsSocket;
-
-    if (not socket().connect(host, port))
-    {
-        LOG_ERROR_S("Unable to connect to dotsd");
-        return false;
-    }
 
     socket().setReceiveCallback(FUN(*this, handleReceivedMessage));
 

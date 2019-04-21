@@ -1,6 +1,7 @@
 #include "AsioTimer.h"
 #include <dots/functional/fun.h>
-#include <dots/eventloop/AsioEventLoop.h>
+#include <dots/io/IoContext.h>
+#include <dots/io/services/TimerService.h>
 
 namespace dots
 {
@@ -51,8 +52,8 @@ namespace dots
 			else
 			{
 				m_cb();
-				AsioEventLoop::Instance().removeTimer(m_id);
+				asio::use_service<TimerService>(static_cast<asio::execution_context&>(IoContext::Instance())).removeTimer(m_id);
 			}
 		}
-		}
+	}
 }

@@ -1,8 +1,8 @@
 #include "Application.h"
 #include <boost/program_options.hpp>
-#include <dots/eventloop/Timer.h>
-#include <dots/eventloop/AsioEventLoop.h>
-#include <dots/io/DotsAsioSocket.h>
+#include <dots/io/IoContext.h>
+#include <dots/io/services/TimerService.h>
+#include <dots/io/services/TcpService.h>
 #include <dots/type/Registry.h>
 #include <DotsClient.dots.h>
 
@@ -15,8 +15,10 @@ namespace dots
 
 		// Start Transceiver
 		// Connect to dotsd
+
+		auto dotsSocket = asio::use_service<TcpService>(static_cast<asio::execution_context&>(ioContext())).connect(m_serverAddress, m_serverPort);
 		
-		if (auto dotsSocket = std::make_shared<DotsAsioSocket>(); not transceiver().start(name, m_serverAddress, m_serverPort, dotsSocket))
+		if (not transceiver().start(name, dotsSocket))
 		{
 			throw std::runtime_error("unable to start transceiver");
 		}
@@ -24,7 +26,7 @@ namespace dots
 		LOG_DEBUG_S("run until state connected...");
 		while (not transceiver().connected())
 		{
-			eventLoop().runOne();
+			ioContext().run_one();
 		}
 		LOG_DEBUG_S("run one done");
 
@@ -33,13 +35,13 @@ namespace dots
 
 	Application::~Application()
 	{
-		transceiver().stop();
+		ioContext().stop();
 	}
 
 	int Application::exec()
 	{
 		m_exitCode = 0;
-		eventLoop().run();
+		ioContext().run();
 
 		return m_exitCode;
 	}
@@ -47,7 +49,7 @@ namespace dots
 	int Application::execOne(const std::chrono::milliseconds& timeout)
 	{
 		m_exitCode = 0;
-		eventLoop().ioContext().run_one_for(std::chrono::milliseconds{ 10 });
+		ioContext().run_one_for(std::chrono::milliseconds{ 10 });
 
 		return m_exitCode;
 	}
@@ -55,17 +57,12 @@ namespace dots
 	void Application::exit(int exitCode)
 	{
 		m_exitCode = exitCode;
-		eventLoop().stop();
+		ioContext().stop();
 	}
 
-	AsioEventLoop& Application::eventLoop() const
+	IoContext& Application::ioContext() const
 	{
-		return AsioEventLoop::Instance();
-	}
-
-	asio::io_context& Application::ioContext() const
-	{
-		return eventLoop().ioContext();
+		return IoContext::Instance();
 	}
 
 	Application* Application::instance()
