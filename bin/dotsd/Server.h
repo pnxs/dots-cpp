@@ -1,10 +1,10 @@
 #pragma once
 
-#include <asio.hpp>
 #include "dots/cpp_config.h"
 #include "ConnectionManager.h"
 #include "AuthManager.h"
 #include "ServerInfo.h"
+#include <dots/io/services/TcpListener.h>
 
 #include "DotsDaemonStatus.dots.h"
 
@@ -26,7 +26,7 @@ public:
      * @param port Port to bind to
      * @param name Servername
      */
-    explicit Server(asio::io_context& io_context, const string& address, const string& port, const string& name);
+    explicit Server(const string& address, const string& port, const string& name);
 
     /*!
      * Returns the AuthManager as reference
@@ -53,25 +53,19 @@ public:
 
 private:
     void asyncAccept();
-    void handleCleanupTimer();
-
-    void processAccept(asio::error_code ec);
-
+	void handleCleanupTimer();
     void updateServerStatus();
-
-    asio::io_context& m_ioContext;
-	asio::ip::tcp::acceptor m_acceptor;
-	asio::ip::tcp::socket m_socket;
 
 	string m_name;
 
     GroupManager m_groupManager;
     ConnectionManager m_connectionManager;
-    AuthManager m_authManager;    
+    AuthManager m_authManager;  
+
+	std::unique_ptr<Listener> m_listener;
 
     DotsDaemonStatus m_daemonStatus;
     ClientId m_serverId = 1;
-    int m_minimumSendBufferSize = 1024*1024; // 1MB
 };
 
 }

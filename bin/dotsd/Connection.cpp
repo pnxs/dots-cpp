@@ -24,7 +24,7 @@ namespace dots {
 
 using namespace std::placeholders;
 
-Connection::Connection(asio::ip::tcp::socket socket, ConnectionManager &manager)
+Connection::Connection(DotsSocketPtr socket, ConnectionManager &manager)
 :m_dotsSocket(std::move(socket)), m_connectionManager(manager)
 {
     // Create connection-name
@@ -32,8 +32,8 @@ Connection::Connection(asio::ip::tcp::socket socket, ConnectionManager &manager)
 
     LOG_INFO_S("connected");
 
-    m_dotsSocket.setReceiveCallback(FUN(*this, onReceivedMessage));
-    m_dotsSocket.setErrorCallback(FUN(*this, onSocketError));
+    m_dotsSocket->setReceiveCallback(FUN(*this, onReceivedMessage));
+    m_dotsSocket->setErrorCallback(FUN(*this, onSocketError));
 }
 
 void Connection::start()
@@ -50,7 +50,7 @@ void Connection::stop()
 {
     LOG_INFO_S("stopped");
     setConnectionState(DotsConnectionState::closed);
-    m_dotsSocket.disconnect();
+    m_dotsSocket->disconnect();
 }
 
 void Connection::kill()
@@ -329,7 +329,7 @@ void Connection::send(const Message &msg)
     try
     {
         logRxTx(RxTx::tx, msg.header());
-        m_dotsSocket.send(msg.header(), msg.data());
+        m_dotsSocket->send(msg.header(), msg.data());
     }
     catch(const std::exception& e)
     {

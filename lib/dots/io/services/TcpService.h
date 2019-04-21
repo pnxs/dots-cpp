@@ -1,6 +1,7 @@
 #pragma once
 #include <asio.hpp>
 #include <dots/io/services/TcpSocket.h>
+#include <dots/io/services/TcpListener.h>
 
 namespace dots
 {
@@ -16,11 +17,11 @@ namespace dots
 		TcpService& operator = (const TcpService& rhs) = delete;
 		TcpService& operator = (TcpService&& rhs) noexcept = default;
 
+		std::unique_ptr<Listener> listen(const std::string& address, const std::string& port, int backlog);
 		DotsSocketPtr connect(const std::string& host, int port);
 
 	private:
 
 		void shutdown() noexcept override;
-
 	};
 }

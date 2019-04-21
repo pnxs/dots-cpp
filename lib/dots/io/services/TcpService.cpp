@@ -8,6 +8,11 @@ namespace dots
 		/* do nothing */
 	}
 
+	std::unique_ptr<Listener> TcpService::listen(const std::string& address, const std::string& port, int backlog)
+	{
+		return std::make_unique<TcpListener>(static_cast<asio::io_context&>(context()), address, port, backlog);
+	}
+
 	DotsSocketPtr TcpService::connect(const std::string& host, int port)
 	{
 		auto socket = std::make_shared<TcpSocket>(asio::ip::tcp::socket{ static_cast<asio::io_context&>(context()) });
