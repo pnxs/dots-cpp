@@ -1,4 +1,5 @@
 #include <dots/io/Io.h>
+#include <dots/io/services/TcpService.h>
 #include "dots/cpp_config.h"
 #include "Server.h"
 #include <boost/program_options.hpp>
@@ -41,7 +42,8 @@ int main(int argc, char* argv[])
     string host = vm["dots-address"].as<string>();
     string port = vm["dots-port"].as<string>();
 
-    dots::Server server(host, port, serverName);
+	std::unique_ptr<dots::Listener> listener = asio::use_service<dots::TcpService>(dots::global_execution_context()).listen(host, port, 25);
+    dots::Server server(std::move(listener), serverName);
     LOG_NOTICE_S("Listen to " << host << ":" << port);
 
     signals.async_wait([&](auto /*ec*/, int /*signo*/) {

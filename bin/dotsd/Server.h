@@ -4,7 +4,7 @@
 #include "ConnectionManager.h"
 #include "AuthManager.h"
 #include "ServerInfo.h"
-#include <dots/io/services/TcpListener.h>
+#include <dots/io/services/Listener.h>
 
 #include "DotsDaemonStatus.dots.h"
 
@@ -26,7 +26,7 @@ public:
      * @param port Port to bind to
      * @param name Servername
      */
-    explicit Server(const string& address, const string& port, const string& name);
+    explicit Server(std::unique_ptr<Listener>&& listener, const string& name);
 
     /*!
      * Returns the AuthManager as reference

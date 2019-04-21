@@ -9,9 +9,10 @@
 namespace dots
 {
 
-Server::Server(const string& address, const string& port, const string& name)
+Server::Server(std::unique_ptr<Listener>&& listener, const string& name)
 :m_name(name)
 ,m_connectionManager(m_groupManager, *this)
+,m_listener(std::move(listener))
 {
     onPublishObject = &m_connectionManager;
 
@@ -30,7 +31,6 @@ Server::Server(const string& address, const string& port, const string& name)
         DotsMsgHello::_Descriptor();
     }
 
-	m_listener = asio::use_service<TcpService>(global_execution_context()).listen(address, port, 25);
 	asyncAccept();
 
     m_daemonStatus.serverName = m_name;
