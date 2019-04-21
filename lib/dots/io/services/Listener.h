@@ -1,6 +1,6 @@
 #pragma once
 #include <functional>
-#include <dots/io/Channel.h>
+#include <dots/io/services/Channel.h>
 
 namespace dots
 {

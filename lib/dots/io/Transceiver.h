@@ -6,7 +6,7 @@
 #include "Transmitter.h"
 #include "ServerConnection.h"
 #include "Subscription.h"
-#include "Channel.h"
+#include <dots/io/services/Channel.h>
 #include "Publisher.h"
 
 

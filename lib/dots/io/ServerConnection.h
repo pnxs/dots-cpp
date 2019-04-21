@@ -2,7 +2,7 @@
 
 #include "dots/cpp_config.h"
 #include <dots/functional/signal.h>
-#include "Channel.h"
+#include <dots/io/services/Channel.h>
 #include "Transmitter.h"
 
 #include "DotsConnectionState.dots.h"

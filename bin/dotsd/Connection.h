@@ -1,7 +1,7 @@
 #pragma once
 
 #include "dots/cpp_config.h"
-#include <dots/io/Channel.h>
+#include <dots/io/services/Channel.h>
 
 #include <memory>
 #include <dots/io/AnyContainer.h>

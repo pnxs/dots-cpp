@@ -1,9 +1,9 @@
 #pragma once
 
 #include <cstdint>
-#include "dots/cpp_config.h"
-#include "DotsTransportHeader.dots.h"
-#include "Message.h"
+#include <dots/cpp_config.h>
+#include <DotsTransportHeader.dots.h>
+#include <dots/io/Message.h>
 
 class QTcpSocket;
 
