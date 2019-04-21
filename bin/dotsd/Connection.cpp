@@ -32,8 +32,7 @@ Connection::Connection(ChannelPtr socket, ConnectionManager &manager)
 
     LOG_INFO_S("connected");
 
-    m_dotsSocket->setReceiveCallback(FUN(*this, onReceivedMessage));
-    m_dotsSocket->setErrorCallback(FUN(*this, onSocketError));
+	m_dotsSocket->asyncReceive(FUN(*this, onReceivedMessage), FUN(*this, onSocketError));
 }
 
 void Connection::start()
@@ -50,7 +49,7 @@ void Connection::stop()
 {
     LOG_INFO_S("stopped");
     setConnectionState(DotsConnectionState::closed);
-    m_dotsSocket->disconnect();
+    m_dotsSocket.reset();
 }
 
 void Connection::kill()
@@ -329,7 +328,7 @@ void Connection::send(const Message &msg)
     try
     {
         logRxTx(RxTx::tx, msg.header());
-        m_dotsSocket->send(msg.header(), msg.data());
+        m_dotsSocket->transmit(msg.header(), msg.data());
     }
     catch(const std::exception& e)
     {

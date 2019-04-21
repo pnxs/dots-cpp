@@ -15,13 +15,7 @@ namespace dots
 
 	ChannelPtr TcpService::connect(const std::string& host, int port)
 	{
-		auto socket = std::make_shared<TcpSocket>(asio::ip::tcp::socket{ static_cast<asio::io_context&>(context()) });
-		
-		if (!socket->connect(host, port))
-		{
-			throw std::runtime_error{ "unable to connect to host: " + host + ":" + std::to_string(port) };
-		}
-
+		auto socket = std::make_shared<TcpSocket>(static_cast<asio::io_context&>(context()), host, port);
 		return socket;
 	}
 

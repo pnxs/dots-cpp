@@ -1,6 +1,6 @@
 #pragma once
-#include <cstdint>
-#include <dots/cpp_config.h>
+#include <string>
+#include <vector>
 #include <DotsTransportHeader.dots.h>
 #include <dots/io/Message.h>
 
@@ -8,21 +8,17 @@ namespace dots
 {
 	struct Channel
 	{
-		using receive_callback = std::function<void(const Message&)>;
-		using error_callback = std::function<void(int ec)>;
-
+		Channel() = default;
+		Channel(const Channel& other) = delete;
+		Channel(Channel&& other) = delete;
 		virtual ~Channel() = default;
 
-		virtual void start() = 0;
+		Channel& operator = (const Channel& rhs) = delete;
+		Channel& operator = (Channel&& rhs) = delete;
 
-		virtual void setReceiveCallback(receive_callback cb) = 0;
-		virtual void setErrorCallback(error_callback cb) = 0;
-
-		virtual int send(const DotsTransportHeader& header, const std::vector<uint8_t>& data = {}) = 0;
-
-		virtual bool connect(const std::string& host, int port) = 0;
-		virtual void disconnect() = 0;
+		virtual void asyncReceive(std::function<void(const Message&)>&& receiveHandler, std::function<void(int ec)>&& errorHandler) = 0;
+		virtual int transmit(const DotsTransportHeader& header, const std::vector<uint8_t>& data = {}) = 0;
 	};
 
-	typedef shared_ptr<Channel> ChannelPtr;
+	using ChannelPtr = std::shared_ptr<Channel>;
 }

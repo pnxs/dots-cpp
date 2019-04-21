@@ -21,7 +21,7 @@ bool ServerConnection::start(const string &name, ChannelPtr dotsSocket)
 
     m_dotsSocket = dotsSocket;
 
-    socket().setReceiveCallback(FUN(*this, handleReceivedMessage));
+    socket().asyncReceive(FUN(*this, handleReceivedMessage), nullptr);
 
     m_running = true;
     m_clientName = name;
@@ -47,7 +47,7 @@ bool ServerConnection::running()
 
 void ServerConnection::disconnect()
 {
-    socket().disconnect();
+	m_dotsSocket.reset();
 }
 
 Channel& ServerConnection::socket()
@@ -239,7 +239,7 @@ void ServerConnection::setConnectionState(DotsConnectionState state)
 
 int ServerConnection::send(const DotsTransportHeader &header, const vector<uint8_t> &data)
 {
-    return socket().send(header, data);
+    return socket().transmit(header, data);
 }
 
 Transmitter &ServerConnection::transmitter()

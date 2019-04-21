@@ -4,19 +4,14 @@
 
 namespace dots
 {
-	void TcpSocket::start()
+	void TcpSocket::asyncReceive(std::function<void(const Message&)>&& receiveHandler, std::function<void(int ec)>&& errorHandler)
 	{
-		m_buffer.resize(8192);
-		m_headerBuffer.resize(1024); //TODO: may be smaller...
+		m_cb = std::move(receiveHandler);
+		m_ecb = std::move(errorHandler);
 		readHeaderLength();
 	}
 
-	void TcpSocket::setReceiveCallback(Channel::receive_callback cb)
-	{
-		m_cb = cb;
-	}
-
-	int TcpSocket::send(const DotsTransportHeader& header, const vector<uint8_t>& data)
+	int TcpSocket::transmit(const DotsTransportHeader& header, const vector<uint8_t>& data)
 	{
 		DotsTransportHeader _header(header);
 		_header.payloadSize = data.size();
@@ -35,7 +30,7 @@ namespace dots
 		return 0;
 	}
 
-	bool TcpSocket::connect(const string& host, int port)
+	bool TcpSocket::connect(const std::string& host, int port)
 	{
 		asio::ip::tcp::resolver resolver(m_socket.get_executor().context());
 		auto iter = resolver.resolve({ host, "", asio::ip::resolver_query_base::numeric_service });
@@ -72,17 +67,9 @@ namespace dots
 
 				break;
 			}
-
 		}
 
-		start();
-
 		return true;
-	}
-
-	void TcpSocket::disconnect()
-	{
-		m_socket.close();
 	}
 
 	void TcpSocket::readHeaderLength()
@@ -176,11 +163,6 @@ namespace dots
 		});
 	}
 
-	void TcpSocket::setErrorCallback(Channel::error_callback cb)
-	{
-		m_ecb = cb;
-	}
-
 	void TcpSocket::handleError(const string& text, const asio::error_code& ec)
 	{
 		int errorCode = 1;
@@ -201,14 +183,18 @@ namespace dots
 		}
 	}
 
-	TcpSocket::TcpSocket() : TcpSocket(asio::ip::tcp::socket{ global_io_context() })
+	TcpSocket::TcpSocket(asio::io_context& ioContext, const std::string& host, int port) :
+		m_socket{ ioContext }
 	{
-
+		connect(host, port);
+		m_buffer.resize(8192);
+		m_headerBuffer.resize(1024);
 	}
 
-	TcpSocket::TcpSocket(asio::ip::tcp::socket socket)
+	TcpSocket::TcpSocket(asio::ip::tcp::socket&& socket)
 		: m_socket(std::move(socket))
 	{
-		start();
+		m_buffer.resize(8192);
+		m_headerBuffer.resize(1024);
 	}
 }
