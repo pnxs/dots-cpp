@@ -11,7 +11,7 @@
 namespace dots
 {
 
-bool ServerConnection::start(const string &name, DotsSocketPtr dotsSocket)
+bool ServerConnection::start(const string &name, ChannelPtr dotsSocket)
 {
     if (running())
     {
@@ -50,7 +50,7 @@ void ServerConnection::disconnect()
     socket().disconnect();
 }
 
-DotsSocket& ServerConnection::socket()
+Channel& ServerConnection::socket()
 {
     return *m_dotsSocket.get();
 }

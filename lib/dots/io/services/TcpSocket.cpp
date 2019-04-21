@@ -12,7 +12,7 @@ void TcpSocket::start()
     readHeaderLength();
 }
 
-void TcpSocket::setReceiveCallback(DotsSocket::receive_callback cb)
+void TcpSocket::setReceiveCallback(Channel::receive_callback cb)
 {
     m_cb = cb;
 }
@@ -187,7 +187,7 @@ void TcpSocket::readPayload()
     });
 }
 
-void TcpSocket::setErrorCallback(DotsSocket::error_callback cb)
+void TcpSocket::setErrorCallback(Channel::error_callback cb)
 {
     m_ecb = cb;
 }

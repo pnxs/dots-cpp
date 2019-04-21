@@ -6,7 +6,7 @@
 #include "Transmitter.h"
 #include "ServerConnection.h"
 #include "Subscription.h"
-#include "DotsSocket.h"
+#include "Channel.h"
 #include "Publisher.h"
 
 
@@ -20,7 +20,7 @@ class Transceiver: public Publisher
 public:
     Transceiver();
 
-    bool start(const string &name, DotsSocketPtr dotsSocket);
+    bool start(const string &name, ChannelPtr dotsSocket);
     void stop();
 
     Subscription addReceiver(const type::StructDescriptor* td, ContainerBase* cb, const Dispatcher::callback_type& f)

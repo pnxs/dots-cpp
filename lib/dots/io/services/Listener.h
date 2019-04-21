@@ -1,6 +1,6 @@
 #pragma once
 #include <functional>
-#include <dots/io/DotsSocket.h>
+#include <dots/io/Channel.h>
 
 namespace dots
 {
@@ -14,6 +14,6 @@ namespace dots
 		Listener& operator = (const Listener& rhs) = delete;
 		Listener& operator = (Listener&& rhs) = delete;
 
-		virtual void asyncAccept(std::function<void(DotsSocketPtr)>&& handler) = 0;
+		virtual void asyncAccept(std::function<void(ChannelPtr)>&& handler) = 0;
 	};
 }

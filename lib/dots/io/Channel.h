@@ -10,17 +10,17 @@ class QTcpSocket;
 namespace dots
 {
 
-class DotsSocket
+class Channel
 {
 public:
     typedef function<void (const Message&)> receive_callback;
     typedef function<void (int ec)> error_callback;
 
-    DotsSocket() = default;
+    Channel() = default;
 
     virtual void start() = 0;
 
-    virtual ~DotsSocket() = default;
+    virtual ~Channel() = default;
 
     virtual void setReceiveCallback(receive_callback cb) = 0;
     virtual void setErrorCallback(error_callback cb) = 0;
@@ -33,6 +33,6 @@ public:
 
 
 
-typedef shared_ptr<DotsSocket> DotsSocketPtr;
+typedef shared_ptr<Channel> ChannelPtr;
 
 }

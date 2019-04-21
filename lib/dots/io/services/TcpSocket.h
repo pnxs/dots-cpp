@@ -1,12 +1,12 @@
 #pragma once
 #include <asio.hpp>
 #include "dots/cpp_config.h"
-#include <dots/io/DotsSocket.h>
+#include <dots/io/Channel.h>
 
 namespace dots
 {
 
-class TcpSocket: public DotsSocket
+class TcpSocket: public Channel
 {
 public:
     TcpSocket();

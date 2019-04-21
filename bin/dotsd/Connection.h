@@ -1,7 +1,7 @@
 #pragma once
 
 #include "dots/cpp_config.h"
-#include <dots/io/DotsSocket.h>
+#include <dots/io/Channel.h>
 
 #include <memory>
 #include <dots/io/AnyContainer.h>
@@ -31,7 +31,7 @@ public:
      * @param socket TcpSocket, that is moved into this Connection.
      * @param manager
      */
-    explicit Connection(DotsSocketPtr socket, ConnectionManager &manager);
+    explicit Connection(ChannelPtr socket, ConnectionManager &manager);
     ~Connection();
 
     virtual DotsConnectionState state() const;
@@ -109,7 +109,7 @@ private:
 
     dots::Transmitter m_transmitter;
 
-	DotsSocketPtr m_dotsSocket;
+	ChannelPtr m_dotsSocket;
     ConnectionManager& m_connectionManager;
     DotsConnectionState  m_connectionState = DotsConnectionState::connecting;
     bool m_wantMemberMessages = false;

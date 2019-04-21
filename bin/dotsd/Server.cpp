@@ -59,7 +59,7 @@ const ClientId& Server::id() const
  */
 void Server::asyncAccept()
 {
-	m_listener->asyncAccept([&](DotsSocketPtr socket)
+	m_listener->asyncAccept([&](ChannelPtr socket)
 	{
 		auto connection = std::make_shared<Connection>(std::move(socket), m_connectionManager);
 		m_connectionManager.start(connection);

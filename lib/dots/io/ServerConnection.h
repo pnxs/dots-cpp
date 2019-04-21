@@ -2,7 +2,7 @@
 
 #include "dots/cpp_config.h"
 #include <dots/functional/signal.h>
-#include "DotsSocket.h"
+#include "Channel.h"
 #include "Transmitter.h"
 
 #include "DotsConnectionState.dots.h"
@@ -34,7 +34,7 @@ class ServerConnection
 {
 public:
 
-    bool start(const string &name, DotsSocketPtr dotsSocket);
+    bool start(const string &name, ChannelPtr dotsSocket);
     void stop();
 
     bool running();
@@ -60,7 +60,7 @@ public:
     int send(const DotsTransportHeader& header, const vector<uint8_t>& data = {});
     const ClientId& clientId() const { return m_serversideClientname; }
 
-    DotsSocket& socket();
+    Channel& socket();
 
     // Signals:
     ReceiveMessageSignal onReceiveMessage;
@@ -87,7 +87,7 @@ private:
     //int send(const DotsMessageHeader& header, const vector<uint8_t>& data = {});
 
     bool m_running = false;
-    DotsSocketPtr m_dotsSocket;
+    ChannelPtr m_dotsSocket;
     DotsConnectionState m_connectionState = DotsConnectionState::connecting;
     Transmitter m_transmitter;
     string m_clientName;

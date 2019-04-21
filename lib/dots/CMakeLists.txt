@@ -48,7 +48,6 @@ target_sources(${TARGET_NAME}
 		io/ServerConnection.cpp
 		io/Subscription.cpp
 		io/Chained.cpp
-		io/DotsSocket.cpp
 
 		io/Io.cpp
 		io/AnyContainer.cpp
