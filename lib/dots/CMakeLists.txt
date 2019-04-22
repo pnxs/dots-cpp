@@ -42,7 +42,6 @@ target_sources(${TARGET_NAME}
 
 		functional/signal.cpp
 
-		io/ConstBufSeq.cpp
 		io/Transmitter.cpp
 		io/Transceiver.cpp
 		io/ServerConnection.cpp
