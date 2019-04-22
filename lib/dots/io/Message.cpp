@@ -1,22 +1,21 @@
 #include "Message.h"
 
-namespace dots {
-
-Message::Message(const DotsTransportHeader &header, const std::vector<uint8_t> &data)
-:m_header(header)
-,m_data(data)
+namespace dots
 {
+	Message::Message(const DotsTransportHeader& header, const std::vector<uint8_t>& data)
+		:m_header(header)
+		,m_data(data)
+	{
+		/* do nothing */
+	}
 
-}
+	const DotsTransportHeader& Message::header() const
+	{
+		return m_header;
+	}
 
-const DotsTransportHeader &Message::header() const
-{
-    return m_header;
-}
-
-const std::vector<uint8_t> &Message::data() const
-{
-    return m_data;
-}
-
+	const std::vector<uint8_t>& Message::data() const
+	{
+		return m_data;
+	}
 }

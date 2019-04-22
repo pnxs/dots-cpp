@@ -1,33 +1,31 @@
 #pragma once
-#include "dots/cpp_config.h"
-#include "DotsTransportHeader.dots.h"
+#include <dots/cpp_config.h>
+#include <DotsTransportHeader.dots.h>
 
-namespace dots {
-
-/*!
- * Object, that holds a the data, needed for sending a DOTS-object to a client.
- * It contains a DotsTransportHeader and the serialized payload.
- */
-class Message
+namespace dots
 {
-    DotsTransportHeader m_header;
-    const std::vector<uint8_t >& m_data;
+	/*!
+	 * Object, that holds a the data, needed for sending a DOTS-object to a client.
+	 * It contains a DotsTransportHeader and the serialized payload.
+	 */
+	struct Message
+	{
+		Message(const DotsTransportHeader& header, const std::vector<uint8_t>& data);
 
-public:
-    Message(const DotsTransportHeader& header, const std::vector<uint8_t>& data);
+		const DotsTransportHeader& header() const;
+		const std::vector<uint8_t>& data()  const;
 
-    const DotsTransportHeader& header() const;
-    const std::vector<uint8_t>& data()  const;
+		bool operator == (const Message& rhs) const
+		{
+			if (rhs.m_header != m_header) return false;
+			if (rhs.m_data != m_data) return false;
+			return true;
+		}		
 
-    bool operator==(const Message& rhs) const
-    {
-        if (rhs.m_header != m_header) return false;
-        if (rhs.m_data != m_data) return false;
-        return true;
-    }
+	private:
 
-    //void setHeader(const DotsTransportHeader& header);
-
-};
-
+		DotsTransportHeader m_header;
+		const std::vector<uint8_t >& m_data;
+		
+	};
 }
