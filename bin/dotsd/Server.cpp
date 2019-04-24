@@ -1,5 +1,5 @@
 #include "Server.h"
-#include <dots/io/Io.h>
+#include <dots/dots.h>
 #include <dots/io/ResourceUsage.h>
 #include <dots/io/Transceiver.h>
 #include <dots/io/services/TcpService.h>

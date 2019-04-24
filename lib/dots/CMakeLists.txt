@@ -31,6 +31,7 @@ GENERATE_DOTS_TYPES(MODEL_SOURCES MODEL_HEADERS
 )
 target_sources(${TARGET_NAME}
 	PRIVATE
+		dots.cpp
 		dots_base.cpp
 		Uuid.cpp
 
