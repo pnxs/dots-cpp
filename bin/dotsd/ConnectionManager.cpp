@@ -199,6 +199,10 @@ void ConnectionManager::processMemberMessage(const DotsTransportHeader& /*header
         {
             connection->sendContainerContent(*containerPtr);
         }
+        else
+        {
+            connection->sendCacheEnd(typeName);
+        }
     }
 }
 

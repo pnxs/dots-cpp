@@ -89,6 +89,7 @@ public:
     void sendNs(const string& nameSpace, const type::StructDescriptor* td, const void* data, property_set properties, bool remove);
 
     void sendContainerContent(const AnyContainer &container);
+    void sendCacheEnd(const std::string& typeName);
 
 protected:
     Connection(ConnectionManager &manager);

@@ -453,9 +453,15 @@ void Connection::sendContainerContent(const AnyContainer &container)
         send({thead, m_transmitter.buffer()});
     }
 
-    DotsCacheInfo dotsCacheInfo;
-    dotsCacheInfo.typeName(td->name());
-    dotsCacheInfo.endTransmission(true);
+    sendCacheEnd(td->name());
+}
+
+void Connection::sendCacheEnd(const std::string& typeName)
+{
+    DotsCacheInfo dotsCacheInfo {
+        DotsCacheInfo::typeName_t_i{typeName},
+        DotsCacheInfo::endTransmission_t_i{true}
+    };
     sendNs("SYS", dotsCacheInfo);
 }
 
