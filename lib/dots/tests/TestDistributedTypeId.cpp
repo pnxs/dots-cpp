@@ -12,17 +12,14 @@
 #include "MockPublisher.h"
 
 using namespace dots::type;
-using ::testing::Pointee;
-using ::testing::Eq;
-using ::testing::SafeMatcherCast;
-using ::testing::MatcherCast;
+using ::testing::Truly;
 
 using ::testing::ElementsAreArray;
 
 template<typename F, class T>
-void expect_publish(F& mock, const T& data)
+void expect_publish(F& mock, const T& instance)
 {
-    EXPECT_CALL(mock, publish(&T::_Descriptor(), MatcherCast<const void*>(SafeMatcherCast<const T*>(Pointee(Eq(data)))), data._validProperties(), false));
+    EXPECT_CALL(mock, publish(&T::_Descriptor(), Truly([instance](const auto& published){ return published._equal(instance); }), instance._validProperties(), false));
 }
 
 TEST(TestDistributedTypeId, createId)

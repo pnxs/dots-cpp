@@ -357,7 +357,7 @@ namespace dots::type
 
     void Struct::_publish(const property_set& includedProperties/* = PROPERTY_SET_ALL*/, bool remove/* = false*/) const
     {
-		onPublishObject->publish(&_descriptor(), this, includedProperties == PROPERTY_SET_ALL ? _validPropSet : includedProperties, remove);
+		onPublishObject->publish(&_descriptor(), *this, includedProperties == PROPERTY_SET_ALL ? _validPropSet : includedProperties, remove);
     }
 
     void Struct::_remove(const property_set& includedProperties/* = PROPERTY_SET_ALL*/) const

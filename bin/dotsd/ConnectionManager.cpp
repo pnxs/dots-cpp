@@ -379,7 +379,7 @@ void ConnectionManager::handleClearCache(const DotsClearCache::Cbd& cbd)
         // publish remove for every element of the container
         for (auto& element : container)
         {
-            publishNs({}, container.td(), element.data, container.td()->keys(), true, false);
+            publishNs({}, container.td(), *reinterpret_cast<type::Struct*>(element.data), container.td()->keys(), true, false);
         }
 
         container.clear();
@@ -408,7 +408,7 @@ void ConnectionManager::cleanupObjects(Connection *connection)
 
         for (auto item : remove)
         {
-            publishNs({}, container->td(), item, container->td()->keys(), true);
+            publishNs({}, container->td(), *reinterpret_cast<const type::Struct*>(item), container->td()->keys(), true);
         }
     }
 
@@ -416,7 +416,7 @@ void ConnectionManager::cleanupObjects(Connection *connection)
 
 void ConnectionManager::publishNs(const string &nameSpace,
                                   const type::StructDescriptor *td,
-                                  const void *data,
+                                  const type::Struct& instance,
                                   property_set properties,
                                   bool remove, bool processLocal)
 {
@@ -427,7 +427,7 @@ void ConnectionManager::publishNs(const string &nameSpace,
     if (not nameSpace.empty()) header.nameSpace(nameSpace);
 
     // prepareBuffer
-    m_transmitter.prepareBuffer(td, data, header, properties);
+    m_transmitter.prepareBuffer(td, &instance, header, properties);
 
     // Send to peer or group
     if (processLocal)
@@ -490,9 +490,9 @@ void ConnectionManager::addClient(Connection* connection)
 }
 
 void
-ConnectionManager::publish(const type::StructDescriptor *td, const void *data, property_set properties, bool remove)
+ConnectionManager::publish(const type::StructDescriptor *td, const type::Struct& instance, property_set properties, bool remove)
 {
-    publishNs("SYS", td, data, properties, remove, true);
+    publishNs("SYS", td, instance, properties, remove, true);
 }
 
 string ConnectionManager::clientId2Name(ClientId id) const

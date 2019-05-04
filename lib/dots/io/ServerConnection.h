@@ -53,8 +53,8 @@ public:
 
     void requestConnection(const ClientName&, ConnectMode);
 
-    void publish(const type::StructDescriptor* td, CTypeless data, property_set what = PROPERTY_SET_ALL, bool remove = false);
-    void publishNs(const string& nameSpace, const type::StructDescriptor* td, CTypeless data, property_set what = PROPERTY_SET_ALL, bool remove = false);
+    void publish(const type::StructDescriptor* td, const type::Struct& instance, property_set what = PROPERTY_SET_ALL, bool remove = false);
+    void publishNs(const string& nameSpace, const type::StructDescriptor* td, const type::Struct& instance, property_set what = PROPERTY_SET_ALL, bool remove = false);
     // Server actions END
 
     int send(const DotsTransportHeader& header, const vector<uint8_t>& data = {});

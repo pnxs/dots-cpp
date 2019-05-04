@@ -46,7 +46,7 @@ public:
 
     bool connected() const;
 
-    void publish(const type::StructDescriptor* td, CTypeless data, property_set what, bool remove) override;
+    void publish(const type::StructDescriptor* td, const type::Struct& instance, property_set what, bool remove) override;
 
 private:
     void onConnect();
@@ -65,7 +65,7 @@ private:
 
 Transceiver& transceiver();
 
-void publish(const type::StructDescriptor* td, CTypeless data, property_set what, bool remove);
+void publish(const type::StructDescriptor* td, const type::Struct& instance, property_set what, bool remove);
 
 template<class T>
 void publish(const T& data, typename T::PropSet what)

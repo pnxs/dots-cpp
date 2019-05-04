@@ -246,7 +246,7 @@ Transmitter &ServerConnection::transmitter()
     return m_transmitter;
 }
 
-void ServerConnection::publishNs(const string& nameSpace, const type::StructDescriptor* td, CTypeless data, property_set what, bool remove)
+void ServerConnection::publishNs(const string& nameSpace, const type::StructDescriptor* td, const type::Struct& instance, property_set what, bool remove)
 {
     DotsTransportHeader header;
     transmitter().prepareHeader(header, td, what, remove); //< Modifies header and what
@@ -255,12 +255,12 @@ void ServerConnection::publishNs(const string& nameSpace, const type::StructDesc
     }
 
     // prepareBuffer
-    transmitter().prepareBuffer(td, data, header, what);
+    transmitter().prepareBuffer(td, &instance, header, what);
 
     // Send to peer or group
 
     LOG_DEBUG_S("publish ns=" << nameSpace << " type=" << td->name());
-    LOG_DATA_S("data:" << to_ascii(td, data, what));
+    LOG_DATA_S("data:" << to_ascii(td, &instance, what));
     //LOG_INFO_S("publish data-size: " << b.size());
     //LOG_INFO_S("data: " << b.toString());
     //vector<uint8_t > v(b.data(), b.data() + b.size());
@@ -268,9 +268,9 @@ void ServerConnection::publishNs(const string& nameSpace, const type::StructDesc
     this->send(header, transmitter().buffer());
 }
 
-void ServerConnection::publish(const type::StructDescriptor *td, CTypeless data, property_set what, bool remove)
+void ServerConnection::publish(const type::StructDescriptor *td, const type::Struct& instance, property_set what, bool remove)
 {
-    publishNs(string(), td, data, what, remove);
+    publishNs(string(), td, instance, what, remove);
 }
 
 void ServerConnection::processConnectResponse(const DotsMsgConnectResponse& cr)
@@ -324,7 +324,7 @@ void ServerConnection::joinGroup(const GroupName &groupName)
     member.event(DotsMemberEvent::join);
 
     LOG_DEBUG_S("send DotsMember (join " << groupName << ")");
-    publishNs("SYS", &member._Descriptor(), &member);
+    publishNs("SYS", &member._Descriptor(), member);
 }
 
 void ServerConnection::requestConnection(const ServerConnection::ClientName& name, ServerConnection::ConnectMode mode)
@@ -336,7 +336,7 @@ void ServerConnection::requestConnection(const ServerConnection::ClientName& nam
         case ConnectMode::direct: cm.preloadCache(false); break;
         case ConnectMode::preload: cm.preloadCache(true); break;
     }
-    publishNs("SYS", &cm._Descriptor(), &cm);
+    publishNs("SYS", &cm._Descriptor(), cm);
 }
 
 void ServerConnection::requestDescriptors(const DescriptorList &whiteList, const DescriptorList &blackList)
@@ -356,7 +356,7 @@ void ServerConnection::requestDescriptors(const DescriptorList &whiteList, const
             req.blacklist->push_back(e);
     }
 
-    publish(&req._Descriptor(), &req);
+    publish(&req._Descriptor(), req);
 }
 
 void ServerConnection::leaveGroup(const ServerConnection::GroupName &groupName)
@@ -366,7 +366,7 @@ void ServerConnection::leaveGroup(const ServerConnection::GroupName &groupName)
     member.event(DotsMemberEvent::leave);
 
     LOG_INFO_S("send DotsMember (leave " << groupName << ")");
-    publishNs("SYS", &member._Descriptor(), &member);
+    publishNs("SYS", &member._Descriptor(), member);
 }
 
 
