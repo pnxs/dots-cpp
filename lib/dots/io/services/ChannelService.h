@@ -5,21 +5,21 @@
 
 namespace dots
 {
-	struct TcpService : asio::execution_context::service
+	struct ChannelService : asio::execution_context::service
 	{
-		using key_type = TcpService;
+		using key_type = ChannelService;
 
-		explicit TcpService(asio::execution_context& executionContext) :
+		explicit ChannelService(asio::execution_context& executionContext) :
 			asio::execution_context::service(executionContext)
 		{
 			/* do nothing */
 		}
-		TcpService(const TcpService& other) = delete;
-		TcpService(TcpService&& other) noexcept = default;
-		~TcpService() = default;
+		ChannelService(const ChannelService& other) = delete;
+		ChannelService(ChannelService&& other) noexcept = default;
+		~ChannelService() = default;
 
-		TcpService& operator = (const TcpService& rhs) = delete;
-		TcpService& operator = (TcpService&& rhs) noexcept = default;
+		ChannelService& operator = (const ChannelService& rhs) = delete;
+		ChannelService& operator = (ChannelService&& rhs) noexcept = default;
 
 		template <typename TListener, typename... Args>
 		std::unique_ptr<Listener> listen(Args&&... args)
