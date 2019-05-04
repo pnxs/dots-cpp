@@ -20,5 +20,5 @@ namespace dots
 		virtual int transmit(const DotsTransportHeader& header, const std::vector<uint8_t>& data = {}) = 0;
 	};
 
-	using ChannelPtr = std::shared_ptr<Channel>;
+	using channel_ptr_t = std::shared_ptr<Channel>;
 }

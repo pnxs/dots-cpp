@@ -11,7 +11,7 @@
 namespace dots
 {
 
-bool ServerConnection::start(const string &name, ChannelPtr channel)
+bool ServerConnection::start(const string &name, channel_ptr_t channel)
 {
     if (running())
     {

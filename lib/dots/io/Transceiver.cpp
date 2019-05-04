@@ -19,7 +19,7 @@ Transceiver::Transceiver()
 //    connection().onDisconnected
 }
 
-bool Transceiver::start(const string &name, ChannelPtr channel)
+bool Transceiver::start(const string &name, channel_ptr_t channel)
 {
     LOG_DEBUG_S("start transceiver");
 

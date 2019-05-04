@@ -18,7 +18,7 @@ namespace dots
 		m_acceptor.listen(backlog);
 	}
 
-	void TcpListener::asyncAccept(std::function<void(ChannelPtr)>&& handler)
+	void TcpListener::asyncAccept(std::function<void(channel_ptr_t)>&& handler)
 	{
 		m_acceptor.async_accept(m_socket, [this, handler = std::move(handler)](const asio::error_code& error)
 		{

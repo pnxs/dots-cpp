@@ -34,7 +34,7 @@ class ServerConnection
 {
 public:
 
-    bool start(const string &name, ChannelPtr channel);
+    bool start(const string &name, channel_ptr_t channel);
     void stop();
 
     bool running();
@@ -87,7 +87,7 @@ private:
     //int send(const DotsMessageHeader& header, const vector<uint8_t>& data = {});
 
     bool m_running = false;
-    ChannelPtr m_channel;
+    channel_ptr_t m_channel;
     DotsConnectionState m_connectionState = DotsConnectionState::connecting;
     Transmitter m_transmitter;
     string m_clientName;

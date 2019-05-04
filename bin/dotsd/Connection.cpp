@@ -24,7 +24,7 @@ namespace dots {
 
 using namespace std::placeholders;
 
-Connection::Connection(ChannelPtr channel, ConnectionManager &manager)
+Connection::Connection(channel_ptr_t channel, ConnectionManager &manager)
 :m_channel(std::move(channel)), m_connectionManager(manager)
 {
     // Create connection-name

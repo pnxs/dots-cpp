@@ -18,7 +18,7 @@ namespace dots
 		TcpService& operator = (TcpService&& rhs) noexcept = default;
 
 		std::unique_ptr<Listener> listen(const std::string& address, const std::string& port, int backlog);
-		ChannelPtr connect(const std::string& host, int port);
+		channel_ptr_t connect(const std::string& host, int port);
 
 	private:
 

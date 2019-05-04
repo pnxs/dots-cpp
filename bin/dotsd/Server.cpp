@@ -59,7 +59,7 @@ const ClientId& Server::id() const
  */
 void Server::asyncAccept()
 {
-	m_listener->asyncAccept([&](ChannelPtr channel)
+	m_listener->asyncAccept([&](channel_ptr_t channel)
 	{
 		auto connection = std::make_shared<Connection>(std::move(channel), m_connectionManager);
 		m_connectionManager.start(connection);

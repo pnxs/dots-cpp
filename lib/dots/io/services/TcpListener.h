@@ -16,7 +16,7 @@ namespace dots
 		TcpListener& operator = (const TcpListener& rhs) = delete;
 		TcpListener& operator = (TcpListener&& rhs) = delete;
 
-		void asyncAccept(std::function<void(ChannelPtr)>&& handler) override;
+		void asyncAccept(std::function<void(channel_ptr_t)>&& handler) override;
 
 	private:
 

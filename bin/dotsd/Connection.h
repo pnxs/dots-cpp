@@ -31,7 +31,7 @@ public:
      * @param channel Channel, that is moved into this Connection.
      * @param manager
      */
-    explicit Connection(ChannelPtr channel, ConnectionManager &manager);
+    explicit Connection(channel_ptr_t channel, ConnectionManager &manager);
     ~Connection();
 
     virtual DotsConnectionState state() const;
@@ -109,7 +109,7 @@ private:
 
     dots::Transmitter m_transmitter;
 
-	ChannelPtr m_channel;
+	channel_ptr_t m_channel;
     ConnectionManager& m_connectionManager;
     DotsConnectionState  m_connectionState = DotsConnectionState::connecting;
     bool m_wantMemberMessages = false;
