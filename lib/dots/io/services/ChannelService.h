@@ -28,7 +28,7 @@ namespace dots
 		}
 
 		template <typename TChannel, typename... Args>
-		channel_ptr_t connect(Args&&... args)
+		channel_ptr_t open(Args&&... args)
 		{
 			auto channel = std::make_shared<TChannel>(static_cast<asio::io_context&>(context()), std::forward<Args>(args)...);
 			return channel;

@@ -16,7 +16,7 @@ namespace dots
 		// Start Transceiver
 		// Connect to dotsd
 
-		auto channel = global_service<ChannelService>().connect<TcpChannel>(m_serverAddress, m_serverPort);
+		auto channel = global_service<ChannelService>().open<TcpChannel>(m_serverAddress, m_serverPort);
 		
 		if (not transceiver().start(name, channel))
 		{
