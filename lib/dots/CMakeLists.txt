@@ -65,7 +65,6 @@ target_sources(${TARGET_NAME}
 		io/serialization/CborNativeSerialization.cpp
 		io/services/FdHandlerService.cpp
 		io/services/TcpListener.cpp
-		io/services/TcpService.cpp
 		io/services/TcpChannel.cpp
 		io/services/Timer.cpp
 		io/services/TimerService.cpp

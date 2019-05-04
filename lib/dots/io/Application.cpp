@@ -2,6 +2,7 @@
 #include <boost/program_options.hpp>
 #include <dots/io/Io.h>
 #include <dots/io/services/TcpService.h>
+#include <dots/io/services/TcpChannel.h>
 #include <dots/type/Registry.h>
 #include <DotsClient.dots.h>
 
@@ -15,7 +16,7 @@ namespace dots
 		// Start Transceiver
 		// Connect to dotsd
 
-		auto channel = global_service<TcpService>().connect(m_serverAddress, m_serverPort);
+		auto channel = global_service<TcpService>().connect<TcpChannel>(m_serverAddress, m_serverPort);
 		
 		if (not transceiver().start(name, channel))
 		{

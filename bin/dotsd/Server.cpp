@@ -2,7 +2,6 @@
 #include <dots/dots.h>
 #include <dots/io/ResourceUsage.h>
 #include <dots/io/Transceiver.h>
-#include <dots/io/services/TcpService.h>
 #include "DotsClient.dots.h"
 #include "EnumDescriptorData.dots.h"
 

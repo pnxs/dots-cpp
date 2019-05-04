@@ -1,7 +1,7 @@
 #pragma once
 #include <asio.hpp>
-#include <dots/io/services/TcpChannel.h>
-#include <dots/io/services/TcpListener.h>
+#include <dots/io/services/Listener.h>
+#include <dots/io/services/Channel.h>
 
 namespace dots
 {
@@ -9,7 +9,11 @@ namespace dots
 	{
 		using key_type = TcpService;
 
-		explicit TcpService(asio::execution_context& executionContext);
+		explicit TcpService(asio::execution_context& executionContext) :
+			asio::execution_context::service(executionContext)
+		{
+			/* do nothing */
+		}
 		TcpService(const TcpService& other) = delete;
 		TcpService(TcpService&& other) noexcept = default;
 		~TcpService() = default;
@@ -17,11 +21,24 @@ namespace dots
 		TcpService& operator = (const TcpService& rhs) = delete;
 		TcpService& operator = (TcpService&& rhs) noexcept = default;
 
-		std::unique_ptr<Listener> listen(const std::string& address, const std::string& port, int backlog);
-		channel_ptr_t connect(const std::string& host, int port);
+		template <typename TListener, typename... Args>
+		std::unique_ptr<Listener> listen(Args&&... args)
+		{
+			return std::make_unique<TListener>(static_cast<asio::io_context&>(context()), std::forward<Args>(args)...);
+		}
+
+		template <typename TChannel, typename... Args>
+		channel_ptr_t connect(Args&&... args)
+		{
+			auto channel = std::make_shared<TChannel>(static_cast<asio::io_context&>(context()), std::forward<Args>(args)...);
+			return channel;
+		}
 
 	private:
 
-		void shutdown() noexcept override;
+		void shutdown() noexcept override
+		{
+			/* do nothing */
+		}
 	};
 }
