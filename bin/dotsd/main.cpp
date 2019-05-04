@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
     string host = vm["dots-address"].as<string>();
     string port = vm["dots-port"].as<string>();
 
-	std::unique_ptr<dots::Listener> listener = asio::use_service<dots::TcpService>(dots::global_execution_context()).listen(host, port, 25);
+	std::unique_ptr<dots::Listener> listener = dots::global_service<dots::TcpService>().listen(host, port, 25);
     dots::Server server(std::move(listener), serverName);
     LOG_NOTICE_S("Listen to " << host << ":" << port);
 

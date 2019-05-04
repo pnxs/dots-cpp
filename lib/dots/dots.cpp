@@ -7,21 +7,21 @@ namespace dots
 {
 	uint32_t add_timer(const pnxs::chrono::Duration& timeout, const std::function<void()>& handler, bool periodic/* = false*/)
 	{
-		return asio::use_service<TimerService>(global_execution_context()).addTimer(timeout, handler, periodic);
+		return global_service<TimerService>().addTimer(timeout, handler, periodic);
 	}
 
 	void remove_timer(uint32_t id)
 	{
-		asio::use_service<TimerService>(global_execution_context()).removeTimer(id);
+		global_service<TimerService>().removeTimer(id);
 	}
 
 	void add_fd_handler(int fileDescriptor, const std::function<void()>& handler)
 	{
-		asio::use_service<FdHandlerService>(global_execution_context()).addInEventHandler(fileDescriptor, handler);
+		global_service<FdHandlerService>().addInEventHandler(fileDescriptor, handler);
 	}
 
 	void remove_fd_handler(int fileDescriptor)
 	{
-		asio::use_service<FdHandlerService>(global_execution_context()).removeInEventHandler(fileDescriptor);
+		global_service<FdHandlerService>().removeInEventHandler(fileDescriptor);
 	}
 }

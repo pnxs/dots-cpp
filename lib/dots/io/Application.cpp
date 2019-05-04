@@ -15,7 +15,7 @@ namespace dots
 		// Start Transceiver
 		// Connect to dotsd
 
-		auto channel = asio::use_service<TcpService>(global_execution_context()).connect(m_serverAddress, m_serverPort);
+		auto channel = global_service<TcpService>().connect(m_serverAddress, m_serverPort);
 		
 		if (not transceiver().start(name, channel))
 		{
