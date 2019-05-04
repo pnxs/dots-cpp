@@ -1,5 +1,6 @@
 #include "Application.h"
 #include <boost/program_options.hpp>
+#include <dots/io/Io.h>
 #include <dots/io/services/TcpService.h>
 #include <dots/type/Registry.h>
 #include <DotsClient.dots.h>
