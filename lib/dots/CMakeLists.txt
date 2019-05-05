@@ -57,7 +57,6 @@ target_sources(${TARGET_NAME}
 		io/Application.cpp
 		io/DynamicTypeReceiver.cpp
 		io/ResourceUsage.cpp
-		io/Message.cpp
 		io/DistributedTypeId.cpp
 		io/Filter.cpp
 		io/serialization/JsonSerialization.cpp

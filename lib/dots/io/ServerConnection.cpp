@@ -3,6 +3,7 @@
 #include "DotsTransportHeader.dots.h"
 #include "DotsMsgConnect.dots.h"
 #include "DotsMember.dots.h"
+#include "DotsCacheInfo.dots.h"
 #include "DotsDescriptorRequest.dots.h"
 #include "dots/io/serialization/CborNativeSerialization.h"
 #include "dots/io/serialization/AsciiSerialization.h"
@@ -18,6 +19,10 @@ bool ServerConnection::start(const string &name, channel_ptr_t channel)
         LOG_WARN_S("already started");
         return true;
     }
+
+    DotsMsgHello::_Descriptor();
+    DotsMsgConnectResponse::_Descriptor();
+    DotsCacheInfo::_Descriptor();
 
     m_channel = channel;
 	m_channel->asyncReceive(FUN(*this, handleReceivedMessage), nullptr);
@@ -107,15 +112,15 @@ void ServerConnection::handleDisconnected()
     }
 }
 
-void ServerConnection::handleReceivedMessage(const Message &msg)
+void ServerConnection::handleReceivedMessage(const DotsTransportHeader& transportHeader, type::AnyStruct&& instance, const std::vector<uint8_t>& payload)
 {
     try {
-        if (msg.header().nameSpace.isValid() && msg.header().nameSpace == "SYS")
+        if (transportHeader.nameSpace.isValid() && transportHeader.nameSpace == "SYS")
         {
-            onControlMessage(msg);
+            onControlMessage(transportHeader, std::move(instance), payload);
         } else
         {
-            onRegularMessage(msg);
+            onRegularMessage(transportHeader, std::move(instance), payload);
         }
     }
     catch (const std::exception& e) {
@@ -124,18 +129,18 @@ void ServerConnection::handleReceivedMessage(const Message &msg)
     }
 }
 
-void ServerConnection::onControlMessage(const Message &msg)
+void ServerConnection::onControlMessage(const DotsTransportHeader& transportHeader, type::AnyStruct&& instance, const std::vector<uint8_t>& payload)
 {
-    const auto& typeName = *msg.header().dotsHeader->typeName;
-    const auto& data = msg.data();
-    const auto& dotsHeader = *msg.header().dotsHeader;
+    const auto& typeName = *transportHeader.dotsHeader->typeName;
+    const auto& data = payload;
+    const auto& dotsHeader = *transportHeader.dotsHeader;
 
     switch(m_connectionState)
     {
         case DotsConnectionState::connecting:
             if (typeName == "DotsMsgHello")
             {
-                processHello(decodeInto_cbor<DotsMsgHello>(msg.data()));
+                processHello(decodeInto_cbor<DotsMsgHello>(data));
             }
             else if (typeName == "DotsMsgConnectResponse")
             {
@@ -162,7 +167,7 @@ void ServerConnection::onControlMessage(const Message &msg)
                     &data[0],
                     data.size(),
                     dotsHeader.sender,
-                    msg.header().destinationGroup,
+                    transportHeader.destinationGroup,
                     dotsHeader.sentTime,
                     dotsHeader,
                     (dotsHeader.sender == m_serversideClientname)
@@ -182,11 +187,11 @@ void ServerConnection::onControlMessage(const Message &msg)
 
 }
 
-void ServerConnection::onRegularMessage(const Message &msg)
+void ServerConnection::onRegularMessage(const DotsTransportHeader& transportHeader, type::AnyStruct&& instance, const std::vector<uint8_t>& payload)
 {
-    const auto& typeName = *msg.header().dotsHeader->typeName;
-    const auto& data = msg.data();
-    const auto& dotsHeader = *msg.header().dotsHeader;
+    const auto& typeName = *transportHeader.dotsHeader->typeName;
+    const auto& data = payload;
+    const auto& dotsHeader = *transportHeader.dotsHeader;
 
     switch(m_connectionState)
     {
@@ -201,7 +206,7 @@ void ServerConnection::onRegularMessage(const Message &msg)
                 &data[0],
                 data.size(),
                 dotsHeader.sender,
-                msg.header().destinationGroup,
+                transportHeader.destinationGroup,
                 dotsHeader.sentTime,
                 dotsHeader,
                 (dotsHeader.sender == m_serversideClientname)
@@ -236,11 +241,6 @@ void ServerConnection::setConnectionState(DotsConnectionState state)
     }
 }
 
-int ServerConnection::send(const DotsTransportHeader &header, const vector<uint8_t> &data)
-{
-    return channel().transmit(header, data);
-}
-
 Transmitter &ServerConnection::transmitter()
 {
     return m_transmitter;
@@ -254,9 +254,6 @@ void ServerConnection::publishNs(const string& nameSpace, const type::StructDesc
         header.nameSpace(nameSpace);
     }
 
-    // prepareBuffer
-    transmitter().prepareBuffer(td, &instance, header, what);
-
     // Send to peer or group
 
     LOG_DEBUG_S("publish ns=" << nameSpace << " type=" << td->name());
@@ -265,7 +262,7 @@ void ServerConnection::publishNs(const string& nameSpace, const type::StructDesc
     //LOG_INFO_S("data: " << b.toString());
     //vector<uint8_t > v(b.data(), b.data() + b.size());
     //LOG_INFO_S("publish data: " <<cbor::hexlify(&v[0], v.size()));
-    this->send(header, transmitter().buffer());
+    channel().transmit(header, instance);
 }
 
 void ServerConnection::publish(const type::StructDescriptor *td, const type::Struct& instance, property_set what, bool remove)

@@ -2,7 +2,7 @@
 
 #include "dots/cpp_config.h"
 #include "DotsMember.dots.h"
-#include "dots/io/Message.h"
+#include <DotsTransportHeader.dots.h>
 
 namespace dots {
 
@@ -51,7 +51,7 @@ public:
 
     virtual const ConnectionList& connections() const { return m_connections; }
 
-    virtual void deliverMessage(const Message&);
+    virtual void deliver(const DotsTransportHeader& transportHeader, const type::Struct& instance, const std::vector<uint8_t>& payload);
 };
 
 typedef string GroupKey;

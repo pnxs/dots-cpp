@@ -122,9 +122,8 @@ void ConnectionManager::onNewType(const dots::type::StructDescriptor* td)
     m_dispatcher.addTypelessReceiver(td, bind(&ConnectionManager::onReceivedMessage, this, _1, std::ref(*container)));
 }
 
-void ConnectionManager::deliverMessage(const Message &msg)
+void ConnectionManager::deliver(const DotsTransportHeader& transportHeader, const type::Struct& instance, const std::vector<uint8_t>& payload)
 {
-    DotsTransportHeader transportHeader(msg.header());
     const DotsHeader& dotsHeader = *transportHeader.dotsHeader;
     bool isFromMySelf = false;
 
@@ -140,8 +139,8 @@ void ConnectionManager::deliverMessage(const Message &msg)
         if(m_CacheEnabled)
         {
             dots::ReceiveMessageData rmd = {
-                msg.data().data(),
-                msg.data().size(),
+                payload.data(),
+                payload.size(),
                 dotsHeader.sender.isValid() ? *dotsHeader.sender : 0,
                 transportHeader.destinationGroup,
                 dotsHeader.sentTime,
@@ -153,7 +152,7 @@ void ConnectionManager::deliverMessage(const Message &msg)
         }
 
         Group *grp = m_groupManager.getGroup({ transportHeader.destinationGroup });
-        if (grp) grp->deliverMessage(msg);
+        if (grp) grp->deliver(transportHeader, instance, payload);
 
         return;
     }
@@ -164,7 +163,7 @@ void ConnectionManager::deliverMessage(const Message &msg)
         auto dstConnection = findConnection(transportHeader.destinationClientId);
         if (dstConnection)
         {
-            dstConnection->send(msg);
+            dstConnection->send(transportHeader, instance, payload);
         }
     }
 }
@@ -351,7 +350,7 @@ void ConnectionManager::handleDescriptorRequest(const DotsDescriptorRequest::Cbd
             m_transmitter.prepareBuffer(td, body, thead, td->validProperties(body));
 
             // Send to peer or group
-            connection->send({thead, m_transmitter.buffer()});
+            connection->send(thead, *reinterpret_cast<const type::Struct*>(body));
         });
     }
 
@@ -432,13 +431,13 @@ void ConnectionManager::publishNs(const string &nameSpace,
     // Send to peer or group
     if (processLocal)
     {
-        deliverMessage({header, m_transmitter.buffer()});
+        deliver(header, instance, m_transmitter.buffer());
     }
     else {
         if(header.destinationGroup.isValid())
         {
             Group *grp = m_groupManager.getGroup({header.destinationGroup});
-            if (grp) grp->deliverMessage({header, m_transmitter.buffer()});
+            if (grp) grp->deliver(header, instance, m_transmitter.buffer());
         }
     }
 }

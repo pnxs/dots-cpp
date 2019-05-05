@@ -27,6 +27,11 @@ using namespace std::placeholders;
 Connection::Connection(channel_ptr_t channel, ConnectionManager &manager)
 :m_channel(std::move(channel)), m_connectionManager(manager)
 {
+    DotsMsgConnect::_Descriptor();
+    DotsMember::_Descriptor();
+    EnumDescriptorData::_Descriptor();
+    StructDescriptorData::_Descriptor();
+
     // Create connection-name
     m_id = m_connectionManager.getUniqueClientId();
 
@@ -125,12 +130,12 @@ void Connection::processConnectPreloadClientFinished(const DotsMsgConnect& msg)
  * -----------+--------------------------+
  * @endcode
  */
-void Connection::onReceivedMessage(const Message &msg)
+void Connection::onReceivedMessage(const DotsTransportHeader& transportHeader, type::AnyStruct&& instance, const std::vector<uint8_t>& payload)
 {
     LOG_DEBUG_S("onReceivedMessage:");
     bool handled = false;
 
-    auto modifiedHeader = msg.header();
+    auto modifiedHeader = transportHeader;
     // Overwrite sender to known client peerAddress
     auto& dotsHeader = *modifiedHeader.dotsHeader;
     dotsHeader.sender = id();
@@ -141,27 +146,25 @@ void Connection::onReceivedMessage(const Message &msg)
         dotsHeader.sentTime = dotsHeader.serverSentTime;
     }
 
-    Message modifiedMessage(modifiedHeader, msg.data());
-
-    logRxTx(RxTx::rx, modifiedMessage.header());
+    logRxTx(RxTx::rx, modifiedHeader);
 
     try
     {
         // Check for DOTS control message-types
-        if (msg.header().nameSpace.isValid() && *msg.header().nameSpace == "SYS")
+        if (transportHeader.nameSpace.isValid() && *transportHeader.nameSpace == "SYS")
         {
-            handled = onControlMessage(modifiedMessage);
+            handled = onControlMessage(modifiedHeader, std::move(instance), payload);
         }
         else
         {
-            handled = onRegularMessage(modifiedMessage);
+            handled = onRegularMessage(modifiedHeader, std::move(instance), payload);
         }
 
         if (not handled)
         {
             string objName;
-            if (msg.header().nameSpace.isValid()) objName = "::" + *msg.header().nameSpace + "::";
-            objName += *msg.header().destinationGroup;
+            if (transportHeader.nameSpace.isValid()) objName = "::" + *transportHeader.nameSpace + "::";
+            objName += *transportHeader.destinationGroup;
             string errorText = "invalid message received while in state " + to_string(m_connectionState) + ": " + objName;
             LOG_WARN_S(errorText);
             // send false response
@@ -176,7 +179,7 @@ void Connection::onReceivedMessage(const Message &msg)
     catch(const std::exception& e)
     {
         string errorReport = "exception in receive [";
-        errorReport += "dstGrp=" + *msg.header().destinationGroup;
+        errorReport += "dstGrp=" + *transportHeader.destinationGroup;
         errorReport += ",state=" + to_string(m_connectionState);
         errorReport += string("]:") + e.what();
 
@@ -212,10 +215,10 @@ void Connection::onReceivedMessage(const Message &msg)
  *                           |            |                 |           |           |
  * @endcode
  */
-bool Connection::onControlMessage(const Message &msg)
+bool Connection::onControlMessage(const DotsTransportHeader& transportHeader, type::AnyStruct&& instance, const std::vector<uint8_t>& payload)
 {
-    const auto& typeName = *msg.header().dotsHeader->typeName;
-    const auto& data = msg.data();
+    const auto& typeName = *transportHeader.dotsHeader->typeName;
+    const auto& data = payload;
     bool handled = false;
 
     switch(m_connectionState)
@@ -239,7 +242,7 @@ bool Connection::onControlMessage(const Message &msg)
         case DotsConnectionState::connected:
             if (typeName == "DotsMember")
             {
-                processMemberMessage(msg.header(), dots::decodeInto_cbor<DotsMember>(data), this);
+                processMemberMessage(transportHeader, dots::decodeInto_cbor<DotsMember>(data), this);
                 handled = true;
             }
             else if (typeName == "EnumDescriptorData")
@@ -247,7 +250,7 @@ bool Connection::onControlMessage(const Message &msg)
                 auto enumDescriptorData = dots::decodeInto_cbor<EnumDescriptorData>(data);
                 enumDescriptorData.publisherId(id());
                 type::EnumDescriptor::createFromEnumDescriptorData(enumDescriptorData);
-                m_connectionManager.deliverMessage(msg);
+                m_connectionManager.deliver(transportHeader, std::move(instance), payload);
                 handled = true;
             }
             else if (typeName == "StructDescriptorData")
@@ -256,12 +259,12 @@ bool Connection::onControlMessage(const Message &msg)
                 structDescriptorData.publisherId(id());
                 LOG_DEBUG_S("received struct descriptor: " << structDescriptorData.name);
                 type::StructDescriptor::createFromStructDescriptorData(structDescriptorData);
-                m_connectionManager.deliverMessage(msg);
+                m_connectionManager.deliver(transportHeader, std::move(instance), payload);
                 handled = true;
             }
             else if (typeName == "DotsClearCache")
             {
-                m_connectionManager.deliverMessage(msg);
+                m_connectionManager.deliver(transportHeader, std::move(instance), payload);
                 handled = true;
             }
             break;
@@ -279,7 +282,7 @@ bool Connection::onControlMessage(const Message &msg)
     return handled;
 }
 
-bool Connection::onRegularMessage(const Message &msg)
+bool Connection::onRegularMessage(const DotsTransportHeader& transportHeader, type::AnyStruct&& instance, const std::vector<uint8_t>& payload)
 {
     bool handled = false;
     switch (m_connectionState)
@@ -291,7 +294,7 @@ bool Connection::onRegularMessage(const Message &msg)
         case DotsConnectionState::connected:
         {
             // Normal operation
-            m_connectionManager.deliverMessage(msg);
+            m_connectionManager.deliver(transportHeader, std::move(instance), payload);
             handled = true;
         }
             break;
@@ -323,12 +326,12 @@ void Connection::setConnectionState(const DotsConnectionState& state)
 	DotsClient{ DotsClient::id_t_i{ id() }, DotsClient::connectionState_t_i{ state } }._publish();
 }
 
-void Connection::send(const Message &msg)
+void Connection::send(const DotsTransportHeader& header, const type::Struct& instance, const std::vector<uint8_t>& /*payload*/)
 {
     try
     {
-        logRxTx(RxTx::tx, msg.header());
-        m_channel->transmit(msg.header(), msg.data());
+        logRxTx(RxTx::tx, header);
+        m_channel->transmit(header, instance);
     }
     catch(const std::exception& e)
     {
@@ -379,7 +382,7 @@ void Connection::onChannelError(int ec)
 
 void Connection::sendNs(const string &nameSpace,
                         const type::StructDescriptor *td,
-                        const void *data,
+                        const type::Struct& instance,
                         property_set properties,
                         bool remove)
 {
@@ -388,11 +391,8 @@ void Connection::sendNs(const string &nameSpace,
     if (not nameSpace.empty()) header.nameSpace(nameSpace);
     header.dotsHeader->sender(m_connectionManager.serverInfo().id());
 
-    // prepareBuffer
-    m_transmitter.prepareBuffer(td, data, header, properties);
-
     // Send to peer or group
-    send({header, m_transmitter.buffer()});
+    send(header, instance);
 }
 
 void Connection::logRxTx(Connection::RxTx rxtx, const DotsTransportHeader &header)
@@ -445,11 +445,8 @@ void Connection::sendContainerContent(const AnyContainer &container)
         dotsHeader.sender(e.information.lastUpdateFrom);
         dotsHeader.fromCache(--remainingCacheObjects);
 
-        // prepareBuffer
-        m_transmitter.prepareBuffer(td, e.data, thead, td->validProperties(e.data));
-
         // Send to peer or group
-        send({thead, m_transmitter.buffer()});
+        send(thead, *reinterpret_cast<dots::type::Struct*>(e.data), {});
     }
 
     DotsCacheInfo dotsCacheInfo;

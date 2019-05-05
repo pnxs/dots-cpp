@@ -19,17 +19,19 @@ namespace dots
 		m_headerBuffer.resize(1024);
 	}
 
-	void TcpChannel::asyncReceive(std::function<void(const Message&)>&& receiveHandler, std::function<void(int ec)>&& errorHandler)
+	void TcpChannel::asyncReceive(receive_handler_t&& receiveHandler, error_handler_t&& errorHandler)
 	{
 		m_cb = std::move(receiveHandler);
 		m_ecb = std::move(errorHandler);
 		readHeaderLength();
 	}
 
-	int TcpChannel::transmit(const DotsTransportHeader& header, const vector<uint8_t>& data)
+	int TcpChannel::transmit(const DotsTransportHeader& header, const type::Struct& instance)
 	{
+		std::string payload = to_cbor(instance, header.dotsHeader->attributes);
+
 		DotsTransportHeader _header(header);
-		_header.payloadSize = data.size();
+		_header.payloadSize = payload.size();
 
 		auto headerBuffer = to_cbor(_header);
 		uint16_t headerSize = headerBuffer.size();
@@ -37,7 +39,7 @@ namespace dots
 		std::array<asio::const_buffer, 3> buffers{
 			asio::buffer(&headerSize, sizeof(headerSize)),
 			asio::buffer(headerBuffer.data(), headerBuffer.size()),
-			asio::buffer(&data[0], data.size())
+			asio::buffer(payload.data(), payload.size())
 		};
 
 		m_socket.write_some(buffers);
@@ -171,7 +173,17 @@ namespace dots
 
 			if (m_cb)
 			{
-				m_cb(Message(m_header, m_buffer));
+				if (const type::StructDescriptor* descriptor = type::Descriptor::registry().findStructDescriptor(m_header.dotsHeader->typeName); descriptor == nullptr)
+				{
+					// TODO: error handling
+					throw std::runtime_error{ "unknown type: " + *m_header.dotsHeader->typeName };
+				}
+				else
+				{
+					type::AnyStruct instance{ *descriptor };
+					from_cbor(m_buffer.data(), m_buffer.size(), descriptor, &instance.get());
+					m_cb(m_header, std::move(instance), m_buffer);
+				}
 			}
 
 			this->readHeaderLength();

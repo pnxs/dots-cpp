@@ -9,7 +9,6 @@
 #include "DotsConnectionState.dots.h"
 #include "DotsMsgConnect.dots.h"
 #include "DotsMember.dots.h"
-#include "dots/io/Message.h"
 
 namespace dots {
 
@@ -47,7 +46,7 @@ public:
      * Directly send a Message to the client.
      * @param msg Message-object
      */
-    virtual void send(const Message& msg);
+    virtual void send(const DotsTransportHeader& header, const type::Struct& instance, const std::vector<uint8_t>& payload = {});
 
     /*!
      * @return true if the client said, the it is intrested in DotsMember-messages.
@@ -61,9 +60,9 @@ public:
      * @param data A reference to the DOTS-object
      */
     template<class T>
-    void sendNs(const string& nameSpace, const T& data)
+    void sendNs(const string& nameSpace, const T& instance)
     {
-        sendNs(nameSpace, &data._Descriptor(), &data, data._validProperties(), false);
+        sendNs(nameSpace, &instance._Descriptor(), instance, instance._validProperties(), false);
     }
 
     /*!
@@ -72,9 +71,9 @@ public:
      * @param data A reference to the DOTS-object
      */
     template<class T>
-    void send(const T& data)
+    void send(const T& instance)
     {
-        sendNs({}, &T::_Descriptor(), &data, data._validProperties(), false);
+        sendNs({}, &T::_Descriptor(), instance, instance._validProperties(), false);
     }
 
     /*!
@@ -85,7 +84,7 @@ public:
      * @param properties which properties should be send?
      * @param remove send normal or remove object?
      */
-    void sendNs(const string& nameSpace, const type::StructDescriptor* td, const void* data, property_set properties, bool remove);
+    void sendNs(const string& nameSpace, const type::StructDescriptor* td, const type::Struct& instance, property_set properties, bool remove);
 
     void sendContainerContent(const AnyContainer &container);
 
@@ -101,9 +100,9 @@ private:
     void logRxTx(RxTx, const DotsTransportHeader& header);
 
     void onChannelError(int ec);
-    void onReceivedMessage(const Message &msg);
-    bool onControlMessage(const Message &msg);
-    bool onRegularMessage(const Message &msg);
+    void onReceivedMessage(const DotsTransportHeader& transportHeader, type::AnyStruct&& instance, const std::vector<uint8_t>& payload);
+    bool onControlMessage(const DotsTransportHeader& transportHeader, type::AnyStruct&& instance, const std::vector<uint8_t>& payload);
+    bool onRegularMessage(const DotsTransportHeader& transportHeader, type::AnyStruct&& instance, const std::vector<uint8_t>& payload);
 
     void setConnectionState(const DotsConnectionState& state);
 

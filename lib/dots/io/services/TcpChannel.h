@@ -15,8 +15,8 @@ namespace dots
 		TcpChannel& operator = (const TcpChannel& rhs) = delete;
 		TcpChannel& operator = (TcpChannel&& rhs) = delete;
 
-		void asyncReceive(std::function<void(const Message&)>&& receiveHandler, std::function<void(int ec)>&& errorHandler) override;
-		int transmit(const DotsTransportHeader& header, const std::vector <uint8_t>& data = {}) override;
+		void asyncReceive(receive_handler_t&& receiveHandler, error_handler_t&& errorHandler) override;
+		int transmit(const DotsTransportHeader& header, const type::Struct& instance) override;
 
 	private:
 
@@ -33,8 +33,8 @@ namespace dots
 
 		void handleError(const std::string& text, const asio::error_code& error);
 
-		std::function<void(const Message&)> m_cb;
-		std::function<void(int ec)> m_ecb;
+		receive_handler_t m_cb;
+		error_handler_t m_ecb;
 
 		asio::ip::tcp::socket m_socket;
 

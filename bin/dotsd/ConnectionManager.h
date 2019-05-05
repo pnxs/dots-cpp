@@ -67,7 +67,7 @@ public:
      * Deliver a message to all subscribed connections.
      * @param message
      */
-    void deliverMessage(const Message &message);
+    void deliver(const DotsTransportHeader& transportHeader, const type::Struct& instance, const std::vector<uint8_t>& payload);
 
     /*!
      * Publishes a Object with a namespace

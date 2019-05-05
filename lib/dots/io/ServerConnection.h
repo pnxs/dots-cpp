@@ -57,7 +57,6 @@ public:
     void publishNs(const string& nameSpace, const type::StructDescriptor* td, const type::Struct& instance, property_set what = PROPERTY_SET_ALL, bool remove = false);
     // Server actions END
 
-    int send(const DotsTransportHeader& header, const vector<uint8_t>& data = {});
     const ClientId& clientId() const { return m_serversideClientname; }
 
     Channel& channel();
@@ -70,9 +69,9 @@ public:
 private:
     void handleConnected(const string &name);
     void handleDisconnected();
-    void onControlMessage(const Message &);
-    void onRegularMessage(const Message &msg);
-    void handleReceivedMessage(const Message &);
+    void onControlMessage(const DotsTransportHeader& transportHeader, type::AnyStruct&& instance, const std::vector<uint8_t>& payload);
+    void onRegularMessage(const DotsTransportHeader& transportHeader, type::AnyStruct&& instance, const std::vector<uint8_t>& payload);
+    void handleReceivedMessage(const DotsTransportHeader& transportHeader, type::AnyStruct&& instance, const std::vector<uint8_t>& payload);
 
     void processConnectResponse(const DotsMsgConnectResponse &cr);
     void processEarlySubscribe(const DotsMsgConnectResponse &cr);
