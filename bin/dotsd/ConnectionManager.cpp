@@ -199,6 +199,10 @@ void ConnectionManager::processMemberMessage(const DotsTransportHeader& /*header
         {
             connection->sendContainerContent(*containerPtr);
         }
+        else
+        {
+            connection->sendCacheEnd(typeName);
+        }
     }
 }
 
@@ -355,8 +359,9 @@ void ConnectionManager::handleDescriptorRequest(const DotsDescriptorRequest::Cbd
         });
     }
 
-    DotsCacheInfo dotsCacheInfo;
-    dotsCacheInfo.endDescriptorRequest(true);
+    DotsCacheInfo dotsCacheInfo {
+        DotsCacheInfo::endDescriptorRequest_t_i{true}
+    };
     connection->sendNs("SYS", dotsCacheInfo);
 }
 
