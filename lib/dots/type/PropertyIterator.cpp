@@ -8,7 +8,7 @@ namespace dots::type
 		_innerIterator(std::move(innerIterator)),
 		_set(set)
 	{
-		if (!emplaceProxy().isPartOf(_set))
+		if (!hasReachedEnd() && !emplaceProxy().isPartOf(_set))
 		{
 			++(*this);
 		}
@@ -36,7 +36,7 @@ namespace dots::type
 		{
 			++_innerIterator;
 
-			if (emplaceProxy().isPartOf(_set))
+			if (hasReachedEnd() || emplaceProxy().isPartOf(_set))
 			{
 				break;
 			}
