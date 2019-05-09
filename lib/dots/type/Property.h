@@ -177,28 +177,24 @@ namespace dots::type
 
 		value_t& assign(const Derived& rhs)
 		{
-			if (rhs.isValid())
+			if (!rhs.isValid())
 			{
-				assign(rhs.valueReference());
+				throw std::runtime_error{ std::string{ "attempt to assign from invalid property: " } + qualifiedName() };
 			}
-			else
-			{
-				destroy();
-			}
+			
+			assign(rhs.valueReference());
 
 			return *this;
 		}
 
 		value_t& assign(Derived&& rhs)
 		{
-			if (rhs.isValid())
+			if (!rhs.isValid())
 			{
-				assign(rhs.extractUnchecked());
+				throw std::runtime_error{ std::string{ "attempt to assign from invalid property: " } + qualifiedName() };
 			}
-			else
-			{
-				destroy();
-			}
+
+			assign(rhs.extractUnchecked());
 
 			return *this;
 		}
