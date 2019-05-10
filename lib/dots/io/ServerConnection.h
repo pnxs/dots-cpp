@@ -15,12 +15,11 @@ namespace dots
 
 struct ReceiveMessageData
 {
-    const uint8_t* data;
-    size_t length;
     ClientId sender;
     string group;
     TimePoint sentTime;
     const DotsHeader& header;
+    const type::Struct& instance;
     bool isFromMyself;
 };
 
@@ -69,9 +68,9 @@ public:
 private:
     void handleConnected(const string &name);
     void handleDisconnected();
-    void onControlMessage(const DotsTransportHeader& transportHeader, type::AnyStruct&& instance, const std::vector<uint8_t>& payload);
-    void onRegularMessage(const DotsTransportHeader& transportHeader, type::AnyStruct&& instance, const std::vector<uint8_t>& payload);
-    void handleReceivedMessage(const DotsTransportHeader& transportHeader, type::AnyStruct&& instance, const std::vector<uint8_t>& payload);
+    void onControlMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission);
+    void onRegularMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission);
+    bool handleReceivedMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission);
 
     void processConnectResponse(const DotsMsgConnectResponse &cr);
     void processEarlySubscribe(const DotsMsgConnectResponse &cr);

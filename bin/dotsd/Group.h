@@ -1,6 +1,7 @@
 #pragma once
 
 #include "dots/cpp_config.h"
+#include <dots/io/services/Transmission.h>
 #include "DotsMember.dots.h"
 #include <DotsTransportHeader.dots.h>
 
@@ -51,7 +52,7 @@ public:
 
     virtual const ConnectionList& connections() const { return m_connections; }
 
-    virtual void deliver(const DotsTransportHeader& transportHeader, const type::Struct& instance, const std::vector<uint8_t>& payload);
+    virtual void deliver(const DotsTransportHeader& transportHeader, const Transmission& transmission);
 };
 
 typedef string GroupKey;

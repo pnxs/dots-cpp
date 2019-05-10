@@ -140,7 +140,7 @@ void Group::sendLeave(Connection *connection)
     }
 
 }
-void Group::deliver(const DotsTransportHeader& transportHeader, const type::Struct& instance, const std::vector<uint8_t>&/* payload*/)
+void Group::deliver(const DotsTransportHeader& transportHeader, const Transmission& transmission)
 {
     LOG_DEBUG_S("deliver message group:" << this << "(" << name() << ")");
     // Dispatch message to all connections, registered to the group
@@ -155,7 +155,7 @@ void Group::deliver(const DotsTransportHeader& transportHeader, const type::Stru
             if (connection->state() == DotsConnectionState::connected
                 or connection->state() == DotsConnectionState::suspended)
             {
-                connection->send(transportHeader, instance, {});
+                connection->send(transportHeader, transmission);
             }
         }
     }

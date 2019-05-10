@@ -1,6 +1,5 @@
 #include "Dispatcher.h"
 #include "dots/type/Registry.h"
-#include "dots/io/serialization/CborNativeSerialization.h"
 
 namespace dots
 {
@@ -45,59 +44,45 @@ void Dispatcher::dispatchMessage(const ReceiveMessageData &rmd)
 {
     auto& typeName = rmd.group;
 
-    auto td = type::Descriptor::registry().findStructDescriptor(typeName);
-    if (td)
+    const TypedescSignalPtr& signal = m_typeSignalMap[typeName];
+    const auto& typelessSignal = m_typelessSignalMap[typeName];
+    if (signal || typelessSignal)
     {
-        // create object to deserialize data into
-        auto obj = td->make_shared();
-
-        from_cbor(rmd.data, rmd.length, td, obj.get());
-
-        const TypedescSignalPtr& signal = m_typeSignalMap[typeName];
-        const auto& typelessSignal = m_typelessSignalMap[typeName];
-        if (signal || typelessSignal)
+        if (not rmd.instance._descriptor().internal())
         {
-            if (not td->internal())
-            {
-                (*m_statistics.packages)++;
-                (*m_statistics.bytes) += rmd.length;
-            }
-
-            DotsHeader header(rmd.header);
-
-            if (not header.removeObj.isValid()) {
-                header.removeObj = false;
-            }
-
-            header.sender = rmd.sender;
-            header.sentTime = rmd.sentTime;
-            header.isFromMyself = rmd.isFromMyself;
-
-            if (typelessSignal)
-            {
-                TypelessCbd typelessCbd{header, typelessSignal->td(), obj.get(), obj, rmd.length};
-                (*typelessSignal)(&typelessCbd);
-            }
-
-            if (signal)
-            {
-                auto container = signal->container();
-
-                if (container) {
-                    container->processTypeless(header, (Typeless) obj.get(), *signal);
-                }
-            }
-
+            (*m_statistics.packages)++;
+            (*m_statistics.bytes) += 1; // TODO: find other form of metric (e.g. effective memory size)
         }
-        else
+
+        DotsHeader header(rmd.header);
+
+        if (not header.removeObj.isValid()) {
+            header.removeObj = false;
+        }
+
+        header.sender = rmd.sender;
+        header.sentTime = rmd.sentTime;
+        header.isFromMyself = rmd.isFromMyself;
+
+        if (typelessSignal)
         {
-            LOG_DEBUG_S("no receiver registered for type " << typeName);
+            TypelessCbd typelessCbd{ header, rmd.instance };
+            (*typelessSignal)(&typelessCbd);
+        }
+
+        if (signal)
+        {
+            auto container = signal->container();
+
+            if (container) {
+                container->processTypeless(header, rmd.instance, *signal);
+            }
         }
 
     }
     else
     {
-        LOG_WARN_S("unable to dispatch message (" << rmd.group << "), because TD is not in pool.");
+        LOG_DEBUG_S("no receiver registered for type " << typeName);
     }
 }
 

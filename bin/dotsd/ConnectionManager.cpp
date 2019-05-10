@@ -58,7 +58,7 @@ void ConnectionManager::stop_all()
  */
 void ConnectionManager::onReceivedMessage(const dots::TypelessCbd* cbd, dots::AnyContainer &container)
 {
-    container.process(cbd->header, cbd->data);
+    container.process(cbd->header, cbd->instance);
 }
 
 /*!
@@ -122,7 +122,7 @@ void ConnectionManager::onNewType(const dots::type::StructDescriptor* td)
     m_dispatcher.addTypelessReceiver(td, bind(&ConnectionManager::onReceivedMessage, this, _1, std::ref(*container)));
 }
 
-void ConnectionManager::deliver(const DotsTransportHeader& transportHeader, const type::Struct& instance, const std::vector<uint8_t>& payload)
+void ConnectionManager::deliver(const DotsTransportHeader& transportHeader, const Transmission& transmission)
 {
     const DotsHeader& dotsHeader = *transportHeader.dotsHeader;
     bool isFromMySelf = false;
@@ -139,12 +139,11 @@ void ConnectionManager::deliver(const DotsTransportHeader& transportHeader, cons
         if(m_CacheEnabled)
         {
             dots::ReceiveMessageData rmd = {
-                payload.data(),
-                payload.size(),
                 dotsHeader.sender.isValid() ? *dotsHeader.sender : 0,
                 transportHeader.destinationGroup,
                 dotsHeader.sentTime,
                 dotsHeader,
+                transmission.instance(),
                 isFromMySelf
             };
 
@@ -152,7 +151,7 @@ void ConnectionManager::deliver(const DotsTransportHeader& transportHeader, cons
         }
 
         Group *grp = m_groupManager.getGroup({ transportHeader.destinationGroup });
-        if (grp) grp->deliver(transportHeader, instance, payload);
+        if (grp) grp->deliver(transportHeader, transmission);
 
         return;
     }
@@ -163,7 +162,7 @@ void ConnectionManager::deliver(const DotsTransportHeader& transportHeader, cons
         auto dstConnection = findConnection(transportHeader.destinationClientId);
         if (dstConnection)
         {
-            dstConnection->send(transportHeader, instance, payload);
+            dstConnection->send(transportHeader, transmission);
         }
     }
 }
@@ -425,19 +424,19 @@ void ConnectionManager::publishNs(const string &nameSpace,
     header.dotsHeader->sender(serverInfo().id());
     if (not nameSpace.empty()) header.nameSpace(nameSpace);
 
-    // prepareBuffer
-    m_transmitter.prepareBuffer(td, &instance, header, properties);
+    // TODO: avoid local copy
+    Transmission transmission{ type::AnyStruct{ instance } };
 
     // Send to peer or group
     if (processLocal)
     {
-        deliver(header, instance, m_transmitter.buffer());
+        deliver(header, transmission);
     }
     else {
         if(header.destinationGroup.isValid())
         {
             Group *grp = m_groupManager.getGroup({header.destinationGroup});
-            if (grp) grp->deliver(header, instance, m_transmitter.buffer());
+            if (grp) grp->deliver(header, transmission);
         }
     }
 }

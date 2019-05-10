@@ -46,7 +46,9 @@ public:
      * Directly send a Message to the client.
      * @param msg Message-object
      */
-    virtual void send(const DotsTransportHeader& header, const type::Struct& instance, const std::vector<uint8_t>& payload = {});
+    virtual void send(const DotsTransportHeader& header, const type::Struct& instance);
+
+    virtual void send(const DotsTransportHeader& header, const Transmission& transmission);
 
     /*!
      * @return true if the client said, the it is intrested in DotsMember-messages.
@@ -100,9 +102,9 @@ private:
     void logRxTx(RxTx, const DotsTransportHeader& header);
 
     void onChannelError(int ec);
-    void onReceivedMessage(const DotsTransportHeader& transportHeader, type::AnyStruct&& instance, const std::vector<uint8_t>& payload);
-    bool onControlMessage(const DotsTransportHeader& transportHeader, type::AnyStruct&& instance, const std::vector<uint8_t>& payload);
-    bool onRegularMessage(const DotsTransportHeader& transportHeader, type::AnyStruct&& instance, const std::vector<uint8_t>& payload);
+    bool onReceivedMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission);
+    bool onControlMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission);
+    bool onRegularMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission);
 
     void setConnectionState(const DotsConnectionState& state);
 

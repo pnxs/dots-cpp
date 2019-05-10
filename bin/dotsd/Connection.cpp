@@ -3,7 +3,6 @@
 #include "ConnectionManager.h"
 #include "AuthManager.h"
 #include "dots/type/Registry.h"
-#include "dots/io/serialization/CborNativeSerialization.h"
 
 #include "DotsMsgConnectResponse.dots.h"
 #include "DotsMsgError.dots.h"
@@ -130,7 +129,7 @@ void Connection::processConnectPreloadClientFinished(const DotsMsgConnect& msg)
  * -----------+--------------------------+
  * @endcode
  */
-void Connection::onReceivedMessage(const DotsTransportHeader& transportHeader, type::AnyStruct&& instance, const std::vector<uint8_t>& payload)
+bool Connection::onReceivedMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission)
 {
     LOG_DEBUG_S("onReceivedMessage:");
     bool handled = false;
@@ -153,11 +152,11 @@ void Connection::onReceivedMessage(const DotsTransportHeader& transportHeader, t
         // Check for DOTS control message-types
         if (transportHeader.nameSpace.isValid() && *transportHeader.nameSpace == "SYS")
         {
-            handled = onControlMessage(modifiedHeader, std::move(instance), payload);
+            handled = onControlMessage(modifiedHeader, std::move(transmission));
         }
         else
         {
-            handled = onRegularMessage(modifiedHeader, std::move(instance), payload);
+            handled = onRegularMessage(modifiedHeader, std::move(transmission));
         }
 
         if (not handled)
@@ -192,6 +191,8 @@ void Connection::onReceivedMessage(const DotsTransportHeader& transportHeader, t
 
         stop();
     }
+
+    return m_channel != nullptr;
 }
 
 /**
@@ -215,10 +216,10 @@ void Connection::onReceivedMessage(const DotsTransportHeader& transportHeader, t
  *                           |            |                 |           |           |
  * @endcode
  */
-bool Connection::onControlMessage(const DotsTransportHeader& transportHeader, type::AnyStruct&& instance, const std::vector<uint8_t>& payload)
+bool Connection::onControlMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission)
 {
+    Transmission transmission_ = std::move(transmission);
     const auto& typeName = *transportHeader.dotsHeader->typeName;
-    const auto& data = payload;
     bool handled = false;
 
     switch(m_connectionState)
@@ -227,14 +228,14 @@ bool Connection::onControlMessage(const DotsTransportHeader& transportHeader, ty
             // Only accept DotsMsgConnect messages (MsgType connect)
             if (typeName == "DotsMsgConnect")
             {    // Check authentication and authorization;
-                 processConnectRequest(dots::decodeInto_cbor<DotsMsgConnect>(data));
+                 processConnectRequest(static_cast<const DotsMsgConnect&>(transmission_.instance().get()));
                 handled = true;
             }
             break;
         case DotsConnectionState::early_subscribe:
             if (typeName == "DotsMsgConnect")
             {    // Check authentication and authorization;
-                processConnectPreloadClientFinished(dots::decodeInto_cbor<DotsMsgConnect>(data));
+                processConnectPreloadClientFinished(static_cast<const DotsMsgConnect&>(transmission_.instance().get()));
                 handled = true;
             }
             //No break here: Falltrough
@@ -242,29 +243,29 @@ bool Connection::onControlMessage(const DotsTransportHeader& transportHeader, ty
         case DotsConnectionState::connected:
             if (typeName == "DotsMember")
             {
-                processMemberMessage(transportHeader, dots::decodeInto_cbor<DotsMember>(data), this);
+                processMemberMessage(transportHeader, static_cast<const DotsMember&>(transmission_.instance().get()), this);
                 handled = true;
             }
             else if (typeName == "EnumDescriptorData")
             {
-                auto enumDescriptorData = dots::decodeInto_cbor<EnumDescriptorData>(data);
+                auto enumDescriptorData = static_cast<const EnumDescriptorData&>(transmission_.instance().get());
                 enumDescriptorData.publisherId(id());
                 type::EnumDescriptor::createFromEnumDescriptorData(enumDescriptorData);
-                m_connectionManager.deliver(transportHeader, std::move(instance), payload);
+                m_connectionManager.deliver(transportHeader, transmission_);
                 handled = true;
             }
             else if (typeName == "StructDescriptorData")
             {
-                auto structDescriptorData = dots::decodeInto_cbor<StructDescriptorData>(data);
+                auto structDescriptorData = static_cast<const StructDescriptorData&>(transmission_.instance().get());
                 structDescriptorData.publisherId(id());
                 LOG_DEBUG_S("received struct descriptor: " << structDescriptorData.name);
                 type::StructDescriptor::createFromStructDescriptorData(structDescriptorData);
-                m_connectionManager.deliver(transportHeader, std::move(instance), payload);
+                m_connectionManager.deliver(transportHeader, transmission_);
                 handled = true;
             }
             else if (typeName == "DotsClearCache")
             {
-                m_connectionManager.deliver(transportHeader, std::move(instance), payload);
+                m_connectionManager.deliver(transportHeader, transmission_);
                 handled = true;
             }
             break;
@@ -282,8 +283,9 @@ bool Connection::onControlMessage(const DotsTransportHeader& transportHeader, ty
     return handled;
 }
 
-bool Connection::onRegularMessage(const DotsTransportHeader& transportHeader, type::AnyStruct&& instance, const std::vector<uint8_t>& payload)
+bool Connection::onRegularMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission)
 {
+    Transmission transmission_ = std::move(transmission);
     bool handled = false;
     switch (m_connectionState)
     {
@@ -294,7 +296,7 @@ bool Connection::onRegularMessage(const DotsTransportHeader& transportHeader, ty
         case DotsConnectionState::connected:
         {
             // Normal operation
-            m_connectionManager.deliver(transportHeader, std::move(instance), payload);
+            m_connectionManager.deliver(transportHeader, transmission_);
             handled = true;
         }
             break;
@@ -326,12 +328,26 @@ void Connection::setConnectionState(const DotsConnectionState& state)
 	DotsClient{ DotsClient::id_t_i{ id() }, DotsClient::connectionState_t_i{ state } }._publish();
 }
 
-void Connection::send(const DotsTransportHeader& header, const type::Struct& instance, const std::vector<uint8_t>& /*payload*/)
+void Connection::send(const DotsTransportHeader& header, const type::Struct& instance)
 {
     try
     {
         logRxTx(RxTx::tx, header);
         m_channel->transmit(header, instance);
+    }
+    catch(const std::exception& e)
+    {
+        LOG_WARN_S("exception: " << e.what())
+        kill();
+    }
+}
+
+void Connection::send(const DotsTransportHeader& header, const Transmission& transmission)
+{
+    try
+    {
+        logRxTx(RxTx::tx, header);
+        m_channel->transmit(header, transmission);
     }
     catch(const std::exception& e)
     {
@@ -446,7 +462,7 @@ void Connection::sendContainerContent(const AnyContainer &container)
         dotsHeader.fromCache(--remainingCacheObjects);
 
         // Send to peer or group
-        send(thead, *reinterpret_cast<dots::type::Struct*>(e.data), {});
+        send(thead, *reinterpret_cast<dots::type::Struct*>(e.data));
     }
 
     DotsCacheInfo dotsCacheInfo;

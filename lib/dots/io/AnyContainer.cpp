@@ -75,19 +75,19 @@ AnyContainer::const_iterator AnyContainer::find(const AnyElement &e) const
     return m_container.find(e);
 }
 
-Mt AnyContainer::process(const DotsHeader &header, Typeless data, const signal_type *signal)
+Mt AnyContainer::process(const DotsHeader &header, const type::Struct& instance, const signal_type *signal)
 {
     auto now = pnxs::SystemNow();
     Mt mt = Mt::remove;
 
-    auto transmitted_keyfields = td()->validProperties(data) & td()->keys();
+    auto transmitted_keyfields = instance._validProperties() & td()->keys();
 
     if (transmitted_keyfields != td()->keys())
     {
         throw std::runtime_error("AnyContainer::process: not all key-fields of " + td()->name() + " are set. Set=" + transmitted_keyfields.to_string() + " Expected=" + td()->keys().to_string());
     }
 
-    AnyElement element(data, {header.sentTime});
+    AnyElement element(&instance, {header.sentTime});
     element.information.modified(header.sentTime);
 
     if (not td()->cached())
@@ -153,12 +153,12 @@ Mt AnyContainer::process(const DotsHeader &header, Typeless data, const signal_t
         if(inserted)
         {
             Writable(e.data) = td()->New(); // create new element data
-            td()->swap(e.data, data, header.attributes); // copy arrived data to element data
+            reinterpret_cast<type::Struct*>(e.data)->_copy(instance, header.attributes); // copy arrived data to element data
         }
         else
         {
             // incremental update element with received data attributes, except keys
-            td()->swap(e.data, data, *header.attributes & ~td()->keys());
+            reinterpret_cast<type::Struct*>(e.data)->_copy(instance, *header.attributes & ~td()->keys());
         }
 
         mt = inserted ? Mt::create : Mt::update;

@@ -5,7 +5,6 @@
 #include "DotsMember.dots.h"
 #include "DotsCacheInfo.dots.h"
 #include "DotsDescriptorRequest.dots.h"
-#include "dots/io/serialization/CborNativeSerialization.h"
 #include "dots/io/serialization/AsciiSerialization.h"
 #include "Transmitter.h"
 
@@ -112,27 +111,34 @@ void ServerConnection::handleDisconnected()
     }
 }
 
-void ServerConnection::handleReceivedMessage(const DotsTransportHeader& transportHeader, type::AnyStruct&& instance, const std::vector<uint8_t>& payload)
+bool ServerConnection::handleReceivedMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission)
 {
-    try {
+    try 
+    {
         if (transportHeader.nameSpace.isValid() && transportHeader.nameSpace == "SYS")
         {
-            onControlMessage(transportHeader, std::move(instance), payload);
-        } else
+            onControlMessage(transportHeader, std::move(transmission));
+        } 
+        else
         {
-            onRegularMessage(transportHeader, std::move(instance), payload);
+            onRegularMessage(transportHeader, std::move(transmission));
         }
+
+        return true;
     }
-    catch (const std::exception& e) {
+    catch (const std::exception& e) 
+    {
         LOG_ERROR_S("exception in receive: " << e.what());
         stop();
+
+        return false;
     }
 }
 
-void ServerConnection::onControlMessage(const DotsTransportHeader& transportHeader, type::AnyStruct&& instance, const std::vector<uint8_t>& payload)
+void ServerConnection::onControlMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission)
 {
+    Transmission transmission_ = std::move(transmission);
     const auto& typeName = *transportHeader.dotsHeader->typeName;
-    const auto& data = payload;
     const auto& dotsHeader = *transportHeader.dotsHeader;
 
     switch(m_connectionState)
@@ -140,17 +146,17 @@ void ServerConnection::onControlMessage(const DotsTransportHeader& transportHead
         case DotsConnectionState::connecting:
             if (typeName == "DotsMsgHello")
             {
-                processHello(decodeInto_cbor<DotsMsgHello>(data));
+                processHello(static_cast<const DotsMsgHello&>(transmission_.instance().get()));
             }
             else if (typeName == "DotsMsgConnectResponse")
             {
-                processConnectResponse(decodeInto_cbor<DotsMsgConnectResponse>(data));
+                processConnectResponse(static_cast<const DotsMsgConnectResponse&>(transmission_.instance().get()));
             }
             break;
         case DotsConnectionState::early_subscribe:
             if (typeName == "DotsMsgConnectResponse")
             {
-                processEarlySubscribe(decodeInto_cbor<DotsMsgConnectResponse>(data));
+                processEarlySubscribe(static_cast<const DotsMsgConnectResponse&>(transmission_.instance().get()));
             }
             // No break here: falltrough
             // process all messages, put non-cache messages into buffer
@@ -164,12 +170,11 @@ void ServerConnection::onControlMessage(const DotsTransportHeader& transportHead
             }
 
             ReceiveMessageData rmd = {
-                    &data[0],
-                    data.size(),
                     dotsHeader.sender,
                     transportHeader.destinationGroup,
                     dotsHeader.sentTime,
                     dotsHeader,
+                    transmission.instance(),
                     (dotsHeader.sender == m_serversideClientname)
             };
 
@@ -187,10 +192,10 @@ void ServerConnection::onControlMessage(const DotsTransportHeader& transportHead
 
 }
 
-void ServerConnection::onRegularMessage(const DotsTransportHeader& transportHeader, type::AnyStruct&& instance, const std::vector<uint8_t>& payload)
+void ServerConnection::onRegularMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission)
 {
+    Transmission transmission_ = std::move(transmission);
     const auto& typeName = *transportHeader.dotsHeader->typeName;
-    const auto& data = payload;
     const auto& dotsHeader = *transportHeader.dotsHeader;
 
     switch(m_connectionState)
@@ -203,12 +208,11 @@ void ServerConnection::onRegularMessage(const DotsTransportHeader& transportHead
             LOG_DATA_S("dispatch message " << typeName);
 
             ReceiveMessageData rmd = {
-                &data[0],
-                data.size(),
                 dotsHeader.sender,
                 transportHeader.destinationGroup,
                 dotsHeader.sentTime,
                 dotsHeader,
+                transmission.instance(),
                 (dotsHeader.sender == m_serversideClientname)
             };
 

@@ -170,6 +170,7 @@ namespace dots
 			LOG_DATA_S("received payload: " << m_payloadSize);
 
 			m_buffer.resize(bytes);
+			bool readNext = true;
 
 			if (m_cb)
 			{
@@ -182,11 +183,14 @@ namespace dots
 				{
 					type::AnyStruct instance{ *descriptor };
 					from_cbor(m_buffer.data(), m_buffer.size(), descriptor, &instance.get());
-					m_cb(m_header, std::move(instance), m_buffer);
+					readNext = m_cb(m_header, Transmission{ std::move(instance) });
 				}
 			}
 
-			this->readHeaderLength();
+			if (readNext)
+			{
+				this->readHeaderLength();				
+			}
 		});
 	}
 
