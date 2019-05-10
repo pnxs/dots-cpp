@@ -122,6 +122,26 @@ namespace dots::type
 		void _publish(const property_set& what = PROPERTY_SET_ALL, bool remove = false) const;
 		void _remove(const property_set& what = PROPERTY_SET_ALL) const;
 
+        template <typename T>
+        bool _is() const
+        {
+            static_assert(std::is_base_of_v<Struct, T>, "T has to be a sub-class of Struct");
+            return &T::_Descriptor() == _desc;
+        }
+
+        template <typename T>
+        const T* _as() const
+        {
+            static_assert(std::is_base_of_v<Struct, T>, "T has to be a sub-class of Struct");
+            return _is<T>() ? static_cast<const T*>(this) : nullptr;
+        }
+
+        template <typename T>
+        T* _as()
+        {
+            return const_cast<T*>(std::as_const(*this)._as<T>());
+        }
+
     protected:
 
 		static constexpr uint8_t Uncached      = 0b0000'0000;
