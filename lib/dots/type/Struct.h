@@ -117,6 +117,7 @@ namespace dots::type
 		bool _less(const Struct& rhs) const;
 
 		property_set _diffProperties(const Struct& other) const;
+		bool _hasProperties(const property_set properties) const;
 
 		void _publish(const property_set& what = PROPERTY_SET_ALL, bool remove = false) const;
 		void _remove(const property_set& what = PROPERTY_SET_ALL) const;

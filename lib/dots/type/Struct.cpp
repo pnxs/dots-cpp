@@ -362,6 +362,11 @@ namespace dots::type
         return symmetricDiff;
     }
 
+    bool Struct::_hasProperties(const property_set properties) const
+    {
+        return (properties & _validPropSet) == properties;
+    }
+
     void Struct::_publish(const property_set& includedProperties/* = PROPERTY_SET_ALL*/, bool remove/* = false*/) const
     {
         onPublishObject->publish(&_descriptor(), *this, includedProperties == PROPERTY_SET_ALL ? _validPropSet : includedProperties, remove);
