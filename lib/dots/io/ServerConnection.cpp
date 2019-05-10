@@ -212,7 +212,7 @@ void ServerConnection::onRegularMessage(const DotsTransportHeader& transportHead
                 transportHeader.destinationGroup,
                 dotsHeader.sentTime,
                 dotsHeader,
-                transmission.instance(),
+                transmission_.instance(),
                 (dotsHeader.sender == m_serversideClientname)
             };
 
