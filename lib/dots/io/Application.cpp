@@ -31,7 +31,7 @@ namespace dots
 		LOG_DEBUG_S("run one done");
 
 		DotsClient{ DotsClient::id_t_i{ transceiver().connection().clientId() }, DotsClient::running_t_i{ true } }._publish();
-	}
+		}
 
 	Application::~Application()
 	{
@@ -49,7 +49,7 @@ namespace dots
 	int Application::execOne(const std::chrono::milliseconds& timeout)
 	{
 		m_exitCode = 0;
-		global_io_context().run_one_for(std::chrono::milliseconds{ 10 });
+		global_io_context().run_one_for(timeout);
 
 		return m_exitCode;
 	}
