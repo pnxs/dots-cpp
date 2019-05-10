@@ -345,9 +345,6 @@ void ConnectionManager::handleDescriptorRequest(const DotsDescriptorRequest::Cbd
             thead.dotsHeader->sentTime = pnxs::SystemNow();
             thead.dotsHeader->sender(this->serverInfo().id());
 
-            // prepareBuffer
-            m_transmitter.prepareBuffer(td, body, thead, td->validProperties(body));
-
             // Send to peer or group
             connection->send(thead, *reinterpret_cast<const type::Struct*>(body));
         });
