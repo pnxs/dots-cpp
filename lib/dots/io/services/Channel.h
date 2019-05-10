@@ -20,10 +20,10 @@ namespace dots
 		Channel& operator = (Channel&& rhs) = delete;
 
 		virtual void asyncReceive(receive_handler_t&& receiveHandler, error_handler_t&& errorHandler) = 0;
-		virtual int transmit(const DotsTransportHeader& header, const type::Struct& instance) = 0;
-		virtual int transmit(const DotsTransportHeader& header, const Transmission& transmission)
+		virtual void transmit(const DotsTransportHeader& header, const type::Struct& instance) = 0;
+		virtual void transmit(const DotsTransportHeader& header, const Transmission& transmission)
 		{
-			return transmit(header, transmission.instance().get());
+			transmit(header, transmission.instance().get());
 		}
 	};
 

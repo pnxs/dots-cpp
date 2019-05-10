@@ -26,7 +26,7 @@ namespace dots
 		readHeaderLength();
 	}
 
-	int TcpChannel::transmit(const DotsTransportHeader& header, const type::Struct& instance)
+	void TcpChannel::transmit(const DotsTransportHeader& header, const type::Struct& instance)
 	{
 		std::string payload = to_cbor(instance, header.dotsHeader->attributes);
 
@@ -43,8 +43,6 @@ namespace dots
 		};
 
 		m_socket.write_some(buffers);
-
-		return 0;
 	}
 
 	bool TcpChannel::connect(const std::string& host, int port)
