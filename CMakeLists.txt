@@ -9,7 +9,6 @@ set(Boost_USE_STATIC_LIBS ON)
 
 option(WITH_QT5   "Build with Qt5 support" OFF)
 option(BUILD_XDOTS "Build the xdots utility" ON)
-option(BUILD_NDOTS "Build the ndots utility" ON)
 option(BUILD_UNIT_TESTS "Build the unit tests" ON)
 
 # optional dependencies
@@ -25,10 +24,6 @@ add_subdirectory(lib/dots)
 add_subdirectory(bin/dotsd)
 add_subdirectory(bin/dots-web-connector)
 add_subdirectory(bin/utils/dotsctl)
-add_subdirectory(bin/utils/dotstrace)
-add_subdirectory(bin/utils/dots_record)
-add_subdirectory(bin/utils/dotscli)
-add_subdirectory(bin/examples/dots-test)
 add_subdirectory(bin/examples/testClient)
 
 if (Sqlite3_FOUND)
@@ -43,8 +38,4 @@ endif()
 if (WITH_QT5)
     add_subdirectory(bin/utils/qdots2)
     add_subdirectory(bin/utils/dots_qplay)
-endif()
-
-if (BUILD_NDOTS)
-    add_subdirectory(bin/utils/ndots)
 endif()
