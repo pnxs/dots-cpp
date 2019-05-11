@@ -67,6 +67,7 @@ target_sources(${TARGET_NAME}
 		io/services/TcpChannel.cpp
 		io/services/Timer.cpp
 		io/services/TimerService.cpp
+		io/services/Transmission.cpp
 		io/services/VirtualChannel.cpp
 		io/recording/FileStore.cpp
 		io/recording/Load.cpp
