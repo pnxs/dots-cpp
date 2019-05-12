@@ -35,7 +35,7 @@ namespace dots
 		uint16_t m_headerSize = 0;
 		uint32_t m_payloadSize = 0;
 		DotsTransportHeader m_header;
-		std::vector <uint8_t> m_buffer;
-		std::vector <uint8_t> m_headerBuffer;
+		std::vector<uint8_t> m_buffer;
+		std::vector<uint8_t> m_headerBuffer;
 	};
 }
