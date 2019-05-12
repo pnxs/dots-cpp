@@ -21,10 +21,10 @@ namespace dots
 
 	private:
 
-		void readHeaderLength();
-		void readHeader();
-		void readPayload();
-		
+		void asynReadHeaderLength();
+		void asyncReadHeader();
+		void asyncReadPayload();
+
 		void handleError(const std::string& text, const asio::error_code& error);
 
 		receive_handler_t m_cb;

@@ -42,7 +42,7 @@ namespace dots
 	{
 		m_cb = std::move(receiveHandler);
 		m_ecb = std::move(errorHandler);
-		readHeaderLength();
+		asynReadHeaderLength();
 	}
 
 	void TcpChannel::transmit(const DotsTransportHeader& header, const type::Struct& instance)
@@ -64,7 +64,7 @@ namespace dots
 		m_socket.write_some(buffers);
 	}
 
-	void TcpChannel::readHeaderLength()
+	void TcpChannel::asynReadHeaderLength()
 	{
 		asio::async_read(m_socket, asio::buffer(&m_headerSize, sizeof(m_headerSize)), [&](auto ec, auto /*bytes*/)
 		{
@@ -80,11 +80,11 @@ namespace dots
 				return;
 			}
 
-			this->readHeader();
+			this->asyncReadHeader();
 		});
 	}
 
-	void TcpChannel::readHeader()
+	void TcpChannel::asyncReadHeader()
 	{
 		asio::async_read(m_socket, asio::buffer(&m_headerBuffer[0], m_headerSize), [&](auto ec, auto bytes)
 		{
@@ -115,7 +115,7 @@ namespace dots
 				if (m_header.payloadSize.isValid())
 				{
 					m_payloadSize = m_header.payloadSize;
-					this->readPayload();
+					this->asyncReadPayload();
 				}
 				else
 				{
@@ -132,7 +132,7 @@ namespace dots
 		});
 	}
 
-	void TcpChannel::readPayload()
+	void TcpChannel::asyncReadPayload()
 	{
 		m_buffer.resize(m_payloadSize);
 		asio::async_read(m_socket, asio::buffer(&m_buffer[0], m_payloadSize), [&](auto ec, auto bytes)
@@ -164,7 +164,7 @@ namespace dots
 
 			if (readNext)
 			{
-				this->readHeaderLength();				
+				this->asynReadHeaderLength();				
 			}
 		});
 	}
