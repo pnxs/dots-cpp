@@ -23,7 +23,7 @@ namespace dots
 
 		void asynReadHeaderLength();
 		void asyncReadHeader();
-		void asyncReadPayload();
+		void asyncReadInstance();
 
 		void handleError(const std::string& text, const asio::error_code& error);
 
@@ -31,11 +31,9 @@ namespace dots
 		error_handler_t m_ecb;
 
 		asio::ip::tcp::socket m_socket;
-
-		uint16_t m_headerSize = 0;
-		uint32_t m_payloadSize = 0;
+		uint16_t m_headerSize;
 		DotsTransportHeader m_header;
-		std::vector<uint8_t> m_buffer;
 		std::vector<uint8_t> m_headerBuffer;
+		std::vector<uint8_t> m_instanceBuffer;
 	};
 }

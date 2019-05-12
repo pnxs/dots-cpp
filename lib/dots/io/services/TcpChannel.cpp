@@ -31,10 +31,11 @@ namespace dots
 		throw std::runtime_error{ "could not open TCP connection: " + std::string{ host } + ":" + std::string{ port } };
 	}
 
-	TcpChannel::TcpChannel(asio::ip::tcp::socket&& socket)
-		: m_socket(std::move(socket))
+	TcpChannel::TcpChannel(asio::ip::tcp::socket&& socket) :		
+		m_socket{ std::move(socket) },
+		m_headerSize(0)
 	{
-		m_buffer.resize(8192);
+		m_instanceBuffer.resize(8192);
 		m_headerBuffer.resize(1024);
 	}
 
@@ -47,18 +48,18 @@ namespace dots
 
 	void TcpChannel::transmit(const DotsTransportHeader& header, const type::Struct& instance)
 	{
-		std::string payload = to_cbor(instance, header.dotsHeader->attributes);
+		std::string serializedInstance = to_cbor(instance, header.dotsHeader->attributes);
 
-		DotsTransportHeader _header(header);
-		_header.payloadSize = payload.size();
+		DotsTransportHeader header_(header);
+		header_.payloadSize = serializedInstance.size();
 
-		auto headerBuffer = to_cbor(_header);
-		uint16_t headerSize = headerBuffer.size();
+		auto serializedHeader = to_cbor(header_);
+		uint16_t headerSize = serializedHeader.size();
 
 		std::array<asio::const_buffer, 3> buffers{
 			asio::buffer(&headerSize, sizeof(headerSize)),
-			asio::buffer(headerBuffer.data(), headerBuffer.size()),
-			asio::buffer(payload.data(), payload.size())
+			asio::buffer(serializedHeader.data(), serializedHeader.size()),
+			asio::buffer(serializedInstance.data(), serializedInstance.size())
 		};
 
 		m_socket.write_some(buffers);
@@ -114,8 +115,8 @@ namespace dots
 
 				if (m_header.payloadSize.isValid())
 				{
-					m_buffer.resize(m_header.payloadSize);
-					asyncReadPayload();
+					m_instanceBuffer.resize(m_header.payloadSize);
+					asyncReadInstance();
 				}
 				else
 				{
@@ -132,16 +133,16 @@ namespace dots
 		});
 	}
 
-	void TcpChannel::asyncReadPayload()
+	void TcpChannel::asyncReadInstance()
 	{
-		asio::async_read(m_socket, asio::buffer(m_buffer), [&](auto ec, auto bytes)
+		asio::async_read(m_socket, asio::buffer(m_instanceBuffer), [&](auto ec, auto bytes)
 		{
 			if (ec)
 			{
-				handleError("error in readPayload", ec);
+				handleError("error in asyncReadInstance", ec);
 				return;
 			}
-			LOG_DATA_S("received payload: " << m_buffer.size());
+			LOG_DATA_S("received payload: " << m_instanceBuffer.size());
 
 			bool readNext = true;
 
@@ -155,7 +156,7 @@ namespace dots
 				else
 				{
 					type::AnyStruct instance{ *descriptor };
-					from_cbor(m_buffer.data(), m_buffer.size(), descriptor, &instance.get());
+					from_cbor(m_instanceBuffer.data(), m_instanceBuffer.size(), descriptor, &instance.get());
 					readNext = m_cb(m_header, Transmission{ std::move(instance) });
 				}
 			}
