@@ -62,6 +62,7 @@ target_sources(${TARGET_NAME}
 		io/serialization/JsonSerialization.cpp
 		io/serialization/AsciiSerialization.cpp
 		io/serialization/CborNativeSerialization.cpp
+		io/services/Channel.cpp
 		io/services/FdHandlerService.cpp
 		io/services/TcpListener.cpp
 		io/services/TcpChannel.cpp

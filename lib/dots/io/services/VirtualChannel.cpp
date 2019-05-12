@@ -20,16 +20,48 @@ namespace dots
         }
         else
         {
-            m_connectionState = DotsConnectionState::connecting;
+            m_connectionState = DotsConnectionState::closed;
         }
 	}
 
-	void VirtualChannel::asyncReceive(receive_handler_t&& receiveHandler, error_handler_t&&/* errorHandler*/)
-	{
-		m_receiveHandler = std::move(receiveHandler);
-
-        if (m_connectionState == DotsConnectionState::connecting)
+    void VirtualChannel::spoof(const DotsTransportHeader& header, const type::Struct& instance)
+    {
+        asio::post(m_ioContext.get(), [this, _header = header, _instance = type::AnyStruct{ instance }]() mutable
         {
+            _header.dotsHeader->sender.constructOrValue(ClientId);
+            _header.dotsHeader->serverSentTime(pnxs::SystemNow{});
+            processReceive(_header, Transmission{ std::move(_instance) });
+        });
+    }
+    
+    void VirtualChannel::spoof(uint32_t sender, const type::Struct& instance, bool remove/* = false*/)
+    {
+        const type::StructDescriptor& descriptor = instance._descriptor();
+
+        DotsTransportHeader transportHeader{
+            DotsTransportHeader::destinationGroup_t_i{ descriptor.name() },
+            DotsTransportHeader::dotsHeader_t_i{
+                DotsHeader::typeName_t_i{ descriptor.name() },
+                DotsHeader::sentTime_t_i{ pnxs::SystemNow() },
+                DotsHeader::attributes_t_i{ instance._validProperties() },
+                DotsHeader::sender_t_i{ sender },
+                DotsHeader::removeObj_t_i{ remove },
+            }
+        };
+
+        if (descriptor.internal())
+        {
+            transportHeader.nameSpace("SYS");
+        }
+
+        spoof(transportHeader, instance);
+    }
+
+	void VirtualChannel::asyncReceiveImpl()
+	{
+        if (m_connectionState == DotsConnectionState::closed)
+        {
+            m_connectionState = DotsConnectionState::connecting;
             spoof(ServerId, DotsMsgHello{
                 DotsMsgHello::serverName_t_i{ m_serverName },
                 DotsMsgHello::authChallenge_t_i{ 0 }
@@ -37,7 +69,7 @@ namespace dots
         }        
 	}
 
-	void VirtualChannel::transmit(const DotsTransportHeader& header, const type::Struct& instance)
+	void VirtualChannel::transmitImpl(const DotsTransportHeader& header, const type::Struct& instance)
 	{
         if (header.nameSpace == "SYS")
         {
@@ -112,39 +144,6 @@ namespace dots
             }
         }		
 	}
-
-    void VirtualChannel::spoof(const DotsTransportHeader& header, const type::Struct& instance)
-    {
-        asio::post(m_ioContext.get(), [this, _header = header, _instance = type::AnyStruct{ instance }]() mutable
-        {
-            _header.dotsHeader->sender.constructOrValue(ClientId);
-            _header.dotsHeader->serverSentTime(pnxs::SystemNow{});
-            m_receiveHandler(_header, Transmission{ std::move(_instance) });
-        });
-    }
-    
-    void VirtualChannel::spoof(uint32_t sender, const type::Struct& instance, bool remove/* = false*/)
-    {
-        const type::StructDescriptor& descriptor = instance._descriptor();
-
-        DotsTransportHeader transportHeader{
-            DotsTransportHeader::destinationGroup_t_i{ descriptor.name() },
-            DotsTransportHeader::dotsHeader_t_i{
-                DotsHeader::typeName_t_i{ descriptor.name() },
-                DotsHeader::sentTime_t_i{ pnxs::SystemNow() },
-                DotsHeader::attributes_t_i{ instance._validProperties() },
-                DotsHeader::sender_t_i{ sender },
-                DotsHeader::removeObj_t_i{ remove },
-            }
-        };
-
-        if (descriptor.internal())
-        {
-            transportHeader.nameSpace("SYS");
-        }
-
-        spoof(transportHeader, instance);
-    }
 
     void VirtualChannel::onConnected()
     {

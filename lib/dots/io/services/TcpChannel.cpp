@@ -39,14 +39,12 @@ namespace dots
 		m_headerBuffer.resize(1024);
 	}
 
-	void TcpChannel::asyncReceive(receive_handler_t&& receiveHandler, error_handler_t&& errorHandler)
+	void TcpChannel::asyncReceiveImpl()
 	{
-		m_cb = std::move(receiveHandler);
-		m_ecb = std::move(errorHandler);
 		asynReadHeaderLength();
 	}
 
-	void TcpChannel::transmit(const DotsTransportHeader& header, const type::Struct& instance)
+	void TcpChannel::transmitImpl(const DotsTransportHeader& header, const type::Struct& instance)
 	{
 		std::string serializedInstance = to_cbor(instance, header.dotsHeader->attributes);
 
@@ -144,26 +142,16 @@ namespace dots
 			}
 			LOG_DATA_S("received payload: " << m_instanceBuffer.size());
 
-			bool readNext = true;
-
-			if (m_cb)
+			if (const type::StructDescriptor* descriptor = type::Descriptor::registry().findStructDescriptor(m_header.dotsHeader->typeName); descriptor == nullptr)
 			{
-				if (const type::StructDescriptor* descriptor = type::Descriptor::registry().findStructDescriptor(m_header.dotsHeader->typeName); descriptor == nullptr)
-				{
-					// TODO: error handling
-					throw std::runtime_error{ "unknown type: " + *m_header.dotsHeader->typeName };
-				}
-				else
-				{
-					type::AnyStruct instance{ *descriptor };
-					from_cbor(m_instanceBuffer.data(), m_instanceBuffer.size(), descriptor, &instance.get());
-					readNext = m_cb(m_header, Transmission{ std::move(instance) });
-				}
+				// TODO: error handling
+				throw std::runtime_error{ "unknown type: " + *m_header.dotsHeader->typeName };
 			}
-
-			if (readNext)
+			else
 			{
-				asynReadHeaderLength();				
+				type::AnyStruct instance{ *descriptor };
+				from_cbor(m_instanceBuffer.data(), m_instanceBuffer.size(), descriptor, &instance.get());
+				processReceive(m_header, Transmission{ std::move(instance) });
 			}
 		});
 	}
@@ -182,9 +170,6 @@ namespace dots
 			LOG_ERROR_S("error " << text << " ec: " << ec);
 		}
 
-		if (m_ecb)
-		{
-			m_ecb(errorCode);
-		}
+		processError(errorCode);
 	}
 }

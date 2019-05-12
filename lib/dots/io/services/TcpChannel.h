@@ -16,8 +16,10 @@ namespace dots
 		TcpChannel& operator = (const TcpChannel& rhs) = delete;
 		TcpChannel& operator = (TcpChannel&& rhs) = delete;
 
-		void asyncReceive(receive_handler_t&& receiveHandler, error_handler_t&& errorHandler) override;
-		void transmit(const DotsTransportHeader& header, const type::Struct& instance) override;
+	protected:
+
+		void asyncReceiveImpl() override;
+		void transmitImpl(const DotsTransportHeader& header, const type::Struct& instance) override;
 
 	private:
 

@@ -19,12 +19,23 @@ namespace dots
 		Channel& operator = (const Channel& rhs) = delete;
 		Channel& operator = (Channel&& rhs) = delete;
 
-		virtual void asyncReceive(receive_handler_t&& receiveHandler, error_handler_t&& errorHandler) = 0;
-		virtual void transmit(const DotsTransportHeader& header, const type::Struct& instance) = 0;
-		virtual void transmit(const DotsTransportHeader& header, const Transmission& transmission)
-		{
-			transmit(header, transmission.instance().get());
-		}
+		void asyncReceive(receive_handler_t&& receiveHandler, error_handler_t&& errorHandler);
+		void transmit(const DotsTransportHeader& header, const type::Struct& instance);
+		void transmit(const DotsTransportHeader& header, const Transmission& transmission);
+
+	protected:
+
+		virtual void asyncReceiveImpl() = 0;
+		virtual void transmitImpl(const DotsTransportHeader& header, const type::Struct& instance) = 0;
+		virtual void transmitImpl(const DotsTransportHeader& header, const Transmission& transmission);
+
+		void processReceive(const DotsTransportHeader& haeder, Transmission&& transmission);
+		void processError(int ec);
+
+	private:
+
+		receive_handler_t m_receiveHandler;
+		error_handler_t m_errorHandler;
 	};
 
 	using channel_ptr_t = std::shared_ptr<Channel>;
