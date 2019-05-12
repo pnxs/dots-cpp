@@ -70,17 +70,17 @@ namespace dots
 		{
 			if (ec)
 			{
-				this->handleError("error in header-length", ec);
+				handleError("error in header-length", ec);
 				return;
 			}
 
 			if (m_headerSize > m_headerBuffer.size())
 			{
-				this->handleError("header-buffer to small for header of size " + std::to_string(m_headerSize), ec);
+				handleError("header-buffer to small for header of size " + std::to_string(m_headerSize), ec);
 				return;
 			}
 
-			this->asyncReadHeader();
+			asyncReadHeader();
 		});
 	}
 
@@ -90,7 +90,7 @@ namespace dots
 		{
 			if (ec)
 			{
-				this->handleError("error in readHeader", ec);
+				handleError("error in readHeader", ec);
 				return;
 			}
 
@@ -115,18 +115,18 @@ namespace dots
 				if (m_header.payloadSize.isValid())
 				{
 					m_payloadSize = m_header.payloadSize;
-					this->asyncReadPayload();
+					asyncReadPayload();
 				}
 				else
 				{
-					this->handleError("received header without payloadSize", ec);
+					handleError("received header without payloadSize", ec);
 				}
 			}
 			catch (const std::exception& e)
 			{
 				string msg = "exception in async-read handler: " + string(e.what());
 				LOG_ERROR_S(msg);
-				this->handleError(msg, std::make_error_code(std::errc::bad_message));
+				handleError(msg, std::make_error_code(std::errc::bad_message));
 			}
 
 		});
@@ -139,7 +139,7 @@ namespace dots
 		{
 			if (ec)
 			{
-				this->handleError("error in readPayload", ec);
+				handleError("error in readPayload", ec);
 				return;
 			}
 			LOG_DATA_S("received payload: " << m_payloadSize);
@@ -164,7 +164,7 @@ namespace dots
 
 			if (readNext)
 			{
-				this->asynReadHeaderLength();				
+				asynReadHeaderLength();				
 			}
 		});
 	}
