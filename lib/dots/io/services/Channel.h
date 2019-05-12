@@ -34,6 +34,7 @@ namespace dots
 
 	private:
 
+		bool m_asyncReceiveActive = false;
 		receive_handler_t m_receiveHandler;
 		error_handler_t m_errorHandler;
 	};
