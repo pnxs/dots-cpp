@@ -101,7 +101,7 @@ private:
     enum class RxTx { rx, tx };
     void logRxTx(RxTx, const DotsTransportHeader& header);
 
-    void onChannelError(int ec);
+    void onChannelError(const std::exception& e);
     bool onReceivedMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission);
     bool onControlMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission);
     bool onRegularMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission);

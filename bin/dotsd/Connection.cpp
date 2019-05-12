@@ -388,11 +388,9 @@ Connection::Connection(ConnectionManager &manager)
 
 }
 
-void Connection::onChannelError(int ec)
+void Connection::onChannelError(const std::exception& e)
 {
-    if (ec != 2) {
-        LOG_ERROR_S("channel error: " << ec);
-    }
+    LOG_ERROR_S("channel error: " << e.what());
     kill();
 }
 

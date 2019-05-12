@@ -44,11 +44,11 @@ namespace dots
         }
     }
 	
-    void Channel::processError(int ec)
+    void Channel::processError(const std::exception& e)
     {
         if (m_errorHandler != nullptr)
         {
-            m_errorHandler(ec);
+            m_errorHandler(e);
         }        
     }
 }

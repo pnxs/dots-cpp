@@ -158,18 +158,13 @@ namespace dots
 
 	void TcpChannel::handleError(const string& text, const asio::error_code& ec)
 	{
-		int errorCode = 1;
-
 		if (ec == asio::error::misc_errors::eof || ec == asio::error::basic_errors::bad_descriptor)
 		{
-			LOG_DEBUG_S(text << ": client closed connection");
-			errorCode = 2;
+			processError(std::runtime_error{ "TCP channel was closed unexpectedly: " + text + ": " + ec.message() });
 		}
 		else
 		{
-			LOG_ERROR_S("error " << text << " ec: " << ec);
+			processError(std::runtime_error{ "TCP channel error: " + text + ": " + ec.message() });
 		}
-
-		processError(errorCode);
 	}
 }

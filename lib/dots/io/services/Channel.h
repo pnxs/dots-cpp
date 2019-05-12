@@ -9,7 +9,7 @@ namespace dots
 	struct Channel
 	{
 		using receive_handler_t = std::function<bool(const DotsTransportHeader&, Transmission&&)>;
-		using error_handler_t = std::function<void(int)>;
+		using error_handler_t = std::function<void(const std::exception&)>;
 
 		Channel() = default;
 		Channel(const Channel& other) = delete;
@@ -30,7 +30,7 @@ namespace dots
 		virtual void transmitImpl(const DotsTransportHeader& header, const Transmission& transmission);
 
 		void processReceive(const DotsTransportHeader& haeder, Transmission&& transmission);
-		void processError(int ec);
+		void processError(const std::exception& e);
 
 	private:
 
