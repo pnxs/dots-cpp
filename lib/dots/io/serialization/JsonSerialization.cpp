@@ -61,7 +61,7 @@ static void write_atomic_types_to_json(const type::Descriptor *td, const void *d
         case type::DotsType::string:
             writer.String(*(const std::string *) data);
             break;
-        case type::DotsType::property_set: writer.Int(((const dots::property_set *) data)->value());
+        case type::DotsType::property_set: writer.Uint(((const dots::property_set *) data)->value());
             break;
         case type::DotsType::timepoint: writer.Double(((const pnxs::TimePoint *) data)->value());
             break;
