@@ -24,13 +24,7 @@ namespace dots
 		void readHeaderLength();
 		void readHeader();
 		void readPayload();
-
-		template<typename MutableBufferSequence, typename ReadHandler>
-		void asyncRead(const MutableBufferSequence& buffers, ASIO_MOVE_ARG(ReadHandler) handler)
-		{
-			asio::async_read(m_socket, buffers, handler);
-		}
-
+		
 		void handleError(const std::string& text, const asio::error_code& error);
 
 		receive_handler_t m_cb;

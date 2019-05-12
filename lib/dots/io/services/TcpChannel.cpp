@@ -66,7 +66,7 @@ namespace dots
 
 	void TcpChannel::readHeaderLength()
 	{
-		asyncRead(asio::buffer(&m_headerSize, sizeof(m_headerSize)), [&](auto ec, auto /*bytes*/)
+		asio::async_read(m_socket, asio::buffer(&m_headerSize, sizeof(m_headerSize)), [&](auto ec, auto /*bytes*/)
 		{
 			if (ec)
 			{
@@ -86,7 +86,7 @@ namespace dots
 
 	void TcpChannel::readHeader()
 	{
-		asyncRead(asio::buffer(&m_headerBuffer[0], m_headerSize), [&](auto ec, auto bytes)
+		asio::async_read(m_socket, asio::buffer(&m_headerBuffer[0], m_headerSize), [&](auto ec, auto bytes)
 		{
 			if (ec)
 			{
@@ -135,7 +135,7 @@ namespace dots
 	void TcpChannel::readPayload()
 	{
 		m_buffer.resize(m_payloadSize);
-		asyncRead(asio::buffer(&m_buffer[0], m_payloadSize), [&](auto ec, auto bytes)
+		asio::async_read(m_socket, asio::buffer(&m_buffer[0], m_payloadSize), [&](auto ec, auto bytes)
 		{
 			if (ec)
 			{
