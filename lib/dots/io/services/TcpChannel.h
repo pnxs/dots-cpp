@@ -20,7 +20,6 @@ namespace dots
 
 	private:
 
-		bool connect(const std::string& host, int port);
 		void readHeaderLength();
 		void readHeader();
 		void readPayload();

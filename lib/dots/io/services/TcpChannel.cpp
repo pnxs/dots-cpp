@@ -5,11 +5,43 @@
 namespace dots
 {
 	TcpChannel::TcpChannel(asio::io_context& ioContext, const std::string& host, int port) :
-		m_socket{ ioContext }
+		TcpChannel(asio::ip::tcp::socket{ ioContext })
 	{
-		connect(host, port);
-		m_buffer.resize(8192);
-		m_headerBuffer.resize(1024);
+		asio::ip::tcp::resolver resolver(m_socket.get_executor().context());
+		auto iter = resolver.resolve({ host, "", asio::ip::resolver_query_base::numeric_service });
+		decltype(iter) iterEnd;
+
+		for (; iter != iterEnd; ++iter)
+		{
+			const auto& address = iter->endpoint().address();
+			LOG_DEBUG_P("connect to %s (%s)", iter->host_name().c_str(), address.to_string().c_str());
+
+			if (address.is_v4())
+			{
+				auto ep_to_string = [](const asio::ip::tcp::endpoint & ep)
+				{
+					return ep.address().to_string() + ":" + std::to_string(ep.port());
+				};
+				asio::ip::tcp::endpoint ep(address, port);
+				asio::error_code ec;
+				m_socket.connect(ep, ec);
+
+				if (ec)
+				{
+					LOG_ERROR_P("unable to connect to socket '%s': %s",
+						ep_to_string(ep).c_str(),
+						ec.message().c_str());
+				}
+
+				LOG_INFO_P("connected to socket '%s'", ep_to_string(ep).c_str());
+
+				m_socket.set_option(asio::ip::tcp::no_delay(true), ec);
+				m_socket.set_option(asio::ip::tcp::socket::keep_alive(true), ec);
+				m_socket.set_option(asio::socket_base::linger(true, 10), ec);
+
+				break;
+			}
+		}
 	}
 
 	TcpChannel::TcpChannel(asio::ip::tcp::socket&& socket)
@@ -43,48 +75,6 @@ namespace dots
 		};
 
 		m_socket.write_some(buffers);
-	}
-
-	bool TcpChannel::connect(const std::string& host, int port)
-	{
-		asio::ip::tcp::resolver resolver(m_socket.get_executor().context());
-		auto iter = resolver.resolve({ host, "", asio::ip::resolver_query_base::numeric_service });
-		decltype(iter) iterEnd;
-
-		for (; iter != iterEnd; ++iter)
-		{
-			const auto& address = iter->endpoint().address();
-			LOG_DEBUG_P("connect to %s (%s)", iter->host_name().c_str(), address.to_string().c_str());
-
-			if (address.is_v4())
-			{
-				auto ep_to_string = [](const asio::ip::tcp::endpoint & ep)
-				{
-					return ep.address().to_string() + ":" + std::to_string(ep.port());
-				};
-				asio::ip::tcp::endpoint ep(address, port);
-				asio::error_code ec;
-				m_socket.connect(ep, ec);
-
-				if (ec)
-				{
-					LOG_ERROR_P("unable to connect to socket '%s': %s",
-						ep_to_string(ep).c_str(),
-						ec.message().c_str());
-					return false;
-				}
-
-				LOG_INFO_P("connected to socket '%s'", ep_to_string(ep).c_str());
-
-				m_socket.set_option(asio::ip::tcp::no_delay(true), ec);
-				m_socket.set_option(asio::ip::tcp::socket::keep_alive(true), ec);
-				m_socket.set_option(asio::socket_base::linger(true, 10), ec);
-
-				break;
-			}
-		}
-
-		return true;
 	}
 
 	void TcpChannel::readHeaderLength()
