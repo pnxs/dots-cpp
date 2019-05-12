@@ -13,6 +13,7 @@ find_package(ASIO REQUIRED MODULE)
 find_package(Boost 1.59 REQUIRED COMPONENTS filesystem iostreams program_options)
 find_package(Rapidjson REQUIRED MODULE)
 #find_package(cborcpp REQUIRED) (uncomment when dependency is no longer part of build tree)
+find_package(Websocketpp REQUIRED MODULE)
 
 # target
 if (BUILD_DOTS_SHARED)
@@ -59,9 +60,11 @@ target_sources(${TARGET_NAME}
 		io/ResourceUsage.cpp
 		io/DistributedTypeId.cpp
 		io/Filter.cpp
+
 		io/serialization/JsonSerialization.cpp
 		io/serialization/AsciiSerialization.cpp
 		io/serialization/CborNativeSerialization.cpp
+
 		io/services/Channel.cpp
 		io/services/FdHandlerService.cpp
 		io/services/TcpListener.cpp
@@ -70,6 +73,9 @@ target_sources(${TARGET_NAME}
 		io/services/TimerService.cpp
 		io/services/Transmission.cpp
 		io/services/VirtualChannel.cpp
+		io/services/WebSocketChannel.cpp
+		io/services/WebSocketListener.cpp
+
 		io/recording/FileStore.cpp
 		io/recording/Load.cpp
 		io/recording/MmapedFile.cpp
@@ -123,6 +129,7 @@ target_compile_definitions(${TARGET_NAME}
 target_link_libraries(${TARGET_NAME}
 	PUBLIC
 		$<BUILD_INTERFACE:ASIO::ASIO>
+		$<BUILD_INTERFACE:Websocketpp::websocketpp>
 		Boost::boost
 		Boost::program_options
 		Boost::iostreams
@@ -130,7 +137,7 @@ target_link_libraries(${TARGET_NAME}
 		pthread
 	PRIVATE
 		cborcpp
-		RapidJSON::RapidJSON
+		RapidJSON::RapidJSON		
 )
 set_target_properties(${TARGET_NAME} PROPERTIES
     SOVERSION 0
