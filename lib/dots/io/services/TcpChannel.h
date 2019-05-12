@@ -1,4 +1,5 @@
 #pragma once
+#include <string_view>
 #include <asio.hpp>
 #include <dots/io/services/Channel.h>
 
@@ -6,7 +7,7 @@ namespace dots
 {
 	struct TcpChannel : Channel
 	{
-		TcpChannel(asio::io_context& ioContext, const std::string& host, int port);
+		TcpChannel(asio::io_context& ioContext, const std::string_view& host, const std::string_view& port);
 		TcpChannel(asio::ip::tcp::socket&& socket);
 		TcpChannel(const TcpChannel& other) = delete;
 		TcpChannel(TcpChannel&& other) = delete;

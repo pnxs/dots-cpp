@@ -4,44 +4,31 @@
 
 namespace dots
 {
-	TcpChannel::TcpChannel(asio::io_context& ioContext, const std::string& host, int port) :
+	TcpChannel::TcpChannel(asio::io_context& ioContext, const std::string_view& host, const std::string_view& port) :
 		TcpChannel(asio::ip::tcp::socket{ ioContext })
 	{
-		asio::ip::tcp::resolver resolver(m_socket.get_executor().context());
-		auto iter = resolver.resolve({ host, "", asio::ip::resolver_query_base::numeric_service });
-		decltype(iter) iterEnd;
+		asio::ip::tcp::resolver resolver{ m_socket.get_executor().context() };
+		auto endpoints = resolver.resolve(asio::ip::tcp::socket::protocol_type::v4(), host, port, asio::ip::resolver_query_base::numeric_service);
 
-		for (; iter != iterEnd; ++iter)
+		for (const asio::ip::tcp::endpoint& endpoint: endpoints)
 		{
-			const auto& address = iter->endpoint().address();
-			LOG_DEBUG_P("connect to %s (%s)", iter->host_name().c_str(), address.to_string().c_str());
-
-			if (address.is_v4())
+			try
 			{
-				auto ep_to_string = [](const asio::ip::tcp::endpoint & ep)
-				{
-					return ep.address().to_string() + ":" + std::to_string(ep.port());
-				};
-				asio::ip::tcp::endpoint ep(address, port);
-				asio::error_code ec;
-				m_socket.connect(ep, ec);
+				m_socket.connect(endpoint);
 
-				if (ec)
-				{
-					LOG_ERROR_P("unable to connect to socket '%s': %s",
-						ep_to_string(ep).c_str(),
-						ec.message().c_str());
-				}
+				m_socket.set_option(asio::ip::tcp::no_delay(true));
+				m_socket.set_option(asio::ip::tcp::socket::keep_alive(true));
+				m_socket.set_option(asio::socket_base::linger(true, 10));
 
-				LOG_INFO_P("connected to socket '%s'", ep_to_string(ep).c_str());
-
-				m_socket.set_option(asio::ip::tcp::no_delay(true), ec);
-				m_socket.set_option(asio::ip::tcp::socket::keep_alive(true), ec);
-				m_socket.set_option(asio::socket_base::linger(true, 10), ec);
-
-				break;
+				return;
+			}
+			catch (const std::exception&/* e*/)
+			{
+				/* do nothing */
 			}
 		}
+
+		throw std::runtime_error{ "could not open TCP connection: " + std::string{ host } + ":" + std::string{ port } };
 	}
 
 	TcpChannel::TcpChannel(asio::ip::tcp::socket&& socket)

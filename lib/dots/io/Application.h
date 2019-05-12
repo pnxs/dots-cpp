@@ -24,6 +24,6 @@ namespace dots
 		inline static Application* m_instance = nullptr;		
 		int m_exitCode;
 		std::string m_serverAddress;
-		int m_serverPort;
+		std::string m_serverPort;
 	};
 }

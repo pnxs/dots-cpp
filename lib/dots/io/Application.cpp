@@ -73,7 +73,7 @@ namespace dots
 		po::options_description desc("Allowed options");
 		desc.add_options()
 			("dots-address", po::value<string>()->default_value("127.0.0.1"), "address to bind to")
-			("dots-port", po::value<int>()->default_value(11234), "port to bind to")
+			("dots-port", po::value<string>()->default_value("11234"), "port to bind to")
 			;
 
 		po::variables_map vm;
@@ -92,6 +92,6 @@ namespace dots
 		}
 
 		m_serverAddress = vm["dots-address"].as<string>();
-		m_serverPort = vm["dots-port"].as<int>();
+		m_serverPort = vm["dots-port"].as<string>();
 	}
 }
