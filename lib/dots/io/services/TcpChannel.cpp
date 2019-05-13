@@ -67,19 +67,21 @@ namespace dots
 	{
 		asio::async_read(m_socket, asio::buffer(&m_headerSize, sizeof(m_headerSize)), [&](auto ec, auto /*bytes*/)
 		{
-			if (ec)
+			try
 			{
-				handleError("error in header-length", ec);
-				return;
-			}
+				verifyErrorCode(ec);
 
-			if (m_headerSize > m_headerBuffer.size())
+				if (m_headerSize > m_headerBuffer.size())
+				{
+					throw std::runtime_error{ "header buffer too small for header of size: " + std::to_string(m_headerSize) };
+				}
+
+				asyncReadHeader();
+			}
+			catch (const std::exception& e)
 			{
-				handleError("header-buffer to small for header of size " + std::to_string(m_headerSize), ec);
-				return;
+				processError(e);
 			}
-
-			asyncReadHeader();
 		});
 	}
 
@@ -87,47 +89,26 @@ namespace dots
 	{
 		asio::async_read(m_socket, asio::buffer(m_headerBuffer.data(), m_headerSize), [&](auto ec, auto bytes)
 		{
-			if (ec)
-			{
-				handleError("error in readHeader", ec);
-				return;
-			}
-
 			try
 			{
-				// Decode header
-				m_header = DotsTransportHeader{};
+				verifyErrorCode(ec);
 
+				m_header = DotsTransportHeader{};
 				from_cbor(&m_headerBuffer[0], m_headerSize, &m_header._Descriptor(), &m_header);
 
-				string nameSpace = m_header.nameSpace.isValid() ? *m_header.nameSpace : "";
-				bool remove = false;
-				if (m_header.dotsHeader.isValid())
+				if (!m_header.payloadSize.isValid())
 				{
-					remove = m_header.dotsHeader->removeObj.isValid() ? m_header.dotsHeader->removeObj : false;
+					throw std::runtime_error{ "received header without payloadSize" };
 				}
 
-				LOG_DEBUG_S("received header (size=" << bytes << "): ns=" << nameSpace << " dstGrp="
-					<< *m_header.destinationGroup << " remove=" << remove
-					<< " payloadSize=" << m_header.payloadSize);
-
-				if (m_header.payloadSize.isValid())
-				{
-					m_instanceBuffer.resize(m_header.payloadSize);
-					asyncReadInstance();
-				}
-				else
-				{
-					handleError("received header without payloadSize", ec);
-				}
+				m_instanceBuffer.resize(m_header.payloadSize);
+				asyncReadInstance();
+				
 			}
 			catch (const std::exception& e)
 			{
-				string msg = "exception in async-read handler: " + string(e.what());
-				LOG_ERROR_S(msg);
-				handleError(msg, std::make_error_code(std::errc::bad_message));
+				processError(e);
 			}
-
 		});
 	}
 
@@ -135,36 +116,37 @@ namespace dots
 	{
 		asio::async_read(m_socket, asio::buffer(m_instanceBuffer), [&](auto ec, auto bytes)
 		{
-			if (ec)
+			try
 			{
-				handleError("error in asyncReadInstance", ec);
-				return;
-			}
-			LOG_DATA_S("received payload: " << m_instanceBuffer.size());
+				verifyErrorCode(ec);
 
-			if (const type::StructDescriptor* descriptor = type::Descriptor::registry().findStructDescriptor(m_header.dotsHeader->typeName); descriptor == nullptr)
-			{
-				// TODO: error handling
-				throw std::runtime_error{ "unknown type: " + *m_header.dotsHeader->typeName };
-			}
-			else
-			{
+				const type::StructDescriptor* descriptor = type::Descriptor::registry().findStructDescriptor(m_header.dotsHeader->typeName);
+
+				if (descriptor == nullptr)
+				{
+					throw std::runtime_error{ "encountered unknown type: " + *m_header.dotsHeader->typeName };
+				}
+
 				type::AnyStruct instance{ *descriptor };
 				from_cbor(m_instanceBuffer.data(), m_instanceBuffer.size(), descriptor, &instance.get());
 				processReceive(m_header, Transmission{ std::move(instance) });
 			}
+			catch (const std::exception e)
+			{
+				processError(e);
+			}
 		});
 	}
 
-	void TcpChannel::handleError(const string& text, const asio::error_code& ec)
+	void TcpChannel::verifyErrorCode(const asio::error_code& ec)
 	{
 		if (ec == asio::error::misc_errors::eof || ec == asio::error::basic_errors::bad_descriptor)
 		{
-			processError(std::runtime_error{ "TCP channel was closed unexpectedly: " + text + ": " + ec.message() });
+			throw std::runtime_error{ "channel was closed unexpectedly: " + ec.message() };
 		}
-		else
+		else if (ec)
 		{
-			processError(std::runtime_error{ "TCP channel error: " + text + ": " + ec.message() });
+			throw std::system_error{ ec };
 		}
 	}
 }

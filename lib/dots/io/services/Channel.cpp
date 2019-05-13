@@ -51,4 +51,17 @@ namespace dots
             m_errorHandler(e);
         }        
     }
+
+    void Channel::processError(const std::string& what)
+    {
+        processError(std::runtime_error{ what });
+    }
+
+    void Channel::verifyErrorCode(const std::error_code& errorCode)
+    {
+        if (errorCode)
+        {
+            throw std::system_error{ errorCode };
+        }
+    }
 }

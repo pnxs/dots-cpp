@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <system_error>
 #include <dots/io/services/Transmission.h>
 #include <DotsTransportHeader.dots.h>
 
@@ -31,6 +32,8 @@ namespace dots
 
 		void processReceive(const DotsTransportHeader& haeder, Transmission&& transmission);
 		void processError(const std::exception& e);
+		void processError(const std::string& what);
+		void verifyErrorCode(const std::error_code& errorCode);
 
 	private:
 

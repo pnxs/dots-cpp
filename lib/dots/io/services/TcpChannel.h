@@ -27,7 +27,7 @@ namespace dots
 		void asyncReadHeader();
 		void asyncReadInstance();
 
-		void handleError(const std::string& text, const asio::error_code& error);
+		void verifyErrorCode(const asio::error_code& error);
 
 		receive_handler_t m_cb;
 		error_handler_t m_ecb;

@@ -33,8 +33,6 @@ namespace dots
 
 	private:
 
-		void handleError(const std::string& what);
-
 		ws_connection_ptr_t m_connection;
 		std::optional<ws_client_t> m_client;
 	};
