@@ -63,7 +63,7 @@ void Server::asyncAccept()
 		auto connection = std::make_shared<Connection>(std::move(channel), m_connectionManager);
 		m_connectionManager.start(connection);
 
-		asyncAccept();
+		return true;
 	});
 }
 

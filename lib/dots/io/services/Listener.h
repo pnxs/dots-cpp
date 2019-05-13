@@ -6,6 +6,8 @@ namespace dots
 {
 	struct Listener
 	{
+		using accept_handler_t = std::function<bool(channel_ptr_t)>;
+
 		Listener() = default;
 		Listener(const Listener& other) = delete;
 		Listener(Listener&& other) = delete;
@@ -14,6 +16,16 @@ namespace dots
 		Listener& operator = (const Listener& rhs) = delete;
 		Listener& operator = (Listener&& rhs) = delete;
 
-		virtual void asyncAccept(std::function<void(channel_ptr_t)>&& handler) = 0;
+		void asyncAccept(accept_handler_t&& acceptHandler);
+
+	protected:
+
+		virtual void asyncAcceptImpl() = 0;
+		void processAccept(channel_ptr_t channel);
+
+	private:
+
+		bool m_asyncAcceptActive = false;
+		accept_handler_t m_acceptHandler;
 	};
 }

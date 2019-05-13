@@ -17,7 +17,9 @@ namespace dots
 		WebSocketListener& operator = (const WebSocketListener& rhs) = delete;
 		WebSocketListener& operator = (WebSocketListener&& rhs) = delete;
 
-		void asyncAccept(std::function<void(channel_ptr_t)>&& handler) override;
+	protected:
+
+		void asyncAcceptImpl() override;
 
 	private:
 

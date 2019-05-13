@@ -13,9 +13,9 @@ namespace dots
         m_wsServer.listen(port);
 	}
 
-	void WebSocketListener::asyncAccept(std::function<void(channel_ptr_t)>&& handler)
+	void WebSocketListener::asyncAcceptImpl()
 	{
-		m_wsServer.set_validate_handler([this, _handler{ std::move(handler) }](websocketpp::connection_hdl hdl)
+		m_wsServer.set_validate_handler([this](websocketpp::connection_hdl hdl)
 		{
 			ws_connection_ptr_t connection = m_wsServer.get_con_from_hdl(hdl);
             const std::vector<std::string>& subProtocols = connection->get_requested_subprotocols();
@@ -28,9 +28,9 @@ namespace dots
             else
             {
                 connection->select_subprotocol(*it);
-                connection->set_open_handler([&_handler, connection](ws_connection_hdl_t hdl)
+                connection->set_open_handler([this, connection](ws_connection_hdl_t hdl)
                 {
-                    _handler(std::make_shared<WebSocketChannel>(connection));
+                    processAccept(std::make_shared<WebSocketChannel>(connection));
                 });
 
                 return true;

@@ -18,9 +18,9 @@ namespace dots
 		m_acceptor.listen(backlog);
 	}
 
-	void TcpListener::asyncAccept(std::function<void(channel_ptr_t)>&& handler)
+	void TcpListener::asyncAcceptImpl()
 	{
-		m_acceptor.async_accept(m_socket, [this, handler = std::move(handler)](const asio::error_code& error)
+		m_acceptor.async_accept(m_socket, [this](const asio::error_code& error)
 		{
 			if (!m_acceptor.is_open())
 			{
@@ -49,7 +49,7 @@ namespace dots
 				}
 
 				// note: this move is explicitly allowed according to the ASIO v1.12.2 documentation of the socket
-				handler(std::make_shared<TcpChannel>(std::move(m_socket)));
+				processAccept(std::make_shared<TcpChannel>(std::move(m_socket)));
 			}
 			catch (const std::exception & e)
 			{
