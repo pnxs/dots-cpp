@@ -13,17 +13,7 @@
 namespace dots
 {
 
-struct ReceiveMessageData
-{
-    ClientId sender;
-    string group;
-    TimePoint sentTime;
-    const DotsHeader& header;
-    const type::Struct& instance;
-    bool isFromMyself;
-};
-
-typedef pnxs::Signal<void (const ReceiveMessageData& cbd)> ReceiveMessageSignal;
+typedef pnxs::Signal<void (const DotsHeader& header, const type::AnyStruct& instance)> ReceiveMessageSignal;
 
 /**
  * This class is a proxy to a dotsd server

@@ -122,32 +122,15 @@ void ConnectionManager::onNewType(const dots::type::StructDescriptor* td)
     m_dispatcher.addTypelessReceiver(td, bind(&ConnectionManager::onReceivedMessage, this, _1, std::ref(*container)));
 }
 
-void ConnectionManager::deliver(const DotsTransportHeader& transportHeader, const Transmission& transmission)
+void ConnectionManager::deliver(const DotsTransportHeader& transportHeader, Transmission&& transmission)
 {
-    const DotsHeader& dotsHeader = *transportHeader.dotsHeader;
-    bool isFromMySelf = false;
-
-    // Send to a group (fan-out)
     if(transportHeader.destinationGroup.isValid())
     {
-        if(dotsHeader.sender.isValid() && *dotsHeader.sender == 1)
-        {
-            LOG_DEBUG_P("own message \n");
-            isFromMySelf = true;
-        }
-
         if(m_CacheEnabled)
         {
-            dots::ReceiveMessageData rmd = {
-                dotsHeader.sender.isValid() ? *dotsHeader.sender : 0,
-                transportHeader.destinationGroup,
-                dotsHeader.sentTime,
-                dotsHeader,
-                transmission.instance(),
-                isFromMySelf
-            };
-
-            m_dispatcher.dispatchMessage(rmd);
+            DotsHeader dotsHeader = transportHeader.dotsHeader;
+            dotsHeader.isFromMyself(dotsHeader.sender == 1u);
+            m_dispatcher.dispatchMessage(dotsHeader, transmission.instance());
         }
 
         Group *grp = m_groupManager.getGroup({ transportHeader.destinationGroup });
@@ -427,13 +410,13 @@ void ConnectionManager::publishNs(const string &nameSpace,
     // Send to peer or group
     if (processLocal)
     {
-        deliver(header, transmission);
+        deliver(header, std::move(transmission));
     }
     else {
         if(header.destinationGroup.isValid())
         {
             Group *grp = m_groupManager.getGroup({header.destinationGroup});
-            if (grp) grp->deliver(header, transmission);
+            if (grp) grp->deliver(header, std::move(transmission));
         }
     }
 }

@@ -169,16 +169,9 @@ void ServerConnection::onControlMessage(const DotsTransportHeader& transportHead
                 // return;
             }
 
-            ReceiveMessageData rmd = {
-                    dotsHeader.sender,
-                    transportHeader.destinationGroup,
-                    dotsHeader.sentTime,
-                    dotsHeader,
-                    transmission.instance(),
-                    (dotsHeader.sender == m_serversideClientname)
-            };
-
-            onReceiveMessage(rmd);
+            DotsHeader dotsHeader = transportHeader.dotsHeader;
+            dotsHeader.isFromMyself(dotsHeader.sender == m_serversideClientname);
+            onReceiveMessage(dotsHeader, transmission.instance());
         }
 
             break;
@@ -194,10 +187,6 @@ void ServerConnection::onControlMessage(const DotsTransportHeader& transportHead
 
 void ServerConnection::onRegularMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission)
 {
-    Transmission transmission_ = std::move(transmission);
-    const auto& typeName = *transportHeader.dotsHeader->typeName;
-    const auto& dotsHeader = *transportHeader.dotsHeader;
-
     switch(m_connectionState)
     {
         case DotsConnectionState::connecting:
@@ -205,18 +194,9 @@ void ServerConnection::onRegularMessage(const DotsTransportHeader& transportHead
         case DotsConnectionState::early_subscribe:
         case DotsConnectionState::connected:
         {
-            LOG_DATA_S("dispatch message " << typeName);
-
-            ReceiveMessageData rmd = {
-                dotsHeader.sender,
-                transportHeader.destinationGroup,
-                dotsHeader.sentTime,
-                dotsHeader,
-                transmission_.instance(),
-                (dotsHeader.sender == m_serversideClientname)
-            };
-
-            onReceiveMessage(rmd);
+            DotsHeader dotsHeader = transportHeader.dotsHeader;
+            dotsHeader.isFromMyself(dotsHeader.sender == m_serversideClientname);
+            onReceiveMessage(dotsHeader, transmission.instance());
         }
             break;
         case DotsConnectionState::suspended:

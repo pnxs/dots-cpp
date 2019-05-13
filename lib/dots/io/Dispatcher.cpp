@@ -40,33 +40,22 @@ Dispatcher::TypedescSignalPtr Dispatcher::registerReceiver(const type::StructDes
     return signal;
 }
 
-void Dispatcher::dispatchMessage(const ReceiveMessageData &rmd)
+void Dispatcher::dispatchMessage(const DotsHeader& header, const type::AnyStruct& instance)
 {
-    auto& typeName = rmd.group;
+    const TypedescSignalPtr& signal = m_typeSignalMap[header.typeName];
+    const auto& typelessSignal = m_typelessSignalMap[header.typeName];
 
-    const TypedescSignalPtr& signal = m_typeSignalMap[typeName];
-    const auto& typelessSignal = m_typelessSignalMap[typeName];
     if (signal || typelessSignal)
     {
-        if (not rmd.instance._descriptor().internal())
+        if (not instance->_descriptor().internal())
         {
             (*m_statistics.packages)++;
             (*m_statistics.bytes) += 1; // TODO: find other form of metric (e.g. effective memory size)
         }
 
-        DotsHeader header(rmd.header);
-
-        if (not header.removeObj.isValid()) {
-            header.removeObj = false;
-        }
-
-        header.sender = rmd.sender;
-        header.sentTime = rmd.sentTime;
-        header.isFromMyself = rmd.isFromMyself;
-
         if (typelessSignal)
         {
-            TypelessCbd typelessCbd{ header, rmd.instance };
+            TypelessCbd typelessCbd{ header, instance };
             (*typelessSignal)(&typelessCbd);
         }
 
@@ -75,14 +64,13 @@ void Dispatcher::dispatchMessage(const ReceiveMessageData &rmd)
             auto container = signal->container();
 
             if (container) {
-                container->processTypeless(header, rmd.instance, *signal);
+                container->processTypeless(header, instance, *signal);
             }
         }
-
     }
     else
     {
-        LOG_DEBUG_S("no receiver registered for type " << typeName);
+        LOG_DEBUG_S("no receiver registered for type " << header.typeName);
     }
 }
 

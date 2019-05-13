@@ -218,7 +218,6 @@ bool Connection::onReceivedMessage(const DotsTransportHeader& transportHeader, T
  */
 bool Connection::onControlMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission)
 {
-    Transmission transmission_ = std::move(transmission);
     const auto& typeName = *transportHeader.dotsHeader->typeName;
     bool handled = false;
 
@@ -228,14 +227,14 @@ bool Connection::onControlMessage(const DotsTransportHeader& transportHeader, Tr
             // Only accept DotsMsgConnect messages (MsgType connect)
             if (typeName == "DotsMsgConnect")
             {    // Check authentication and authorization;
-                 processConnectRequest(static_cast<const DotsMsgConnect&>(transmission_.instance().get()));
+                 processConnectRequest(static_cast<const DotsMsgConnect&>(transmission.instance().get()));
                 handled = true;
             }
             break;
         case DotsConnectionState::early_subscribe:
             if (typeName == "DotsMsgConnect")
             {    // Check authentication and authorization;
-                processConnectPreloadClientFinished(static_cast<const DotsMsgConnect&>(transmission_.instance().get()));
+                processConnectPreloadClientFinished(static_cast<const DotsMsgConnect&>(transmission.instance().get()));
                 handled = true;
             }
             //No break here: Falltrough
@@ -243,29 +242,29 @@ bool Connection::onControlMessage(const DotsTransportHeader& transportHeader, Tr
         case DotsConnectionState::connected:
             if (typeName == "DotsMember")
             {
-                processMemberMessage(transportHeader, static_cast<const DotsMember&>(transmission_.instance().get()), this);
+                processMemberMessage(transportHeader, static_cast<const DotsMember&>(transmission.instance().get()), this);
                 handled = true;
             }
             else if (typeName == "EnumDescriptorData")
             {
-                auto enumDescriptorData = static_cast<const EnumDescriptorData&>(transmission_.instance().get());
+                auto enumDescriptorData = static_cast<const EnumDescriptorData&>(transmission.instance().get());
                 enumDescriptorData.publisherId(id());
                 type::EnumDescriptor::createFromEnumDescriptorData(enumDescriptorData);
-                m_connectionManager.deliver(transportHeader, transmission_);
+                m_connectionManager.deliver(transportHeader, std::move(transmission));
                 handled = true;
             }
             else if (typeName == "StructDescriptorData")
             {
-                auto structDescriptorData = static_cast<const StructDescriptorData&>(transmission_.instance().get());
+                auto structDescriptorData = static_cast<const StructDescriptorData&>(transmission.instance().get());
                 structDescriptorData.publisherId(id());
                 LOG_DEBUG_S("received struct descriptor: " << structDescriptorData.name);
                 type::StructDescriptor::createFromStructDescriptorData(structDescriptorData);
-                m_connectionManager.deliver(transportHeader, transmission_);
+                m_connectionManager.deliver(transportHeader, std::move(transmission));
                 handled = true;
             }
             else if (typeName == "DotsClearCache")
             {
-                m_connectionManager.deliver(transportHeader, transmission_);
+                m_connectionManager.deliver(transportHeader, std::move(transmission));
                 handled = true;
             }
             break;
@@ -285,7 +284,6 @@ bool Connection::onControlMessage(const DotsTransportHeader& transportHeader, Tr
 
 bool Connection::onRegularMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission)
 {
-    Transmission transmission_ = std::move(transmission);
     bool handled = false;
     switch (m_connectionState)
     {
@@ -296,7 +294,7 @@ bool Connection::onRegularMessage(const DotsTransportHeader& transportHeader, Tr
         case DotsConnectionState::connected:
         {
             // Normal operation
-            m_connectionManager.deliver(transportHeader, transmission_);
+            m_connectionManager.deliver(transportHeader, std::move(transmission));
             handled = true;
         }
             break;
