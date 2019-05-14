@@ -30,9 +30,9 @@ namespace dots
         transmitImpl(header, transmission.instance());
     }
 
-    void Channel::processReceive(const DotsTransportHeader& haeder, Transmission&& transmission)
+    void Channel::processReceive(const DotsTransportHeader& header, Transmission&& transmission)
     {
-        if (m_receiveHandler(haeder, std::move(transmission)))
+        if (m_receiveHandler(header, std::move(transmission)))
         {
             asyncReceiveImpl();
         }

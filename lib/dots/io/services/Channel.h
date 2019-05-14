@@ -30,7 +30,7 @@ namespace dots
 		virtual void transmitImpl(const DotsTransportHeader& header, const type::Struct& instance) = 0;
 		virtual void transmitImpl(const DotsTransportHeader& header, const Transmission& transmission);
 
-		void processReceive(const DotsTransportHeader& haeder, Transmission&& transmission);
+		void processReceive(const DotsTransportHeader& header, Transmission&& transmission);
 		void processError(const std::exception& e);
 		void processError(const std::string& what);
 		void verifyErrorCode(const std::error_code& errorCode);
