@@ -248,7 +248,7 @@ bool Connection::onControlMessage(const DotsTransportHeader& transportHeader, Tr
             else if (typeName == "EnumDescriptorData")
             {
                 auto enumDescriptorData = static_cast<const EnumDescriptorData&>(transmission.instance().get());
-                enumDescriptorData.publisherId(id());
+                enumDescriptorData.publisherId = id();
                 type::EnumDescriptor::createFromEnumDescriptorData(enumDescriptorData);
                 m_connectionManager.deliver(transportHeader, std::move(transmission));
                 handled = true;
@@ -256,7 +256,7 @@ bool Connection::onControlMessage(const DotsTransportHeader& transportHeader, Tr
             else if (typeName == "StructDescriptorData")
             {
                 auto structDescriptorData = static_cast<const StructDescriptorData&>(transmission.instance().get());
-                structDescriptorData.publisherId(id());
+                structDescriptorData.publisherId = id();
                 LOG_DEBUG_S("received struct descriptor: " << structDescriptorData.name);
                 type::StructDescriptor::createFromStructDescriptorData(structDescriptorData);
                 m_connectionManager.deliver(transportHeader, std::move(transmission));
@@ -453,17 +453,23 @@ void Connection::sendContainerContent(const AnyContainer &container)
 
         auto& dotsHeader = *thead.dotsHeader;
         dotsHeader.sentTime = e.information.modified;
-        dotsHeader.serverSentTime(pnxs::SystemNow());
-        dotsHeader.sender(e.information.lastUpdateFrom);
-        dotsHeader.fromCache(--remainingCacheObjects);
+        dotsHeader.serverSentTime =pnxs::SystemNow();
+        dotsHeader.sender = e.information.lastUpdateFrom;
+        dotsHeader.fromCache = --remainingCacheObjects;
 
         // Send to peer or group
         send(thead, *reinterpret_cast<dots::type::Struct*>(e.data));
     }
 
-    DotsCacheInfo dotsCacheInfo;
-    dotsCacheInfo.typeName(td->name());
-    dotsCacheInfo.endTransmission(true);
+    sendCacheEnd(td->name());
+}
+
+void Connection::sendCacheEnd(const std::string& typeName)
+{
+    DotsCacheInfo dotsCacheInfo {
+        DotsCacheInfo::typeName_t_i{typeName},
+        DotsCacheInfo::endTransmission_t_i{true}
+    };
     sendNs("SYS", dotsCacheInfo);
 }
 
