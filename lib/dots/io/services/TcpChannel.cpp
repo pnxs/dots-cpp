@@ -87,7 +87,7 @@ namespace dots
 
 	void TcpChannel::asyncReadHeader()
 	{
-		asio::async_read(m_socket, asio::buffer(m_headerBuffer.data(), m_headerSize), [&](auto ec, auto bytes)
+		asio::async_read(m_socket, asio::buffer(m_headerBuffer.data(), m_headerSize), [&](auto ec, auto /*bytes*/)
 		{
 			try
 			{
@@ -114,7 +114,7 @@ namespace dots
 
 	void TcpChannel::asyncReadInstance()
 	{
-		asio::async_read(m_socket, asio::buffer(m_instanceBuffer), [&](auto ec, auto bytes)
+		asio::async_read(m_socket, asio::buffer(m_instanceBuffer), [&](auto ec, auto /*bytes*/)
 		{
 			try
 			{

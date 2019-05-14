@@ -36,17 +36,17 @@ namespace dots
 
 	void WebSocketChannel::asyncReceiveImpl()
 	{
-		m_connection->set_fail_handler([this](ws_connection_hdl_t hdl)
+		m_connection->set_fail_handler([this](ws_connection_hdl_t /*hdl*/)
 		{ 
 			processError("channel encountered an error during async read");
 		});
 
-		m_connection->set_close_handler([this](ws_connection_hdl_t hdl)
+		m_connection->set_close_handler([this](ws_connection_hdl_t /*hdl*/)
 		{ 
 			processError("channel was closed unexpectedly");
 		});
 
-		m_connection->set_message_handler([this](ws_connection_hdl_t hdl, ws_message_ptr_t msg)
+		m_connection->set_message_handler([this](ws_connection_hdl_t /*hdl*/, ws_message_ptr_t msg)
 		{
 			try
 			{

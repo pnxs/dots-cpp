@@ -150,17 +150,17 @@ namespace dots
         /* do nothing */
     }
 
-    void VirtualChannel::onSubscribe(const std::string& name)
+    void VirtualChannel::onSubscribe(const std::string& /*name*/)
     {
         /* do nothing */
     }
 
-    void VirtualChannel::onUnsubscribe(const std::string& name)
+    void VirtualChannel::onUnsubscribe(const std::string& /*name*/)
     {
         /* do nothing */
     }
 
-    void VirtualChannel::onTransmit(const DotsTransportHeader& header, const type::Struct& instance)
+    void VirtualChannel::onTransmit(const DotsTransportHeader& /*name*/, const type::Struct& /*name*/)
     {
         /* do nothing */
     }

@@ -28,7 +28,7 @@ namespace dots
             else
             {
                 connection->select_subprotocol(*it);
-                connection->set_open_handler([this, connection](ws_connection_hdl_t hdl)
+                connection->set_open_handler([this, connection](ws_connection_hdl_t /*hdl*/)
                 {
                     processAccept(std::make_shared<WebSocketChannel>(connection));
                 });

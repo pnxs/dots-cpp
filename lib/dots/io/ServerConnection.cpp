@@ -139,7 +139,6 @@ void ServerConnection::onControlMessage(const DotsTransportHeader& transportHead
 {
     Transmission transmission_ = std::move(transmission);
     const auto& typeName = *transportHeader.dotsHeader->typeName;
-    const auto& dotsHeader = *transportHeader.dotsHeader;
 
     switch(m_connectionState)
     {
