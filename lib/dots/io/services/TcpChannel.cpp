@@ -131,7 +131,7 @@ namespace dots
 				from_cbor(m_instanceBuffer.data(), m_instanceBuffer.size(), descriptor, &instance.get());
 				processReceive(m_header, Transmission{ std::move(instance) });
 			}
-			catch (const std::exception e)
+			catch (const std::exception& e)
 			{
 				processError(e);
 			}
