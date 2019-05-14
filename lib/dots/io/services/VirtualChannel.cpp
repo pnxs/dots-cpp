@@ -99,7 +99,7 @@ namespace dots
                     }
                     break;
                 case DotsConnectionState::early_subscribe:
-                    if (instance._is<DotsMsgConnect>())
+                    if (auto* dotsMsgConnect = instance._as<DotsMsgConnect>(); dotsMsgConnect->preloadClientFinished == true)
                     {
                         m_connectionState = DotsConnectionState::connected;
                         spoof(ServerId, DotsMsgConnectResponse{ DotsMsgConnectResponse::preloadFinished_t_i{ true } });
