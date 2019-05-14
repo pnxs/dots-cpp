@@ -30,7 +30,17 @@ namespace dots::type
 
 		bool operator == (const Derived& rhs) const
 		{
-			return _equal(rhs);
+			return _applyKeyPropertyPairs(rhs, [](const auto&... propertyPairs)
+			{
+				if constexpr (sizeof...(propertyPairs) == 0)
+				{
+					return true;
+				}
+				else
+				{
+					return ((propertyPairs.first == propertyPairs.second) && ...);
+				}
+			});
 		}
 
 		bool operator != (const Derived& rhs) const
@@ -275,7 +285,7 @@ namespace dots::type
 
 		bool _equal(const Derived& rhs) const
 		{
-			return _applyKeyPropertyPairs(rhs, [](const auto&... propertyPairs)
+			return _propertyPairs(rhs, [](const auto&... propertyPairs)
 			{
 				if constexpr (sizeof...(propertyPairs) == 0)
 				{
