@@ -137,7 +137,6 @@ bool ServerConnection::handleReceivedMessage(const DotsTransportHeader& transpor
 
 void ServerConnection::onControlMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission)
 {
-    Transmission transmission_ = std::move(transmission);
     const auto& typeName = *transportHeader.dotsHeader->typeName;
 
     switch(m_connectionState)
@@ -145,17 +144,17 @@ void ServerConnection::onControlMessage(const DotsTransportHeader& transportHead
         case DotsConnectionState::connecting:
             if (typeName == "DotsMsgHello")
             {
-                processHello(static_cast<const DotsMsgHello&>(transmission_.instance().get()));
+                processHello(static_cast<const DotsMsgHello&>(transmission.instance().get()));
             }
             else if (typeName == "DotsMsgConnectResponse")
             {
-                processConnectResponse(static_cast<const DotsMsgConnectResponse&>(transmission_.instance().get()));
+                processConnectResponse(static_cast<const DotsMsgConnectResponse&>(transmission.instance().get()));
             }
             break;
         case DotsConnectionState::early_subscribe:
             if (typeName == "DotsMsgConnectResponse")
             {
-                processEarlySubscribe(static_cast<const DotsMsgConnectResponse&>(transmission_.instance().get()));
+                processEarlySubscribe(static_cast<const DotsMsgConnectResponse&>(transmission.instance().get()));
             }
             // No break here: falltrough
             // process all messages, put non-cache messages into buffer
