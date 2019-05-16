@@ -53,7 +53,6 @@ void Connection::stop()
 {
     LOG_INFO_S("stopped");
     setConnectionState(DotsConnectionState::closed);
-    m_channel.reset();
 }
 
 void Connection::kill()
@@ -192,7 +191,7 @@ bool Connection::onReceivedMessage(const DotsTransportHeader& transportHeader, T
         stop();
     }
 
-    return m_channel != nullptr;
+    return m_connectionState != DotsConnectionState::closed;
 }
 
 /**
