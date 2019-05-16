@@ -2,7 +2,7 @@
 
 namespace dots
 {
-    void Listener::asyncAccept(accept_handler_t&& acceptHandler)
+    void Listener::asyncAccept(accept_handler_t&& acceptHandler, error_handler_t&& errorHandler)
     {
         if (m_asyncAcceptActive)
         {
@@ -11,6 +11,7 @@ namespace dots
 
         m_asyncAcceptActive = true;
         m_acceptHandler = std::move(acceptHandler);
+        m_errorHandler = std::move(errorHandler);
         asyncAcceptImpl();
     }
 
@@ -24,6 +25,28 @@ namespace dots
         {
             m_asyncAcceptActive = false;
             m_acceptHandler = nullptr;
+            m_errorHandler = nullptr;
+        }
+    }
+
+    void Listener::processError(const std::exception& e)
+    {
+        if (m_errorHandler != nullptr)
+        {
+            m_errorHandler(e);
+        }        
+    }
+
+    void Listener::processError(const std::string& what)
+    {
+        processError(std::runtime_error{ what });
+    }
+
+    void Listener::verifyErrorCode(const std::error_code& errorCode)
+    {
+        if (errorCode)
+        {
+            throw std::system_error{ errorCode };
         }
     }
 }

@@ -58,13 +58,20 @@ const ClientId& Server::id() const
  */
 void Server::asyncAccept()
 {
-	m_listener->asyncAccept([&](channel_ptr_t channel)
+    Listener::accept_handler_t acceptHandler = [this](channel_ptr_t channel)
 	{
 		auto connection = std::make_shared<Connection>(std::move(channel), m_connectionManager);
 		m_connectionManager.start(connection);
 
 		return true;
-	});
+	};
+
+    Listener::error_handler_t errorHandler = [this](const std::exception& e)
+    {
+        LOG_ERROR_S("error while listening for incoming channels -> " << e.what());
+    };
+
+	m_listener->asyncAccept(std::move(acceptHandler), std::move(errorHandler));
 }
 
 /*!

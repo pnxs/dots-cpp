@@ -1,5 +1,4 @@
 #include "TcpListener.h"
-#include <dots/common/logging.h>
 
 namespace dots
 {
@@ -37,7 +36,7 @@ namespace dots
 
 			if (error)
 			{
-				LOG_WARN_S("failed listening on TCP endpoint at " << m_address << ":" << m_port << " -> " << error.message());
+				processError(std::runtime_error{ "failed listening on TCP endpoint at " + m_address + ":" + m_port + " -> " + error.message() });
 				return;
 			}
 
@@ -59,9 +58,9 @@ namespace dots
 				// note: this move is explicitly allowed according to the ASIO v1.12.2 documentation of the socket
 				processAccept(std::make_shared<TcpChannel>(std::move(m_socket)));
 			}
-			catch (const std::exception & e)
+			catch (const std::exception& e)
 			{
-				LOG_WARN_S("failed to configure TCP socket -> " << e.what());
+				processError(std::string{ "failed to configure TCP socket -> " } + e.what());
 			}
 		});
 	}
