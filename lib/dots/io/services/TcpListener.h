@@ -1,5 +1,6 @@
 #pragma once
 #include <functional>
+#include <optional>
 #include <asio.hpp>
 #include <dots/io/services/Listener.h>
 #include <dots/io/services/TcpChannel.h>
@@ -8,7 +9,7 @@ namespace dots
 {
 	struct TcpListener : Listener
 	{
-		TcpListener(asio::io_context& ioContext, std::string address, std::string port, int backlog);
+		TcpListener(asio::io_context& ioContext, std::string address, std::string port, std::optional<int> backlog = std::nullopt);
 		TcpListener(const TcpListener& other) = delete;
 		TcpListener(TcpListener&& other) = delete;
 		~TcpListener() = default;

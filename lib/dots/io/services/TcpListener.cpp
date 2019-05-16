@@ -3,7 +3,7 @@
 
 namespace dots
 {
-	TcpListener::TcpListener(asio::io_context& ioContext, std::string address, std::string port, int backlog) :
+	TcpListener::TcpListener(asio::io_context& ioContext, std::string address, std::string port, std::optional<int> backlog/* = std::nullopt*/) :
 		m_address{ std::move(address) },
 		m_port{ std::move(port) },
 		m_acceptor{ ioContext },
@@ -15,7 +15,15 @@ namespace dots
 		m_acceptor.open(endpoint.protocol());
 		m_acceptor.set_option(asio::ip::tcp::acceptor::reuse_address(true));
 		m_acceptor.bind(endpoint);
-		m_acceptor.listen(backlog);
+
+		if (backlog == std::nullopt)
+		{
+			m_acceptor.listen();
+		}
+		else
+		{
+			m_acceptor.listen(*backlog);
+		}
 	}
 
 	void TcpListener::asyncAcceptImpl()
