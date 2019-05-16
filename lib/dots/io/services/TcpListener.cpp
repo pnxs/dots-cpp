@@ -60,7 +60,17 @@ namespace dots
 			}
 			catch (const std::exception& e)
 			{
-				processError(std::string{ "failed to configure TCP socket -> " } + e.what());
+				try
+				{
+					processError(std::string{ "failed to configure TCP socket -> " } + e.what());
+
+					m_socket.shutdown(asio::ip::tcp::socket::shutdown_both);
+					m_socket.close();
+				}
+				catch (const std::exception& e)
+				{
+					processError(std::string{ "failed to shutdown and close TCP socket -> " } + e.what());
+				}
 			}
 		});
 	}
