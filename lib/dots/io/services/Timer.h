@@ -9,10 +9,10 @@ namespace dots
 {
 	struct Timer
 	{
-		using timer_id_t = uint32_t;
+		using id_t = uint32_t;
 		using callback_t = std::function<void()>;
 
-		Timer(asio::io_context& ioContext, timer_id_t id, const pnxs::Duration& interval, const callback_t& cb, bool periodic = false);
+		Timer(asio::io_context& ioContext, id_t id, const pnxs::Duration& interval, const callback_t& cb, bool periodic = false);
 		Timer(const Timer& other) = delete;
 		Timer(Timer&& other) = delete;
 		~Timer();
@@ -20,7 +20,7 @@ namespace dots
 		Timer& operator = (const Timer& rhs) = delete;
 		Timer& operator = (Timer&& rhs) = delete;
 
-		timer_id_t id() { return m_id; }
+		id_t id() { return m_id; }
 
 	private:		
 
@@ -34,7 +34,7 @@ namespace dots
 
 		timer_t m_timer;
 		callback_t m_cb;
-		timer_id_t m_id;
+		id_t m_id;
 		pnxs::Duration m_interval;
 		pnxs::SteadyTimePoint m_next;
 		bool m_periodic;			

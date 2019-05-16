@@ -4,7 +4,7 @@
 
 namespace dots
 {
-	Timer::Timer(asio::io_context& ioContext, timer_id_t id, const pnxs::Duration& interval, const callback_t& cb, bool periodic) :
+	Timer::Timer(asio::io_context& ioContext, id_t id, const pnxs::Duration& interval, const callback_t& cb, bool periodic) :
 		m_timer(ioContext),
 		m_cb(cb),
 		m_id(id),
