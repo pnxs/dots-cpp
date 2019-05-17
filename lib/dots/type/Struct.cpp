@@ -103,6 +103,26 @@ namespace dots::type
         return *_desc;
     }
 
+    bool Struct::_usesDynamicMemory() const
+    {
+        return _desc->usesDynamicMemory();
+    }
+
+    size_t Struct::_dynamicMemoryUsage() const
+    {
+        return _desc->dynamicMemoryUsage(this);
+    }
+
+    size_t Struct::_staticMemoryUsage() const
+    {
+        return _desc->sizeOf();
+    }
+
+    size_t Struct::_totalMemoryUsage() const
+    {
+        return _staticMemoryUsage() + _dynamicMemoryUsage();
+    }
+
     property_set& Struct::_validProperties()
     {
         return _validPropSet;

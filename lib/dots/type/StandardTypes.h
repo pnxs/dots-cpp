@@ -50,6 +50,32 @@ public:
         ((T*)obj)->~T();
     }
 
+    bool usesDynamicMemory() const override
+    {
+        if constexpr (std::is_same_v<T, std::string>)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    size_t dynamicMemoryUsage(const void* lhs) const override
+    {
+        if constexpr (std::is_same_v<T, std::string>)
+        {
+            const std::string& s = *reinterpret_cast<const std::string*>(lhs);
+            return s.empty() ? 0 : s.size() + 1;
+        }
+        else
+        {
+            (void)lhs;
+            return 0;
+        }
+    }
+
     std::string to_string(const void* lhs) const override
     {
         return ::to_string(*(const T*)lhs);

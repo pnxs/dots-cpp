@@ -67,6 +67,16 @@ Descriptor::~Descriptor()
 {
 }
 
+bool type::Descriptor::usesDynamicMemory() const
+{
+    return false;
+}
+
+size_t type::Descriptor::dynamicMemoryUsage(const void* /*lhs*/) const
+{
+    return 0;
+}
+
 Registry &type::Descriptor::registry()
 {
     static Registry *registry = new Registry;

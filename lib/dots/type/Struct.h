@@ -63,6 +63,11 @@ namespace dots::type
 
         const StructDescriptor& _descriptor() const;
 
+		bool _usesDynamicMemory() const;
+    	size_t _dynamicMemoryUsage() const;
+		size_t _staticMemoryUsage() const;
+		size_t _totalMemoryUsage() const;
+
 		property_set& _validProperties();
 		const property_set& _validProperties() const;
 		const property_set& _keyProperties() const;

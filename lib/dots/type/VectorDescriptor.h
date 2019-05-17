@@ -17,6 +17,9 @@ public:
     void construct(void*) const final override;
     void destruct(void*) const final override;
 
+    bool usesDynamicMemory() const override;
+    size_t dynamicMemoryUsage(const void* lhs) const override;
+
     virtual std::string to_string(const void* lhs) const final override;
     virtual bool from_string(void* lhs, const std::string& str) const final override;
 
