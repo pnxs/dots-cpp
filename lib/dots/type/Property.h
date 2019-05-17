@@ -122,11 +122,6 @@ namespace dots::type
 		template <typename... Args>
 		value_t& construct(Args&&... args)
 		{
-			if constexpr (sizeof...(Args) == 0)
-			{
-				static_assert(std::is_default_constructible_v<T> || IsTypeless);
-			}
-
 			if (isValid())
 			{
 				throw std::runtime_error{ std::string{ "attempt to construct already valid property: " } + qualifiedName() };
@@ -407,9 +402,10 @@ namespace dots::type
 		template <typename... Args>
 		constexpr value_t& valueConstruct(Args&&... args)
 		{
+			// note: the redundant if constexpr statements are intentional to improve readability when the build stops due to a static assertion error
+
 			if constexpr (IsTypeless)
-			{
-				// note: the redundant if constexpr statements are intentional to improve readability when the build stops due to a static assertion error
+			{				
 				static_assert(sizeof...(Args) <= 1, "typeless construction only supports default construction or a single argument");
 
 				if constexpr (sizeof...(Args) <= 1)
@@ -424,7 +420,12 @@ namespace dots::type
 			}
 			else
 			{
-				::new (static_cast<void *>(::std::addressof(valueReference()))) T(std::forward<Args>(args)...);
+				static_assert(std::is_constructible_v<T, Args...>, "property value is not constructible from passed arguments");
+				
+				if constexpr (std::is_constructible_v<T, Args...>)
+				{
+					::new (static_cast<void *>(::std::addressof(valueReference()))) T(std::forward<Args>(args)...);
+				}				
 			}
 
 			return valueReference();
@@ -445,9 +446,10 @@ namespace dots::type
 		template <typename... Args>
 		constexpr value_t& valueAssign(Args&&... args)
 		{
+			// note: the redundant if constexpr statements are intentional to improve readability when the build stops due to a static assertion error
+
 			if constexpr (IsTypeless)
 			{
-				// note: the redundant if constexpr statements are intentional to improve readability when the build stops due to a static assertion error
 				static_assert(sizeof...(Args) == 1, "typeless assignment only supports a single argument");
 
 				if constexpr (sizeof...(Args) == 1)
@@ -465,7 +467,14 @@ namespace dots::type
 			}
 			else
 			{
-				return valueReference() = T(std::forward<Args>(args)...);
+				static_assert(std::is_constructible_v<T, Args...>, "property value is not constructible from passed arguments");
+
+				if constexpr (std::is_constructible_v<T, Args...>)
+				{
+					valueReference() = T(std::forward<Args>(args)...);
+				}
+
+				return valueReference();
 			}
 		}
 
