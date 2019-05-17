@@ -49,6 +49,7 @@ int main(int argc, char* argv[])
 
     signals.async_wait([&](auto /*ec*/, int /*signo*/) {
         LOG_NOTICE_S("stopping server");
+        dots::global_io_context().stop();
         server.stop();
     });
 
