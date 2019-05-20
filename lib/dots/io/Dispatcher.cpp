@@ -1,6 +1,5 @@
 #include "Dispatcher.h"
 #include "dots/type/Registry.h"
-#include "dots/io/serialization/CborNativeSerialization.h"
 
 namespace dots
 {
@@ -41,63 +40,37 @@ Dispatcher::TypedescSignalPtr Dispatcher::registerReceiver(const type::StructDes
     return signal;
 }
 
-void Dispatcher::dispatchMessage(const ReceiveMessageData &rmd)
+void Dispatcher::dispatchMessage(const DotsHeader& header, const type::AnyStruct& instance)
 {
-    auto& typeName = rmd.group;
+    const TypedescSignalPtr& signal = m_typeSignalMap[header.typeName];
+    const auto& typelessSignal = m_typelessSignalMap[header.typeName];
 
-    auto td = type::Descriptor::registry().findStructDescriptor(typeName);
-    if (td)
+    if (signal || typelessSignal)
     {
-        // create object to deserialize data into
-        auto obj = td->make_shared();
-
-        from_cbor(rmd.data, rmd.length, td, obj.get());
-
-        const TypedescSignalPtr& signal = m_typeSignalMap[typeName];
-        const auto& typelessSignal = m_typelessSignalMap[typeName];
-        if (signal || typelessSignal)
+        if (not instance->_descriptor().internal())
         {
-            if (not td->internal())
-            {
-                (*m_statistics.packages)++;
-                (*m_statistics.bytes) += rmd.length;
-            }
-
-            DotsHeader header(rmd.header);
-
-            if (not header.removeObj.isValid()) {
-                header.removeObj = false;
-            }
-
-            header.sender = rmd.sender;
-            header.sentTime = rmd.sentTime;
-            header.isFromMyself = rmd.isFromMyself;
-
-            if (typelessSignal)
-            {
-                TypelessCbd typelessCbd{header, typelessSignal->td(), obj.get(), obj, rmd.length};
-                (*typelessSignal)(&typelessCbd);
-            }
-
-            if (signal)
-            {
-                auto container = signal->container();
-
-                if (container) {
-                    container->processTypeless(header, (Typeless) obj.get(), *signal);
-                }
-            }
-
-        }
-        else
-        {
-            LOG_DEBUG_S("no receiver registered for type " << typeName);
+            (*m_statistics.packages)++;
+            (*m_statistics.bytes) += 1; // TODO: find other form of metric (e.g. effective memory size)
         }
 
+        if (typelessSignal)
+        {
+            TypelessCbd typelessCbd{ header, instance };
+            (*typelessSignal)(&typelessCbd);
+        }
+
+        if (signal)
+        {
+            auto container = signal->container();
+
+            if (container) {
+                container->processTypeless(header, instance, *signal);
+            }
+        }
     }
     else
     {
-        LOG_WARN_S("unable to dispatch message (" << rmd.group << "), because TD is not in pool.");
+        LOG_DEBUG_S("no receiver registered for type " << header.typeName);
     }
 }
 

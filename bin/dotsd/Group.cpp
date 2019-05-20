@@ -140,7 +140,7 @@ void Group::sendLeave(Connection *connection)
     }
 
 }
-void Group::deliverMessage(const Message &msg)
+void Group::deliver(const DotsTransportHeader& transportHeader, const Transmission& transmission)
 {
     LOG_DEBUG_S("deliver message group:" << this << "(" << name() << ")");
     // Dispatch message to all connections, registered to the group
@@ -150,12 +150,12 @@ void Group::deliverMessage(const Message &msg)
         {
             string ns;
 
-            if (msg.header().nameSpace.isValid()) ns = *msg.header().nameSpace;
-            LOG_DATA_S("send to connection " << connection->id() << " ns=" << ns << " grp=" << msg.header().destinationGroup);
+            if (transportHeader.nameSpace.isValid()) ns = transportHeader.nameSpace;
+            LOG_DATA_S("send to connection " << connection->id() << " ns=" << ns << " grp=" << transportHeader.destinationGroup);
             if (connection->state() == DotsConnectionState::connected
                 or connection->state() == DotsConnectionState::suspended)
             {
-                connection->send(msg);
+                connection->send(transportHeader, transmission);
             }
         }
     }

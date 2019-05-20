@@ -2,6 +2,7 @@
 #include "dots/type/EnumDescriptor.h"
 #include "dots/type/Registry.h"
 #include "DotsTestStruct.dots.h"
+#include "DotsTestVectorStruct.dots.h"
 #include "StructDescriptorData.dots.h"
 #include <gtest/gtest.h>
 
@@ -130,6 +131,57 @@ TEST(TestStruct, construct)
 	EXPECT_EQ(tpCnt, 1);
 	EXPECT_EQ(subStructCnt, 1);
 	EXPECT_EQ(uuidCnt, 1);
+}
+
+TEST(TestStruct, usesDynamicMemory_FalseForPrimitiveStruct)
+{
+	DotsTestSubStruct sut;
+	EXPECT_FALSE(sut._usesDynamicMemory());
+}
+
+TEST(TestStruct, usesDynamicMemory_TrueForComplexStruct)
+{
+	DotsTestVectorStruct sut;
+	EXPECT_TRUE(sut._usesDynamicMemory());
+}
+
+TEST(TestStruct, dynamicMemoryUsage_ZeroAfterDefaultConstruction)
+{
+	DotsTestSubStruct sut1;
+	DotsTestVectorStruct sut2;
+
+	EXPECT_EQ(sut1._dynamicMemoryUsage(), 0);
+	EXPECT_EQ(sut2._dynamicMemoryUsage(), 0);
+}
+
+TEST(TestStruct, dynamicMemoryUsage_ExpectedValueAfterInitConstruction)
+{
+	DotsTestSubStruct sut1{
+		DotsTestSubStruct::flag1_t_i{ true }
+	};
+
+	DotsTestVectorStruct sut2{
+		DotsTestVectorStruct::intList_t_i{ 
+			dots::Vector<int>{ 1, 2, 3, 4 } 
+		},
+		DotsTestVectorStruct::subStructList_t_i{ 
+			dots::Vector<DotsTestSubStruct>{
+				DotsTestSubStruct{ DotsTestSubStruct::flag1_t_i{ true } },
+				DotsTestSubStruct{ DotsTestSubStruct::flag1_t_i{ true } },
+				DotsTestSubStruct{ DotsTestSubStruct::flag1_t_i{ true } }
+			}
+		},
+		DotsTestVectorStruct::stringList_t_i{
+			dots::Vector<std::string>{
+				"stringWithSize17",
+				"_stringWithSize18",
+				"__stringWithSize19"
+			}
+		}
+	};
+
+	EXPECT_EQ(sut1._dynamicMemoryUsage(), 0);
+	EXPECT_EQ(sut2._dynamicMemoryUsage(), 4 * sizeof(int) + 3 * sizeof(DotsTestSubStruct) + 3 * sizeof(std::string) + 17 + 18 + 19);
 }
 
 TEST(TestStruct, assign_ExpectedPropertiesAfterCompleteAssign)

@@ -1,10 +1,10 @@
+#include <dots/io/Io.h>
+#include <dots/io/services/ChannelService.h>
+#include <dots/io/services/TcpListener.h>
 #include "dots/cpp_config.h"
 #include "Server.h"
 #include <boost/program_options.hpp>
 #include <iostream>
-#include <dots/eventloop/Timer.h>
-#include <dots/eventloop/AsioTimer.h>
-#include <dots/eventloop/Io.h>
 
 namespace po = boost::program_options;
 using std::string;
@@ -31,12 +31,11 @@ int main(int argc, char* argv[])
 
     auto serverName = vm["server-name"].as<string>();
 
-    dots::IoService& io_service = dots::ioService();
-    pnxs::ioInitAsio(io_service);
+   asio::io_context& io_context = dots::global_io_context();
 
     LOG_NOTICE_S("dotsd server");
 
-    boost::asio::signal_set signals(io_service);
+    asio::signal_set signals(io_context);
 
     signals.add(SIGINT);
     signals.add(SIGTERM);
@@ -44,11 +43,13 @@ int main(int argc, char* argv[])
     string host = vm["dots-address"].as<string>();
     string port = vm["dots-port"].as<string>();
 
-    dots::Server server(io_service, host, port, serverName);
+	std::unique_ptr<dots::Listener> listener = dots::global_service<dots::ChannelService>().listen<dots::TcpListener>(host, port);
+    dots::Server server(std::move(listener), serverName);
     LOG_NOTICE_S("Listen to " << host << ":" << port);
 
     signals.async_wait([&](auto /*ec*/, int /*signo*/) {
         LOG_NOTICE_S("stopping server");
+        dots::global_io_context().stop();
         server.stop();
     });
 
@@ -62,6 +63,6 @@ int main(int argc, char* argv[])
     }
 
     LOG_DEBUG_S("run mainloop");
-    io_service.run();
+    io_context.run();
     return 0;
 }

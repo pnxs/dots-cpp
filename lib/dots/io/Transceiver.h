@@ -6,7 +6,7 @@
 #include "Transmitter.h"
 #include "ServerConnection.h"
 #include "Subscription.h"
-#include "DotsSocket.h"
+#include <dots/io/services/Channel.h>
 #include "Publisher.h"
 
 
@@ -20,7 +20,7 @@ class Transceiver: public Publisher
 public:
     Transceiver();
 
-    bool start(const string &name, const string &host, int port, DotsSocketPtr dotsSocket);
+    bool start(const string &name, channel_ptr_t channel);
     void stop();
 
     Subscription addReceiver(const type::StructDescriptor* td, ContainerBase* cb, const Dispatcher::callback_type& f)
@@ -46,7 +46,7 @@ public:
 
     bool connected() const;
 
-    void publish(const type::StructDescriptor* td, CTypeless data, property_set what, bool remove) override;
+    void publish(const type::StructDescriptor* td, const type::Struct& instance, property_set what, bool remove) override;
 
 private:
     void onConnect();
@@ -65,7 +65,7 @@ private:
 
 Transceiver& transceiver();
 
-void publish(const type::StructDescriptor* td, CTypeless data, property_set what, bool remove);
+void publish(const type::StructDescriptor* td, const type::Struct& instance, property_set what, bool remove);
 
 template<class T>
 void publish(const T& data, typename T::PropSet what)

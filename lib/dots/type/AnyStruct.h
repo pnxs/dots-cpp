@@ -25,6 +25,24 @@ namespace dots::type
 		operator Struct&();
 		operator const Struct&() const;
 
+		template <typename T>
+        bool is() const
+        {
+            return _instance->_is<T>();
+        }
+
+        template <typename T>
+        const T* as() const
+        {
+            return _instance->_as<T>();
+        }
+
+        template <typename T>
+        T* as()
+        {
+            return _instance->_as<T>();
+        }
+
 		Struct& get();
 		const Struct& get() const;
 

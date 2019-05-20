@@ -20,10 +20,30 @@ namespace dots::type
 		using Property<T, Derived>::operator();
 		using Property<T, Derived>::construct;
 
+		T& operator () (init_t& init)
+		{
+			return (*this)(init.value);
+		}
+
+		T& operator () (const init_t& init)
+		{
+			return (*this)(init.value);
+		}
+
 		T& operator () (init_t&& init)
 		{
 			// note: moving the value out of the initializer should be legal but leads to a segfault when using GCC 8 with O2 and LTO
 			return (*this)(init.value);
+		}
+
+		T& construct(init_t& init)
+		{
+			return Property<T, Derived>::construct(init.value);
+		}
+
+		T& construct(const init_t& init)
+		{
+			return Property<T, Derived>::construct(init.value);
 		}
 
 		T& construct(init_t&& init)

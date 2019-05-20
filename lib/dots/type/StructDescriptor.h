@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <set>
+#include <optional>
 
 namespace dots
 {
@@ -28,6 +29,9 @@ public:
 
     void construct(void*) const final override;
     void destruct(void*) const final override;
+
+    bool usesDynamicMemory() const override;
+    size_t dynamicMemoryUsage(const void* lhs) const override;
 
     virtual std::string to_string(const void* lhs) const final override;
     virtual bool from_string(void* lhs, const std::string& str) const final override;
@@ -75,6 +79,7 @@ private:
     property_set m_keyProperties;
     std::unique_ptr<DescriptorData> m_descriptorData;
     uint32_t m_publisherId = 0;
+    mutable std::optional<std::vector<const StructProperty*>> m_dynamicMemoryProperties;
 };
 
 static

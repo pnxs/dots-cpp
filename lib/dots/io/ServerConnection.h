@@ -2,8 +2,7 @@
 
 #include "dots/cpp_config.h"
 #include <dots/functional/signal.h>
-#include "TcpSocket.h"
-#include "DotsSocket.h"
+#include <dots/io/services/Channel.h>
 #include "Transmitter.h"
 
 #include "DotsConnectionState.dots.h"
@@ -14,18 +13,7 @@
 namespace dots
 {
 
-struct ReceiveMessageData
-{
-    const uint8_t* data;
-    size_t length;
-    ClientId sender;
-    string group;
-    TimePoint sentTime;
-    const DotsHeader& header;
-    bool isFromMyself;
-};
-
-typedef pnxs::Signal<void (const ReceiveMessageData& cbd)> ReceiveMessageSignal;
+typedef pnxs::Signal<void (const DotsHeader& header, const type::AnyStruct& instance)> ReceiveMessageSignal;
 
 /**
  * This class is a proxy to a dotsd server
@@ -35,7 +23,7 @@ class ServerConnection
 {
 public:
 
-    bool start(const string &name, const string &host, int port, DotsSocketPtr dotsSocket);
+    bool start(const string &name, channel_ptr_t channel);
     void stop();
 
     bool running();
@@ -54,14 +42,13 @@ public:
 
     void requestConnection(const ClientName&, ConnectMode);
 
-    void publish(const type::StructDescriptor* td, CTypeless data, property_set what = PROPERTY_SET_ALL, bool remove = false);
-    void publishNs(const string& nameSpace, const type::StructDescriptor* td, CTypeless data, property_set what = PROPERTY_SET_ALL, bool remove = false);
+    void publish(const type::StructDescriptor* td, const type::Struct& instance, property_set what = PROPERTY_SET_ALL, bool remove = false);
+    void publishNs(const string& nameSpace, const type::StructDescriptor* td, const type::Struct& instance, property_set what = PROPERTY_SET_ALL, bool remove = false);
     // Server actions END
 
-    int send(const DotsTransportHeader& header, const vector<uint8_t>& data = {});
     const ClientId& clientId() const { return m_serversideClientname; }
 
-    DotsSocket& socket();
+    Channel& channel();
 
     // Signals:
     ReceiveMessageSignal onReceiveMessage;
@@ -71,9 +58,9 @@ public:
 private:
     void handleConnected(const string &name);
     void handleDisconnected();
-    void onControlMessage(const Message &);
-    void onRegularMessage(const Message &msg);
-    void handleReceivedMessage(const Message &);
+    void onControlMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission);
+    void onRegularMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission);
+    bool handleReceivedMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission);
 
     void processConnectResponse(const DotsMsgConnectResponse &cr);
     void processEarlySubscribe(const DotsMsgConnectResponse &cr);
@@ -88,7 +75,7 @@ private:
     //int send(const DotsMessageHeader& header, const vector<uint8_t>& data = {});
 
     bool m_running = false;
-    DotsSocketPtr m_dotsSocket;
+    channel_ptr_t m_channel;
     DotsConnectionState m_connectionState = DotsConnectionState::connecting;
     Transmitter m_transmitter;
     string m_clientName;

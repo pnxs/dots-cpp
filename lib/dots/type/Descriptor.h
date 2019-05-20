@@ -42,6 +42,9 @@ public:
     void Delete(void*) const;
     std::shared_ptr<void> make_shared() const;
 
+    virtual bool usesDynamicMemory() const;
+    virtual size_t dynamicMemoryUsage(const void* lhs) const;
+
     virtual std::string to_string(const void* lhs) const = 0;
     virtual bool from_string(void* lhs, const std::string& str) const = 0;
 

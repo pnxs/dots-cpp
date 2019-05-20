@@ -66,7 +66,7 @@ public:
     const_iterator end() const;
     const_iterator find(const AnyElement& e) const;
 
-    Mt process(const DotsHeader &, Typeless, const signal_type * = nullptr);
+    Mt process(const DotsHeader &, const type::Struct& instance, const signal_type * = nullptr);
 
     const type::StructDescriptor* td() const;
 

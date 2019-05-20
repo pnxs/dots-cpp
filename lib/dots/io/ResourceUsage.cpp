@@ -1,6 +1,6 @@
 #include "ResourceUsage.h"
 #include <sys/resource.h>
-#include <dots/eventloop/seconds.h>
+#include <dots/common/seconds.h>
 
 dots::ResourceUsage::ResourceUsage()
 {

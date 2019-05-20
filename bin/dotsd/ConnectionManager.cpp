@@ -58,7 +58,7 @@ void ConnectionManager::stop_all()
  */
 void ConnectionManager::onReceivedMessage(const dots::TypelessCbd* cbd, dots::AnyContainer &container)
 {
-    container.process(cbd->header, cbd->data);
+    container.process(cbd->header, cbd->instance);
 }
 
 /*!
@@ -122,38 +122,19 @@ void ConnectionManager::onNewType(const dots::type::StructDescriptor* td)
     m_dispatcher.addTypelessReceiver(td, bind(&ConnectionManager::onReceivedMessage, this, _1, std::ref(*container)));
 }
 
-void ConnectionManager::deliverMessage(const Message &msg)
+void ConnectionManager::deliver(const DotsTransportHeader& transportHeader, Transmission&& transmission)
 {
-    DotsTransportHeader transportHeader(msg.header());
-    const DotsHeader& dotsHeader = *transportHeader.dotsHeader;
-    bool isFromMySelf = false;
-
-    // Send to a group (fan-out)
     if(transportHeader.destinationGroup.isValid())
     {
-        if(dotsHeader.sender.isValid() && *dotsHeader.sender == 1)
-        {
-            LOG_DEBUG_P("own message \n");
-            isFromMySelf = true;
-        }
-
         if(m_CacheEnabled)
         {
-            dots::ReceiveMessageData rmd = {
-                msg.data().data(),
-                msg.data().size(),
-                dotsHeader.sender.isValid() ? *dotsHeader.sender : 0,
-                transportHeader.destinationGroup,
-                dotsHeader.sentTime,
-                dotsHeader,
-                isFromMySelf
-            };
-
-            m_dispatcher.dispatchMessage(rmd);
+            DotsHeader dotsHeader = transportHeader.dotsHeader;
+            dotsHeader.isFromMyself(dotsHeader.sender == 1u);
+            m_dispatcher.dispatchMessage(dotsHeader, transmission.instance());
         }
 
         Group *grp = m_groupManager.getGroup({ transportHeader.destinationGroup });
-        if (grp) grp->deliverMessage(msg);
+        if (grp) grp->deliver(transportHeader, transmission);
 
         return;
     }
@@ -164,7 +145,7 @@ void ConnectionManager::deliverMessage(const Message &msg)
         auto dstConnection = findConnection(transportHeader.destinationClientId);
         if (dstConnection)
         {
-            dstConnection->send(msg);
+            dstConnection->send(transportHeader, transmission);
         }
     }
 }
@@ -351,11 +332,8 @@ void ConnectionManager::handleDescriptorRequest(const DotsDescriptorRequest::Cbd
             thead.dotsHeader->sentTime = pnxs::SystemNow();
             thead.dotsHeader->sender(this->serverInfo().id());
 
-            // prepareBuffer
-            m_transmitter.prepareBuffer(td, body, thead, td->validProperties(body));
-
             // Send to peer or group
-            connection->send({thead, m_transmitter.buffer()});
+            connection->send(thead, *reinterpret_cast<const type::Struct*>(body));
         });
     }
 
@@ -384,7 +362,7 @@ void ConnectionManager::handleClearCache(const DotsClearCache::Cbd& cbd)
         // publish remove for every element of the container
         for (auto& element : container)
         {
-            publishNs({}, container.td(), element.data, container.td()->keys(), true, false);
+            publishNs({}, container.td(), *reinterpret_cast<type::Struct*>(element.data), container.td()->keys(), true, false);
         }
 
         container.clear();
@@ -413,7 +391,7 @@ void ConnectionManager::cleanupObjects(Connection *connection)
 
         for (auto item : remove)
         {
-            publishNs({}, container->td(), item, container->td()->keys(), true);
+            publishNs({}, container->td(), *reinterpret_cast<const type::Struct*>(item), container->td()->keys(), true);
         }
     }
 
@@ -421,7 +399,7 @@ void ConnectionManager::cleanupObjects(Connection *connection)
 
 void ConnectionManager::publishNs(const string &nameSpace,
                                   const type::StructDescriptor *td,
-                                  const void *data,
+                                  const type::Struct& instance,
                                   property_set properties,
                                   bool remove, bool processLocal)
 {
@@ -431,19 +409,19 @@ void ConnectionManager::publishNs(const string &nameSpace,
     header.dotsHeader->sender(serverInfo().id());
     if (not nameSpace.empty()) header.nameSpace(nameSpace);
 
-    // prepareBuffer
-    m_transmitter.prepareBuffer(td, data, header, properties);
+    // TODO: avoid local copy
+    Transmission transmission{ type::AnyStruct{ instance } };
 
     // Send to peer or group
     if (processLocal)
     {
-        deliverMessage({header, m_transmitter.buffer()});
+        deliver(header, std::move(transmission));
     }
     else {
         if(header.destinationGroup.isValid())
         {
             Group *grp = m_groupManager.getGroup({header.destinationGroup});
-            if (grp) grp->deliverMessage({header, m_transmitter.buffer()});
+            if (grp) grp->deliver(header, std::move(transmission));
         }
     }
 }
@@ -495,9 +473,9 @@ void ConnectionManager::addClient(Connection* connection)
 }
 
 void
-ConnectionManager::publish(const type::StructDescriptor *td, const void *data, property_set properties, bool remove)
+ConnectionManager::publish(const type::StructDescriptor *td, const type::Struct& instance, property_set properties, bool remove)
 {
-    publishNs("SYS", td, data, properties, remove, true);
+    publishNs("SYS", td, instance, properties, remove, true);
 }
 
 string ConnectionManager::clientId2Name(ClientId id) const

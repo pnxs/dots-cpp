@@ -22,7 +22,10 @@ namespace dots::type
 
 	AnyStruct::~AnyStruct()
 	{
-		_instance->_descriptor().destruct(_instance.get());
+		if (_instance != nullptr)
+		{
+			_instance->_descriptor().destruct(_instance.get());
+		}		
 	}
 
 	AnyStruct& AnyStruct::operator = (const AnyStruct& rhs)

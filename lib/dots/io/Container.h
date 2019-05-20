@@ -2,7 +2,7 @@
 
 #include "dots/cpp_config.h"
 
-#include <dots/eventloop/Chrono.h>
+#include <dots/common/Chrono.h>
 #include "dots/type/StructDescriptor.h"
 #include "Chained.h"
 #include "Subscription.h"
@@ -57,10 +57,7 @@ public:
 struct TypelessCbd
 {
     const types::DotsHeader& header;
-    const type::StructDescriptor* td;
-    Typeless data;
-    std::shared_ptr<void> dataPtr;
-    size_t length = 0;
+    const type::Struct& instance;
 };
 
 /**
@@ -154,7 +151,7 @@ public:
     ContainerBase(const type::StructDescriptor* td);
 
     virtual size_t typelessSize() const = 0;
-    virtual bool processTypeless(const types::DotsHeader& header, Typeless data, const signal_type& signal) = 0;
+    virtual bool processTypeless(const types::DotsHeader& header, const type::Struct& instance, const signal_type& signal) = 0;
 
     const type::StructDescriptor* td() const;
 };
@@ -167,7 +164,7 @@ template <class T>
 class ContainerEx: public ContainerBase, public Container<T>
 {
 private:
-    bool insert(const DotsHeader& header, T& data, const signal_type& signal)
+    bool insert(const DotsHeader& header, const T& data, const signal_type& signal)
     {
 		auto rc = this->m_container.insert({ data, *header.sentTime });
 
@@ -177,7 +174,7 @@ private:
         if (not inserted)
         {
             // Update element with received attributes
-            Writeable(item)._swap(data, data._validProperties() - T::_KeyProperties());
+            Writeable(item)._copy(data, data._validProperties() - T::_KeyProperties());
         }
 
         Cbd<T> cbd(item, header, inserted ? Mt::create : Mt::update );
@@ -219,7 +216,7 @@ public:
      * @param signal
      * @return true if container changed size (items)
      */
-    bool process(const types::DotsHeader& header, T& data, const signal_type& signal)
+    bool process(const types::DotsHeader& header, const T& data, const signal_type& signal)
     {
         //TODO: convert to if constexpr when C++17 can be used.
         if (T::_IsCached())
@@ -246,9 +243,9 @@ public:
 
     size_t typelessSize() const final { return this->size(); }
 
-    bool processTypeless(const types::DotsHeader& header, Typeless data, const signal_type& signal) final
+    bool processTypeless(const types::DotsHeader& header, const type::Struct& instance, const signal_type& signal) final
     {
-        return process(header, *reinterpret_cast<T*>(data), signal);
+        return process(header, static_cast<const T&>(instance), signal);
     }
 };
 

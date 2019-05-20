@@ -1,37 +1,29 @@
 #pragma once
-
-#include "dots/cpp_config.h"
-#include "Transceiver.h"
+#include <chrono>
+#include <dots/dots.h>
+#include <dots/cpp_config.h>
+#include <dots/io/Transceiver.h>
 
 namespace dots
 {
+	struct Application
+	{
+		Application(const string& name, int& argc, char* argv[]);
+		virtual ~Application();
 
-class IoService;
+		virtual int exec();
+		virtual int execOne(const std::chrono::milliseconds& timeout);
+		virtual void exit(int exitCode = 0);
 
-class Application
-{
-public:
-    Application(const string& name, int& argc, char*argv[]);
-    virtual ~Application();
+		static Application* instance();
 
-    virtual int exec();
-    virtual void exit(int exitCode = 0);
+	private:
 
-    IoService& ioService() const { return m_ioService; }
-
-    static Application* instance();
-
-private:
-    void parseProgramOptions(int argc, char*argv[]);
-
-    int m_exitCode = 0;
-    IoService& m_ioService;
-
-    static Application* m_instance;
-
-    std::string m_serverAddress;
-    int m_serverPort;
-};
-
-
+		void parseProgramOptions(int argc, char* argv[]);
+		
+		inline static Application* m_instance = nullptr;		
+		int m_exitCode;
+		std::string m_serverAddress;
+		std::string m_serverPort;
+	};
 }

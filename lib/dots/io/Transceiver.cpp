@@ -19,14 +19,14 @@ Transceiver::Transceiver()
 //    connection().onDisconnected
 }
 
-bool Transceiver::start(const string &name, const string &host, int port, DotsSocketPtr dotsSocket)
+bool Transceiver::start(const string &name, channel_ptr_t channel)
 {
     LOG_DEBUG_S("start transceiver");
 
     // start communication
-    if (connection().start(name, host, port, dotsSocket))
+    if (connection().start(name, channel))
     {
-       // m_receiver.start(connection().socket());
+       // m_receiver.start(connection().channel());
         // publish types
         return true;
     }
@@ -46,9 +46,9 @@ ServerConnection &Transceiver::connection()
 }
 
 
-void Transceiver::publish(const type::StructDescriptor *td, CTypeless data, property_set what, bool remove)
+void Transceiver::publish(const type::StructDescriptor *td, const type::Struct& instance, property_set what, bool remove)
 {
-    connection().publish(td, data, what, remove);
+    connection().publish(td, instance, what, remove);
 }
 
 void Transceiver::onConnect()
@@ -75,7 +75,7 @@ void Transceiver::onEarlySubscribe()
         if (td->internal()) continue;
 
         traversal.traverseDescriptorData(td, [this](auto td, auto body) {
-            this->connection().publishNs("SYS", td, body, td->validProperties(body), false);
+            this->connection().publishNs("SYS", td, *reinterpret_cast<const type::Struct*>(body), td->validProperties(body), false);
         });
     }
 
@@ -90,7 +90,7 @@ void Transceiver::onEarlySubscribe()
     DotsMsgConnect cm;
     cm.preloadClientFinished(true);
 
-    connection().publishNs("SYS", &cm._Descriptor(), &cm);
+    connection().publishNs("SYS", &cm._Descriptor(), cm);
 }
 
 type::StructDescriptorSet Transceiver::getPublishedDescriptors() const
@@ -162,9 +162,9 @@ Transceiver& transceiver()
     return tranceiver;
 }
 
-void publish(const type::StructDescriptor* td, CTypeless data, property_set what, bool remove)
+void publish(const type::StructDescriptor* td, const type::Struct& instance, property_set what, bool remove)
 {
-    onPublishObject->publish(td, data, what, remove);
+    onPublishObject->publish(td, instance, what, remove);
 }
 
 ServerConnection& gcomm()

@@ -1,25 +1,18 @@
 #include "Server.h"
-#include <dots/eventloop/Timer.h>
+#include <dots/dots.h>
 #include <dots/io/ResourceUsage.h>
-#include <boost/asio/socket_base.hpp>
 #include <dots/io/Transceiver.h>
-
 #include "DotsClient.dots.h"
 #include "EnumDescriptorData.dots.h"
 
 namespace dots
 {
 
-Server::Server(IoService& io_service, const string& address, const string& port, const string& name)
-        :m_ioservice(io_service)
-        ,m_acceptor(io_service)
-        ,m_socket(io_service)
-        ,m_name(name)
+Server::Server(std::unique_ptr<Listener>&& listener, const string& name)
+:m_name(name)
 ,m_connectionManager(m_groupManager, *this)
+,m_listener(std::move(listener))
 {
-    ASIO::ip::tcp::resolver resolver(io_service);
-    ASIO::ip::tcp::endpoint endpoint = *resolver.resolve({address, port});
-
     onPublishObject = &m_connectionManager;
 
     for (const auto& e : dots::PublishedType::allChained())
@@ -37,23 +30,7 @@ Server::Server(IoService& io_service, const string& address, const string& port,
         DotsMsgHello::_Descriptor();
     }
 
-    m_acceptor.open(endpoint.protocol());
-    m_acceptor.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
-
-    boost::system::error_code ec;
-    m_acceptor.bind(endpoint, ec);
-    if (ec) {
-        LOG_ERROR_S("error binding to port " << port);
-        throw std::runtime_error("error binding to port " + port);
-    }
-
-    m_acceptor.listen(25, ec);
-    if (ec) {
-        LOG_ERROR_S("error on listeing:" << ec);
-        throw std::runtime_error("error listening:" + ec.message());
-    }
-
-    asyncAccept();
+	asyncAccept();
 
     m_daemonStatus.serverName = m_name;
     m_daemonStatus.startTime = pnxs::SystemNow();
@@ -61,15 +38,14 @@ Server::Server(IoService& io_service, const string& address, const string& port,
     m_connectionManager.init();
 
     // Start cleanup-timer
-    pnxs::addTimer(1, FUN(*this, handleCleanupTimer));
-    pnxs::addTimer(1, FUN(*this, updateServerStatus));
+    add_timer(1, FUN(*this, handleCleanupTimer));
+    add_timer(1, FUN(*this, updateServerStatus));
 }
 
 void Server::stop()
 {
-    m_acceptor.close();
+	m_listener.reset();
     m_connectionManager.stop_all();
-    m_ioservice.stop();
 }
     
 const ClientId& Server::id() const
@@ -78,64 +54,24 @@ const ClientId& Server::id() const
 }
 
 /*!
- * Starts an asynchronous Accept. Calls processAccept when a new connection is accepted.
+ * Starts an asynchronous Accept.
  */
 void Server::asyncAccept()
 {
-    m_acceptor.async_accept(m_socket, FUN(*this, processAccept));
-}
+    Listener::accept_handler_t acceptHandler = [this](channel_ptr_t channel)
+	{
+		auto connection = std::make_shared<Connection>(std::move(channel), m_connectionManager);
+		m_connectionManager.start(connection);
 
-/*!
- * Creates a new Connection object for a new connection (when no error on accept has been occured).
- * @param ec error-code of accept-call
- */
-void Server::processAccept(boost::system::error_code ec)
-{
-    namespace IP = boost::asio::ip;
-    using boost::asio::socket_base;
+		return true;
+	};
 
-    if (not m_acceptor.is_open())
+    Listener::error_handler_t errorHandler = [this](const std::exception& e)
     {
-        return;
-    }
+        LOG_ERROR_S("error while listening for incoming channels -> " << e.what());
+    };
 
-    if (not ec)
-    {
-        boost::system::error_code ec;
-        m_socket.set_option(IP::tcp::no_delay(true), ec);
-        m_socket.set_option(IP::tcp::socket::keep_alive(true), ec);
-
-        socket_base::receive_buffer_size receiveBufferSize;
-        socket_base::send_buffer_size sendBufferSize;
-        socket_base::receive_low_watermark receiveLowWatermark;
-        socket_base::send_low_watermark sendLowWatermark;
-
-        m_socket.get_option(receiveBufferSize);
-        m_socket.get_option(sendBufferSize);
-        m_socket.get_option(receiveLowWatermark);
-        m_socket.get_option(sendLowWatermark);
-
-        m_socket.nonBlocking(true);
-
-        if (sendBufferSize.value() < m_minimumSendBufferSize) {
-            LOG_DEBUG_S("try to set send-buffer-size to " << m_minimumSendBufferSize);
-            m_socket.set_option(socket_base::send_buffer_size(m_minimumSendBufferSize), ec);
-            m_socket.get_option(sendBufferSize);
-            if (sendBufferSize.value() < m_minimumSendBufferSize) {
-                LOG_ERROR_S("unable to set send-buffer-size to " << m_minimumSendBufferSize);
-            }
-        }
-
-        LOG_INFO_S("network-buffers: receive:" << receiveBufferSize.value() <<
-                   " send:" << sendBufferSize.value() <<
-                   " receiveLowWatermark:" << receiveLowWatermark.value() <<
-                   " sendLowWatermark:" << sendLowWatermark.value());
-
-        auto connection = std::make_shared<Connection>(std::move(m_socket), m_connectionManager);
-        m_connectionManager.start(connection);
-    }
-
-    this->asyncAccept();
+	m_listener->asyncAccept(std::move(acceptHandler), std::move(errorHandler));
 }
 
 /*!
@@ -146,9 +82,9 @@ void Server::handleCleanupTimer()
 {
     m_connectionManager.cleanup();
 
-    if (not m_ioservice.stopped())
+    if (m_listener != nullptr)
     {
-        pnxs::addTimer(1, FUN(*this, handleCleanupTimer));
+        add_timer(1, FUN(*this, handleCleanupTimer));
     }
 }
 
@@ -176,9 +112,9 @@ void Server::updateServerStatus()
         LOG_ERROR_S("exception in updateServerStatus: " << e.what());
     }
 
-    if (not m_ioservice.stopped())
+    if (m_listener != nullptr)
     {
-        pnxs::addTimer(1, FUN(*this, updateServerStatus));
+        add_timer(1, FUN(*this, updateServerStatus));
     }
 }
 

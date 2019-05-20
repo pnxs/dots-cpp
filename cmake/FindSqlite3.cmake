@@ -1,4 +1,4 @@
-find_path(Sqlite3_INCLUDE_DIR curses.h)
+find_path(Sqlite3_INCLUDE_DIR sqlite3.h)
 find_library(Sqlite3_LIBRARY sqlite3)
 mark_as_advanced(Sqlite3_INCLUDE_DIR Sqlite3_LIBRARY)
 

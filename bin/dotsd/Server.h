@@ -1,20 +1,15 @@
 #pragma once
 
-#include <dots/io/TcpAcceptor.h>
-#include <dots/io/TcpSocket.h>
 #include "dots/cpp_config.h"
-#include "boost/asio.hpp"
 #include "ConnectionManager.h"
 #include "AuthManager.h"
 #include "ServerInfo.h"
+#include <dots/io/services/Listener.h>
 
 #include "DotsDaemonStatus.dots.h"
 
 namespace dots
 {
-namespace ASIO = boost::asio;
-using dots::IoService;
-
 /*!
  * This class provides the server functionality of the DOTS system.
  */
@@ -26,12 +21,12 @@ public:
 
     /*!
      * Create a DOTS server, listening on the given address and port
-     * @param io_service Boost-ASIO io-service object
+     * @param io_context Boost-ASIO io-context object
      * @param address Address to bind to
      * @param port Port to bind to
      * @param name Servername
      */
-    explicit Server(IoService& io_service, const string& address, const string& port, const string& name);
+    explicit Server(std::unique_ptr<Listener>&& listener, const string& name);
 
     /*!
      * Returns the AuthManager as reference
@@ -58,25 +53,19 @@ public:
 
 private:
     void asyncAccept();
-    void handleCleanupTimer();
-
-    void processAccept(boost::system::error_code ec);
-
+	void handleCleanupTimer();
     void updateServerStatus();
-
-    IoService& m_ioservice;
-    dots::TcpAcceptor m_acceptor;
-    dots::TcpSocket m_socket;
 
 	string m_name;
 
     GroupManager m_groupManager;
     ConnectionManager m_connectionManager;
-    AuthManager m_authManager;    
+    AuthManager m_authManager;  
+
+	std::unique_ptr<Listener> m_listener;
 
     DotsDaemonStatus m_daemonStatus;
     ClientId m_serverId = 1;
-    int m_minimumSendBufferSize = 1024*1024; // 1MB
 };
 
 }

@@ -3,7 +3,6 @@
 #include "ConnectionManager.h"
 #include "AuthManager.h"
 #include "dots/type/Registry.h"
-#include "dots/io/serialization/CborNativeSerialization.h"
 
 #include "DotsMsgConnectResponse.dots.h"
 #include "DotsMsgError.dots.h"
@@ -24,16 +23,20 @@ namespace dots {
 
 using namespace std::placeholders;
 
-Connection::Connection(dots::TcpSocket socket, ConnectionManager &manager)
-:m_dotsSocket(std::move(socket)), m_connectionManager(manager)
+Connection::Connection(channel_ptr_t channel, ConnectionManager &manager)
+:m_channel(std::move(channel)), m_connectionManager(manager)
 {
+    DotsMsgConnect::_Descriptor();
+    DotsMember::_Descriptor();
+    EnumDescriptorData::_Descriptor();
+    StructDescriptorData::_Descriptor();
+
     // Create connection-name
     m_id = m_connectionManager.getUniqueClientId();
 
     LOG_INFO_S("connected");
 
-    m_dotsSocket.setReceiveCallback(FUN(*this, onReceivedMessage));
-    m_dotsSocket.setErrorCallback(FUN(*this, onSocketError));
+	m_channel->asyncReceive(FUN(*this, onReceivedMessage), FUN(*this, onChannelError));
 }
 
 void Connection::start()
@@ -50,7 +53,6 @@ void Connection::stop()
 {
     LOG_INFO_S("stopped");
     setConnectionState(DotsConnectionState::closed);
-    m_dotsSocket.disconnect();
 }
 
 void Connection::kill()
@@ -126,12 +128,12 @@ void Connection::processConnectPreloadClientFinished(const DotsMsgConnect& msg)
  * -----------+--------------------------+
  * @endcode
  */
-void Connection::onReceivedMessage(const Message &msg)
+bool Connection::onReceivedMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission)
 {
     LOG_DEBUG_S("onReceivedMessage:");
     bool handled = false;
 
-    auto modifiedHeader = msg.header();
+    auto modifiedHeader = transportHeader;
     // Overwrite sender to known client peerAddress
     auto& dotsHeader = *modifiedHeader.dotsHeader;
     dotsHeader.sender = id();
@@ -142,27 +144,25 @@ void Connection::onReceivedMessage(const Message &msg)
         dotsHeader.sentTime = dotsHeader.serverSentTime;
     }
 
-    Message modifiedMessage(modifiedHeader, msg.data());
-
-    logRxTx(RxTx::rx, modifiedMessage.header());
+    logRxTx(RxTx::rx, modifiedHeader);
 
     try
     {
         // Check for DOTS control message-types
-        if (msg.header().nameSpace.isValid() && *msg.header().nameSpace == "SYS")
+        if (transportHeader.nameSpace.isValid() && *transportHeader.nameSpace == "SYS")
         {
-            handled = onControlMessage(modifiedMessage);
+            handled = onControlMessage(modifiedHeader, std::move(transmission));
         }
         else
         {
-            handled = onRegularMessage(modifiedMessage);
+            handled = onRegularMessage(modifiedHeader, std::move(transmission));
         }
 
         if (not handled)
         {
             string objName;
-            if (msg.header().nameSpace.isValid()) objName = "::" + *msg.header().nameSpace + "::";
-            objName += *msg.header().destinationGroup;
+            if (transportHeader.nameSpace.isValid()) objName = "::" + *transportHeader.nameSpace + "::";
+            objName += *transportHeader.destinationGroup;
             string errorText = "invalid message received while in state " + to_string(m_connectionState) + ": " + objName;
             LOG_WARN_S(errorText);
             // send false response
@@ -177,7 +177,7 @@ void Connection::onReceivedMessage(const Message &msg)
     catch(const std::exception& e)
     {
         string errorReport = "exception in receive [";
-        errorReport += "dstGrp=" + *msg.header().destinationGroup;
+        errorReport += "dstGrp=" + *transportHeader.destinationGroup;
         errorReport += ",state=" + to_string(m_connectionState);
         errorReport += string("]:") + e.what();
 
@@ -190,6 +190,8 @@ void Connection::onReceivedMessage(const Message &msg)
 
         stop();
     }
+
+    return m_connectionState != DotsConnectionState::closed;
 }
 
 /**
@@ -213,10 +215,9 @@ void Connection::onReceivedMessage(const Message &msg)
  *                           |            |                 |           |           |
  * @endcode
  */
-bool Connection::onControlMessage(const Message &msg)
+bool Connection::onControlMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission)
 {
-    const auto& typeName = *msg.header().dotsHeader->typeName;
-    const auto& data = msg.data();
+    const auto& typeName = *transportHeader.dotsHeader->typeName;
     bool handled = false;
 
     switch(m_connectionState)
@@ -225,14 +226,14 @@ bool Connection::onControlMessage(const Message &msg)
             // Only accept DotsMsgConnect messages (MsgType connect)
             if (typeName == "DotsMsgConnect")
             {    // Check authentication and authorization;
-                 processConnectRequest(dots::decodeInto_cbor<DotsMsgConnect>(data));
+                 processConnectRequest(static_cast<const DotsMsgConnect&>(transmission.instance().get()));
                 handled = true;
             }
             break;
         case DotsConnectionState::early_subscribe:
             if (typeName == "DotsMsgConnect")
             {    // Check authentication and authorization;
-                processConnectPreloadClientFinished(dots::decodeInto_cbor<DotsMsgConnect>(data));
+                processConnectPreloadClientFinished(static_cast<const DotsMsgConnect&>(transmission.instance().get()));
                 handled = true;
             }
             //No break here: Falltrough
@@ -240,29 +241,29 @@ bool Connection::onControlMessage(const Message &msg)
         case DotsConnectionState::connected:
             if (typeName == "DotsMember")
             {
-                processMemberMessage(msg.header(), dots::decodeInto_cbor<DotsMember>(data), this);
+                processMemberMessage(transportHeader, static_cast<const DotsMember&>(transmission.instance().get()), this);
                 handled = true;
             }
             else if (typeName == "EnumDescriptorData")
             {
-                auto enumDescriptorData = dots::decodeInto_cbor<EnumDescriptorData>(data);
+                auto enumDescriptorData = static_cast<const EnumDescriptorData&>(transmission.instance().get());
                 enumDescriptorData.publisherId = id();
                 type::EnumDescriptor::createFromEnumDescriptorData(enumDescriptorData);
-                m_connectionManager.deliverMessage(msg);
+                m_connectionManager.deliver(transportHeader, std::move(transmission));
                 handled = true;
             }
             else if (typeName == "StructDescriptorData")
             {
-                auto structDescriptorData = dots::decodeInto_cbor<StructDescriptorData>(data);
+                auto structDescriptorData = static_cast<const StructDescriptorData&>(transmission.instance().get());
                 structDescriptorData.publisherId = id();
                 LOG_DEBUG_S("received struct descriptor: " << structDescriptorData.name);
                 type::StructDescriptor::createFromStructDescriptorData(structDescriptorData);
-                m_connectionManager.deliverMessage(msg);
+                m_connectionManager.deliver(transportHeader, std::move(transmission));
                 handled = true;
             }
             else if (typeName == "DotsClearCache")
             {
-                m_connectionManager.deliverMessage(msg);
+                m_connectionManager.deliver(transportHeader, std::move(transmission));
                 handled = true;
             }
             break;
@@ -280,7 +281,7 @@ bool Connection::onControlMessage(const Message &msg)
     return handled;
 }
 
-bool Connection::onRegularMessage(const Message &msg)
+bool Connection::onRegularMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission)
 {
     bool handled = false;
     switch (m_connectionState)
@@ -292,7 +293,7 @@ bool Connection::onRegularMessage(const Message &msg)
         case DotsConnectionState::connected:
         {
             // Normal operation
-            m_connectionManager.deliverMessage(msg);
+            m_connectionManager.deliver(transportHeader, std::move(transmission));
             handled = true;
         }
             break;
@@ -324,12 +325,26 @@ void Connection::setConnectionState(const DotsConnectionState& state)
 	DotsClient{ DotsClient::id_t_i{ id() }, DotsClient::connectionState_t_i{ state } }._publish();
 }
 
-void Connection::send(const Message &msg)
+void Connection::send(const DotsTransportHeader& header, const type::Struct& instance)
 {
     try
     {
-        logRxTx(RxTx::tx, msg.header());
-        m_dotsSocket.send(msg.header(), msg.data());
+        logRxTx(RxTx::tx, header);
+        m_channel->transmit(header, instance);
+    }
+    catch(const std::exception& e)
+    {
+        LOG_WARN_S("exception: " << e.what())
+        kill();
+    }
+}
+
+void Connection::send(const DotsTransportHeader& header, const Transmission& transmission)
+{
+    try
+    {
+        logRxTx(RxTx::tx, header);
+        m_channel->transmit(header, transmission);
     }
     catch(const std::exception& e)
     {
@@ -370,17 +385,15 @@ Connection::Connection(ConnectionManager &manager)
 
 }
 
-void Connection::onSocketError(int ec)
+void Connection::onChannelError(const std::exception& e)
 {
-    if (ec != 2) {
-        LOG_ERROR_S("socket error: " << ec);
-    }
+    LOG_ERROR_S("channel error: " << e.what());
     kill();
 }
 
 void Connection::sendNs(const string &nameSpace,
                         const type::StructDescriptor *td,
-                        const void *data,
+                        const type::Struct& instance,
                         property_set properties,
                         bool remove)
 {
@@ -389,11 +402,8 @@ void Connection::sendNs(const string &nameSpace,
     if (not nameSpace.empty()) header.nameSpace(nameSpace);
     header.dotsHeader->sender(m_connectionManager.serverInfo().id());
 
-    // prepareBuffer
-    m_transmitter.prepareBuffer(td, data, header, properties);
-
     // Send to peer or group
-    send({header, m_transmitter.buffer()});
+    send(header, instance);
 }
 
 void Connection::logRxTx(Connection::RxTx rxtx, const DotsTransportHeader &header)
@@ -446,11 +456,8 @@ void Connection::sendContainerContent(const AnyContainer &container)
         dotsHeader.sender = e.information.lastUpdateFrom;
         dotsHeader.fromCache = --remainingCacheObjects;
 
-        // prepareBuffer
-        m_transmitter.prepareBuffer(td, e.data, thead, td->validProperties(e.data));
-
         // Send to peer or group
-        send({thead, m_transmitter.buffer()});
+        send(thead, *reinterpret_cast<dots::type::Struct*>(e.data));
     }
 
     sendCacheEnd(td->name());

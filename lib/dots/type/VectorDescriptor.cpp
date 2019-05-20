@@ -22,6 +22,24 @@ void VectorDescriptor::destruct(void* obj) const
     }
 }
 
+bool VectorDescriptor::usesDynamicMemory() const
+{
+    return true;
+}
+
+size_t VectorDescriptor::dynamicMemoryUsage(const void* lhs) const
+{
+    size_t size = get_size(lhs);
+    size_t dynMemUsage = size * m_valueTypeDescriptor->sizeOf();
+
+    for (size_t i = 0; i < size; ++i)
+    {
+        dynMemUsage += m_valueTypeDescriptor->dynamicMemoryUsage(get_data(lhs, i));
+    }
+
+    return dynMemUsage;   
+}
+
 std::string VectorDescriptor::to_string(const void */*lhs*/) const
 {
     return std::string();

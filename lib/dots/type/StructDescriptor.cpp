@@ -46,6 +46,49 @@ void StructDescriptor::destruct(void *obj) const
     }
 }
 
+bool StructDescriptor::usesDynamicMemory() const
+{
+    // TODO: improve when overhauling descriptors
+    if (m_dynamicMemoryProperties == std::nullopt)
+    {
+        std::vector<const StructProperty*>& dynamicMemoryProperties = m_dynamicMemoryProperties.emplace(); 
+
+        for (const StructProperty& sp: m_properties)
+        {
+            if (sp.td()->usesDynamicMemory())
+            {
+                dynamicMemoryProperties.emplace_back(&sp);
+            }
+        }
+    }
+
+    return !m_dynamicMemoryProperties->empty();
+}
+
+size_t StructDescriptor::dynamicMemoryUsage(const void* lhs) const
+{
+    // TODO: improve when overhauling descriptors
+    if (usesDynamicMemory())
+    {
+        const property_set& validProperties = reinterpret_cast<const Struct*>(lhs)->_validProperties();
+        size_t dynMemUsage = 0;
+
+        for (const StructProperty* sp : *m_dynamicMemoryProperties)
+        {
+            if (validProperties.test(sp->tag()))
+            {
+                dynMemUsage += sp->td()->dynamicMemoryUsage(sp->address(lhs));
+            }            
+        }
+
+        return dynMemUsage;
+    }
+    else
+    {
+        return 0;
+    }    
+}
+
 std::string StructDescriptor::to_string(const void* /*lhs*/) const
 {
     return {};

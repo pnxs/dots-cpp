@@ -24,13 +24,23 @@ namespace dots::type
 		template <typename... PropertyInitializers>
 		explicit TStruct(PropertyInitializers&&... propertyInitializers) : Struct(_Descriptor())
 		{
-			static_assert(std::conjunction_v<is_t_property_initializer_t<PropertyInitializers>...>, "a struct can only be constructed by its property initializers");
-			(strip_t<decltype(propertyInitializers)>::property_t::Get(*this).construct(std::forward<decltype(propertyInitializers)>(propertyInitializers)), ...);
+			static_assert(std::conjunction_v<is_t_property_initializer_t<strip_t<PropertyInitializers>>...>, "a struct can only be constructed by its property initializers");
+			(strip_t<PropertyInitializers>::property_t::Get(*this).construct(std::forward<decltype(propertyInitializers)>(propertyInitializers)), ...);
 		}
 
 		bool operator == (const Derived& rhs) const
 		{
-			return _equal(rhs);
+			return _applyKeyPropertyPairs(rhs, [](const auto&... propertyPairs)
+			{
+				if constexpr (sizeof...(propertyPairs) == 0)
+				{
+					return true;
+				}
+				else
+				{
+					return ((propertyPairs.first == propertyPairs.second) && ...);
+				}
+			});
 		}
 
 		bool operator != (const Derived& rhs) const
@@ -275,7 +285,7 @@ namespace dots::type
 
 		bool _equal(const Derived& rhs) const
 		{
-			return _applyKeyPropertyPairs(rhs, [](const auto&... propertyPairs)
+			return _propertyPairs(rhs, [](const auto&... propertyPairs)
 			{
 				if constexpr (sizeof...(propertyPairs) == 0)
 				{

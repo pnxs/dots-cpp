@@ -68,7 +68,7 @@ public:
      * Dispatch the message to all registered receivers
      * @param cbd struct that contains the message and metadata
      */
-    void dispatchMessage(const ReceiveMessageData& cbd);
+    void dispatchMessage(const DotsHeader& header, const type::AnyStruct& instance);
 
     Subscription addTypelessReceiver(const type::StructDescriptor* td, const typeless_callback_type& callback);
     Subscription addReceiver(const type::StructDescriptor* td, ContainerBase* cb, const callback_type& callback);

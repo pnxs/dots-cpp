@@ -12,17 +12,14 @@
 #include "MockPublisher.h"
 
 using namespace dots::type;
-using ::testing::Pointee;
-using ::testing::Eq;
-using ::testing::SafeMatcherCast;
-using ::testing::MatcherCast;
+using ::testing::Truly;
 
 using ::testing::ElementsAreArray;
 
 template<typename F, class T>
-void expect_publish(F& mock, const T& data)
+void expect_publish(F& mock, const T& instance)
 {
-    EXPECT_CALL(mock, publish(&T::_Descriptor(), MatcherCast<const void*>(SafeMatcherCast<const T*>(Pointee(Eq(data)))), data._validProperties(), false));
+    EXPECT_CALL(mock, publish(&T::_Descriptor(), Truly([&instance](const Struct& published){ return published._equal(instance); }), instance._validProperties(), false));
 }
 
 TEST(TestDistributedTypeId, createId)
@@ -36,26 +33,20 @@ TEST(TestDistributedTypeId, createId)
     const Descriptor* p2 = &DotsTestSubStruct::_Descriptor();
     const Descriptor* p3 = &dots::type::enum_type_t<DotsTestEnum>::Descriptor();
 
-    {
-        DotsTypes t;
-        t.id = 1;
-        t.name = p1->name();
-        expect_publish(mockPublisher, t);
-    }
+    DotsTypes t1;
+    t1.id = 1;
+    t1.name = p1->name();
+    expect_publish(mockPublisher, t1);
 
-    {
-        DotsTypes t;
-        t.id = 2;
-        t.name = p2->name();
-        expect_publish(mockPublisher, t);
-    }
+    DotsTypes t2;
+    t2.id = 2;
+    t2.name = p2->name();
+    expect_publish(mockPublisher, t2);
 
-    {
-        DotsTypes t;
-        t.id = 3;
-        t.name = p3->name();
-        expect_publish(mockPublisher, t);
-    }
+    DotsTypes t3;
+    t3.id = 3;
+    t3.name = p3->name();
+    expect_publish(mockPublisher, t3);
 
     EXPECT_EQ(dtid.createTypeId(p1), 1);
     EXPECT_EQ(dtid.createTypeId(p2), 2);

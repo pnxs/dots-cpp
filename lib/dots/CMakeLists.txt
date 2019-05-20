@@ -9,13 +9,11 @@ option(BUILD_DOTS_SHARED "Build DOTS as a shared instead of a static library" OF
 
 # dependencies
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
+find_package(ASIO REQUIRED MODULE)
 find_package(Boost 1.59 REQUIRED COMPONENTS filesystem iostreams program_options)
 find_package(Rapidjson REQUIRED MODULE)
 #find_package(cborcpp REQUIRED) (uncomment when dependency is no longer part of build tree)
-if (WITH_QT5)
-    find_package(Qt5 COMPONENTS Core Network Widgets REQUIRED)
-    set(CMAKE_AUTOMOC ON)
-endif()
+find_package(Websocketpp REQUIRED MODULE)
 
 # target
 if (BUILD_DOTS_SHARED)
@@ -34,34 +32,25 @@ GENERATE_DOTS_TYPES(MODEL_SOURCES MODEL_HEADERS
 )
 target_sources(${TARGET_NAME}
 	PRIVATE
+		dots.cpp
 		dots_base.cpp
 		Uuid.cpp
+
+		common/Chrono.cpp
 		common/logging.cpp
 		common/Stream.cpp
-		eventloop/AsioTimer.cpp
-		eventloop/Chrono.cpp
-		eventloop/event_loop.cpp
-		eventloop/Io.cpp
-		eventloop/IoService.cpp
-		eventloop/seconds.cpp
-		eventloop/string_convert.cpp
-		eventloop/Timer.cpp
+		common/string_convert.cpp
+		common/seconds.cpp
+
 		functional/signal.cpp
 
-		io/Socket.cpp
-		io/TcpSocket.cpp
-		io/ConstBufSeq.cpp
-		io/TcpEndpoint.cpp
-		io/TcpAcceptor.cpp
 		io/Transmitter.cpp
 		io/Transceiver.cpp
 		io/ServerConnection.cpp
-		io/TcpResolver.cpp
 		io/Subscription.cpp
 		io/Chained.cpp
-		io/DotsSocket.cpp
-		io/DotsAsioSocket.cpp
 
+		io/Io.cpp
 		io/AnyContainer.cpp
 		io/Container.cpp
 		io/Dispatcher.cpp
@@ -69,12 +58,25 @@ target_sources(${TARGET_NAME}
 		io/Application.cpp
 		io/DynamicTypeReceiver.cpp
 		io/ResourceUsage.cpp
-		io/Message.cpp
 		io/DistributedTypeId.cpp
 		io/Filter.cpp
+
 		io/serialization/JsonSerialization.cpp
 		io/serialization/AsciiSerialization.cpp
 		io/serialization/CborNativeSerialization.cpp
+
+		io/services/Channel.cpp
+		io/services/FdHandlerService.cpp
+		io/services/Listener.cpp
+		io/services/TcpListener.cpp
+		io/services/TcpChannel.cpp
+		io/services/Timer.cpp
+		io/services/TimerService.cpp
+		io/services/Transmission.cpp
+		io/services/VirtualChannel.cpp
+		io/services/WebSocketChannel.cpp
+		io/services/WebSocketListener.cpp
+
 		io/recording/FileStore.cpp
 		io/recording/Load.cpp
 		io/recording/MmapedFile.cpp
@@ -104,10 +106,6 @@ target_sources(${TARGET_NAME}
 		type/VectorDescriptor.cpp
 		type/Struct.cpp
 
-		$<$<BOOL:${WITH_QT5}>:io/QtCoreApplication.cpp>
-		$<$<BOOL:${WITH_QT5}>:io/DotsQtSocket.cpp>
-		$<$<BOOL:${WITH_QT5}>:qt5/QtSingleShotTimer.cpp>
-
 		${MODEL_SOURCES}
 )
 target_include_directories(${TARGET_NAME}
@@ -124,19 +122,23 @@ target_compile_options(${TARGET_NAME}
 	PRIVATE
 		$<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-O2 -flto -Wall -Wextra -Wpedantic -Werror>>		
 )
+target_compile_definitions(${TARGET_NAME}
+	PUBLIC
+		$<BUILD_INTERFACE:ASIO_STANDALONE>
+		$<BUILD_INTERFACE:ASIO_DISABLE_EPOLL>
+)
 target_link_libraries(${TARGET_NAME}
 	PUBLIC
+		$<BUILD_INTERFACE:ASIO::ASIO>
+		$<BUILD_INTERFACE:Websocketpp::websocketpp>
 		Boost::boost
 		Boost::program_options
 		Boost::iostreams
 		Boost::filesystem
 		pthread
-		$<$<BOOL:${WITH_QT5}>:Qt5::Widgets>
-		$<$<BOOL:${WITH_QT5}>:Qt5::Network>
 	PRIVATE
 		cborcpp
-		RapidJSON::RapidJSON
-		$<$<BOOL:${WITH_QT5}>:Qt5::Core>
+		RapidJSON::RapidJSON		
 )
 set_target_properties(${TARGET_NAME} PROPERTIES
     SOVERSION 0

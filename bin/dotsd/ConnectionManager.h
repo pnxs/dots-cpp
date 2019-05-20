@@ -67,7 +67,7 @@ public:
      * Deliver a message to all subscribed connections.
      * @param message
      */
-    void deliverMessage(const Message &message);
+    void deliver(const DotsTransportHeader& transportHeader, Transmission&& transmission);
 
     /*!
      * Publishes a Object with a namespace
@@ -77,10 +77,10 @@ public:
      * @param properties properties, that should be send
      * @param remove if object should be removed
      */
-    void publishNs(const string& nameSpace, const type::StructDescriptor* td, const void* data, property_set properties, bool remove, bool processLocal = true);
+    void publishNs(const string& nameSpace, const type::StructDescriptor* td, const type::Struct& instance, property_set properties, bool remove, bool processLocal = true);
 
     // Need for Publisher-Interface
-    void publish(const type::StructDescriptor* td, const void* data, property_set properties, bool remove) override;
+    void publish(const type::StructDescriptor* td, const type::Struct& instance, property_set properties, bool remove) override;
 
     /*!
      * Process DotsMember-message. Do Join or Leave from Groups.

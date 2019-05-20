@@ -1,12 +1,12 @@
 #pragma once
 #include "dots/cpp_config.h"
-#include <boost/asio.hpp>
+#include <asio.hpp>
 
 namespace dots {
 
-class AsioFdHandler
+class FdHandler
 {
-    boost::asio::posix::stream_descriptor m_sd;
+    asio::posix::stream_descriptor m_sd;
     function<void()> m_handler;
 
     /**
@@ -19,8 +19,8 @@ class AsioFdHandler
     }
 
 public:
-    AsioFdHandler(boost::asio::io_service &ioservice, int fd, function<void()> handler)
-            : m_sd(ioservice, fd), m_handler(handler)
+    FdHandler(asio::io_context& ioContext, int fd, function<void()> handler)
+            : m_sd(ioContext, fd), m_handler(handler)
     {
         start_read();
     }
@@ -28,8 +28,8 @@ public:
     void start_read()
     {
         m_sd.async_read_some(
-                boost::asio::null_buffers(),
-                std::bind(&AsioFdHandler::on_read_finished, this));
+                asio::null_buffers(),
+                std::bind(&FdHandler::on_read_finished, this));
     }
 
 };

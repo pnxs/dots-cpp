@@ -2,6 +2,7 @@
 #include "dots/type/EnumDescriptor.h"
 #include "dots/type/Registry.h"
 #include "DotsTestStruct.dots.h"
+#include "DotsTestVectorStruct.dots.h"
 #include "StructDescriptorData.dots.h"
 #include <gtest/gtest.h>
 
@@ -101,15 +102,35 @@ TEST(TestTStruct, KeyPropertiesHasExpectedValue)
 
 TEST(TestTStruct, ctor_EqualPropertiesAfterInitializerConstruction)
 {
-	DotsTestStruct dts1{
+	DotsTestStruct sut1{
 		DotsTestStruct::indKeyfField_t_i{ 1 },
 		DotsTestStruct::stringField_t_i{ "foo" },
 		DotsTestStruct::floatField_t_i{ 3.1415f }
 	};
 
-	EXPECT_EQ(dts1.indKeyfField, 1);
-	EXPECT_EQ(dts1.stringField, "foo");
-	EXPECT_EQ(dts1.floatField, 3.1415f);
+	DotsTestVectorStruct sut2{
+		DotsTestVectorStruct::intList_t_i{ 
+			dots::Vector<int>{ 1, 2, 3, 4 } 
+		},
+		DotsTestVectorStruct::stringList_t_i{
+			dots::Vector<std::string>{
+				"stringWithSize17",
+				"_stringWithSize18",
+				"__stringWithSize19"
+			}
+		}
+	};
+
+	EXPECT_EQ(sut1.indKeyfField, 1);
+	EXPECT_EQ(sut1.stringField, "foo");
+	EXPECT_EQ(sut1.floatField, 3.1415f);
+
+	EXPECT_EQ(*sut2.intList, (dots::Vector<int>{ 1, 2, 3, 4 }));
+	EXPECT_EQ(*sut2.stringList, (dots::Vector<std::string>{ 
+		"stringWithSize17",
+		"_stringWithSize18",
+		"__stringWithSize19"
+	}));
 }
 
 TEST(TestTStruct, ctor_EqualPropertiesAfterCopyConstruction)

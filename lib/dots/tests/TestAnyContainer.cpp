@@ -30,14 +30,14 @@ TEST(TestAnyContainer, storeAndRemove)
     dh.attributes(dts._validProperties());
 
     // Process a DotsTestStruct 'create' in container
-    container.process(dh, &dts);
+    container.process(dh, dts);
 
     ASSERT_EQ(container.size(), 1u);
 
     // Modify Key property, so that it will be another instance
     dts.indKeyfField = 2;
 
-    container.process(dh, &dts);
+    container.process(dh, dts);
 
     EXPECT_EQ(container.size(), 2u);
 
@@ -45,7 +45,7 @@ TEST(TestAnyContainer, storeAndRemove)
     dh.removeObj = true;
 
     // Remove DotsTestStruct with Key==2 from container
-    container.process(dh, &dts);
+    container.process(dh, dts);
 
     EXPECT_EQ(container.size(), 1u);
 }
@@ -109,7 +109,7 @@ TEST(TestAnyContainer, storeUpdateAndRemoveSignal)
             ASSERT_TRUE(testStruct->stringField.isValid());
             EXPECT_EQ(testStruct->stringField, "Hello");
         };
-        container.process(dh, &dts, &sig);
+        container.process(dh, dts, &sig);
         ASSERT_EQ(container.size(), 1u);
         EXPECT_EQ(timesSigCalled, 1u);
     }
@@ -145,7 +145,7 @@ TEST(TestAnyContainer, storeUpdateAndRemoveSignal)
             EXPECT_EQ(cbd.td, &dts._Descriptor());
             EXPECT_EQ(cbd.mt, dots::Mt::create);
         };
-        container.process(dh, &dts, &sig);
+        container.process(dh, dts, &sig);
         EXPECT_EQ(container.size(), 2u);
         EXPECT_EQ(timesSigCalled, 2u);
     }
@@ -183,7 +183,7 @@ TEST(TestAnyContainer, storeUpdateAndRemoveSignal)
             ASSERT_TRUE(testStruct->stringField.isValid());
             EXPECT_EQ(testStruct->stringField, "World");
         };
-        container.process(dh, &removeObj, &sig);
+        container.process(dh, removeObj, &sig);
         EXPECT_EQ(container.size(), 1u);
         EXPECT_EQ(timesSigCalled, 3u);
     }
@@ -224,7 +224,7 @@ TEST(TestAnyContainer, storeUpdateAndRemoveSignal)
             ASSERT_TRUE(testStruct->floatField.isValid());
             EXPECT_EQ(testStruct->floatField, 3.0f);
         };
-        container.process(dh, &dts, &sig);
+        container.process(dh, dts, &sig);
         EXPECT_EQ(container.size(), 1u);
         EXPECT_EQ(timesSigCalled, 4u);
     }
@@ -246,10 +246,10 @@ TEST(TestAnyContainer, find)
     dh.sentTime(pnxs::SystemNow());
     dh.attributes(dts._validProperties());
 
-    container.process(dh, &dts);
+    container.process(dh, dts);
 
-    dts.indKeyfField(2);
-    container.process(dh, &dts);
+    dts.indKeyfField = 2;
+    container.process(dh, dts);
 
     // dts is now empty, because the content was moved
 
@@ -284,7 +284,7 @@ TEST(TestAnyContainer, updateInstance)
         dts.indKeyfField(1);
 
         dh.attributes(dts._validProperties());
-        container.process(dh, &dts);
+        container.process(dh, dts);
     }
     ASSERT_EQ(container.size(), 1u);
 
@@ -308,7 +308,7 @@ TEST(TestAnyContainer, updateInstance)
 
 
         dh.attributes = dts._validProperties();
-        container.process(dh, &dts);
+        container.process(dh, dts);
     }
     ASSERT_EQ(container.size(), 1u);
 
@@ -331,7 +331,7 @@ TEST(TestAnyContainer, updateInstance)
         dts.floatField(3);
 
         dh.attributes = dts._validProperties();
-        container.process(dh, &dts);
+        container.process(dh, dts);
     }
     ASSERT_EQ(container.size(), 1u);
 
@@ -358,7 +358,7 @@ TEST(TestAnyContainer, updateInstance)
 
         // Set Float-Field to Valid, but it's not set. We've expect, that the property will be set to not-set in container
         dh.attributes = dts._validProperties() + DotsTestStruct::floatField_t::Set();
-        container.process(dh, &dts);
+        container.process(dh, dts);
     }
     ASSERT_EQ(container.size(), 1u);
 
@@ -398,7 +398,7 @@ TEST(TestAnyContainer, uncachedType)
     dh.attributes(dts._validProperties());
 
     // Process a DotsTestStruct 'create' in container
-    container.process(dh, &dts);
+    container.process(dh, dts);
 
     ASSERT_EQ(container.size(), 0u);
 
@@ -406,7 +406,7 @@ TEST(TestAnyContainer, uncachedType)
     dts.intKeyfField = 1; // Set field again, because the container moves the values into it.
     dh.removeObj = true;
 
-    container.process(dh, &dts);
+    container.process(dh, dts);
 
     EXPECT_EQ(container.size(), 0u);
 }
@@ -471,13 +471,13 @@ TEST(TestAnyContainer, uncachedTypeSignal)
     };
 
     // Process a DotsTestStruct 'create' in container
-    container.process(dh, &dts, &sig);
+    container.process(dh, dts, &sig);
     ASSERT_EQ(container.size(), 0u);
 
     dts.intKeyfField = 1; // Set field again, because the container moves the values into it.
     dh.removeObj = true;
 
-    container.process(dh, &dts, &sig);
+    container.process(dh, dts, &sig);
 
     EXPECT_EQ(container.size(), 0u);
 }

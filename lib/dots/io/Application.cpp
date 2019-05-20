@@ -1,114 +1,97 @@
-#include <dots/eventloop/Timer.h>
-#include <dots/eventloop/AsioTimer.h>
 #include "Application.h"
-#include "dots/type/Registry.h"
-#include "DotsAsioSocket.h"
-#include <dots/eventloop/AsioFdHandler.h>
 #include <boost/program_options.hpp>
-
-#include "DotsClient.dots.h"
-namespace po = boost::program_options;
+#include <dots/io/Io.h>
+#include <dots/io/services/ChannelService.h>
+#include <dots/io/services/TcpChannel.h>
+#include <dots/type/Registry.h>
+#include <DotsClient.dots.h>
 
 namespace dots
 {
+	Application::Application(const string& name, int& argc, char* argv[])
+	{
+		m_instance = this;
+		parseProgramOptions(argc, argv);
 
-pnxs::TimerId addTimerAsio(const pnxs::Duration& timeout, const function<void ()> &fun, bool /*periodic*/)
-{
-    AsioSingleShotTimer *timer = new AsioSingleShotTimer(timeout, fun);
-    return timer->id();
-}
+		// Start Transceiver
+		// Connect to dotsd
 
-void remTimerAsio(pnxs::TimerId id)
-{
-    AsioSingleShotTimer::remTimer(id);
-}
+		auto channel = global_service<ChannelService>().open<TcpChannel>(m_serverAddress, m_serverPort);
+		
+		if (not transceiver().start(name, channel))
+		{
+			throw std::runtime_error("unable to start transceiver");
+		}
 
+		LOG_DEBUG_S("run until state connected...");
+		while (not transceiver().connected())
+		{
+			global_io_context().run_one();
+		}
+		LOG_DEBUG_S("run one done");
 
-Application* Application::m_instance = nullptr;
+		DotsClient{ DotsClient::id_t_i{ transceiver().connection().clientId() }, DotsClient::running_t_i{ true } }._publish();
+		}
 
-Application::Application(const string& name, int& argc, char*argv[])
-    :m_ioService(dots::ioService())
-{
-    pnxs::onAddTimer = addTimerAsio;
-    pnxs::onRemTimer = remTimerAsio;
+	Application::~Application()
+	{
+		global_io_context().stop();
+	}
 
-    m_instance = this;
+	int Application::exec()
+	{
+		m_exitCode = 0;
+		global_io_context().run();
 
-    parseProgramOptions(argc, argv);
+		return m_exitCode;
+	}
 
-    // Start Transceiver
-    // Connect to dotsd
-    auto dotsSocket = std::make_shared<DotsAsioSocket>();
-    if(not transceiver().start(name, m_serverAddress, m_serverPort, dotsSocket))
-    {
-        throw std::runtime_error("unable to start transceiver");
-        //quick_exit(-1);
-    }
+	int Application::execOne(const std::chrono::milliseconds& timeout)
+	{
+		m_exitCode = 0;
+		global_io_context().run_one_for(timeout);
 
-    LOG_DEBUG_S("run until state connected...");
-    while(not transceiver().connected())
-    {
-        m_ioService.run_one();
-    }
-    LOG_DEBUG_S("run one done");
+		return m_exitCode;
+	}
 
-	DotsClient{ DotsClient::id_t_i{ transceiver().connection().clientId() }, DotsClient::running_t_i{ true } }._publish();
-}
+	void Application::exit(int exitCode)
+	{
+		m_exitCode = exitCode;
+		global_io_context().stop();
+	}
 
-Application::~Application()
-{
-    // stop Transceiver
-    transceiver().stop();
-}
+	Application* Application::instance()
+	{
+		return m_instance;
+	}
 
-int Application::exec()
-{
-    // Check if connected
+	void Application::parseProgramOptions(int argc, char* argv[])
+	{
+		namespace po = boost::program_options;
 
-    m_exitCode = 0;
+		// define and parse command line options
+		po::options_description desc("Allowed options");
+		desc.add_options()
+			("dots-address", po::value<string>()->default_value("127.0.0.1"), "address to bind to")
+			("dots-port", po::value<string>()->default_value("11234"), "port to bind to")
+			;
 
-    // run mainloop
-    m_ioService.run();
+		po::variables_map vm;
+		po::store(po::basic_command_line_parser<char>(argc, argv).options(desc).allow_unregistered().run(), vm);
+		po::notify(vm);
 
-    return m_exitCode;
-}
+		// parse environment options
+		if (::getenv("DOTS_SERVER_ADDRESS")) 
+		{
+			m_serverAddress = getenv("DOTS_SERVER_ADDRESS");
+		}
 
-void Application::exit(int exitCode)
-{
-    m_exitCode = exitCode;
-    // stop eventloop
-    m_ioService.stop();
-}
+		if (::getenv("DOTS_SERVER_PORT")) 
+		{
+			m_serverPort = atoi("DOTS_SERVER_PORT");
+		}
 
-Application *Application::instance()
-{
-    return m_instance;
-}
-
-void Application::parseProgramOptions(int argc, char*argv[])
-{
-    po::options_description desc("Allowed options");
-    desc.add_options()
-            ("dots-address", po::value<string>()->default_value("127.0.0.1"), "address to bind to")
-            ("dots-port", po::value<int>()->default_value(11234), "port to bind to")
-            ;
-
-    po::variables_map vm;
-    po::store(po::basic_command_line_parser<char>(argc, argv).options(desc).allow_unregistered().run(), vm);
-    po::notify(vm);
-
-    // Check environment
-    if (getenv("DOTS_SERVER_ADDRESS")) {
-        m_serverAddress = getenv("DOTS_SERVER_ADDRESS");
-    }
-
-    if (getenv("DOTS_SERVER_PORT")) {
-        m_serverPort = atoi("DOTS_SERVER_PORT");
-    }
-
-    m_serverAddress =vm["dots-address"].as<string>();
-    m_serverPort = vm["dots-port"].as<int>();
-}
-
-
+		m_serverAddress = vm["dots-address"].as<string>();
+		m_serverPort = vm["dots-port"].as<string>();
+	}
 }
