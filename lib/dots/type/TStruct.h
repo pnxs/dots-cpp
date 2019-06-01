@@ -50,7 +50,17 @@ namespace dots::type
 
 		bool operator < (const Derived& rhs) const
 		{
-			return _less(rhs);
+			return _applyKeyPropertyPairs(rhs, [](const auto&... propertyPairs)
+			{
+				if constexpr (sizeof...(propertyPairs) == 0)
+				{
+					return false;
+				}
+				else
+				{
+					return ((propertyPairs.first < propertyPairs.second) && ...);
+				}
+			});
 		}
 
 		auto _properties()
@@ -283,34 +293,54 @@ namespace dots::type
 			});
 		}
 
+		bool _equal(const Derived& rhs, const property_set& includedProperties) const
+		{
+			return _applyPropertyPairs(rhs, [&](const auto&... propertyPairs)
+			{
+				auto equal = [&](auto& propertyThis, auto& propertyOther)
+				{
+					if (strip_t<decltype(propertyThis)>::IsPartOf(includedProperties))
+					{
+						return propertyThis == propertyOther;
+					}
+					else
+					{
+						return true;
+					}
+				};
+
+				return (equal(propertyPairs.first, propertyPairs.second) && ...);
+			});
+		}
+
 		bool _equal(const Derived& rhs) const
 		{
-			return _propertyPairs(rhs, [](const auto&... propertyPairs)
+			return _equal(rhs, PROPERTY_SET_ALL);
+		}
+
+		bool _less(const Derived& rhs, const property_set& includedProperties) const
+		{
+			return _applyPropertyPairs(rhs, [&](const auto&... propertyPairs)
 			{
-				if constexpr (sizeof...(propertyPairs) == 0)
+				auto less = [&](auto& propertyThis, auto& propertyOther)
 				{
-					return true;
-				}
-				else
-				{
-					return ((propertyPairs.first == propertyPairs.second) && ...);
-				}
+					if (strip_t<decltype(propertyThis)>::IsPartOf(includedProperties))
+					{
+						return propertyThis < propertyOther;
+					}
+					else
+					{
+						return true;
+					}
+				};
+
+				return (less(propertyPairs.first, propertyPairs.second) && ...);
 			});
 		}
 
 		bool _less(const Derived& rhs) const
 		{
-			return _applyKeyPropertyPairs(rhs, [](const auto&... propertyPairs)
-			{
-				if constexpr (sizeof...(propertyPairs) == 0)
-				{
-					return false;
-				}
-				else
-				{
-					return ((propertyPairs.first < propertyPairs.second) && ...);
-				}
-			});
+			return _less(rhs, PROPERTY_SET_ALL);
 		}
 
 		property_set _diffProperties(const Derived& other) const
@@ -441,6 +471,9 @@ namespace dots::type
 		}
 
     private:
+
+        using Struct::_equal;
+        using Struct::_less;
 
 		using Struct::_clear;
 

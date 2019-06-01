@@ -337,9 +337,9 @@ namespace dots::type
         }
     }
 
-    bool Struct::_equal(const Struct& rhs) const
+    bool Struct::_equal(const Struct& rhs, const property_set& includedProperties/* = PROPERTY_SET_ALL*/) const
     {
-        for (const auto&[propertyThis, propertyOther] : _propertyRange(rhs))
+        for (const auto&[propertyThis, propertyOther] : _propertyRange(rhs, includedProperties))
         {
             if (propertyThis != propertyOther)
             {
@@ -350,17 +350,24 @@ namespace dots::type
         return true;
     }
 
-    bool Struct::_less(const Struct& rhs) const
+    bool Struct::_less(const Struct& rhs, const property_set& includedProperties/* = PROPERTY_SET_ALL*/) const
     {
-        for (const auto&[propertyThis, propertyOther] : _propertyRange(rhs))
+        if (includedProperties.empty())
         {
-            if (!(propertyThis < propertyOther))
-            {
-                return false;
-            }
+            return false;
         }
+        else
+        {
+            for (const auto&[propertyThis, propertyOther] : _propertyRange(rhs, includedProperties))
+            {
+                if (!(propertyThis < propertyOther))
+                {
+                    return false;
+                }
+            }
 
-        return true;
+            return true;
+        }        
     }
 
     property_set Struct::_diffProperties(const Struct& other) const

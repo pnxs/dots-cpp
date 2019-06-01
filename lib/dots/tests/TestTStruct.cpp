@@ -197,36 +197,6 @@ TEST(TestTStruct, assignment_ExpectedPropertiesAfterMoveAssignment)
 	EXPECT_EQ(dts2.floatField, 3.1415f);
 }
 
-TEST(TestTStruct, less_CompareLessToOtherStruct)
-{
-	DotsTestStruct dts1;
-	dts1.indKeyfField(1);
-	dts1.stringField("foo");
-	dts1.floatField(3.1415f);
-
-	DotsTestStruct dts2;
-	dts2.indKeyfField(2);
-	dts2.stringField("bar");
-	dts2.floatField(2.7183f);
-
-	EXPECT_LT(dts1, dts2);
-}
-
-TEST(TestTStruct, equal_CompareEqualToOtherStruct)
-{
-	DotsTestStruct dts1;
-	dts1.indKeyfField(1);
-	dts1.stringField("foo");
-	dts1.floatField(3.1415f);
-
-	DotsTestStruct dts2;
-	dts2.indKeyfField(1);
-	dts2.stringField("foo");
-	dts2.floatField(3.1415f);
-
-	EXPECT_TRUE(DotsTestStruct::_Descriptor().equal(&dts1, &dts2));
-}
-
 TEST(TestTStruct, assign_ExpectedPropertiesAfterCompleteAssign)
 {
 	DotsTestStruct sut;
@@ -411,4 +381,64 @@ TEST(TestTStruct, clear_OnlyClearedPropertiesInvalidAfterPartialClear)
 	EXPECT_TRUE(sut.stringField.isValid());
 	EXPECT_EQ(sut.stringField, "foo");
 	EXPECT_FALSE(sut.floatField.isValid());
+}
+
+TEST(TestTStruct, equal_CompareEqualToOtherStruct)
+{
+	DotsTestStruct dts1;
+	dts1.indKeyfField(1);
+	dts1.stringField("foo");
+	dts1.floatField(3.1415f);
+
+	DotsTestStruct dts2;
+	dts2.indKeyfField(1);
+	dts2.stringField("foo");
+	dts2.floatField(3.1415f);
+
+	EXPECT_TRUE(dts1._equal(dts2));
+}
+
+TEST(TestTStruct, equal_CompareNotEqualToOtherStruct)
+{
+	DotsTestStruct dts1;
+	dts1.indKeyfField(1);
+	dts1.stringField("foo");
+	dts1.floatField(3.1415f);
+
+	DotsTestStruct dts2;
+	dts2.indKeyfField(1);
+	dts2.stringField("bar");
+	dts2.floatField(3.1415f);
+
+	EXPECT_FALSE(dts1._equal(dts2));
+}
+
+TEST(TestTStruct, less_CompareLessToOtherStruct)
+{
+	DotsTestStruct dts1;
+	dts1.indKeyfField(1);
+	dts1.stringField("bar");
+	dts1.floatField(2.7183f);
+
+	DotsTestStruct dts2;
+	dts2.indKeyfField(2);
+	dts2.stringField("foo");
+	dts2.floatField(3.1415f);
+
+	EXPECT_TRUE(dts1._less(dts2));
+}
+
+TEST(TestTStruct, less_CompareNotLessToOtherStruct)
+{
+	DotsTestStruct dts1;
+	dts1.indKeyfField(1);
+	dts1.stringField("foo");
+	dts1.floatField(2.7183f);
+
+	DotsTestStruct dts2;
+	dts2.indKeyfField(2);
+	dts2.stringField("bar");
+	dts2.floatField(3.1415f);
+
+	EXPECT_FALSE(dts1._less(dts2));
 }

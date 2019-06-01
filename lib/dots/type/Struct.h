@@ -118,8 +118,8 @@ namespace dots::type
 		void _swap(Struct& other, const property_set& includedProperties = PROPERTY_SET_ALL);
 		void _clear(const property_set& includedProperties = PROPERTY_SET_ALL);
 
-		bool _equal(const Struct& rhs) const;
-		bool _less(const Struct& rhs) const;
+		bool _equal(const Struct& rhs, const property_set& includedProperties = PROPERTY_SET_ALL) const;
+		bool _less(const Struct& rhs, const property_set& includedProperties = PROPERTY_SET_ALL) const;
 
 		property_set _diffProperties(const Struct& other) const;
 		bool _hasProperties(const property_set properties) const;
@@ -174,7 +174,7 @@ namespace dots::type
     private:
 
 		property_set _validPropSet;
-        const StructDescriptor* _desc;        
+        const StructDescriptor* _desc;
     };
 
 	property_iterator begin(Struct& instance);
