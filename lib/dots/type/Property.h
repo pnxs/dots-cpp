@@ -274,7 +274,14 @@ namespace dots::type
 
 		bool equal(const Derived& rhs) const
 		{
-			return rhs.isValid() && equal(*rhs);
+			if (isValid())
+			{
+				return rhs.isValid() && valueEqual(*rhs);
+			}
+			else
+			{
+				return !rhs.isValid();
+			}			
 		}
 
 		bool less(const value_t& rhs) const

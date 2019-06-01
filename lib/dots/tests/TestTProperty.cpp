@@ -261,18 +261,6 @@ TEST(TestTProperty, equal_CompareNotEqualToValueWhenValid)
 	EXPECT_TRUE(sut != rhs);
 }
 
-TEST(TestTProperty, equal_CompareNotEqualToInvalidPropertyWhenInvalid)
-{
-	dots::types::DotsTestStruct dtsLhs;
-	dots::types::DotsTestStruct dtsRhs;
-	auto& sutLhs = dtsLhs.stringField;
-	auto& sutRhs = dtsRhs.stringField;
-
-	EXPECT_FALSE(sutLhs.equal(sutRhs));
-	EXPECT_FALSE(sutLhs == sutRhs);
-	EXPECT_TRUE(sutLhs != sutRhs);
-}
-
 TEST(TestTProperty, equal_CompareNotEqualToValidPropertyWhenInvalid)
 {
 	dots::types::DotsTestStruct dtsLhs;

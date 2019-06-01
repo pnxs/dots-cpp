@@ -183,6 +183,7 @@ TEST(TestPropertyProxyVoid, constructOrAssign_AssignOnValid)
 	EXPECT_EQ(value, "bar");
 }
 
+// note: extract is not yet supported by the typeless PropertyProxy
 //TEST(TestPropertyProxyVoid, extract_InvalidAfterExtract)
 //{
 //	dots::types::DotsTestStruct dts;
@@ -281,18 +282,6 @@ TEST(TestPropertyProxyVoid, equal_CompareNotEqualToValueWhenValid)
 	EXPECT_FALSE(sut.equal(reinterpret_cast<std::byte&>(rhs)));
 	EXPECT_FALSE(sut == reinterpret_cast<std::byte&>(rhs));
 	EXPECT_TRUE(sut != reinterpret_cast<std::byte&>(rhs));
-}
-
-TEST(TestPropertyProxyVoid, equal_CompareNotEqualToInvalidPropertyWhenInvalid)
-{
-	dots::types::DotsTestStruct dtsLhs;
-	dots::types::DotsTestStruct dtsRhs;
-	dots::type::PropertyProxy<void> sutLhs{ dtsLhs.stringField };
-	dots::type::PropertyProxy<void> sutRhs{ dtsRhs.stringField };
-
-	EXPECT_FALSE(sutLhs.equal(sutRhs));
-	EXPECT_FALSE(sutLhs == sutRhs);
-	EXPECT_TRUE(sutLhs != sutRhs);
 }
 
 TEST(TestPropertyProxyVoid, equal_CompareNotEqualToValidPropertyWhenInvalid)

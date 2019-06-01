@@ -261,18 +261,6 @@ TEST(TestPropertyProxy, equal_CompareNotEqualToValueWhenValid)
 	EXPECT_TRUE(sut != rhs);
 }
 
-TEST(TestPropertyProxy, equal_CompareNotEqualToInvalidPropertyWhenInvalid)
-{
-	dots::types::DotsTestStruct dtsLhs;
-	dots::types::DotsTestStruct dtsRhs;
-	dots::type::PropertyProxy<std::string> sutLhs{ dtsLhs.stringField };
-	dots::type::PropertyProxy<std::string> sutRhs{ dtsRhs.stringField };
-
-	EXPECT_FALSE(sutLhs.equal(sutRhs));
-	EXPECT_FALSE(sutLhs == sutRhs);
-	EXPECT_TRUE(sutLhs != sutRhs);
-}
-
 TEST(TestPropertyProxy, equal_CompareNotEqualToValidPropertyWhenInvalid)
 {
 	dots::types::DotsTestStruct dtsLhs;
