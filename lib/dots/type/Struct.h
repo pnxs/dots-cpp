@@ -147,6 +147,28 @@ namespace dots::type
             return const_cast<T*>(std::as_const(*this)._as<T>());
         }
 
+		template <typename T, bool Safe = false>
+        const T& _to() const
+        {
+			static_assert(std::is_base_of_v<Struct, T>, "T has to be a sub-class of Struct");
+
+			if constexpr (Safe)
+			{
+				if (!_is<T>())
+				{
+					throw std::logic_error{ "type mismatch in safe Struct conversion: expected " + _desc->name() + " but got " + T::_Descriptor().name() };
+				}
+			}
+
+            return static_cast<const T&>(*this);
+        }
+
+        template <typename T, bool Safe = false>
+        T& _to()
+        {
+            return const_cast<T&>(std::as_const(*this)._to<T, Safe>());
+        }
+
     protected:
 
 		static constexpr uint8_t Uncached      = 0b0000'0000;

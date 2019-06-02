@@ -43,6 +43,18 @@ namespace dots::type
             return _instance->_as<T>();
         }
 
+		template <typename T, bool Safe = false>
+        const T& to() const
+        {
+			return _instance->_to<T, Safe>();
+        }
+
+        template <typename T, bool Safe = false>
+        T& to()
+        {
+            return _instance->_to<T, Safe>();
+        }
+
 		Struct& get();
 		const Struct& get() const;
 
