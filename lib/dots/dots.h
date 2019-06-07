@@ -16,11 +16,27 @@ namespace dots
 
 	void publish(const type::StructDescriptor* td, const type::Struct& instance, property_set what, bool remove);
 
+	template<class T>
+	void publish(const T& data, typename T::PropSet what);
+	template<class T>
+	void publish(const T& data);
+
+	template<class T>
+	void remove(const T& data);
+
 	Subscription subscribe(const type::StructDescriptor& descriptor, Transceiver::receive_handler_t<>&& handler);
 	Subscription subscribe(const type::StructDescriptor& descriptor, Transceiver::event_handler_t<>&& handler);
 
+	template<class T>
+	Subscription subscribe(Dispatcher::receive_handler_t<T>&& handler);
+	template<class T>
+	Subscription subscribe(Dispatcher::event_handler_t<T>&& handler);
+
 	const ContainerPool& pool();
-	const Container<>& container(const type::StructDescriptor& descriptor);	
+
+	const Container<>& container(const type::StructDescriptor& descriptor);
+	template <typename T>
+	const Container<T>& container();
 
 	template<class T>
 	void publish(const T& data, typename T::PropSet what)
@@ -50,7 +66,7 @@ namespace dots
 	    static_assert(!data.isSubstructOnly(), "It is not allowed to remove a struct, that is marked with 'substruct_only'!");
 
 	    onPublishObject->publish(T::_td(), &data, data.validProperties(), true);
-	}	
+	}
 
 	template<class T>
 	Subscription subscribe(Dispatcher::receive_handler_t<T>&& handler)
