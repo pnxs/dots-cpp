@@ -71,6 +71,7 @@ namespace dots
 	template <typename T>
 	const Container<T>& container()
 	{
+		registerTypeUsage<T, SubscribedType>();
 		return transceiver().container<T>();
 	}
 }
