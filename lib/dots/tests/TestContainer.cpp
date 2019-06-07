@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <dots/io/ContainerNew.h>
+#include <dots/io/Container.h>
 #include <DotsHeader.dots.h>
 #include <DotsTestStruct.dots.h>
 
@@ -22,7 +22,7 @@ namespace
 
 TEST(TestContainer, ctor_EmptyAfterDefaultConstruction)
 {
-	dots::ContainerNew<DotsTestStruct> sut;
+	dots::Container<DotsTestStruct> sut;
 	DotsTestStruct dts{ DotsTestStruct::indKeyfField_t_i{ 1 } };
 
 	ASSERT_TRUE(sut.empty());
@@ -33,7 +33,7 @@ TEST(TestContainer, ctor_EmptyAfterDefaultConstruction)
 
 TEST(TestContainer, insert_CreateInstanceWhenEmpty)
 {
-	dots::ContainerNew<DotsTestStruct> sut;
+	dots::Container<DotsTestStruct> sut;
 	DotsTestStruct dts{
 		DotsTestStruct::indKeyfField_t_i{ 1 },
 		DotsTestStruct::stringField_t_i{ "foo" },
@@ -63,7 +63,7 @@ TEST(TestContainer, insert_CreateInstanceWhenEmpty)
 
 TEST(TestContainer, insert_UpdateSameInstanceWhenNotEmpty)
 {
-	dots::ContainerNew<DotsTestStruct> sut;
+	dots::Container<DotsTestStruct> sut;
 	DotsTestStruct dts1{
 		DotsTestStruct::indKeyfField_t_i{ 1 },
 		DotsTestStruct::stringField_t_i{ "foo" },
@@ -106,7 +106,7 @@ TEST(TestContainer, insert_UpdateSameInstanceWhenNotEmpty)
 
 TEST(TestContainer, insert_CreateDifferentInstanceWhenNotEmpty)
 {
-	dots::ContainerNew<DotsTestStruct> sut;
+	dots::Container<DotsTestStruct> sut;
 	DotsTestStruct dts1{
 		DotsTestStruct::indKeyfField_t_i{ 1 },
 		DotsTestStruct::stringField_t_i{ "foo" },
@@ -143,7 +143,7 @@ TEST(TestContainer, insert_CreateDifferentInstanceWhenNotEmpty)
 
 TEST(TestContainer, remove_ThrowWhenEmpty)
 {
-	dots::ContainerNew<DotsTestStruct> sut;
+	dots::Container<DotsTestStruct> sut;
 	DotsTestStruct dts{	DotsTestStruct::indKeyfField_t_i{ 1 } };
 	DotsHeader header = test_helpers::make_header(dts, 42);
 
@@ -152,7 +152,7 @@ TEST(TestContainer, remove_ThrowWhenEmpty)
 
 TEST(TestContainer, remove_ThrowWhenNotContained)
 {
-	dots::ContainerNew<DotsTestStruct> sut;
+	dots::Container<DotsTestStruct> sut;
 	DotsTestStruct dts1{ DotsTestStruct::indKeyfField_t_i{ 1 } };
 	DotsTestStruct dts2{ DotsTestStruct::indKeyfField_t_i{ 2 } };
 	DotsHeader header1 = test_helpers::make_header(dts1, 42);
@@ -166,7 +166,7 @@ TEST(TestContainer, remove_ThrowWhenNotContained)
 
 TEST(TestContainer, remove_RemoveWhenContained)
 {
-	dots::ContainerNew<DotsTestStruct> sut;
+	dots::Container<DotsTestStruct> sut;
 	DotsTestStruct dts1{
 		DotsTestStruct::indKeyfField_t_i{ 1 },
 		DotsTestStruct::stringField_t_i{ "foo" }
@@ -189,7 +189,7 @@ TEST(TestContainer, remove_RemoveWhenContained)
 
 	sut.insert(header1, dts1);
 	sut.insert(header2, dts2);
-	dots::ContainerNew<DotsTestStruct>::node_t removedNode = sut.remove(header3, dts3);
+	dots::Container<DotsTestStruct>::node_t removedNode = sut.remove(header3, dts3);
 	const dots::type::Struct& removed = removedNode.key();
 	const DotsCloneInformation& cloneInfo = removedNode.mapped();
 

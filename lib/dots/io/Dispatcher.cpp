@@ -1,14 +1,14 @@
-#include <dots/io/DispatcherNew.h>
+#include <dots/io/Dispatcher.h>
 
 namespace dots
 {
-	DispatcherNew::DispatcherNew() :
-		m_this(std::make_shared<DispatcherNew*>(this))
+	Dispatcher::Dispatcher() :
+		m_this(std::make_shared<Dispatcher*>(this))
 	{
 		/* do nothing*/
 	}
 
-	DispatcherNew::DispatcherNew(DispatcherNew&& other) noexcept :
+	Dispatcher::Dispatcher(Dispatcher&& other) noexcept :
 		m_this(std::move(other.m_this)),
 		m_containerPool(std::move(other.m_containerPool)),
 		m_receiveHandlerPool(std::move(other.m_receiveHandlerPool)),
@@ -17,7 +17,7 @@ namespace dots
 		*m_this = this;
 	}
 
-	DispatcherNew& DispatcherNew::operator = (DispatcherNew&& rhs) noexcept
+	Dispatcher& Dispatcher::operator = (Dispatcher&& rhs) noexcept
 	{
 		m_this = std::move(rhs.m_this);
 		m_containerPool = std::move(rhs.m_containerPool);
@@ -29,40 +29,40 @@ namespace dots
 		return *this;
 	}
 
-	const ContainerPoolNew& DispatcherNew::pool() const
+	const ContainerPool& Dispatcher::pool() const
 	{
 		return m_containerPool;
 	}
 
-	ContainerPoolNew& DispatcherNew::pool()
+	ContainerPool& Dispatcher::pool()
 	{
 		return m_containerPool;
 	}
 
-	const ContainerNew<>& DispatcherNew::container(const type::StructDescriptor& descriptor) const
+	const Container<>& Dispatcher::container(const type::StructDescriptor& descriptor) const
 	{
 		return m_containerPool.get(descriptor);
 	}
 
-	ContainerNew<>& DispatcherNew::container(const type::StructDescriptor& descriptor)
+	Container<>& Dispatcher::container(const type::StructDescriptor& descriptor)
 	{
 		return m_containerPool.get(descriptor);
 	}
 
-	SubscriptionNew DispatcherNew::subscribe(const type::StructDescriptor& descriptor, receive_handler_t<>&& handler)
+	Subscription Dispatcher::subscribe(const type::StructDescriptor& descriptor, receive_handler_t<>&& handler)
 	{
-		SubscriptionNew subscription{ m_this, descriptor };
+		Subscription subscription{ m_this, descriptor };
 		m_receiveHandlerPool[&descriptor].emplace(subscription.id(), std::move(handler));
 
 		return subscription;
 	}
 
-	SubscriptionNew DispatcherNew::subscribe(const type::StructDescriptor& descriptor, event_handler_t<>&& handler)
+	Subscription Dispatcher::subscribe(const type::StructDescriptor& descriptor, event_handler_t<>&& handler)
 	{
-		SubscriptionNew subscription{ m_this, descriptor };
+		Subscription subscription{ m_this, descriptor };
 		const event_handler_t<>& handler_ = m_eventHandlerPool[&descriptor].emplace(subscription.id(), std::move(handler)).first->second;
 
-		const ContainerNew<>& container = m_containerPool.get(descriptor);
+		const Container<>& container = m_containerPool.get(descriptor);
 
 		if (!container.empty())
 		{
@@ -83,7 +83,7 @@ namespace dots
 		return subscription;
 	}
 
-	void DispatcherNew::unsubscribe(const SubscriptionNew& subscription)
+	void Dispatcher::unsubscribe(const Subscription& subscription)
 	{
 		auto itHandlers = m_eventHandlerPool.find(&subscription.descriptor());
 
@@ -103,13 +103,13 @@ namespace dots
 		handlers.erase(itHandler);
 	}
 
-	void DispatcherNew::dispatch(const DotsHeader& header, const type::AnyStruct& instance)
+	void Dispatcher::dispatch(const DotsHeader& header, const type::AnyStruct& instance)
 	{
 		dispatchReceive(header, instance);
 		dispatchEvent(header, instance);
 	}
 
-	void DispatcherNew::dispatchReceive(const DotsHeader& header, const type::AnyStruct& instance)
+	void Dispatcher::dispatchReceive(const DotsHeader& header, const type::AnyStruct& instance)
 	{
 		const type::StructDescriptor& descriptor = instance->_descriptor();
 
@@ -129,7 +129,7 @@ namespace dots
 		}
 	}
 
-	void DispatcherNew::dispatchEvent(const DotsHeader& header, const type::AnyStruct& instance)
+	void Dispatcher::dispatchEvent(const DotsHeader& header, const type::AnyStruct& instance)
 	{
 		const type::StructDescriptor& descriptor = instance->_descriptor();
 
@@ -153,11 +153,11 @@ namespace dots
 
 		if (descriptor.cached())
 		{
-			ContainerNew<>& container = m_containerPool.get(descriptor);
+			Container<>& container = m_containerPool.get(descriptor);
 
 			if (header.removeObj == true)
 			{
-				ContainerNew<>::node_t removed = container.remove(header, instance);
+				Container<>::node_t removed = container.remove(header, instance);
 				dispatchEvent(Event<>{ header, instance, removed.key(), removed.mapped() });
 			}
 			else

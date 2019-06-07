@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <dots/io/DispatcherNew.h>
+#include <dots/io/Dispatcher.h>
 #include <DotsHeader.dots.h>
 #include <DotsTestStruct.dots.h>
 #include <DotsUncachedTestStruct.dots.h>
@@ -21,9 +21,9 @@ namespace
 	}
 }
 
-//TEST(TestDispatcherNew, dispatch_ThrowWhenNotSubscribed)
+//TEST(TestDispatcher, dispatch_ThrowWhenNotSubscribed)
 //{
-//	dots::DispatcherNew sut;
+//	dots::Dispatcher sut;
 //	DotsTestStruct dts{
 //		DotsTestStruct::indKeyfField_t_i{ 1 }
 //	};
@@ -32,15 +32,15 @@ namespace
 //	ASSERT_THROW(sut.dispatch(header, dts), std::logic_error);
 //}
 
-TEST(TestDispatcherNew, dispatch_CreateEventWhenSubscribedToCachedType)
+TEST(TestDispatcher, dispatch_CreateEventWhenSubscribedToCachedType)
 {
-	dots::DispatcherNew sut;
+	dots::Dispatcher sut;
 	DotsTestStruct dts{ DotsTestStruct::indKeyfField_t_i{ 1 } };
 	DotsHeader header = test_helpers::make_header(dts, 42);
 
 	size_t i = 0;
 
-	dots::SubscriptionNew subscription = sut.subscribe<DotsTestStruct>([&](const dots::Event<DotsTestStruct>& e)
+	dots::Subscription subscription = sut.subscribe<DotsTestStruct>([&](const dots::Event<DotsTestStruct>& e)
 	{
 		++i;
 
@@ -70,9 +70,9 @@ TEST(TestDispatcherNew, dispatch_CreateEventWhenSubscribedToCachedType)
 	ASSERT_EQ(i, 1);
 }
 
-TEST(TestDispatcherNew, dispatch_UpdateEventWhenSubscribedToCachedType)
+TEST(TestDispatcher, dispatch_UpdateEventWhenSubscribedToCachedType)
 {
-	dots::DispatcherNew sut;
+	dots::Dispatcher sut;
 	DotsTestStruct dts1{ 
 		DotsTestStruct::indKeyfField_t_i{ 1 },
 		DotsTestStruct::stringField_t_i{ "foo" }
@@ -91,7 +91,7 @@ TEST(TestDispatcherNew, dispatch_UpdateEventWhenSubscribedToCachedType)
 
 	size_t i = 0;
 
-	dots::SubscriptionNew subscription = sut.subscribe<DotsTestStruct>([&](const dots::Event<DotsTestStruct>& e)
+	dots::Subscription subscription = sut.subscribe<DotsTestStruct>([&](const dots::Event<DotsTestStruct>& e)
 	{
 		++i;
 
@@ -122,9 +122,9 @@ TEST(TestDispatcherNew, dispatch_UpdateEventWhenSubscribedToCachedType)
 	ASSERT_EQ(i, 2);
 }
 
-TEST(TestDispatcherNew, dispatch_RemoveEventWhenSubscribedToCachedType)
+TEST(TestDispatcher, dispatch_RemoveEventWhenSubscribedToCachedType)
 {
-	dots::DispatcherNew sut;
+	dots::Dispatcher sut;
 	DotsTestStruct dts1{
 		DotsTestStruct::indKeyfField_t_i{ 1 },
 		DotsTestStruct::stringField_t_i{ "foo" }
@@ -147,7 +147,7 @@ TEST(TestDispatcherNew, dispatch_RemoveEventWhenSubscribedToCachedType)
 
 	size_t i = 0;
 
-	dots::SubscriptionNew subscription = sut.subscribe<DotsTestStruct>([&](const dots::Event<DotsTestStruct>& e)
+	dots::Subscription subscription = sut.subscribe<DotsTestStruct>([&](const dots::Event<DotsTestStruct>& e)
 	{
 		++i;
 
@@ -179,15 +179,15 @@ TEST(TestDispatcherNew, dispatch_RemoveEventWhenSubscribedToCachedType)
 	ASSERT_EQ(i, 3);
 }
 
-TEST(TestDispatcherNew, dispatch_CreateEventWhenDynamicallySubscribedToCachedType)
+TEST(TestDispatcher, dispatch_CreateEventWhenDynamicallySubscribedToCachedType)
 {
-	dots::DispatcherNew sut;
+	dots::Dispatcher sut;
 	DotsTestStruct dts{ DotsTestStruct::indKeyfField_t_i{ 1 } };
 	DotsHeader header = test_helpers::make_header(dts, 42);
 
 	size_t i = 0;
 
-	dots::SubscriptionNew subscription = sut.subscribe(DotsTestStruct::_Descriptor(), [&](const dots::Event<>& e)
+	dots::Subscription subscription = sut.subscribe(DotsTestStruct::_Descriptor(), [&](const dots::Event<>& e)
 	{
 		++i;
 
@@ -217,9 +217,9 @@ TEST(TestDispatcherNew, dispatch_CreateEventWhenDynamicallySubscribedToCachedTyp
 	ASSERT_EQ(i, 1);
 }
 
-TEST(TestDispatcherNew, dispatch_UpdateEventWhenDynamicallSubscribedToCachedType)
+TEST(TestDispatcher, dispatch_UpdateEventWhenDynamicallSubscribedToCachedType)
 {
-	dots::DispatcherNew sut;
+	dots::Dispatcher sut;
 	DotsTestStruct dts1{
 		DotsTestStruct::indKeyfField_t_i{ 1 },
 		DotsTestStruct::stringField_t_i{ "foo" }
@@ -238,7 +238,7 @@ TEST(TestDispatcherNew, dispatch_UpdateEventWhenDynamicallSubscribedToCachedType
 
 	size_t i = 0;
 
-	dots::SubscriptionNew subscription = sut.subscribe(DotsTestStruct::_Descriptor(), [&](const dots::Event<>& e)
+	dots::Subscription subscription = sut.subscribe(DotsTestStruct::_Descriptor(), [&](const dots::Event<>& e)
 	{
 		++i;
 
@@ -269,9 +269,9 @@ TEST(TestDispatcherNew, dispatch_UpdateEventWhenDynamicallSubscribedToCachedType
 	ASSERT_EQ(i, 2);
 }
 
-TEST(TestDispatcherNew, dispatch_RemoveEventWhenDynamicallSubscribedToCachedType)
+TEST(TestDispatcher, dispatch_RemoveEventWhenDynamicallSubscribedToCachedType)
 {
-	dots::DispatcherNew sut;
+	dots::Dispatcher sut;
 	DotsTestStruct dts1{
 		DotsTestStruct::indKeyfField_t_i{ 1 },
 		DotsTestStruct::stringField_t_i{ "foo" }
@@ -294,7 +294,7 @@ TEST(TestDispatcherNew, dispatch_RemoveEventWhenDynamicallSubscribedToCachedType
 
 	size_t i = 0;
 
-	dots::SubscriptionNew subscription = sut.subscribe(DotsTestStruct::_Descriptor(), [&](const dots::Event<>& e)
+	dots::Subscription subscription = sut.subscribe(DotsTestStruct::_Descriptor(), [&](const dots::Event<>& e)
 	{
 		++i;
 
@@ -326,22 +326,22 @@ TEST(TestDispatcherNew, dispatch_RemoveEventWhenDynamicallSubscribedToCachedType
 	ASSERT_EQ(i, 3);
 }
 
-TEST(TestDispatcherNew, dispatch_CreateEventFromCacheWhenSubscribingToCachedType)
+TEST(TestDispatcher, dispatch_CreateEventFromCacheWhenSubscribingToCachedType)
 {
-	dots::DispatcherNew sut;
+	dots::Dispatcher sut;
 	DotsTestStruct dts{ DotsTestStruct::indKeyfField_t_i{ 1 } };
 	DotsHeader header = test_helpers::make_header(dts, 42);
 
 	size_t i = 0;
 
-	dots::SubscriptionNew subscription1 = sut.subscribe<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
+	dots::Subscription subscription1 = sut.subscribe<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
 	{
 		/* do nothing */
 	});	
 
 	sut.dispatch(header, dts);
 
-	dots::SubscriptionNew subscription2 = sut.subscribe<DotsTestStruct>([&](const dots::Event<DotsTestStruct>& e)
+	dots::Subscription subscription2 = sut.subscribe<DotsTestStruct>([&](const dots::Event<DotsTestStruct>& e)
 	{
 		++i;
 
@@ -369,9 +369,9 @@ TEST(TestDispatcherNew, dispatch_CreateEventFromCacheWhenSubscribingToCachedType
 	ASSERT_EQ(i, 1);
 }
 
-TEST(TestDispatcherNew, dispatch_CreateEventWhenSubscribedToUncachedType)
+TEST(TestDispatcher, dispatch_CreateEventWhenSubscribedToUncachedType)
 {
-	dots::DispatcherNew sut;
+	dots::Dispatcher sut;
 	DotsUncachedTestStruct dts1{
 		DotsUncachedTestStruct::intKeyfField_t_i{ 1 },
 		DotsUncachedTestStruct::value_t_i{ "foo" },
@@ -384,7 +384,7 @@ TEST(TestDispatcherNew, dispatch_CreateEventWhenSubscribedToUncachedType)
 
 	size_t i = 0;
 
-	dots::SubscriptionNew subscription = sut.subscribe<DotsUncachedTestStruct>([&](const dots::Event<DotsUncachedTestStruct>& e)
+	dots::Subscription subscription = sut.subscribe<DotsUncachedTestStruct>([&](const dots::Event<DotsUncachedTestStruct>& e)
 	{
 		++i;
 
@@ -415,15 +415,15 @@ TEST(TestDispatcherNew, dispatch_CreateEventWhenSubscribedToUncachedType)
 	ASSERT_EQ(i, 2);
 }
 
-TEST(TestDispatcherNew, dispatch_ThrowWhenRemovingUncachedType)
+TEST(TestDispatcher, dispatch_ThrowWhenRemovingUncachedType)
 {
-	dots::DispatcherNew sut;
+	dots::Dispatcher sut;
 	DotsUncachedTestStruct duts{
 		DotsUncachedTestStruct::intKeyfField_t_i{ 1 }
 	};
 	DotsHeader header = test_helpers::make_header(duts, 42, true);
 
-	dots::SubscriptionNew subscription1 = sut.subscribe<DotsUncachedTestStruct>([&](const dots::Event<DotsUncachedTestStruct>&/* e*/)
+	dots::Subscription subscription1 = sut.subscribe<DotsUncachedTestStruct>([&](const dots::Event<DotsUncachedTestStruct>&/* e*/)
 	{
 		/* do nothing */
 	});
@@ -431,19 +431,19 @@ TEST(TestDispatcherNew, dispatch_ThrowWhenRemovingUncachedType)
 	ASSERT_THROW(sut.dispatch(header, duts), std::logic_error);
 }
 
-TEST(TestDispatcherNew, dispatch_NoEventWhenNotSubscribedToType)
+TEST(TestDispatcher, dispatch_NoEventWhenNotSubscribedToType)
 {
-	dots::DispatcherNew sut;
+	dots::Dispatcher sut;
 	DotsUncachedTestStruct duts{ DotsUncachedTestStruct::intKeyfField_t_i{ 1 } };
 	DotsHeader header = test_helpers::make_header(duts, 42);
 
 	size_t i = 0;
 
-	dots::SubscriptionNew subscription1 = sut.subscribe<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
+	dots::Subscription subscription1 = sut.subscribe<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
 	{
 		++i;
 	});
-	dots::SubscriptionNew subscription2 = sut.subscribe<DotsUncachedTestStruct>([&](const dots::Event<DotsUncachedTestStruct>&/* e*/)
+	dots::Subscription subscription2 = sut.subscribe<DotsUncachedTestStruct>([&](const dots::Event<DotsUncachedTestStruct>&/* e*/)
 	{
 		/* do nothing */
 	});
@@ -453,16 +453,16 @@ TEST(TestDispatcherNew, dispatch_NoEventWhenNotSubscribedToType)
 	ASSERT_EQ(i, 0);
 }
 
-TEST(TestDispatcherNew, dispatch_NoEventAfterExplicitUnubscribeFromType)
+TEST(TestDispatcher, dispatch_NoEventAfterExplicitUnubscribeFromType)
 {
-	dots::DispatcherNew sut;
+	dots::Dispatcher sut;
 	DotsTestStruct dts{ DotsTestStruct::indKeyfField_t_i{ 1 } };
 	DotsHeader header1 = test_helpers::make_header(dts, 42);
 	DotsHeader header2 = test_helpers::make_header(dts, 42);
 
 	size_t i = 0;
 
-	dots::SubscriptionNew subscription = sut.subscribe<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
+	dots::Subscription subscription = sut.subscribe<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
 	{
 		++i;
 	});
@@ -474,9 +474,9 @@ TEST(TestDispatcherNew, dispatch_NoEventAfterExplicitUnubscribeFromType)
 	ASSERT_EQ(i, 1);
 }
 
-TEST(TestDispatcherNew, dispatch_NoEventAfterImplicitUnubscribeFromType)
+TEST(TestDispatcher, dispatch_NoEventAfterImplicitUnubscribeFromType)
 {
-	dots::DispatcherNew sut;
+	dots::Dispatcher sut;
 	DotsTestStruct dts{ DotsTestStruct::indKeyfField_t_i{ 1 } };
 	DotsHeader header1 = test_helpers::make_header(dts, 42);
 	DotsHeader header2 = test_helpers::make_header(dts, 42);
@@ -484,7 +484,7 @@ TEST(TestDispatcherNew, dispatch_NoEventAfterImplicitUnubscribeFromType)
 	size_t i = 0;
 
 	{
-		dots::SubscriptionNew subscription = sut.subscribe<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
+		dots::Subscription subscription = sut.subscribe<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
 		{
 			++i;
 		});
@@ -497,20 +497,20 @@ TEST(TestDispatcherNew, dispatch_NoEventAfterImplicitUnubscribeFromType)
 	ASSERT_EQ(i, 1);
 }
 
-TEST(TestDispatcherNew, moveCtor_CreateEventAfterMoveContructWhenSubscribedToCachedType)
+TEST(TestDispatcher, moveCtor_CreateEventAfterMoveContructWhenSubscribedToCachedType)
 {
-	dots::DispatcherNew dispatcher;
+	dots::Dispatcher dispatcher;
 	DotsTestStruct dts{ DotsTestStruct::indKeyfField_t_i{ 1 } };
 	DotsHeader header = test_helpers::make_header(dts, 42);
 
 	size_t i = 0;
 
-	dots::SubscriptionNew subscription = dispatcher.subscribe<DotsTestStruct>([&](const dots::Event<DotsTestStruct>& e)
+	dots::Subscription subscription = dispatcher.subscribe<DotsTestStruct>([&](const dots::Event<DotsTestStruct>& e)
 	{
 		++i;
 	});
 
-	dots::DispatcherNew sut{ std::move(dispatcher) };
+	dots::Dispatcher sut{ std::move(dispatcher) };
 	sut.dispatch(header, dts);
 
 	ASSERT_EQ(i, 1);

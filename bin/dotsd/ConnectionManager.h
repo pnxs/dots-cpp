@@ -2,7 +2,7 @@
 
 #include "Connection.h"
 #include <set>
-#include <dots/io/DispatcherNew.h>
+#include <dots/io/Dispatcher.h>
 #include "dots/io/Publisher.h"
 #include "dots/io/DistributedTypeId.h"
 #include "GroupManager.h"
@@ -127,14 +127,14 @@ private:
     string clientId2Name(ClientId id) const;
 
     std::map<Connection::ConnectionId, connection_ptr> m_connections;
-    std::vector<const ContainerNew<>*> m_cleanupContainer; ///< all containers with cleanup-flag.
+    std::vector<const Container<>*> m_cleanupContainer; ///< all containers with cleanup-flag.
 
     std::set<connection_ptr> m_cleanupConnections; ///< old connection-object.
 
     bool m_CacheEnabled = true;
     GroupManager& m_groupManager;
     ServerInfo& m_serverInfo;
-    dots::DispatcherNew m_dispatcher;
+    dots::Dispatcher m_dispatcher;
     dots::Transmitter m_transmitter;
     Connection::ConnectionId m_lastConnectionId = 1; // 0 is used for unitialized, 1 is used for the server.
     std::unique_ptr<DistributedTypeId> m_distributedTypeId;

@@ -39,34 +39,34 @@ void Transceiver::stop()
     connection().stop();
 }
 
-const ContainerPoolNew& Transceiver::pool() const
+const ContainerPool& Transceiver::pool() const
 {
 	return m_dispatcher.pool();
 }
 
-const ContainerNew<>& Transceiver::container(const type::StructDescriptor& descriptor)
+const Container<>& Transceiver::container(const type::StructDescriptor& descriptor)
 {
 	return m_dispatcher.container(descriptor);
 }
 
-SubscriptionNew Transceiver::subscribe(const type::StructDescriptor& descriptor, receive_handler_t<>&& handler)
+Subscription Transceiver::subscribe(const type::StructDescriptor& descriptor, receive_handler_t<>&& handler)
 {
 	connection().joinGroup(descriptor.name());
 	return m_dispatcher.subscribe(descriptor, std::move(handler));
 }
 
-SubscriptionNew Transceiver::subscribe(const type::StructDescriptor& descriptor, event_handler_t<>&& handler)
+Subscription Transceiver::subscribe(const type::StructDescriptor& descriptor, event_handler_t<>&& handler)
 {
 	connection().joinGroup(descriptor.name());
 	return m_dispatcher.subscribe(descriptor, std::move(handler));
 }
 
-SubscriptionNew Transceiver::subscribe(const std::string_view& name, receive_handler_t<>&& handler)
+Subscription Transceiver::subscribe(const std::string_view& name, receive_handler_t<>&& handler)
 {
 	return subscribe(getDescriptorFromName(name), std::move(handler));
 }
 
-SubscriptionNew Transceiver::subscribe(const std::string_view& name, event_handler_t<>&& handler)
+Subscription Transceiver::subscribe(const std::string_view& name, event_handler_t<>&& handler)
 {
 	return subscribe(getDescriptorFromName(name), std::move(handler));
 }

@@ -1,5 +1,5 @@
-#include <dots/io/SubscriptionNew.h>
-#include <dots/io/DispatcherNew.h>
+#include <dots/io/Subscription.h>
+#include <dots/io/Dispatcher.h>
 
 namespace dots
 {
@@ -15,7 +15,7 @@ namespace dots
 	    LOG_DEBUG_S("SubType: " << td->name());
 	}
 
-	SubscriptionNew::SubscriptionNew(std::weak_ptr<DispatcherNew*> dispatcher, const type::StructDescriptor& descriptor) :
+	Subscription::Subscription(std::weak_ptr<Dispatcher*> dispatcher, const type::StructDescriptor& descriptor) :
 		m_dispatcher(std::move(dispatcher)),
 		m_descriptor(&descriptor),
 		m_id(++M_lastId)
@@ -23,7 +23,7 @@ namespace dots
 		/* do nothing */
 	}
 
-	SubscriptionNew::SubscriptionNew(SubscriptionNew&& other) noexcept :
+	Subscription::Subscription(Subscription&& other) noexcept :
 		m_dispatcher(std::move(other.m_dispatcher)),
 		m_descriptor(other.m_descriptor),
 		m_id(other.m_id)
@@ -32,12 +32,12 @@ namespace dots
 		other.m_id = 0;
 	}
 
-	SubscriptionNew::~SubscriptionNew()
+	Subscription::~Subscription()
 	{
 		unsubscribe();
 	}
 
-	SubscriptionNew& SubscriptionNew::operator = (SubscriptionNew&& rhs) noexcept
+	Subscription& Subscription::operator = (Subscription&& rhs) noexcept
 	{
 		m_dispatcher = std::move(rhs.m_dispatcher);
 		m_descriptor = rhs.m_descriptor;
@@ -49,17 +49,17 @@ namespace dots
 		return *this;
 	}
 
-	const type::StructDescriptor& SubscriptionNew::descriptor() const
+	const type::StructDescriptor& Subscription::descriptor() const
 	{
 		return *m_descriptor;
 	}
 
-	auto SubscriptionNew::id() const -> id_t
+	auto Subscription::id() const -> id_t
 	{
 		return m_id;
 	}
 
-	void SubscriptionNew::unsubscribe()
+	void Subscription::unsubscribe()
 	{
 		if (auto dispatcher = m_dispatcher.lock())
 		{
@@ -68,7 +68,7 @@ namespace dots
 		}
 	}
 
-	void SubscriptionNew::discard()
+	void Subscription::discard()
 	{
 		m_dispatcher.reset();
 	}

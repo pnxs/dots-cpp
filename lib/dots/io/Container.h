@@ -8,10 +8,10 @@
 namespace dots
 {
 	template <typename = type::Struct>
-	struct ContainerNew;
+	struct Container;
 
 	template <>
-	struct ContainerNew<type::Struct>
+	struct Container<type::Struct>
 	{
 		struct key_compare
 		{
@@ -28,13 +28,13 @@ namespace dots
 		using value_t = container_t::value_type;
 		using node_t = container_t::node_type;
 
-		ContainerNew(const type::StructDescriptor& descriptor);
-		ContainerNew(const ContainerNew& other) = default;
-		ContainerNew(ContainerNew&& other) = default;
-		~ContainerNew() = default;
+		Container(const type::StructDescriptor& descriptor);
+		Container(const Container& other) = default;
+		Container(Container&& other) = default;
+		~Container() = default;
 
-		ContainerNew& operator = (const ContainerNew& rhs) = default;
-		ContainerNew& operator = (ContainerNew&& rhs) = default;
+		Container& operator = (const Container& rhs) = default;
+		Container& operator = (Container&& rhs) = default;
 
 		const type::StructDescriptor& descriptor() const;
 
@@ -64,7 +64,7 @@ namespace dots
 		size_t totalMemoryUsage() const;
 
 		template <typename T>
-		const ContainerNew<T>& as() const
+		const Container<T>& as() const
 		{
 			static_assert(std::is_base_of_v<type::Struct, T>);
 
@@ -73,13 +73,13 @@ namespace dots
 				throw std::runtime_error{ "type mismatch: expected " + m_descriptor->name() + " but got " + T::_Descriptor().name() };
 			}
 
-			return static_cast<const ContainerNew<T>&>(*this);
+			return static_cast<const Container<T>&>(*this);
 		}
 
 		template <typename T>
-		ContainerNew<T>& as()
+		Container<T>& as()
 		{
-			return const_cast<ContainerNew<T>&>(std::as_const(*this).as<T>());
+			return const_cast<Container<T>&>(std::as_const(*this).as<T>());
 		}
 
 	private:
@@ -89,30 +89,30 @@ namespace dots
 	};
 
 	template <typename T>
-	struct ContainerNew : ContainerNew<type::Struct>
+	struct Container : Container<type::Struct>
 	{
 		static_assert(std::is_base_of_v<type::Struct, T>);
 
-		ContainerNew() :
-			ContainerNew<type::Struct>(T::_Descriptor())
+		Container() :
+			Container<type::Struct>(T::_Descriptor())
 		{
 			/* do nothing */
 		}
-		ContainerNew(const ContainerNew& other) = default;
-		ContainerNew(ContainerNew&& other) = default;
-		~ContainerNew() = default;
+		Container(const Container& other) = default;
+		Container(Container&& other) = default;
+		~Container() = default;
 
-		ContainerNew& operator = (const ContainerNew& rhs) = default;
-		ContainerNew& operator = (ContainerNew&& rhs) = default;
+		Container& operator = (const Container& rhs) = default;
+		Container& operator = (Container&& rhs) = default;
 
 		const T* find(const T& instance) const
 		{
-			return static_cast<const T*>(ContainerNew<>::find(instance));
+			return static_cast<const T*>(Container<>::find(instance));
 		}
 
 		const T& get(const T& instance) const
 		{
-			return static_cast<const T&>(ContainerNew<>::get(instance));
+			return static_cast<const T&>(Container<>::get(instance));
 		}
 
 		void forEach(const std::function<void(const T&)>& f) const
@@ -125,9 +125,9 @@ namespace dots
 
 	private:
 
-		using ContainerNew<>::find;
-		using ContainerNew<>::get;
-		using ContainerNew<>::forEach;
-		using ContainerNew<>::as;
+		using Container<>::find;
+		using Container<>::get;
+		using Container<>::forEach;
+		using Container<>::as;
 	};
 }

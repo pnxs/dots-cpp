@@ -4,7 +4,7 @@
 #include <dots/io/services/Channel.h>
 
 #include <memory>
-#include <dots/io/ContainerNew.h>
+#include <dots/io/Container.h>
 #include "dots/io/Transmitter.h"
 #include "DotsConnectionState.dots.h"
 #include "DotsMsgConnect.dots.h"
@@ -88,7 +88,7 @@ public:
      */
     void sendNs(const string& nameSpace, const type::StructDescriptor* td, const type::Struct& instance, property_set properties, bool remove);
 
-    void sendContainerContent(const ContainerNew<>& container);
+    void sendContainerContent(const Container<>& container);
     void sendCacheEnd(const std::string& typeName);
 
 protected:

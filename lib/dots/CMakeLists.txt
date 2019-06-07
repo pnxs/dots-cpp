@@ -47,13 +47,13 @@ target_sources(${TARGET_NAME}
 		io/Transmitter.cpp
 		io/Transceiver.cpp
 		io/ServerConnection.cpp
-		io/SubscriptionNew.cpp
+		io/Subscription.cpp
 		io/Chained.cpp
 
 		io/Io.cpp
-		io/ContainerNew.cpp
-		io/ContainerPoolNew.cpp
-		io/DispatcherNew.cpp
+		io/Container.cpp
+		io/ContainerPool.cpp
+		io/Dispatcher.cpp
 		io/Event.cpp
 		io/TD_Traversal.cpp
 		io/Application.cpp

@@ -63,7 +63,7 @@ private:
         LOG_INFO_S("received subscribed TestStruct:" << dots::to_ascii(&cbd()._Descriptor(), &cbd()));
     }
 
-    dots::SubscriptionNew m_subs;
+    dots::Subscription m_subs;
 
     int m_value = 0;
 

@@ -1,7 +1,7 @@
 #pragma once
 #include <string_view>
 #include <type_traits>
-#include "dots/io/SubscriptionNew.h"
+#include "dots/io/Subscription.h"
 #include "TProperty.h"
 #include "TPropertyInitializer.h"
 #include "StructDescriptor.h"

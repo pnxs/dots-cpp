@@ -427,7 +427,7 @@ const string &Connection::clientName() const
     return m_clientName;
 }
 
-void Connection::sendContainerContent(const ContainerNew<>& container)
+void Connection::sendContainerContent(const Container<>& container)
 {
     const auto& td = container.descriptor();
 

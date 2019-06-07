@@ -97,7 +97,7 @@ void ConnectionManager::onNewType(const dots::type::StructDescriptor* td)
         return;
     }
 
-	const ContainerNew<>& container = m_dispatcher.container(*td);
+	const Container<>& container = m_dispatcher.container(*td);
 
     // Cached types can be marked as "cleanup"
     if(td->cleanup())
@@ -157,7 +157,7 @@ void ConnectionManager::processMemberMessage(const DotsTransportHeader& /*header
 
         auto& typeName = member.groupName;
 
-        const ContainerNew<>* container = m_dispatcher.pool().find(*typeName);
+        const Container<>* container = m_dispatcher.pool().find(*typeName);
         if (container == nullptr) return;
 
         if (container->descriptor().cached())

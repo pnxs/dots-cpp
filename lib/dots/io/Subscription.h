@@ -52,19 +52,19 @@ namespace dots
 		RegisterTypeUsage<T, S>::get();
 	}
 
-	struct DispatcherNew;
+	struct Dispatcher;
 
-	struct [[nodiscard]] SubscriptionNew
+	struct [[nodiscard]] Subscription
 	{
 		using id_t = uint64_t;
 
-		SubscriptionNew(std::weak_ptr<DispatcherNew*> dispatcher, const type::StructDescriptor& descriptor);
-		SubscriptionNew(const SubscriptionNew& other) = delete;
-		SubscriptionNew(SubscriptionNew&& other) noexcept;
-		~SubscriptionNew();
+		Subscription(std::weak_ptr<Dispatcher*> dispatcher, const type::StructDescriptor& descriptor);
+		Subscription(const Subscription& other) = delete;
+		Subscription(Subscription&& other) noexcept;
+		~Subscription();
 
-		SubscriptionNew& operator = (const SubscriptionNew& rhs) = delete;
-		SubscriptionNew& operator = (SubscriptionNew&& rhs) noexcept;
+		Subscription& operator = (const Subscription& rhs) = delete;
+		Subscription& operator = (Subscription&& rhs) noexcept;
 
 		const type::StructDescriptor& descriptor() const;
 		id_t id() const;
@@ -75,7 +75,7 @@ namespace dots
 	private:
 
 		inline static std::atomic<id_t> M_lastId = 0;
-		std::weak_ptr<DispatcherNew*> m_dispatcher;
+		std::weak_ptr<Dispatcher*> m_dispatcher;
 		const type::StructDescriptor* m_descriptor;
 		id_t m_id;
 	};
