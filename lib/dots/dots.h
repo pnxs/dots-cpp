@@ -41,32 +41,30 @@ namespace dots
 	template<class T>
 	void publish(const T& instance, const property_set& what/* = PROPERTY_SET_ALL*/, bool remove/* = false*/)
 	{
-	    registerTypeUsage<T, PublishedType>();
-
 	    static_assert(!T::_IsSubstructOnly(), "it is not allowed to publish to a struct that is marked with 'substruct_only'!");
-
+	    registerTypeUsage<T, PublishedType>();
 	    onPublishObject->publish(T::_Descriptor(), &instance, what, remove);
 	}
 
 	template<class T>
 	void remove(const T& instance)
 	{
-	    registerTypeUsage<T, PublishedType>();
-
 	    static_assert(!T::_IsSubstructOnly(), "it is not allowed to remove to a struct that is marked with 'substruct_only'!");
-
+	    registerTypeUsage<T, PublishedType>();
 	    onPublishObject->publish(T::_Descriptor(), &instance, instance.validProperties(), true);
 	}
 
 	template<class T>
 	Subscription subscribe(Dispatcher::receive_handler_t<T>&& handler)
 	{
+		registerTypeUsage<T, SubscribedType>();
 	    return transceiver().subscribe<T>(std::move(handler));
 	}
 
 	template<class T>
 	Subscription subscribe(Dispatcher::event_handler_t<T>&& handler)
 	{
+		registerTypeUsage<T, SubscribedType>();
 	    return transceiver().subscribe<T>(std::move(handler));
 	}
 

@@ -61,8 +61,6 @@ public:
 	Subscription subscribe(receive_handler_t<T>&& handler)
 	{
 		static_assert(!T::_IsSubstructOnly(), "it is not allowed to subscribe to a struct that is marked with 'substruct_only'!");
-		
-		registerTypeUsage<T, SubscribedType>();
 		connection().joinGroup(T::_Descriptor().name());
 
 		return m_dispatcher.subscribe<T>(std::move(handler));
@@ -72,8 +70,6 @@ public:
 	Subscription subscribe(event_handler_t<T>&& handler)
 	{
 		static_assert(!T::_IsSubstructOnly(), "it is not allowed to subscribe to a struct that is marked with 'substruct_only'!");
-
-		registerTypeUsage<T, SubscribedType>();
 		connection().joinGroup(T::_Descriptor().name());
 
 		return m_dispatcher.subscribe<T>(std::move(handler));
