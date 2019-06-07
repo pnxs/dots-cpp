@@ -31,12 +31,12 @@ namespace dots
 		return transceiver;
 	}
 
-	Subscription subscribe(const type::StructDescriptor& descriptor, Dispatcher::receive_handler_t<>&& handler)
+	Subscription subscribe(const type::StructDescriptor& descriptor, Transceiver::receive_handler_t<>&& handler)
 	{
 		return transceiver().subscribe(descriptor, std::move(handler));
 	}
 
-	Subscription subscribe(const type::StructDescriptor& descriptor, Dispatcher::event_handler_t<>&& handler)
+	Subscription subscribe(const type::StructDescriptor& descriptor, Transceiver::event_handler_t<>&& handler)
 	{
 		return transceiver().subscribe(descriptor, std::move(handler));
 	}

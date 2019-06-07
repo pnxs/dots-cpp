@@ -16,8 +16,8 @@ namespace dots
 
 	void publish(const type::StructDescriptor* td, const type::Struct& instance, property_set what, bool remove);
 
-	Subscription subscribe(const type::StructDescriptor& descriptor, Dispatcher::receive_handler_t<>&& handler);
-	Subscription subscribe(const type::StructDescriptor& descriptor, Dispatcher::event_handler_t<>&& handler);
+	Subscription subscribe(const type::StructDescriptor& descriptor, Transceiver::receive_handler_t<>&& handler);
+	Subscription subscribe(const type::StructDescriptor& descriptor, Transceiver::event_handler_t<>&& handler);
 
 	const ContainerPool& pool();
 	const Container<>& container(const type::StructDescriptor& descriptor);	
