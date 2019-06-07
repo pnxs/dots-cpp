@@ -31,6 +31,11 @@ namespace dots
 		return transceiver;
 	}
 
+	void publish(const type::StructDescriptor* td, const type::Struct& instance, property_set what, bool remove)
+	{
+	    onPublishObject->publish(td, instance, what, remove);
+	}
+
 	Subscription subscribe(const type::StructDescriptor& descriptor, Transceiver::receive_handler_t<>&& handler)
 	{
 		return transceiver().subscribe(descriptor, std::move(handler));

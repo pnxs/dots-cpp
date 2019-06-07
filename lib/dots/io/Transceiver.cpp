@@ -198,9 +198,4 @@ const type::StructDescriptor& Transceiver::getDescriptorFromName(const std::stri
 	return *static_cast<const type::StructDescriptor*>(descriptor);
 }
 
-void publish(const type::StructDescriptor* td, const type::Struct& instance, property_set what, bool remove)
-{
-    onPublishObject->publish(td, instance, what, remove);
-}
-
 }
