@@ -1,5 +1,6 @@
 #pragma once
 #include <map>
+#include <unordered_map>
 #include <string_view>
 #include <dots/io/Container.h>
 
@@ -7,7 +8,7 @@ namespace dots
 {
     struct ContainerPool
     {
-        using pool_t = std::map<const type::StructDescriptor*, Container<>>;
+        using pool_t = std::unordered_map<const type::StructDescriptor*, Container<>>;
 		using iterator_t = pool_t::iterator;
         using const_iterator_t = pool_t::const_iterator;
         using value_t = pool_t::value_type;

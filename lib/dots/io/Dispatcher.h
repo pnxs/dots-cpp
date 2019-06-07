@@ -1,5 +1,6 @@
 #pragma once
 #include <map>
+#include <unordered_map>
 #include <functional>
 #include <memory>
 #include <algorithm>
@@ -71,10 +72,10 @@ namespace dots
 	private:
 
 		using receive_handlers_t = std::map<Subscription::id_t, receive_handler_t<>>;
-		using receive_handler_pool_t = std::map<const type::StructDescriptor*, receive_handlers_t>;
+		using receive_handler_pool_t = std::unordered_map<const type::StructDescriptor*, receive_handlers_t>;
 
 		using event_handlers_t = std::map<Subscription::id_t, event_handler_t<>>;
-		using event_handler_pool_t = std::map<const type::StructDescriptor*, event_handlers_t>;
+		using event_handler_pool_t = std::unordered_map<const type::StructDescriptor*, event_handlers_t>;
 
 		void dispatchReceive(const DotsHeader& header, const type::AnyStruct& instance);
 		void dispatchEvent(const DotsHeader& header, const type::AnyStruct& instance);
