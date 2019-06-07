@@ -1,4 +1,3 @@
-#include <dots/io/AnyContainer.h>
 #include "Transceiver.h"
 #include "dots/type/Registry.h"
 #include "DotsMsgConnect.dots.h"
@@ -13,7 +12,7 @@ Transceiver::Transceiver()
 {
     connection().onConnected.connect(FUN(*this, onConnect));
     connection().onEarlyConnect.connect(FUN(*this, onEarlySubscribe));
-    connection().onReceiveMessage.connect(FUN(m_dispatcher, dispatchMessage));
+    connection().onReceiveMessage.connect(FUN(m_dispatcher, dispatch));
 
     onPublishObject = this;
 //    connection().onDisconnected
@@ -40,6 +39,38 @@ void Transceiver::stop()
     connection().stop();
 }
 
+const ContainerPoolNew& Transceiver::pool() const
+{
+	return m_dispatcher.pool();
+}
+
+const ContainerNew<>& Transceiver::container(const type::StructDescriptor& descriptor)
+{
+	return m_dispatcher.container(descriptor);
+}
+
+SubscriptionNew Transceiver::subscribe(const type::StructDescriptor& descriptor, receive_handler_t<>&& handler)
+{
+	connection().joinGroup(descriptor.name());
+	return m_dispatcher.subscribe(descriptor, std::move(handler));
+}
+
+SubscriptionNew Transceiver::subscribe(const type::StructDescriptor& descriptor, event_handler_t<>&& handler)
+{
+	connection().joinGroup(descriptor.name());
+	return m_dispatcher.subscribe(descriptor, std::move(handler));
+}
+
+SubscriptionNew Transceiver::subscribe(const std::string_view& name, receive_handler_t<>&& handler)
+{
+	return subscribe(getDescriptorFromName(name), std::move(handler));
+}
+
+SubscriptionNew Transceiver::subscribe(const std::string_view& name, event_handler_t<>&& handler)
+{
+	return subscribe(getDescriptorFromName(name), std::move(handler));
+}
+
 ServerConnection &Transceiver::connection()
 {
     return m_serverConnection;
@@ -61,11 +92,6 @@ bool Transceiver::connected() const
     return m_connected;
 }
 
-Dispatcher &Transceiver::dispatcher()
-{
-    return m_dispatcher;
-}
-
 void Transceiver::onEarlySubscribe()
 {
     TD_Traversal traversal;
@@ -80,10 +106,9 @@ void Transceiver::onEarlySubscribe()
     }
 
     // Send all subscribes
-    for (auto& e: dots::ContainerBase::allChained())
+    for (auto& descriptor: getSubscribedDescriptors())
     {
-        connection().joinGroup(e->td()->name());
-        dispatcher().registerReceiver(e->td(), e);
+        connection().joinGroup(descriptor->name());
     }
 
     // Send preloadClientFinished
@@ -154,6 +179,23 @@ void Transceiver::subscribeDescriptors()
     });
     dispatcher().addReceiver<StructDescriptorData>();
 */
+}
+
+const type::StructDescriptor& Transceiver::getDescriptorFromName(const std::string_view& name) const
+{
+	const type::Descriptor* descriptor = type::Descriptor::registry().fromWireName(name.data());
+
+	if (descriptor == nullptr)
+	{
+		throw std::logic_error{ "could not find a struct type with name: " + std::string{ name.data() } };
+	}
+
+	if (descriptor->dotsType() != type::DotsType::Struct)
+	{
+		throw std::logic_error{ "type with name is not a struct type: " + std::string{ name.data() } };
+	}
+
+	return *static_cast<const type::StructDescriptor*>(descriptor);
 }
 
 Transceiver& transceiver()

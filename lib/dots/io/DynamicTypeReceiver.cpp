@@ -17,12 +17,12 @@ DynamicTypeReceiver::DynamicTypeReceiver(const std::vector<std::string> &whiteLi
 
     dots::subscribe<EnumDescriptorData>([](const EnumDescriptorData::Cbd& cbd) {
         type::EnumDescriptor::createFromEnumDescriptorData(cbd());
-    });
+    }).discard();
 
     dots::subscribe<StructDescriptorData>([](const StructDescriptorData::Cbd& cbd) {
         LOG_DEBUG_S("received StructDescriptorData");
         type::StructDescriptor::createFromStructDescriptorData(cbd());
-    });
+    }).discard();
 
     transceiver().connection().requestDescriptors(whiteList);
 }

@@ -8,9 +8,9 @@
 class MyClientClass
 {
 public:
-    MyClientClass()
+    MyClientClass() :
+		m_subs{ dots::subscribe<DotsTestStruct>(FUN(*this, handleTestStruct)) }
     {
-        m_subs = dots::subscribe<DotsTestStruct>(FUN(*this, handleTestStruct));
         dots::add_timer(1, FUN(*this, handleTimer));
     }
 
@@ -63,7 +63,7 @@ private:
         LOG_INFO_S("received subscribed TestStruct:" << dots::to_ascii(&cbd()._Descriptor(), &cbd()));
     }
 
-    dots::Subscription m_subs;
+    dots::SubscriptionNew m_subs;
 
     int m_value = 0;
 

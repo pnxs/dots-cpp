@@ -47,20 +47,21 @@ target_sources(${TARGET_NAME}
 		io/Transmitter.cpp
 		io/Transceiver.cpp
 		io/ServerConnection.cpp
-		io/Subscription.cpp
+		io/SubscriptionNew.cpp
 		io/Chained.cpp
 
 		io/Io.cpp
-		io/AnyContainer.cpp
-		io/Container.cpp
-		io/Dispatcher.cpp
+		io/ContainerNew.cpp
+		io/ContainerPoolNew.cpp
+		io/DispatcherNew.cpp
+		io/Event.cpp
 		io/TD_Traversal.cpp
 		io/Application.cpp
 		io/DynamicTypeReceiver.cpp
 		io/ResourceUsage.cpp
 		io/DistributedTypeId.cpp
 		io/Filter.cpp
-
+		
 		io/serialization/JsonSerialization.cpp
 		io/serialization/AsciiSerialization.cpp
 		io/serialization/CborNativeSerialization.cpp

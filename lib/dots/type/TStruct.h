@@ -1,7 +1,7 @@
 #pragma once
 #include <string_view>
 #include <type_traits>
-#include "dots/io/Subscription.h"
+#include "dots/io/SubscriptionNew.h"
 #include "TProperty.h"
 #include "TPropertyInitializer.h"
 #include "StructDescriptor.h"
@@ -10,8 +10,8 @@
 
 namespace dots
 {
-	template<class T>
-	struct Cbd;
+	template<typename T>
+	struct Event;
 }
 
 namespace dots::type
@@ -19,7 +19,7 @@ namespace dots::type
     template <typename Derived>
     struct TStruct : Struct
     {
-		using Cbd = dots::Cbd<Derived>;
+		using Cbd = dots::Event<Derived>;
 
 		template <typename... PropertyInitializers>
 		explicit TStruct(PropertyInitializers&&... propertyInitializers) : Struct(_Descriptor())

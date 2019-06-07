@@ -11,9 +11,10 @@ namespace dots {
 ConnectionManager::ConnectionManager(GroupManager &groupManager, ServerInfo &server)
         :m_groupManager(groupManager), m_serverInfo(server)
 {
+	m_dispatcher.pool().get<DotsClient>();
     dots::type::Descriptor::registry().onNewStruct.connect(FUN(*this, onNewType));
-    m_dispatcher.addReceiver<DotsDescriptorRequest>(FUN(*this, handleDescriptorRequest));
-    m_dispatcher.addReceiver<DotsClearCache>(FUN(*this, handleClearCache));
+    m_dispatcher.subscribe<DotsDescriptorRequest>(FUN(*this, handleDescriptorRequest)).discard();
+    m_dispatcher.subscribe<DotsClearCache>(FUN(*this, handleClearCache)).discard();
 }
 
 void ConnectionManager::init()
@@ -52,16 +53,6 @@ void ConnectionManager::stop_all()
 }
 
 /*!
- * Main receive method for new messages from groups.
- * @param cbd typless callbackdata.
- * @param container the container associated with the calling type.
- */
-void ConnectionManager::onReceivedMessage(const dots::TypelessCbd* cbd, dots::AnyContainer &container)
-{
-    container.process(cbd->header, cbd->instance);
-}
-
-/*!
  * Returns a short string-representation of the DotsStructFlags.
  * The String consists of 5 chars (5 flags). Every flag has a static place in
  * this string:
@@ -96,16 +87,9 @@ static std::string flags2String(const dots::type::StructDescriptor* td)
  */
 void ConnectionManager::onNewType(const dots::type::StructDescriptor* td)
 {
-    dots::AnyContainer* container = m_containerPool.getContainer(td->name());
-
     LOG_INFO_S("register type " << td->name() << " published by " << clientId2Name(td->publisherId()));
 
-    LOG_DEBUG_S("onNewType name=" << td->name() << " flags:" << flags2String(td) << " container:" << container);
-
-    if(not container) {
-        LOG_WARN_S("container is NULL");
-        return;
-    }
+    LOG_DEBUG_S("onNewType name=" << td->name() << " flags:" << flags2String(td));
 
     // Only continue, if type is a cached type
     if(not td->cached())
@@ -113,13 +97,13 @@ void ConnectionManager::onNewType(const dots::type::StructDescriptor* td)
         return;
     }
 
+	const ContainerNew<>& container = m_dispatcher.container(*td);
+
     // Cached types can be marked as "cleanup"
     if(td->cleanup())
     {
-        m_cleanupContainer.push_back(container);
+        m_cleanupContainer.push_back(&container);
     }
-
-    m_dispatcher.addTypelessReceiver(td, bind(&ConnectionManager::onReceivedMessage, this, _1, std::ref(*container)));
 }
 
 void ConnectionManager::deliver(const DotsTransportHeader& transportHeader, Transmission&& transmission)
@@ -130,7 +114,7 @@ void ConnectionManager::deliver(const DotsTransportHeader& transportHeader, Tran
         {
             DotsHeader dotsHeader = transportHeader.dotsHeader;
             dotsHeader.isFromMyself(dotsHeader.sender == 1u);
-            m_dispatcher.dispatchMessage(dotsHeader, transmission.instance());
+            m_dispatcher.dispatch(dotsHeader, transmission.instance());
         }
 
         Group *grp = m_groupManager.getGroup({ transportHeader.destinationGroup });
@@ -173,12 +157,12 @@ void ConnectionManager::processMemberMessage(const DotsTransportHeader& /*header
 
         auto& typeName = member.groupName;
 
-        dots::AnyContainer* containerPtr = m_containerPool.getContainer(typeName);
-        if (containerPtr == nullptr) return;
+        const ContainerNew<>* container = m_dispatcher.pool().find(*typeName);
+        if (container == nullptr) return;
 
-        if (containerPtr->td()->cached())
+        if (container->descriptor().cached())
         {
-            connection->sendContainerContent(*containerPtr);
+            connection->sendContainerContent(*container);
         }
         else
         {
@@ -238,13 +222,13 @@ void ConnectionManager::removeConnection(connection_ptr c)
 
 bool ConnectionManager::isClientIdInContainers(ClientId id)
 {
-    for (auto& poolIter : m_containerPool.getPool())
+    for (auto& poolIter : m_dispatcher.pool())
     {
         auto& container = poolIter.second;
         for (auto& element : container)
         {
-            if (element.information.createdFrom == id) return true;
-            if (element.information.lastUpdateFrom == id) return true;
+            if (element.second.createdFrom == id) return true;
+            if (element.second.lastUpdateFrom == id) return true;
         }
     }
     return false;
@@ -257,21 +241,19 @@ void ConnectionManager::cleanup()
     }
     m_cleanupConnections.clear();
 
-    auto containerPtr = m_containerPool.getContainer("DotsClient");
+    const auto& container = m_dispatcher.container<DotsClient>();
     std::vector<ClientId> clientsToRemove;
 
-    if (containerPtr) {
-        for (auto &element : *containerPtr) {
-            auto client = static_cast<DotsClient *>(element.data);
-            if (client->connectionState.isValid() && client->connectionState == DotsConnectionState::closed) {
-                // Search for a ClientId reference in all containers
-                //LOG_DATA_S("check closed conn state of " << client->name());
-                if (isClientIdInContainers(client->id)) {
-                    continue;
-                }
-                else {
-                    clientsToRemove.push_back(client->id);
-                }
+    for (auto &element : container) {
+        const auto& client = static_cast<const DotsClient&>(element.first);
+        if (client.connectionState == DotsConnectionState::closed) {
+            // Search for a ClientId reference in all containers
+            //LOG_DATA_S("check closed conn state of " << client->name());
+            if (isClientIdInContainers(client.id)) {
+                continue;
+            }
+            else {
+                clientsToRemove.push_back(client.id);
             }
         }
     }
@@ -294,7 +276,7 @@ void ConnectionManager::handleDescriptorRequest(const DotsDescriptorRequest::Cbd
 
     dots::TD_Traversal traversal;
 
-    auto connection = findConnection(cbd.header.sender);
+    auto connection = findConnection(cbd.header().sender);
 
     if (not connection)
     {
@@ -304,12 +286,12 @@ void ConnectionManager::handleDescriptorRequest(const DotsDescriptorRequest::Cbd
 
     LOG_INFO_S("received DescriptorRequest from " << connection->clientName() << "(" << connection->id() << ")");
 
-    for (const auto& cpItem : m_containerPool.getPool())
+    for (const auto& cpItem : m_dispatcher.pool())
     {
         const auto& container = cpItem.second;
-        auto td = container.td();
+        const auto& td = container.descriptor();
 
-        if (not wl.empty() && std::find(wl.begin(), wl.end(), td->name()) == wl.end())
+        if (not wl.empty() && std::find(wl.begin(), wl.end(), td.name()) == wl.end())
         {
             // when whitelist is set, skip all types, that are not on the list.
             continue;
@@ -317,16 +299,16 @@ void ConnectionManager::handleDescriptorRequest(const DotsDescriptorRequest::Cbd
 
         if (cbd().blacklist.isValid()) {
             auto& bl = *cbd().blacklist;
-            if (std::find(bl.begin(), bl.end(), td->name()) != wl.end()) {
+            if (std::find(bl.begin(), bl.end(), td.name()) != wl.end()) {
                 // if blacklist is set and the type was found on the list, skip it.
                 continue;
             }
         }
 
-        if (td->internal()) continue; // skip internal types
+        if (td.internal()) continue; // skip internal types
 
-        LOG_DEBUG_S("sending descriptor for type '" << td->name() << "' to " << cbd.header.sender);
-        traversal.traverseDescriptorData(td, [&](auto td, auto body) {
+        LOG_DEBUG_S("sending descriptor for type '" << td.name() << "' to " << cbd.header().sender);
+        traversal.traverseDescriptorData(&td, [&](auto td, auto body) {
             DotsTransportHeader thead;
             m_transmitter.prepareHeader(thead, td, td->validProperties(body), false);
             thead.dotsHeader->sentTime = pnxs::SystemNow();
@@ -347,22 +329,22 @@ void ConnectionManager::handleClearCache(const DotsClearCache::Cbd& cbd)
 {
     auto& whitelist = cbd().typeNames.isValid() ? *cbd().typeNames : dots::Vector<string>();
 
-    for (auto& cpItem : m_containerPool.getPool())
+    for (auto& cpItem : m_dispatcher.pool())
     {
         auto &container = cpItem.second;
 
-        if (std::find(whitelist.begin(), whitelist.end(), container.td()->name()) == whitelist.end())
+        if (std::find(whitelist.begin(), whitelist.end(), container.descriptor().name()) == whitelist.end())
         {
             continue; // not found
         }
 
         // clear container content
-        LOG_INFO_S("clear container '" << container.td()->name() << "' (" << container.size() << " elements)");
+        LOG_INFO_S("clear container '" << container.descriptor().name() << "' (" << container.size() << " elements)");
 
         // publish remove for every element of the container
         for (auto& element : container)
         {
-            publishNs({}, container.td(), *reinterpret_cast<type::Struct*>(element.data), container.td()->keys(), true, false);
+            publishNs({}, &container.descriptor(), element.first, container.descriptor().keys(), true, false);
         }
 
         container.clear();
@@ -378,20 +360,20 @@ void ConnectionManager::cleanupObjects(Connection *connection)
 {
     for (const auto& container : m_cleanupContainer)
     {
-        vector<const void*> remove;
+        vector<const type::Struct*> remove;
 
         // Search for objects which where sent by this killed Connection.
-        for (const AnyElement& item : *container)
+        for (const auto& [instance, cloneInfo] : *container)
         {
-            if  (connection->id() == item.information.lastUpdateFrom)
+            if  (connection->id() == cloneInfo.lastUpdateFrom)
             {
-                remove.push_back(item.data);
+                remove.push_back(&*instance);
             }
         }
 
         for (auto item : remove)
         {
-            publishNs({}, container->td(), *reinterpret_cast<const type::Struct*>(item), container->td()->keys(), true);
+            publishNs({}, &container->descriptor(), *reinterpret_cast<const type::Struct*>(item), container->descriptor().keys(), true);
         }
     }
 
@@ -428,7 +410,9 @@ void ConnectionManager::publishNs(const string &nameSpace,
 
 DotsStatistics ConnectionManager::receiveStatistics() const
 {
-    return m_dispatcher.statistics();
+    //return m_dispatcher.statistics();
+	// TODO: determine if still necessary
+	return DotsStatistics{};
 }
 
 DotsStatistics ConnectionManager::sendStatistics() const
@@ -440,21 +424,10 @@ DotsCacheStatus ConnectionManager::cacheStatus() const
 {
     DotsCacheStatus cs;
 
-    auto& pool = m_containerPool.getPool();
+    auto& pool = m_dispatcher.pool();
 
     cs.nrTypes(pool.size());
-
-    uint64_t sizeOfContainers = 0;
-
-    for (auto& container : pool)
-    {
-        auto nrElements = container.second.size();
-        sizeOfContainers += sizeof(container.first) + container.first.size(); // Size of pool-key
-        sizeOfContainers += sizeof(AnyElement) * nrElements; // Size of Container Metadata
-        sizeOfContainers += container.second.td()->sizeOf() * nrElements; // Size of Container payload
-
-    }
-    cs.size(sizeOfContainers);
+    cs.size(pool.totalMemoryUsage());
     return cs;
 }
 
@@ -480,18 +453,16 @@ ConnectionManager::publish(const type::StructDescriptor *td, const type::Struct&
 
 string ConnectionManager::clientId2Name(ClientId id) const
 {
-    auto containerPtr = m_containerPool.getConstContainer("DotsClient");
-    if (containerPtr)
-    {
-		DotsClient searchKey(DotsClient::id_t_i{ id });
+    const auto& container = m_dispatcher.container<DotsClient>();
 
-        auto iter = containerPtr->find({&searchKey, pnxs::TimePoint()});
-        if (iter != containerPtr->end())
-        {
-            auto client = static_cast<DotsClient *>(iter->data);
-            if (client->name.isValid())
-                return client->name;
-        }
+    const DotsClient* client = container.find(DotsClient{ 
+		DotsClient::id_t_i{ id }
+	});
+
+    if (client != nullptr)
+    {
+        if (client->name.isValid())
+            return client->name;
     }
 
     if (id == 0)
