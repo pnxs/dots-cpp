@@ -30,4 +30,24 @@ namespace dots
 		static Transceiver transceiver;
 		return transceiver;
 	}
+
+	Subscription subscribe(const type::StructDescriptor& descriptor, Dispatcher::receive_handler_t<>&& handler)
+	{
+		return transceiver().subscribe(descriptor, std::move(handler));
+	}
+
+	Subscription subscribe(const type::StructDescriptor& descriptor, Dispatcher::event_handler_t<>&& handler)
+	{
+		return transceiver().subscribe(descriptor, std::move(handler));
+	}
+
+	const ContainerPool& pool()
+	{
+		return transceiver().pool();
+	}
+
+	const Container<>& container(const type::StructDescriptor& descriptor)
+	{
+		return transceiver().container(descriptor);
+	}
 }

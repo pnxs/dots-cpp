@@ -46,15 +46,9 @@ namespace dots
 	    onPublishObject->publish(T::_td(), &data, data.validProperties(), true);
 	}
 
-	inline Subscription subscribe(const type::StructDescriptor& descriptor, Dispatcher::receive_handler_t<>&& handler)
-	{
-	    return transceiver().subscribe(descriptor, std::move(handler));
-	}
+	Subscription subscribe(const type::StructDescriptor& descriptor, Dispatcher::receive_handler_t<>&& handler);
 
-	inline Subscription subscribe(const type::StructDescriptor& descriptor, Dispatcher::event_handler_t<>&& handler)
-	{
-	    return transceiver().subscribe(descriptor, std::move(handler));
-	}
+	Subscription subscribe(const type::StructDescriptor& descriptor, Dispatcher::event_handler_t<>&& handler);
 
 	template<class T>
 	Subscription subscribe(Dispatcher::receive_handler_t<T>&& handler)
@@ -68,15 +62,9 @@ namespace dots
 	    return transceiver().subscribe<T>(std::move(handler));
 	}
 
-	inline const ContainerPool& pool()
-	{
-		return transceiver().pool();
-	}
+	const ContainerPool& pool();
 
-	inline const Container<>& container(const type::StructDescriptor& descriptor)
-	{
-		return transceiver().container(descriptor);
-	}
+	const Container<>& container(const type::StructDescriptor& descriptor);
 
 	template <typename T>
 	const Container<T>& container()
