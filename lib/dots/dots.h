@@ -17,7 +17,7 @@ namespace dots
 	void publish(const type::StructDescriptor* td, const type::Struct& instance, property_set what, bool remove);
 
 	template<class T>
-	void publish(const T& data, typename T::PropSet what);
+	void publish(const T& instance, const property_set& what = PROPERTY_SET_ALL, bool remove = false);
 	template<class T>
 	void publish(const T& data);
 
@@ -39,33 +39,23 @@ namespace dots
 	const Container<T>& container();
 
 	template<class T>
-	void publish(const T& data, typename T::PropSet what)
+	void publish(const T& instance, const property_set& what/* = PROPERTY_SET_ALL*/, bool remove/* = false*/)
 	{
 	    registerTypeUsage<T, PublishedType>();
 
-	    static_assert(!data.isSubstructOnly(), "It is not allowed to publish a struct, that is marked with 'substruct_only'!");
+	    static_assert(!T::_IsSubstructOnly(), "it is not allowed to publish to a struct that is marked with 'substruct_only'!");
 
-	    onPublishObject->publish(T::_td(), &data, what, false);
+	    onPublishObject->publish(T::_Descriptor(), &instance, what, remove);
 	}
 
 	template<class T>
-	void publish(const T& data)
+	void remove(const T& instance)
 	{
 	    registerTypeUsage<T, PublishedType>();
 
-	    static_assert(!data.isSubstructOnly(), "It is not allowed to publish a struct, that is marked with 'substruct_only'!");
+	    static_assert(!T::_IsSubstructOnly(), "it is not allowed to remove to a struct that is marked with 'substruct_only'!");
 
-	    publish(data, data.valatt());
-	}
-
-	template<class T>
-	void remove(const T& data)
-	{
-	    registerTypeUsage<T, PublishedType>();
-
-	    static_assert(!data.isSubstructOnly(), "It is not allowed to remove a struct, that is marked with 'substruct_only'!");
-
-	    onPublishObject->publish(T::_td(), &data, data.validProperties(), true);
+	    onPublishObject->publish(T::_Descriptor(), &instance, instance.validProperties(), true);
 	}
 
 	template<class T>
