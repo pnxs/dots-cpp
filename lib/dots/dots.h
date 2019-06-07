@@ -2,6 +2,7 @@
 #include <functional>
 #include <dots/common/Chrono.h>
 #include <dots/io/services/Timer.h>
+#include <dots/io/Transceiver.h>
 
 namespace dots
 {
@@ -10,4 +11,76 @@ namespace dots
 
 	void add_fd_handler(int fileDescriptor, const std::function<void()>& handler);
 	void remove_fd_handler(int fileDescriptor);
+
+	Transceiver& transceiver();
+
+	void publish(const type::StructDescriptor* td, const type::Struct& instance, property_set what, bool remove);
+
+	template<class T>
+	void publish(const T& data, typename T::PropSet what)
+	{
+	    registerTypeUsage<T, PublishedType>();
+
+	    static_assert(!data.isSubstructOnly(), "It is not allowed to publish a struct, that is marked with 'substruct_only'!");
+
+	    onPublishObject->publish(T::_td(), &data, what, false);
+	}
+
+	template<class T>
+	void publish(const T& data)
+	{
+	    registerTypeUsage<T, PublishedType>();
+
+	    static_assert(!data.isSubstructOnly(), "It is not allowed to publish a struct, that is marked with 'substruct_only'!");
+
+	    publish(data, data.valatt());
+	}
+
+	template<class T>
+	void remove(const T& data)
+	{
+	    registerTypeUsage<T, PublishedType>();
+
+	    static_assert(!data.isSubstructOnly(), "It is not allowed to remove a struct, that is marked with 'substruct_only'!");
+
+	    onPublishObject->publish(T::_td(), &data, data.validProperties(), true);
+	}
+
+	inline Subscription subscribe(const type::StructDescriptor& descriptor, Dispatcher::receive_handler_t<>&& handler)
+	{
+	    return transceiver().subscribe(descriptor, std::move(handler));
+	}
+
+	inline Subscription subscribe(const type::StructDescriptor& descriptor, Dispatcher::event_handler_t<>&& handler)
+	{
+	    return transceiver().subscribe(descriptor, std::move(handler));
+	}
+
+	template<class T>
+	Subscription subscribe(Dispatcher::receive_handler_t<T>&& handler)
+	{
+	    return transceiver().subscribe<T>(std::move(handler));
+	}
+
+	template<class T>
+	Subscription subscribe(Dispatcher::event_handler_t<T>&& handler)
+	{
+	    return transceiver().subscribe<T>(std::move(handler));
+	}
+
+	inline const ContainerPool& pool()
+	{
+		return transceiver().pool();
+	}
+
+	inline const Container<>& container(const type::StructDescriptor& descriptor)
+	{
+		return transceiver().container(descriptor);
+	}
+
+	template <typename T>
+	const Container<T>& container()
+	{
+		return transceiver().container<T>();
+	}
 }

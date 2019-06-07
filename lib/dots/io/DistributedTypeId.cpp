@@ -1,5 +1,5 @@
 #include "DistributedTypeId.h"
-#include <dots/io/Transceiver.h>
+#include <dots/dots.h>
 #include <dots/type/Registry.h>
 
 namespace dots

@@ -24,4 +24,10 @@ namespace dots
 	{
 		global_service<FdHandlerService>().removeInEventHandler(fileDescriptor);
 	}
+
+	Transceiver& transceiver()
+	{
+		static Transceiver transceiver;
+		return transceiver;
+	}
 }
