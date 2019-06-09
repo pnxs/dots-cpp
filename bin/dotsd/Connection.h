@@ -31,7 +31,7 @@ public:
      * @param manager
      */
     explicit Connection(channel_ptr_t channel, ConnectionManager &manager);
-    ~Connection();
+    virtual ~Connection();
 
     virtual DotsConnectionState state() const;
     virtual const ConnectionId& id() const; ///< return client-id
