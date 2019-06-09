@@ -6,8 +6,8 @@
 namespace dots {
 
 namespace types {
-class EnumDescriptorData;
-class EnumElementDescriptor;
+struct EnumDescriptorData;
+struct EnumElementDescriptor;
 }
 
 namespace type {

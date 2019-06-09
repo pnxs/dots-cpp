@@ -13,7 +13,7 @@ namespace dots
 
 namespace types
 {
-    class StructDescriptorData;
+    struct StructDescriptorData;
 }
 
 namespace type
