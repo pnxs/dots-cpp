@@ -52,22 +52,25 @@ namespace dots::type
 	};
 	template <typename T>
 	using enum_type_t = typename enum_type<T>::type;
+
+	inline std::ostream& operator << (std::ostream& os, const dots::type::Enum<>& e)
+	{
+		os << e.identifier();
+		return os;
+	}
+
+	inline const std::string& to_string(const dots::type::Enum<>& e)
+	{
+		return e.identifier();
+	}
 }
 
-inline std::ostream& operator << (std::ostream& os, const dots::type::Enum<>& e)
+namespace dots::types
 {
-	os << e.identifier();
-	return os;
-}
-
-inline const std::string& to_string(const dots::type::Enum<>& e)
-{
-	return e.identifier();
-}
-
-template <typename T, std::enable_if_t<dots::type::has_enum_type_v<T>, int> = 0>
-std::ostream& operator << (std::ostream& os, const T& enumerator)
-{
-	os << dots::type::enum_type_t<T>{ enumerator };
-	return os;
+	template <typename T, std::enable_if_t<dots::type::has_enum_type_v<T>, int> = 0>
+	std::ostream& operator << (std::ostream& os, const T& enumerator)
+	{
+		os << dots::type::enum_type_t<T>{ enumerator };
+		return os;
+	}
 }
