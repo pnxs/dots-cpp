@@ -20,10 +20,11 @@ namespace dots::type
 		// STL iterator traits
 		using iterator_category = typename inner_lhs_iterator_t::iterator_category;
 		using value_type        = std::pair<inner_lhs_value_t, inner_rhs_value_t>;
-		using reference         = std::pair<inner_lhs_value_t, inner_rhs_value_t>&;
-		using pointer           = std::pair<inner_lhs_value_t, inner_rhs_value_t>*;
-		using const_pointer     = const std::pair<inner_lhs_value_t, inner_rhs_value_t>*;
-
+		using reference         = value_type&;
+		using const_reference   = const value_type&;
+		using pointer           = value_type*;
+		using const_pointer     = const value_type*;
+		
 		PropertyPairIterator(inner_lhs_iterator_t innerIteratorLhs, inner_rhs_iterator_t innerIteratorRhs);
 		PropertyPairIterator(const PropertyPairIterator& other) = default;
 		PropertyPairIterator(PropertyPairIterator&& other) = default;
@@ -42,7 +43,7 @@ namespace dots::type
 		PropertyPairIterator operator -- (int);
 
 		reference operator * ();
-		const reference operator * () const;
+		const_reference operator * () const;
 
 		pointer operator -> ();
 		const_pointer operator -> () const;

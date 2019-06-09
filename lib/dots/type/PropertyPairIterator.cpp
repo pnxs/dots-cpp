@@ -61,7 +61,7 @@ namespace dots::type
 	}
 
 	template <typename LhsIterator, typename RhsIterator>
-	auto PropertyPairIterator<LhsIterator, RhsIterator>::operator * () const -> const reference
+	auto PropertyPairIterator<LhsIterator, RhsIterator>::operator * () const -> const_reference
 	{
 		return *const_cast<PropertyPairIterator&>(*this);
 	}
