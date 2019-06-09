@@ -84,27 +84,27 @@ namespace dots::type
 
 		static constexpr const std::string_view& Name()
 		{
-			return Derived::Description.name();
+			return Derived::Description.name;
 		}
 
 		static constexpr const std::string_view& TypeName()
 		{
-			return Derived::Description.typeName();
+			return Derived::Description.type;
 		}
 
 		static constexpr size_t Offset()
 		{
-			return Derived::Description.offset();
+			return Derived::Description.offset;
 		}
 
 		static constexpr uint32_t Tag()
 		{
-			return Derived::Description.tag();
+			return Derived::Description.tag;
 		}
 
 		static constexpr bool IsKey()
 		{
-			return Derived::Description.isKey();
+			return Derived::Description.isKey;
 		}
 
 	protected:
@@ -157,9 +157,9 @@ namespace dots::type
 			return *this;
 		}
 
-		static constexpr StructProperty MakePropertyDescription(uint32_t tag, const std::string_view& type, const std::string_view& name, bool isKey)
+		static constexpr PropertyDescription MakePropertyDescription(uint32_t tag, const std::string_view& type, const std::string_view& name, bool isKey)
 		{
-			return StructProperty{ CalculateOffset(), tag, isKey, name, type };
+			return PropertyDescription{ CalculateOffset(), tag, isKey, name, type };
 		}
 
 	private:
@@ -179,9 +179,10 @@ namespace dots::type
 			return const_cast<TProperty&>(*this).derivedValue();
 		}
 
-		static constexpr const StructProperty& derivedDescriptor()
+		static const StructProperty& derivedDescriptor()
 		{
-			return Derived::Description;
+			static StructProperty descriptor = Property<T, Derived>::MakePropertyDescriptor(Derived::Description);
+			return descriptor;
 		}
 
 		static Derived& Get(Struct& instance)

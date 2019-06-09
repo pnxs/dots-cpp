@@ -334,7 +334,7 @@ namespace dots::type
 			return structProperty().isKey();
 		}
 
-		constexpr const std::string_view& name() const
+		constexpr const std::string& name() const
 		{
 			return structProperty().name();
 		}
@@ -344,9 +344,9 @@ namespace dots::type
 			return instance()._descriptor().name() + "." + name().data();
 		}
 
-		constexpr const std::string_view& typeName() const
+		constexpr const std::string& typeName() const
 		{
-			return structProperty().type();
+			return structProperty().typeName();
 		}
 
 		const Descriptor& td() const
@@ -386,6 +386,11 @@ namespace dots::type
 
 		constexpr Property& operator = (const Property& rhs) = default;
 		constexpr Property& operator = (Property&& rhs) = default;
+
+		static StructProperty MakePropertyDescriptor(const PropertyDescription& description)
+		{
+			return StructProperty{ description };
+		}
 
 	private:
 

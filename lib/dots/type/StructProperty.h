@@ -4,58 +4,70 @@
 
 namespace dots::type
 {
+	struct PropertyDescription
+	{
+		constexpr PropertyDescription() :
+			offset(0), tag(0), isKey(false) {}
+		constexpr PropertyDescription(size_t offset, uint32_t tag, bool isKey, const std::string_view& name, const std::string_view& type) :
+			offset(offset), tag(tag), isKey(isKey), name(name), type(type) {}
+
+		size_t offset;
+		uint32_t tag;
+		bool isKey;
+		std::string_view name;
+		std::string_view type;
+	};
+
 	struct StructProperty
 	{
-		constexpr StructProperty() :
+		StructProperty() :
 			_offset(0),
 			_tag(0),
 			_isKey(false),
-			_nameStr(nullptr),
 			_typeDescriptor(nullptr)
 		{
 			/* do nothing */
 		}
-		constexpr StructProperty(size_t offset, uint32_t tag, bool isKey, const std::string_view& name, const std::string_view& type) :
-			_offset(offset),
-			_tag(tag),
-			_isKey(isKey),
-			_name(name),
-			_type(type),
-			_nameStr(nullptr),
+		StructProperty(const PropertyDescription& description) :
+			_offset(description.offset),
+			_tag(description.tag),
+			_isKey(description.isKey),
+			_name(description.name.data()),
+			_type(description.type.data()),
 			_typeDescriptor(nullptr)
 		{
 			/* do nothing */
 		}
-		StructProperty(const std::string &name, std::size_t offset, int tag, bool key, const Descriptor *td);
+		StructProperty(std::string name, std::size_t offset, int tag, bool key, const Descriptor *td);
 
-		constexpr StructProperty(const StructProperty& other) = default;
-		constexpr StructProperty(StructProperty&& other) = default;
+		StructProperty(const StructProperty& other) = default;
+		StructProperty(StructProperty&& other) = default;
 		~StructProperty() = default;
 
-		constexpr StructProperty& operator = (const StructProperty& rhs) = default;
-		constexpr StructProperty& operator = (StructProperty&& rhs) = default;
+		StructProperty& operator = (const StructProperty& rhs) = default;
+		StructProperty& operator = (StructProperty&& rhs) = default;
 
-	    constexpr size_t offset() const
+	    size_t offset() const
 	    {
 			return _offset;
 	    }
 
-		constexpr uint32_t tag() const
+		uint32_t tag() const
 		{
 			return _tag;
 		}
 
-		constexpr bool isKey() const
+		bool isKey() const
 	    {
 			return _isKey;
 	    }
 
-		constexpr const std::string_view& name() const
+		const std::string& name() const
 	    {
 			return _name;
 	    }
 
-		constexpr const std::string_view& typeName() const
+		const std::string& typeName() const
 		{
 			return _type;
 		}
@@ -76,9 +88,8 @@ namespace dots::type
 		size_t _offset;
 		uint32_t _tag;
 		bool _isKey;
-		std::string_view _name;
-		std::string_view _type;
-		std::string* _nameStr;
-	    const Descriptor* _typeDescriptor;
+		std::string _name;
+		std::string _type;
+	    mutable const Descriptor* _typeDescriptor;
 	};
 }

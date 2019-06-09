@@ -3,24 +3,16 @@
 
 namespace dots::type
 {
-	StructProperty::StructProperty(const std::string &name, std::size_t offset, int tag, bool key, const Descriptor *td) :
+	StructProperty::StructProperty(std::string name, std::size_t offset, int tag, bool key, const Descriptor *td) :
 		_offset(offset),
 		_tag(tag),
 		_isKey(key),
+		_name(std::move(name)),
 		_type(td->name()),		
 		_typeDescriptor(td)
 	{
-		_nameStr = new std::string(name);
-		_name = *_nameStr;
+		/* do nothing */
 	}
-
-	/*StructProperty::~StructProperty()
-	{
-		if (_nameStr != nullptr)
-		{
-			delete _nameStr;
-		}
-	}*/
 
 	bool StructProperty::equal(const void *lhs, const void *rhs) const
 	{
@@ -61,7 +53,7 @@ namespace dots::type
 	{
 		if (_typeDescriptor == nullptr)
 		{
-			const_cast<StructProperty*>(this)->_typeDescriptor = Registry::fromWireName(typeName().data());
+			_typeDescriptor = Registry::fromWireName(typeName().data());
 		}
 
 		return _typeDescriptor;

@@ -470,12 +470,12 @@ namespace dots::type
 
         for (size_t i = 0; i < structDescription.numProperties; ++i)
         {
-            const StructProperty& propertyDescription = structDescription.propertyDescriptions[i];
+            const PropertyDescription& propertyDescription = structDescription.propertyDescriptions[i];
             StructPropertyData structPropertyData;
-            structPropertyData.name(propertyDescription.name().data());
-            structPropertyData.tag(propertyDescription.tag());
-            structPropertyData.isKey(propertyDescription.isKey());
-            structPropertyData.type(propertyDescription.typeName().data());
+            structPropertyData.name(propertyDescription.name.data());
+            structPropertyData.tag(propertyDescription.tag);
+            structPropertyData.isKey(propertyDescription.isKey);
+            structPropertyData.type(propertyDescription.type.data());
             properties.emplace_back(structPropertyData);
         }
 

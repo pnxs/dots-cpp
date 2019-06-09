@@ -181,12 +181,12 @@ namespace dots::type
 
 		struct StructDescription
 		{
-			constexpr StructDescription(const std::string_view& name, uint8_t flags, const std::array<StructProperty, 32>& propertyDescriptions, size_t numProperties) :
+			constexpr StructDescription(const std::string_view& name, uint8_t flags, const std::array<PropertyDescription, 32>& propertyDescriptions, size_t numProperties) :
 				name(name), flags(flags), propertyDescriptions(propertyDescriptions), numProperties(numProperties) {}
 
 			std::string_view name;
 			uint8_t flags;
-			std::array<StructProperty, 32> propertyDescriptions;
+			std::array<PropertyDescription, 32> propertyDescriptions;
 			size_t numProperties;
 		};
 
