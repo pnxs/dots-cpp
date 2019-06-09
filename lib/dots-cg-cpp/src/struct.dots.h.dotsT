@@ -50,6 +50,7 @@ namespace dots::types
         };
 		using {{property.name}}_i = {{property.name}}_t::init_t;
 		using {{property.name}}_t_i = {{property.name}}_i;
+		static constexpr property_set {{property.name}}_v = {{property.name}}_t::Set();
 
 {% endfor %}
         static constexpr auto Description = MakeStructDescription("{{name}}", {% if options.cached %}Cached{% else %}Uncached{% endif %}{% if options.internal %} | Internal{% endif %}{% if options.persistent %} | Persistent{% endif %}{% if options.cleanup %} | Cleanup{% endif %}{% if options.substruct_only %} | SubstructOnly{% endif %}, 
