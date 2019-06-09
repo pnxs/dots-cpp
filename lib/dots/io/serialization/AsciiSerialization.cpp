@@ -141,7 +141,6 @@ private:
     }
 
     std::string m_line;
-    bool m_objectValue = false;
     std::stack<write_mode> m_writeMode;
     uint16_t m_indentLevel = 0;
     uint16_t m_indentation = 4;
