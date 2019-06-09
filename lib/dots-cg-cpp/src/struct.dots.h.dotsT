@@ -48,7 +48,8 @@ namespace dots::types
 			{{property.name}}_t({{property.name}}_t&& other) = default;
 			~{{property.name}}_t() = default;
         };
-		using {{property.name}}_t_i = {{property.name}}_t::init_t;
+		using {{property.name}}_i = {{property.name}}_t::init_t;
+		using {{property.name}}_t_i = {{property.name}}_i;
 
 {% endfor %}
         static constexpr auto Description = MakeStructDescription("{{name}}", {% if options.cached %}Cached{% else %}Uncached{% endif %}{% if options.internal %} | Internal{% endif %}{% if options.persistent %} | Persistent{% endif %}{% if options.cleanup %} | Cleanup{% endif %}{% if options.substruct_only %} | SubstructOnly{% endif %}, 
