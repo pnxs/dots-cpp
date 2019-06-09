@@ -79,6 +79,6 @@ namespace dots::type
 		std::string_view _name;
 		std::string_view _type;
 		std::string* _nameStr;
-	    mutable const Descriptor* _typeDescriptor;
+	    const Descriptor* _typeDescriptor;
 	};
 }

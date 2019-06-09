@@ -61,7 +61,7 @@ namespace dots::type
 	{
 		if (_typeDescriptor == nullptr)
 		{
-			_typeDescriptor = Registry::fromWireName(typeName().data());
+			const_cast<StructProperty*>(this)->_typeDescriptor = Registry::fromWireName(typeName().data());
 		}
 
 		return _typeDescriptor;
