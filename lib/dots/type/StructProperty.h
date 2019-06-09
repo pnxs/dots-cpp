@@ -10,8 +10,6 @@ namespace dots::type
 			_offset(0),
 			_tag(0),
 			_isKey(false),
-			_name({}),
-			_type({}),
 			_nameStr(nullptr),
 			_typeDescriptor(nullptr)
 		{
