@@ -20,24 +20,9 @@ namespace dots::type
 
 	struct StructProperty
 	{
-		StructProperty() :
-			_offset(0),
-			_tag(0),
-			_isKey(false),
-			_typeDescriptor(nullptr)
-		{
-			/* do nothing */
-		}
-		StructProperty(const PropertyDescription& description) :
-			_offset(description.offset),
-			_tag(description.tag),
-			_isKey(description.isKey),
-			_name(description.name.data()),
-			_type(description.type.data()),
-			_typeDescriptor(nullptr)
-		{
-			/* do nothing */
-		}
+		StructProperty();
+
+		StructProperty(const PropertyDescription& description);
 		StructProperty(std::string name, std::size_t offset, int tag, bool key, const Descriptor *td);
 
 		StructProperty(const StructProperty& other) = default;
@@ -47,31 +32,11 @@ namespace dots::type
 		StructProperty& operator = (const StructProperty& rhs) = default;
 		StructProperty& operator = (StructProperty&& rhs) = default;
 
-	    size_t offset() const
-	    {
-			return _offset;
-	    }
-
-		uint32_t tag() const
-		{
-			return _tag;
-		}
-
-		bool isKey() const
-	    {
-			return _isKey;
-	    }
-
-		const std::string& name() const
-	    {
-			return _name;
-	    }
-
-		const std::string& typeName() const
-		{
-			return _type;
-		}
-
+		size_t offset() const;
+		uint32_t tag() const;
+		bool isKey() const;
+		const std::string& name() const;
+		const std::string& typeName() const;
 		const Descriptor* td() const;
 
 	    bool equal(const void* lhs, const void* rhs) const;
