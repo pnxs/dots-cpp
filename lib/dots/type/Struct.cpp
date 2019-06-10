@@ -6,60 +6,6 @@
 #include "dots/io/Transceiver.h"
 #include <StructDescriptorData.dots.h>
 
-struct StructProperties
-{
-    std::size_t size;
-    std::size_t alignment;
-};
-
-static size_t evalPropertyOffset(const dots::type::Descriptor* td, size_t start)
-{
-    size_t align = td->alignOf();
-    return start + (align - (start % align)) % align;
-}
-
-static size_t evalMaxPropertyAlignment(const StructDescriptorData &sd)
-{
-    size_t maxAlign = alignof(dots::type::Struct);
-
-    for (auto &p : *sd.properties)
-    {
-        auto td = dots::type::Descriptor::registry().findDescriptor(p.type);
-        size_t align = td->alignOf();
-        if (align > maxAlign)
-            maxAlign = align;
-    }
-    return maxAlign;
-}
-
-static StructProperties getStructProperties(const StructDescriptorData &sd)
-{
-    size_t sizeOf = sizeof(dots::type::Struct);
-    size_t alignOf = alignof(dots::type::Struct);
-
-    size_t lastPropertyOffset = sizeof(dots::type::Struct);
-
-    for (auto &p : *sd.properties)
-    {
-        std::string dots_type_name = p.type;
-        auto td = dots::type::Registry::fromWireName(dots_type_name);
-        if (not td) {
-            throw std::runtime_error("getStructProperties: missing type: " + dots_type_name);
-        }
-
-        size_t offset = evalPropertyOffset(td, lastPropertyOffset);
-        lastPropertyOffset = offset + td->sizeOf();
-    }
-
-    {
-        auto pointerType = dots::type::Descriptor::registry().findDescriptor("pointer");
-        sizeOf = evalPropertyOffset(pointerType, lastPropertyOffset);
-        alignOf = evalMaxPropertyAlignment(sd);
-    }
-
-    return { sizeOf, alignOf };
-}
-
 namespace dots::type
 {
     Struct::Struct(const StructDescriptor& descriptor) :
@@ -412,42 +358,7 @@ namespace dots::type
             if (structDescriptor) return structDescriptor;
         }
 
-        auto structProperties = getStructProperties(structDescriptorData);
-        ::new (static_cast<void *>(newstruct)) StructDescriptor(structDescriptorData, structProperties.size, structProperties.alignment);
-
-        std::size_t lastOffset = sizeof(Struct);
-
-
-        for (const StructPropertyData &p : *newstruct->descriptorData().properties)
-        {
-            std::string dots_type_name = p.type; // DOTS typename
-            auto td = Registry::fromWireName(dots_type_name);
-
-            std::size_t offset = evalPropertyOffset(td, lastOffset);
-            // Create Properties
-            const Descriptor* propertyTypeDescriptor = td;
-            if (propertyTypeDescriptor)
-            {
-                newstruct->m_properties.push_back(StructProperty(p.name, offset, p.tag, p.isKey, propertyTypeDescriptor));
-                newstruct->m_propertySet.set(p.tag);
-                if (p.isKey) {
-                    newstruct->m_keyProperties.set(p.tag);
-                }
-            }
-            else
-            {
-                // Error, because the needed type is not found
-                throw std::runtime_error("missing type '" + dots_type_name + "' for property '" + *p.name + "'");
-            }
-            lastOffset = offset + propertyTypeDescriptor->sizeOf();
-        }
-
-        if (structDescriptorData.publisherId.isValid())
-        {
-            newstruct->m_publisherId = structDescriptorData.publisherId;
-        }
-
-
+        ::new (static_cast<void *>(newstruct)) StructDescriptor(structDescriptorData);
         Descriptor::registry().onNewStruct(newstruct);
 
         return newstruct;

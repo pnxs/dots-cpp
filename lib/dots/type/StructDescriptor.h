@@ -22,6 +22,9 @@ namespace dots::type
 	{
 	public:
 		typedef dots::types::StructDescriptorData DescriptorData;
+
+		StructDescriptor(const DescriptorData& sd);
+
 		static const StructDescriptor* createFromStructDescriptorData(const DescriptorData& sd);
 
 		void construct(void*) const final override;
@@ -62,14 +65,11 @@ namespace dots::type
 		bool internal() const;
 		bool substructOnly() const;
 
-		//void merge(void *lhs, void *rhs, void* what) const;
-
 	private:
 
-		friend Struct;
-
-		//StructDescriptor(const rttr::type& type);
-		StructDescriptor(const DescriptorData& sd, std::size_t sizeOf, std::size_t alignOf);
+		size_t determineSize(const types::StructDescriptorData &sd);
+		size_t determineAlignment(const types::StructDescriptorData& sd);
+		size_t determineOffset(const Descriptor* td, size_t start);
 
 		std::vector<StructProperty> m_properties;
 		property_set m_propertySet;

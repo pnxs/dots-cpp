@@ -100,7 +100,6 @@ target_sources(${TARGET_NAME}
 		type/Registry.cpp
 		type/StandardTypes.cpp
 		type/StructDescriptor.cpp
-		type/StructDescriptorConstruct.cpp
 		type/StructProperty.cpp
 		type/UuidDescriptor.cpp
 		type/Vector.cpp

@@ -7,8 +7,8 @@
 
 namespace dots::type
 {
-	StructDescriptor::StructDescriptor(const DescriptorData& sd, std::size_t sizeOf, std::size_t alignOf) :
-		Descriptor(sd.name, DotsType::Struct, sizeOf, alignOf)
+	StructDescriptor::StructDescriptor(const DescriptorData& sd) :
+		Descriptor(sd.name, DotsType::Struct, determineSize(sd), determineAlignment(sd))
 	{
 		m_descriptorData = std::make_unique<DescriptorData>(sd);
 		auto& flags = sd.flags.isValid() ? *m_descriptorData->flags : m_descriptorData->flags();
@@ -19,6 +19,49 @@ namespace dots::type
 		if (not flags.cached.isValid())     flags.cached(false);
 		if (not flags.internal.isValid())   flags.internal(false);
 		if (not flags.substructOnly.isValid()) flags.substructOnly(false);
+
+		std::size_t lastOffset = sizeof(Struct);
+
+
+        for (const StructPropertyData &p : *m_descriptorData->properties)
+        {
+            std::string dots_type_name = p.type; // DOTS typename
+            auto td = Registry::fromWireName(dots_type_name);
+
+            std::size_t offset = determineOffset(td, lastOffset);
+            // Create Properties
+            const Descriptor* propertyTypeDescriptor = td;
+            if (propertyTypeDescriptor)
+            {
+                m_properties.push_back(StructProperty(p.name, offset, p.tag, p.isKey, propertyTypeDescriptor));
+                m_propertySet.set(p.tag);
+                if (p.isKey) {
+                    m_keyProperties.set(p.tag);
+                }
+            }
+            else
+            {
+                // Error, because the needed type is not found
+                throw std::runtime_error("missing type '" + dots_type_name + "' for property '" + *p.name + "'");
+            }
+            lastOffset = offset + propertyTypeDescriptor->sizeOf();
+        }
+
+        if (sd.publisherId.isValid())
+        {
+            m_publisherId = sd.publisherId;
+        }
+	}
+
+	const StructDescriptor * StructDescriptor::createFromStructDescriptorData(const StructDescriptorData &sd)
+	{
+	    // Check if type is already registred
+	    {
+	        auto structDescriptor = registry().findStructDescriptor(sd.name);
+	        if (structDescriptor) return structDescriptor;
+	    }
+
+	    return new StructDescriptor(sd);
 	}
 
 	void StructDescriptor::construct(void* obj) const
@@ -318,5 +361,52 @@ namespace dots::type
 	void StructDescriptorSet::merge(const StructDescriptorSet& rhs)
 	{
 		insert(rhs.begin(), rhs.end());
+	}
+
+	size_t StructDescriptor::determineSize(const StructDescriptorData &sd)
+	{
+	    size_t lastPropertyOffset = sizeof(Struct);
+		size_t sizeOf;
+
+	    for (auto &p : *sd.properties)
+	    {
+	        std::string dots_type_name = p.type;
+	        auto td = Registry::fromWireName(dots_type_name);
+	        if (!td)
+			{
+	            throw std::runtime_error("getStructProperties: missing type: " + dots_type_name);
+	        }
+
+	        size_t offset = determineOffset(td, lastPropertyOffset);
+	        lastPropertyOffset = offset + td->sizeOf();
+	    }
+
+	    {
+	        auto pointerType = registry().findDescriptor("pointer");
+	        sizeOf = determineOffset(pointerType, lastPropertyOffset);
+	    }
+
+	    return sizeOf;
+	}
+
+	size_t StructDescriptor::determineAlignment(const types::StructDescriptorData& sd)
+	{
+		size_t maxAlign = alignof(Struct);
+
+	    for (auto &p : *sd.properties)
+	    {
+	        auto td = registry().findDescriptor(p.type);
+	        size_t align = td->alignOf();
+	        if (align > maxAlign)
+	            maxAlign = align;
+	    }
+
+	    return maxAlign;
+	}
+
+	size_t StructDescriptor::determineOffset(const Descriptor* td, size_t start)
+	{
+		size_t align = td->alignOf();
+		return start + (align - (start % align)) % align;
 	}
 }
