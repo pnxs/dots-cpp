@@ -505,7 +505,7 @@ TEST(TestDispatcher, moveCtor_CreateEventAfterMoveContructWhenSubscribedToCached
 
 	size_t i = 0;
 
-	dots::Subscription subscription = dispatcher.subscribe<DotsTestStruct>([&](const dots::Event<DotsTestStruct>& e)
+	dots::Subscription subscription = dispatcher.subscribe<DotsTestStruct>([&](const dots::Event<DotsTestStruct>& /*e*/)
 	{
 		++i;
 	});
