@@ -395,7 +395,8 @@ namespace dots::type
 
 	    for (auto &p : *sd.properties)
 	    {
-	        auto td = registry().findDescriptor(p.type);
+	        auto td = Registry::fromWireName(p.type);
+
 	        size_t align = td->alignOf();
 	        if (align > maxAlign)
 	            maxAlign = align;
