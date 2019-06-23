@@ -61,7 +61,10 @@ namespace dots::type
 	        if (structDescriptor) return structDescriptor;
 	    }
 
-	    return new StructDescriptor(sd);
+	    const StructDescriptor* descriptor  = new StructDescriptor(sd);
+		Descriptor::registry().onNewStruct(descriptor);
+
+		return descriptor;
 	}
 
 	void StructDescriptor::construct(void* obj) const
