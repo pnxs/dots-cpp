@@ -142,7 +142,7 @@ namespace dots
 
 		const event_handlers_t& handlers = itHandlers->second;
 
-		auto dispatchEvent = [&](const Event<>& e)
+		auto dispatchEventToHandlers = [&](const Event<>& e)
 		{
 			for (const auto& [id, handler] : handlers)
 			{
@@ -158,12 +158,12 @@ namespace dots
 			if (header.removeObj == true)
 			{
 				Container<>::node_t removed = container.remove(header, instance);
-				dispatchEvent(Event<>{ header, instance, removed.key(), removed.mapped() });
+				dispatchEventToHandlers(Event<>{ header, instance, removed.key(), removed.mapped() });
 			}
 			else
 			{
 				const auto& [updated, cloneInfo] = container.insert(header, instance);
-				dispatchEvent(Event<>{ header, instance, updated, cloneInfo });
+				dispatchEventToHandlers(Event<>{ header, instance, updated, cloneInfo });
 			}
 		}
 		else
@@ -173,7 +173,7 @@ namespace dots
 				throw std::logic_error{ "cannot remove uncached instance for type: " + descriptor.name() };
 			}
 
-			dispatchEvent(Event<>{ header, instance, instance,
+			dispatchEventToHandlers(Event<>{ header, instance, instance,
 				DotsCloneInformation{
 					DotsCloneInformation::lastOperation_t_i{ DotsMt::create },
 					DotsCloneInformation::createdFrom_t_i{ header.sender },
