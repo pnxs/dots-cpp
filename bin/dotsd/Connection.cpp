@@ -448,7 +448,7 @@ void Connection::sendContainerContent(const Container<>& container)
 
 
         DotsTransportHeader thead;
-        m_transmitter.prepareHeader(thead, &td, td.validProperties(&instance), false);
+        m_transmitter.prepareHeader(thead, &td, instance->_validProperties(), false);
 
         auto& dotsHeader = *thead.dotsHeader;
         dotsHeader.sentTime = cloneInfo.modified;
