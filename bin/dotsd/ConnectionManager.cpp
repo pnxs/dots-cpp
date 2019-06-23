@@ -104,6 +104,8 @@ void ConnectionManager::onNewType(const dots::type::StructDescriptor* td)
     {
         m_cleanupContainer.push_back(&container);
     }
+
+	m_dispatcher.subscribe(*td, [](const Event<>&){}).discard();
 }
 
 void ConnectionManager::deliver(const DotsTransportHeader& transportHeader, Transmission&& transmission)
