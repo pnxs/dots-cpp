@@ -35,7 +35,7 @@ namespace dots
 		size_t size() const;
 
         const Container<>* find(const type::StructDescriptor& descriptor) const;
-        const Container<>& get(const type::StructDescriptor& descriptor) const;
+        const Container<>& get(const type::StructDescriptor& descriptor, bool insertIfNotExist = true) const;
 
 		Container<>* find(const type::StructDescriptor& descriptor);
 		Container<>& get(const type::StructDescriptor& descriptor, bool insertIfNotExist = true);
@@ -83,7 +83,8 @@ namespace dots
 
 		using name_cache_t = std::map<std::string, Container<>*, std::less<>>;
 
-        pool_t m_pool;
-		name_cache_t m_nameCache;
+		// TODO: remove mutability when utilities are fixed to no longer require non-const pool access
+        mutable pool_t m_pool;
+		mutable name_cache_t m_nameCache;
     };
 }

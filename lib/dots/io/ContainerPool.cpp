@@ -51,26 +51,9 @@ namespace dots
 		return it == m_pool.end() ? nullptr : &it->second;
     }
 
-    const Container<>& ContainerPool::get(const type::StructDescriptor& descriptor) const
+    const Container<>& ContainerPool::get(const type::StructDescriptor& descriptor, bool insertIfNotExist/* = true*/) const
     {
-		const Container<>* container = find(descriptor);
-
-		if (container == nullptr)
-		{
-			throw std::runtime_error{ "container pool does not contain an element for the given type: " + descriptor.name() };
-		}
-
-		return *container;
-    }
-
-    Container<>* ContainerPool::find(const type::StructDescriptor& descriptor)
-    {
-		return const_cast<Container<>*>(std::as_const(*this).find(descriptor));
-    }
-
-    Container<>& ContainerPool::get(const type::StructDescriptor& descriptor, bool insertIfNotExist/* = true*/)
-    {
-        if (insertIfNotExist)
+		if (insertIfNotExist)
         {
             auto [it, emplaced] = m_pool.try_emplace(&descriptor, descriptor);
 			auto& [descriptor, container] = *it;
@@ -84,8 +67,25 @@ namespace dots
         }
         else
         {
-			return const_cast<Container<>&>(std::as_const(*this).get(descriptor));
-        }        
+			const Container<>* container = find(descriptor);
+
+			if (container == nullptr)
+			{
+				throw std::runtime_error{ "container pool does not contain an element for the given type: " + descriptor.name() };
+			}
+
+			return *container;
+        }
+    }
+
+    Container<>* ContainerPool::find(const type::StructDescriptor& descriptor)
+    {
+		return const_cast<Container<>*>(std::as_const(*this).find(descriptor));
+    }
+
+    Container<>& ContainerPool::get(const type::StructDescriptor& descriptor, bool insertIfNotExist/* = true*/)
+    {
+        return const_cast<Container<>&>(std::as_const(*this).get(descriptor, insertIfNotExist));
     }
 
 	const Container<>* ContainerPool::find(const std::string_view& name) const
