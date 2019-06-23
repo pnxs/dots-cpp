@@ -28,6 +28,7 @@ Server::Server(std::unique_ptr<Listener>&& listener, const string& name)
         DotsMsgConnect::_Descriptor();
         DotsMsgConnectResponse::_Descriptor();
         DotsMsgHello::_Descriptor();
+		DotsCloneInformation::_Descriptor();
     }
 
 	asyncAccept();
