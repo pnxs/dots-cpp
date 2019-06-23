@@ -30,17 +30,13 @@ namespace dots::type
 
     Struct& Struct::operator = (const Struct& rhs)
     {
-        _validPropSet = {};
         _desc = rhs._desc;
-
         return *this;
     }
 
     Struct& Struct::operator = (Struct&& rhs) noexcept
     {
-        _validPropSet = {};
         _desc = rhs._desc;
-
         return *this;
     }
 
