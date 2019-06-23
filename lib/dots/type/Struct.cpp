@@ -15,14 +15,12 @@ namespace dots::type
     }
 
     Struct::Struct(const Struct& other) :
-        _validPropSet{},
         _desc(other._desc)
     {
         /* do nothing */
     }
 
     Struct::Struct(Struct&& other) :
-        _validPropSet{},
         _desc(other._desc)
     {
         /* do nothing */
