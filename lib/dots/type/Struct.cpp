@@ -6,60 +6,6 @@
 #include "dots/io/Transceiver.h"
 #include <StructDescriptorData.dots.h>
 
-struct StructProperties
-{
-    std::size_t size;
-    std::size_t alignment;
-};
-
-static size_t evalPropertyOffset(const dots::type::Descriptor* td, size_t start)
-{
-    size_t align = td->alignOf();
-    return start + (align - (start % align)) % align;
-}
-
-static size_t evalMaxPropertyAlignment(const StructDescriptorData &sd)
-{
-    size_t maxAlign = alignof(dots::type::Struct);
-
-    for (auto &p : *sd.properties)
-    {
-        auto td = dots::type::Descriptor::registry().findDescriptor(p.type);
-        size_t align = td->alignOf();
-        if (align > maxAlign)
-            maxAlign = align;
-    }
-    return maxAlign;
-}
-
-static StructProperties getStructProperties(const StructDescriptorData &sd)
-{
-    size_t sizeOf = sizeof(dots::type::Struct);
-    size_t alignOf = alignof(dots::type::Struct);
-
-    size_t lastPropertyOffset = sizeof(dots::type::Struct);
-
-    for (auto &p : *sd.properties)
-    {
-        std::string dots_type_name = p.type;
-        auto td = dots::type::Registry::fromWireName(dots_type_name);
-        if (not td) {
-            throw std::runtime_error("getStructProperties: missing type: " + dots_type_name);
-        }
-
-        size_t offset = evalPropertyOffset(td, lastPropertyOffset);
-        lastPropertyOffset = offset + td->sizeOf();
-    }
-
-    {
-        auto pointerType = dots::type::Descriptor::registry().findDescriptor("pointer");
-        sizeOf = evalPropertyOffset(pointerType, lastPropertyOffset);
-        alignOf = evalMaxPropertyAlignment(sd);
-    }
-
-    return { sizeOf, alignOf };
-}
-
 namespace dots::type
 {
     Struct::Struct(const StructDescriptor& descriptor) :
@@ -69,14 +15,12 @@ namespace dots::type
     }
 
     Struct::Struct(const Struct& other) :
-        _validPropSet{},
         _desc(other._desc)
     {
         /* do nothing */
     }
 
     Struct::Struct(Struct&& other) :
-        _validPropSet{},
         _desc(other._desc)
     {
         /* do nothing */
@@ -84,17 +28,13 @@ namespace dots::type
 
     Struct& Struct::operator = (const Struct& rhs)
     {
-        _validPropSet = {};
         _desc = rhs._desc;
-
         return *this;
     }
 
     Struct& Struct::operator = (Struct&& rhs) noexcept
     {
-        _validPropSet = {};
         _desc = rhs._desc;
-
         return *this;
     }
 
@@ -229,52 +169,52 @@ namespace dots::type
 
     property_range Struct::_validPropertyRange(const property_set& includedProperties/* = PROPERTY_SET_ALL*/)
     {
-        return _validPropertyRange(_validProperties() & includedProperties);
+        return _propertyRange(_validProperties() & includedProperties);
     }
 
     const_property_range Struct::_validPropertyRange(const property_set& includedProperties/* = PROPERTY_SET_ALL*/) const
     {
-        return _validPropertyRange(_validProperties() & includedProperties);
+        return _propertyRange(_validProperties() & includedProperties);
     }
 
     reverse_property_range Struct::_validPropertyRangeReversed(const property_set& includedProperties/* = PROPERTY_SET_ALL*/)
     {
-        return _validPropertyRangeReversed(_validProperties() & includedProperties);
+        return _propertyRangeReversed(_validProperties() & includedProperties);
     }
 
     const_reverse_property_range Struct::_validPropertyRangeReversed(const property_set& includedProperties/* = PROPERTY_SET_ALL*/) const
     {
-        return _validPropertyRangeReversed(_validProperties() & includedProperties);
+        return _propertyRangeReversed(_validProperties() & includedProperties);
     }
 
     property_pair_range Struct::_validPropertyRange(Struct& rhs, const property_set& includedProperties/* = PROPERTY_SET_ALL*/)
     {
-        return _validPropertyRange(rhs, _validProperties() & rhs._validProperties() & includedProperties);
+        return _propertyRange(rhs, _validProperties() & rhs._validProperties() & includedProperties);
     }
 
     property_pair_range_const Struct::_validPropertyRange(const Struct& rhs, const property_set& includedProperties/* = PROPERTY_SET_ALL*/)
     {
-        return _validPropertyRange(rhs, _validProperties() & rhs._validProperties() & includedProperties);
+        return _propertyRange(rhs, _validProperties() & rhs._validProperties() & includedProperties);
     }
 
     const_property_pair_range_const Struct::_validPropertyRange(const Struct& rhs, const property_set& includedProperties/* = PROPERTY_SET_ALL*/) const
     {
-        return _validPropertyRange(rhs, _validProperties() & rhs._validProperties() & includedProperties);
+        return _propertyRange(rhs, _validProperties() & rhs._validProperties() & includedProperties);
     }
 
     reverse_property_pair_range Struct::_validPropertyRangeReversed(Struct& rhs, const property_set& includedProperties/* = PROPERTY_SET_ALL*/)
     {
-        return _validPropertyRangeReversed(rhs, _validProperties() & rhs._validProperties() & includedProperties);
+        return _propertyRangeReversed(rhs, _validProperties() & rhs._validProperties() & includedProperties);
     }
 
     reverse_property_pair_range_const Struct::_validPropertyRangeReversed(const Struct& rhs, const property_set& includedProperties/* = PROPERTY_SET_ALL*/)
     {
-        return _validPropertyRangeReversed(rhs, _validProperties() & rhs._validProperties() & includedProperties);
+        return _propertyRangeReversed(rhs, _validProperties() & rhs._validProperties() & includedProperties);
     }
 
     const_reverse_property_pair_range_const Struct::_validPropertyRangeReversed(const Struct& rhs, const property_set& includedProperties/* = PROPERTY_SET_ALL*/) const
     {
-        return _validPropertyRangeReversed(rhs, _validProperties() & rhs._validProperties() & includedProperties);
+        return _propertyRangeReversed(rhs, _validProperties() & rhs._validProperties() & includedProperties);
     }
 
     Struct& Struct::_assign(const Struct& other, const property_set& includedProperties/* = PROPERTY_SET_ALL*/)
@@ -337,9 +277,9 @@ namespace dots::type
         }
     }
 
-    bool Struct::_equal(const Struct& rhs) const
+    bool Struct::_equal(const Struct& rhs, const property_set& includedProperties/* = PROPERTY_SET_ALL*/) const
     {
-        for (const auto&[propertyThis, propertyOther] : _propertyRange(rhs))
+        for (const auto&[propertyThis, propertyOther] : _propertyRange(rhs, includedProperties))
         {
             if (propertyThis != propertyOther)
             {
@@ -350,17 +290,24 @@ namespace dots::type
         return true;
     }
 
-    bool Struct::_less(const Struct& rhs) const
+    bool Struct::_less(const Struct& rhs, const property_set& includedProperties/* = PROPERTY_SET_ALL*/) const
     {
-        for (const auto&[propertyThis, propertyOther] : _propertyRange(rhs))
+        if (includedProperties.empty())
         {
-            if (!(propertyThis < propertyOther))
-            {
-                return false;
-            }
+            return false;
         }
+        else
+        {
+            for (const auto&[propertyThis, propertyOther] : _propertyRange(rhs, includedProperties))
+            {
+                if (!(propertyThis < propertyOther))
+                {
+                    return false;
+                }
+            }
 
-        return true;
+            return true;
+        }        
     }
 
     property_set Struct::_diffProperties(const Struct& other) const
@@ -405,42 +352,7 @@ namespace dots::type
             if (structDescriptor) return structDescriptor;
         }
 
-        auto structProperties = getStructProperties(structDescriptorData);
-        ::new (static_cast<void *>(newstruct)) StructDescriptor(structDescriptorData, structProperties.size, structProperties.alignment);
-
-        std::size_t lastOffset = sizeof(Struct);
-
-
-        for (const StructPropertyData &p : *newstruct->descriptorData().properties)
-        {
-            std::string dots_type_name = p.type; // DOTS typename
-            auto td = Registry::fromWireName(dots_type_name);
-
-            std::size_t offset = evalPropertyOffset(td, lastOffset);
-            // Create Properties
-            const Descriptor* propertyTypeDescriptor = td;
-            if (propertyTypeDescriptor)
-            {
-                newstruct->m_properties.push_back(StructProperty(p.name, offset, p.tag, p.isKey, propertyTypeDescriptor));
-                newstruct->m_propertySet.set(p.tag);
-                if (p.isKey) {
-                    newstruct->m_keyProperties.set(p.tag);
-                }
-            }
-            else
-            {
-                // Error, because the needed type is not found
-                throw std::runtime_error("missing type '" + dots_type_name + "' for property '" + *p.name + "'");
-            }
-            lastOffset = offset + propertyTypeDescriptor->sizeOf();
-        }
-
-        if (structDescriptorData.publisherId.isValid())
-        {
-            newstruct->m_publisherId = structDescriptorData.publisherId;
-        }
-
-
+        ::new (static_cast<void *>(newstruct)) StructDescriptor(structDescriptorData);
         Descriptor::registry().onNewStruct(newstruct);
 
         return newstruct;
@@ -463,12 +375,12 @@ namespace dots::type
 
         for (size_t i = 0; i < structDescription.numProperties; ++i)
         {
-            const StructProperty& propertyDescription = structDescription.propertyDescriptions[i];
+            const PropertyDescription& propertyDescription = structDescription.propertyDescriptions[i];
             StructPropertyData structPropertyData;
-            structPropertyData.name(propertyDescription.name().data());
-            structPropertyData.tag(propertyDescription.tag());
-            structPropertyData.isKey(propertyDescription.isKey());
-            structPropertyData.type(propertyDescription.typeName().data());
+            structPropertyData.name(propertyDescription.name.data());
+            structPropertyData.tag(propertyDescription.tag);
+            structPropertyData.isKey(propertyDescription.isKey);
+            structPropertyData.type(propertyDescription.type.data());
             properties.emplace_back(structPropertyData);
         }
 

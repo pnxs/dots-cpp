@@ -6,16 +6,15 @@ set(TARGET_NAME dots-unittests)
 #find_package(DOTS REQUIRED) (uncomment when dependency is no longer part of build tree)
 
 # target
-add_executable(${TARGET_NAME} TestAnyContainer.cpp)
+add_executable(${TARGET_NAME} TestContainer.cpp)
 
 # properties
 target_sources(${TARGET_NAME}
 	PRIVATE
-		TestAnyContainer.cpp
-        TestContainer.cpp
         TestAsciiSerialization.cpp
         TestCborSerialization.cpp
         TestChronoDescriptor.cpp
+		TestDispatcher.cpp
         TestDistributedTypeId.cpp
         TestEnumDescriptor.cpp
         TestFileStore.cpp

@@ -1,292 +1,133 @@
 #pragma once
-
-#include "dots/cpp_config.h"
-
-#include <dots/common/Chrono.h>
-#include "dots/type/StructDescriptor.h"
-#include "Chained.h"
-#include "Subscription.h"
-#include <dots/functional/signal.h>
-#include <set>
-
-#include "DotsHeader.dots.h"
-#include "DotsCloneInformation.dots.h"
+#include <map>
+#include <functional>
+#include <dots/type/AnyStruct.h>
+#include <DotsHeader.dots.h>
+#include <DotsCloneInformation.dots.h>
 
 namespace dots
 {
+	template <typename = type::Struct>
+	struct Container;
 
-/**
- * DOTS Modification Type
- * Describes, if a callback is because an object was created, updated or removed.
- */
-typedef DotsMt Mt;
+	template <>
+	struct Container<type::Struct>
+	{
+		struct key_compare
+		{
+			using is_transparent = void;
 
-struct CloneInformation: public types::DotsCloneInformation
-{
+			bool operator () (const type::Struct& lhs, const type::Struct& rhs) const
+			{
+				return lhs._less(rhs, lhs._keyProperties());
+			}
+		};
 
-    CloneInformation() {
-        lastOperation(DotsMt::create);
-    }
+		using container_t = std::map<type::AnyStruct, DotsCloneInformation, key_compare>;
+		using const_iterator_t = container_t::const_iterator;
+		using value_t = container_t::value_type;
+		using node_t = container_t::node_type;
 
-    CloneInformation(const TimePoint& created)
-    {
-        lastOperation(DotsMt::create);
-		DotsCloneInformation::created(created);
-    }
-};
+		Container(const type::StructDescriptor& descriptor);
+		Container(const Container& other) = default;
+		Container(Container&& other) = default;
+		~Container() = default;
 
-template<class T>
-class Clone: public T
-{
-public:
-    CloneInformation _clone_metainfo;
+		Container& operator = (const Container& rhs) = default;
+		Container& operator = (Container&& rhs) = default;
 
-    Clone() = default;
-    Clone(const T& data, const CloneInformation& info)
-            :T(data), _clone_metainfo(info)
-    {}
+		const type::StructDescriptor& descriptor() const;
 
-    Clone& operator=(const T& key)
-    {
-        T::operator=(key);
-        return *this;
-    }
+		const_iterator_t begin() const;
+		const_iterator_t end() const;
 
-};
+		const_iterator_t cbegin() const;
+		const_iterator_t cend() const;
 
-struct TypelessCbd
-{
-    const types::DotsHeader& header;
-    const type::Struct& instance;
-};
+		bool empty() const;
+		size_t size() const;
 
-/**
- * CallBackData,
- * used by the container-user-callback
- */
-template<class T>
-struct Cbd
-{
-private:
-    const CloneInformation& information;
+		const value_t* findClone(const type::Struct& instance) const;
+		const value_t& getClone(const type::Struct& instance) const;
 
-    const T& data;
-public:
-    const DotsHeader& header;
-    const Mt mt;
+		const type::Struct* find(const type::Struct& instance) const;
+		const type::Struct& get(const type::Struct& instance) const;
 
-    Cbd(const Clone<T>& clone, const types::DotsHeader& header, Mt mt)
-            : information(clone._clone_metainfo), data(clone), header(header), mt(mt)
-    {}
+		const value_t& insert(const DotsHeader& header, const type::Struct& instance);
+		node_t remove(const DotsHeader& header, const type::Struct& instance);
 
-    Cbd(const T& data, const CloneInformation& information, const types::DotsHeader& header, Mt mt)
-            : information(information), data(data), header(header), mt(mt)
-    {
-    }
+		void clear();
 
-    bool isCreate() const { return mt == Mt::create; }
-    bool isUpdate() const { return mt == Mt::update; }
-    bool isRemove() const { return mt == Mt::remove; }
+		void forEachClone(const std::function<void(const value_t&)>& f) const;
+		void forEach(const std::function<void(const type::Struct&)>& f) const;
 
-    bool isOwnUpdate() const { return header.isFromMyself; }
+		size_t totalMemoryUsage() const;
 
-    /**
-     * @return contained DOTS object
-     */
-    const T& operator()() const { return data; }
+		template <typename T>
+		const Container<T>& as() const
+		{
+			static_assert(std::is_base_of_v<type::Struct, T>);
 
-    /**
-     * @return Set of properties, that are transmitted within this update
-     */
-    const property_set newProperties() const { return header.attributes; }
+			if (&T::_Descriptor() != m_descriptor)
+			{
+				throw std::runtime_error{ "type mismatch: expected " + m_descriptor->name() + " but got " + T::_Descriptor().name() };
+			}
 
-    /**
-     * @return Set of properties, that are updated and valid within this update
-     */
-    const property_set updatedProperties() const { return newProperties() & data._validProperties(); }
-};
+			return static_cast<const Container<T>&>(*this);
+		}
 
-template<class T>
-class Container
-{
-protected:
-    typedef std::set<Clone<T>> container_type;
-    container_type m_container;
+		template <typename T>
+		Container<T>& as()
+		{
+			return const_cast<Container<T>&>(std::as_const(*this).as<T>());
+		}
 
-    mutable Clone<T> m_keyHelper;
+	private:
 
-public:
-    size_t size() const { return m_container.size(); }
-    bool empty() const { return m_container.empty(); }
-    void clear() { m_container.clear(); }
+		const type::StructDescriptor* m_descriptor;
+		container_t m_instances;
+	};
 
-    typedef typename container_type::iterator iterator;
-    typedef typename container_type::const_iterator const_iterator;
+	template <typename T>
+	struct Container : Container<type::Struct>
+	{
+		static_assert(std::is_base_of_v<type::Struct, T>);
 
-    iterator begin() const { return m_container.begin(); }
-    iterator end() const { return m_container.end(); }
-    const_iterator cbegin() const { return m_container.cbegin(); }
-    const_iterator cend() const { return m_container.cend(); }
+		Container() :
+			Container<type::Struct>(T::_Descriptor())
+		{
+			/* do nothing */
+		}
+		Container(const Container& other) = default;
+		Container(Container&& other) = default;
+		~Container() = default;
 
-    const_iterator findIter(const T& key) const
-    {
-        m_keyHelper = key;
-        return m_container.find(m_keyHelper);
-    }
+		Container& operator = (const Container& rhs) = default;
+		Container& operator = (Container&& rhs) = default;
 
-    const Clone<T>* find(const T& key) const
-    {
-        auto iter = findIter(key);
-        return (iter != end()) ? &*iter : nullptr;
-    }
-};
+		const T* find(const T& instance) const
+		{
+			return static_cast<const T*>(Container<>::find(instance));
+		}
 
-class ContainerBase: public Chained<ContainerBase>
-{
-    const type::StructDescriptor* m_td;
+		const T& get(const T& instance) const
+		{
+			return static_cast<const T&>(Container<>::get(instance));
+		}
 
-public:
-    typedef pnxs::Signal<void (CTypeless cbd)> signal_type;
+		void forEach(const std::function<void(const T&)>& f) const
+		{
+			forEachClone([&](const value_t& value)
+			{
+				f(static_cast<const T&>(value.first));
+			});
+		}
 
-    ContainerBase(const type::StructDescriptor* td);
+	private:
 
-    virtual size_t typelessSize() const = 0;
-    virtual bool processTypeless(const types::DotsHeader& header, const type::Struct& instance, const signal_type& signal) = 0;
-
-    const type::StructDescriptor* td() const;
-};
-
-template<class T>
-static inline
-T& Writeable(const T& d) { return const_cast<T&>(d); }
-
-template <class T>
-class ContainerEx: public ContainerBase, public Container<T>
-{
-private:
-    bool insert(const DotsHeader& header, const T& data, const signal_type& signal)
-    {
-		auto rc = this->m_container.insert({ data, *header.sentTime });
-
-        const auto& item = *rc.first;
-        bool inserted = rc.second;
-
-        if (not inserted)
-        {
-            // Update element with received attributes
-            Writeable(item)._copy(data, data._validProperties() - T::_KeyProperties());
-        }
-
-        Cbd<T> cbd(item, header, inserted ? Mt::create : Mt::update );
-
-        // Call user-code
-        signal(&cbd);
-
-        return inserted;
-    }
-
-    bool remove(const types::DotsHeader& header, const T& data, const signal_type& signal)
-    {
-        auto iter = this->findIter(data);
-
-        if (iter != this->m_container.end())
-        {
-            Cbd<T> cbd(*iter, header, Mt::remove);
-
-            // Call user-code
-            signal(&cbd);
-
-            this->m_container.erase(iter);
-
-            return true;
-        }
-
-        return false;
-    }
-
-public:
-    ContainerEx(): ContainerBase(&T::_Descriptor())
-    {
-    }
-
-    /**
-     * Moves data into container and calls signal
-     * @param header
-     * @param data
-     * @param signal
-     * @return true if container changed size (items)
-     */
-    bool process(const types::DotsHeader& header, const T& data, const signal_type& signal)
-    {
-        //TODO: convert to if constexpr when C++17 can be used.
-        if (T::_IsCached())
-        {
-            if (header.removeObj)
-            {
-                return remove(header, data, signal);
-            }
-            else
-            {
-                return insert(header, data, signal);
-            }
-        }
-        else
-        {
-            Clone<T> item{data, *header.sentTime};
-            Cbd<T> cbd(item, header, Mt::create);
-            // Call user-code
-            signal(&cbd);
-
-			return false;
-        }
-    }
-
-    size_t typelessSize() const final { return this->size(); }
-
-    bool processTypeless(const types::DotsHeader& header, const type::Struct& instance, const signal_type& signal) final
-    {
-        return process(header, static_cast<const T&>(instance), signal);
-    }
-};
-
-/**
- * This template creates for every DOTS-type that is used with dots::C or dots::rC
- * a container.
- */
-template<class T>
-struct StaticContainer
-{
-    static ContainerEx<T> container;
-};
-
-template<class T>
-ContainerEx<T> StaticContainer<T>::container;
-
-/**
- * API to get a writeable access to a type-specific container
- * Usage:
- * dots::rC<TypeName>().methodOfContainer();
- *
- * @tparam T DOTS-Type
- * @return reference to container
- */
-template<class T>
-ContainerEx<T>& rC() {
-    registerTypeUsage<T, SubscribedType>();
-    return StaticContainer<T>::container;
-}
-
-/**
- * API to get a read-only acces to a type-specific container
- * Usage:
- * dots::C<TypeName>().methodOfContainer(); (e.g. find())
- * @tparam T
- * @return const reference to container
- */
-template<class T>
-const ContainerEx<T>& C() {
-    registerTypeUsage<T, SubscribedType>();
-    return StaticContainer<T>::container;
-}
-
+		using Container<>::find;
+		using Container<>::get;
+		using Container<>::forEach;
+		using Container<>::as;
+	};
 }

@@ -1,5 +1,5 @@
 #include "DistributedTypeId.h"
-#include <dots/io/Transceiver.h>
+#include <dots/dots.h>
 #include <dots/type/Registry.h>
 
 namespace dots
@@ -10,7 +10,7 @@ DistributedTypeId::DistributedTypeId(bool master)
 {
     if (not master)
     {
-        dots::subscribe<DotsTypes>(FUN(*this, handleDotsType));
+        dots::subscribe<DotsTypes>(FUN(*this, handleDotsType)).discard();
     }
     else
     {

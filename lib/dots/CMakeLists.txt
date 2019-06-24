@@ -51,16 +51,17 @@ target_sources(${TARGET_NAME}
 		io/Chained.cpp
 
 		io/Io.cpp
-		io/AnyContainer.cpp
 		io/Container.cpp
+		io/ContainerPool.cpp
 		io/Dispatcher.cpp
+		io/Event.cpp
 		io/TD_Traversal.cpp
 		io/Application.cpp
 		io/DynamicTypeReceiver.cpp
 		io/ResourceUsage.cpp
 		io/DistributedTypeId.cpp
 		io/Filter.cpp
-
+		
 		io/serialization/JsonSerialization.cpp
 		io/serialization/AsciiSerialization.cpp
 		io/serialization/CborNativeSerialization.cpp
@@ -99,7 +100,6 @@ target_sources(${TARGET_NAME}
 		type/Registry.cpp
 		type/StandardTypes.cpp
 		type/StructDescriptor.cpp
-		type/StructDescriptorConstruct.cpp
 		type/StructProperty.cpp
 		type/UuidDescriptor.cpp
 		type/Vector.cpp

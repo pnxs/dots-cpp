@@ -3,7 +3,6 @@
 #include "Connection.h"
 #include <set>
 #include <dots/io/Dispatcher.h>
-#include "dots/io/AnyContainer.h"
 #include "dots/io/Publisher.h"
 #include "dots/io/DistributedTypeId.h"
 #include "GroupManager.h"
@@ -22,7 +21,6 @@ namespace dots
  */
 class ConnectionManager: public Publisher
 {
-    dots::AnyContainerPool m_containerPool;
 public:
     ConnectionManager(const ConnectionManager&) = delete;
     ConnectionManager&operator=(const ConnectionManager&) = delete;
@@ -119,7 +117,6 @@ public:
 
 
 private:
-    void onReceivedMessage(const dots::TypelessCbd* cbd, dots::AnyContainer& container);
 
     void removeConnection(connection_ptr c);
 
@@ -129,9 +126,8 @@ private:
     bool isClientIdInContainers(ClientId id);
     string clientId2Name(ClientId id) const;
 
-
     std::map<Connection::ConnectionId, connection_ptr> m_connections;
-    vector<AnyContainer*> m_cleanupContainer; ///< all containers with cleanup-flag.
+    std::vector<const Container<>*> m_cleanupContainer; ///< all containers with cleanup-flag.
 
     std::set<connection_ptr> m_cleanupConnections; ///< old connection-object.
 

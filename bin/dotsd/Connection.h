@@ -4,7 +4,7 @@
 #include <dots/io/services/Channel.h>
 
 #include <memory>
-#include <dots/io/AnyContainer.h>
+#include <dots/io/Container.h>
 #include "dots/io/Transmitter.h"
 #include "DotsConnectionState.dots.h"
 #include "DotsMsgConnect.dots.h"
@@ -31,7 +31,7 @@ public:
      * @param manager
      */
     explicit Connection(channel_ptr_t channel, ConnectionManager &manager);
-    ~Connection();
+    virtual ~Connection();
 
     virtual DotsConnectionState state() const;
     virtual const ConnectionId& id() const; ///< return client-id
@@ -88,7 +88,7 @@ public:
      */
     void sendNs(const string& nameSpace, const type::StructDescriptor* td, const type::Struct& instance, property_set properties, bool remove);
 
-    void sendContainerContent(const AnyContainer &container);
+    void sendContainerContent(const Container<>& container);
     void sendCacheEnd(const std::string& typeName);
 
 protected:

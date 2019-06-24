@@ -9,6 +9,8 @@ namespace dots {
 
 struct ToAsciiColorSchema
 {
+	virtual ~ToAsciiColorSchema() = default;
+
     virtual const char* string() const = 0;
     virtual const char* integer() const = 0;
     virtual const char* floatingPoint() const = 0;

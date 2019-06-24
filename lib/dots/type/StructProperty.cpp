@@ -3,24 +3,61 @@
 
 namespace dots::type
 {
-	StructProperty::StructProperty(const std::string &name, std::size_t offset, int tag, bool key, const Descriptor *td) :
+	StructProperty::StructProperty():
+		_offset(0),
+		_tag(0),
+		_isKey(false),
+		_typeDescriptor(nullptr)
+	{
+		/* do nothing */
+	}
+
+	StructProperty::StructProperty(const PropertyDescription& description):
+		_offset(description.offset),
+		_tag(description.tag),
+		_isKey(description.isKey),
+		_name(description.name.data()),
+		_type(description.type.data()),
+		_typeDescriptor(nullptr)
+	{
+		/* do nothing */
+	}
+
+	StructProperty::StructProperty(std::string name, std::size_t offset, int tag, bool key, const Descriptor *td) :
 		_offset(offset),
 		_tag(tag),
 		_isKey(key),
+		_name(std::move(name)),
 		_type(td->name()),		
 		_typeDescriptor(td)
 	{
-		_nameStr = new std::string(name);
-		_name = *_nameStr;
+		/* do nothing */
 	}
 
-	/*StructProperty::~StructProperty()
+	size_t StructProperty::offset() const
 	{
-		if (_nameStr != nullptr)
-		{
-			delete _nameStr;
-		}
-	}*/
+		return _offset;
+	}
+
+	uint32_t StructProperty::tag() const
+	{
+		return _tag;
+	}
+
+	bool StructProperty::isKey() const
+	{
+		return _isKey;
+	}
+
+	const std::string& StructProperty::name() const
+	{
+		return _name;
+	}
+
+	const std::string& StructProperty::typeName() const
+	{
+		return _type;
+	}
 
 	bool StructProperty::equal(const void *lhs, const void *rhs) const
 	{

@@ -118,8 +118,8 @@ namespace dots::type
 		void _swap(Struct& other, const property_set& includedProperties = PROPERTY_SET_ALL);
 		void _clear(const property_set& includedProperties = PROPERTY_SET_ALL);
 
-		bool _equal(const Struct& rhs) const;
-		bool _less(const Struct& rhs) const;
+		bool _equal(const Struct& rhs, const property_set& includedProperties = PROPERTY_SET_ALL) const;
+		bool _less(const Struct& rhs, const property_set& includedProperties = PROPERTY_SET_ALL) const;
 
 		property_set _diffProperties(const Struct& other) const;
 		bool _hasProperties(const property_set properties) const;
@@ -147,6 +147,28 @@ namespace dots::type
             return const_cast<T*>(std::as_const(*this)._as<T>());
         }
 
+		template <typename T, bool Safe = false>
+        const T& _to() const
+        {
+			static_assert(std::is_base_of_v<Struct, T>, "T has to be a sub-class of Struct");
+
+			if constexpr (Safe)
+			{
+				if (!_is<T>())
+				{
+					throw std::logic_error{ "type mismatch in safe Struct conversion: expected " + _desc->name() + " but got " + T::_Descriptor().name() };
+				}
+			}
+
+            return static_cast<const T&>(*this);
+        }
+
+        template <typename T, bool Safe = false>
+        T& _to()
+        {
+            return const_cast<T&>(std::as_const(*this)._to<T, Safe>());
+        }
+
     protected:
 
 		static constexpr uint8_t Uncached      = 0b0000'0000;
@@ -159,12 +181,12 @@ namespace dots::type
 
 		struct StructDescription
 		{
-			constexpr StructDescription(const std::string_view& name, uint8_t flags, const std::array<StructProperty, 32>& propertyDescriptions, size_t numProperties) :
+			constexpr StructDescription(const std::string_view& name, uint8_t flags, const std::array<PropertyDescription, 32>& propertyDescriptions, size_t numProperties) :
 				name(name), flags(flags), propertyDescriptions(propertyDescriptions), numProperties(numProperties) {}
 
 			std::string_view name;
 			uint8_t flags;
-			std::array<StructProperty, 32> propertyDescriptions;
+			std::array<PropertyDescription, 32> propertyDescriptions;
 			size_t numProperties;
 		};
 
@@ -174,7 +196,7 @@ namespace dots::type
     private:
 
 		property_set _validPropSet;
-        const StructDescriptor* _desc;        
+        const StructDescriptor* _desc;
     };
 
 	property_iterator begin(Struct& instance);

@@ -1,237 +1,212 @@
-#include "dots/io/Container.h"
-#include "DotsTestStruct.dots.h"
-#include "DotsUncachedTestStruct.dots.h"
-#include "dots/type/Registry.h"
 #include <gtest/gtest.h>
+#include <dots/io/Container.h>
+#include <DotsHeader.dots.h>
+#include <DotsTestStruct.dots.h>
 
-#include <iostream>
-
-using namespace dots::type;
-
-/**
- * Add two instances of a DotsTestStruct to an Container and
- * remove one of them.
- */
-TEST(TestContainer, storeAndRemove)
+namespace
 {
-    uint32_t timesSigCalled = 0;
-    dots::rC<DotsTestStruct>().clear();
-
-    dots::ContainerBase::signal_type sig;
-    sig.connect([&](dots::CTypeless /*cbd*/) {
-        timesSigCalled++;
-    });
-
-    DotsTestStruct dts;
-
-    // SUT: Container of DotsTestStruct
-    auto& container = dots::rC<DotsTestStruct>();
-    ASSERT_EQ(container.size(), 0u);
-
-    dts.indKeyfField(1);
-
-    DotsHeader dh;
-    dh.typeName(dts._Descriptor().name());
-    dh.removeObj(false);
-    dh.sender(0);
-    dh.sentTime(pnxs::SystemNow());
-    dh.attributes(dts._validProperties());
-
-    // Process a DotsTestStruct 'create' in container
-    container.process(dh, dts, sig);
-
-    ASSERT_EQ(container.size(), 1u);
-
-    // Modify Key property, so that it will be another instance
-    dts.indKeyfField = 2;
-
-    container.process(dh, dts, sig);
-
-    EXPECT_EQ(container.size(), 2u);
-
-    dts.indKeyfField = 2; // Set field again, because the container moves the values into it.
-    dh.removeObj = true;
-
-    // Remove DotsTestStruct with Key==2 from container
-    container.process(dh, dts, sig);
-
-    EXPECT_EQ(container.size(), 1u);
-
-    EXPECT_EQ(timesSigCalled, 3);
+	namespace test_helpers
+	{
+		DotsHeader make_header(const dots::type::Struct& instance, uint32_t sender, bool remove = false)
+		{
+			return DotsHeader{
+				DotsHeader::typeName_t_i{ instance._descriptor().name() },
+				DotsHeader::sentTime_t_i{ pnxs::SystemNow() },
+				DotsHeader::attributes_t_i{ instance._validProperties() },
+				DotsHeader::sender_t_i{ sender },
+				DotsHeader::removeObj_t_i{ remove },
+			};
+		}
+	}
 }
 
-TEST(TestContainer, storeUpdateAndRemoveSignal)
+TEST(TestContainer, ctor_EmptyAfterDefaultConstruction)
 {
-    uint32_t timesSigCalled = 0;
-    dots::rC<DotsTestStruct>().clear();
+	dots::Container<DotsTestStruct> sut;
+	DotsTestStruct dts{ DotsTestStruct::indKeyfField_t_i{ 1 } };
 
-    std::function<void (const DotsTestStruct::Cbd& cbd)> expectCheck = [](auto&){
-        FAIL();
-    };
+	ASSERT_TRUE(sut.empty());
+	ASSERT_EQ(sut.size(), 0);
+	ASSERT_EQ(sut.find(dts), nullptr);
+	ASSERT_THROW(sut.get(dts), std::logic_error);
+}
 
-    dots::ContainerBase::signal_type sig;
-    sig.connect([&](dots::CTypeless cbd) {
-        timesSigCalled++;
-        expectCheck(*(dots::Cbd<DotsTestStruct>*)(cbd));
-    });
+TEST(TestContainer, insert_CreateInstanceWhenEmpty)
+{
+	dots::Container<DotsTestStruct> sut;
+	DotsTestStruct dts{
+		DotsTestStruct::indKeyfField_t_i{ 1 },
+		DotsTestStruct::stringField_t_i{ "foo" },
+		DotsTestStruct::floatField_t_i{ 3.1415f }
+	};
+	DotsHeader header = test_helpers::make_header(dts, 42);
 
-    auto& container = dots::rC<DotsTestStruct>();
-    ASSERT_EQ(container.size(), 0u);
+	const auto& [created, cloneInfo] = sut.insert(header, dts);
+	
+	ASSERT_FALSE(sut.empty());
+	ASSERT_EQ(sut.size(), 1);
+	ASSERT_EQ(sut.find(dts), &*created);
+	ASSERT_TRUE(created->_equal(dts));
+	ASSERT_NO_THROW(sut.get(dts));
 
-    auto t1 = pnxs::SystemNow();
+	ASSERT_EQ(cloneInfo.lastOperation, DotsMt::create);
 
-    {
-        DotsTestStruct dts;
+	ASSERT_EQ(cloneInfo.createdFrom, *header.sender);
+	ASSERT_EQ(cloneInfo.created, *header.sentTime);
 
-        // Add 1st element
-        dts.indKeyfField(1);
-        dts.stringField("Hello");
+	ASSERT_GE(*cloneInfo.localUpdateTime, *header.sentTime);
+	ASSERT_LE(*cloneInfo.localUpdateTime, pnxs::SystemNow());
 
-        // Fill DotsHeader data
-        DotsHeader dh;
-        dh.typeName(dts._Descriptor().name());
-        dh.removeObj(false);
-        dh.sender(0);
-        dh.sentTime(t1);
-        dh.attributes(dts._validProperties());
+	ASSERT_FALSE(cloneInfo.lastUpdateFrom.isValid());
+	ASSERT_FALSE(cloneInfo.modified.isValid());
+}
 
-        // Expect call of signal-handler with:
-        // data is heap pointer
-        expectCheck = [&](const DotsTestStruct::Cbd& cbd)
-        {
-            auto& testStruct = cbd();
+TEST(TestContainer, insert_UpdateSameInstanceWhenNotEmpty)
+{
+	dots::Container<DotsTestStruct> sut;
+	DotsTestStruct dts1{
+		DotsTestStruct::indKeyfField_t_i{ 1 },
+		DotsTestStruct::stringField_t_i{ "foo" },
+		DotsTestStruct::floatField_t_i{ 3.1415f }
+	};
+	DotsTestStruct dts2{
+		DotsTestStruct::indKeyfField_t_i{ 1 },
+		DotsTestStruct::floatField_t_i{ 2.7183f },
+		DotsTestStruct::enumField_t_i{ DotsTestEnum::value1 }
+	};
+	DotsTestStruct dts3{
+		DotsTestStruct::indKeyfField_t_i{ 1 },
+		DotsTestStruct::stringField_t_i{ "foo" },
+		DotsTestStruct::floatField_t_i{ 2.7183f },
+		DotsTestStruct::enumField_t_i{ DotsTestEnum::value1 }
+	};
+	DotsHeader header1 = test_helpers::make_header(dts1, 42);
+	DotsHeader header2 = test_helpers::make_header(dts2, 21);
 
-            /*
-            EXPECT_EQ(cbd.information.lastOperation(), dots::Mt::create);
-            EXPECT_EQ(cbd.information.lastUpdateFrom(), 0);
-            EXPECT_EQ(cbd.information.created(), t1);
-            EXPECT_EQ(cbd.information.createdFrom(), 0);
-            EXPECT_EQ(cbd.information.modified(), t1);
-            //EXPECT_EQ(cbd.information.localUpdateTime, ); // Is not good testable, because the current time is used.
-             */
-            EXPECT_EQ(cbd.header, dh);
+	sut.insert(header1, dts1);
+	const auto& [updated, cloneInfo] = sut.insert(header2, dts2);
 
-            EXPECT_EQ(cbd.mt, dots::Mt::create);
+	ASSERT_FALSE(sut.empty());
+	ASSERT_EQ(sut.size(), 1);
+	ASSERT_EQ(sut.find(dts3), &*updated);
+	ASSERT_TRUE(updated->_equal(dts3));
+	ASSERT_NO_THROW(sut.get(dts2));
 
-            ASSERT_TRUE(testStruct.stringField.isValid());
-            EXPECT_EQ(testStruct.stringField, "Hello");
-        };
-        container.process(dh, dts, sig);
-        ASSERT_EQ(container.size(), 1u);
-        EXPECT_EQ(timesSigCalled, 1u);
-    }
+	ASSERT_EQ(cloneInfo.lastOperation, DotsMt::update);
 
-    auto t2 = pnxs::SystemNow();
+	ASSERT_EQ(cloneInfo.createdFrom, *header1.sender);
+	ASSERT_EQ(cloneInfo.created, *header1.sentTime);
 
-    {
-        DotsTestStruct dts;
+	ASSERT_EQ(cloneInfo.lastUpdateFrom, *header2.sender);
+	ASSERT_EQ(cloneInfo.modified, *header2.sentTime);
 
-        // Add 2nd
-        dts.indKeyfField(2);
-        dts.stringField("World");
+	ASSERT_GE(*cloneInfo.localUpdateTime, *header2.sentTime);
+	ASSERT_LE(*cloneInfo.localUpdateTime, pnxs::SystemNow());
+}
 
-        // Fill DotsHeader data
-        DotsHeader dh;
-        dh.typeName(dts._Descriptor().name());
-        dh.removeObj(false);
-        dh.sender(1);
-        dh.sentTime(t2);
-        dh.attributes(dts._validProperties());
+TEST(TestContainer, insert_CreateDifferentInstanceWhenNotEmpty)
+{
+	dots::Container<DotsTestStruct> sut;
+	DotsTestStruct dts1{
+		DotsTestStruct::indKeyfField_t_i{ 1 },
+		DotsTestStruct::stringField_t_i{ "foo" },
+		DotsTestStruct::floatField_t_i{ 3.1415f }
+	};
+	DotsTestStruct dts2{
+		DotsTestStruct::indKeyfField_t_i{ 2 },
+		DotsTestStruct::floatField_t_i{ 2.7183f },
+		DotsTestStruct::enumField_t_i{ DotsTestEnum::value1 }
+	};
+	DotsHeader header1 = test_helpers::make_header(dts1, 42);
+	DotsHeader header2 = test_helpers::make_header(dts2, 21);
 
-        expectCheck = [&](const DotsTestStruct::Cbd& cbd)
-        {
-            /*
-            EXPECT_EQ(cbd.information.lastOperation(), dots::Mt::create);
-            EXPECT_EQ(cbd.information.lastUpdateFrom(), 1);
-            EXPECT_EQ(cbd.information.created(), t2);
-            EXPECT_EQ(cbd.information.createdFrom(), 1);
-            EXPECT_EQ(cbd.information.modified(), t2);
-             */
+	sut.insert(header1, dts1);
+	const auto& [created, cloneInfo] = sut.insert(header2, dts2);
 
-            EXPECT_EQ(cbd.header, dh);
-            EXPECT_EQ(cbd.mt, dots::Mt::create);
-        };
-        container.process(dh, dts, sig);
-        EXPECT_EQ(container.size(), 2u);
-        EXPECT_EQ(timesSigCalled, 2u);
-    }
+	ASSERT_FALSE(sut.empty());
+	ASSERT_EQ(sut.size(), 2);
+	ASSERT_EQ(sut.find(dts2), &*created);
+	ASSERT_TRUE(created->_equal(dts2));
+	ASSERT_NO_THROW(sut.get(dts2));
 
-    {
-        DotsTestStruct dts;
+	ASSERT_EQ(cloneInfo.lastOperation, DotsMt::create);
 
-        // Remove
-        DotsTestStruct removeObj;
-        removeObj.indKeyfField = 2;
+	ASSERT_EQ(cloneInfo.createdFrom, *header2.sender);
+	ASSERT_EQ(cloneInfo.created, *header2.sentTime);
 
-        // Fill DotsHeader data
-        DotsHeader dh;
-        dh.typeName(dts._Descriptor().name());
-        dh.removeObj(true);
-        dh.sender(1);
-        dh.sentTime(t2);
-        dh.attributes(dts._validProperties());
+	ASSERT_GE(*cloneInfo.localUpdateTime, *header2.sentTime);
+	ASSERT_LE(*cloneInfo.localUpdateTime, pnxs::SystemNow());
 
-        expectCheck = [&](const DotsTestStruct::Cbd& cbd)
-        {
-            /*
-            EXPECT_EQ(cbd.information.lastOperation(), dots::Mt::remove);
-            EXPECT_EQ(cbd.information.lastUpdateFrom(), 1);
-            EXPECT_EQ(cbd.information.created(), t2);
-            EXPECT_EQ(cbd.information.createdFrom(), 1);
-            EXPECT_EQ(cbd.information.modified(), t2);
-             */
+	ASSERT_FALSE(cloneInfo.lastUpdateFrom.isValid());
+	ASSERT_FALSE(cloneInfo.modified.isValid());
+}
 
-            EXPECT_EQ(cbd.header, dh);
-            EXPECT_EQ(cbd.mt, dots::Mt::remove);
+TEST(TestContainer, remove_ThrowWhenEmpty)
+{
+	dots::Container<DotsTestStruct> sut;
+	DotsTestStruct dts{	DotsTestStruct::indKeyfField_t_i{ 1 } };
+	DotsHeader header = test_helpers::make_header(dts, 42);
 
-            auto& testStruct = cbd();
-            ASSERT_TRUE(testStruct.stringField.isValid());
-            EXPECT_EQ(testStruct.stringField, "World");
-        };
-        container.process(dh, removeObj, sig);
-        EXPECT_EQ(container.size(), 1u);
-        EXPECT_EQ(timesSigCalled, 3u);
-    }
+	ASSERT_THROW(sut.remove(header, dts), std::logic_error);
+}
 
-    auto t3 = pnxs::SystemNow();
+TEST(TestContainer, remove_ThrowWhenNotContained)
+{
+	dots::Container<DotsTestStruct> sut;
+	DotsTestStruct dts1{ DotsTestStruct::indKeyfField_t_i{ 1 } };
+	DotsTestStruct dts2{ DotsTestStruct::indKeyfField_t_i{ 2 } };
+	DotsHeader header1 = test_helpers::make_header(dts1, 42);
+	DotsHeader header2 = test_helpers::make_header(dts2, 21);
 
-    {
-        DotsTestStruct dts;
+	sut.insert(header1, dts1);
 
-        // Update 1st
-        dts.indKeyfField(1);
-        dts.floatField(3.0f);
+	ASSERT_EQ(sut.find(dts2), nullptr);
+	ASSERT_THROW(sut.remove(header2, dts2), std::logic_error);
+}
 
-        // Fill DotsHeader data
-        DotsHeader dh;
-        dh.typeName(dts._Descriptor().name());
-        dh.removeObj(false);
-        dh.sender(2);
-        dh.sentTime(t3);
-        dh.attributes(dts._validProperties());
+TEST(TestContainer, remove_RemoveWhenContained)
+{
+	dots::Container<DotsTestStruct> sut;
+	DotsTestStruct dts1{
+		DotsTestStruct::indKeyfField_t_i{ 1 },
+		DotsTestStruct::stringField_t_i{ "foo" }
+	};
+	DotsTestStruct dts2{
+		DotsTestStruct::indKeyfField_t_i{ 2 } 
+	};
+	DotsTestStruct dts3{
+		DotsTestStruct::indKeyfField_t_i{ 1 },
+		DotsTestStruct::floatField_t_i{ 2.7183f }
+	};
+	DotsTestStruct dts4{
+		DotsTestStruct::indKeyfField_t_i{ 1 },
+		DotsTestStruct::stringField_t_i{ "foo" },
+		DotsTestStruct::floatField_t_i{ 2.7183f }
+	};
+	DotsHeader header1 = test_helpers::make_header(dts1, 42);
+	DotsHeader header2 = test_helpers::make_header(dts2, 21);
+	DotsHeader header3 = test_helpers::make_header(dts2, 73, true);
 
-        expectCheck = [&](const DotsTestStruct::Cbd& cbd)
-        {
-            /*
-            EXPECT_EQ(cbd.information.lastOperation(), dots::Mt::update);
-            EXPECT_EQ(cbd.information.lastUpdateFrom(), 2);
-            EXPECT_EQ(cbd.information.created(), t1);
-            EXPECT_EQ(cbd.information.createdFrom(), 0);
-            EXPECT_EQ(cbd.information.modified(), t3);
-             */
+	sut.insert(header1, dts1);
+	sut.insert(header2, dts2);
+	dots::Container<DotsTestStruct>::node_t removedNode = sut.remove(header3, dts3);
+	const dots::type::Struct& removed = removedNode.key();
+	const DotsCloneInformation& cloneInfo = removedNode.mapped();
 
-            EXPECT_EQ(cbd.header, dh);
-            EXPECT_EQ(cbd.mt, dots::Mt::update);
+	ASSERT_EQ(sut.size(), 1);
+	ASSERT_EQ(sut.find(dts1), nullptr);
+	ASSERT_EQ(sut.find(dts3), nullptr);
+	ASSERT_TRUE(removed._equal(dts4));
+	ASSERT_THROW(sut.get(dts4), std::logic_error);
 
-            auto& testStruct = cbd();
-            ASSERT_TRUE(testStruct.stringField.isValid());
-            EXPECT_EQ(testStruct.stringField, "Hello");
-            ASSERT_TRUE(testStruct.floatField.isValid());
-            EXPECT_EQ(testStruct.floatField, 3.0f);
-        };
-        container.process(dh, dts, sig);
-        EXPECT_EQ(container.size(), 1u);
-        EXPECT_EQ(timesSigCalled, 4u);
-    }
+	ASSERT_EQ(cloneInfo.lastOperation, DotsMt::remove);
 
+	ASSERT_EQ(cloneInfo.createdFrom, *header1.sender);
+	ASSERT_EQ(cloneInfo.created, *header1.sentTime);
+
+	ASSERT_EQ(cloneInfo.lastUpdateFrom, *header3.sender);
+	ASSERT_EQ(cloneInfo.modified, *header3.sentTime);
+
+	ASSERT_GE(*cloneInfo.localUpdateTime, *header3.sentTime);
+	ASSERT_LE(*cloneInfo.localUpdateTime, pnxs::SystemNow());
 }

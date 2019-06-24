@@ -28,6 +28,7 @@ Server::Server(std::unique_ptr<Listener>&& listener, const string& name)
         DotsMsgConnect::_Descriptor();
         DotsMsgConnectResponse::_Descriptor();
         DotsMsgHello::_Descriptor();
+		DotsCloneInformation::_Descriptor();
     }
 
 	asyncAccept();
@@ -66,7 +67,7 @@ void Server::asyncAccept()
 		return true;
 	};
 
-    Listener::error_handler_t errorHandler = [this](const std::exception& e)
+    Listener::error_handler_t errorHandler = [](const std::exception& e)
     {
         LOG_ERROR_S("error while listening for incoming channels -> " << e.what());
     };

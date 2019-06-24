@@ -1,116 +1,88 @@
 #pragma once
-
-#include "dots/cpp_config.h"
-#include "Container.h"
-#include "Subscription.h"
-#include <dots/functional/signal.h>
+#include <map>
 #include <unordered_map>
-#include "ServerConnection.h"
-#include "Subscription.h"
-
-#include "DotsStatistics.dots.h"
+#include <functional>
+#include <memory>
+#include <algorithm>
+#include <dots/type/AnyStruct.h>
+#include <dots/io/Event.h>
+#include <dots/io/Subscription.h>
+#include <dots/io/ContainerPool.h>
 
 namespace dots
 {
+	struct Dispatcher
+	{
+		template <typename T = type::Struct>
+		using receive_handler_t = std::function<void(const DotsHeader&, const T&)>;
+		template <typename T = type::Struct>
+		using event_handler_t = std::function<void(const Event<T>&)>;
 
-class Dispatcher
-{
-private:
-    class TypedescSignal: public pnxs::Signal<void (CTypeless)>
-    {
-    public:
-        TypedescSignal(const type::StructDescriptor* td, ContainerBase* cb)
-            : m_td(td), m_obj(td->New()), m_cb(cb)
-        {}
+		Dispatcher();
+		Dispatcher(const Dispatcher& other) = delete;
+		Dispatcher(Dispatcher&& other) noexcept;
+		~Dispatcher() = default;
 
-        ~TypedescSignal()
-        {
-            m_td->Delete(m_obj);
-        }
+		Dispatcher& operator = (const Dispatcher& rhs) = delete;
+		Dispatcher& operator = (Dispatcher&& rhs) noexcept;
 
-        const type::StructDescriptor* td() const
-        {
-            return m_td;
-        }
+		const ContainerPool& pool() const;
+		ContainerPool& pool();
 
-        Typeless obj() const
-        {
-            return m_obj;
-        }
+		const Container<>& container(const type::StructDescriptor& descriptor) const;
+		Container<>& container(const type::StructDescriptor& descriptor);
 
-        ContainerBase* container() const
-        {
-            return m_cb;
-        }
+		Subscription subscribe(const type::StructDescriptor& descriptor, receive_handler_t<>&& handler);
+		Subscription subscribe(const type::StructDescriptor& descriptor, event_handler_t<>&& handler);
 
-    private:
-        const type::StructDescriptor* m_td;
-        Typeless m_obj;
-        ContainerBase* m_cb;
-    };
+		void unsubscribe(const Subscription& subscription);
 
-    typedef shared_ptr<TypedescSignal> TypedescSignalPtr;
+		void dispatch(const DotsHeader& header, const type::AnyStruct& instance);
 
-    template <class T>
-    static void wrapper(CTypeless cbd, const function<void (const Cbd<T>&)>& f)
-    {
-        //f(*reinterpret_cast<Cbd<T>*>(cbd));
-        f(*(Cbd<T>*)(cbd));
+		template <typename T>
+		const Container<T>& container() const
+		{
+			return m_containerPool.get<T>();
+		}
 
-    }
-public:
-    typedef function<void (CTypeless cbd)> callback_type;
-    typedef function<void (const TypelessCbd* cbd)> typeless_callback_type;
+		template <typename T>
+		Container<T>& container()
+		{
+			return m_containerPool.get<T>();
+		}
 
-    Dispatcher();
+		template<typename T>
+		Subscription subscribe(receive_handler_t<T>&& handler)
+		{
+			return subscribe(T::_Descriptor(), [_handler(std::move(handler))](const DotsHeader& header, const type::Struct& instance)
+			{
+				_handler(static_cast<const T&>(instance));
+			});
+		}	
 
-    /**
-     * Dispatch the message to all registered receivers
-     * @param cbd struct that contains the message and metadata
-     */
-    void dispatchMessage(const DotsHeader& header, const type::AnyStruct& instance);
+		template<typename T>
+		Subscription subscribe(event_handler_t<T>&& handler)
+		{
+			return subscribe(T::_Descriptor(), [_handler(std::move(handler))](const Event<>& e)
+			{
+				_handler(e.as<T>());
+			});
+		}		
 
-    Subscription addTypelessReceiver(const type::StructDescriptor* td, const typeless_callback_type& callback);
-    Subscription addReceiver(const type::StructDescriptor* td, ContainerBase* cb, const callback_type& callback);
+	private:
 
-    TypedescSignalPtr registerReceiver(const type::StructDescriptor* td, ContainerBase* cb);
-    TypedescSignalPtr registerTypelessReceiver(const type::StructDescriptor* td);
+		using receive_handlers_t = std::map<Subscription::id_t, receive_handler_t<>>;
+		using receive_handler_pool_t = std::unordered_map<const type::StructDescriptor*, receive_handlers_t>;
 
-    template<class T>
-    Subscription addReceiver(const function<void (const Cbd<T>& cbd)>& callback)
-    {
-        C<T>(); // Create static container
-        registerTypeUsage<T, SubscribedType>();
+		using event_handlers_t = std::map<Subscription::id_t, event_handler_t<>>;
+		using event_handler_pool_t = std::unordered_map<const type::StructDescriptor*, event_handlers_t>;
 
-        static_assert(not T::_IsSubstructOnly(), "It is not allowed to subscribe a struct, that is marked with 'substruct_only'!");
+		void dispatchReceive(const DotsHeader& header, const type::AnyStruct& instance);
+		void dispatchEvent(const DotsHeader& header, const type::AnyStruct& instance);
 
-        auto ret = addReceiver(&T::_Descriptor(), &rC<T>(), bind(&wrapper<T>, _1, callback));
-
-        if (C<T>().empty())
-            return ret;
-
-        DotsHeader dh;
-        dh.typeName = T::_Descriptor().name();
-        dh.removeObj = false;
-
-        auto remaining = C<T>().size();
-
-        for (const auto& e : C<T>())
-        {
-            dh.attributes = e._validProperties();
-            dh.fromCache = --remaining;
-            callback({e, dh, Mt::create});
-        }
-
-        return ret;
-    }
-
-    const DotsStatistics& statistics() const;
-private:
-    std::unordered_map<string, TypedescSignalPtr> m_typeSignalMap;
-    std::unordered_map<string, TypedescSignalPtr> m_typelessSignalMap;
-    DotsStatistics m_statistics;
-
-};
-
+		std::shared_ptr<Dispatcher*> m_this;
+		ContainerPool m_containerPool;
+		receive_handler_pool_t m_receiveHandlerPool;
+		event_handler_pool_t m_eventHandlerPool;
+	};
 }

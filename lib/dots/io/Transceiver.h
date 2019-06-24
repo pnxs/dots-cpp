@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string_view>
 #include "dots/cpp_config.h"
 #include "Dispatcher.h"
 #include "TD_Traversal.h"
@@ -18,24 +19,26 @@ extern Publisher* onPublishObject;
 class Transceiver: public Publisher
 {
 public:
+
+	template <typename T = type::Struct>
+	using receive_handler_t = Dispatcher::receive_handler_t<T>;
+	template <typename T = type::Struct>
+	using event_handler_t = Dispatcher::event_handler_t<T>;
+
     Transceiver();
 
     bool start(const string &name, channel_ptr_t channel);
     void stop();
 
-    Subscription addReceiver(const type::StructDescriptor* td, ContainerBase* cb, const Dispatcher::callback_type& f)
-    {
-        connection().joinGroup(td->name());
-        return dispatcher().addReceiver(td, cb, f);
-    }
+	const ContainerPool& pool() const;
+	const Container<>& container(const type::StructDescriptor& descriptor);
 
-    Subscription addTypelessReceiver(const type::StructDescriptor* td, const Dispatcher::typeless_callback_type& f)
-    {
-        connection().joinGroup(td->name());
-        return dispatcher().addTypelessReceiver(td, f);
-    }
+	Subscription subscribe(const type::StructDescriptor& descriptor, receive_handler_t<>&& handler);
+    Subscription subscribe(const type::StructDescriptor& descriptor, event_handler_t<>&& handler);
 
-    Dispatcher& dispatcher();
+	Subscription subscribe(const std::string_view& name, receive_handler_t<>&& handler);
+	Subscription subscribe(const std::string_view& name, event_handler_t<>&& handler);
+
     ServerConnection& connection();
 
     type::StructDescriptorSet getPublishedDescriptors() const;
@@ -48,9 +51,34 @@ public:
 
     void publish(const type::StructDescriptor* td, const type::Struct& instance, property_set what, bool remove) override;
 
+	template <typename T>
+	const Container<T>& container()
+	{
+		return m_dispatcher.container<T>();
+	}
+
+	template<typename T>
+	Subscription subscribe(receive_handler_t<T>&& handler)
+	{
+		static_assert(!T::_IsSubstructOnly(), "it is not allowed to subscribe to a struct that is marked with 'substruct_only'!");
+		connection().joinGroup(T::_Descriptor().name());
+
+		return m_dispatcher.subscribe<T>(std::move(handler));
+	}
+
+	template<typename T>
+	Subscription subscribe(event_handler_t<T>&& handler)
+	{
+		static_assert(!T::_IsSubstructOnly(), "it is not allowed to subscribe to a struct that is marked with 'substruct_only'!");
+		connection().joinGroup(T::_Descriptor().name());
+
+		return m_dispatcher.subscribe<T>(std::move(handler));
+	}
+
 private:
     void onConnect();
     void onEarlySubscribe();
+	const type::StructDescriptor& getDescriptorFromName(const std::string_view& name) const;
 
     ServerConnection m_serverConnection;
 
@@ -62,45 +90,5 @@ private:
     //Transmitter m_transmitter;
 
 };
-
-Transceiver& transceiver();
-
-void publish(const type::StructDescriptor* td, const type::Struct& instance, property_set what, bool remove);
-
-template<class T>
-void publish(const T& data, typename T::PropSet what)
-{
-    registerTypeUsage<T, PublishedType>();
-
-    static_assert(not data.isSubstructOnly(), "It is not allowed to publish a struct, that is marked with 'substruct_only'!");
-
-    onPublishObject->publish(T::_td(), &data, what, false);
-}
-
-template<class T>
-void publish(const T& data)
-{
-    registerTypeUsage<T, PublishedType>();
-
-    static_assert(not data.isSubstructOnly(), "It is not allowed to publish a struct, that is marked with 'substruct_only'!");
-
-    publish(data, data.valatt());
-}
-
-template<class T>
-void remove(const T& data)
-{
-    registerTypeUsage<T, PublishedType>();
-
-    static_assert(not data.isSubstructOnly(), "It is not allowed to remove a struct, that is marked with 'substruct_only'!");
-
-    onPublishObject->publish(T::_td(), &data, data.validProperties(), true);
-}
-
-template<class T>
-Subscription subscribe(const function<void (const Cbd<T>&)>& callback)
-{
-    return transceiver().dispatcher().addReceiver(callback);
-}
 
 }

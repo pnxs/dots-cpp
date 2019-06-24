@@ -8,9 +8,9 @@
 class MyClientClass
 {
 public:
-    MyClientClass()
+    MyClientClass() :
+		m_subs{ dots::subscribe<DotsTestStruct>(FUN(*this, handleTestStruct)) }
     {
-        m_subs = dots::subscribe<DotsTestStruct>(FUN(*this, handleTestStruct));
         dots::add_timer(1, FUN(*this, handleTimer));
     }
 

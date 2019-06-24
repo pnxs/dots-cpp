@@ -25,6 +25,18 @@ namespace dots::type
 		operator Struct&();
 		operator const Struct&() const;
 
+		template <typename T, std::enable_if_t<std::is_base_of_v<Struct, T>, int> = 0>
+		explicit operator const T&() const
+		{
+			return _instance->_to<T>();
+		}
+
+		template <typename T, std::enable_if_t<std::is_base_of_v<Struct, T>, int> = 0>
+		explicit operator T&()
+		{
+			return _instance->_to<T>();
+		}
+
 		template <typename T>
         bool is() const
         {
@@ -41,6 +53,18 @@ namespace dots::type
         T* as()
         {
             return _instance->_as<T>();
+        }
+
+		template <typename T, bool Safe = false>
+        const T& to() const
+        {
+			return _instance->_to<T, Safe>();
+        }
+
+        template <typename T, bool Safe = false>
+        T& to()
+        {
+            return _instance->_to<T, Safe>();
         }
 
 		Struct& get();

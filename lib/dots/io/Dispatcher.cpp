@@ -1,104 +1,186 @@
-#include "Dispatcher.h"
-#include "dots/type/Registry.h"
+#include <dots/io/Dispatcher.h>
 
 namespace dots
 {
+	Dispatcher::Dispatcher() :
+		m_this(std::make_shared<Dispatcher*>(this))
+	{
+		/* do nothing*/
+	}
 
-Dispatcher::Dispatcher()
-{
-    m_statistics.packages(0);
-    m_statistics.bytes(0);
-}
+	Dispatcher::Dispatcher(Dispatcher&& other) noexcept :
+		m_this(std::move(other.m_this)),
+		m_containerPool(std::move(other.m_containerPool)),
+		m_receiveHandlerPool(std::move(other.m_receiveHandlerPool)),
+		m_eventHandlerPool(std::move(other.m_eventHandlerPool))
+	{
+		*m_this = this;
+	}
 
-Subscription
-Dispatcher::addReceiver(const type::StructDescriptor *td, ContainerBase *cb, const Dispatcher::callback_type &callback)
-{
-    if (td == nullptr) {
-        throw std::invalid_argument("addReceiver: td is nullptr");
-    }
-    TypedescSignalPtr signal = registerReceiver(td, cb);
+	Dispatcher& Dispatcher::operator = (Dispatcher&& rhs) noexcept
+	{
+		m_this = std::move(rhs.m_this);
+		m_containerPool = std::move(rhs.m_containerPool);
+		m_receiveHandlerPool = std::move(rhs.m_receiveHandlerPool);
+		m_eventHandlerPool = std::move(rhs.m_eventHandlerPool);
 
-    return Subscription(td, signal->connect(callback));
-}
+		*m_this = this;
 
-Dispatcher::TypedescSignalPtr Dispatcher::registerReceiver(const type::StructDescriptor *td, ContainerBase *cb)
-{
-    TypedescSignalPtr& signal = m_typeSignalMap[td->name()];
+		return *this;
+	}
 
-    LOG_DEBUG_S("registerReceiver: " << td->name());
+	const ContainerPool& Dispatcher::pool() const
+	{
+		return m_containerPool;
+	}
 
-    if (not signal)
-    {
-        signal = std::make_shared<TypedescSignal>(td, cb);
-    } else
-    {
-        // This is not a warning, it's allowed for the using program to register as many receivers for one type
-        // as needed
-        //LOG_WARN_S("already registered receiver for " << td->name());
-    }
+	ContainerPool& Dispatcher::pool()
+	{
+		return m_containerPool;
+	}
 
-    return signal;
-}
+	const Container<>& Dispatcher::container(const type::StructDescriptor& descriptor) const
+	{
+		return m_containerPool.get(descriptor);
+	}
 
-void Dispatcher::dispatchMessage(const DotsHeader& header, const type::AnyStruct& instance)
-{
-    const TypedescSignalPtr& signal = m_typeSignalMap[header.typeName];
-    const auto& typelessSignal = m_typelessSignalMap[header.typeName];
+	Container<>& Dispatcher::container(const type::StructDescriptor& descriptor)
+	{
+		return m_containerPool.get(descriptor);
+	}
 
-    if (signal || typelessSignal)
-    {
-        if (not instance->_descriptor().internal())
-        {
-            (*m_statistics.packages)++;
-            (*m_statistics.bytes) += 1; // TODO: find other form of metric (e.g. effective memory size)
-        }
+	Subscription Dispatcher::subscribe(const type::StructDescriptor& descriptor, receive_handler_t<>&& handler)
+	{
+		Subscription subscription{ m_this, descriptor };
+		m_receiveHandlerPool[&descriptor].emplace(subscription.id(), std::move(handler));
 
-        if (typelessSignal)
-        {
-            TypelessCbd typelessCbd{ header, instance };
-            (*typelessSignal)(&typelessCbd);
-        }
+		return subscription;
+	}
 
-        if (signal)
-        {
-            auto container = signal->container();
+	Subscription Dispatcher::subscribe(const type::StructDescriptor& descriptor, event_handler_t<>&& handler)
+	{
+		Subscription subscription{ m_this, descriptor };
+		const event_handler_t<>& handler_ = m_eventHandlerPool[&descriptor].emplace(subscription.id(), std::move(handler)).first->second;
 
-            if (container) {
-                container->processTypeless(header, instance, *signal);
-            }
-        }
-    }
-    else
-    {
-        LOG_DEBUG_S("no receiver registered for type " << header.typeName);
-    }
-}
+		const Container<>& container = m_containerPool.get(descriptor);
 
-Subscription
-Dispatcher::addTypelessReceiver(const type::StructDescriptor *td, const Dispatcher::typeless_callback_type &callback)
-{
-    TypedescSignalPtr signal = registerTypelessReceiver(td);
-    return Subscription(td, signal->connect(*(const callback_type*)&callback));
-}
+		if (!container.empty())
+		{
+			DotsHeader header{
+				DotsHeader::typeName_t_i{ descriptor.name() },
+				DotsHeader::removeObj_t_i{ false },
+				DotsHeader::fromCache_t_i{ container.size() }
+			};
 
-const DotsStatistics &Dispatcher::statistics() const
-{
-    return m_statistics;
-}
+			for (const auto& [instance, cloneInfo] : container)
+			{
+				header.attributes = instance->_validProperties();
+				--* header.fromCache;
+				handler_(Event<>{ header, instance, instance, cloneInfo });
+			}
+		}
 
-Dispatcher::TypedescSignalPtr Dispatcher::registerTypelessReceiver(const type::StructDescriptor *td)
-{
-    TypedescSignalPtr& signal = m_typelessSignalMap[td->name()];
+		return subscription;
+	}
 
-    LOG_DEBUG_S("registerTypelessReceiver: " << td->name());
+	void Dispatcher::unsubscribe(const Subscription& subscription)
+	{
+		auto itHandlers = m_eventHandlerPool.find(&subscription.descriptor());
 
-    if (not signal)
-    {
-        signal = std::make_shared<TypedescSignal>(td, nullptr);
-    } else{
-        LOG_WARN_S("already registered typeless-receiver for " << td->name());
-    }
-    return signal;
-}
+		if (itHandlers == m_eventHandlerPool.end())
+		{
+			throw std::logic_error{ "cannot unsubscribe unknown subscription for type: " + subscription.descriptor().name() };
+		}
 
+		event_handlers_t& handlers = itHandlers->second;
+		auto itHandler = handlers.find(subscription.id());
+
+		if (itHandler == handlers.end())
+		{
+			throw std::logic_error{ "cannot unsubscribe unknown subscription for type: " + subscription.descriptor().name() };
+		}
+
+		handlers.erase(itHandler);
+	}
+
+	void Dispatcher::dispatch(const DotsHeader& header, const type::AnyStruct& instance)
+	{
+		dispatchReceive(header, instance);
+		dispatchEvent(header, instance);
+	}
+
+	void Dispatcher::dispatchReceive(const DotsHeader& header, const type::AnyStruct& instance)
+	{
+		const type::StructDescriptor& descriptor = instance->_descriptor();
+
+		auto itHandlers = m_receiveHandlerPool.find(&descriptor);
+
+		if (itHandlers == m_receiveHandlerPool.end())
+		{
+			return;
+		}
+
+		const receive_handlers_t& handlers = itHandlers->second;
+
+		for (const auto& [id, handler] : handlers)
+		{
+			(void)id;
+			handler(header, instance);
+		}
+	}
+
+	void Dispatcher::dispatchEvent(const DotsHeader& header, const type::AnyStruct& instance)
+	{
+		const type::StructDescriptor& descriptor = instance->_descriptor();
+
+		auto itHandlers = m_eventHandlerPool.find(&descriptor);
+
+		if (itHandlers == m_eventHandlerPool.end())
+		{
+			return;
+		}
+
+		const event_handlers_t& handlers = itHandlers->second;
+
+		auto dispatchEventToHandlers = [&](const Event<>& e)
+		{
+			for (const auto& [id, handler] : handlers)
+			{
+				(void)id;
+				handler(e);
+			}
+		};
+
+		if (descriptor.cached())
+		{
+			Container<>& container = m_containerPool.get(descriptor);
+
+			if (header.removeObj == true)
+			{
+				Container<>::node_t removed = container.remove(header, instance);
+				dispatchEventToHandlers(Event<>{ header, instance, removed.key(), removed.mapped() });
+			}
+			else
+			{
+				const auto& [updated, cloneInfo] = container.insert(header, instance);
+				dispatchEventToHandlers(Event<>{ header, instance, updated, cloneInfo });
+			}
+		}
+		else
+		{
+			if (header.removeObj == true)
+			{
+				throw std::logic_error{ "cannot remove uncached instance for type: " + descriptor.name() };
+			}
+
+			dispatchEventToHandlers(Event<>{ header, instance, instance,
+				DotsCloneInformation{
+					DotsCloneInformation::lastOperation_t_i{ DotsMt::create },
+					DotsCloneInformation::createdFrom_t_i{ header.sender },
+					DotsCloneInformation::created_t_i{ header.sentTime },
+					DotsCloneInformation::localUpdateTime_t_i{ pnxs::SystemNow{} }
+				}
+			});
+		}
+	}
 }

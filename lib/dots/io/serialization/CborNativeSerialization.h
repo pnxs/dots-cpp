@@ -7,7 +7,7 @@
 namespace dots {
 
 namespace type {
-    class Struct;
+    struct Struct;
 }
 
 std::string to_cbor(DynamicInstance instance, property_set properties = PROPERTY_SET_ALL);
