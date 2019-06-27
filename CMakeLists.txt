@@ -8,7 +8,6 @@ set(DOTS_TEMPLATE_PATH ${CMAKE_SOURCE_DIR}/model/template)
 set(Boost_USE_STATIC_LIBS ON)
 
 option(WITH_QT5   "Build with Qt5 support" OFF)
-option(BUILD_XDOTS "Build the xdots utility" ON)
 option(BUILD_UNIT_TESTS "Build the unit tests" ON)
 
 # optional dependencies
@@ -29,10 +28,6 @@ add_subdirectory(bin/examples/testClient)
 if (Sqlite3_FOUND)
     add_subdirectory(lib/sqlitecpp)
     add_subdirectory(bin/dots-persistd)
-endif()
-
-if (BUILD_XDOTS)
-    add_subdirectory(bin/utils/xdots)
 endif()
 
 if (WITH_QT5)
