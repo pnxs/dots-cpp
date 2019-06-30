@@ -76,13 +76,13 @@ TEST(TestTStruct, PropertiesHaveExpectedSet)
 {
 	DotsTestStruct dts;
 
-	EXPECT_EQ(DotsTestStruct::stringField_t::Set(), dots::property_set{ 0x1 << 1 });
-	EXPECT_EQ(DotsTestStruct::indKeyfField_t::Set(), dots::property_set{ 0x1 << 2 });
-	EXPECT_EQ(DotsTestStruct::floatField_t::Set(), dots::property_set{ 0x1 << 3 });
-	EXPECT_EQ(DotsTestStruct::enumField_t::Set(), dots::property_set{ 0x1 << 4 });
-	EXPECT_EQ(DotsTestStruct::tp_t::Set(), dots::property_set{ 0x1 << 5 });
-	EXPECT_EQ(DotsTestStruct::subStruct_t::Set(), dots::property_set{ 0x1 << 6 });
-	EXPECT_EQ(DotsTestStruct::uuid_t::Set(), dots::property_set{ 0x1 << 7 });
+	EXPECT_EQ(DotsTestStruct::stringField_v, dots::property_set{ 0x1 << 1 });
+	EXPECT_EQ(DotsTestStruct::indKeyfField_v, dots::property_set{ 0x1 << 2 });
+	EXPECT_EQ(DotsTestStruct::floatField_v, dots::property_set{ 0x1 << 3 });
+	EXPECT_EQ(DotsTestStruct::enumField_v, dots::property_set{ 0x1 << 4 });
+	EXPECT_EQ(DotsTestStruct::tp_v, dots::property_set{ 0x1 << 5 });
+	EXPECT_EQ(DotsTestStruct::subStruct_v, dots::property_set{ 0x1 << 6 });
+	EXPECT_EQ(DotsTestStruct::uuid_v, dots::property_set{ 0x1 << 7 });
 }
 
 TEST(TestTStruct, FlagsHaveExpectedValues)
@@ -97,7 +97,7 @@ TEST(TestTStruct, FlagsHaveExpectedValues)
 
 TEST(TestTStruct, KeyPropertiesHasExpectedValue)
 {
-	EXPECT_EQ(DotsTestStruct::_KeyProperties(), DotsTestStruct::indKeyfField_t::Set());
+	EXPECT_EQ(DotsTestStruct::_KeyProperties(), DotsTestStruct::indKeyfField_v);
 }
 
 TEST(TestTStruct, ctor_EqualPropertiesAfterInitializerConstruction)
@@ -227,7 +227,7 @@ TEST(TestTStruct, assign_ExpectedPropertiesAfterPartialAssign)
 	other.indKeyfField(2);
 	other.stringField("bar");
 
-	sut._assign(other, ~DotsTestStruct::floatField_t::Set());
+	sut._assign(other, ~DotsTestStruct::floatField_v);
 
 	EXPECT_EQ(sut.indKeyfField, 2);
 	EXPECT_EQ(sut.stringField, "bar");
@@ -264,7 +264,7 @@ TEST(TestTStruct, copy_ExpectedPropertiesAfterPartialCopy)
 	other.indKeyfField(2);
 	other.stringField("bar");
 
-	sut._copy(other, ~DotsTestStruct::floatField_t::Set());
+	sut._copy(other, ~DotsTestStruct::floatField_v);
 
 	EXPECT_EQ(sut.indKeyfField, 2);
 	EXPECT_EQ(sut.stringField, "bar");
@@ -301,7 +301,7 @@ TEST(TestTStruct, merge_ExpectedPropertiesAfterPartialMerge)
 	other.stringField("bar");
 	other.floatField(2.7183f);
 
-	sut._merge(other, ~DotsTestStruct::stringField_t::Set());
+	sut._merge(other, ~DotsTestStruct::stringField_v);
 
 	EXPECT_EQ(sut.indKeyfField, 2);
 	EXPECT_EQ(sut.stringField, "foo");
@@ -343,7 +343,7 @@ TEST(TestTStruct, swap_ExpectedPropertiesAfterPartialSwap)
 	dts2.stringField("bar");
 	dts2.floatField(2.7183f);
 
-	dts1._swap(dts2, DotsTestStruct::floatField_t::Set());
+	dts1._swap(dts2, DotsTestStruct::floatField_v);
 
 	EXPECT_EQ(dts1.indKeyfField, 1);
 	EXPECT_EQ(dts1.stringField, "foo");
@@ -375,7 +375,7 @@ TEST(TestTStruct, clear_OnlyClearedPropertiesInvalidAfterPartialClear)
 	sut.stringField("foo");
 	sut.floatField(3.1415f);
 
-	sut._clear(~DotsTestStruct::stringField_t::Set());
+	sut._clear(~DotsTestStruct::stringField_v);
 
 	EXPECT_FALSE(sut.indKeyfField.isValid());
 	EXPECT_TRUE(sut.stringField.isValid());

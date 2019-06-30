@@ -109,7 +109,7 @@ namespace dots
                 case DotsConnectionState::connected:
                     if (auto* dotsMember = instance._as<DotsMember>())
                     {
-                        if (dotsMember->_hasProperties(DotsMember::groupName_t::Set() + DotsMember::event_t::Set()))
+                        if (dotsMember->_hasProperties(DotsMember::groupName_v + DotsMember::event_v))
                         {
                             if (dotsMember->event == DotsMemberEvent::join)
                             {
