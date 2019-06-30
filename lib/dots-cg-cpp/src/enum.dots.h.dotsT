@@ -46,14 +46,14 @@ namespace dots::type
                 static std::aligned_storage_t<sizeof(EnumDescriptor), alignof(EnumDescriptor)> enumDescriptorStorage;
                 enumDescriptor = reinterpret_cast<const EnumDescriptor*>(&enumDescriptorStorage);
 
-                EnumDescriptorData enumDescriptorData{ EnumDescriptorData::name_t_i{ "{{name}}" } };
+                EnumDescriptorData enumDescriptorData{ EnumDescriptorData::name_i{ "{{name}}" } };
                 Vector<EnumElementDescriptor>& enumeratorDescriptorData = enumDescriptorData.elements();
 
                 {% for elem in items %}
                 enumeratorDescriptorData.emplace_back(
-                    EnumElementDescriptor::enum_value_t_i{ static_cast<std::underlying_type_t<value_t>>(types::{{name}}::{{elem.name}}) },
-                    EnumElementDescriptor::name_t_i{ "{{elem.name}}" },
-                    EnumElementDescriptor::tag_t_i{ {{elem.tag}} }
+                    EnumElementDescriptor::enum_value_i{ static_cast<std::underlying_type_t<value_t>>(types::{{name}}::{{elem.name}}) },
+                    EnumElementDescriptor::name_i{ "{{elem.name}}" },
+                    EnumElementDescriptor::tag_i{ {{elem.tag}} }
                 );
                 
                 {% endfor %}

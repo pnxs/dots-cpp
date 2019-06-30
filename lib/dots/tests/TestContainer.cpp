@@ -10,11 +10,11 @@ namespace
 		DotsHeader make_header(const dots::type::Struct& instance, uint32_t sender, bool remove = false)
 		{
 			return DotsHeader{
-				DotsHeader::typeName_t_i{ instance._descriptor().name() },
-				DotsHeader::sentTime_t_i{ pnxs::SystemNow() },
-				DotsHeader::attributes_t_i{ instance._validProperties() },
-				DotsHeader::sender_t_i{ sender },
-				DotsHeader::removeObj_t_i{ remove },
+				DotsHeader::typeName_i{ instance._descriptor().name() },
+				DotsHeader::sentTime_i{ pnxs::SystemNow() },
+				DotsHeader::attributes_i{ instance._validProperties() },
+				DotsHeader::sender_i{ sender },
+				DotsHeader::removeObj_i{ remove },
 			};
 		}
 	}
@@ -23,7 +23,7 @@ namespace
 TEST(TestContainer, ctor_EmptyAfterDefaultConstruction)
 {
 	dots::Container<DotsTestStruct> sut;
-	DotsTestStruct dts{ DotsTestStruct::indKeyfField_t_i{ 1 } };
+	DotsTestStruct dts{ DotsTestStruct::indKeyfField_i{ 1 } };
 
 	ASSERT_TRUE(sut.empty());
 	ASSERT_EQ(sut.size(), 0);
@@ -35,9 +35,9 @@ TEST(TestContainer, insert_CreateInstanceWhenEmpty)
 {
 	dots::Container<DotsTestStruct> sut;
 	DotsTestStruct dts{
-		DotsTestStruct::indKeyfField_t_i{ 1 },
-		DotsTestStruct::stringField_t_i{ "foo" },
-		DotsTestStruct::floatField_t_i{ 3.1415f }
+		DotsTestStruct::indKeyfField_i{ 1 },
+		DotsTestStruct::stringField_i{ "foo" },
+		DotsTestStruct::floatField_i{ 3.1415f }
 	};
 	DotsHeader header = test_helpers::make_header(dts, 42);
 
@@ -65,20 +65,20 @@ TEST(TestContainer, insert_UpdateSameInstanceWhenNotEmpty)
 {
 	dots::Container<DotsTestStruct> sut;
 	DotsTestStruct dts1{
-		DotsTestStruct::indKeyfField_t_i{ 1 },
-		DotsTestStruct::stringField_t_i{ "foo" },
-		DotsTestStruct::floatField_t_i{ 3.1415f }
+		DotsTestStruct::indKeyfField_i{ 1 },
+		DotsTestStruct::stringField_i{ "foo" },
+		DotsTestStruct::floatField_i{ 3.1415f }
 	};
 	DotsTestStruct dts2{
-		DotsTestStruct::indKeyfField_t_i{ 1 },
-		DotsTestStruct::floatField_t_i{ 2.7183f },
-		DotsTestStruct::enumField_t_i{ DotsTestEnum::value1 }
+		DotsTestStruct::indKeyfField_i{ 1 },
+		DotsTestStruct::floatField_i{ 2.7183f },
+		DotsTestStruct::enumField_i{ DotsTestEnum::value1 }
 	};
 	DotsTestStruct dts3{
-		DotsTestStruct::indKeyfField_t_i{ 1 },
-		DotsTestStruct::stringField_t_i{ "foo" },
-		DotsTestStruct::floatField_t_i{ 2.7183f },
-		DotsTestStruct::enumField_t_i{ DotsTestEnum::value1 }
+		DotsTestStruct::indKeyfField_i{ 1 },
+		DotsTestStruct::stringField_i{ "foo" },
+		DotsTestStruct::floatField_i{ 2.7183f },
+		DotsTestStruct::enumField_i{ DotsTestEnum::value1 }
 	};
 	DotsHeader header1 = test_helpers::make_header(dts1, 42);
 	DotsHeader header2 = test_helpers::make_header(dts2, 21);
@@ -108,14 +108,14 @@ TEST(TestContainer, insert_CreateDifferentInstanceWhenNotEmpty)
 {
 	dots::Container<DotsTestStruct> sut;
 	DotsTestStruct dts1{
-		DotsTestStruct::indKeyfField_t_i{ 1 },
-		DotsTestStruct::stringField_t_i{ "foo" },
-		DotsTestStruct::floatField_t_i{ 3.1415f }
+		DotsTestStruct::indKeyfField_i{ 1 },
+		DotsTestStruct::stringField_i{ "foo" },
+		DotsTestStruct::floatField_i{ 3.1415f }
 	};
 	DotsTestStruct dts2{
-		DotsTestStruct::indKeyfField_t_i{ 2 },
-		DotsTestStruct::floatField_t_i{ 2.7183f },
-		DotsTestStruct::enumField_t_i{ DotsTestEnum::value1 }
+		DotsTestStruct::indKeyfField_i{ 2 },
+		DotsTestStruct::floatField_i{ 2.7183f },
+		DotsTestStruct::enumField_i{ DotsTestEnum::value1 }
 	};
 	DotsHeader header1 = test_helpers::make_header(dts1, 42);
 	DotsHeader header2 = test_helpers::make_header(dts2, 21);
@@ -144,7 +144,7 @@ TEST(TestContainer, insert_CreateDifferentInstanceWhenNotEmpty)
 TEST(TestContainer, remove_ThrowWhenEmpty)
 {
 	dots::Container<DotsTestStruct> sut;
-	DotsTestStruct dts{	DotsTestStruct::indKeyfField_t_i{ 1 } };
+	DotsTestStruct dts{	DotsTestStruct::indKeyfField_i{ 1 } };
 	DotsHeader header = test_helpers::make_header(dts, 42);
 
 	ASSERT_THROW(sut.remove(header, dts), std::logic_error);
@@ -153,8 +153,8 @@ TEST(TestContainer, remove_ThrowWhenEmpty)
 TEST(TestContainer, remove_ThrowWhenNotContained)
 {
 	dots::Container<DotsTestStruct> sut;
-	DotsTestStruct dts1{ DotsTestStruct::indKeyfField_t_i{ 1 } };
-	DotsTestStruct dts2{ DotsTestStruct::indKeyfField_t_i{ 2 } };
+	DotsTestStruct dts1{ DotsTestStruct::indKeyfField_i{ 1 } };
+	DotsTestStruct dts2{ DotsTestStruct::indKeyfField_i{ 2 } };
 	DotsHeader header1 = test_helpers::make_header(dts1, 42);
 	DotsHeader header2 = test_helpers::make_header(dts2, 21);
 
@@ -168,20 +168,20 @@ TEST(TestContainer, remove_RemoveWhenContained)
 {
 	dots::Container<DotsTestStruct> sut;
 	DotsTestStruct dts1{
-		DotsTestStruct::indKeyfField_t_i{ 1 },
-		DotsTestStruct::stringField_t_i{ "foo" }
+		DotsTestStruct::indKeyfField_i{ 1 },
+		DotsTestStruct::stringField_i{ "foo" }
 	};
 	DotsTestStruct dts2{
-		DotsTestStruct::indKeyfField_t_i{ 2 } 
+		DotsTestStruct::indKeyfField_i{ 2 } 
 	};
 	DotsTestStruct dts3{
-		DotsTestStruct::indKeyfField_t_i{ 1 },
-		DotsTestStruct::floatField_t_i{ 2.7183f }
+		DotsTestStruct::indKeyfField_i{ 1 },
+		DotsTestStruct::floatField_i{ 2.7183f }
 	};
 	DotsTestStruct dts4{
-		DotsTestStruct::indKeyfField_t_i{ 1 },
-		DotsTestStruct::stringField_t_i{ "foo" },
-		DotsTestStruct::floatField_t_i{ 2.7183f }
+		DotsTestStruct::indKeyfField_i{ 1 },
+		DotsTestStruct::stringField_i{ "foo" },
+		DotsTestStruct::floatField_i{ 2.7183f }
 	};
 	DotsHeader header1 = test_helpers::make_header(dts1, 42);
 	DotsHeader header2 = test_helpers::make_header(dts2, 21);

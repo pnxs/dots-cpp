@@ -157,21 +157,21 @@ TEST(TestStruct, dynamicMemoryUsage_ZeroAfterDefaultConstruction)
 TEST(TestStruct, dynamicMemoryUsage_ExpectedValueAfterInitConstruction)
 {
 	DotsTestSubStruct sut1{
-		DotsTestSubStruct::flag1_t_i{ true }
+		DotsTestSubStruct::flag1_i{ true }
 	};
 
 	DotsTestVectorStruct sut2{
-		DotsTestVectorStruct::intList_t_i{ 
+		DotsTestVectorStruct::intList_i{ 
 			dots::Vector<int>{ 1, 2, 3, 4 } 
 		},
-		DotsTestVectorStruct::subStructList_t_i{ 
+		DotsTestVectorStruct::subStructList_i{ 
 			dots::Vector<DotsTestSubStruct>{
-				DotsTestSubStruct{ DotsTestSubStruct::flag1_t_i{ true } },
-				DotsTestSubStruct{ DotsTestSubStruct::flag1_t_i{ true } },
-				DotsTestSubStruct{ DotsTestSubStruct::flag1_t_i{ true } }
+				DotsTestSubStruct{ DotsTestSubStruct::flag1_i{ true } },
+				DotsTestSubStruct{ DotsTestSubStruct::flag1_i{ true } },
+				DotsTestSubStruct{ DotsTestSubStruct::flag1_i{ true } }
 			}
 		},
-		DotsTestVectorStruct::stringList_t_i{
+		DotsTestVectorStruct::stringList_i{
 			dots::Vector<std::string>{
 				"stringWithSize17",
 				"_stringWithSize18",

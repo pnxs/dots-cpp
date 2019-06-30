@@ -103,16 +103,16 @@ TEST(TestTStruct, KeyPropertiesHasExpectedValue)
 TEST(TestTStruct, ctor_EqualPropertiesAfterInitializerConstruction)
 {
 	DotsTestStruct sut1{
-		DotsTestStruct::indKeyfField_t_i{ 1 },
-		DotsTestStruct::stringField_t_i{ "foo" },
-		DotsTestStruct::floatField_t_i{ 3.1415f }
+		DotsTestStruct::indKeyfField_i{ 1 },
+		DotsTestStruct::stringField_i{ "foo" },
+		DotsTestStruct::floatField_i{ 3.1415f }
 	};
 
 	DotsTestVectorStruct sut2{
-		DotsTestVectorStruct::intList_t_i{ 
+		DotsTestVectorStruct::intList_i{ 
 			dots::Vector<int>{ 1, 2, 3, 4 } 
 		},
-		DotsTestVectorStruct::stringList_t_i{
+		DotsTestVectorStruct::stringList_i{
 			dots::Vector<std::string>{
 				"stringWithSize17",
 				"_stringWithSize18",

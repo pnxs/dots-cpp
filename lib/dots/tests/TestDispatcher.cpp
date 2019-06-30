@@ -11,11 +11,11 @@ namespace
 		DotsHeader make_header(const dots::type::Struct& instance, uint32_t sender, bool remove = false)
 		{
 			return DotsHeader{
-				DotsHeader::typeName_t_i{ instance._descriptor().name() },
-				DotsHeader::sentTime_t_i{ pnxs::SystemNow() },
-				DotsHeader::attributes_t_i{ instance._validProperties() },
-				DotsHeader::sender_t_i{ sender },
-				DotsHeader::removeObj_t_i{ remove },
+				DotsHeader::typeName_i{ instance._descriptor().name() },
+				DotsHeader::sentTime_i{ pnxs::SystemNow() },
+				DotsHeader::attributes_i{ instance._validProperties() },
+				DotsHeader::sender_i{ sender },
+				DotsHeader::removeObj_i{ remove },
 			};
 		}
 	}
@@ -25,7 +25,7 @@ namespace
 //{
 //	dots::Dispatcher sut;
 //	DotsTestStruct dts{
-//		DotsTestStruct::indKeyfField_t_i{ 1 }
+//		DotsTestStruct::indKeyfField_i{ 1 }
 //	};
 //	DotsHeader header = test_helpers::make_header(dts, 42);
 //
@@ -35,7 +35,7 @@ namespace
 TEST(TestDispatcher, dispatch_CreateEventWhenSubscribedToCachedType)
 {
 	dots::Dispatcher sut;
-	DotsTestStruct dts{ DotsTestStruct::indKeyfField_t_i{ 1 } };
+	DotsTestStruct dts{ DotsTestStruct::indKeyfField_i{ 1 } };
 	DotsHeader header = test_helpers::make_header(dts, 42);
 
 	size_t i = 0;
@@ -74,17 +74,17 @@ TEST(TestDispatcher, dispatch_UpdateEventWhenSubscribedToCachedType)
 {
 	dots::Dispatcher sut;
 	DotsTestStruct dts1{ 
-		DotsTestStruct::indKeyfField_t_i{ 1 },
-		DotsTestStruct::stringField_t_i{ "foo" }
+		DotsTestStruct::indKeyfField_i{ 1 },
+		DotsTestStruct::stringField_i{ "foo" }
 	};
 	DotsTestStruct dts2{
-		DotsTestStruct::indKeyfField_t_i{ 1 },
-		DotsTestStruct::floatField_t_i{ 2.7183f }
+		DotsTestStruct::indKeyfField_i{ 1 },
+		DotsTestStruct::floatField_i{ 2.7183f }
 	};
 	DotsTestStruct dts3{
-		DotsTestStruct::indKeyfField_t_i{ 1 },
-		DotsTestStruct::stringField_t_i{ "foo" },
-		DotsTestStruct::floatField_t_i{ 2.7183f }
+		DotsTestStruct::indKeyfField_i{ 1 },
+		DotsTestStruct::stringField_i{ "foo" },
+		DotsTestStruct::floatField_i{ 2.7183f }
 	};
 	DotsHeader header1 = test_helpers::make_header(dts1, 42);
 	DotsHeader header2 = test_helpers::make_header(dts2, 21);
@@ -126,20 +126,20 @@ TEST(TestDispatcher, dispatch_RemoveEventWhenSubscribedToCachedType)
 {
 	dots::Dispatcher sut;
 	DotsTestStruct dts1{
-		DotsTestStruct::indKeyfField_t_i{ 1 },
-		DotsTestStruct::stringField_t_i{ "foo" }
+		DotsTestStruct::indKeyfField_i{ 1 },
+		DotsTestStruct::stringField_i{ "foo" }
 	};
 	DotsTestStruct dts2{
-		DotsTestStruct::indKeyfField_t_i{ 2 }
+		DotsTestStruct::indKeyfField_i{ 2 }
 	};
 	DotsTestStruct dts3{
-		DotsTestStruct::indKeyfField_t_i{ 1 },
-		DotsTestStruct::floatField_t_i{ 2.7183f }
+		DotsTestStruct::indKeyfField_i{ 1 },
+		DotsTestStruct::floatField_i{ 2.7183f }
 	};
 	DotsTestStruct dts4{
-		DotsTestStruct::indKeyfField_t_i{ 1 },
-		DotsTestStruct::stringField_t_i{ "foo" },
-		DotsTestStruct::floatField_t_i{ 2.7183f }
+		DotsTestStruct::indKeyfField_i{ 1 },
+		DotsTestStruct::stringField_i{ "foo" },
+		DotsTestStruct::floatField_i{ 2.7183f }
 	};
 	DotsHeader header1 = test_helpers::make_header(dts1, 42);
 	DotsHeader header2 = test_helpers::make_header(dts2, 21);
@@ -182,7 +182,7 @@ TEST(TestDispatcher, dispatch_RemoveEventWhenSubscribedToCachedType)
 TEST(TestDispatcher, dispatch_CreateEventWhenDynamicallySubscribedToCachedType)
 {
 	dots::Dispatcher sut;
-	DotsTestStruct dts{ DotsTestStruct::indKeyfField_t_i{ 1 } };
+	DotsTestStruct dts{ DotsTestStruct::indKeyfField_i{ 1 } };
 	DotsHeader header = test_helpers::make_header(dts, 42);
 
 	size_t i = 0;
@@ -221,17 +221,17 @@ TEST(TestDispatcher, dispatch_UpdateEventWhenDynamicallSubscribedToCachedType)
 {
 	dots::Dispatcher sut;
 	DotsTestStruct dts1{
-		DotsTestStruct::indKeyfField_t_i{ 1 },
-		DotsTestStruct::stringField_t_i{ "foo" }
+		DotsTestStruct::indKeyfField_i{ 1 },
+		DotsTestStruct::stringField_i{ "foo" }
 	};
 	DotsTestStruct dts2{
-		DotsTestStruct::indKeyfField_t_i{ 1 },
-		DotsTestStruct::floatField_t_i{ 2.7183f }
+		DotsTestStruct::indKeyfField_i{ 1 },
+		DotsTestStruct::floatField_i{ 2.7183f }
 	};
 	DotsTestStruct dts3{
-		DotsTestStruct::indKeyfField_t_i{ 1 },
-		DotsTestStruct::stringField_t_i{ "foo" },
-		DotsTestStruct::floatField_t_i{ 2.7183f }
+		DotsTestStruct::indKeyfField_i{ 1 },
+		DotsTestStruct::stringField_i{ "foo" },
+		DotsTestStruct::floatField_i{ 2.7183f }
 	};
 	DotsHeader header1 = test_helpers::make_header(dts1, 42);
 	DotsHeader header2 = test_helpers::make_header(dts2, 21);
@@ -273,20 +273,20 @@ TEST(TestDispatcher, dispatch_RemoveEventWhenDynamicallSubscribedToCachedType)
 {
 	dots::Dispatcher sut;
 	DotsTestStruct dts1{
-		DotsTestStruct::indKeyfField_t_i{ 1 },
-		DotsTestStruct::stringField_t_i{ "foo" }
+		DotsTestStruct::indKeyfField_i{ 1 },
+		DotsTestStruct::stringField_i{ "foo" }
 	};
 	DotsTestStruct dts2{
-		DotsTestStruct::indKeyfField_t_i{ 2 }
+		DotsTestStruct::indKeyfField_i{ 2 }
 	};
 	DotsTestStruct dts3{
-		DotsTestStruct::indKeyfField_t_i{ 1 },
-		DotsTestStruct::floatField_t_i{ 2.7183f }
+		DotsTestStruct::indKeyfField_i{ 1 },
+		DotsTestStruct::floatField_i{ 2.7183f }
 	};
 	DotsTestStruct dts4{
-		DotsTestStruct::indKeyfField_t_i{ 1 },
-		DotsTestStruct::stringField_t_i{ "foo" },
-		DotsTestStruct::floatField_t_i{ 2.7183f }
+		DotsTestStruct::indKeyfField_i{ 1 },
+		DotsTestStruct::stringField_i{ "foo" },
+		DotsTestStruct::floatField_i{ 2.7183f }
 	};
 	DotsHeader header1 = test_helpers::make_header(dts1, 42);
 	DotsHeader header2 = test_helpers::make_header(dts2, 21);
@@ -329,7 +329,7 @@ TEST(TestDispatcher, dispatch_RemoveEventWhenDynamicallSubscribedToCachedType)
 TEST(TestDispatcher, dispatch_CreateEventFromCacheWhenSubscribingToCachedType)
 {
 	dots::Dispatcher sut;
-	DotsTestStruct dts{ DotsTestStruct::indKeyfField_t_i{ 1 } };
+	DotsTestStruct dts{ DotsTestStruct::indKeyfField_i{ 1 } };
 	DotsHeader header = test_helpers::make_header(dts, 42);
 
 	size_t i = 0;
@@ -373,11 +373,11 @@ TEST(TestDispatcher, dispatch_CreateEventWhenSubscribedToUncachedType)
 {
 	dots::Dispatcher sut;
 	DotsUncachedTestStruct dts1{
-		DotsUncachedTestStruct::intKeyfField_t_i{ 1 },
-		DotsUncachedTestStruct::value_t_i{ "foo" },
+		DotsUncachedTestStruct::intKeyfField_i{ 1 },
+		DotsUncachedTestStruct::value_i{ "foo" },
 	};
 	DotsUncachedTestStruct dts2{
-		DotsUncachedTestStruct::intKeyfField_t_i{ 1 },
+		DotsUncachedTestStruct::intKeyfField_i{ 1 },
 	};
 	DotsHeader header1 = test_helpers::make_header(dts1, 42);
 	DotsHeader header2 = test_helpers::make_header(dts2, 21);
@@ -419,7 +419,7 @@ TEST(TestDispatcher, dispatch_ThrowWhenRemovingUncachedType)
 {
 	dots::Dispatcher sut;
 	DotsUncachedTestStruct duts{
-		DotsUncachedTestStruct::intKeyfField_t_i{ 1 }
+		DotsUncachedTestStruct::intKeyfField_i{ 1 }
 	};
 	DotsHeader header = test_helpers::make_header(duts, 42, true);
 
@@ -434,7 +434,7 @@ TEST(TestDispatcher, dispatch_ThrowWhenRemovingUncachedType)
 TEST(TestDispatcher, dispatch_NoEventWhenNotSubscribedToType)
 {
 	dots::Dispatcher sut;
-	DotsUncachedTestStruct duts{ DotsUncachedTestStruct::intKeyfField_t_i{ 1 } };
+	DotsUncachedTestStruct duts{ DotsUncachedTestStruct::intKeyfField_i{ 1 } };
 	DotsHeader header = test_helpers::make_header(duts, 42);
 
 	size_t i = 0;
@@ -456,7 +456,7 @@ TEST(TestDispatcher, dispatch_NoEventWhenNotSubscribedToType)
 TEST(TestDispatcher, dispatch_NoEventAfterExplicitUnubscribeFromType)
 {
 	dots::Dispatcher sut;
-	DotsTestStruct dts{ DotsTestStruct::indKeyfField_t_i{ 1 } };
+	DotsTestStruct dts{ DotsTestStruct::indKeyfField_i{ 1 } };
 	DotsHeader header1 = test_helpers::make_header(dts, 42);
 	DotsHeader header2 = test_helpers::make_header(dts, 42);
 
@@ -477,7 +477,7 @@ TEST(TestDispatcher, dispatch_NoEventAfterExplicitUnubscribeFromType)
 TEST(TestDispatcher, dispatch_NoEventAfterImplicitUnubscribeFromType)
 {
 	dots::Dispatcher sut;
-	DotsTestStruct dts{ DotsTestStruct::indKeyfField_t_i{ 1 } };
+	DotsTestStruct dts{ DotsTestStruct::indKeyfField_i{ 1 } };
 	DotsHeader header1 = test_helpers::make_header(dts, 42);
 	DotsHeader header2 = test_helpers::make_header(dts, 42);
 
@@ -500,7 +500,7 @@ TEST(TestDispatcher, dispatch_NoEventAfterImplicitUnubscribeFromType)
 TEST(TestDispatcher, moveCtor_CreateEventAfterMoveContructWhenSubscribedToCachedType)
 {
 	dots::Dispatcher dispatcher;
-	DotsTestStruct dts{ DotsTestStruct::indKeyfField_t_i{ 1 } };
+	DotsTestStruct dts{ DotsTestStruct::indKeyfField_i{ 1 } };
 	DotsHeader header = test_helpers::make_header(dts, 42);
 
 	size_t i = 0;

@@ -39,13 +39,13 @@ namespace dots
         const type::StructDescriptor& descriptor = instance._descriptor();
 
         DotsTransportHeader transportHeader{
-            DotsTransportHeader::destinationGroup_t_i{ descriptor.name() },
-            DotsTransportHeader::dotsHeader_t_i{
-                DotsHeader::typeName_t_i{ descriptor.name() },
-                DotsHeader::sentTime_t_i{ pnxs::SystemNow() },
-                DotsHeader::attributes_t_i{ instance._validProperties() },
-                DotsHeader::sender_t_i{ sender },
-                DotsHeader::removeObj_t_i{ remove },
+            DotsTransportHeader::destinationGroup_i{ descriptor.name() },
+            DotsTransportHeader::dotsHeader_i{
+                DotsHeader::typeName_i{ descriptor.name() },
+                DotsHeader::sentTime_i{ pnxs::SystemNow() },
+                DotsHeader::attributes_i{ instance._validProperties() },
+                DotsHeader::sender_i{ sender },
+                DotsHeader::removeObj_i{ remove },
             }
         };
 
@@ -63,8 +63,8 @@ namespace dots
         {
             m_connectionState = DotsConnectionState::connecting;
             spoof(ServerId, DotsMsgHello{
-                DotsMsgHello::serverName_t_i{ m_serverName },
-                DotsMsgHello::authChallenge_t_i{ 0 }
+                DotsMsgHello::serverName_i{ m_serverName },
+                DotsMsgHello::authChallenge_i{ 0 }
             });
         }        
 	}
@@ -79,9 +79,9 @@ namespace dots
                     if (auto* dotsMsgConnect = instance._as<DotsMsgConnect>())
                     {
                         DotsMsgConnectResponse dotsMsgConnectResponse{
-                            DotsMsgConnectResponse::serverName_t_i{ m_serverName },
-                            DotsMsgConnectResponse::clientId_t_i{ ClientId },
-                            DotsMsgConnectResponse::accepted_t_i{ true },
+                            DotsMsgConnectResponse::serverName_i{ m_serverName },
+                            DotsMsgConnectResponse::clientId_i{ ClientId },
+                            DotsMsgConnectResponse::accepted_i{ true },
                         };
 
                         if (dotsMsgConnect->preloadCache == true)
@@ -102,7 +102,7 @@ namespace dots
                     if (auto* dotsMsgConnect = instance._as<DotsMsgConnect>(); dotsMsgConnect->preloadClientFinished == true)
                     {
                         m_connectionState = DotsConnectionState::connected;
-                        spoof(ServerId, DotsMsgConnectResponse{ DotsMsgConnectResponse::preloadFinished_t_i{ true } });
+                        spoof(ServerId, DotsMsgConnectResponse{ DotsMsgConnectResponse::preloadFinished_i{ true } });
                         asio::post(m_ioContext.get(), [this](){ onConnected(); });
                     }
                     [[fallthrough]];

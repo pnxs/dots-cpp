@@ -30,7 +30,7 @@ namespace dots
 		}
 		LOG_DEBUG_S("run one done");
 
-		DotsClient{ DotsClient::id_t_i{ transceiver().connection().clientId() }, DotsClient::running_t_i{ true } }._publish();
+		DotsClient{ DotsClient::id_i{ transceiver().connection().clientId() }, DotsClient::running_i{ true } }._publish();
 		}
 
 	Application::~Application()
