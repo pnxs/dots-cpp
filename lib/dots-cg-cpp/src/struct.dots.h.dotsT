@@ -49,7 +49,6 @@ namespace dots::types
 			~{{property.name}}_t() = default;
         };
 		using {{property.name}}_i = {{property.name}}_t::init_t;
-		using {{property.name}}_t_i = {{property.name}}_i;
 		static constexpr property_set {{property.name}}_v = {{property.name}}_t::Set();
 
 {% endfor %}
