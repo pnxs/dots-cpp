@@ -82,10 +82,10 @@ namespace dots
 		if (unknownInstance)
 		{
 			auto itInserted = m_instances.emplace_hint(itUpper, instance, DotsCloneInformation{
-				DotsCloneInformation::lastOperation_t_i{ DotsMt::create },
-				DotsCloneInformation::createdFrom_t_i{ header.sender },
-				DotsCloneInformation::created_t_i{ header.sentTime },
-				DotsCloneInformation::localUpdateTime_t_i{ pnxs::SystemNow{} }
+				DotsCloneInformation::lastOperation_i{ DotsMt::create },
+				DotsCloneInformation::createdFrom_i{ header.sender },
+				DotsCloneInformation::created_i{ header.sentTime },
+				DotsCloneInformation::localUpdateTime_i{ pnxs::SystemNow{} }
 				});
 
 			return *itInserted;

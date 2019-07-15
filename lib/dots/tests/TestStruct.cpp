@@ -157,21 +157,21 @@ TEST(TestStruct, dynamicMemoryUsage_ZeroAfterDefaultConstruction)
 TEST(TestStruct, dynamicMemoryUsage_ExpectedValueAfterInitConstruction)
 {
 	DotsTestSubStruct sut1{
-		DotsTestSubStruct::flag1_t_i{ true }
+		DotsTestSubStruct::flag1_i{ true }
 	};
 
 	DotsTestVectorStruct sut2{
-		DotsTestVectorStruct::intList_t_i{ 
+		DotsTestVectorStruct::intList_i{ 
 			dots::Vector<int>{ 1, 2, 3, 4 } 
 		},
-		DotsTestVectorStruct::subStructList_t_i{ 
+		DotsTestVectorStruct::subStructList_i{ 
 			dots::Vector<DotsTestSubStruct>{
-				DotsTestSubStruct{ DotsTestSubStruct::flag1_t_i{ true } },
-				DotsTestSubStruct{ DotsTestSubStruct::flag1_t_i{ true } },
-				DotsTestSubStruct{ DotsTestSubStruct::flag1_t_i{ true } }
+				DotsTestSubStruct{ DotsTestSubStruct::flag1_i{ true } },
+				DotsTestSubStruct{ DotsTestSubStruct::flag1_i{ true } },
+				DotsTestSubStruct{ DotsTestSubStruct::flag1_i{ true } }
 			}
 		},
-		DotsTestVectorStruct::stringList_t_i{
+		DotsTestVectorStruct::stringList_i{
 			dots::Vector<std::string>{
 				"stringWithSize17",
 				"_stringWithSize18",
@@ -214,7 +214,7 @@ TEST(TestStruct, assign_ExpectedPropertiesAfterPartialAssign)
 	other.indKeyfField(2);
 	other.stringField("bar");
 
-	static_cast<dots::type::Struct&>(sut)._assign(other, ~DotsTestStruct::floatField_t::Set());
+	static_cast<dots::type::Struct&>(sut)._assign(other, ~DotsTestStruct::floatField_p);
 
 	EXPECT_EQ(sut.indKeyfField, 2);
 	EXPECT_EQ(sut.stringField, "bar");
@@ -251,7 +251,7 @@ TEST(TestStruct, copy_ExpectedPropertiesAfterPartialCopy)
 	other.indKeyfField(2);
 	other.stringField("bar");
 
-	static_cast<dots::type::Struct&>(sut)._copy(other, ~DotsTestStruct::floatField_t::Set());
+	static_cast<dots::type::Struct&>(sut)._copy(other, ~DotsTestStruct::floatField_p);
 
 	EXPECT_EQ(sut.indKeyfField, 2);
 	EXPECT_EQ(sut.stringField, "bar");
@@ -288,7 +288,7 @@ TEST(TestStruct, merge_ExpectedPropertiesAfterPartialMerge)
 	other.stringField("bar");
 	other.floatField(2.7183f);
 
-	static_cast<dots::type::Struct&>(sut)._merge(other, ~DotsTestStruct::stringField_t::Set());
+	static_cast<dots::type::Struct&>(sut)._merge(other, ~DotsTestStruct::stringField_p);
 
 	EXPECT_EQ(sut.indKeyfField, 2);
 	EXPECT_EQ(sut.stringField, "foo");
@@ -330,7 +330,7 @@ TEST(TestStruct, swap_ExpectedPropertiesAfterPartialSwap)
 	dts2.stringField("bar");
 	dts2.floatField(2.7183f);
 
-	static_cast<dots::type::Struct&>(dts1)._swap(dts2, DotsTestStruct::floatField_t::Set());
+	static_cast<dots::type::Struct&>(dts1)._swap(dts2, DotsTestStruct::floatField_p);
 
 	EXPECT_EQ(dts1.indKeyfField, 1);
 	EXPECT_EQ(dts1.stringField, "foo");
@@ -362,7 +362,7 @@ TEST(TestStruct, clear_OnlyClearedPropertiesInvalidAfterPartialClear)
 	sut.stringField("foo");
 	sut.floatField(3.1415f);
 
-	static_cast<dots::type::Struct&>(sut)._clear(~DotsTestStruct::stringField_t::Set());
+	static_cast<dots::type::Struct&>(sut)._clear(~DotsTestStruct::stringField_p);
 
 	EXPECT_FALSE(sut.indKeyfField.isValid());
 	EXPECT_TRUE(sut.stringField.isValid());

@@ -322,7 +322,7 @@ void Connection::setConnectionState(const DotsConnectionState& state)
     LOG_DEBUG_S("change connection state to " << state);
     m_connectionState = state;
 
-	DotsClient{ DotsClient::id_t_i{ id() }, DotsClient::connectionState_t_i{ state } }._publish();
+	DotsClient{ DotsClient::id_i{ id() }, DotsClient::connectionState_i{ state } }._publish();
 }
 
 void Connection::send(const DotsTransportHeader& header, const type::Struct& instance)
@@ -466,8 +466,8 @@ void Connection::sendContainerContent(const Container<>& container)
 void Connection::sendCacheEnd(const std::string& typeName)
 {
     DotsCacheInfo dotsCacheInfo {
-        DotsCacheInfo::typeName_t_i{typeName},
-        DotsCacheInfo::endTransmission_t_i{true}
+        DotsCacheInfo::typeName_i{typeName},
+        DotsCacheInfo::endTransmission_i{true}
     };
     sendNs("SYS", dotsCacheInfo);
 }

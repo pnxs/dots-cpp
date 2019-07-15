@@ -129,7 +129,7 @@ TEST(TestCborSerialization, deserialize)
         ASSERT_TRUE(nativeTest.properties.isValid());
         ASSERT_TRUE(nativeTest.documentation.isValid());
 
-        auto properties = StructDescriptorData::name_t::Set() + StructDescriptorData::properties_t::Set() + StructDescriptorData::documentation_t::Set();
+        auto properties = StructDescriptorData::name_p + StructDescriptorData::properties_p + StructDescriptorData::documentation_p;
         ASSERT_EQ(nativeTest._validProperties(), properties);
 
         EXPECT_EQ(nativeTest.name, "aName");
@@ -153,7 +153,7 @@ TEST(TestCborSerialization, deserialize)
     ASSERT_TRUE(sd.properties.isValid());
     ASSERT_TRUE(sd.documentation.isValid());
 
-    auto properties = StructDescriptorData::name_t::Set() + StructDescriptorData::properties_t::Set() + StructDescriptorData::documentation_t::Set();
+    auto properties = StructDescriptorData::name_p + StructDescriptorData::properties_p + StructDescriptorData::documentation_p;
     ASSERT_EQ(sd._validProperties(), properties);
 
     EXPECT_EQ(sd.name, "aName");
@@ -228,7 +228,7 @@ TEST(TestCborSerialization, deserializeDynamic)
     ASSERT_TRUE(sd.properties.isValid());
     ASSERT_TRUE(sd.documentation.isValid());
 
-    auto properties = StructDescriptorData::name_t::Set() + StructDescriptorData::properties_t::Set() + StructDescriptorData::documentation_t::Set();
+    auto properties = StructDescriptorData::name_p + StructDescriptorData::properties_p + StructDescriptorData::documentation_p;
     ASSERT_EQ(sd._validProperties(), properties);
 
     EXPECT_EQ(sd.name, "aName");

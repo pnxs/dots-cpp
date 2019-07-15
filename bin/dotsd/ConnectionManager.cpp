@@ -261,7 +261,7 @@ void ConnectionManager::cleanup()
     }
 
     for (auto& id : clientsToRemove) {
-		DotsClient client(DotsClient::id_t_i{ id });
+		DotsClient client(DotsClient::id_i{ id });
         client._remove();
     }
 }
@@ -322,7 +322,7 @@ void ConnectionManager::handleDescriptorRequest(const DotsDescriptorRequest::Cbd
     }
 
     DotsCacheInfo dotsCacheInfo {
-        DotsCacheInfo::endDescriptorRequest_t_i{true}
+        DotsCacheInfo::endDescriptorRequest_i{true}
     };
     connection->sendNs("SYS", dotsCacheInfo);
 }
@@ -441,7 +441,7 @@ Connection::ConnectionId ConnectionManager::getUniqueClientId()
 void ConnectionManager::addClient(Connection* connection)
 {
     // Send DotsClient when Client is added to network.
-    DotsClient client(DotsClient::id_t_i{ connection->id() });
+    DotsClient client(DotsClient::id_i{ connection->id() });
     client.name(connection->clientName());
     client.connectionState(connection->state());
     client._publish();
@@ -458,7 +458,7 @@ string ConnectionManager::clientId2Name(ClientId id) const
     const auto& container = m_dispatcher.container<DotsClient>();
 
     const DotsClient* client = container.find(DotsClient{ 
-		DotsClient::id_t_i{ id }
+		DotsClient::id_i{ id }
 	});
 
     if (client != nullptr)
