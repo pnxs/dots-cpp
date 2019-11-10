@@ -107,6 +107,7 @@ target_sources(${TARGET_NAME}
 		type/Struct.cpp
 		
 		type/NewDescriptor.cpp
+		type/NewVectorDescriptor.cpp
 
 		${MODEL_SOURCES}
 )
