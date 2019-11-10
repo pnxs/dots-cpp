@@ -48,7 +48,7 @@ namespace dots::type
 	    virtual bool equal(const NewTypeless& lhs, const NewTypeless& rhs) const = 0;
 	    virtual bool less(const NewTypeless& lhs, const NewTypeless& rhs) const = 0;
 
-		virtual bool usesDynamicMemory(const NewTypeless& value) const;
+		virtual bool usesDynamicMemory() const;
 		virtual size_t dynamicMemoryUsage(const NewTypeless& value) const;
 
 	private:

@@ -31,7 +31,7 @@ namespace dots::type
 		return m_alignment;
 	}
 
-	bool NewDescriptor<NewTypeless>::usesDynamicMemory(const NewTypeless&/* value*/) const
+	bool NewDescriptor<NewTypeless>::usesDynamicMemory() const
 	{
 		return false;
 	}

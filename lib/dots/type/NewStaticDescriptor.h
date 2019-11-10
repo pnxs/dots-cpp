@@ -114,12 +114,17 @@ namespace dots::type
 			return std::less<T>{}(lhs, rhs);
 		}
 
-		size_t dynamicMemoryUsage(const NewTypeless& lhs) const override
+		bool usesDynamicMemory() const override
 		{
-			return dynamicMemoryUsage(reinterpret_cast<const T&>(lhs));
+			return false;;
 		}
 
-		constexpr size_t dynamicMemoryUsage(const T&/* lhs*/) const
+		size_t dynamicMemoryUsage(const NewTypeless& value) const override
+		{
+			return dynamicMemoryUsage(reinterpret_cast<const T&>(value));
+		}
+
+		constexpr size_t dynamicMemoryUsage(const T&/* value*/) const
 		{
 			return 0;
 		}
