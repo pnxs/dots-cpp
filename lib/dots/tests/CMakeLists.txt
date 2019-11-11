@@ -27,6 +27,7 @@ target_sources(${TARGET_NAME}
 		TestNewPropertySet.cpp
 		TestNewProperty.cpp
 		TestNewProxyProperty.cpp
+		TestNewProxyPropertyIterator.cpp
         TestRecord.cpp
         TestRegistry.cpp
         TestStruct.cpp
