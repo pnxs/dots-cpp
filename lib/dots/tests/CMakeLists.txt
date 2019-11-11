@@ -26,6 +26,7 @@ target_sources(${TARGET_NAME}
 		TestNewStaticDescriptor.cpp
 		TestNewPropertySet.cpp
 		TestNewProperty.cpp
+		TestNewProxyProperty.cpp
         TestRecord.cpp
         TestRegistry.cpp
         TestStruct.cpp
