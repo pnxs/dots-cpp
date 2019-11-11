@@ -108,6 +108,8 @@ target_sources(${TARGET_NAME}
 		
 		type/NewDescriptor.cpp
 		type/NewPropertyDescriptor.cpp
+		type/NewProxyPropertyIterator.cpp
+		type/NewProxyPropertyPairIterator.cpp
 		type/NewVectorDescriptor.cpp
 
 		${MODEL_SOURCES}
