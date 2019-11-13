@@ -107,6 +107,7 @@ target_sources(${TARGET_NAME}
 		type/Struct.cpp
 		
 		type/NewDescriptor.cpp
+		type/NewEnumDescriptor.cpp
 		type/NewPropertyDescriptor.cpp
 		type/NewProxyPropertyIterator.cpp
 		type/NewProxyPropertyPairIterator.cpp
