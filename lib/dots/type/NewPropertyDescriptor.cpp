@@ -15,7 +15,7 @@ namespace dots::type
 	}
 
 	NewPropertyDescriptor<NewTypeless, void>::NewPropertyDescriptor(const NewDescriptor<>& descriptor, std::string name, uint32_t tag, bool isKey):
-		NewPropertyDescriptor(descriptor, std::move(name), CalculateOffset(descriptor, sizeof(NewPropertyArea), sizeof(NewPropertyArea)), tag, isKey)
+		NewPropertyDescriptor(descriptor, std::move(name), CalculateOffset(descriptor, 0, sizeof(NewPropertyArea)), tag, isKey)
 	{
 		/* do nothing */
 	}
