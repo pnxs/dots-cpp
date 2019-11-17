@@ -296,8 +296,8 @@ TEST_F(TestNewProxyProperty, less_CompareNotLessToValueWhenValid)
 
 TEST_F(TestNewProxyProperty, less_CompareLessToInvalidPropertyWhenInvalid)
 {
-	EXPECT_TRUE(m_sutLhs.less(m_sutRhs));
-	EXPECT_TRUE(m_sutLhs < m_sutRhs);
+	EXPECT_FALSE(m_sutLhs.less(m_sutRhs));
+	EXPECT_FALSE(m_sutLhs < m_sutRhs);
 }
 
 TEST_F(TestNewProxyProperty, less_CompareNotLessToValidPropertyWhenInvalid)
