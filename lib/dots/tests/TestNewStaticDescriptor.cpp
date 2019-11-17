@@ -227,23 +227,60 @@ TEST_F(TestNewStaticDescriptor, equal)
 
 TEST_F(TestNewStaticDescriptor, less)
 {
-	int i1 = 21;
-	int i2 = 42;
-	int i3 = 21;
+	EXPECT_TRUE(m_sutInt.less(21, 42));
+	EXPECT_TRUE(m_sutString.less("bar", "foo"));
+	EXPECT_TRUE(m_sutComposite.less(Composite{ 21, "bar" }, Composite{ 21, "foo" }));
 	
-	std::string s1 = "bar";
-	std::string s2 = "foo";
-	std::string s3 = "bar";
+	EXPECT_FALSE(m_sutInt.less(21, 21));
+	EXPECT_FALSE(m_sutString.less("bar", "bar"));
+	EXPECT_FALSE(m_sutComposite.less(Composite{ 21, "bar" }, Composite{ 21, "bar" }));
 
-	Composite c1{ 21, "bar" };
-	Composite c2{ 21, "qux" };
-	Composite c3{ 21, "bar" };
+	EXPECT_FALSE(m_sutInt.less(42, 21));
+	EXPECT_FALSE(m_sutString.less("foo", "bar"));
+	EXPECT_FALSE(m_sutComposite.less(Composite{ 21, "foo" }, Composite{ 21, "bar" }));
+}
+
+TEST_F(TestNewStaticDescriptor, lessEqual)
+{
+	EXPECT_TRUE(m_sutInt.lessEqual(21, 42));
+	EXPECT_TRUE(m_sutString.lessEqual("bar", "foo"));
+	EXPECT_TRUE(m_sutComposite.lessEqual(Composite{ 21, "bar" }, Composite{ 21, "foo" }));
 	
-	EXPECT_TRUE(m_sutInt.less(NewTypeless::From(i1), NewTypeless::From(i2)));
-	EXPECT_TRUE(m_sutString.less(NewTypeless::From(s1), NewTypeless::From(s2)));
-	EXPECT_TRUE(m_sutComposite.less(NewTypeless::From(c1), NewTypeless::From(c2)));
+	EXPECT_TRUE(m_sutInt.lessEqual(21, 21));
+	EXPECT_TRUE(m_sutString.lessEqual("bar", "bar"));
+	EXPECT_TRUE(m_sutComposite.lessEqual(Composite{ 21, "bar" }, Composite{ 21, "bar" }));
+
+	EXPECT_FALSE(m_sutInt.lessEqual(42, 21));
+	EXPECT_FALSE(m_sutString.lessEqual("foo", "bar"));
+	EXPECT_FALSE(m_sutComposite.lessEqual(Composite{ 21, "foo" }, Composite{ 21, "bar" }));
+}
+
+TEST_F(TestNewStaticDescriptor, greater)
+{
+	EXPECT_FALSE(m_sutInt.greater(21, 42));
+	EXPECT_FALSE(m_sutString.greater("bar", "foo"));
+	EXPECT_FALSE(m_sutComposite.greater(Composite{ 21, "bar" }, Composite{ 21, "foo" }));
 	
-	EXPECT_FALSE(m_sutInt.less(NewTypeless::From(i1), NewTypeless::From(i3)));
-	EXPECT_FALSE(m_sutString.less(NewTypeless::From(s1), NewTypeless::From(s3)));
-	EXPECT_FALSE(m_sutComposite.less(NewTypeless::From(c1), NewTypeless::From(c3)));
+	EXPECT_FALSE(m_sutInt.greater(21, 21));
+	EXPECT_FALSE(m_sutString.greater("bar", "bar"));
+	EXPECT_FALSE(m_sutComposite.greater(Composite{ 21, "bar" }, Composite{ 21, "bar" }));
+
+	EXPECT_TRUE(m_sutInt.greater(42, 21));
+	EXPECT_TRUE(m_sutString.greater("foo", "bar"));
+	EXPECT_TRUE(m_sutComposite.greater(Composite{ 21, "foo" }, Composite{ 21, "bar" }));
+}
+
+TEST_F(TestNewStaticDescriptor, greaterEqual)
+{
+	EXPECT_FALSE(m_sutInt.greaterEqual(21, 42));
+	EXPECT_FALSE(m_sutString.greaterEqual("bar", "foo"));
+	EXPECT_FALSE(m_sutComposite.greaterEqual(Composite{ 21, "bar" }, Composite{ 21, "foo" }));
+	
+	EXPECT_TRUE(m_sutInt.greaterEqual(21, 21));
+	EXPECT_TRUE(m_sutString.greaterEqual("bar", "bar"));
+	EXPECT_TRUE(m_sutComposite.greaterEqual(Composite{ 21, "bar" }, Composite{ 21, "bar" }));
+
+	EXPECT_TRUE(m_sutInt.greaterEqual(42, 21));
+	EXPECT_TRUE(m_sutString.greaterEqual("foo", "bar"));
+	EXPECT_TRUE(m_sutComposite.greaterEqual(Composite{ 21, "foo" }, Composite{ 21, "bar" }));
 }

@@ -114,9 +114,39 @@ namespace dots::type
 			return std::less<T>{}(lhs, rhs);
 		}
 
+		bool lessEqual(const NewTypeless& lhs, const NewTypeless& rhs) const override
+		{
+			return lessEqual(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
+		}
+
+		constexpr bool lessEqual(const T& lhs, const T& rhs) const
+		{
+			return !greater(lhs, rhs);
+		}
+
+		bool greater(const NewTypeless& lhs, const NewTypeless& rhs) const override
+		{
+			return greater(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
+		}
+
+		constexpr bool greater(const T& lhs, const T& rhs) const
+		{
+			return less(rhs, lhs);
+		}
+
+		bool greaterEqual(const NewTypeless& lhs, const NewTypeless& rhs) const override
+		{
+			return greaterEqual(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
+		}
+
+		constexpr bool greaterEqual(const T& lhs, const T& rhs) const
+		{
+			return !less(lhs, rhs);
+		}
+
 		bool usesDynamicMemory() const override
 		{
-			return false;;
+			return false;
 		}
 
 		size_t dynamicMemoryUsage(const NewTypeless& value) const override
