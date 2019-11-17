@@ -89,6 +89,36 @@ namespace dots::type
 			return less(rhs);
 		}
 
+		bool operator <= (const T& rhs) const
+		{
+			return lessEqual(rhs);
+		}
+
+		bool operator <= (const Derived& rhs) const
+		{
+			return lessEqual(rhs);
+		}
+
+		bool operator > (const T& rhs) const
+		{
+			return greater(rhs);
+		}
+
+		bool operator > (const Derived& rhs) const
+		{
+			return greater(rhs);
+		}
+
+		bool operator >= (const T& rhs) const
+		{
+			return greaterEqual(rhs);
+		}
+
+		bool operator >= (const Derived& rhs) const
+		{
+			return greaterEqual(rhs);
+		}
+
 		bool isValid() const
 		{
 			return descriptor().set() <= validProperties();
@@ -260,13 +290,13 @@ namespace dots::type
 
 		bool equal(const Derived& rhs) const
 		{
-			if (isValid())
+			if (rhs.isValid())
 			{
-				return rhs.isValid() && valueDescriptor().equal(storage(), rhs);
+				return equal(rhs.storage());
 			}
 			else
 			{
-				return !rhs.isValid();
+				return !isValid();
 			}			
 		}
 
@@ -277,7 +307,44 @@ namespace dots::type
 
 		bool less(const Derived& rhs) const
 		{
-			return !rhs.isValid() || less(*rhs);
+			if (rhs.isValid())
+			{
+				return less(rhs.storage());
+			}
+			else
+			{
+				return isValid();
+			}
+		}
+
+		bool lessEqual(const T& rhs) const
+		{
+			return !greater(rhs);
+		}
+
+		bool lessEqual(const Derived& rhs) const
+		{
+			return !greater(rhs);
+		}
+
+		bool greater(const T& rhs) const
+		{
+			return rhs.less(*this);
+		}
+
+		bool greater(const Derived& rhs) const
+		{
+			return rhs.less(*this);
+		}
+
+		bool greaterEqual(const T& rhs) const
+		{
+			return !less(rhs);
+		}
+
+		bool greaterEqual(const Derived& rhs) const
+		{
+			return !less(rhs);
 		}
 
 		constexpr const NewPropertyDescriptor<T>& descriptor() const

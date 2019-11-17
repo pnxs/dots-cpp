@@ -291,10 +291,10 @@ TEST_F(TestNewProperty, less_CompareNotLessToValueWhenValid)
 	EXPECT_FALSE(m_sut < rhs);
 }
 
-TEST_F(TestNewProperty, less_CompareLessToInvalidPropertyWhenInvalid)
+TEST_F(TestNewProperty, less_CompareNotLessToInvalidPropertyWhenInvalid)
 {
-	EXPECT_TRUE(m_sutLhs.less(m_sutRhs));
-	EXPECT_TRUE(m_sutLhs < m_sutRhs);
+	EXPECT_FALSE(m_sutLhs.less(m_sutRhs));
+	EXPECT_FALSE(m_sutLhs < m_sutRhs);
 }
 
 TEST_F(TestNewProperty, less_CompareNotLessToValidPropertyWhenInvalid)
