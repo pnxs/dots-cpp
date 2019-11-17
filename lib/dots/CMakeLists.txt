@@ -111,6 +111,8 @@ target_sources(${TARGET_NAME}
 		type/NewPropertyDescriptor.cpp
 		type/NewProxyPropertyIterator.cpp
 		type/NewProxyPropertyPairIterator.cpp
+		type/NewStruct.cpp
+		type/NewStructDescriptor.cpp
 		type/NewVectorDescriptor.cpp
 
 		${MODEL_SOURCES}
