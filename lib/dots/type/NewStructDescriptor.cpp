@@ -349,6 +349,6 @@ namespace dots::type
 
 	const NewPropertySet& NewStructDescriptor<NewTypeless, void>::keyProperties() const
 	{
-		return m_properties;
+		return m_keyProperties;
 	}
 }
