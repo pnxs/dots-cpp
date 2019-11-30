@@ -38,17 +38,25 @@ namespace dots::type
 	};
 
 	template <typename T>
-	struct NewVector<T> : NewVector<NewTypeless>, std::vector<T>
+	struct NewVector<T> : NewVector<NewTypeless>, std::vector<std::conditional_t<std::is_same_v<T, bool>, uint8_t, T>>
 	{
+		using vector_t = std::vector<std::conditional_t<std::is_same_v<T, bool>, uint8_t, T>>;
+		
 		NewVector() = default;
+		
 		NewVector(const NewVector& other) = default;
 		NewVector(NewVector&& other) = default;
+
+		using vector_t::vector;
+		
 		// ReSharper disable CppHidingFunction
 		~NewVector() = default; // note: hiding a non-virtual destructor is harmless for stateless sub-classes
 		// ReSharper restore CppHidingFunction
 
 		NewVector& operator = (const NewVector& rhs) = default;
 		NewVector& operator = (NewVector&& rhs) = default;
+
+		using vector_t::operator=;
 
 		NewVector& operator = (const NewVector<NewTypeless>& rhs) override
 		{
@@ -66,30 +74,27 @@ namespace dots::type
 
 		size_t typelessSize() const noexcept override
 		{
-			return std::vector<T>::size();
+			return vector_t::size();
 		}
 
 		const NewTypeless& typelessAt(size_t pos) const override
 		{
-			return NewTypeless::From(std::vector<T>::operator[](pos));
+			return NewTypeless::From(vector_t::operator[](pos));
 		}
 		
 		NewTypeless& typelessAt(size_t pos) override
 		{
-			return NewTypeless::From(std::vector<T>::operator[](pos));
+			return NewTypeless::From(vector_t::operator[](pos));
 		}		
 
 		NewTypeless* typelessData() override
 		{
-			return NewTypeless::From(std::vector<T>::data());
+			return NewTypeless::From(vector_t::data());
 		}
 		
 		const NewTypeless* typelessData() const override
 		{
-			return NewTypeless::From(NewTypeless::From(std::vector<T>::data()));
+			return NewTypeless::From(vector_t::data());
 		}
-
-		using std::vector<T>::vector;
-		using std::vector<T>::operator=;
 	};
 }
