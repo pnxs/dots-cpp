@@ -27,8 +27,8 @@ namespace dots::type
 
 		NewTypeless& construct(NewTypeless& value) const override
 		{
-			return reinterpret_cast<NewTypeless&>(construct(reinterpret_cast<T&>(value)));
-		}
+				return reinterpret_cast<NewTypeless&>(construct(reinterpret_cast<T&>(value)));
+			}
 
 		NewTypeless& construct(NewTypeless& value, const NewTypeless& other) const override
 		{
@@ -46,7 +46,7 @@ namespace dots::type
 			static_assert(std::is_constructible_v<T, Args...>, "type is not constructible from passed arguments");
 			if constexpr (std::is_constructible_v<T, Args...>)
 			{
-				::new(static_cast<void*>(::std::addressof(value))) T{ std::forward<Args>(args)... };
+				::new(static_cast<void*>(::std::addressof(value))) T(std::forward<Args>(args)...);
 			}
 
 			return value;
@@ -78,7 +78,7 @@ namespace dots::type
 			static_assert(std::is_constructible_v<T, Args...>, "type is not constructible from passed arguments");
 			if constexpr (std::is_constructible_v<T, Args...>)
 			{
-				value = T{ std::forward<Args>(args)... };
+				value = T(std::forward<Args>(args)...);
 			}
 
 			return value;
