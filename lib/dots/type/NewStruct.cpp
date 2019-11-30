@@ -1,5 +1,6 @@
 #include <dots/type/NewStruct.h>
 #include <dots/type/NewStructDescriptor.h>
+#include <dots/dots.h>
 
 namespace dots::type
 {
@@ -102,5 +103,15 @@ namespace dots::type
     bool NewStruct::_hasProperties(const NewPropertySet properties) const
     {
         return properties <= _validProperties();
+    }
+
+	void NewStruct::_publish(const NewPropertySet& includedProperties/* = NewPropertySet::All*/, bool remove/* = false*/) const
+    {
+    	onPublishObject->publish(&_descriptor(), *this, includedProperties ^ _validProperties(), remove);
+    }
+
+    void NewStruct::_remove(const NewPropertySet& includedProperties/* = NewPropertySet::All*/) const
+    {
+        _publish(includedProperties, true);
     }
 }

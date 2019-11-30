@@ -374,6 +374,18 @@ namespace dots::type
 			return symmetricDiff;
 		}
 
+    	void _publish(const NewPropertySet& includedProperties = NewPropertySet::All, bool remove = false) const
+		{
+			registerTypeUsage<Derived, PublishedType>();
+			NewStruct::_publish(includedProperties, remove);
+		}
+
+		void _remove(const NewPropertySet& includedProperties = NewPropertySet::All) const
+		{
+			registerTypeUsage<Derived, PublishedType>();
+			NewStruct::_remove(includedProperties);
+		}
+
     	template <typename P>
     	const P& getProperty() const
 		{
@@ -435,8 +447,8 @@ namespace dots::type
 
     	using NewStruct::_diffProperties;
 
-		/*using NewStruct::_publish;
-		using NewStruct::_remove;*/
+		using NewStruct::_publish;
+		using NewStruct::_remove;
 
     	template <typename PropertyPair, typename... PropertyPairs>
     	bool _less(const NewPropertySet& includedProperties, const PropertyPair& firstPair, const PropertyPairs&... remainingPairs) const
