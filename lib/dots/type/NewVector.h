@@ -29,6 +29,7 @@ namespace dots::type
 		virtual const NewTypeless& typelessAt(size_t pos) const = 0;
 		virtual const NewTypeless* typelessData() const = 0;
 		virtual NewTypeless* typelessData() = 0;
+		virtual void typelessResize(size_t n) = 0;
 
 	protected:
 
@@ -117,6 +118,11 @@ namespace dots::type
 		const NewTypeless* typelessData() const override
 		{
 			return NewTypeless::From(vector_t::data());
+		}
+
+		void typelessResize(size_t n) override 
+		{
+			vector_t::resize(n);
 		}
 	};
 }
