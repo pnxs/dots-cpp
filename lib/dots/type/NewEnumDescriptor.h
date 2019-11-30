@@ -203,3 +203,35 @@ namespace dots::type
 		std::vector<NewEnumDescriptor<>::enumerator_ref_t> m_enumeratorsTypeless;
 	};
 }
+namespace dots::type
+{
+
+	template<typename T, typename = void>
+	constexpr bool is_defined_v = false;
+	template<typename T>
+	constexpr bool is_defined_v<T, decltype(sizeof(T), void())> = true;
+	template<typename T>
+	using is_defined_t = std::conditional_t<is_defined_v<T>, std::true_type, std::false_type>;
+	template <typename T>
+	struct has_enum_type : std::conditional_t<std::conjunction_v<std::is_enum<T>, is_defined_t<NewDescriptor<T>>>, std::true_type, std::false_type> {};
+	template <typename T>
+	using has_enum_type_t = typename has_enum_type<T>::type;
+	template <typename T>
+	constexpr bool has_enum_type_v = has_enum_type_t<T>::value;
+}
+
+namespace dots::types
+{
+	template <typename E, std::enable_if_t<dots::type::has_enum_type_v<E>, int> = 0>
+	std::ostream& operator << (std::ostream& os, const E& enumerator)
+	{
+		os << type::NewDescriptor<E>::Instance().enumeratorFromValue(enumerator).name();
+		return os;
+	}
+
+	template <typename E, std::enable_if_t<dots::type::has_enum_type_v<E>, int> = 0>
+	const std::string& to_string(const E& enumerator)
+	{
+		return type::NewDescriptor<E>::Instance().enumeratorFromValue(enumerator).name();
+	}
+}

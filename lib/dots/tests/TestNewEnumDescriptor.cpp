@@ -1,3 +1,4 @@
+#include <sstream>
 #include <dots/type/NewEnumDescriptor.h>
 #include <dots/type/NewFundamentalTypes.h>
 #include <gtest/gtest.h>
@@ -15,6 +16,22 @@ namespace dots::types
     };
 }
 
+namespace dots::type
+{
+	template <>
+	struct NewDescriptor<types::TestEnumSimple> : NewEnumDescriptor<types::TestEnumSimple>
+	{
+		NewDescriptor() : NewEnumDescriptor("TestEnumSimple", {
+			NewEnumeratorDescriptor{ 2, "enumerator2", types::TestEnumSimple::enumerator2 },
+			NewEnumeratorDescriptor{ 3, "enumerator3", types::TestEnumSimple::enumerator3 },
+			NewEnumeratorDescriptor{ 5, "enumerator5", types::TestEnumSimple::enumerator5 },
+			NewEnumeratorDescriptor{ 7, "enumerator7", types::TestEnumSimple::enumerator7 },
+			NewEnumeratorDescriptor{ 11, "enumerator11", types::TestEnumSimple::enumerator11 },
+			NewEnumeratorDescriptor{ 13, "enumerator13", types::TestEnumSimple::enumerator13 }
+		}){}
+	};
+}
+
 using namespace dots::type;
 using namespace dots::types;
 
@@ -23,14 +40,6 @@ struct TestNewEnumDescriptor : ::testing::Test
 protected:
 
 	TestNewEnumDescriptor() :
-		m_sutSimple{ "TestEnumSimple", {
-			NewEnumeratorDescriptor{ 2, "enumerator2", TestEnumSimple::enumerator2 },
-			NewEnumeratorDescriptor{ 3, "enumerator3", TestEnumSimple::enumerator3 },
-			NewEnumeratorDescriptor{ 5, "enumerator5", TestEnumSimple::enumerator5 },
-			NewEnumeratorDescriptor{ 7, "enumerator7", TestEnumSimple::enumerator7 },
-			NewEnumeratorDescriptor{ 11, "enumerator11", TestEnumSimple::enumerator11 },
-			NewEnumeratorDescriptor{ 13, "enumerator13", TestEnumSimple::enumerator13 }
-		} },
 		m_sutGeneric{ "TestEnumGeneric", {
 			NewEnumeratorDescriptor<vector_t<string_t>>{ 1, "enumerator1", { "foo", "bar"} },
 			NewEnumeratorDescriptor<vector_t<string_t>>{ 4, "enumerator4", { "baz", "qux" } },
@@ -41,7 +50,7 @@ protected:
 			NewEnumeratorDescriptor<vector_t<string_t>>{ 16, "enumerator16", { "alpha", "beta", "delta" } }
 		} } {}
 
-	NewEnumDescriptor<TestEnumSimple> m_sutSimple;
+	NewDescriptor<TestEnumSimple> m_sutSimple;
 	NewEnumDescriptor<vector_t<string_t>> m_sutGeneric;
 };
 
@@ -154,4 +163,21 @@ TEST_F(TestNewEnumDescriptor, enumeratorFromValue)
 
 	EXPECT_THROW(m_sutSimple.enumeratorFromValue(static_cast<TestEnumSimple>(6)), std::logic_error);
 	EXPECT_THROW(m_sutGeneric.enumeratorFromValue(vector_t<string_t>({ "1", "2", "3" })), std::logic_error);
+}
+
+TEST_F(TestNewEnumDescriptor, global_op_ostream)
+{
+	std::ostringstream oss;
+	oss << TestEnumSimple::enumerator2;	
+	EXPECT_EQ(oss.str(), "enumerator2");
+
+	oss = std::ostringstream{};
+	oss << TestEnumSimple::enumerator11;
+	EXPECT_EQ(oss.str(), "enumerator11");
+}
+
+TEST_F(TestNewEnumDescriptor, global_to_string)
+{
+	EXPECT_EQ(to_string(TestEnumSimple::enumerator2), "enumerator2");
+	EXPECT_EQ(to_string(TestEnumSimple::enumerator11), "enumerator11");
 }
