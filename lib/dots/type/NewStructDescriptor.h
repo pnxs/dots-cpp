@@ -69,8 +69,8 @@ namespace dots::type
 
 		virtual NewPropertySet diffProperties(const NewStruct& instance, const NewStruct& other, const NewPropertySet& includedProperties) const;
 
-		virtual const NewPropertyArea& propertyArea(const NewStruct& instance) const = 0;
-		virtual NewPropertyArea& propertyArea(NewStruct& instance) const = 0;
+		const NewPropertyArea& propertyArea(const NewStruct& instance) const;
+		NewPropertyArea& propertyArea(NewStruct& instance) const;
 
 		uint8_t flags() const;
 		bool cached() const;
@@ -237,26 +237,6 @@ namespace dots::type
 		NewPropertySet diffProperties(const T& instance, const T& other, const NewPropertySet& includedProperties) const
 		{
 			return instance._diffProperties(other, includedProperties);
-		}
-
-		const NewPropertyArea& propertyArea(const NewStruct& instance) const override
-	{
-			return propertyArea(static_cast<const T&>(instance));
-	}
-
-		const NewPropertyArea& propertyArea(const T& instance) const
-		{
-			return instance._propertyArea();
-		}
-
-		NewPropertyArea& propertyArea(NewStruct& instance) const override
-		{
-			return propertyArea(static_cast<T&>(instance));
-		}
-
-		NewPropertyArea& propertyArea(T& instance) const
-		{
-			return instance._propertyArea();
 		}
 	};
 }

@@ -95,12 +95,12 @@ namespace dots::type
 
     	const NewPropertyArea& derivedPropertyArea() const
 		{
-			return _desc->propertyArea(*this);
+			return _propArea;
 		}
 
     	NewPropertyArea& derivedPropertyArea()
 		{
-			return _desc->propertyArea(*this);
+			return _propArea;
 		}
 
     	const new_property_descriptor_container_t& derivedPropertyDescriptors() const
@@ -109,5 +109,6 @@ namespace dots::type
     	}
 
         const NewStructDescriptor<>* _desc;
+    	NewPropertyArea _propArea;
     };
 }

@@ -292,6 +292,16 @@ namespace dots::type
         return symmetricDiff;
 	}
 
+	const NewPropertyArea& NewStructDescriptor<NewTypeless, void>::propertyArea(const NewStruct& instance) const
+	{
+		return instance._propertyArea();
+	}
+
+	NewPropertyArea& NewStructDescriptor<NewTypeless, void>::propertyArea(NewStruct& instance) const
+	{
+		return instance._propertyArea();
+	}
+
 	uint8_t NewStructDescriptor<NewTypeless, void>::flags() const
 	{
 		return m_flags;

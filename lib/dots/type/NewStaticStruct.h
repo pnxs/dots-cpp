@@ -374,20 +374,10 @@ namespace dots::type
 			return symmetricDiff;
 		}
 
-    	const NewPropertyArea& _propertyArea() const
-		{
-			return m_propertyArea;
-		}
-
-    	NewPropertyArea& _propertyArea()
-		{
-			return m_propertyArea;
-		}
-
     	template <typename P>
     	const P& getProperty() const
 		{
-			return m_propertyArea.getProperty<P>();
+			return _propertyArea().getProperty<P>();
 		}
 
     	template <typename P>
@@ -475,7 +465,5 @@ namespace dots::type
 
 		template <typename T>
 		using strip_t = std::remove_pointer_t<std::decay_t<T>>;
-
-    	NewPropertyArea m_propertyArea;
     };
 }
