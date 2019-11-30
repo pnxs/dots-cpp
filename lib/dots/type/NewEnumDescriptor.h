@@ -125,11 +125,11 @@ namespace dots::type
 				m_enumeratorsTypeless.emplace_back(std::ref(enumerator));
 			}
 		}
-		NewEnumDescriptor(const NewEnumDescriptor& other) = default;
+		NewEnumDescriptor(const NewEnumDescriptor& other) = delete;
 		NewEnumDescriptor(NewEnumDescriptor&& other) = default;
 		~NewEnumDescriptor() = default;
 
-		NewEnumDescriptor& operator = (const NewEnumDescriptor& rhs) = default;
+		NewEnumDescriptor& operator = (const NewEnumDescriptor& rhs) = delete;
 		NewEnumDescriptor& operator = (NewEnumDescriptor&& rhs) = default;
 
 		const NewDescriptor<underlying_type_t>& underlyingDescriptor() const override
