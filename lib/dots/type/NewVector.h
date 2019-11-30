@@ -48,6 +48,18 @@ namespace dots::type
 		NewVector(NewVector&& other) = default;
 
 		using vector_t::vector;
+
+		NewVector(const vector_t& other) noexcept :
+			vector_t(other)
+		{
+			/* do nothing */
+		}
+
+		NewVector(vector_t&& other) noexcept :
+			vector_t(std::move(other))
+		{
+			/* do nothing */
+		}
 		
 		// ReSharper disable CppHidingFunction
 		~NewVector() = default; // note: hiding a non-virtual destructor is harmless for stateless sub-classes
@@ -57,6 +69,16 @@ namespace dots::type
 		NewVector& operator = (NewVector&& rhs) = default;
 
 		using vector_t::operator=;
+
+		NewVector& operator = (const vector_t& rhs) noexcept
+		{
+			return vector_t::operator=(rhs);
+		}
+		
+		NewVector& operator = (vector_t&& rhs) noexcept
+		{
+			return vector_t::operator=(std::move(rhs));
+		}
 
 		NewVector& operator = (const NewVector<NewTypeless>& rhs) override
 		{
