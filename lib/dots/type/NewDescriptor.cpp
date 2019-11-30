@@ -16,6 +16,11 @@ namespace dots::type
 		return m_type;
 	}
 
+	bool NewDescriptor<NewTypeless>::isFundamentalType() const
+	{
+		return IsFundamentalType(type());
+	}
+
 	const std::string& NewDescriptor<NewTypeless>::name() const
 	{
 		return m_name;
@@ -39,5 +44,42 @@ namespace dots::type
 	size_t NewDescriptor<NewTypeless>::dynamicMemoryUsage(const NewTypeless&/* value*/) const
 	{
 		return 0;
+	}
+
+	bool NewDescriptor<NewTypeless>::IsFundamentalType(const NewDescriptor& descriptor)
+	{
+		return IsFundamentalType(descriptor.type());
+	}
+
+	bool NewDescriptor<NewTypeless>::IsFundamentalType(NewType type)
+	{
+		switch (type)
+	    {
+	        case NewType::boolean:
+	        case NewType::int8:
+	        case NewType::int16:
+	        case NewType::int32:
+	        case NewType::int64:
+	        case NewType::uint8:
+	        case NewType::uint16:
+	        case NewType::uint32:
+	        case NewType::uint64:
+	        case NewType::float32:
+	        case NewType::float64:
+	        case NewType::property_set:
+	        case NewType::timepoint:
+	        case NewType::steady_timepoint:
+	        case NewType::duration:
+	        case NewType::string:
+	        case NewType::uuid:
+	            return true;
+
+	        case NewType::Vector:
+	        case NewType::Enum:
+	        case NewType::Struct:
+	            return false;
+	    }
+
+		return false;
 	}
 }

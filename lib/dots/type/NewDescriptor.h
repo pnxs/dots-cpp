@@ -32,6 +32,8 @@ namespace dots::type
 		NewDescriptor& operator = (NewDescriptor&& rhs) = default;
 
 		NewType type() const;
+		bool isFundamentalType() const;
+		
 		const std::string& name() const;
 		size_t size() const;
 		size_t alignment() const;
@@ -53,6 +55,9 @@ namespace dots::type
 
 		virtual bool usesDynamicMemory() const;
 		virtual size_t dynamicMemoryUsage(const NewTypeless& value) const;
+
+		static bool IsFundamentalType(const NewDescriptor& descriptor);
+		static bool IsFundamentalType(NewType type);
 
 	private:
 
