@@ -29,25 +29,45 @@ namespace dots::type
 		NewStructDescriptor& operator = (const NewStructDescriptor& rhs) = default;
 		NewStructDescriptor& operator = (NewStructDescriptor&& rhs) = default;
 
+		NewTypeless& construct(NewTypeless& value) const override;
+		NewStruct& construct(NewStruct& instance) const;
+		NewTypeless& construct(NewTypeless& value, const NewTypeless& other) const override;
+		NewStruct& construct(NewStruct& instance, const NewStruct& other) const;
+		NewTypeless& construct(NewTypeless& value, NewTypeless&& other) const override;
+		NewStruct& construct(NewStruct& instance, NewStruct&& other) const;
+		
+		void destruct(NewTypeless& value) const override;
+		NewStruct& destruct(NewStruct& instance) const;
+		
+		NewTypeless& assign(NewTypeless& lhs, const NewTypeless& rhs) const override;
+		NewTypeless& assign(NewTypeless& lhs, NewTypeless&& rhs) const override;
+		void swap(NewTypeless& value, NewTypeless& other) const override;
+		
+		bool equal(const NewTypeless& lhs, const NewTypeless& rhs) const override;
+		bool less(const NewTypeless& lhs, const NewTypeless& rhs) const override;
+		bool lessEqual(const NewTypeless& lhs, const NewTypeless& rhs) const override;
+		bool greater(const NewTypeless& lhs, const NewTypeless& rhs) const override;
+		bool greaterEqual(const NewTypeless& lhs, const NewTypeless& rhs) const override;
+
 		bool usesDynamicMemory() const override;
 		size_t dynamicMemoryUsage(const NewTypeless& instance) const override;
 		size_t dynamicMemoryUsage(const NewStruct& instance) const;
 
-		virtual NewStruct& assign(NewStruct& instance, const NewStruct& other, const NewPropertySet& includedProperties) const = 0;
-		virtual NewStruct& copy(NewStruct& instance, const NewStruct& other, const NewPropertySet& includedProperties) const = 0;
-		virtual NewStruct& merge(NewStruct& instance, const NewStruct& other, const NewPropertySet& includedProperties) const = 0;
-		virtual void swap(NewStruct& instance, NewStruct& other, const NewPropertySet& includedProperties) const = 0;
-		virtual void clear(NewStruct& instance, const NewPropertySet& includedProperties) const = 0;
+		virtual NewStruct& assign(NewStruct& instance, const NewStruct& other, const NewPropertySet& includedProperties) const;
+		virtual NewStruct& copy(NewStruct& instance, const NewStruct& other, const NewPropertySet& includedProperties) const;
+		virtual NewStruct& merge(NewStruct& instance, const NewStruct& other, const NewPropertySet& includedProperties) const;
+		virtual void swap(NewStruct& instance, NewStruct& other, const NewPropertySet& includedProperties) const;
+		virtual void clear(NewStruct& instance, const NewPropertySet& includedProperties) const;
 
-		virtual bool equal(const NewStruct& lhs, const NewStruct& rhs, const NewPropertySet& includedProperties) const = 0;
-		virtual bool same(const NewStruct& lhs, const NewStruct& rhs) const = 0;
+		virtual bool equal(const NewStruct& lhs, const NewStruct& rhs, const NewPropertySet& includedProperties) const;
+		virtual bool same(const NewStruct& lhs, const NewStruct& rhs) const;
 		
-		virtual bool less(const NewStruct& lhs, const NewStruct& rhs, const NewPropertySet& includedProperties) const = 0;
-		virtual bool lessEqual(const NewStruct& lhs, const NewStruct& rhs, const NewPropertySet& includedProperties) const = 0;
-		virtual bool greater(const NewStruct& lhs, const NewStruct& rhs, const NewPropertySet& includedProperties) const = 0;
-		virtual bool greaterEqual(const NewStruct& lhs, const NewStruct& rhs, const NewPropertySet& includedProperties) const = 0;
+		virtual bool less(const NewStruct& lhs, const NewStruct& rhs, const NewPropertySet& includedProperties) const;
+		virtual bool lessEqual(const NewStruct& lhs, const NewStruct& rhs, const NewPropertySet& includedProperties) const;
+		virtual bool greater(const NewStruct& lhs, const NewStruct& rhs, const NewPropertySet& includedProperties) const;
+		virtual bool greaterEqual(const NewStruct& lhs, const NewStruct& rhs, const NewPropertySet& includedProperties) const;
 
-		virtual NewPropertySet diffProperties(const NewStruct& instance, const NewStruct& other, const NewPropertySet& includedProperties) const = 0;
+		virtual NewPropertySet diffProperties(const NewStruct& instance, const NewStruct& other, const NewPropertySet& includedProperties) const;
 
 		virtual const NewPropertyArea& propertyArea(const NewStruct& instance) const = 0;
 		virtual NewPropertyArea& propertyArea(NewStruct& instance) const = 0;
@@ -220,9 +240,9 @@ namespace dots::type
 		}
 
 		const NewPropertyArea& propertyArea(const NewStruct& instance) const override
-		{
+	{
 			return propertyArea(static_cast<const T&>(instance));
-		}
+	}
 
 		const NewPropertyArea& propertyArea(const T& instance) const
 		{
