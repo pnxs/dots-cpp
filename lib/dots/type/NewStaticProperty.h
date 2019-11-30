@@ -7,6 +7,8 @@ namespace dots::type
 	template <typename T, typename Derived>
 	struct NewStaticProperty : NewProperty<T, Derived>
 	{
+		using NewProperty<T, Derived>::operator=;
+		
 		static constexpr const NewDescriptor<T>& ValueDescriptor()
 		{
 			return Derived::Descriptor.valueDescriptor();
