@@ -220,6 +220,11 @@ namespace dots::type
 			return toBitSet().to_string(zero, one);
 		}
 
+		constexpr value_t toValue() const
+		{
+			return m_value;
+		}
+
 		static constexpr NewPropertySet FromIndex(index_t index)
 		{
 			return NewPropertySet{ 0x1u << index };
