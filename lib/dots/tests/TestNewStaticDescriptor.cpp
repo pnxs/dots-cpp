@@ -29,6 +29,22 @@ struct Composite
 	std::string s;
 };
 
+std::ostream& operator << (std::ostream& os, const Composite& composite)
+{
+	os << std::to_string(composite.i) + "," + composite.s;
+	return os;
+}
+
+std::istream& operator >> (std::istream& is, Composite& composite)
+{
+	is >> composite.i;
+	char c;
+	is >> c;
+	is >> composite.s;
+	
+	return is;
+}
+
 namespace dots::type
 {
 	template <>
@@ -283,4 +299,26 @@ TEST_F(TestNewStaticDescriptor, greaterEqual)
 	EXPECT_TRUE(m_sutInt.greaterEqual(42, 21));
 	EXPECT_TRUE(m_sutString.greaterEqual("foo", "bar"));
 	EXPECT_TRUE(m_sutComposite.greaterEqual(Composite{ 21, "foo" }, Composite{ 21, "bar" }));
+}
+
+TEST_F(TestNewStaticDescriptor, toString)
+{
+	EXPECT_EQ(m_sutInt.toString(42), "42");
+	EXPECT_EQ(m_sutString.toString("foo"), "foo");
+	EXPECT_EQ(m_sutComposite.toString(Composite{ 21, "bar" }), "21,bar");
+}
+
+TEST_F(TestNewStaticDescriptor, fromString)
+{
+	int i;
+	std::string s;
+	Composite c;
+
+	m_sutInt.fromString(i, "73");
+	m_sutString.fromString(s, "meow");
+	m_sutComposite.fromString(c, "7,moo");
+
+	EXPECT_EQ(i, 73);
+	EXPECT_EQ(s, "meow");
+	EXPECT_EQ(c, Composite(7, "moo"));
 }

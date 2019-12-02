@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <string_view>
 #include <memory>
 #include <dots/type/NewTypeless.h>
 
@@ -55,6 +56,9 @@ namespace dots::type
 
 		virtual bool usesDynamicMemory() const;
 		virtual size_t dynamicMemoryUsage(const NewTypeless& value) const;
+
+		virtual void fromString(NewTypeless& storage, const std::string_view& value) const;
+		virtual std::string toString(const NewTypeless& value) const;
 
 		static bool IsFundamentalType(const NewDescriptor& descriptor);
 		static bool IsFundamentalType(NewType type);
