@@ -4,7 +4,7 @@
 #include <atomic>
 #include <memory>
 #include <dots/io/Chained.h>
-#include <dots/type/NewStructDescriptor.h>
+#include <dots/type/StructDescriptor.h>
 
 namespace dots
 {

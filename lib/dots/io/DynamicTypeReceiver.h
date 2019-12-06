@@ -1,7 +1,7 @@
 #pragma once
 
 #include <dots/cpp_config.h>
-#include <dots/type/NewStructDescriptor.h>
+#include <dots/type/StructDescriptor.h>
 #include <dots/functional/signal.h>
 
 namespace dots {

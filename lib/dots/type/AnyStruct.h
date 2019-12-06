@@ -1,6 +1,6 @@
 #pragma once
 #include <memory>
-#include <dots/type/NewStruct.h>
+#include <dots/type/Struct.h>
 
 namespace dots::type
 {

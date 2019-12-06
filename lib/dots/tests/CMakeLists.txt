@@ -17,13 +17,13 @@ target_sources(${TARGET_NAME}
         TestDistributedTypeId.cpp
         TestFileStore.cpp
         TestJsonSerialization.cpp
-		TestNewEnumDescriptor.cpp
-		TestNewStaticDescriptor.cpp
-		TestNewStaticStruct.cpp
-		TestNewPropertySet.cpp
-		TestNewProperty.cpp
-		TestNewProxyProperty.cpp
-		TestNewProxyPropertyIterator.cpp
+		TestEnumDescriptor.cpp
+		TestStaticDescriptor.cpp
+		TestStaticStruct.cpp
+		TestPropertySet.cpp
+		TestProperty.cpp
+		TestProxyProperty.cpp
+		TestProxyPropertyIterator.cpp
         TestRecord.cpp
         TestJsonStore.cpp
 )	

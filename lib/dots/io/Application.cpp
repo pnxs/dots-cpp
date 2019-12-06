@@ -3,7 +3,7 @@
 #include <dots/io/Io.h>
 #include <dots/io/services/ChannelService.h>
 #include <dots/io/services/TcpChannel.h>
-#include <dots/io/NewRegistry.h>
+#include <dots/io/Registry.h>
 #include <DotsClient.dots.h>
 
 namespace dots

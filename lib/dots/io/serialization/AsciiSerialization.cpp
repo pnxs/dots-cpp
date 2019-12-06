@@ -1,5 +1,5 @@
 #include "AsciiSerialization.h"
-#include <dots/type/NewEnumDescriptor.h>
+#include <dots/type/EnumDescriptor.h>
 #include <stack>
 #include <iostream>
 

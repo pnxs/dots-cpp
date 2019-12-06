@@ -1,7 +1,7 @@
 #include <dots/io/serialization/AsciiSerialization.h>
 #include "StructDescriptorData.dots.h"
 #include "DotsTestStruct.dots.h"
-#include "dots/io/NewRegistry.h"
+#include "dots/io/Registry.h"
 #include <gtest/gtest.h>
 
 #include <iostream>

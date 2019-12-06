@@ -1,8 +1,8 @@
-#include <dots/type/NewEnumDescriptor.h>
+#include <dots/type/EnumDescriptor.h>
 #include "Connection.h"
 #include "ConnectionManager.h"
 #include "AuthManager.h"
-#include "dots/io/NewRegistry.h"
+#include "dots/io/Registry.h"
 
 #include "DotsMsgConnectResponse.dots.h"
 #include "DotsMsgError.dots.h"

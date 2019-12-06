@@ -1,8 +1,8 @@
 #pragma once
 
 #include "dots/cpp_config.h"
-#include <dots/type/NewStructDescriptor.h>
-#include <dots/type/NewFundamentalTypes.h>
+#include <dots/type/StructDescriptor.h>
+#include <dots/type/FundamentalTypes.h>
 
 #define RAPIDJSON_HAS_STDSTRING 1
 #include <rapidjson/prettywriter.h>

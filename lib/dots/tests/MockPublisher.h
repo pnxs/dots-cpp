@@ -2,7 +2,7 @@
 
 #include "gmock/gmock.h"
 #include "dots/io/Publisher.h"
-#include "dots/type/NewStructDescriptor.h"
+#include "dots/type/StructDescriptor.h"
 
 namespace dots {
 

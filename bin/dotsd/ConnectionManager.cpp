@@ -1,6 +1,6 @@
 #include "ConnectionManager.h"
 #include "dots/io/TD_Traversal.h"
-#include "dots/io/NewRegistry.h"
+#include "dots/io/Registry.h"
 #include <dots/dots.h>
 
 #include "DotsCacheInfo.dots.h"

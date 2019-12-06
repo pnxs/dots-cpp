@@ -1,9 +1,9 @@
 
-#include <dots/type/NewEnumDescriptor.h>
+#include <dots/type/EnumDescriptor.h>
 #include "EnumDescriptorData.dots.h"
 #include "StructDescriptorData.dots.h"
 #include "DynamicTypeReceiver.h"
-#include "dots/io/NewRegistry.h"
+#include "dots/io/Registry.h"
 #include <dots/dots.h>
 
 namespace dots {

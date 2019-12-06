@@ -9,7 +9,7 @@
 #include "Subscription.h"
 #include <dots/io/services/Channel.h>
 #include "Publisher.h"
-#include <dots/io/NewRegistry.h>
+#include <dots/io/Registry.h>
 
 namespace dots::type
 {

@@ -1,5 +1,5 @@
 #pragma once
-#include <dots/type/NewStruct.h>
+#include <dots/type/Struct.h>
 #include <DotsHeader.dots.h>
 #include <DotsCloneInformation.dots.h>
 

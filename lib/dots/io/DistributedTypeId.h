@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cstdint>
-#include <dots/type/NewStructDescriptor.h>
+#include <dots/type/StructDescriptor.h>
 #include <map>
 #include <dots/functional/signal.h>
 

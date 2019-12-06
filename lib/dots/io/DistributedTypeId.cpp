@@ -1,6 +1,6 @@
 #include "DistributedTypeId.h"
 #include <dots/dots.h>
-#include <dots/io/NewRegistry.h>
+#include <dots/io/Registry.h>
 
 namespace dots
 {

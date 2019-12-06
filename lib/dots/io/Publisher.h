@@ -1,5 +1,5 @@
 #pragma once
-#include <dots/type/NewStructDescriptor.h>
+#include <dots/type/StructDescriptor.h>
 
 namespace dots
 {

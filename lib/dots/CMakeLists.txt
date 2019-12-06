@@ -87,17 +87,17 @@ target_sources(${TARGET_NAME}
 		io/recording/DynamicLoader.cpp
 		io/recording/Player.cpp
 		io/recording/FileReader.cpp
-		io/NewRegistry.cpp
-		io/NewDescriptorConverter.cpp
+		io/Registry.cpp
+		io/DescriptorConverter.cpp
 		type/AnyStruct.cpp		
-		type/NewDescriptor.cpp
-		type/NewEnumDescriptor.cpp
-		type/NewPropertyDescriptor.cpp
-		type/NewProxyPropertyIterator.cpp
-		type/NewProxyPropertyPairIterator.cpp
-		type/NewStruct.cpp
-		type/NewStructDescriptor.cpp
-		type/NewVectorDescriptor.cpp
+		type/Descriptor.cpp
+		type/EnumDescriptor.cpp
+		type/PropertyDescriptor.cpp
+		type/ProxyPropertyIterator.cpp
+		type/ProxyPropertyPairIterator.cpp
+		type/Struct.cpp
+		type/StructDescriptor.cpp
+		type/VectorDescriptor.cpp
 
 		${MODEL_SOURCES}
 )

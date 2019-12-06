@@ -2,7 +2,7 @@
 #include "StructDescriptorData.dots.h"
 #include "DotsTestStruct.dots.h"
 #include "DotsTestVectorStruct.dots.h"
-#include "dots/io/NewRegistry.h"
+#include "dots/io/Registry.h"
 #include <dots/dots_base.h>
 #include <gtest/gtest.h>
 
