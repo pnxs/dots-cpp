@@ -89,23 +89,7 @@ target_sources(${TARGET_NAME}
 		io/recording/FileReader.cpp
 		io/NewRegistry.cpp
 		io/NewDescriptorConverter.cpp
-		type/AnyStruct.cpp
-		type/ChronoDescriptor.cpp
-		type/Descriptor.cpp
-		type/Enum.cpp
-		type/EnumDescriptor.cpp
-		type/PropertyIterator.cpp
-		type/PropertyPairIterator.cpp
-		type/EnumDescriptor.cpp
-		type/Registry.cpp
-		type/StandardTypes.cpp
-		type/StructDescriptor.cpp
-		type/StructProperty.cpp
-		type/UuidDescriptor.cpp
-		type/Vector.cpp
-		type/VectorDescriptor.cpp
-		type/Struct.cpp
-		
+		type/AnyStruct.cpp		
 		type/NewDescriptor.cpp
 		type/NewEnumDescriptor.cpp
 		type/NewPropertyDescriptor.cpp

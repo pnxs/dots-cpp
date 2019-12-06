@@ -1,6 +1,7 @@
 #include "WebSocketChannel.h"
 #include <dots/io/Io.h>
 #include <dots/io/serialization/JsonSerializationRapidJson.h>
+#include <dots/dots.h>
 
 namespace dots
 {
@@ -69,9 +70,9 @@ namespace dots
 				}
 
 				DotsTransportHeader header;
-				from_json(std::as_const(itHeader->value).GetObject(), &header._Descriptor(), &header);
+				from_json(std::as_const(itHeader->value).GetObject(), header);
 
-				const type::StructDescriptor* descriptor = type::Descriptor::registry().findStructDescriptor(header.dotsHeader->typeName);
+				const type::NewStructDescriptor<>* descriptor = transceiver().registry().findStructType(*header.dotsHeader->typeName).get();
 
 				if (descriptor == nullptr)
 				{
@@ -79,7 +80,7 @@ namespace dots
 				}
 				
 				type::AnyStruct instance{ *descriptor };
-				from_json(std::as_const(itInstance->value).GetObject(), descriptor, &instance.get());
+				from_json(std::as_const(itInstance->value).GetObject(), instance.get());
 				processReceive(header, Transmission{ std::move(instance) });
 			}
 			catch (const std::exception& e)
@@ -89,7 +90,7 @@ namespace dots
 		});
 	}
 
-	void WebSocketChannel::transmitImpl(const DotsTransportHeader& header, const type::Struct& instance)
+	void WebSocketChannel::transmitImpl(const DotsTransportHeader& header, const type::NewStruct& instance)
 	{
 		rapidjson::StringBuffer buffer;
     	rapidjson::PrettyWriter<rapidjson::StringBuffer> writer{ buffer };
@@ -98,10 +99,10 @@ namespace dots
 		writer.StartObject();
 		{
 			writer.String("header");
-			dots::to_json(&header._Descriptor(), &header, writer);
+			dots::to_json(header, writer);
 
 			writer.String("instance");
-			dots::to_json(&instance._descriptor(), &instance, writer);
+			dots::to_json(instance, writer);
 		}
 		writer.EndObject();
 

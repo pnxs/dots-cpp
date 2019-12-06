@@ -7,17 +7,17 @@
 
 namespace dots
 {
-	template <typename = type::Struct>
+	template <typename = type::NewStruct>
 	struct Container;
 
 	template <>
-	struct Container<type::Struct>
+	struct Container<type::NewStruct>
 	{
 		struct key_compare
 		{
 			using is_transparent = void;
 
-			bool operator () (const type::Struct& lhs, const type::Struct& rhs) const
+			bool operator () (const type::NewStruct& lhs, const type::NewStruct& rhs) const
 			{
 				return lhs._less(rhs, lhs._keyProperties());
 			}
@@ -28,7 +28,7 @@ namespace dots
 		using value_t = container_t::value_type;
 		using node_t = container_t::node_type;
 
-		Container(const type::StructDescriptor& descriptor);
+		Container(const type::NewStructDescriptor<>& descriptor);
 		Container(const Container& other) = default;
 		Container(Container&& other) = default;
 		~Container() = default;
@@ -36,7 +36,7 @@ namespace dots
 		Container& operator = (const Container& rhs) = default;
 		Container& operator = (Container&& rhs) = default;
 
-		const type::StructDescriptor& descriptor() const;
+		const type::NewStructDescriptor<>& descriptor() const;
 
 		const_iterator_t begin() const;
 		const_iterator_t end() const;
@@ -47,26 +47,26 @@ namespace dots
 		bool empty() const;
 		size_t size() const;
 
-		const value_t* findClone(const type::Struct& instance) const;
-		const value_t& getClone(const type::Struct& instance) const;
+		const value_t* findClone(const type::NewStruct& instance) const;
+		const value_t& getClone(const type::NewStruct& instance) const;
 
-		const type::Struct* find(const type::Struct& instance) const;
-		const type::Struct& get(const type::Struct& instance) const;
+		const type::NewStruct* find(const type::NewStruct& instance) const;
+		const type::NewStruct& get(const type::NewStruct& instance) const;
 
-		const value_t& insert(const DotsHeader& header, const type::Struct& instance);
-		node_t remove(const DotsHeader& header, const type::Struct& instance);
+		const value_t& insert(const DotsHeader& header, const type::NewStruct& instance);
+		node_t remove(const DotsHeader& header, const type::NewStruct& instance);
 
 		void clear();
 
 		void forEachClone(const std::function<void(const value_t&)>& f) const;
-		void forEach(const std::function<void(const type::Struct&)>& f) const;
+		void forEach(const std::function<void(const type::NewStruct&)>& f) const;
 
 		size_t totalMemoryUsage() const;
 
 		template <typename T>
 		const Container<T>& as() const
 		{
-			static_assert(std::is_base_of_v<type::Struct, T>);
+			static_assert(std::is_base_of_v<type::NewStruct, T>);
 
 			if (&T::_Descriptor() != m_descriptor)
 			{
@@ -84,17 +84,17 @@ namespace dots
 
 	private:
 
-		const type::StructDescriptor* m_descriptor;
+		const type::NewStructDescriptor<>* m_descriptor;
 		container_t m_instances;
 	};
 
 	template <typename T>
-	struct Container : Container<type::Struct>
+	struct Container : Container<type::NewStruct>
 	{
-		static_assert(std::is_base_of_v<type::Struct, T>);
+		static_assert(std::is_base_of_v<type::NewStruct, T>);
 
 		Container() :
-			Container<type::Struct>(T::_Descriptor())
+			Container<type::NewStruct>(T::_Descriptor())
 		{
 			/* do nothing */
 		}

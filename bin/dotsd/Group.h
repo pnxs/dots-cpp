@@ -1,7 +1,9 @@
 #pragma once
 
+#include <set>
 #include "dots/cpp_config.h"
 #include <dots/io/services/Transmission.h>
+#include <dots/dots_base.h>
 #include "DotsMember.dots.h"
 #include <DotsTransportHeader.dots.h>
 

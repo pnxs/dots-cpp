@@ -1,8 +1,8 @@
-#include <dots/type/EnumDescriptor.h>
+#include <dots/type/NewEnumDescriptor.h>
 #include "Connection.h"
 #include "ConnectionManager.h"
 #include "AuthManager.h"
-#include "dots/type/Registry.h"
+#include "dots/io/NewRegistry.h"
 
 #include "DotsMsgConnectResponse.dots.h"
 #include "DotsMsgError.dots.h"
@@ -248,7 +248,7 @@ bool Connection::onControlMessage(const DotsTransportHeader& transportHeader, Tr
             {
                 auto enumDescriptorData = static_cast<const EnumDescriptorData&>(transmission.instance().get());
                 enumDescriptorData.publisherId = id();
-                type::EnumDescriptor::createFromEnumDescriptorData(enumDescriptorData);
+                type::NewEnumDescriptor<>::createFromEnumDescriptorData(enumDescriptorData);
                 m_connectionManager.deliver(transportHeader, std::move(transmission));
                 handled = true;
             }
@@ -257,7 +257,9 @@ bool Connection::onControlMessage(const DotsTransportHeader& transportHeader, Tr
                 auto structDescriptorData = static_cast<const StructDescriptorData&>(transmission.instance().get());
                 structDescriptorData.publisherId = id();
                 LOG_DEBUG_S("received struct descriptor: " << structDescriptorData.name);
-                type::StructDescriptor::createFromStructDescriptorData(structDescriptorData);
+            	const type::NewStructDescriptor<>* descriptor = type::NewStructDescriptor<>::createFromStructDescriptorData(structDescriptorData);
+            	LOG_INFO_S("register type " << descriptor->name() << " published by " << m_clientName);
+            	m_connectionManager.onNewType(descriptor);
                 m_connectionManager.deliver(transportHeader, std::move(transmission));
                 handled = true;
             }
@@ -325,7 +327,7 @@ void Connection::setConnectionState(const DotsConnectionState& state)
 	DotsClient{ DotsClient::id_i{ id() }, DotsClient::connectionState_i{ state } }._publish();
 }
 
-void Connection::send(const DotsTransportHeader& header, const type::Struct& instance)
+void Connection::send(const DotsTransportHeader& header, const type::NewStruct& instance)
 {
     try
     {
@@ -392,9 +394,9 @@ void Connection::onChannelError(const std::exception& e)
 }
 
 void Connection::sendNs(const string &nameSpace,
-                        const type::StructDescriptor *td,
-                        const type::Struct& instance,
-                        property_set properties,
+                        const type::NewStructDescriptor<> *td,
+                        const type::NewStruct& instance,
+                        type::NewPropertySet properties,
                         bool remove)
 {
     DotsTransportHeader header;

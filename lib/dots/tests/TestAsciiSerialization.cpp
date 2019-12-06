@@ -1,7 +1,7 @@
 #include <dots/io/serialization/AsciiSerialization.h>
 #include "StructDescriptorData.dots.h"
 #include "DotsTestStruct.dots.h"
-#include "dots/type/Registry.h"
+#include "dots/io/NewRegistry.h"
 #include <gtest/gtest.h>
 
 #include <iostream>
@@ -53,7 +53,7 @@ TEST(TestAsciiSerialization, serialize)
             "    }\n"
             "}\n";
 
-    EXPECT_EQ(dots::to_ascii(&sd._Descriptor(), &sd, PROPERTY_SET_ALL), expectedOutput);
+    EXPECT_EQ(dots::to_ascii(&sd._Descriptor(), &sd, NewPropertySet::All), expectedOutput);
 }
 
 TEST(TestAsciiSerialization, serializeSingleLine)
@@ -83,7 +83,7 @@ TEST(TestAsciiSerialization, serializeSingleLine)
 
     std::string expectedOutput = "<name:aName properties:[<name:aProperty tag:1 isKey:0 type:type >, <name:anotherProperty tag:2 isKey:0 type:type >] documentation:<description:aDescription comment:aComment >>";
 
-    EXPECT_EQ(dots::to_ascii(&sd._Descriptor(), &sd, PROPERTY_SET_ALL, options), expectedOutput);
+    EXPECT_EQ(dots::to_ascii(&sd._Descriptor(), &sd, NewPropertySet::All, options), expectedOutput);
 }
 
 TEST(TestAsciiSerialization, serializeSingleLineWithEnums)
@@ -100,9 +100,9 @@ TEST(TestAsciiSerialization, serializeSingleLineWithEnums)
     //std::string expectedOutput = "<name:aName properties:[<name:aProperty tag:1 isKey:0 type:type >, <name:anotherProperty tag:2 isKey:0 type:type >] documentation:<description:aDescription comment:aComment >>";
     std::string expectedOutput = "<indKeyfField:42 enumField:value3 tp:0.000000 uuid:00000000-0000-0000-0000-000000000000 >";
 
-    //std::cout << "Ascii: '" << dots::to_ascii(&ts._Descriptor(), &ts, PROPERTY_SET_ALL, options) << "'";
+    //std::cout << "Ascii: '" << dots::to_ascii(&ts._Descriptor(), &ts, NewPropertySet::All, options) << "'";
 
-    EXPECT_EQ(dots::to_ascii(&ts._Descriptor(), &ts, PROPERTY_SET_ALL, options), expectedOutput);
+    EXPECT_EQ(dots::to_ascii(&ts._Descriptor(), &ts, NewPropertySet::All, options), expectedOutput);
 }
 
 struct TraceColorSchema: public dots::ToAsciiColorSchema
@@ -148,5 +148,5 @@ TEST(TestAsciiSerialization, serializeSingleLineColored)
     options.singleLine = true;
     options.cs = &cs;
 
-    std::cout << "\nAscii: " << dots::to_ascii(&sd._Descriptor(), &sd, PROPERTY_SET_ALL, options) << "\n";
+    std::cout << "\nAscii: " << dots::to_ascii(&sd._Descriptor(), &sd, NewPropertySet::All, options) << "\n";
 }

@@ -1,7 +1,8 @@
 #pragma once
 
 #include "dots/cpp_config.h"
-#include <dots/type/StructDescriptor.h>
+#include <dots/type/NewStructDescriptor.h>
+#include <dots/type/NewFundamentalTypes.h>
 
 namespace dots {
 
@@ -30,11 +31,11 @@ struct ToAsciiOptions
     ToAsciiColorSchema* cs = nullptr;
     bool singleLine = false;
     bool enumAsTag = false;
-    dots::property_set highlightAttributes;
+    types::property_set_t highlightAttributes;
 };
 
 
-std::string to_ascii(const dots::type::StructDescriptor* td, const void* data, property_set properties = PROPERTY_SET_ALL, const ToAsciiOptions& cs = {});
+std::string to_ascii(const type::NewStructDescriptor<>* td, const void* data, types::property_set_t properties = types::property_set_t::All, const ToAsciiOptions& cs = {});
 
 }
 

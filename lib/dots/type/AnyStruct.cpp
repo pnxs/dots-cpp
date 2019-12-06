@@ -2,13 +2,13 @@
 
 namespace dots::type
 {
-	AnyStruct::AnyStruct(const StructDescriptor& descriptor):
-		_instance{ reinterpret_cast<Struct*>(::operator new(descriptor.sizeOf())) }
+	AnyStruct::AnyStruct(const NewStructDescriptor<>& descriptor):
+		_instance{ reinterpret_cast<NewStruct*>(::operator new(descriptor.size())) }
 	{
-		descriptor.construct(_instance.get());
+		descriptor.construct(NewTypeless::From(*_instance));
 	}
 
-	AnyStruct::AnyStruct(const Struct& instance) :
+	AnyStruct::AnyStruct(const NewStruct& instance) :
 		AnyStruct(instance._descriptor())
 	{
 		*this = instance;
@@ -24,7 +24,7 @@ namespace dots::type
 	{
 		if (_instance != nullptr)
 		{
-			_instance->_descriptor().destruct(_instance.get());
+			_instance->_descriptor().destruct(NewTypeless::From(*_instance));
 		}		
 	}
 
@@ -33,48 +33,48 @@ namespace dots::type
 		return *this = rhs.get();
 	}
 
-	AnyStruct& AnyStruct::operator = (const Struct& rhs)
+	AnyStruct& AnyStruct::operator = (const NewStruct& rhs)
 	{
-		_instance->_descriptor().copy(_instance.get(), &rhs);
+		_instance->_assign(rhs);
 		return *this;
 	}
 
-	Struct& AnyStruct::operator * ()
+	NewStruct& AnyStruct::operator * ()
 	{
 		return get();
 	}
 
-	const Struct& AnyStruct::operator * () const
+	const NewStruct& AnyStruct::operator * () const
 	{
 		return get();
 	}
 
-	Struct* AnyStruct::operator -> ()
+	NewStruct* AnyStruct::operator -> ()
 	{
 		return &get();
 	}
 
-	const Struct* AnyStruct::operator -> () const
+	const NewStruct* AnyStruct::operator -> () const
 	{
 		return &get();
 	}
 
-	AnyStruct::operator Struct&()
+	AnyStruct::operator NewStruct&()
 	{
 		return get();
 	}
 
-	AnyStruct::operator const Struct&() const
+	AnyStruct::operator const NewStruct&() const
 	{
 		return const_cast<AnyStruct&>(*this).get();
 	}
 
-	Struct& AnyStruct::get()
+	NewStruct& AnyStruct::get()
 	{
 		return *_instance;
 	}
 
-	const Struct& AnyStruct::get() const
+	const NewStruct& AnyStruct::get() const
 	{
 		return *_instance;
 	}

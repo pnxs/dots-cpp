@@ -1,6 +1,7 @@
 #include "ConnectionManager.h"
 #include "dots/io/TD_Traversal.h"
-#include "dots/type/Registry.h"
+#include "dots/io/NewRegistry.h"
+#include <dots/dots.h>
 
 #include "DotsCacheInfo.dots.h"
 #include "DotsClient.dots.h"
@@ -12,7 +13,6 @@ ConnectionManager::ConnectionManager(GroupManager &groupManager, ServerInfo &ser
         :m_groupManager(groupManager), m_serverInfo(server)
 {
 	m_dispatcher.pool().get<DotsClient>();
-    dots::type::Descriptor::registry().onNewStruct.connect(FUN(*this, onNewType));
     m_dispatcher.subscribe<DotsDescriptorRequest>(FUN(*this, handleDescriptorRequest)).discard();
     m_dispatcher.subscribe<DotsClearCache>(FUN(*this, handleClearCache)).discard();
 }
@@ -22,9 +22,9 @@ void ConnectionManager::init()
     m_distributedTypeId = std::make_unique<DistributedTypeId>(true);
 
     // Register all types, that are registered before this instance was created
-    for (auto& t : type::Descriptor::registry().getTypes())
+    for (auto& t : transceiver().registry().getTypes())
     {
-        m_distributedTypeId->createTypeId(t.second);
+        m_distributedTypeId->createTypeId(t.second.get());
     }
 }
 
@@ -70,7 +70,7 @@ void ConnectionManager::stop_all()
  * @param td the structdescriptor from which the flags should be processed.
  * @return short string containing the flags.
  */
-static std::string flags2String(const dots::type::StructDescriptor* td)
+static std::string flags2String(const dots::type::NewStructDescriptor<>* td)
 {
     std::string ret = ".....";
     if (td->cached())       ret[0] = 'C';
@@ -85,10 +85,8 @@ static std::string flags2String(const dots::type::StructDescriptor* td)
  * Called for newly registered DOTS types.
  * @param td typedescriptor of the new type.
  */
-void ConnectionManager::onNewType(const dots::type::StructDescriptor* td)
+void ConnectionManager::onNewType(const dots::type::NewStructDescriptor<>* td)
 {
-    LOG_INFO_S("register type " << td->name() << " published by " << clientId2Name(td->publisherId()));
-
     LOG_DEBUG_S("onNewType name=" << td->name() << " flags:" << flags2String(td));
 
     // Only continue, if type is a cached type
@@ -274,7 +272,7 @@ void ConnectionManager::handleDescriptorRequest(const DotsDescriptorRequest::Cbd
 {
     if (cbd.isOwnUpdate()) return;
 
-    auto& wl = cbd().whitelist.IsPartOf(cbd.updatedProperties()) ? *cbd().whitelist : dots::Vector<string>();
+    auto& wl = cbd().whitelist.IsPartOf(cbd.updatedProperties()) ? *cbd().whitelist : dots::type::NewVector<string>();
 
     dots::TD_Traversal traversal;
 
@@ -317,7 +315,7 @@ void ConnectionManager::handleDescriptorRequest(const DotsDescriptorRequest::Cbd
             thead.dotsHeader->sender(this->serverInfo().id());
 
             // Send to peer or group
-            connection->send(thead, *reinterpret_cast<const type::Struct*>(body));
+            connection->send(thead, *reinterpret_cast<const type::NewStruct*>(body));
         });
     }
 
@@ -329,7 +327,7 @@ void ConnectionManager::handleDescriptorRequest(const DotsDescriptorRequest::Cbd
 
 void ConnectionManager::handleClearCache(const DotsClearCache::Cbd& cbd)
 {
-    auto& whitelist = cbd().typeNames.isValid() ? *cbd().typeNames : dots::Vector<string>();
+    auto& whitelist = cbd().typeNames.isValid() ? *cbd().typeNames : dots::type::NewVector<string>();
 
     for (auto& cpItem : m_dispatcher.pool())
     {
@@ -362,7 +360,7 @@ void ConnectionManager::cleanupObjects(Connection *connection)
 {
     for (const auto& container : m_cleanupContainer)
     {
-        vector<const type::Struct*> remove;
+        vector<const type::NewStruct*> remove;
 
         // Search for objects which where sent by this killed Connection.
         for (const auto& [instance, cloneInfo] : *container)
@@ -375,16 +373,16 @@ void ConnectionManager::cleanupObjects(Connection *connection)
 
         for (auto item : remove)
         {
-            publishNs({}, &container->descriptor(), *reinterpret_cast<const type::Struct*>(item), container->descriptor().keys(), true);
+            publishNs({}, &container->descriptor(), *reinterpret_cast<const type::NewStruct*>(item), container->descriptor().keys(), true);
         }
     }
 
 }
 
 void ConnectionManager::publishNs(const string &nameSpace,
-                                  const type::StructDescriptor *td,
-                                  const type::Struct& instance,
-                                  property_set properties,
+                                  const type::NewStructDescriptor<> *td,
+                                  const type::NewStruct& instance,
+                                  type::NewPropertySet properties,
                                   bool remove, bool processLocal)
 {
     DotsTransportHeader header;
@@ -448,7 +446,7 @@ void ConnectionManager::addClient(Connection* connection)
 }
 
 void
-ConnectionManager::publish(const type::StructDescriptor *td, const type::Struct& instance, property_set properties, bool remove)
+ConnectionManager::publish(const type::NewStructDescriptor<> *td, const type::NewStruct& instance, type::NewPropertySet properties, bool remove)
 {
     publishNs("SYS", td, instance, properties, remove, true);
 }
@@ -472,7 +470,7 @@ string ConnectionManager::clientId2Name(ClientId id) const
         return m_serverInfo.name();
     }
 
-    return to_string(id);
+    return std::to_string(id);
 }
 
 const DistributedTypeId &ConnectionManager::distributedTypeId() const

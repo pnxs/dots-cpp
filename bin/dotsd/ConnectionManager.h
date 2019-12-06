@@ -75,10 +75,10 @@ public:
      * @param properties properties, that should be send
      * @param remove if object should be removed
      */
-    void publishNs(const string& nameSpace, const type::StructDescriptor* td, const type::Struct& instance, property_set properties, bool remove, bool processLocal = true);
+    void publishNs(const string& nameSpace, const type::NewStructDescriptor<>* td, const type::NewStruct& instance, type::NewPropertySet properties, bool remove, bool processLocal = true);
 
     // Need for Publisher-Interface
-    void publish(const type::StructDescriptor* td, const type::Struct& instance, property_set properties, bool remove) override;
+    void publish(const type::NewStructDescriptor<>* td, const type::NewStruct& instance, type::NewPropertySet properties, bool remove) override;
 
     /*!
      * Process DotsMember-message. Do Join or Leave from Groups.
@@ -111,7 +111,7 @@ public:
     DotsStatistics sendStatistics() const;
     DotsCacheStatus cacheStatus() const;
 
-    void onNewType(const type::StructDescriptor*);
+    void onNewType(const type::NewStructDescriptor<>*);
 
     const DistributedTypeId& distributedTypeId() const;
 

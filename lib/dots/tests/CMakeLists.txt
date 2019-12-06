@@ -17,10 +17,6 @@ target_sources(${TARGET_NAME}
         TestDistributedTypeId.cpp
         TestFileStore.cpp
         TestJsonSerialization.cpp
-        TestPropertyIterator.cpp
-		TestPropertyProxy.cpp
-		TestPropertyProxyVoid.cpp
-		TestPropertySet.cpp
 		TestNewEnumDescriptor.cpp
 		TestNewStaticDescriptor.cpp
 		TestNewStaticStruct.cpp
@@ -29,10 +25,6 @@ target_sources(${TARGET_NAME}
 		TestNewProxyProperty.cpp
 		TestNewProxyPropertyIterator.cpp
         TestRecord.cpp
-        TestStruct.cpp
-		TestTProperty.cpp
-		TestTStruct.cpp
-        TestVectorDescriptor.cpp
         TestJsonStore.cpp
 )	
 target_include_directories(${TARGET_NAME}

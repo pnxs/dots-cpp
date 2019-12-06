@@ -1,16 +1,13 @@
 #pragma once
+#include <dots/type/NewStructDescriptor.h>
 
 namespace dots
 {
 
-namespace type {
-class StructDescriptor;
-}
-
 class Publisher
 {
 public:
-    virtual void publish(const type::StructDescriptor* td, const type::Struct& instance, property_set what, bool remove) = 0;
+    virtual void publish(const type::NewStructDescriptor<>* td, const type::NewStruct& instance, types::property_set_t what, bool remove) = 0;
 };
 
 }

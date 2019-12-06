@@ -1,17 +1,17 @@
 #pragma once
-#include <dots/type/Struct.h>
+#include <dots/type/NewStruct.h>
 #include <DotsHeader.dots.h>
 #include <DotsCloneInformation.dots.h>
 
 namespace dots
 {
-    template<typename = type::Struct>
+    template<typename = type::NewStruct>
     struct Event;
 
     template<>
-    struct Event<type::Struct>
+    struct Event<type::NewStruct>
     {
-        Event(const DotsHeader& header, const type::Struct& transmitted, const type::Struct& updated, const DotsCloneInformation& cloneInfo);
+        Event(const DotsHeader& header, const type::NewStruct& transmitted, const type::NewStruct& updated, const DotsCloneInformation& cloneInfo);
 		Event(const Event& other) = delete;
 		Event(Event&& other) = delete;
 		~Event() = default;
@@ -19,14 +19,14 @@ namespace dots
 		Event& operator = (const Event& rhs) = delete;
 		Event& operator = (Event&& rhs) = delete;
 
-        const type::Struct& operator () () const;
+        const type::NewStruct& operator () () const;
 
         const DotsHeader& header() const;
-        const type::Struct& transmitted() const;
-        const type::Struct& updated() const;
+        const type::NewStruct& transmitted() const;
+        const type::NewStruct& updated() const;
         const DotsCloneInformation& cloneInfo() const;
 
-		const type::StructDescriptor& descriptor() const;
+		const type::NewStructDescriptor<>& descriptor() const;
 
         DotsMt mt() const;
         bool isCreate() const;
@@ -34,13 +34,13 @@ namespace dots
         bool isRemove() const;
 
         bool isOwnUpdate() const;		
-	    property_set newProperties() const { return header().attributes; }
-	    property_set updatedProperties() const { return newProperties() & updated()._validProperties(); }
+	    types::property_set_t newProperties() const { return header().attributes; }
+	    types::property_set_t updatedProperties() const { return newProperties() ^ updated()._validProperties(); }
 
         template <typename T>
         const Event<T>& as() const
         {
-            static_assert(std::is_base_of_v<type::Struct, T>);
+            static_assert(std::is_base_of_v<type::NewStruct, T>);
 
             if (&T::_Descriptor() != &m_transmitted._descriptor())
             {
@@ -59,18 +59,18 @@ namespace dots
     private:
 
         const DotsHeader& m_header;
-        const type::Struct& m_transmitted;
-        const type::Struct& m_updated;
+        const type::NewStruct& m_transmitted;
+        const type::NewStruct& m_updated;
         const DotsCloneInformation m_cloneInfo;
     };
 
     template<typename T>
-    struct Event : Event<type::Struct>
+    struct Event : Event<type::NewStruct>
     {
-        static_assert(std::is_base_of_v<type::Struct, T>);
+        static_assert(std::is_base_of_v<type::NewStruct, T>);
 
         Event(const DotsHeader& header, const T& transmitted, const T& updated, const DotsCloneInformation& cloneInfo) :
-            Event<type::Struct>(header, transmitted, updated, cloneInfo)
+            Event<type::NewStruct>(header, transmitted, updated, cloneInfo)
         {
             /* do nothing */
         }
@@ -83,23 +83,23 @@ namespace dots
 
 		const T& operator () () const
 		{
-			return static_cast<const T&>(Event<type::Struct>::operator()());
+			return static_cast<const T&>(Event<type::NewStruct>::operator()());
 		}
 
         const T& transmitted() const
         {
-            return static_cast<const T&>(Event<type::Struct>::transmitted());
+            return static_cast<const T&>(Event<type::NewStruct>::transmitted());
         }
 
         const T& updated() const
         {
-            return static_cast<const T&>(Event<type::Struct>::updated());
+            return static_cast<const T&>(Event<type::NewStruct>::updated());
         }
 
     private:
 
-		using Event<type::Struct>::operator();
-        using Event<type::Struct>::transmitted;
-        using Event<type::Struct>::updated;
+		using Event<type::NewStruct>::operator();
+        using Event<type::NewStruct>::transmitted;
+        using Event<type::NewStruct>::updated;
     };
 }

@@ -21,13 +21,13 @@ namespace dots
 		Channel& operator = (Channel&& rhs) = delete;
 
 		void asyncReceive(receive_handler_t&& receiveHandler, error_handler_t&& errorHandler);
-		void transmit(const DotsTransportHeader& header, const type::Struct& instance);
+		void transmit(const DotsTransportHeader& header, const type::NewStruct& instance);
 		void transmit(const DotsTransportHeader& header, const Transmission& transmission);
 
 	protected:
 
 		virtual void asyncReceiveImpl() = 0;
-		virtual void transmitImpl(const DotsTransportHeader& header, const type::Struct& instance) = 0;
+		virtual void transmitImpl(const DotsTransportHeader& header, const type::NewStruct& instance) = 0;
 		virtual void transmitImpl(const DotsTransportHeader& header, const Transmission& transmission);
 
 		void processReceive(const DotsTransportHeader& header, Transmission&& transmission);

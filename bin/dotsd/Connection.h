@@ -46,7 +46,7 @@ public:
      * Directly send a Message to the client.
      * @param msg Message-object
      */
-    virtual void send(const DotsTransportHeader& header, const type::Struct& instance);
+    virtual void send(const DotsTransportHeader& header, const type::NewStruct& instance);
 
     virtual void send(const DotsTransportHeader& header, const Transmission& transmission);
 
@@ -86,7 +86,7 @@ public:
      * @param properties which properties should be send?
      * @param remove send normal or remove object?
      */
-    void sendNs(const string& nameSpace, const type::StructDescriptor* td, const type::Struct& instance, property_set properties, bool remove);
+    void sendNs(const string& nameSpace, const type::NewStructDescriptor<>* td, const type::NewStruct& instance, type::NewPropertySet properties, bool remove);
 
     void sendContainerContent(const Container<>& container);
     void sendCacheEnd(const std::string& typeName);
