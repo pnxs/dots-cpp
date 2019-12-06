@@ -329,7 +329,7 @@ namespace dots::type
 
 		bool greater(const T& rhs) const
 		{
-			return rhs.less(*this);
+			return !isValid() || valueDescriptor().less(rhs, storage());
 		}
 
 		bool greater(const Derived& rhs) const
