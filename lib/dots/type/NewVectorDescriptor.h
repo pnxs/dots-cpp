@@ -6,7 +6,7 @@ namespace dots::type
 {
 	struct NewVectorDescriptor : NewDescriptor<NewTypeless>
 	{
-		NewVectorDescriptor(std::string name, const NewDescriptor<NewTypeless>& valueDescriptor, size_t size, size_t alignment);
+		NewVectorDescriptor(std::string name, const std::shared_ptr<NewDescriptor<>>& valueDescriptor, size_t size, size_t alignment);
 		NewVectorDescriptor(const NewVectorDescriptor& other) = default;
 		NewVectorDescriptor(NewVectorDescriptor&& other) = default;
 		~NewVectorDescriptor() = default;
@@ -14,18 +14,19 @@ namespace dots::type
 		NewVectorDescriptor& operator = (const NewVectorDescriptor& rhs) = default;
 		NewVectorDescriptor& operator = (NewVectorDescriptor&& rhs) = default;
 
+		const std::shared_ptr<NewDescriptor<>>& valueDescriptorPtr() const;
 		const NewDescriptor<NewTypeless>& valueDescriptor() const;
 
 	private:
 
-		const NewDescriptor<NewTypeless>* m_valueDescriptor;
+		std::shared_ptr<NewDescriptor<>> m_valueDescriptor;
 	};
 
 	template <typename T>
 	struct NewDescriptor<NewVector<T>> : NewStaticDescriptor<NewVector<T>, NewVectorDescriptor>
 	{
 		NewDescriptor() :
-			NewStaticDescriptor<NewVector<T>, NewVectorDescriptor>("vector<" + valueDescriptor().name() + ">", valueDescriptor(), sizeof(NewVector<T>), alignof(NewVector<T>))
+			NewStaticDescriptor<NewVector<T>, NewVectorDescriptor>("vector<" + valueDescriptor().name() + ">", valueDescriptorPtr(), sizeof(NewVector<T>), alignof(NewVector<T>))
 		{
 			/* do nothing */
 		}
@@ -56,6 +57,11 @@ namespace dots::type
 		    return dynMemUsage;
 		}
 
+		static const std::shared_ptr<NewDescriptor<T>>& valueDescriptorPtr()
+		{
+			return NewDescriptor<T>::InstancePtr();
+		}
+
 		static const NewDescriptor<T>& valueDescriptor()
 		{
 			return NewDescriptor<T>::Instance();
@@ -63,6 +69,7 @@ namespace dots::type
 
 	private:
 
+		using NewVectorDescriptor::valueDescriptorPtr;
 		using NewVectorDescriptor::valueDescriptor;
 	};
 }

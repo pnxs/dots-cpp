@@ -3,10 +3,38 @@
 #include <string_view>
 #include <sstream>
 #include <iomanip>
+#include <map>
 #include <dots/type/NewDescriptor.h>
 
 namespace dots::type
 {
+	struct NewStaticDescriptorMap
+	{
+		template <typename D, std::enable_if_t<std::is_base_of_v<NewDescriptor<>, D>, int> = 0>
+    	static std::shared_ptr<D> Emplace(D&& descriptor)
+    	{
+			auto descriptor_ = std::make_shared<D>(std::forward<D>(descriptor));
+			auto [it, emplaced] = M_descriptors.try_emplace(descriptor_->name(), descriptor_);
+			
+			if (!emplaced)
+			{
+				throw std::logic_error{ "there already is a static descriptor with name: " + descriptor_->name() };
+			}
+			
+    		return descriptor_;
+    	}
+
+    	static std::shared_ptr<NewDescriptor<>> Find(const std::string_view& name)
+    	{
+    		auto it = M_descriptors.find(name);
+			return it == M_descriptors.end() ? nullptr : it->second;
+    	}
+		
+	private:
+
+		inline static std::map<std::string_view, std::shared_ptr<NewDescriptor<>>> M_descriptors;
+	};
+	
 	template <typename T, typename Base = NewDescriptor<NewTypeless>>
 	struct NewStaticDescriptor : Base
 	{
@@ -249,10 +277,15 @@ namespace dots::type
 			}
 		}
 
+		static const std::shared_ptr<NewDescriptor<T>>& InstancePtr()
+		{
+			static std::shared_ptr<NewDescriptor<T>> InstancePtr_ = NewStaticDescriptorMap::Emplace(NewDescriptor<T>{});
+			return InstancePtr_;
+		}
+
 		static const NewDescriptor<T>& Instance()
 		{
-			static NewDescriptor<T> Instance_;
-			return Instance_;
+			return *InstancePtr();
 		}
 
 	private:
@@ -274,5 +307,7 @@ namespace dots::type
 		using is_istreamable_t = typename is_istreamable<U>::type;
 		template <typename U>
 		static constexpr bool is_istreamable_v = is_istreamable_t<U>::value;
+
+		inline static const std::shared_ptr<NewDescriptor<T>>& M_Descriptor = InstancePtr();
 	};
 }

@@ -37,6 +37,7 @@ namespace dots::type
 		uint32_t tag() const;
 		const std::string& name() const;
 
+		virtual std::shared_ptr<NewDescriptor<>> underlyingDescriptorPtr() const = 0;
 		virtual const NewDescriptor<NewTypeless>& underlyingDescriptor() const = 0;
 		virtual const NewTypeless& valueTypeless() const = 0;
 
@@ -64,6 +65,11 @@ namespace dots::type
 
 		NewEnumeratorDescriptor& operator = (const NewEnumeratorDescriptor& rhs) = default;
 		NewEnumeratorDescriptor& operator = (NewEnumeratorDescriptor&& rhs) = default;
+
+		std::shared_ptr<NewDescriptor<>> underlyingDescriptorPtr() const override
+		{
+			return NewDescriptor<underlying_type_t>::InstancePtr();			
+		}
 
 		const NewDescriptor<underlying_type_t>& underlyingDescriptor() const override
 		{
@@ -101,6 +107,7 @@ namespace dots::type
 		NewEnumDescriptor& operator = (const NewEnumDescriptor& rhs) = default;
 		NewEnumDescriptor& operator = (NewEnumDescriptor&& rhs) = default;
 
+		virtual std::shared_ptr<NewDescriptor<>> underlyingDescriptorPtr() const = 0;
 		virtual const NewDescriptor<NewTypeless>& underlyingDescriptor() const = 0;
 
 		virtual const std::vector<enumerator_ref_t>& enumeratorsTypeless() const = 0;
@@ -131,6 +138,11 @@ namespace dots::type
 
 		NewEnumDescriptor& operator = (const NewEnumDescriptor& rhs) = delete;
 		NewEnumDescriptor& operator = (NewEnumDescriptor&& rhs) = default;
+
+		std::shared_ptr<NewDescriptor<>> underlyingDescriptorPtr() const override
+		{
+			return NewDescriptor<underlying_type_t>::InstancePtr();			
+		}
 
 		const NewDescriptor<underlying_type_t>& underlyingDescriptor() const override
 		{

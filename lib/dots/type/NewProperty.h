@@ -352,6 +352,11 @@ namespace dots::type
 			return static_cast<const Derived&>(*this).derivedDescriptor();
 		}
 
+		constexpr const NewDescriptor<T>& valueDescriptorPtr() const
+		{
+			return descriptor().valueDescriptorPtr();
+		}
+
 		constexpr const NewDescriptor<T>& valueDescriptor() const
 		{
 			return descriptor().valueDescriptor();

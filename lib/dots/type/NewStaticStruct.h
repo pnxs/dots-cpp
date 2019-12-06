@@ -147,7 +147,7 @@ namespace dots::type
 			return std::apply(std::forward<Callable>(callable), _properties());
 		}
 
-		template <typename Callable>
+    	template <typename Callable>
 		auto _applyKeyProperties(Callable&& callable)
 		{
 			return std::apply(std::forward<Callable>(callable), _keyProperties());
@@ -177,7 +177,7 @@ namespace dots::type
 			return std::apply(std::forward<Callable>(callable), _propertyPairs(other));
 		}
 
-		template <typename Callable>
+    	template <typename Callable>
 		auto _applyKeyPropertyPairs(Derived& other, Callable&& callable)
 		{
 			return std::apply(std::forward<Callable>(callable), _keyPropertyPairs(other));
@@ -397,6 +397,11 @@ namespace dots::type
 		{
 			return const_cast<P&>(std::as_const(*this).template getProperty<P>());
 		}
+
+    	static const std::shared_ptr<NewDescriptor<>>& _DescriptorPtr()
+        {
+			return NewDescriptor<Derived>::InstancePtr();
+        }
 
     	static const NewDescriptor<Derived>& _Descriptor()
         {
