@@ -30,6 +30,14 @@ namespace dots::type
 		{
 			/* do nothing */
 		}
+		NewDescriptor(const std::shared_ptr<NewDescriptor<>>& valueDescriptorOverride) :
+			NewStaticDescriptor<NewVector<T>, NewVectorDescriptor>("vector<" + valueDescriptorOverride->name() + ">", valueDescriptorOverride, sizeof(NewVector<T>), alignof(NewVector<T>))
+		{
+			if (valueDescriptorOverride->size() != valueDescriptor().size() || valueDescriptorOverride->alignment() != valueDescriptor().alignment())
+			{
+				throw std::logic_error{ "attempt to create vector descriptor with incompatible value type" };
+			}
+		}
 
 		bool usesDynamicMemory() const override
 		{
