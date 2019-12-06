@@ -12,13 +12,13 @@ namespace dots::type
 	{		
 		virtual ~NewVector() = default;
 
-		virtual NewVector& operator = (const NewVector& rhs)
+		virtual NewVector& operator = (const NewVector& /*rhs*/)
 		{
 			// note that this is only a necessary dummy implementation that always gets overriden by sub-class
 			return *this;
 		}
 		
-		virtual NewVector& operator = (NewVector&& rhs) noexcept
+		virtual NewVector& operator = (NewVector&& /*rhs*/) noexcept
 		{
 			// note that this is only a necessary dummy implementation that always gets overriden by sub-class
 			return *this;

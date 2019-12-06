@@ -7,24 +7,24 @@ namespace dots::type
 	{
 		constexpr NewPropertyArea() = default;
 		
-		constexpr NewPropertyArea(const NewPropertyArea& other)
+		constexpr NewPropertyArea(const NewPropertyArea& /*other*/)
 		{
 			/* do nothing */
 		}
 		
-		constexpr NewPropertyArea(NewPropertyArea&& other) noexcept
+		constexpr NewPropertyArea(NewPropertyArea&& /*other*/) noexcept
 		{
 			/* do nothing */
 		}
 		
 		~NewPropertyArea() = default;
 
-		constexpr NewPropertyArea& operator = (const NewPropertyArea& rhs)
+		constexpr NewPropertyArea& operator = (const NewPropertyArea& /*rhs*/)
 		{
 			return *this;
 		}
 		
-		constexpr NewPropertyArea& operator = (NewPropertyArea&& rhs) noexcept
+		constexpr NewPropertyArea& operator = (NewPropertyArea&& /*rhs*/) noexcept
 		{
 			return *this;
 		}
@@ -76,7 +76,7 @@ namespace dots::type
 		}
 
 		template <typename P>
-    	static const NewPropertyArea& GetArea(const P& property)
+    	static const NewPropertyArea& GetArea(const P& /*property*/)
 		{
 			return GetArea(P::Offset());
 		}
