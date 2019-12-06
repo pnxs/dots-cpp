@@ -3,6 +3,11 @@
 #include <dots/type/NewStaticDescriptor.h>
 #include <dots/type/NewProperty.h>
 
+namespace dots::types
+{
+	struct StructDescriptorData;
+}
+
 namespace dots::type
 {
 	struct NewStruct;
@@ -85,6 +90,21 @@ namespace dots::type
 		const NewPropertySet& properties() const;
 		const NewPropertySet& keyProperties() const;
 
+		[[deprecated("only available for backwards compatibility")]]
+		const NewPropertySet& keys() const;
+
+		[[deprecated("only available for backwards compatibility")]]
+		const NewPropertySet& validProperties(const void* instance) const;
+
+		[[deprecated("only available for backwards compatibility")]]
+		NewPropertySet& validProperties(void* instance) const;
+
+		[[deprecated("only available for backwards compatibility")]]
+		const types::StructDescriptorData& descriptorData() const;
+
+		[[deprecated("only available for backwards compatibility")]]
+		static const NewStructDescriptor<>* createFromStructDescriptorData(const types::StructDescriptorData& sd);
+
 	private:
 
 		uint8_t m_flags;
@@ -92,6 +112,7 @@ namespace dots::type
 		NewPropertySet m_properties;
 		NewPropertySet m_keyProperties;
 		NewPropertySet m_dynamicMemoryProperties;
+		mutable const types::StructDescriptorData* m_descriptorData = nullptr;
 	};
 
 	template <typename T>
@@ -239,4 +260,10 @@ namespace dots::type
 			return instance._diffProperties(other, includedProperties);
 		}
 	};
+
+	[[deprecated("only available for backwards compatibility")]]
+	inline const NewStructDescriptor<>* toStructDescriptor(const NewDescriptor<>* descriptor)
+	{
+		return dynamic_cast<const NewStructDescriptor<>*>(descriptor);
+	}
 }

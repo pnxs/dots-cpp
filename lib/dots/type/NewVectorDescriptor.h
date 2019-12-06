@@ -80,4 +80,10 @@ namespace dots::type
 		using NewVectorDescriptor::valueDescriptorPtr;
 		using NewVectorDescriptor::valueDescriptor;
 	};
+
+	[[deprecated("only available for backwards compatibility")]]
+	inline const NewVectorDescriptor* toVectorDescriptor(const NewDescriptor<>* descriptor)
+	{
+	    return dynamic_cast<const NewVectorDescriptor*>(descriptor);
+	}
 }

@@ -178,4 +178,19 @@ namespace dots::io
 			m_types.erase(it);
 		} 
 	}
+
+	const type::NewDescriptor<>* NewRegistry::findDescriptor(const std::string& name) const
+    {
+	    return findType(name).get();
+    }
+	
+    const type::NewStructDescriptor<>* NewRegistry::findStructDescriptor(const std::string& name) const
+    {
+	    return findStructType(name).get();
+    }
+
+	const std::map<std::string_view, std::shared_ptr<type::NewDescriptor<>>>& NewRegistry::getTypes()
+    {
+	    return m_types;
+    }
 }

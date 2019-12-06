@@ -62,6 +62,16 @@ namespace dots::type
 		return m_set;
 	}
 
+	char* NewPropertyDescriptor<NewTypeless, void>::address(void* p) const
+	{
+		return reinterpret_cast<char*>(&reinterpret_cast<NewStruct*>(p)->_propertyArea()) + offset();
+	}
+
+	const char* NewPropertyDescriptor<NewTypeless, void>::address(const void* p) const
+	{
+		return reinterpret_cast<const char*>(&reinterpret_cast<const NewStruct*>(p)->_propertyArea()) + offset();
+	}
+
 	size_t NewPropertyDescriptor<NewTypeless, void>::CalculateOffset(const NewDescriptor<>& descriptor, const NewPropertyDescriptor<>& previous)
 	{
 		return CalculateOffset(descriptor, previous.offset(), previous.valueDescriptor().size());

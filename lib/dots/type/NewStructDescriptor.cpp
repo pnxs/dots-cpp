@@ -1,5 +1,6 @@
 #include <dots/type/NewStructDescriptor.h>
 #include <dots/type/NewStruct.h>
+#include <dots/io/NewDescriptorConverter.h>
 
 namespace dots::type
 {
@@ -350,5 +351,35 @@ namespace dots::type
 	const NewPropertySet& NewStructDescriptor<NewTypeless, void>::keyProperties() const
 	{
 		return m_keyProperties;
+	}
+
+	const NewPropertySet& NewStructDescriptor<NewTypeless, void>::keys() const
+	{
+		return m_keyProperties;
+	}
+
+	const NewPropertySet& NewStructDescriptor<NewTypeless, void>::validProperties(const void* instance) const
+	{
+		return propertyArea(*reinterpret_cast<const NewStruct*>(instance)).validProperties();
+	}
+
+	NewPropertySet& NewStructDescriptor<NewTypeless, void>::validProperties(void* instance) const
+	{
+		return propertyArea(*reinterpret_cast<NewStruct*>(instance)).validProperties();
+	}
+
+	const types::StructDescriptorData& NewStructDescriptor<NewTypeless, void>::descriptorData() const
+	{
+		if (m_descriptorData == nullptr)
+		{
+			m_descriptorData = new types::StructDescriptorData{ io::NewDescriptorConverter{}(*this) };
+		}
+		
+		return *m_descriptorData;
+	}
+
+	const NewStructDescriptor<>* NewStructDescriptor<NewTypeless, void>::createFromStructDescriptorData(const types::StructDescriptorData& sd)
+	{
+		return io::NewDescriptorConverter{}(sd).get();
 	}
 }

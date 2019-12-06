@@ -30,6 +30,12 @@ namespace dots::type
 		bool isKey() const;
 		NewPropertySet set() const;
 
+		[[deprecated("only available for backwards compatibility and should be replaced by property iteration")]]
+		char* address(void* p) const;
+
+		[[deprecated("only available for backwards compatibility and should be replaced by property iteration")]]
+		const char* address(const void* p) const;
+
 	private:
 
 		static size_t CalculateOffset(const NewDescriptor<>& descriptor, const NewPropertyDescriptor<>& previous);

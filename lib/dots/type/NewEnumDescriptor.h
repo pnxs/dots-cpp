@@ -7,6 +7,11 @@
 #include <dots/type/NewDescriptor.h>
 #include <dots/type/NewStaticDescriptor.h>
 
+namespace dots::types
+{
+	struct EnumDescriptorData;
+}
+
 namespace dots::type
 {
 	namespace details
@@ -114,7 +119,17 @@ namespace dots::type
 
 		virtual const NewEnumeratorDescriptor<>& enumeratorFromTag(uint32_t tag) const = 0;
 		virtual const NewEnumeratorDescriptor<>& enumeratorFromName(const std::string_view& name) const = 0;
-		virtual const NewEnumeratorDescriptor<>& enumeratorFromValue(const NewTypeless& value) const = 0;		
+		virtual const NewEnumeratorDescriptor<>& enumeratorFromValue(const NewTypeless& value) const = 0;
+
+		[[deprecated("only available for backwards compatibility")]]
+		const types::EnumDescriptorData& descriptorData() const;
+
+		[[deprecated("only available for backwards compatibility")]]
+		static const NewEnumDescriptor<>* createFromEnumDescriptorData(const types::EnumDescriptorData& sd);
+
+	private:
+
+		mutable const types::EnumDescriptorData* m_descriptorData = nullptr;
 	};
 
 	template <typename E>
@@ -214,6 +229,12 @@ namespace dots::type
 		std::vector<NewEnumeratorDescriptor<E>> m_enumerators;
 		std::vector<NewEnumDescriptor<>::enumerator_ref_t> m_enumeratorsTypeless;
 	};
+
+	[[deprecated("only available for backwards compatibility")]]
+	inline const NewEnumDescriptor<>* toEnumDescriptor(const NewDescriptor<>* descriptor)
+	{
+		return dynamic_cast<const NewEnumDescriptor<>*>(descriptor);
+	}
 }
 namespace dots::type
 {

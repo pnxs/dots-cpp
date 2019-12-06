@@ -18,6 +18,9 @@ namespace dots::type
 		Struct, Enum
 	};
 
+	// [[deprecated("only available for backwards compatibility")]]
+	using DotsType = NewType;
+
 	template <typename = NewTypeless>
 	struct NewDescriptor;
 
@@ -63,6 +66,53 @@ namespace dots::type
 		static bool IsFundamentalType(const NewDescriptor& descriptor);
 		static bool IsFundamentalType(NewType type);
 
+		[[deprecated("only available for backwards compatibility")]]
+		DotsType dotsType() const
+		{
+			return type();
+		}
+
+		[[deprecated("only available for backwards compatibility")]]
+		void* New() const
+		{
+		    void *obj = ::operator new(size());
+		    construct(*NewTypeless::From(obj));
+		    return obj;
+		}
+
+		[[deprecated("only available for backwards compatibility")]]
+		void Delete(void *obj) const
+		{
+		    destruct(*NewTypeless::From(obj));
+		    ::operator delete(obj);
+		}
+
+		[[deprecated("only available for backwards compatibility")]]
+		std::shared_ptr<void> make_shared() const
+		{
+			return { New(), [this](void* obj){ Delete(obj); } };
+		}
+
+		[[deprecated("only available for backwards compatibility")]]
+		std::string to_string(const void* lhs) const
+		{
+			return toString(*NewTypeless::From(lhs));
+		}
+
+		[[deprecated("only available for backwards compatibility")]]
+		bool from_string(void* lhs, const std::string& str) const
+		{
+			try
+			{
+				fromString(*NewTypeless::From(lhs), str);
+				return true;
+			}
+			catch (...)
+			{
+				return false;
+			}
+		}
+
 	private:
 
 		NewType m_type;
@@ -98,4 +148,37 @@ namespace dots::type
 
 	template <typename T>
 	using new_described_type_t = typename new_described_type<T>::type;
+
+	[[deprecated("only available for backwards compatibility and should be replaced by fundamental type check")]]
+	inline bool isDotsBaseType(NewType dotsType)
+	{
+	    switch (dotsType)
+	    {
+	        case NewType::int8:
+	        case NewType::int16:
+	        case NewType::int32:
+	        case NewType::int64:
+	        case NewType::uint8:
+	        case NewType::uint16:
+	        case NewType::uint32:
+	        case NewType::uint64:
+	        case NewType::boolean:
+	        case NewType::float32:
+	        case NewType::float64:
+	        case NewType::string:
+	        case NewType::property_set:
+	        case NewType::timepoint:
+	        case NewType::steady_timepoint:
+	        case NewType::duration:
+	        case NewType::uuid:
+	        case NewType::Enum:
+	            return true;
+
+	        case NewType::Vector:
+	        case NewType::Struct:
+	            return false;
+	    }
+		
+	    return false;
+	}
 }

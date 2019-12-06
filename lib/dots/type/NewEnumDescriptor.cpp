@@ -1,4 +1,5 @@
 #include <dots/type/NewEnumDescriptor.h>
+#include <dots/io/NewDescriptorConverter.h>
 
 namespace dots::type
 {
@@ -23,5 +24,20 @@ namespace dots::type
 		NewDescriptor<NewTypeless>(NewType::Enum, std::move(name), underlyingDescriptor.size(), underlyingDescriptor.alignment())
 	{
 		/* do nothing */
+	}
+
+	const types::EnumDescriptorData& NewEnumDescriptor<NewTypeless, void>::descriptorData() const
+	{
+		if (m_descriptorData == nullptr)
+		{
+			m_descriptorData = new types::EnumDescriptorData{ io::NewDescriptorConverter{}(*this) };
+		}
+		
+		return *m_descriptorData;
+	}
+	
+	const NewEnumDescriptor<>* NewEnumDescriptor<NewTypeless, void>::createFromEnumDescriptorData(const types::EnumDescriptorData& sd)
+	{
+		return io::NewDescriptorConverter{}(sd).get();
 	}
 }

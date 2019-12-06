@@ -131,7 +131,7 @@ target_compile_features(${TARGET_NAME}
 )
 target_compile_options(${TARGET_NAME}
 	PRIVATE
-		$<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-O2 -flto -Wall -Wextra -Wpedantic -Werror>>		
+		$<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-O2 -flto -Wall -Wextra -Wpedantic -Werror -Wno-deprecated-declarations>>		
 )
 target_compile_definitions(${TARGET_NAME}
 	PUBLIC
