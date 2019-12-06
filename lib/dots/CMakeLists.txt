@@ -90,6 +90,7 @@ target_sources(${TARGET_NAME}
 		io/recording/Player.cpp
 		io/recording/FileReader.cpp
 		io/NewRegistry.cpp
+		io/NewDescriptorConverter.cpp
 		type/AnyStruct.cpp
 		type/ChronoDescriptor.cpp
 		type/Descriptor.cpp
