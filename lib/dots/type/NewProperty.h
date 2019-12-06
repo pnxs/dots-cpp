@@ -10,16 +10,16 @@
 namespace dots::type
 {
 	template <typename T, typename Derived>
-	struct NewProperty
+	struct Property
 	{
 		static_assert(std::conjunction_v<std::negation<std::is_pointer<T>>, std::negation<std::is_reference<T>>>);
 		using value_t = T;
-		static constexpr bool IsTypeless = std::is_same_v<T, NewTypeless>;
+		static constexpr bool IsTypeless = std::is_same_v<T, Typeless>;
 
-		template <typename U, std::enable_if_t<!std::disjunction_v<std::is_same<std::remove_reference_t<U>, NewProperty>, std::is_same<std::remove_reference_t<U>, Derived>>, int> = 0>
+		template <typename U, std::enable_if_t<!std::disjunction_v<std::is_same<std::remove_reference_t<U>, Property>, std::is_same<std::remove_reference_t<U>, Derived>>, int> = 0>
 		Derived& operator = (U&& rhs)
 		{
-			NewProperty<T, Derived>::constructOrAssign(std::forward<U>(rhs));
+			Property<T, Derived>::constructOrAssign(std::forward<U>(rhs));
 			return static_cast<Derived&>(*this);
 		}
 
@@ -189,7 +189,7 @@ namespace dots::type
 
 		const T& value() const
 		{
-			return const_cast<NewProperty&>(*this).value();
+			return const_cast<Property&>(*this).value();
 		}
 
 		template <typename... Args>
@@ -347,22 +347,22 @@ namespace dots::type
 			return !less(rhs);
 		}
 
-		constexpr const NewPropertyDescriptor<T>& descriptor() const
+		constexpr const PropertyDescriptor<T>& descriptor() const
 		{
 			return static_cast<const Derived&>(*this).derivedDescriptor();
 		}
 
-		constexpr const NewDescriptor<T>& valueDescriptorPtr() const
+		constexpr const Descriptor<T>& valueDescriptorPtr() const
 		{
 			return descriptor().valueDescriptorPtr();
 		}
 
-		constexpr const NewDescriptor<T>& valueDescriptor() const
+		constexpr const Descriptor<T>& valueDescriptor() const
 		{
 			return descriptor().valueDescriptor();
 		}
 
-		constexpr bool isPartOf(const NewPropertySet& propertySet) const
+		constexpr bool isPartOf(const PropertySet& propertySet) const
 		{
 			return descriptor().set() <= propertySet;
 		}
@@ -374,29 +374,29 @@ namespace dots::type
 
 		constexpr const T& storage() const
 		{
-			return const_cast<NewProperty&>(*this).storage();
+			return const_cast<Property&>(*this).storage();
 		}
 
 	protected:
 
-		constexpr NewProperty() = default;
-		constexpr NewProperty(const NewProperty& other) = default;
-		constexpr NewProperty(NewProperty&& other) = default;
-		~NewProperty() = default;
+		constexpr Property() = default;
+		constexpr Property(const Property& other) = default;
+		constexpr Property(Property&& other) = default;
+		~Property() = default;
 
-		constexpr NewProperty& operator = (const NewProperty& rhs) = default;
-		constexpr NewProperty& operator = (NewProperty&& rhs) = default;
+		constexpr Property& operator = (const Property& rhs) = default;
+		constexpr Property& operator = (Property&& rhs) = default;
 
 	private:
 
-		const NewPropertySet& validProperties() const
+		const PropertySet& validProperties() const
 		{
-			return NewPropertyArea::GetArea(storage(), descriptor().offset()).validProperties();
+			return PropertyArea::GetArea(storage(), descriptor().offset()).validProperties();
 		}
 
-		NewPropertySet& validProperties()
+		PropertySet& validProperties()
 		{
-			return const_cast<NewPropertySet&>(std::as_const(*this).validProperties());
+			return const_cast<PropertySet&>(std::as_const(*this).validProperties());
 		}		
 
 		void setValid()
@@ -411,7 +411,7 @@ namespace dots::type
 	};
 
 	template <typename T, typename Derived>
-	std::ostream& operator << (std::ostream& os, const NewProperty<T, Derived>& property)
+	std::ostream& operator << (std::ostream& os, const Property<T, Derived>& property)
 	{
 		if (property.isValid())
 		{

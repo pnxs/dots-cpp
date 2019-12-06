@@ -6,29 +6,29 @@
 
 namespace dots::type
 {
-	template <typename T = NewTypeless, typename = void>
-	struct NewPropertyDescriptor;
+	template <typename T = Typeless, typename = void>
+	struct PropertyDescriptor;
 
 	template <>
-	struct NewPropertyDescriptor<>
+	struct PropertyDescriptor<>
 	{
-		NewPropertyDescriptor(const std::shared_ptr<NewDescriptor<>>& descriptor, std::string name, size_t offset, uint32_t tag, bool isKey);
-		NewPropertyDescriptor(const std::shared_ptr<NewDescriptor<>>& descriptor, std::string name, uint32_t tag, bool isKey);
-		NewPropertyDescriptor(const std::shared_ptr<NewDescriptor<>>& descriptor, std::string name, const NewPropertyDescriptor<>& previous, uint32_t tag, bool isKey);
-		NewPropertyDescriptor(const NewPropertyDescriptor& other) = default;
-		NewPropertyDescriptor(NewPropertyDescriptor&& other) = default;
-		~NewPropertyDescriptor() = default;
+		PropertyDescriptor(const std::shared_ptr<Descriptor<>>& descriptor, std::string name, size_t offset, uint32_t tag, bool isKey);
+		PropertyDescriptor(const std::shared_ptr<Descriptor<>>& descriptor, std::string name, uint32_t tag, bool isKey);
+		PropertyDescriptor(const std::shared_ptr<Descriptor<>>& descriptor, std::string name, const PropertyDescriptor<>& previous, uint32_t tag, bool isKey);
+		PropertyDescriptor(const PropertyDescriptor& other) = default;
+		PropertyDescriptor(PropertyDescriptor&& other) = default;
+		~PropertyDescriptor() = default;
 
-		NewPropertyDescriptor& operator = (const NewPropertyDescriptor& rhs) = default;
-		NewPropertyDescriptor& operator = (NewPropertyDescriptor&& rhs) = default;
+		PropertyDescriptor& operator = (const PropertyDescriptor& rhs) = default;
+		PropertyDescriptor& operator = (PropertyDescriptor&& rhs) = default;
 
-		const std::shared_ptr<NewDescriptor<>>& valueDescriptorPtr() const;
-		const NewDescriptor<>& valueDescriptor() const;
+		const std::shared_ptr<Descriptor<>>& valueDescriptorPtr() const;
+		const Descriptor<>& valueDescriptor() const;
 		const std::string& name() const;
 		size_t offset() const;
 		uint32_t tag() const;
 		bool isKey() const;
-		NewPropertySet set() const;
+		PropertySet set() const;
 
 		[[deprecated("only available for backwards compatibility and should be replaced by property iteration")]]
 		char* address(void* p) const;
@@ -38,60 +38,60 @@ namespace dots::type
 
 	private:
 
-		static size_t CalculateOffset(const NewDescriptor<>& descriptor, const NewPropertyDescriptor<>& previous);
-		static size_t CalculateOffset(const NewDescriptor<>& descriptor, size_t previousOffset, size_t previousSize);
+		static size_t CalculateOffset(const Descriptor<>& descriptor, const PropertyDescriptor<>& previous);
+		static size_t CalculateOffset(const Descriptor<>& descriptor, size_t previousOffset, size_t previousSize);
 
-		std::shared_ptr<NewDescriptor<>> m_descriptor;
+		std::shared_ptr<Descriptor<>> m_descriptor;
 		std::string m_name;
 		size_t m_offset;
 		uint32_t m_tag;
 		bool m_isKey;
-		NewPropertySet m_set;
+		PropertySet m_set;
 	};
 
 	template <typename T>
-	struct NewPropertyDescriptor<T> : NewPropertyDescriptor<>
+	struct PropertyDescriptor<T> : PropertyDescriptor<>
 	{
-		NewPropertyDescriptor(std::string name, size_t offset, uint32_t tag, bool isKey) :
-			NewPropertyDescriptor<>(valueDescriptorPtr(), std::move(name), offset, tag, isKey)
+		PropertyDescriptor(std::string name, size_t offset, uint32_t tag, bool isKey) :
+			PropertyDescriptor<>(valueDescriptorPtr(), std::move(name), offset, tag, isKey)
 		{
 			/* do nothing */
 		}
 		
-		NewPropertyDescriptor(std::string name, uint32_t tag, bool isKey) :
-			NewPropertyDescriptor<>(valueDescriptorPtr(), std::move(name), tag, isKey)
+		PropertyDescriptor(std::string name, uint32_t tag, bool isKey) :
+			PropertyDescriptor<>(valueDescriptorPtr(), std::move(name), tag, isKey)
 		{
 			/* do nothing */
 		}
 		
-		NewPropertyDescriptor(std::string name, const NewPropertyDescriptor<>& previous, uint32_t tag, bool isKey) :
-			NewPropertyDescriptor<>(valueDescriptorPtr(), std::move(name), previous, tag, isKey)
+		PropertyDescriptor(std::string name, const PropertyDescriptor<>& previous, uint32_t tag, bool isKey) :
+			PropertyDescriptor<>(valueDescriptorPtr(), std::move(name), previous, tag, isKey)
 		{
 			/* do nothing */
 		}
 		
-		NewPropertyDescriptor(const NewPropertyDescriptor& other) = default;
-		NewPropertyDescriptor(NewPropertyDescriptor&& other) = default;
-		~NewPropertyDescriptor() = default;
+		PropertyDescriptor(const PropertyDescriptor& other) = default;
+		PropertyDescriptor(PropertyDescriptor&& other) = default;
+		~PropertyDescriptor() = default;
 
-		NewPropertyDescriptor& operator = (const NewPropertyDescriptor& rhs) = default;
-		NewPropertyDescriptor& operator = (NewPropertyDescriptor&& rhs) = default;
+		PropertyDescriptor& operator = (const PropertyDescriptor& rhs) = default;
+		PropertyDescriptor& operator = (PropertyDescriptor&& rhs) = default;
 
-		static const std::shared_ptr<NewDescriptor<T>>& valueDescriptorPtr()
+		static const std::shared_ptr<Descriptor<T>>& valueDescriptorPtr()
 		{
-			return NewDescriptor<T>::InstancePtr();
+			return Descriptor<T>::InstancePtr();
 		}
 
-		static const NewDescriptor<T>& valueDescriptor()
+		static const Descriptor<T>& valueDescriptor()
 		{
-			return NewDescriptor<T>::Instance();
+			return Descriptor<T>::Instance();
 		}
 
 	private:
 
-		using NewPropertyDescriptor<>::valueDescriptorPtr;
-		using NewPropertyDescriptor<>::valueDescriptor;
+		using PropertyDescriptor<>::valueDescriptorPtr;
+		using PropertyDescriptor<>::valueDescriptor;
 	};
 
-	using new_property_descriptor_container_t = std::vector<const NewPropertyDescriptor<>*>;
+	using property_descriptor_container_t = std::vector<const PropertyDescriptor<>*>;
 }

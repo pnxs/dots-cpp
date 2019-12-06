@@ -7,15 +7,15 @@ namespace dots::type
 {
 	struct TypeNameLessThan
 	{
-		bool operator() (const type::NewStructDescriptor<>* lhs, const type::NewStructDescriptor<>* rhs) const
+		bool operator() (const type::StructDescriptor<>* lhs, const type::StructDescriptor<>* rhs) const
 		{
 			return lhs->name() < rhs->name();
 		}
 	};
 
-	class StructDescriptorSet : public std::set<const type::NewStructDescriptor<>*, TypeNameLessThan>
+	class StructDescriptorSet : public std::set<const type::StructDescriptor<>*, TypeNameLessThan>
 	{
-		typedef std::set<const type::NewStructDescriptor<>*, TypeNameLessThan> base_type;
+		typedef std::set<const type::StructDescriptor<>*, TypeNameLessThan> base_type;
 
 	public:
 		template<class T>
@@ -78,12 +78,12 @@ void Transceiver::stop()
     connection().stop();
 }
 
-const io::NewRegistry& Transceiver::registry() const
+const io::Registry& Transceiver::registry() const
 {
 	return m_registry;	
 }
 
-io::NewRegistry& Transceiver::registry()
+io::Registry& Transceiver::registry()
 {
 	return m_registry;
 }
@@ -93,12 +93,12 @@ const ContainerPool& Transceiver::pool() const
 	return m_dispatcher.pool();
 }
 
-const Container<>& Transceiver::container(const type::NewStructDescriptor<>& descriptor)
+const Container<>& Transceiver::container(const type::StructDescriptor<>& descriptor)
 {
 	return m_dispatcher.container(descriptor);
 }
 
-Subscription Transceiver::subscribe(const type::NewStructDescriptor<>& descriptor, receive_handler_t<>&& handler)
+Subscription Transceiver::subscribe(const type::StructDescriptor<>& descriptor, receive_handler_t<>&& handler)
 {
 	if (descriptor.substructOnly())
 	{
@@ -109,7 +109,7 @@ Subscription Transceiver::subscribe(const type::NewStructDescriptor<>& descripto
 	return m_dispatcher.subscribe(descriptor, std::move(handler));
 }
 
-Subscription Transceiver::subscribe(const type::NewStructDescriptor<>& descriptor, event_handler_t<>&& handler)
+Subscription Transceiver::subscribe(const type::StructDescriptor<>& descriptor, event_handler_t<>&& handler)
 {
 	if (descriptor.substructOnly())
 	{
@@ -136,7 +136,7 @@ ServerConnection &Transceiver::connection()
 }
 
 
-void Transceiver::publish(const type::NewStructDescriptor<> *td, const type::NewStruct& instance, types::property_set_t what, bool remove)
+void Transceiver::publish(const type::StructDescriptor<> *td, const type::Struct& instance, types::property_set_t what, bool remove)
 {
 	if (td->substructOnly())
 	{
@@ -165,7 +165,7 @@ void Transceiver::onEarlySubscribe()
         if (td->internal()) continue;
 
         traversal.traverseDescriptorData(td, [this](auto td, auto body) {
-            this->connection().publishNs("SYS", td, *reinterpret_cast<const type::NewStruct*>(body), td->validProperties(body), false);
+            this->connection().publishNs("SYS", td, *reinterpret_cast<const type::Struct*>(body), td->validProperties(body), false);
         });
     }
 
@@ -191,7 +191,7 @@ type::StructDescriptorSet Transceiver::getPublishedDescriptors() const
         auto td = m_registry.findStructType(e->td->name());
         if (not td) {
             throw std::runtime_error("struct decriptor not found for " + e->td->name());
-            //td = type::toStructDescriptor(type::NewDescriptor<>::registry().registerType(e->t));
+            //td = type::toStructDescriptor(type::Descriptor<>::registry().registerType(e->t));
         }
         if (td) {
             sds.insert(td.get());
@@ -212,7 +212,7 @@ type::StructDescriptorSet Transceiver::getSubscribedDescriptors() const
         auto td = m_registry.findStructType(e->td->name());
         if (not td) {
             throw std::runtime_error("struct decriptor1 not found for " + e->td->name());
-            //td = type::toStructDescriptor(type::NewDescriptor<>::registry().registerType(e->t));
+            //td = type::toStructDescriptor(type::Descriptor<>::registry().registerType(e->t));
         }
         if (td) {
             sds.insert(td.get());
@@ -245,21 +245,21 @@ void Transceiver::subscribeDescriptors()
 */
 }
 
-const type::NewStructDescriptor<>& Transceiver::getDescriptorFromName(const std::string_view& name) const
+const type::StructDescriptor<>& Transceiver::getDescriptorFromName(const std::string_view& name) const
 {
-	const type::NewDescriptor<>* descriptor = m_registry.findType(name.data()).get();
+	const type::Descriptor<>* descriptor = m_registry.findType(name.data()).get();
 
 	if (descriptor == nullptr)
 	{
 		throw std::logic_error{ "could not find a struct type with name: " + std::string{ name.data() } };
 	}
 
-	if (descriptor->type() != type::NewType::Struct)
+	if (descriptor->type() != type::Type::Struct)
 	{
 		throw std::logic_error{ "type with name is not a struct type: " + std::string{ name.data() } };
 	}
 
-	return *static_cast<const type::NewStructDescriptor<>*>(descriptor);
+	return *static_cast<const type::StructDescriptor<>*>(descriptor);
 }
 
 }

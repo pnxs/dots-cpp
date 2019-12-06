@@ -72,7 +72,7 @@ namespace dots
 				DotsTransportHeader header;
 				from_json(std::as_const(itHeader->value).GetObject(), header);
 
-				const type::NewStructDescriptor<>* descriptor = transceiver().registry().findStructType(*header.dotsHeader->typeName).get();
+				const type::StructDescriptor<>* descriptor = transceiver().registry().findStructType(*header.dotsHeader->typeName).get();
 
 				if (descriptor == nullptr)
 				{
@@ -90,7 +90,7 @@ namespace dots
 		});
 	}
 
-	void WebSocketChannel::transmitImpl(const DotsTransportHeader& header, const type::NewStruct& instance)
+	void WebSocketChannel::transmitImpl(const DotsTransportHeader& header, const type::Struct& instance)
 	{
 		rapidjson::StringBuffer buffer;
     	rapidjson::PrettyWriter<rapidjson::StringBuffer> writer{ buffer };

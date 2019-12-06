@@ -6,32 +6,32 @@ namespace dots::type
 {
 	struct AnyStruct
 	{
-		AnyStruct(const NewStructDescriptor<>& descriptor);
-		AnyStruct(const NewStruct& instance);
+		AnyStruct(const StructDescriptor<>& descriptor);
+		AnyStruct(const Struct& instance);
 		AnyStruct(const AnyStruct& other);
 		AnyStruct(AnyStruct&& other) = default;
 		~AnyStruct();
 
 		AnyStruct& operator = (const AnyStruct& rhs);
 		AnyStruct& operator = (AnyStruct&& rhs) = default;
-		AnyStruct& operator = (const NewStruct& rhs);
+		AnyStruct& operator = (const Struct& rhs);
 
-		NewStruct& operator * ();
-		const NewStruct& operator *() const;
+		Struct& operator * ();
+		const Struct& operator *() const;
 
-		NewStruct* operator -> ();
-		const NewStruct* operator -> () const;
+		Struct* operator -> ();
+		const Struct* operator -> () const;
 
-		operator NewStruct&();
-		operator const NewStruct&() const;
+		operator Struct&();
+		operator const Struct&() const;
 
-		template <typename T, std::enable_if_t<std::is_base_of_v<NewStruct, T>, int> = 0>
+		template <typename T, std::enable_if_t<std::is_base_of_v<Struct, T>, int> = 0>
 		explicit operator const T&() const
 		{
 			return _instance->_to<T>();
 		}
 
-		template <typename T, std::enable_if_t<std::is_base_of_v<NewStruct, T>, int> = 0>
+		template <typename T, std::enable_if_t<std::is_base_of_v<Struct, T>, int> = 0>
 		explicit operator T&()
 		{
 			return _instance->_to<T>();
@@ -67,11 +67,11 @@ namespace dots::type
             return _instance->_to<T, Safe>();
         }
 
-		NewStruct& get();
-		const NewStruct& get() const;
+		Struct& get();
+		const Struct& get() const;
 
 	private:
 
-		std::unique_ptr<NewStruct> _instance;
+		std::unique_ptr<Struct> _instance;
 	};
 }

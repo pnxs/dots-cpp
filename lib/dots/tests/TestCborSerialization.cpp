@@ -337,7 +337,7 @@ TEST(TestCborSerialization, deserializeTransportHeader)
     ASSERT_FALSE(dots_header.sender.isValid());
 
     EXPECT_EQ(dots_header.typeName, "DotsMsgHello");
-    EXPECT_EQ(dots_header.attributes, dots::type::NewPropertySet(1));
+    EXPECT_EQ(dots_header.attributes, dots::type::PropertySet(1));
     EXPECT_EQ(dots_header.removeObj, false);
     EXPECT_EQ(dots_header.sentTime, pnxs::TimePoint(1));
 }
@@ -401,7 +401,7 @@ TEST(TestCborSerialization, deserializeCustomType)
     };
 
     auto sd = dots::decodeInto_cbor<StructDescriptorData>(customTypeDescriptorData);
-    auto descriptor = dots::type::NewStructDescriptor<>::createFromStructDescriptorData(sd);
+    auto descriptor = dots::type::StructDescriptor<>::createFromStructDescriptorData(sd);
 
     auto customObj = descriptor->New();
 
@@ -425,7 +425,7 @@ TEST(TestCborSerialization, deserializeCustomType)
     EXPECT_EQ(expectProperties.size(), 0u); // All expected properties are found
 
 
-    auto json = dots::to_json(descriptor, customObj, NewPropertySet::All);
+    auto json = dots::to_json(descriptor, customObj, PropertySet::All);
 
     std::cout << "Json: " << json << "\n";
 
@@ -472,8 +472,8 @@ TEST(TestCborSerialization, dynamicEnum)
         0xa1, 0x01, 0x02
     };
 
-    auto enumDescriptor = dots::type::NewEnumDescriptor<>::createFromEnumDescriptorData(ed);
-    auto structDescriptor = dots::type::NewStructDescriptor<>::createFromStructDescriptorData(sd);
+    auto enumDescriptor = dots::type::EnumDescriptor<>::createFromEnumDescriptorData(ed);
+    auto structDescriptor = dots::type::StructDescriptor<>::createFromStructDescriptorData(sd);
 
     //auto et = rttr::type::get_by_name("MyEnum");
     //auto enumt = et.get_enumeration();
@@ -486,10 +486,10 @@ TEST(TestCborSerialization, dynamicEnum)
 
     ASSERT_TRUE(structDescriptor->propertyDescriptors().size() > 0);
 
-    EXPECT_EQ(enumDescriptor->enumeratorFromValue(*NewTypeless::From(structDescriptor->propertyDescriptors()[0]->address(myStructObj))).name(), "myvalue2");
-    EXPECT_EQ(enumDescriptor->enumeratorFromValue(*NewTypeless::From(structDescriptor->propertyDescriptors()[0]->address(myStructObj))).valueTypeless().to<int32_t>(), 11);
+    EXPECT_EQ(enumDescriptor->enumeratorFromValue(*Typeless::From(structDescriptor->propertyDescriptors()[0]->address(myStructObj))).name(), "myvalue2");
+    EXPECT_EQ(enumDescriptor->enumeratorFromValue(*Typeless::From(structDescriptor->propertyDescriptors()[0]->address(myStructObj))).valueTypeless().to<int32_t>(), 11);
 
-    EXPECT_THAT(dots::to_cbor({structDescriptor, myStructObj}, NewPropertySet::All), ElementsAreArray(myStructData));
+    EXPECT_THAT(dots::to_cbor({structDescriptor, myStructObj}, PropertySet::All), ElementsAreArray(myStructData));
 
     structDescriptor->Delete(myStructObj);
 }
@@ -534,7 +534,7 @@ TEST(TestCborSerialization, serializeDynamicRegisteredIntVector)
             0x02                 // int 2
     };
 
-    EXPECT_THAT(dots::to_cbor(ts, NewPropertySet::All), ElementsAreArray(expectData));
+    EXPECT_THAT(dots::to_cbor(ts, PropertySet::All), ElementsAreArray(expectData));
 }
 
 TEST(TestCborSerialization, deserializeDynamicRegisteredIntVector)
@@ -575,7 +575,7 @@ TEST(TestCborSerialization, serializeDynamicRegisteredStringVector)
             0x53,0x74,0x72,0x69,0x6E,0x67,0x32 // "String2"
     };
 
-    EXPECT_THAT(dots::to_cbor(ts, NewPropertySet::All), ElementsAreArray(expectData));
+    EXPECT_THAT(dots::to_cbor(ts, PropertySet::All), ElementsAreArray(expectData));
 }
 
 TEST(TestCborSerialization, deserializeDynamicRegisteredStringVector)

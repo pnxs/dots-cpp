@@ -5,12 +5,12 @@
 namespace dots::type
 {
 	template <bool IsReverse, bool IsConst>
-	struct NewProxyPropertyIterator
+	struct ProxyPropertyIterator
 	{
 		// custom iterator traits
-		using base_value_type        = NewProxyProperty<>;
-		using area_t                 = std::conditional_t<IsConst, const NewPropertyArea, NewPropertyArea>;
-		using descriptor_container_t = std::conditional_t<IsConst, const new_property_descriptor_container_t, new_property_descriptor_container_t>;
+		using base_value_type        = ProxyProperty<>;
+		using area_t                 = std::conditional_t<IsConst, const PropertyArea, PropertyArea>;
+		using descriptor_container_t = std::conditional_t<IsConst, const property_descriptor_container_t, property_descriptor_container_t>;
 		using descriptor_iterator_t  = std::conditional_t<IsReverse, typename descriptor_container_t::const_reverse_iterator, typename descriptor_container_t::const_iterator>;
 
 		// STL iterator traits
@@ -19,22 +19,22 @@ namespace dots::type
 		using reference            = std::conditional_t<IsConst, const value_type&, value_type&>;
 		using pointer              = std::conditional_t<IsConst, const value_type*, value_type*>;
 
-		NewProxyPropertyIterator(area_t& area, const descriptor_container_t& descriptors, descriptor_iterator_t descriptorIt, const NewPropertySet& properties = NewPropertySet::All);
-		NewProxyPropertyIterator(const NewProxyPropertyIterator& other) = default;
-		NewProxyPropertyIterator(NewProxyPropertyIterator&& other) = default;
-		~NewProxyPropertyIterator() = default;
+		ProxyPropertyIterator(area_t& area, const descriptor_container_t& descriptors, descriptor_iterator_t descriptorIt, const PropertySet& properties = PropertySet::All);
+		ProxyPropertyIterator(const ProxyPropertyIterator& other) = default;
+		ProxyPropertyIterator(ProxyPropertyIterator&& other) = default;
+		~ProxyPropertyIterator() = default;
 
-		NewProxyPropertyIterator& operator = (const NewProxyPropertyIterator& rhs) = default;
-		NewProxyPropertyIterator& operator = (NewProxyPropertyIterator&& rhs) = default;
+		ProxyPropertyIterator& operator = (const ProxyPropertyIterator& rhs) = default;
+		ProxyPropertyIterator& operator = (ProxyPropertyIterator&& rhs) = default;
 
-		void swap(NewProxyPropertyIterator& other) noexcept;
-		void swap(NewProxyPropertyIterator&& other);
+		void swap(ProxyPropertyIterator& other) noexcept;
+		void swap(ProxyPropertyIterator&& other);
 
-		NewProxyPropertyIterator& operator ++ ();
-		NewProxyPropertyIterator& operator -- ();
+		ProxyPropertyIterator& operator ++ ();
+		ProxyPropertyIterator& operator -- ();
 
-		NewProxyPropertyIterator operator ++ (int);
-		NewProxyPropertyIterator operator -- (int);
+		ProxyPropertyIterator operator ++ (int);
+		ProxyPropertyIterator operator -- (int);
 
 		reference operator * ();
 		const reference operator * () const;
@@ -42,8 +42,8 @@ namespace dots::type
 		pointer operator -> ();
 		const pointer operator -> () const;
 
-		bool operator == (const NewProxyPropertyIterator& other) const;
-		bool operator != (const NewProxyPropertyIterator& other) const;
+		bool operator == (const ProxyPropertyIterator& other) const;
+		bool operator != (const ProxyPropertyIterator& other) const;
 
 	private:
 
@@ -54,30 +54,30 @@ namespace dots::type
 		area_t* m_area;
 		const descriptor_container_t* m_descriptors;
 		descriptor_iterator_t m_descriptorIt;
-		NewPropertySet m_properties;
+		PropertySet m_properties;
 		std::optional<base_value_type> m_proxy;
 	};
 
-	extern template	struct NewProxyPropertyIterator<false, false>;
-	extern template	struct NewProxyPropertyIterator<false, true>;
-	extern template	struct NewProxyPropertyIterator<true, false>;
-	extern template	struct NewProxyPropertyIterator<true, true>;
+	extern template	struct ProxyPropertyIterator<false, false>;
+	extern template	struct ProxyPropertyIterator<false, true>;
+	extern template	struct ProxyPropertyIterator<true, false>;
+	extern template	struct ProxyPropertyIterator<true, true>;
 
-	using new_proxy_property_iterator               = NewProxyPropertyIterator<false, false>;
-	using new_const_proxy_property_iterator         = NewProxyPropertyIterator<false, true>;
-	using new_reverse_proxy_property_iterator       = NewProxyPropertyIterator<true, false>;
-	using new_const_reverse_proxy_property_iterator = NewProxyPropertyIterator<true, true>;
+	using proxy_property_iterator               = ProxyPropertyIterator<false, false>;
+	using const_proxy_property_iterator         = ProxyPropertyIterator<false, true>;
+	using reverse_proxy_property_iterator       = ProxyPropertyIterator<true, false>;
+	using const_reverse_proxy_property_iterator = ProxyPropertyIterator<true, true>;
 
 	template <typename Iterator>
-	struct NewProxyPropertyRange
+	struct ProxyPropertyRange
 	{
-		NewProxyPropertyRange(Iterator begin, Iterator end);
-		NewProxyPropertyRange(const NewProxyPropertyRange& other) = default;
-		NewProxyPropertyRange(NewProxyPropertyRange&& other) = default;
-		~NewProxyPropertyRange() = default;
+		ProxyPropertyRange(Iterator begin, Iterator end);
+		ProxyPropertyRange(const ProxyPropertyRange& other) = default;
+		ProxyPropertyRange(ProxyPropertyRange&& other) = default;
+		~ProxyPropertyRange() = default;
 
-		NewProxyPropertyRange& operator = (const NewProxyPropertyRange& rhs) = default;
-		NewProxyPropertyRange& operator = (NewProxyPropertyRange&& rhs) = default;
+		ProxyPropertyRange& operator = (const ProxyPropertyRange& rhs) = default;
+		ProxyPropertyRange& operator = (ProxyPropertyRange&& rhs) = default;
 
 		Iterator begin() const;
 		Iterator end() const;
@@ -88,13 +88,13 @@ namespace dots::type
 		Iterator m_end;
 	};
 
-	extern template	struct NewProxyPropertyRange<new_proxy_property_iterator>;
-	extern template	struct NewProxyPropertyRange<new_const_proxy_property_iterator>;
-	extern template	struct NewProxyPropertyRange<new_reverse_proxy_property_iterator>;
-	extern template	struct NewProxyPropertyRange<new_const_reverse_proxy_property_iterator>;
+	extern template	struct ProxyPropertyRange<proxy_property_iterator>;
+	extern template	struct ProxyPropertyRange<const_proxy_property_iterator>;
+	extern template	struct ProxyPropertyRange<reverse_proxy_property_iterator>;
+	extern template	struct ProxyPropertyRange<const_reverse_proxy_property_iterator>;
 
-	using new_proxy_property_range               = NewProxyPropertyRange<new_proxy_property_iterator>;
-	using new_const_proxy_property_range         = NewProxyPropertyRange<new_const_proxy_property_iterator>;
-	using new_reverse_proxy_property_range       = NewProxyPropertyRange<new_reverse_proxy_property_iterator>;
-	using new_const_reverse_proxy_property_range = NewProxyPropertyRange<new_const_reverse_proxy_property_iterator>;
+	using proxy_property_range               = ProxyPropertyRange<proxy_property_iterator>;
+	using const_proxy_property_range         = ProxyPropertyRange<const_proxy_property_iterator>;
+	using reverse_proxy_property_range       = ProxyPropertyRange<reverse_proxy_property_iterator>;
+	using const_reverse_proxy_property_range = ProxyPropertyRange<const_reverse_proxy_property_iterator>;
 }

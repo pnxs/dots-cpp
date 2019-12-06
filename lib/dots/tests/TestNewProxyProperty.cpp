@@ -7,42 +7,42 @@
 
 using namespace dots::type;
 
-struct TestNewProxyProperty : ::testing::Test
+struct TestProxyProperty : ::testing::Test
 {
 protected:
 
 	template <typename T>
-	struct TestProperty : NewProperty<T, TestProperty<T>>
+	struct TestProperty : Property<T, TestProperty<T>>
 	{
-		TestProperty(const dots::type::NewPropertyArea& area, std::string name, uint32_t tag) :
-			m_Descriptor{ dots::type::NewPropertyDescriptor<T>{ std::move(name), static_cast<uint32_t>(reinterpret_cast<char*>(this) - reinterpret_cast<const char*>(&area)), tag, false } } {}
+		TestProperty(const dots::type::PropertyArea& area, std::string name, uint32_t tag) :
+			m_Descriptor{ dots::type::PropertyDescriptor<T>{ std::move(name), static_cast<uint32_t>(reinterpret_cast<char*>(this) - reinterpret_cast<const char*>(&area)), tag, false } } {}
 		TestProperty(const TestProperty& other) = delete;
 		TestProperty(TestProperty&& other) = delete;
-		~TestProperty() { NewProperty<T, TestProperty<T>>::destroy(); }
+		~TestProperty() { Property<T, TestProperty<T>>::destroy(); }
 
 		TestProperty& operator = (const TestProperty& rhs) = delete;
 		TestProperty& operator = (TestProperty&& rhs) = delete;
 
 	private:
 
-		friend struct NewProperty<T, TestProperty<T>>;
+		friend struct Property<T, TestProperty<T>>;
 
 		T& derivedStorage()	{ return m_value; }
 		const T& derivedValue() const {	return const_cast<TestProperty&>(*this).derivedValue();	}
-		const NewPropertyDescriptor<T>& derivedDescriptor() const {	return m_Descriptor; }
+		const PropertyDescriptor<T>& derivedDescriptor() const {	return m_Descriptor; }
 
 		union {	T m_value; };
-		const NewPropertyDescriptor<T> m_Descriptor;
+		const PropertyDescriptor<T> m_Descriptor;
 	};
 
-	struct TestPropertyArea : dots::type::NewPropertyArea
+	struct TestPropertyArea : dots::type::PropertyArea
 	{
 		TestPropertyArea() : intProperty{ *this, "intProperty", 1 }, stringProperty{ *this, "stringProperty", 2 } {}		
 		TestProperty<int> intProperty;
 		TestProperty<std::string> stringProperty;
 	};
 	
-	TestNewProxyProperty() :
+	TestProxyProperty() :
 		m_sut(m_propertyArea.stringProperty),
 		m_sutLhs(m_propertyAreaLhs.stringProperty),
 		m_sutRhs(m_propertyAreaRhs.stringProperty) {}
@@ -51,18 +51,18 @@ protected:
 	TestPropertyArea m_propertyAreaLhs;
 	TestPropertyArea m_propertyAreaRhs;
 	
-	NewProxyProperty<std::string> m_sut;	
-	NewProxyProperty<std::string> m_sutLhs;
-	NewProxyProperty<std::string> m_sutRhs;
+	ProxyProperty<std::string> m_sut;	
+	ProxyProperty<std::string> m_sutLhs;
+	ProxyProperty<std::string> m_sutRhs;
 };
 
-TEST_F(TestNewProxyProperty, isValid_InvalidWithoutValue)
+TEST_F(TestProxyProperty, isValid_InvalidWithoutValue)
 {
 	EXPECT_FALSE(m_sut.isValid());
 	EXPECT_THROW(m_sut.value(), std::runtime_error);
 }
 
-TEST_F(TestNewProxyProperty, isValid_ValidWithValue)
+TEST_F(TestProxyProperty, isValid_ValidWithValue)
 {
 	m_sut.construct();
 
@@ -70,7 +70,7 @@ TEST_F(TestNewProxyProperty, isValid_ValidWithValue)
 	EXPECT_NO_THROW(m_sut.value());
 }
 
-TEST_F(TestNewProxyProperty, construct_EqualValueAfterExplicitConstruction)
+TEST_F(TestProxyProperty, construct_EqualValueAfterExplicitConstruction)
 {
 	m_sut.construct(std::string{ "foo" });
 
@@ -78,7 +78,7 @@ TEST_F(TestNewProxyProperty, construct_EqualValueAfterExplicitConstruction)
 	EXPECT_EQ(m_sut.value(), std::string{ "foo" });
 }
 
-TEST_F(TestNewProxyProperty, construct_EqualValueAfterImplicitConstruction)
+TEST_F(TestProxyProperty, construct_EqualValueAfterImplicitConstruction)
 {
 	m_sut.construct("foo");
 
@@ -86,7 +86,7 @@ TEST_F(TestNewProxyProperty, construct_EqualValueAfterImplicitConstruction)
 	EXPECT_EQ(m_sut.value(), "foo");
 }
 
-TEST_F(TestNewProxyProperty, construct_EqualValueAfterEmplaceConstruction)
+TEST_F(TestProxyProperty, construct_EqualValueAfterEmplaceConstruction)
 {
 	m_sut.construct(std::string{ "barfoo" }, 3u, 3u);
 
@@ -94,14 +94,14 @@ TEST_F(TestNewProxyProperty, construct_EqualValueAfterEmplaceConstruction)
 	EXPECT_EQ(m_sut.value(), "foo");
 }
 
-TEST_F(TestNewProxyProperty, construct_ThrowOnOverconstruction)
+TEST_F(TestProxyProperty, construct_ThrowOnOverconstruction)
 {
 	m_sut.construct();
 
 	EXPECT_THROW(m_sut.construct(), std::runtime_error);
 }
 
-TEST_F(TestNewProxyProperty, destroy_InvalidAfterDestroy)
+TEST_F(TestProxyProperty, destroy_InvalidAfterDestroy)
 {
 	m_sut.construct("foo");
 	m_sut.destroy();
@@ -109,7 +109,7 @@ TEST_F(TestNewProxyProperty, destroy_InvalidAfterDestroy)
 	EXPECT_FALSE(m_sut.isValid());
 }
 
-TEST_F(TestNewProxyProperty, constructOrValue_ConstructOnInvalid)
+TEST_F(TestProxyProperty, constructOrValue_ConstructOnInvalid)
 {
 	std::string& value = m_sut.constructOrValue("foo");
 
@@ -117,7 +117,7 @@ TEST_F(TestNewProxyProperty, constructOrValue_ConstructOnInvalid)
 	EXPECT_EQ(value, "foo");
 }
 
-TEST_F(TestNewProxyProperty, constructOrValue_ValueOnValid)
+TEST_F(TestProxyProperty, constructOrValue_ValueOnValid)
 {
 	m_sut.construct("foo");
 
@@ -127,12 +127,12 @@ TEST_F(TestNewProxyProperty, constructOrValue_ValueOnValid)
 	EXPECT_EQ(value, "foo");
 }
 
-TEST_F(TestNewProxyProperty, assign_ExceptionOnInvalid)
+TEST_F(TestProxyProperty, assign_ExceptionOnInvalid)
 {
 	EXPECT_THROW(m_sut.assign(), std::runtime_error);
 }
 
-TEST_F(TestNewProxyProperty, assign_EqualValueAfterExplicitAssign)
+TEST_F(TestProxyProperty, assign_EqualValueAfterExplicitAssign)
 {
 	m_sut.construct();
 	m_sut.assign(std::string{ "foo" });
@@ -141,7 +141,7 @@ TEST_F(TestNewProxyProperty, assign_EqualValueAfterExplicitAssign)
 	EXPECT_EQ(m_sut.value(), std::string{ "foo" });
 }
 
-TEST_F(TestNewProxyProperty, assign_EqualValueAfterImplicitAssign)
+TEST_F(TestProxyProperty, assign_EqualValueAfterImplicitAssign)
 {
 	m_sut.construct();
 	m_sut.assign("foo");
@@ -150,7 +150,7 @@ TEST_F(TestNewProxyProperty, assign_EqualValueAfterImplicitAssign)
 	EXPECT_EQ(m_sut.value(), "foo");
 }
 
-TEST_F(TestNewProxyProperty, assign_EqualValueAfterEmplaceAssign)
+TEST_F(TestProxyProperty, assign_EqualValueAfterEmplaceAssign)
 {
 	m_sut.construct();
 	m_sut.assign(std::string{ "barfoo" }, 3u, 3u);
@@ -159,7 +159,7 @@ TEST_F(TestNewProxyProperty, assign_EqualValueAfterEmplaceAssign)
 	EXPECT_EQ(m_sut.value(), "foo");
 }
 
-TEST_F(TestNewProxyProperty, constructOrAssign_ConstructOnInvalid)
+TEST_F(TestProxyProperty, constructOrAssign_ConstructOnInvalid)
 {
 	std::string& value = m_sut.constructOrAssign("foo");
 
@@ -167,7 +167,7 @@ TEST_F(TestNewProxyProperty, constructOrAssign_ConstructOnInvalid)
 	EXPECT_EQ(value, "foo");
 }
 
-TEST_F(TestNewProxyProperty, constructOrAssign_AssignOnValid)
+TEST_F(TestProxyProperty, constructOrAssign_AssignOnValid)
 {
 	m_sut.construct("foo");
 	std::string& value = m_sut.constructOrAssign("bar");
@@ -176,7 +176,7 @@ TEST_F(TestNewProxyProperty, constructOrAssign_AssignOnValid)
 	EXPECT_EQ(value, "bar");
 }
 
-TEST_F(TestNewProxyProperty, swap_OppositeValuesAfterSwapValid)
+TEST_F(TestProxyProperty, swap_OppositeValuesAfterSwapValid)
 {
 	m_sutLhs.construct("foo");
 	m_sutRhs.construct("bar");
@@ -187,7 +187,7 @@ TEST_F(TestNewProxyProperty, swap_OppositeValuesAfterSwapValid)
 	EXPECT_EQ(m_sutRhs.value(), "foo");
 }
 
-TEST_F(TestNewProxyProperty, swap_OppositeValuesAfterSwapInvalid)
+TEST_F(TestProxyProperty, swap_OppositeValuesAfterSwapInvalid)
 {
 	m_sutLhs.construct("foo");
 	m_sutLhs.swap(m_sutRhs);
@@ -197,7 +197,7 @@ TEST_F(TestNewProxyProperty, swap_OppositeValuesAfterSwapInvalid)
 	EXPECT_EQ(m_sutRhs.value(), "foo");
 }
 
-TEST_F(TestNewProxyProperty, swap_OppositeValuesAfterInvalidSwap)
+TEST_F(TestProxyProperty, swap_OppositeValuesAfterInvalidSwap)
 {
 	m_sutRhs.construct("bar");
 	m_sutLhs.swap(m_sutRhs);
@@ -207,7 +207,7 @@ TEST_F(TestNewProxyProperty, swap_OppositeValuesAfterInvalidSwap)
 	EXPECT_EQ(m_sutLhs.value(), "bar");
 }
 
-TEST_F(TestNewProxyProperty, equal_CompareNotEqualToValueWhenInvalid)
+TEST_F(TestProxyProperty, equal_CompareNotEqualToValueWhenInvalid)
 {
 	std::string rhs{ "foo" };
 
@@ -215,7 +215,7 @@ TEST_F(TestNewProxyProperty, equal_CompareNotEqualToValueWhenInvalid)
 	EXPECT_FALSE(m_sut == rhs);
 	EXPECT_TRUE(m_sut != rhs);
 }
-TEST_F(TestNewProxyProperty, equal_CompareEqualToValueWhenValid)
+TEST_F(TestProxyProperty, equal_CompareEqualToValueWhenValid)
 {
 	std::string rhs{ "foo" };
 
@@ -226,7 +226,7 @@ TEST_F(TestNewProxyProperty, equal_CompareEqualToValueWhenValid)
 	EXPECT_FALSE(m_sut != rhs);
 }
 
-TEST_F(TestNewProxyProperty, equal_CompareNotEqualToValueWhenValid)
+TEST_F(TestProxyProperty, equal_CompareNotEqualToValueWhenValid)
 {
 	std::string rhs{ "bar" };
 
@@ -237,7 +237,7 @@ TEST_F(TestNewProxyProperty, equal_CompareNotEqualToValueWhenValid)
 	EXPECT_TRUE(m_sut != rhs);
 }
 
-TEST_F(TestNewProxyProperty, equal_CompareNotEqualToValidPropertyWhenInvalid)
+TEST_F(TestProxyProperty, equal_CompareNotEqualToValidPropertyWhenInvalid)
 {
 	m_sutRhs.construct("foo");
 
@@ -246,7 +246,7 @@ TEST_F(TestNewProxyProperty, equal_CompareNotEqualToValidPropertyWhenInvalid)
 	EXPECT_TRUE(m_sutLhs != m_sutRhs);
 }
 
-TEST_F(TestNewProxyProperty, equal_CompareEqualToValidPropertyWhenValid)
+TEST_F(TestProxyProperty, equal_CompareEqualToValidPropertyWhenValid)
 {
 	m_sutLhs.construct("foo");
 	m_sutRhs.construct("foo");
@@ -256,7 +256,7 @@ TEST_F(TestNewProxyProperty, equal_CompareEqualToValidPropertyWhenValid)
 	EXPECT_FALSE(m_sutLhs != m_sutRhs);
 }
 
-TEST_F(TestNewProxyProperty, equal_CompareNotEqualToValidPropertyWhenValid)
+TEST_F(TestProxyProperty, equal_CompareNotEqualToValidPropertyWhenValid)
 {
 	m_sutLhs.construct("foo");
 	m_sutRhs.construct("bar");
@@ -266,7 +266,7 @@ TEST_F(TestNewProxyProperty, equal_CompareNotEqualToValidPropertyWhenValid)
 	EXPECT_TRUE(m_sutLhs != m_sutRhs);
 }
 
-TEST_F(TestNewProxyProperty, less_CompareNotLessToValueWhenInvalid)
+TEST_F(TestProxyProperty, less_CompareNotLessToValueWhenInvalid)
 {
 	std::string rhs{ "fou" };
 
@@ -274,7 +274,7 @@ TEST_F(TestNewProxyProperty, less_CompareNotLessToValueWhenInvalid)
 	EXPECT_FALSE(m_sut < rhs);
 }
 
-TEST_F(TestNewProxyProperty, less_CompareLessToValueWhenValid)
+TEST_F(TestProxyProperty, less_CompareLessToValueWhenValid)
 {
 	std::string rhs{ "fou" };
 
@@ -284,7 +284,7 @@ TEST_F(TestNewProxyProperty, less_CompareLessToValueWhenValid)
 	EXPECT_TRUE(m_sut < rhs);
 }
 
-TEST_F(TestNewProxyProperty, less_CompareNotLessToValueWhenValid)
+TEST_F(TestProxyProperty, less_CompareNotLessToValueWhenValid)
 {
 	std::string rhs{ "bar" };
 
@@ -294,13 +294,13 @@ TEST_F(TestNewProxyProperty, less_CompareNotLessToValueWhenValid)
 	EXPECT_FALSE(m_sut < rhs);
 }
 
-TEST_F(TestNewProxyProperty, less_CompareLessToInvalidPropertyWhenInvalid)
+TEST_F(TestProxyProperty, less_CompareLessToInvalidPropertyWhenInvalid)
 {
 	EXPECT_FALSE(m_sutLhs.less(m_sutRhs));
 	EXPECT_FALSE(m_sutLhs < m_sutRhs);
 }
 
-TEST_F(TestNewProxyProperty, less_CompareNotLessToValidPropertyWhenInvalid)
+TEST_F(TestProxyProperty, less_CompareNotLessToValidPropertyWhenInvalid)
 {
 	m_sutRhs.construct("fou");
 
@@ -308,7 +308,7 @@ TEST_F(TestNewProxyProperty, less_CompareNotLessToValidPropertyWhenInvalid)
 	EXPECT_FALSE(m_sutLhs < m_sutRhs);
 }
 
-TEST_F(TestNewProxyProperty, less_CompareLessToValidPropertyValid)
+TEST_F(TestProxyProperty, less_CompareLessToValidPropertyValid)
 {
 	m_sutLhs.construct("foo");
 	m_sutRhs.construct("fou");
@@ -317,7 +317,7 @@ TEST_F(TestNewProxyProperty, less_CompareLessToValidPropertyValid)
 	EXPECT_TRUE(m_sutLhs < m_sutRhs);
 }
 
-TEST_F(TestNewProxyProperty, less_CompareNotLessToValidPropertyValid)
+TEST_F(TestProxyProperty, less_CompareNotLessToValidPropertyValid)
 {
 	m_sutLhs.construct("foo");
 	m_sutRhs.construct("bar");

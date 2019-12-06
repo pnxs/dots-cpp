@@ -22,7 +22,7 @@ namespace dots::types
 	using float32_t          = float;
 	using float64_t          = double;
 
-	using property_set_t     = type::NewPropertySet;
+	using property_set_t     = type::PropertySet;
 
 	using timepoint_t        = pnxs::chrono::TimePoint;
 	using steady_timepoint_t = pnxs::chrono::SteadyTimePoint;
@@ -32,118 +32,118 @@ namespace dots::types
 	using string_t           = std::string;
 
 	template <typename T>
-	using vector_t           = type::NewVector<T>;
+	using vector_t           = type::Vector<T>;
 }
 
 namespace dots::type
 {	
 	template <>
-	struct NewDescriptor<types::bool_t> : NewStaticDescriptor<types::bool_t>
+	struct Descriptor<types::bool_t> : StaticDescriptor<types::bool_t>
 	{
-		NewDescriptor() : NewStaticDescriptor(NewType::boolean, "bool") {}
+		Descriptor() : StaticDescriptor(Type::boolean, "bool") {}
 	};
 
 	template <>
-	struct NewDescriptor<types::int8_t> : NewStaticDescriptor<types::int8_t>
+	struct Descriptor<types::int8_t> : StaticDescriptor<types::int8_t>
 	{
-		NewDescriptor() : NewStaticDescriptor(NewType::int8, "int8") {}
+		Descriptor() : StaticDescriptor(Type::int8, "int8") {}
 	};
 
 	template <>
-	struct NewDescriptor<types::uint8_t> : NewStaticDescriptor<types::uint8_t>
+	struct Descriptor<types::uint8_t> : StaticDescriptor<types::uint8_t>
 	{
-		NewDescriptor() : NewStaticDescriptor(NewType::uint8, "uint8") {}
+		Descriptor() : StaticDescriptor(Type::uint8, "uint8") {}
 	};
 
 	template <>
-	struct NewDescriptor<types::int16_t> : NewStaticDescriptor<types::int16_t>
+	struct Descriptor<types::int16_t> : StaticDescriptor<types::int16_t>
 	{
-		NewDescriptor() : NewStaticDescriptor(NewType::int16, "int16") {}
+		Descriptor() : StaticDescriptor(Type::int16, "int16") {}
 	};
 
 	template <>
-	struct NewDescriptor<types::uint16_t> : NewStaticDescriptor<types::uint16_t>
+	struct Descriptor<types::uint16_t> : StaticDescriptor<types::uint16_t>
 	{
-		NewDescriptor() : NewStaticDescriptor(NewType::uint16, "uint16") {}
+		Descriptor() : StaticDescriptor(Type::uint16, "uint16") {}
 	};
 
 	template <>
-	struct NewDescriptor<types::int32_t> : NewStaticDescriptor<types::int32_t>
+	struct Descriptor<types::int32_t> : StaticDescriptor<types::int32_t>
 	{
-		NewDescriptor() : NewStaticDescriptor(NewType::int32, "int32") {}
+		Descriptor() : StaticDescriptor(Type::int32, "int32") {}
 	};
 
 	template <>
-	struct NewDescriptor<types::uint32_t> : NewStaticDescriptor<types::uint32_t>
+	struct Descriptor<types::uint32_t> : StaticDescriptor<types::uint32_t>
 	{
-		NewDescriptor() : NewStaticDescriptor(NewType::uint32, "uint32") {}
+		Descriptor() : StaticDescriptor(Type::uint32, "uint32") {}
 	};
 
 	template <>
-	struct NewDescriptor<types::int64_t> : NewStaticDescriptor<types::int64_t>
+	struct Descriptor<types::int64_t> : StaticDescriptor<types::int64_t>
 	{
-		NewDescriptor() : NewStaticDescriptor(NewType::int64, "int64") {}
+		Descriptor() : StaticDescriptor(Type::int64, "int64") {}
 	};
 
 	template <>
-	struct NewDescriptor<types::uint64_t> : NewStaticDescriptor<types::uint64_t>
+	struct Descriptor<types::uint64_t> : StaticDescriptor<types::uint64_t>
 	{
-		NewDescriptor() : NewStaticDescriptor(NewType::uint64, "uint64") {}
+		Descriptor() : StaticDescriptor(Type::uint64, "uint64") {}
 	};
 	
 	template <>
-	struct NewDescriptor<types::float32_t> : NewStaticDescriptor<types::float32_t>
+	struct Descriptor<types::float32_t> : StaticDescriptor<types::float32_t>
 	{
-		NewDescriptor() : NewStaticDescriptor(NewType::float32, "float32") {}
+		Descriptor() : StaticDescriptor(Type::float32, "float32") {}
 	};
 
 	template <>
-	struct NewDescriptor<types::float64_t> : NewStaticDescriptor<types::float64_t>
+	struct Descriptor<types::float64_t> : StaticDescriptor<types::float64_t>
 	{
-		NewDescriptor() : NewStaticDescriptor(NewType::float64, "float64") {}
+		Descriptor() : StaticDescriptor(Type::float64, "float64") {}
 	};
 
 	template <>
-	struct NewDescriptor<types::property_set_t> : NewStaticDescriptor<types::property_set_t>
+	struct Descriptor<types::property_set_t> : StaticDescriptor<types::property_set_t>
 	{
-		NewDescriptor() : NewStaticDescriptor(NewType::property_set, "property_set") {}
+		Descriptor() : StaticDescriptor(Type::property_set, "property_set") {}
 	};
 
 	template <>
-	struct NewDescriptor<types::timepoint_t> : NewStaticDescriptor<types::timepoint_t>
+	struct Descriptor<types::timepoint_t> : StaticDescriptor<types::timepoint_t>
 	{
-		NewDescriptor() : NewStaticDescriptor(NewType::timepoint, "timepoint") {}
+		Descriptor() : StaticDescriptor(Type::timepoint, "timepoint") {}
 	};
 
 	template <>
-	struct NewDescriptor<types::steady_timepoint_t> : NewStaticDescriptor<types::steady_timepoint_t>
+	struct Descriptor<types::steady_timepoint_t> : StaticDescriptor<types::steady_timepoint_t>
 	{
-		NewDescriptor() : NewStaticDescriptor(NewType::steady_timepoint, "steady_timepoint") {}
+		Descriptor() : StaticDescriptor(Type::steady_timepoint, "steady_timepoint") {}
 	};
 
 	template <>
-	struct NewDescriptor<types::duration_t> : NewStaticDescriptor<types::duration_t>
+	struct Descriptor<types::duration_t> : StaticDescriptor<types::duration_t>
 	{
-		NewDescriptor() : NewStaticDescriptor(NewType::duration, "duration") {}
+		Descriptor() : StaticDescriptor(Type::duration, "duration") {}
 	};
 
 	template <>
-	struct NewDescriptor<types::uuid_t> : NewStaticDescriptor<types::uuid_t>
+	struct Descriptor<types::uuid_t> : StaticDescriptor<types::uuid_t>
 	{
-		NewDescriptor() : NewStaticDescriptor(NewType::uuid, "uuid") {}
+		Descriptor() : StaticDescriptor(Type::uuid, "uuid") {}
 	};
 
 	template <>
-	struct NewDescriptor<types::string_t> : NewStaticDescriptor<types::string_t>
+	struct Descriptor<types::string_t> : StaticDescriptor<types::string_t>
 	{
-		NewDescriptor() : NewStaticDescriptor(NewType::string, "string") {}
+		Descriptor() : StaticDescriptor(Type::string, "string") {}
 
 		bool usesDynamicMemory() const override
 		{
 			return true;
 		}
 
-		size_t dynamicMemoryUsage(const NewTypeless& value) const override
+		size_t dynamicMemoryUsage(const Typeless& value) const override
 		{
 			return dynamicMemoryUsage(value.to<types::string_t>());
 		}

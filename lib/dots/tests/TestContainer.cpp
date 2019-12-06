@@ -7,7 +7,7 @@ namespace
 {
 	namespace test_helpers
 	{
-		DotsHeader make_header(const dots::type::NewStruct& instance, uint32_t sender, bool remove = false)
+		DotsHeader make_header(const dots::type::Struct& instance, uint32_t sender, bool remove = false)
 		{
 			return DotsHeader{
 				DotsHeader::typeName_i{ instance._descriptor().name() },
@@ -190,7 +190,7 @@ TEST(TestContainer, remove_RemoveWhenContained)
 	sut.insert(header1, dts1);
 	sut.insert(header2, dts2);
 	dots::Container<DotsTestStruct>::node_t removedNode = sut.remove(header3, dts3);
-	const dots::type::NewStruct& removed = removedNode.key();
+	const dots::type::Struct& removed = removedNode.key();
 	const DotsCloneInformation& cloneInfo = removedNode.mapped();
 
 	ASSERT_EQ(sut.size(), 1);

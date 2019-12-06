@@ -10,14 +10,14 @@ namespace dots
 {
 	struct PublishedType : public Chained<PublishedType>
 	{
-		const type::NewStructDescriptor<>* td;
-		PublishedType(const type::NewStructDescriptor<>* td);
+		const type::StructDescriptor<>* td;
+		PublishedType(const type::StructDescriptor<>* td);
 	};
 
 	struct SubscribedType : public Chained<SubscribedType>
 	{
-		const type::NewStructDescriptor<>* td;
-		SubscribedType(const type::NewStructDescriptor<>* td);
+		const type::StructDescriptor<>* td;
+		SubscribedType(const type::StructDescriptor<>* td);
 	};
 
 	/**
@@ -58,7 +58,7 @@ namespace dots
 	{
 		using id_t = uint64_t;
 
-		Subscription(std::weak_ptr<Dispatcher*> dispatcher, const type::NewStructDescriptor<>& descriptor);
+		Subscription(std::weak_ptr<Dispatcher*> dispatcher, const type::StructDescriptor<>& descriptor);
 		Subscription(const Subscription& other) = delete;
 		Subscription(Subscription&& other) noexcept;
 		~Subscription();
@@ -66,7 +66,7 @@ namespace dots
 		Subscription& operator = (const Subscription& rhs) = delete;
 		Subscription& operator = (Subscription&& rhs) noexcept;
 
-		const type::NewStructDescriptor<>& descriptor() const;
+		const type::StructDescriptor<>& descriptor() const;
 		id_t id() const;
 		void unsubscribe();
 
@@ -76,7 +76,7 @@ namespace dots
 
 		inline static std::atomic<id_t> M_lastId = 0;
 		std::weak_ptr<Dispatcher*> m_dispatcher;
-		const type::NewStructDescriptor<>* m_descriptor;
+		const type::StructDescriptor<>* m_descriptor;
 		id_t m_id;
 	};
 }

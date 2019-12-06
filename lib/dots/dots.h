@@ -14,7 +14,7 @@ namespace dots
 
 	Transceiver& transceiver();
 
-	void publish(const type::NewStructDescriptor<>* td, const type::NewStruct& instance, types::property_set_t what, bool remove);
+	void publish(const type::StructDescriptor<>* td, const type::Struct& instance, types::property_set_t what, bool remove);
 
 	template<class T>
 	void publish(const T& instance, const types::property_set_t& what = types::property_set_t::All, bool remove = false);
@@ -24,8 +24,8 @@ namespace dots
 	template<class T>
 	void remove(const T& data);
 
-	Subscription subscribe(const type::NewStructDescriptor<>& descriptor, Transceiver::receive_handler_t<>&& handler);
-	Subscription subscribe(const type::NewStructDescriptor<>& descriptor, Transceiver::event_handler_t<>&& handler);
+	Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::receive_handler_t<>&& handler);
+	Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::event_handler_t<>&& handler);
 
 	template<class T>
 	Subscription subscribe(Dispatcher::receive_handler_t<T>&& handler);
@@ -34,7 +34,7 @@ namespace dots
 
 	const ContainerPool& pool();
 
-	const Container<>& container(const type::NewStructDescriptor<>& descriptor);
+	const Container<>& container(const type::StructDescriptor<>& descriptor);
 	template <typename T>
 	const Container<T>& container();
 

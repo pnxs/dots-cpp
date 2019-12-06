@@ -19,18 +19,18 @@ namespace dots
 		VirtualChannel& operator = (const VirtualChannel& rhs) = delete;
 		VirtualChannel& operator = (VirtualChannel&& rhs) = delete;
 
-        void spoof(const DotsTransportHeader& header, const type::NewStruct& instance);
-        void spoof(uint32_t sender, const type::NewStruct& instance, bool remove = false);
+        void spoof(const DotsTransportHeader& header, const type::Struct& instance);
+        void spoof(uint32_t sender, const type::Struct& instance, bool remove = false);
 
 	protected:
 
 		void asyncReceiveImpl() override;
-		void transmitImpl(const DotsTransportHeader& header, const type::NewStruct& instance) override;
+		void transmitImpl(const DotsTransportHeader& header, const type::Struct& instance) override;
 
 		virtual void onConnected();
 		virtual void onSubscribe(const std::string& name);
 		virtual void onUnsubscribe(const std::string& name);
-		virtual void onTransmit(const DotsTransportHeader& header, const type::NewStruct& instance);
+		virtual void onTransmit(const DotsTransportHeader& header, const type::Struct& instance);
 
 		const std::set<std::string>& subscribedTypes() const;
 

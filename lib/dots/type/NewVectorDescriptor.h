@@ -4,34 +4,34 @@
 
 namespace dots::type
 {
-	struct NewVectorDescriptor : NewDescriptor<NewTypeless>
+	struct VectorDescriptor : Descriptor<Typeless>
 	{
-		NewVectorDescriptor(std::string name, const std::shared_ptr<NewDescriptor<>>& valueDescriptor, size_t size, size_t alignment);
-		NewVectorDescriptor(const NewVectorDescriptor& other) = default;
-		NewVectorDescriptor(NewVectorDescriptor&& other) = default;
-		~NewVectorDescriptor() = default;
+		VectorDescriptor(std::string name, const std::shared_ptr<Descriptor<>>& valueDescriptor, size_t size, size_t alignment);
+		VectorDescriptor(const VectorDescriptor& other) = default;
+		VectorDescriptor(VectorDescriptor&& other) = default;
+		~VectorDescriptor() = default;
 
-		NewVectorDescriptor& operator = (const NewVectorDescriptor& rhs) = default;
-		NewVectorDescriptor& operator = (NewVectorDescriptor&& rhs) = default;
+		VectorDescriptor& operator = (const VectorDescriptor& rhs) = default;
+		VectorDescriptor& operator = (VectorDescriptor&& rhs) = default;
 
-		const std::shared_ptr<NewDescriptor<>>& valueDescriptorPtr() const;
-		const NewDescriptor<NewTypeless>& valueDescriptor() const;
+		const std::shared_ptr<Descriptor<>>& valueDescriptorPtr() const;
+		const Descriptor<Typeless>& valueDescriptor() const;
 
 	private:
 
-		std::shared_ptr<NewDescriptor<>> m_valueDescriptor;
+		std::shared_ptr<Descriptor<>> m_valueDescriptor;
 	};
 
 	template <typename T>
-	struct NewDescriptor<NewVector<T>> : NewStaticDescriptor<NewVector<T>, NewVectorDescriptor>
+	struct Descriptor<Vector<T>> : StaticDescriptor<Vector<T>, VectorDescriptor>
 	{
-		NewDescriptor() :
-			NewStaticDescriptor<NewVector<T>, NewVectorDescriptor>("vector<" + valueDescriptor().name() + ">", valueDescriptorPtr(), sizeof(NewVector<T>), alignof(NewVector<T>))
+		Descriptor() :
+			StaticDescriptor<Vector<T>, VectorDescriptor>("vector<" + valueDescriptor().name() + ">", valueDescriptorPtr(), sizeof(Vector<T>), alignof(Vector<T>))
 		{
 			/* do nothing */
 		}
-		NewDescriptor(const std::shared_ptr<NewDescriptor<>>& valueDescriptorOverride) :
-			NewStaticDescriptor<NewVector<T>, NewVectorDescriptor>("vector<" + valueDescriptorOverride->name() + ">", valueDescriptorOverride, sizeof(NewVector<T>), alignof(NewVector<T>))
+		Descriptor(const std::shared_ptr<Descriptor<>>& valueDescriptorOverride) :
+			StaticDescriptor<Vector<T>, VectorDescriptor>("vector<" + valueDescriptorOverride->name() + ">", valueDescriptorOverride, sizeof(Vector<T>), alignof(Vector<T>))
 		{
 			if (valueDescriptorOverride->size() != valueDescriptor().size() || valueDescriptorOverride->alignment() != valueDescriptor().alignment())
 			{
@@ -44,12 +44,12 @@ namespace dots::type
 			return true;
 		}
 
-		size_t dynamicMemoryUsage(const NewTypeless& lhs) const
+		size_t dynamicMemoryUsage(const Typeless& lhs) const
 		{
-			return dynamicMemoryUsage(lhs.to<NewVector<T>>());
+			return dynamicMemoryUsage(lhs.to<Vector<T>>());
 		}
 
-		size_t dynamicMemoryUsage(const NewVector<T>& lhs) const
+		size_t dynamicMemoryUsage(const Vector<T>& lhs) const
 		{
 			size_t size = lhs.size();
 		    size_t dynMemUsage = size * valueDescriptor().size();
@@ -65,25 +65,25 @@ namespace dots::type
 		    return dynMemUsage;
 		}
 
-		static const std::shared_ptr<NewDescriptor<T>>& valueDescriptorPtr()
+		static const std::shared_ptr<Descriptor<T>>& valueDescriptorPtr()
 		{
-			return NewDescriptor<T>::InstancePtr();
+			return Descriptor<T>::InstancePtr();
 		}
 
-		static const NewDescriptor<T>& valueDescriptor()
+		static const Descriptor<T>& valueDescriptor()
 		{
-			return NewDescriptor<T>::Instance();
+			return Descriptor<T>::Instance();
 		}
 
 	private:
 
-		using NewVectorDescriptor::valueDescriptorPtr;
-		using NewVectorDescriptor::valueDescriptor;
+		using VectorDescriptor::valueDescriptorPtr;
+		using VectorDescriptor::valueDescriptor;
 	};
 
 	[[deprecated("only available for backwards compatibility")]]
-	inline const NewVectorDescriptor* toVectorDescriptor(const NewDescriptor<>* descriptor)
+	inline const VectorDescriptor* toVectorDescriptor(const Descriptor<>* descriptor)
 	{
-	    return dynamic_cast<const NewVectorDescriptor*>(descriptor);
+	    return dynamic_cast<const VectorDescriptor*>(descriptor);
 	}
 }

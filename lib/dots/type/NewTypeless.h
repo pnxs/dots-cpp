@@ -3,15 +3,15 @@
 
 namespace dots::type
 {
-	struct NewTypeless
+	struct Typeless
 	{
-		NewTypeless() = delete;
-		NewTypeless(const NewTypeless& other) = delete;
-		NewTypeless(NewTypeless&& other) = delete;
-		~NewTypeless() = delete;
+		Typeless() = delete;
+		Typeless(const Typeless& other) = delete;
+		Typeless(Typeless&& other) = delete;
+		~Typeless() = delete;
 
-		NewTypeless& operator = (const NewTypeless& rhs) = delete;
-		NewTypeless& operator = (NewTypeless&& rhs) = delete;
+		Typeless& operator = (const Typeless& rhs) = delete;
+		Typeless& operator = (Typeless&& rhs) = delete;
 
 		template <typename T>
 		const T& to() const
@@ -26,33 +26,33 @@ namespace dots::type
 		}
 
 		template <typename T>
-		static const NewTypeless& From(const T& t)
+		static const Typeless& From(const T& t)
 		{
-			return reinterpret_cast<const NewTypeless&>(t);
+			return reinterpret_cast<const Typeless&>(t);
 		}
 
 		template <typename T>
-		static NewTypeless& From(T& t)
+		static Typeless& From(T& t)
 		{
-			return reinterpret_cast<NewTypeless&>(t);
+			return reinterpret_cast<Typeless&>(t);
 		}
 
 		template <typename T>
-		static NewTypeless&& From(T&& t)
+		static Typeless&& From(T&& t)
 		{
-			return reinterpret_cast<NewTypeless&&>(t);
+			return reinterpret_cast<Typeless&&>(t);
 		}
 
 		template <typename T>
-		static const NewTypeless* From(const T* t)
+		static const Typeless* From(const T* t)
 		{
-			return reinterpret_cast<const NewTypeless*>(t);
+			return reinterpret_cast<const Typeless*>(t);
 		}
 
 		template <typename T>
-		static NewTypeless* From(T* t)
+		static Typeless* From(T* t)
 		{
-			return reinterpret_cast<NewTypeless*>(t);
+			return reinterpret_cast<Typeless*>(t);
 		}
 	};
 }

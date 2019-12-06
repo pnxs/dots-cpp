@@ -43,8 +43,8 @@ public:
 
     void requestConnection(const ClientName&, ConnectMode);
 
-    void publish(const type::NewStructDescriptor<>* td, const type::NewStruct& instance, types::property_set_t what = types::property_set_t::All, bool remove = false);
-    void publishNs(const string& nameSpace, const type::NewStructDescriptor<>* td, const type::NewStruct& instance, types::property_set_t what = types::property_set_t::All, bool remove = false);
+    void publish(const type::StructDescriptor<>* td, const type::Struct& instance, types::property_set_t what = types::property_set_t::All, bool remove = false);
+    void publishNs(const string& nameSpace, const type::StructDescriptor<>* td, const type::Struct& instance, types::property_set_t what = types::property_set_t::All, bool remove = false);
     // Server actions END
 
     const ClientId& clientId() const { return m_serversideClientname; }

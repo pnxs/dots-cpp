@@ -10,8 +10,8 @@ class MockPublisher : public dots::Publisher
 {
 public:
     MOCK_METHOD4(publish, void(
-            const type::NewStructDescriptor<> *td, const type::NewStruct& instance,
-                    type::NewPropertySet what, bool remove));
+            const type::StructDescriptor<> *td, const type::Struct& instance,
+                    type::PropertySet what, bool remove));
 };
 
 }

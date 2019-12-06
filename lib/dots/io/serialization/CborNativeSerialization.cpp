@@ -13,13 +13,13 @@
 
 namespace dots {
 
-static void write_array_to_cbor(const type::NewVectorDescriptor& vd, const type::NewVector<>& data, cbor::encoder& encoder);
-static void read_from_array_recursive(const type::NewVectorDescriptor& vd, type::NewVector<>& data, cbor::decoder& decoder);
-void from_cbor_recursive(const type::NewStructDescriptor<>& td, type::NewStruct& instance, cbor::decoder& decoder);
-static void to_cbor_recursive(const type::NewStruct& instance, types::property_set_t what, cbor::encoder &encoder);
+static void write_array_to_cbor(const type::VectorDescriptor& vd, const type::Vector<>& data, cbor::encoder& encoder);
+static void read_from_array_recursive(const type::VectorDescriptor& vd, type::Vector<>& data, cbor::decoder& decoder);
+void from_cbor_recursive(const type::StructDescriptor<>& td, type::Struct& instance, cbor::decoder& decoder);
+static void to_cbor_recursive(const type::Struct& instance, types::property_set_t what, cbor::encoder &encoder);
 
 static void
-write_atomic_types_to_cbor(const type::NewDescriptor<>& td, const type::NewTypeless& data, cbor::encoder& encoder)
+write_atomic_types_to_cbor(const type::Descriptor<>& td, const type::Typeless& data, cbor::encoder& encoder)
 {
     //std::cout << "write atomic is_arithmetic:" << t.is_arithmetic() << " is_enum:" << t.is_enumeration() << " t:" << t.get_name() << "\n";
     //std::cout << "var ptr: " << var.get_ptr() << " type=" << var.get_type().get_name() << "\n";
@@ -43,7 +43,7 @@ write_atomic_types_to_cbor(const type::NewDescriptor<>& td, const type::NewTypel
         case type::DotsType::uuid:            encoder.write_bytes(data.to<types::uuid_t>().data().data(), 16); break;
         case type::DotsType::Enum:
         {
-            encoder.write_int(static_cast<const type::NewEnumDescriptor<>&>(td).enumeratorFromValue(data).tag());
+            encoder.write_int(static_cast<const type::EnumDescriptor<>&>(td).enumeratorFromValue(data).tag());
         }
         break;
         case type::DotsType::Vector:
@@ -53,11 +53,11 @@ write_atomic_types_to_cbor(const type::NewDescriptor<>& td, const type::NewTypel
     }
 }
 
-static inline void write_cbor(const type::NewDescriptor<>& td, const type::NewTypeless& data, cbor::encoder& encoder)
+static inline void write_cbor(const type::Descriptor<>& td, const type::Typeless& data, cbor::encoder& encoder)
 {
     if (td.dotsType() == type::DotsType::Vector)
     {
-        write_array_to_cbor(static_cast<const type::NewVectorDescriptor&>(td), data.to<const type::NewVector<>>(), encoder);
+        write_array_to_cbor(static_cast<const type::VectorDescriptor&>(td), data.to<const type::Vector<>>(), encoder);
     }
     else if (isDotsBaseType(td.dotsType()))
     {
@@ -65,7 +65,7 @@ static inline void write_cbor(const type::NewDescriptor<>& td, const type::NewTy
     }
     else if (td.dotsType() == type::DotsType::Struct) // object
     {
-        to_cbor_recursive(data.to<const type::NewStruct>(), types::property_set_t::All, encoder);
+        to_cbor_recursive(data.to<const type::Struct>(), types::property_set_t::All, encoder);
     }
     else
     {
@@ -74,7 +74,7 @@ static inline void write_cbor(const type::NewDescriptor<>& td, const type::NewTy
 }
 
 
-static void write_array_to_cbor(const type::NewVectorDescriptor& vd, const type::NewVector<>& data, cbor::encoder& encoder)
+static void write_array_to_cbor(const type::VectorDescriptor& vd, const type::Vector<>& data, cbor::encoder& encoder)
 {
     encoder.write_array(data.typelessSize());
 
@@ -84,7 +84,7 @@ static void write_array_to_cbor(const type::NewVectorDescriptor& vd, const type:
     }
 }
 
-static void to_cbor_recursive(const type::NewStruct& instance, types::property_set_t what, cbor::encoder &encoder)
+static void to_cbor_recursive(const type::Struct& instance, types::property_set_t what, cbor::encoder &encoder)
 {
     types::property_set_t validProperties = instance._validProperties();
 
@@ -107,7 +107,7 @@ static void to_cbor_recursive(const type::NewStruct& instance, types::property_s
         // Write Tag
         encoder.write_int(prop->tag());
 
-        write_cbor(prop->valueDescriptor(), *type::NewTypeless::From(propertyValue), encoder);
+        write_cbor(prop->valueDescriptor(), *type::Typeless::From(propertyValue), encoder);
     }
 }
 
@@ -117,33 +117,33 @@ static void to_cbor_recursive(const type::NewStruct& instance, types::property_s
 
 
 static void
-read_atomic_types_from_cbor(const type::NewDescriptor<>& td, type::NewTypeless& data, cbor::decoder& decoder)
+read_atomic_types_from_cbor(const type::Descriptor<>& td, type::Typeless& data, cbor::decoder& decoder)
 {
     //std::cout << "write atomic is_arithmetic:" << t.is_arithmetic() << " is_enum:" << t.is_enumeration() << " t:" << t.get_name() << "\n";
     //std::cout << "var ptr: " << var.get_ptr() << " type=" << var.get_type().get_name() << "\n";
     auto ct = decoder.peekType().major();
 
     switch (td.dotsType()) {
-		case type::DotsType::int8:             static_cast<const type::NewDescriptor<types::int8_t>&>(td).construct(data.to<types::int8_t>(), ct == cbor::majorType::unsignedInteger ? decoder.read_uint() : decoder.read_int()); break;
-        case type::DotsType::int16:            static_cast<const type::NewDescriptor<types::int16_t>&>(td).construct(data.to<types::int16_t>(), ct == cbor::majorType::unsignedInteger ? decoder.read_uint() : decoder.read_int()); break;
-        case type::DotsType::int32:            static_cast<const type::NewDescriptor<types::int32_t>&>(td).construct(data.to<types::int32_t>(), ct == cbor::majorType::unsignedInteger ? decoder.read_uint() : decoder.read_int()); break;
-        case type::DotsType::int64:            static_cast<const type::NewDescriptor<types::int64_t>&>(td).construct(data.to<types::int64_t>(), ct == cbor::majorType::unsignedInteger ? decoder.read_ulong() : decoder.read_long()); break;
-        case type::DotsType::uint8:            static_cast<const type::NewDescriptor<types::uint8_t>&>(td).construct(data.to<types::uint8_t>(), decoder.read_uint()); break;
-        case type::DotsType::uint16:           static_cast<const type::NewDescriptor<types::uint16_t>&>(td).construct(data.to<types::uint16_t>(), decoder.read_uint()); break;
-        case type::DotsType::uint32:           static_cast<const type::NewDescriptor<types::uint32_t>&>(td).construct(data.to<types::uint32_t>(), decoder.read_uint()); break;
-        case type::DotsType::uint64:           static_cast<const type::NewDescriptor<types::uint64_t>&>(td).construct(data.to<types::uint64_t>(), decoder.read_ulong()); break;
-        case type::DotsType::boolean:          static_cast<const type::NewDescriptor<types::bool_t>&>(td).construct(data.to<types::bool_t>(), decoder.read_bool()); break;
-        case type::DotsType::float32:          static_cast<const type::NewDescriptor<types::float32_t>&>(td).construct(data.to<types::float32_t>(), decoder.read_float()); break;
-        case type::DotsType::float64:          static_cast<const type::NewDescriptor<types::float64_t>&>(td).construct(data.to<types::float64_t>(), decoder.read_double()); break;
-        case type::DotsType::string:           static_cast<const type::NewDescriptor<types::string_t>&>(td).construct(data.to<types::string_t>(), decoder.read_string()); break;
-		case type::DotsType::property_set:     static_cast<const type::NewDescriptor<types::property_set_t>&>(td).construct(data.to<types::property_set_t>(), decoder.read_uint()); break;
-        case type::DotsType::timepoint:        static_cast<const type::NewDescriptor<types::timepoint_t>&>(td).construct(data.to<types::timepoint_t>(), decoder.read_double()); break;
-        case type::DotsType::steady_timepoint: static_cast<const type::NewDescriptor<types::steady_timepoint_t>&>(td).construct(data.to<types::steady_timepoint_t>(), decoder.read_double()); break;
-        case type::DotsType::duration:         static_cast<const type::NewDescriptor<types::duration_t>&>(td).construct(data.to<types::duration_t>(), decoder.read_double()); break;
-        case type::DotsType::uuid:             static_cast<const type::NewDescriptor<types::uuid_t>&>(td).construct(data.to<types::uuid_t>(), decoder.read_string()); break;
+		case type::DotsType::int8:             static_cast<const type::Descriptor<types::int8_t>&>(td).construct(data.to<types::int8_t>(), ct == cbor::majorType::unsignedInteger ? decoder.read_uint() : decoder.read_int()); break;
+        case type::DotsType::int16:            static_cast<const type::Descriptor<types::int16_t>&>(td).construct(data.to<types::int16_t>(), ct == cbor::majorType::unsignedInteger ? decoder.read_uint() : decoder.read_int()); break;
+        case type::DotsType::int32:            static_cast<const type::Descriptor<types::int32_t>&>(td).construct(data.to<types::int32_t>(), ct == cbor::majorType::unsignedInteger ? decoder.read_uint() : decoder.read_int()); break;
+        case type::DotsType::int64:            static_cast<const type::Descriptor<types::int64_t>&>(td).construct(data.to<types::int64_t>(), ct == cbor::majorType::unsignedInteger ? decoder.read_ulong() : decoder.read_long()); break;
+        case type::DotsType::uint8:            static_cast<const type::Descriptor<types::uint8_t>&>(td).construct(data.to<types::uint8_t>(), decoder.read_uint()); break;
+        case type::DotsType::uint16:           static_cast<const type::Descriptor<types::uint16_t>&>(td).construct(data.to<types::uint16_t>(), decoder.read_uint()); break;
+        case type::DotsType::uint32:           static_cast<const type::Descriptor<types::uint32_t>&>(td).construct(data.to<types::uint32_t>(), decoder.read_uint()); break;
+        case type::DotsType::uint64:           static_cast<const type::Descriptor<types::uint64_t>&>(td).construct(data.to<types::uint64_t>(), decoder.read_ulong()); break;
+        case type::DotsType::boolean:          static_cast<const type::Descriptor<types::bool_t>&>(td).construct(data.to<types::bool_t>(), decoder.read_bool()); break;
+        case type::DotsType::float32:          static_cast<const type::Descriptor<types::float32_t>&>(td).construct(data.to<types::float32_t>(), decoder.read_float()); break;
+        case type::DotsType::float64:          static_cast<const type::Descriptor<types::float64_t>&>(td).construct(data.to<types::float64_t>(), decoder.read_double()); break;
+        case type::DotsType::string:           static_cast<const type::Descriptor<types::string_t>&>(td).construct(data.to<types::string_t>(), decoder.read_string()); break;
+		case type::DotsType::property_set:     static_cast<const type::Descriptor<types::property_set_t>&>(td).construct(data.to<types::property_set_t>(), decoder.read_uint()); break;
+        case type::DotsType::timepoint:        static_cast<const type::Descriptor<types::timepoint_t>&>(td).construct(data.to<types::timepoint_t>(), decoder.read_double()); break;
+        case type::DotsType::steady_timepoint: static_cast<const type::Descriptor<types::steady_timepoint_t>&>(td).construct(data.to<types::steady_timepoint_t>(), decoder.read_double()); break;
+        case type::DotsType::duration:         static_cast<const type::Descriptor<types::duration_t>&>(td).construct(data.to<types::duration_t>(), decoder.read_double()); break;
+        case type::DotsType::uuid:             static_cast<const type::Descriptor<types::uuid_t>&>(td).construct(data.to<types::uuid_t>(), decoder.read_string()); break;
         case type::DotsType::Enum:
         {
-            const auto& enumDescriptor = static_cast<const type::NewEnumDescriptor<>&>(td);
+            const auto& enumDescriptor = static_cast<const type::EnumDescriptor<>&>(td);
             enumDescriptor.construct(data, enumDescriptor.enumeratorFromTag(decoder.read_int()).valueTypeless());
         }
             break;
@@ -154,21 +154,21 @@ read_atomic_types_from_cbor(const type::NewDescriptor<>& td, type::NewTypeless& 
     }
 }
 
-void read_cbor(const type::NewDescriptor<>& td, type::NewTypeless& data, cbor::decoder& decoder)
+void read_cbor(const type::Descriptor<>& td, type::Typeless& data, cbor::decoder& decoder)
 {
     if (td.dotsType() == type::DotsType::Struct)
     {
-    	const auto& structDescriptor = static_cast<const type::NewStructDescriptor<>&>(td);
+    	const auto& structDescriptor = static_cast<const type::StructDescriptor<>&>(td);
     	structDescriptor.construct(data);
     	
-        from_cbor_recursive(structDescriptor, data.to<type::NewStruct>(), decoder);
+        from_cbor_recursive(structDescriptor, data.to<type::Struct>(), decoder);
     }
     else if (td.dotsType() == type::DotsType::Vector)
     {
-    	const auto& vectorDescriptor = static_cast<const type::NewVectorDescriptor&>(td);
+    	const auto& vectorDescriptor = static_cast<const type::VectorDescriptor&>(td);
     	vectorDescriptor.construct(data);
     	
-        read_from_array_recursive(vectorDescriptor, data.to<type::NewVector<>>(), decoder);
+        read_from_array_recursive(vectorDescriptor, data.to<type::Vector<>>(), decoder);
     }
     else if (isDotsBaseType(td.dotsType()))
     {
@@ -180,7 +180,7 @@ void read_cbor(const type::NewDescriptor<>& td, type::NewTypeless& data, cbor::d
     }
 }
 
-void from_cbor_recursive(const type::NewStructDescriptor<>& td, type::NewStruct& instance, cbor::decoder& decoder)
+void from_cbor_recursive(const type::StructDescriptor<>& td, type::Struct& instance, cbor::decoder& decoder)
 {
     const auto& structProperties = td.propertyDescriptors();
 
@@ -205,11 +205,11 @@ void from_cbor_recursive(const type::NewStructDescriptor<>& td, type::NewStruct&
 
             if (1) // TODO: wireTypeCompatible
             {
-                read_cbor(property->valueDescriptor(), *type::NewTypeless::From(propertyValue), decoder);
+                read_cbor(property->valueDescriptor(), *type::Typeless::From(propertyValue), decoder);
             }
 
             //td.propertyArea(instance).validProperties() += property->set();
-        	type::NewPropertySet& validProperties = td.propertyArea(instance).validProperties();
+        	type::PropertySet& validProperties = td.propertyArea(instance).validProperties();
         	validProperties += property->set();
         }
         else
@@ -221,7 +221,7 @@ void from_cbor_recursive(const type::NewStructDescriptor<>& td, type::NewStruct&
     }
 }
 
-static void read_from_array_recursive(const type::NewVectorDescriptor& vd, type::NewVector<>& data, cbor::decoder& decoder)
+static void read_from_array_recursive(const type::VectorDescriptor& vd, type::Vector<>& data, cbor::decoder& decoder)
 {
 	data.typelessResize(decoder.read_array());
 
@@ -234,7 +234,7 @@ static void read_from_array_recursive(const type::NewVectorDescriptor& vd, type:
 //----------------------------------
 
 
-std::string to_cbor(const type::NewStruct& instance, types::property_set_t properties)
+std::string to_cbor(const type::Struct& instance, types::property_set_t properties)
 {
     cbor::output_dynamic out;
     cbor::encoder encoder(out);
@@ -246,10 +246,10 @@ std::string to_cbor(const type::NewStruct& instance, types::property_set_t prope
 
 std::string to_cbor(DynamicInstance instance, types::property_set_t properties)
 {
-	return to_cbor(*reinterpret_cast<const type::NewStruct*>(instance.obj), properties);
+	return to_cbor(*reinterpret_cast<const type::Struct*>(instance.obj), properties);
 }
 
-int from_cbor(const uint8_t* cborData, std::size_t cborSize, type::NewStruct& instance)
+int from_cbor(const uint8_t* cborData, std::size_t cborSize, type::Struct& instance)
 {
     if (cborSize == 0) {
         throw std::runtime_error("unable to deserialize zero-sized CBOR object");
@@ -263,9 +263,9 @@ int from_cbor(const uint8_t* cborData, std::size_t cborSize, type::NewStruct& in
     return input.offset();
 }
 
-int from_cbor(const uint8_t* cborData, std::size_t cborSize, const dots::type::NewStructDescriptor<>* /*td*/, void* data)
+int from_cbor(const uint8_t* cborData, std::size_t cborSize, const dots::type::StructDescriptor<>* /*td*/, void* data)
 {
-	return from_cbor(cborData, cborSize, *reinterpret_cast<type::NewStruct*>(data));
+	return from_cbor(cborData, cborSize, *reinterpret_cast<type::Struct*>(data));
 }
 
 int skip_cbor(const uint8_t* cborData, std::size_t cborSize)

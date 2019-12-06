@@ -7,57 +7,57 @@
 
 namespace dots::type
 {
-    struct NewStruct : NewPropertyContainer<NewStruct>
+    struct Struct : PropertyContainer<Struct>
     {
-        NewStruct(const NewStructDescriptor<>& descriptor);
-        NewStruct(const NewStruct& other) = default;
-        NewStruct(NewStruct&& other) noexcept = default;
-        ~NewStruct() = default;
+        Struct(const StructDescriptor<>& descriptor);
+        Struct(const Struct& other) = default;
+        Struct(Struct&& other) noexcept = default;
+        ~Struct() = default;
 
-        NewStruct& operator = (const NewStruct& rhs) = default;
-        NewStruct& operator = (NewStruct&& rhs) noexcept = default;
+        Struct& operator = (const Struct& rhs) = default;
+        Struct& operator = (Struct&& rhs) noexcept = default;
 
-        const NewStructDescriptor<>& _descriptor() const;
+        const StructDescriptor<>& _descriptor() const;
 
 		bool _usesDynamicMemory() const;
     	size_t _dynamicMemoryUsage() const;
 		size_t _staticMemoryUsage() const;
 		size_t _totalMemoryUsage() const;
 
-		const NewPropertySet& _keyProperties() const;
+		const PropertySet& _keyProperties() const;
 
-		NewStruct& _assign(const NewStruct& other, const NewPropertySet& includedProperties = NewPropertySet::All);
-		NewStruct& _copy(const NewStruct& other, const NewPropertySet& includedProperties = NewPropertySet::All);
-		NewStruct& _merge(const NewStruct& other, const NewPropertySet& includedProperties = NewPropertySet::All);
-		void _swap(NewStruct& other, const NewPropertySet& includedProperties = NewPropertySet::All);
-		void _clear(const NewPropertySet& includedProperties = NewPropertySet::All);
+		Struct& _assign(const Struct& other, const PropertySet& includedProperties = PropertySet::All);
+		Struct& _copy(const Struct& other, const PropertySet& includedProperties = PropertySet::All);
+		Struct& _merge(const Struct& other, const PropertySet& includedProperties = PropertySet::All);
+		void _swap(Struct& other, const PropertySet& includedProperties = PropertySet::All);
+		void _clear(const PropertySet& includedProperties = PropertySet::All);
 
-		bool _equal(const NewStruct& rhs, const NewPropertySet& includedProperties = NewPropertySet::All) const;
-    	bool _same(const NewStruct& rhs) const;
+		bool _equal(const Struct& rhs, const PropertySet& includedProperties = PropertySet::All) const;
+    	bool _same(const Struct& rhs) const;
     	
-		bool _less(const NewStruct& rhs, const NewPropertySet& includedProperties = NewPropertySet::All) const;
-    	bool _lessEqual(const NewStruct& rhs, const NewPropertySet& includedProperties = NewPropertySet::All) const;
-    	bool _greater(const NewStruct& rhs, const NewPropertySet& includedProperties = NewPropertySet::All) const;
-    	bool _greaterEqual(const NewStruct& rhs, const NewPropertySet& includedProperties = NewPropertySet::All) const;
+		bool _less(const Struct& rhs, const PropertySet& includedProperties = PropertySet::All) const;
+    	bool _lessEqual(const Struct& rhs, const PropertySet& includedProperties = PropertySet::All) const;
+    	bool _greater(const Struct& rhs, const PropertySet& includedProperties = PropertySet::All) const;
+    	bool _greaterEqual(const Struct& rhs, const PropertySet& includedProperties = PropertySet::All) const;
 
-		NewPropertySet _diffProperties(const NewStruct& other, const NewPropertySet& includedProperties = NewPropertySet::All) const;
+		PropertySet _diffProperties(const Struct& other, const PropertySet& includedProperties = PropertySet::All) const;
     	
-		bool _hasProperties(const NewPropertySet properties) const;
+		bool _hasProperties(const PropertySet properties) const;
 
-		void _publish(const NewPropertySet& includedProperties = NewPropertySet::All, bool remove = false) const;
-		void _remove(const NewPropertySet& includedProperties = NewPropertySet::All) const;
+		void _publish(const PropertySet& includedProperties = PropertySet::All, bool remove = false) const;
+		void _remove(const PropertySet& includedProperties = PropertySet::All) const;
 
         template <typename T>
         bool _is() const
         {
-            static_assert(std::is_base_of_v<NewStruct, T>, "T has to be a sub-class of NewStruct");
+            static_assert(std::is_base_of_v<Struct, T>, "T has to be a sub-class of Struct");
             return &T::_Descriptor() == _desc;
         }
 
         template <typename T>
         const T* _as() const
         {
-            static_assert(std::is_base_of_v<NewStruct, T>, "T has to be a sub-class of NewStruct");
+            static_assert(std::is_base_of_v<Struct, T>, "T has to be a sub-class of Struct");
             return _is<T>() ? static_cast<const T*>(this) : nullptr;
         }
 
@@ -70,13 +70,13 @@ namespace dots::type
 		template <typename T, bool Safe = false>
         const T& _to() const
         {
-			static_assert(std::is_base_of_v<NewStruct, T>, "T has to be a sub-class of NewStruct");
+			static_assert(std::is_base_of_v<Struct, T>, "T has to be a sub-class of Struct");
 
 			if constexpr (Safe)
 			{
 				if (!_is<T>())
 				{
-					throw std::logic_error{ std::string{ "type mismatch in safe NewStruct conversion: expected " } + _desc->name().data() + " but got " + T::_Descriptor().name() };
+					throw std::logic_error{ std::string{ "type mismatch in safe Struct conversion: expected " } + _desc->name().data() + " but got " + T::_Descriptor().name() };
 				}
 			}
 
@@ -91,24 +91,24 @@ namespace dots::type
 
     private:
 
-    	friend struct NewPropertyContainer<NewStruct>;
+    	friend struct PropertyContainer<Struct>;
 
-    	const NewPropertyArea& derivedPropertyArea() const
+    	const PropertyArea& derivedPropertyArea() const
 		{
 			return _propArea;
 		}
 
-    	NewPropertyArea& derivedPropertyArea()
+    	PropertyArea& derivedPropertyArea()
 		{
 			return _propArea;
 		}
 
-    	const new_property_descriptor_container_t& derivedPropertyDescriptors() const
+    	const property_descriptor_container_t& derivedPropertyDescriptors() const
     	{
     		return _desc->propertyDescriptors();
     	}
 
-        const NewStructDescriptor<>* _desc;
-    	NewPropertyArea _propArea;
+        const StructDescriptor<>* _desc;
+    	PropertyArea _propArea;
     };
 }

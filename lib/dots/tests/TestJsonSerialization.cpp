@@ -83,7 +83,7 @@ TEST(TestJsonSerialization, plainSerializationSingleLine)
     dots::ToJsonOptions opts;
     opts.prettyPrint = false;
 
-    EXPECT_EQ(dots::to_json(sd, NewPropertySet::All, opts), expectedValue);
+    EXPECT_EQ(dots::to_json(sd, PropertySet::All, opts), expectedValue);
 }
 
 TEST(TestJsonSerialization, plainDeserialization)
@@ -230,7 +230,7 @@ TEST(TestJsonSerialization, serializeDynamicallyRegistered)
     DotsTestStruct* dts = reinterpret_cast<DotsTestStruct*>(sdx.New());
 
     // Copy testdata into instance of DotsTestStructX
-    sdx.swap(*dts, testData, NewPropertySet::All);
+    sdx.swap(*dts, testData, PropertySet::All);
 
     std::string expectedValue = "{\n"
             "    \"stringField\": \"Hallo\",\n"
@@ -252,7 +252,7 @@ TEST(TestJsonSerialization, serializeDynamicallyRegistered)
 //        // Dynamically create DotsTestSubStructX
 //        auto testSd = DotsTestSubStruct::_Descriptor().descriptorData();
 //        testSd.name = "DotsTestSubStructX";
-//        NewStructDescriptor<>::createFromStructDescriptorData(testSd);
+//        StructDescriptor<>::createFromStructDescriptorData(testSd);
 //    }
 //
 //    // Create dynamically registered type "DotsTestStructX" from DotsTestStruct
@@ -262,7 +262,7 @@ TEST(TestJsonSerialization, serializeDynamicallyRegistered)
 //    sd.properties->at(1).type = "vector<DotsTestSubStructX>";
 //
 //
-//    auto sdx = NewStructDescriptor<>::createFromStructDescriptorData(sd);
+//    auto sdx = StructDescriptor<>::createFromStructDescriptorData(sd);
 //
 //    DotsTestVectorStruct *dts = reinterpret_cast<DotsTestVectorStruct *>(sdx->New());
 //
@@ -276,7 +276,7 @@ TEST(TestJsonSerialization, serializeDynamicallyRegistered)
 //        subStructVector.push_back(subStruct);
 //
 //        // Copy testdata into instance of DotsTestSubStructX
-//        sdx->swap(*dts, testData, NewPropertySet::All);
+//        sdx->swap(*dts, testData, PropertySet::All);
 //    }
 //
 //    std::string expectedValue = "{\n"

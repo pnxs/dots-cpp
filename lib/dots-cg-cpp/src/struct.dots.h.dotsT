@@ -28,7 +28,7 @@ namespace dots::types
 {% endfor %}
     /// }
     /// @endcode
-    struct {{name}} : type::NewStaticStruct<{{name}}>
+    struct {{name}} : type::StaticStruct<{{name}}>
     {
 		static constexpr const char _Name[] = "{{name}}";
 
@@ -40,14 +40,14 @@ namespace dots::types
 		static constexpr uint8_t _SubstructOnly = {% if options.substruct_only %}true{% else %}false{% endif %};
 
 {% for property in attributes %}
-        struct {{property.name}}_t : type::NewStaticProperty<types::{{property.cxx_type}}, {{property.name}}_t>
+        struct {{property.name}}_t : type::StaticProperty<types::{{property.cxx_type}}, {{property.name}}_t>
         {
 			using struct_t = {{name}};
-			inline static auto Descriptor = type::NewPropertyDescriptor<types::{{property.cxx_type}}>{ "{{property.name}}"{% if not loop.first %}, {{loop.previtem.name}}_t::Descriptor{% endif %}, {{property.tag}}, {% if property.key %}true{% else %}false{% endif %} };
+			inline static auto Descriptor = type::PropertyDescriptor<types::{{property.cxx_type}}>{ "{{property.name}}"{% if not loop.first %}, {{loop.previtem.name}}_t::Descriptor{% endif %}, {{property.tag}}, {% if property.key %}true{% else %}false{% endif %} };
 		
 			{{property.name}}_t& operator = (const {{property.name}}_t& rhs) = default;
 			{{property.name}}_t& operator = ({{property.name}}_t&& rhs) = default;
-			using NewStaticProperty::operator=;
+			using StaticProperty::operator=;
 
 		private:
 			friend struct {{name}};
@@ -64,7 +64,7 @@ namespace dots::types
         using _key_properties_t = std::tuple<{% for property in keyAttributes %}{{property.name}}_t*{% if not loop.last %}, {% endif %}{% endfor %}>;
         using _properties_t     = std::tuple<{% for property in attributes %}{{property.name}}_t*{% if not loop.last %}, {% endif %}{% endfor %}>;
 
-		using NewStaticStruct::NewStaticStruct;
+		using StaticStruct::StaticStruct;
 		{{name}}(const {{name}}& other) = default;
 		{{name}}({{name}}&& other) = default;
 		~{{name}}() = default;
@@ -81,10 +81,10 @@ namespace dots::types
 namespace dots::type
 {
 	template <>
-	struct NewDescriptor<types::{{name}}> : NewStructDescriptor<types::{{name}}>
+	struct Descriptor<types::{{name}}> : StructDescriptor<types::{{name}}>
 	{
-		NewDescriptor() :
-			NewStructDescriptor(types::{{name}}::_Name, types::{{name}}::_Cached | types::{{name}}::_Internal | types::{{name}}::_Persistent | types::{{name}}::_Cleanup | types::{{name}}::_Local | types::{{name}}::_SubstructOnly, {
+		Descriptor() :
+			StructDescriptor(types::{{name}}::_Name, types::{{name}}::_Cached | types::{{name}}::_Internal | types::{{name}}::_Persistent | types::{{name}}::_Cleanup | types::{{name}}::_Local | types::{{name}}::_SubstructOnly, {
 {% for property in attributes %}
                 &types::{{name}}::{{property.name}}_t::Descriptor{% if not loop.last %},{% endif %}
 				

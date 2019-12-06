@@ -24,7 +24,7 @@ namespace dots
         }
 	}
 
-    void VirtualChannel::spoof(const DotsTransportHeader& header, const type::NewStruct& instance)
+    void VirtualChannel::spoof(const DotsTransportHeader& header, const type::Struct& instance)
     {
         asio::post(m_ioContext.get(), [this, _header = header, _instance = type::AnyStruct{ instance }]() mutable
         {
@@ -34,9 +34,9 @@ namespace dots
         });
     }
     
-    void VirtualChannel::spoof(uint32_t sender, const type::NewStruct& instance, bool remove/* = false*/)
+    void VirtualChannel::spoof(uint32_t sender, const type::Struct& instance, bool remove/* = false*/)
     {
-        const type::NewStructDescriptor<>& descriptor = instance._descriptor();
+        const type::StructDescriptor<>& descriptor = instance._descriptor();
 
         DotsTransportHeader transportHeader{
             DotsTransportHeader::destinationGroup_i{ descriptor.name() },
@@ -69,7 +69,7 @@ namespace dots
         }        
 	}
 
-	void VirtualChannel::transmitImpl(const DotsTransportHeader& header, const type::NewStruct& instance)
+	void VirtualChannel::transmitImpl(const DotsTransportHeader& header, const type::Struct& instance)
 	{
         if (header.nameSpace == "SYS")
         {
@@ -160,7 +160,7 @@ namespace dots
         /* do nothing */
     }
 
-    void VirtualChannel::onTransmit(const DotsTransportHeader& /*name*/, const type::NewStruct& /*name*/)
+    void VirtualChannel::onTransmit(const DotsTransportHeader& /*name*/, const type::Struct& /*name*/)
     {
         /* do nothing */
     }

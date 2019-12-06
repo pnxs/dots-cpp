@@ -4,94 +4,94 @@
 
 namespace dots::type
 {
-	template <typename T = NewTypeless, typename = void>
-	struct NewVector;
+	template <typename T = Typeless, typename = void>
+	struct Vector;
 
 	template <>
-	struct NewVector<NewTypeless>
+	struct Vector<Typeless>
 	{		
-		virtual ~NewVector() = default;
+		virtual ~Vector() = default;
 
-		virtual NewVector& operator = (const NewVector& /*rhs*/)
+		virtual Vector& operator = (const Vector& /*rhs*/)
 		{
 			// note that this is only a necessary dummy implementation that always gets overriden by sub-class
 			return *this;
 		}
 		
-		virtual NewVector& operator = (NewVector&& /*rhs*/) noexcept
+		virtual Vector& operator = (Vector&& /*rhs*/) noexcept
 		{
 			// note that this is only a necessary dummy implementation that always gets overriden by sub-class
 			return *this;
 		}
 
 		virtual size_t typelessSize() const noexcept = 0;
-		virtual NewTypeless& typelessAt(size_t pos) = 0;
-		virtual const NewTypeless& typelessAt(size_t pos) const = 0;
-		virtual const NewTypeless* typelessData() const = 0;
-		virtual NewTypeless* typelessData() = 0;
+		virtual Typeless& typelessAt(size_t pos) = 0;
+		virtual const Typeless& typelessAt(size_t pos) const = 0;
+		virtual const Typeless* typelessData() const = 0;
+		virtual Typeless* typelessData() = 0;
 		virtual void typelessResize(size_t n) = 0;
 
 	protected:
 
-		NewVector() = default;
-		NewVector(const NewVector& other) = default;
-		NewVector(NewVector&& other) = default;
+		Vector() = default;
+		Vector(const Vector& other) = default;
+		Vector(Vector&& other) = default;
 	};
 
 	template <typename T>
-	struct NewVector<T> : NewVector<NewTypeless>, std::vector<std::conditional_t<std::is_same_v<T, bool>, uint8_t, T>>
+	struct Vector<T> : Vector<Typeless>, std::vector<std::conditional_t<std::is_same_v<T, bool>, uint8_t, T>>
 	{
 		using vector_t = std::vector<std::conditional_t<std::is_same_v<T, bool>, uint8_t, T>>;
 		
-		NewVector() = default;
+		Vector() = default;
 		
-		NewVector(const NewVector& other) = default;
-		NewVector(NewVector&& other) = default;
+		Vector(const Vector& other) = default;
+		Vector(Vector&& other) = default;
 
 		using vector_t::vector;
 
-		NewVector(const vector_t& other) noexcept :
+		Vector(const vector_t& other) noexcept :
 			vector_t(other)
 		{
 			/* do nothing */
 		}
 
-		NewVector(vector_t&& other) noexcept :
+		Vector(vector_t&& other) noexcept :
 			vector_t(std::move(other))
 		{
 			/* do nothing */
 		}
 		
 		// ReSharper disable CppHidingFunction
-		~NewVector() = default; // note: hiding a non-virtual destructor is harmless for stateless sub-classes
+		~Vector() = default; // note: hiding a non-virtual destructor is harmless for stateless sub-classes
 		// ReSharper restore CppHidingFunction
 
-		NewVector& operator = (const NewVector& rhs) = default;
-		NewVector& operator = (NewVector&& rhs) = default;
+		Vector& operator = (const Vector& rhs) = default;
+		Vector& operator = (Vector&& rhs) = default;
 
 		using vector_t::operator=;
 
-		NewVector& operator = (const vector_t& rhs) noexcept
+		Vector& operator = (const vector_t& rhs) noexcept
 		{
 			return vector_t::operator=(rhs);
 		}
 		
-		NewVector& operator = (vector_t&& rhs) noexcept
+		Vector& operator = (vector_t&& rhs) noexcept
 		{
 			return vector_t::operator=(std::move(rhs));
 		}
 
-		NewVector& operator = (const NewVector<NewTypeless>& rhs) override
+		Vector& operator = (const Vector<Typeless>& rhs) override
 		{
 			// TODO: ensure compatible type
-			*this = static_cast<const NewVector&>(rhs);
+			*this = static_cast<const Vector&>(rhs);
 			return *this;
 		}
 		
-		NewVector& operator = (NewVector<NewTypeless>&& rhs) noexcept override
+		Vector& operator = (Vector<Typeless>&& rhs) noexcept override
 		{
 			// TODO: ensure compatible type
-			*this = static_cast<NewVector&&>(rhs);
+			*this = static_cast<Vector&&>(rhs);
 			return *this;
 		}
 
@@ -100,24 +100,24 @@ namespace dots::type
 			return vector_t::size();
 		}
 
-		const NewTypeless& typelessAt(size_t pos) const override
+		const Typeless& typelessAt(size_t pos) const override
 		{
-			return NewTypeless::From(vector_t::operator[](pos));
+			return Typeless::From(vector_t::operator[](pos));
 		}
 		
-		NewTypeless& typelessAt(size_t pos) override
+		Typeless& typelessAt(size_t pos) override
 		{
-			return NewTypeless::From(vector_t::operator[](pos));
+			return Typeless::From(vector_t::operator[](pos));
 		}		
 
-		NewTypeless* typelessData() override
+		Typeless* typelessData() override
 		{
-			return NewTypeless::From(vector_t::data());
+			return Typeless::From(vector_t::data());
 		}
 		
-		const NewTypeless* typelessData() const override
+		const Typeless* typelessData() const override
 		{
-			return NewTypeless::From(vector_t::data());
+			return Typeless::From(vector_t::data());
 		}
 
 		void typelessResize(size_t n) override 

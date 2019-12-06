@@ -5,11 +5,11 @@
 namespace dots::type
 {
 	template <typename T, typename Derived>
-	struct NewStaticProperty : NewProperty<T, Derived>
+	struct StaticProperty : Property<T, Derived>
 	{
-		using NewProperty<T, Derived>::operator=;
+		using Property<T, Derived>::operator=;
 		
-		static constexpr const NewDescriptor<T>& ValueDescriptor()
+		static constexpr const Descriptor<T>& ValueDescriptor()
 		{
 			return Derived::Descriptor.valueDescriptor();
 		}
@@ -34,12 +34,12 @@ namespace dots::type
 			return Derived::Descriptor.isKey();
 		}
 
-		static constexpr NewPropertySet Set()
+		static constexpr PropertySet Set()
 		{
 			return Derived::Descriptor.set();
 		}
 
-		static constexpr bool IsPartOf(const NewPropertySet& propertySet)
+		static constexpr bool IsPartOf(const PropertySet& propertySet)
 		{
 			return Set() <= propertySet;
 		}
@@ -52,49 +52,49 @@ namespace dots::type
 
 	protected:
 
-		NewStaticProperty()
+		StaticProperty()
 		{
 			/* do nothing */
 		}
 
-		NewStaticProperty(const NewStaticProperty& other) : NewProperty<T, Derived>()
+		StaticProperty(const StaticProperty& other) : Property<T, Derived>()
 		{
 			*this = other;
 		}
 
-		NewStaticProperty(NewStaticProperty&& other)
+		StaticProperty(StaticProperty&& other)
 		{
 			*this = std::move(other);
 		}
 
-		~NewStaticProperty()
+		~StaticProperty()
 		{
-			NewProperty<T, Derived>::destroy();
+			Property<T, Derived>::destroy();
 		}
 
-		NewStaticProperty& operator = (const NewStaticProperty& rhs)
+		StaticProperty& operator = (const StaticProperty& rhs)
 		{
 			if (rhs.isValid())
 			{
-				NewProperty<T, Derived>::constructOrAssign(static_cast<const Derived&>(rhs));
+				Property<T, Derived>::constructOrAssign(static_cast<const Derived&>(rhs));
 			}
 			else
 			{
-				NewProperty<T, Derived>::destroy();
+				Property<T, Derived>::destroy();
 			}
 
 			return *this;
 		}
 
-		NewStaticProperty& operator = (NewStaticProperty&& rhs)
+		StaticProperty& operator = (StaticProperty&& rhs)
 		{
 			if (rhs.isValid())
 			{
-				NewProperty<T, Derived>::constructOrAssign(static_cast<Derived&&>(rhs));
+				Property<T, Derived>::constructOrAssign(static_cast<Derived&&>(rhs));
 			}
 			else
 			{
-				NewProperty<T, Derived>::destroy();
+				Property<T, Derived>::destroy();
 			}
 
 			return *this;
@@ -102,7 +102,7 @@ namespace dots::type
 
 	private:
 
-		friend struct NewProperty<T, Derived>;
+		friend struct Property<T, Derived>;
 
 		T& derivedStorage()
 		{
@@ -111,10 +111,10 @@ namespace dots::type
 
 		const T& derivedStorage() const
 		{
-			return const_cast<NewStaticProperty&>(*this).derivedStorage();
+			return const_cast<StaticProperty&>(*this).derivedStorage();
 		}
 
-		static const NewPropertyDescriptor<T>& derivedDescriptor()
+		static const PropertyDescriptor<T>& derivedDescriptor()
 		{
 			return Derived::Descriptor;
 		}

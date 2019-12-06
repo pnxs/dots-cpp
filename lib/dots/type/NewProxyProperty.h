@@ -3,42 +3,42 @@
 
 namespace dots::type
 {
-	template <typename T = NewTypeless>
-	struct NewProxyProperty : NewProperty<T, NewProxyProperty<T>>
+	template <typename T = Typeless>
+	struct ProxyProperty : Property<T, ProxyProperty<T>>
 	{
-		NewProxyProperty(T& value, const NewPropertyDescriptor<T>& descriptor) :
+		ProxyProperty(T& value, const PropertyDescriptor<T>& descriptor) :
 			m_value(&value),
 			m_descriptor(&descriptor)
 		{
 			/* do nothing */
 		}
-		NewProxyProperty(NewPropertyArea& area, const NewPropertyDescriptor<T>& descriptor) :
-			NewProxyProperty(area.getProperty<T>(descriptor.offset()), descriptor)
+		ProxyProperty(PropertyArea& area, const PropertyDescriptor<T>& descriptor) :
+			ProxyProperty(area.getProperty<T>(descriptor.offset()), descriptor)
 		{
 			/* do nothing */
 		}
-		template <typename Derived, std::enable_if_t<!NewProperty<T, NewProxyProperty<T>>::IsTypeless && !std::is_same_v<Derived, NewProxyProperty<T>>, int> = 0>
-		NewProxyProperty(NewProperty<T, Derived>& property) :
-			NewProxyProperty(property.storage(), property.descriptor())
+		template <typename Derived, std::enable_if_t<!Property<T, ProxyProperty<T>>::IsTypeless && !std::is_same_v<Derived, ProxyProperty<T>>, int> = 0>
+		ProxyProperty(Property<T, Derived>& property) :
+			ProxyProperty(property.storage(), property.descriptor())
 		{
 			/* do nothing */
 		}
-		template <typename U, typename Derived, std::enable_if_t<NewProperty<T, NewProxyProperty<T>>::IsTypeless && !std::is_same_v<Derived, NewProxyProperty<T>>, int> = 0>
-		NewProxyProperty(NewProperty<U, Derived>& property) :
-			NewProxyProperty(NewTypeless::From(property.storage()), property.descriptor())
+		template <typename U, typename Derived, std::enable_if_t<Property<T, ProxyProperty<T>>::IsTypeless && !std::is_same_v<Derived, ProxyProperty<T>>, int> = 0>
+		ProxyProperty(Property<U, Derived>& property) :
+			ProxyProperty(Typeless::From(property.storage()), property.descriptor())
 		{
 			/* do nothing */
 		}
-		NewProxyProperty(const NewProxyProperty& other) = default;
-		NewProxyProperty(NewProxyProperty&& other) = default;
-		~NewProxyProperty() = default;
+		ProxyProperty(const ProxyProperty& other) = default;
+		ProxyProperty(ProxyProperty&& other) = default;
+		~ProxyProperty() = default;
 
-		NewProxyProperty& operator = (const NewProxyProperty& rhs) = default;
-		NewProxyProperty& operator = (NewProxyProperty&& rhs) = default;
+		ProxyProperty& operator = (const ProxyProperty& rhs) = default;
+		ProxyProperty& operator = (ProxyProperty&& rhs) = default;
 
 	private:
 
-		friend struct NewProperty<T, NewProxyProperty<T>>;
+		friend struct Property<T, ProxyProperty<T>>;
 
 		T& derivedStorage()
 		{
@@ -47,15 +47,15 @@ namespace dots::type
 
 		const T& derivedStorage() const
 		{
-			return const_cast<NewProxyProperty&>(*this).derivedValue();
+			return const_cast<ProxyProperty&>(*this).derivedValue();
 		}
 
-		const NewPropertyDescriptor<T>& derivedDescriptor() const
+		const PropertyDescriptor<T>& derivedDescriptor() const
 		{
 			return *m_descriptor;
 		}
 
 		T* m_value;
-		const NewPropertyDescriptor<T>* m_descriptor;
+		const PropertyDescriptor<T>* m_descriptor;
 	};
 }

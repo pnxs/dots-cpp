@@ -14,17 +14,17 @@ namespace dots
 namespace dots::type
 {
     template <typename Derived>
-    struct NewStaticStruct : NewStruct
+    struct StaticStruct : Struct
     {
 		using Cbd = dots::Event<Derived>;
 
-    	NewStaticStruct() : NewStruct(_Descriptor())
+    	StaticStruct() : Struct(_Descriptor())
     	{
     		/* do nothing */
     	}
 
 		template <typename... PropertyInitializers, std::enable_if_t<sizeof...(PropertyInitializers) >= 1 && std::conjunction_v<is_t_property_initializer_t<std::remove_pointer_t<std::decay_t<PropertyInitializers>>>...>, int> = 0>
-		explicit NewStaticStruct(PropertyInitializers&&... propertyInitializers) : NewStruct(_Descriptor())
+		explicit StaticStruct(PropertyInitializers&&... propertyInitializers) : Struct(_Descriptor())
 		{
 			(getProperty<strip_t<typename strip_t<PropertyInitializers>::property_t>>().construct(std::forward<decltype(propertyInitializers.value)>(propertyInitializers.value)), ...);
 		}
@@ -199,7 +199,7 @@ namespace dots::type
 			return std::apply(std::forward<Callable>(callable), _keyPropertyPairs(other));
 		}
 
-		Derived& _assign(const Derived& other, const NewPropertySet& includedProperties = NewPropertySet::All)
+		Derived& _assign(const Derived& other, const PropertySet& includedProperties = PropertySet::All)
 		{
 			_applyPropertyPairs(other, [&](const auto&... propertyPairs)
 			{
@@ -221,7 +221,7 @@ namespace dots::type
 			return static_cast<Derived&>(*this);
 		}
 
-		Derived& _copy(const Derived& other, const NewPropertySet& includedProperties = NewPropertySet::All)
+		Derived& _copy(const Derived& other, const PropertySet& includedProperties = PropertySet::All)
 		{
 			_applyPropertyPairs(other, [&](const auto&... propertyPairs)
 			{
@@ -239,7 +239,7 @@ namespace dots::type
 			return static_cast<Derived&>(*this);
 		}
 
-		Derived& _merge(const Derived& other, const NewPropertySet& includedProperties = NewPropertySet::All)
+		Derived& _merge(const Derived& other, const PropertySet& includedProperties = PropertySet::All)
 		{
 			_applyPropertyPairs(other, [&](const auto&... propertyPairs)
 			{
@@ -257,7 +257,7 @@ namespace dots::type
 			return static_cast<Derived&>(*this);
 		}
 
-		void _swap(Derived& other, const NewPropertySet& includedProperties = NewPropertySet::All)
+		void _swap(Derived& other, const PropertySet& includedProperties = PropertySet::All)
 		{
 			_applyPropertyPairs(other, [&](const auto&... propertyPairs)
 			{
@@ -273,7 +273,7 @@ namespace dots::type
 			});
 		}
 
-		void _clear(const NewPropertySet& includedProperties = NewPropertySet::All)
+		void _clear(const PropertySet& includedProperties = PropertySet::All)
 		{
 			_applyProperties([&](auto&... properties)
 			{
@@ -289,7 +289,7 @@ namespace dots::type
 			});
 		}
 
-		bool _equal(const Derived& rhs, const NewPropertySet& includedProperties = NewPropertySet::All) const
+		bool _equal(const Derived& rhs, const PropertySet& includedProperties = PropertySet::All) const
 		{
 			return _applyPropertyPairs(rhs, [&](const auto&... propertyPairs)
 			{
@@ -329,7 +329,7 @@ namespace dots::type
 			});
 		}
 
-		bool _less(const Derived& rhs, const NewPropertySet& includedProperties = NewPropertySet::All) const
+		bool _less(const Derived& rhs, const PropertySet& includedProperties = PropertySet::All) const
 		{
 			return _applyPropertyPairs(rhs, [&](const auto&... propertyPairs)
 			{
@@ -337,25 +337,25 @@ namespace dots::type
 			});
 		}
 
-    	bool _lessEqual(const Derived& rhs, const NewPropertySet& includedProperties = NewPropertySet::All) const
+    	bool _lessEqual(const Derived& rhs, const PropertySet& includedProperties = PropertySet::All) const
 		{
 			return !_greater(rhs, includedProperties);
 		}
 
-    	bool _greater(const Derived& rhs, const NewPropertySet& includedProperties = NewPropertySet::All) const
+    	bool _greater(const Derived& rhs, const PropertySet& includedProperties = PropertySet::All) const
 		{
 			return rhs._less(*this, includedProperties);
 		}
 
-    	bool _greaterEqual(const Derived& rhs, const NewPropertySet& includedProperties = NewPropertySet::All) const
+    	bool _greaterEqual(const Derived& rhs, const PropertySet& includedProperties = PropertySet::All) const
 		{
 			return !_less(rhs, includedProperties);
 		}
 
-		NewPropertySet _diffProperties(const Derived& other, const NewPropertySet& includedProperties = NewPropertySet::All) const
+		PropertySet _diffProperties(const Derived& other, const PropertySet& includedProperties = PropertySet::All) const
 		{
-			NewPropertySet symmetricDiff = _validProperties().symmetricDifference(other._validProperties()) ^ includedProperties;
-			NewPropertySet intersection = _validProperties() ^ other._validProperties() ^ includedProperties;
+			PropertySet symmetricDiff = _validProperties().symmetricDifference(other._validProperties()) ^ includedProperties;
+			PropertySet intersection = _validProperties() ^ other._validProperties() ^ includedProperties;
 
 			if (!intersection.empty())
 			{
@@ -378,20 +378,20 @@ namespace dots::type
 			return symmetricDiff;
 		}
 
-    	void _publish(const NewPropertySet& includedProperties = NewPropertySet::All, bool remove = false) const
+    	void _publish(const PropertySet& includedProperties = PropertySet::All, bool remove = false) const
 		{
 			static_assert(!Derived::_SubstructOnly, "a substruct-only type cannot be published");
     		
 			registerTypeUsage<Derived, PublishedType>();
-			NewStruct::_publish(includedProperties, remove);
+			Struct::_publish(includedProperties, remove);
 		}
 
-		void _remove(const NewPropertySet& includedProperties = NewPropertySet::All) const
+		void _remove(const PropertySet& includedProperties = PropertySet::All) const
 		{
 			static_assert(!Derived::_SubstructOnly, "a substruct-only type cannot be removed");
     		
 			registerTypeUsage<Derived, PublishedType>();
-			NewStruct::_remove(includedProperties);
+			Struct::_remove(includedProperties);
 		}
 
     	template <typename P>
@@ -406,23 +406,23 @@ namespace dots::type
 			return const_cast<P&>(std::as_const(*this).template getProperty<P>());
 		}
 
-    	static const std::shared_ptr<NewDescriptor<>>& _DescriptorPtr()
+    	static const std::shared_ptr<Descriptor<>>& _DescriptorPtr()
         {
-			return NewDescriptor<Derived>::InstancePtr();
+			return Descriptor<Derived>::InstancePtr();
         }
 
-    	static const NewDescriptor<Derived>& _Descriptor()
+    	static const Descriptor<Derived>& _Descriptor()
         {
-			return NewDescriptor<Derived>::Instance();
+			return Descriptor<Derived>::Instance();
         }
 
-		static NewPropertySet _KeyProperties()
+		static PropertySet _KeyProperties()
 		{
-			static NewPropertySet KeyProperties = std::apply([](auto&&... args)
+			static PropertySet KeyProperties = std::apply([](auto&&... args)
 			{
 				if constexpr (sizeof...(args) == 0)
 				{
-					return NewPropertySet{};
+					return PropertySet{};
 				}
 				else
 				{
@@ -435,36 +435,36 @@ namespace dots::type
 
     protected:
 
-		NewStaticStruct(const NewStaticStruct& other) = default;
-		NewStaticStruct(NewStaticStruct&& other) = default;
-		~NewStaticStruct() = default;
+		StaticStruct(const StaticStruct& other) = default;
+		StaticStruct(StaticStruct&& other) = default;
+		~StaticStruct() = default;
 
-		NewStaticStruct& operator = (const NewStaticStruct& rhs) = default;
-		NewStaticStruct& operator = (NewStaticStruct&& rhs) = default;
+		StaticStruct& operator = (const StaticStruct& rhs) = default;
+		StaticStruct& operator = (StaticStruct&& rhs) = default;
 
     private:
 
-    	using NewStruct::_assign;
-		using NewStruct::_copy;
-		using NewStruct::_merge;
-		using NewStruct::_swap;
-		using NewStruct::_clear;
+    	using Struct::_assign;
+		using Struct::_copy;
+		using Struct::_merge;
+		using Struct::_swap;
+		using Struct::_clear;
     	
-    	using NewStruct::_equal;
-		using NewStruct::_same;
+    	using Struct::_equal;
+		using Struct::_same;
     	
-        using NewStruct::_less;
-    	using NewStruct::_lessEqual;
-    	using NewStruct::_greater;
-    	using NewStruct::_greaterEqual;
+        using Struct::_less;
+    	using Struct::_lessEqual;
+    	using Struct::_greater;
+    	using Struct::_greaterEqual;
 
-    	using NewStruct::_diffProperties;
+    	using Struct::_diffProperties;
 
-		using NewStruct::_publish;
-		using NewStruct::_remove;
+		using Struct::_publish;
+		using Struct::_remove;
 
     	template <typename PropertyPair, typename... PropertyPairs>
-    	bool _less(const NewPropertySet& includedProperties, const PropertyPair& firstPair, const PropertyPairs&... remainingPairs) const
+    	bool _less(const PropertySet& includedProperties, const PropertyPair& firstPair, const PropertyPairs&... remainingPairs) const
     	{
 			if (includedProperties.empty())
     		{

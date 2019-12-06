@@ -19,7 +19,7 @@ using ::testing::ElementsAreArray;
 template<typename F, class T>
 void expect_publish(F& mock, const T& instance)
 {
-    EXPECT_CALL(mock, publish(&T::_Descriptor(), Truly([&instance](const NewStruct& published){ return published._equal(instance); }), instance._validProperties(), false));
+    EXPECT_CALL(mock, publish(&T::_Descriptor(), Truly([&instance](const Struct& published){ return published._equal(instance); }), instance._validProperties(), false));
 }
 
 TEST(TestDistributedTypeId, createId)
@@ -29,9 +29,9 @@ TEST(TestDistributedTypeId, createId)
 
     dots::DistributedTypeId dtid(true); // Master
 
-    const NewDescriptor<>* p1 = &DotsTestStruct::_Descriptor();
-    const NewDescriptor<>* p2 = &DotsTestSubStruct::_Descriptor();
-    const NewDescriptor<>* p3 = &NewDescriptor<DotsTestEnum>::Instance();
+    const Descriptor<>* p1 = &DotsTestStruct::_Descriptor();
+    const Descriptor<>* p2 = &DotsTestSubStruct::_Descriptor();
+    const Descriptor<>* p3 = &Descriptor<DotsTestEnum>::Instance();
 
     DotsTypes t1;
     t1.id = 1;

@@ -228,7 +228,7 @@ Transmitter &ServerConnection::transmitter()
     return m_transmitter;
 }
 
-void ServerConnection::publishNs(const string& nameSpace, const type::NewStructDescriptor<>* td, const type::NewStruct& instance, types::property_set_t what, bool remove)
+void ServerConnection::publishNs(const string& nameSpace, const type::StructDescriptor<>* td, const type::Struct& instance, types::property_set_t what, bool remove)
 {
     DotsTransportHeader header;
     transmitter().prepareHeader(header, td, what, remove); //< Modifies header and what
@@ -247,7 +247,7 @@ void ServerConnection::publishNs(const string& nameSpace, const type::NewStructD
     channel().transmit(header, instance);
 }
 
-void ServerConnection::publish(const type::NewStructDescriptor<> *td, const type::NewStruct& instance, types::property_set_t what, bool remove)
+void ServerConnection::publish(const type::StructDescriptor<> *td, const type::Struct& instance, types::property_set_t what, bool remove)
 {
     publishNs(string(), td, instance, what, remove);
 }

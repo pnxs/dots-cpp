@@ -3,41 +3,41 @@
 
 namespace dots::type
 {
-	NewEnumeratorDescriptor<NewTypeless>::NewEnumeratorDescriptor(uint32_t tag, std::string name) :
+	EnumeratorDescriptor<Typeless>::EnumeratorDescriptor(uint32_t tag, std::string name) :
 		m_tag(tag),
 		m_name(std::move(name))
 	{
 		/* do nothing */
 	}
 
-	uint32_t NewEnumeratorDescriptor<NewTypeless>::tag() const
+	uint32_t EnumeratorDescriptor<Typeless>::tag() const
 	{
 		return m_tag;
 	}
 
-	const std::string& NewEnumeratorDescriptor<NewTypeless>::name() const
+	const std::string& EnumeratorDescriptor<Typeless>::name() const
 	{
 		return m_name;
 	}
 
-	NewEnumDescriptor<NewTypeless, void>::NewEnumDescriptor(std::string name, const NewDescriptor<NewTypeless>& underlyingDescriptor):
-		NewDescriptor<NewTypeless>(NewType::Enum, std::move(name), underlyingDescriptor.size(), underlyingDescriptor.alignment())
+	EnumDescriptor<Typeless, void>::EnumDescriptor(std::string name, const Descriptor<Typeless>& underlyingDescriptor):
+		Descriptor<Typeless>(Type::Enum, std::move(name), underlyingDescriptor.size(), underlyingDescriptor.alignment())
 	{
 		/* do nothing */
 	}
 
-	const types::EnumDescriptorData& NewEnumDescriptor<NewTypeless, void>::descriptorData() const
+	const types::EnumDescriptorData& EnumDescriptor<Typeless, void>::descriptorData() const
 	{
 		if (m_descriptorData == nullptr)
 		{
-			m_descriptorData = new types::EnumDescriptorData{ io::NewDescriptorConverter{}(*this) };
+			m_descriptorData = new types::EnumDescriptorData{ io::DescriptorConverter{}(*this) };
 		}
 		
 		return *m_descriptorData;
 	}
 	
-	const NewEnumDescriptor<>* NewEnumDescriptor<NewTypeless, void>::createFromEnumDescriptorData(const types::EnumDescriptorData& sd)
+	const EnumDescriptor<>* EnumDescriptor<Typeless, void>::createFromEnumDescriptorData(const types::EnumDescriptorData& sd)
 	{
-		return io::NewDescriptorConverter{}(sd).get();
+		return io::DescriptorConverter{}(sd).get();
 	}
 }

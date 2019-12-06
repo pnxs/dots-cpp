@@ -8,9 +8,9 @@
 
 namespace dots::type
 {
-	struct NewStaticDescriptorMap
+	struct StaticDescriptorMap
 	{
-		template <typename D, std::enable_if_t<std::is_base_of_v<NewDescriptor<>, D>, int> = 0>
+		template <typename D, std::enable_if_t<std::is_base_of_v<Descriptor<>, D>, int> = 0>
     	static std::shared_ptr<D> Emplace(D&& descriptor)
     	{
 			auto descriptor_ = std::make_shared<D>(std::forward<D>(descriptor));
@@ -24,7 +24,7 @@ namespace dots::type
     		return descriptor_;
     	}
 
-    	static std::shared_ptr<NewDescriptor<>> Find(const std::string_view& name)
+    	static std::shared_ptr<Descriptor<>> Find(const std::string_view& name)
     	{
     		auto it = M_descriptors.find(name);
 			return it == M_descriptors.end() ? nullptr : it->second;
@@ -32,44 +32,44 @@ namespace dots::type
 		
 	private:
 
-		inline static std::map<std::string_view, std::shared_ptr<NewDescriptor<>>> M_descriptors;
+		inline static std::map<std::string_view, std::shared_ptr<Descriptor<>>> M_descriptors;
 	};
 	
-	template <typename T, typename Base = NewDescriptor<NewTypeless>>
-	struct NewStaticDescriptor : Base
+	template <typename T, typename Base = Descriptor<Typeless>>
+	struct StaticDescriptor : Base
 	{
-		template <typename Base_ = Base, std::enable_if_t<std::is_same_v<Base_, NewDescriptor<NewTypeless>>, int> = 0>
-		constexpr NewStaticDescriptor(NewType type, std::string name) : Base(type, std::move(name), sizeof(T), alignof(T))
+		template <typename Base_ = Base, std::enable_if_t<std::is_same_v<Base_, Descriptor<Typeless>>, int> = 0>
+		constexpr StaticDescriptor(Type type, std::string name) : Base(type, std::move(name), sizeof(T), alignof(T))
 		{
 			/* do nothing */
 		}
 		
-		template <typename Base_ = Base, typename... Args, std::enable_if_t<!std::is_same_v<Base_, NewDescriptor<NewTypeless>>, int> = 0>
-		constexpr NewStaticDescriptor(Args&&... args) : Base(std::forward<Args>(args)...)
+		template <typename Base_ = Base, typename... Args, std::enable_if_t<!std::is_same_v<Base_, Descriptor<Typeless>>, int> = 0>
+		constexpr StaticDescriptor(Args&&... args) : Base(std::forward<Args>(args)...)
 		{
 			/* do nothing */
 		}
 		
-		NewStaticDescriptor(const NewStaticDescriptor& other) = default;
-		NewStaticDescriptor(NewStaticDescriptor&& other) = default;
-		~NewStaticDescriptor() = default;
+		StaticDescriptor(const StaticDescriptor& other) = default;
+		StaticDescriptor(StaticDescriptor&& other) = default;
+		~StaticDescriptor() = default;
 
-		NewStaticDescriptor& operator = (const NewStaticDescriptor& rhs) = default;
-		NewStaticDescriptor& operator = (NewStaticDescriptor&& rhs) = default;
+		StaticDescriptor& operator = (const StaticDescriptor& rhs) = default;
+		StaticDescriptor& operator = (StaticDescriptor&& rhs) = default;
 
-		NewTypeless& construct(NewTypeless& value) const override
+		Typeless& construct(Typeless& value) const override
 		{
-				return reinterpret_cast<NewTypeless&>(construct(reinterpret_cast<T&>(value)));
+				return reinterpret_cast<Typeless&>(construct(reinterpret_cast<T&>(value)));
 			}
 
-		NewTypeless& construct(NewTypeless& value, const NewTypeless& other) const override
+		Typeless& construct(Typeless& value, const Typeless& other) const override
 		{
-			return reinterpret_cast<NewTypeless&>(construct(reinterpret_cast<T&>(value), reinterpret_cast<const T&>(other)));
+			return reinterpret_cast<Typeless&>(construct(reinterpret_cast<T&>(value), reinterpret_cast<const T&>(other)));
 		}
 
-		NewTypeless& construct(NewTypeless& value, NewTypeless&& other) const override
+		Typeless& construct(Typeless& value, Typeless&& other) const override
 		{
-			return reinterpret_cast<NewTypeless&>(construct(reinterpret_cast<T&>(value), reinterpret_cast<T&&>(other)));
+			return reinterpret_cast<Typeless&>(construct(reinterpret_cast<T&>(value), reinterpret_cast<T&&>(other)));
 		}
 
 		template <typename... Args>
@@ -84,7 +84,7 @@ namespace dots::type
 			return value;
 		}
 
-		void destruct(NewTypeless& value) const override
+		void destruct(Typeless& value) const override
 		{
 			destruct(reinterpret_cast<T&>(value));
 		}
@@ -94,14 +94,14 @@ namespace dots::type
 			value.~T();
 		}
 
-		NewTypeless& assign(NewTypeless& lhs, const NewTypeless& rhs) const override
+		Typeless& assign(Typeless& lhs, const Typeless& rhs) const override
 		{
-			return reinterpret_cast<NewTypeless&>(assign(reinterpret_cast<T&>(lhs), reinterpret_cast<const T&>(rhs)));
+			return reinterpret_cast<Typeless&>(assign(reinterpret_cast<T&>(lhs), reinterpret_cast<const T&>(rhs)));
 		}
 
-		NewTypeless& assign(NewTypeless& lhs, NewTypeless&& rhs) const override
+		Typeless& assign(Typeless& lhs, Typeless&& rhs) const override
 		{
-			return reinterpret_cast<NewTypeless&>(assign(reinterpret_cast<T&>(lhs), reinterpret_cast<T&&>(rhs)));
+			return reinterpret_cast<Typeless&>(assign(reinterpret_cast<T&>(lhs), reinterpret_cast<T&&>(rhs)));
 		}
 
 		template <typename... Args>
@@ -116,7 +116,7 @@ namespace dots::type
 			return value;
 		}
 
-		void swap(NewTypeless& value, NewTypeless& other) const override
+		void swap(Typeless& value, Typeless& other) const override
 		{
 			swap(reinterpret_cast<T&>(value), reinterpret_cast<T&>(other));
 		}
@@ -126,7 +126,7 @@ namespace dots::type
 			std::swap(lhs, rhs);
 		}
 
-		bool equal(const NewTypeless& lhs, const NewTypeless& rhs) const override
+		bool equal(const Typeless& lhs, const Typeless& rhs) const override
 		{
 			return equal(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
 		}
@@ -136,7 +136,7 @@ namespace dots::type
 			return std::equal_to<T>{}(lhs, rhs);
 		}
 
-		bool less(const NewTypeless& lhs, const NewTypeless& rhs) const override
+		bool less(const Typeless& lhs, const Typeless& rhs) const override
 		{
 			return less(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
 		}
@@ -146,7 +146,7 @@ namespace dots::type
 			return std::less<T>{}(lhs, rhs);
 		}
 
-		bool lessEqual(const NewTypeless& lhs, const NewTypeless& rhs) const override
+		bool lessEqual(const Typeless& lhs, const Typeless& rhs) const override
 		{
 			return lessEqual(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
 		}
@@ -156,7 +156,7 @@ namespace dots::type
 			return !greater(lhs, rhs);
 		}
 
-		bool greater(const NewTypeless& lhs, const NewTypeless& rhs) const override
+		bool greater(const Typeless& lhs, const Typeless& rhs) const override
 		{
 			return greater(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
 		}
@@ -166,7 +166,7 @@ namespace dots::type
 			return less(rhs, lhs);
 		}
 
-		bool greaterEqual(const NewTypeless& lhs, const NewTypeless& rhs) const override
+		bool greaterEqual(const Typeless& lhs, const Typeless& rhs) const override
 		{
 			return greaterEqual(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
 		}
@@ -181,7 +181,7 @@ namespace dots::type
 			return false;
 		}
 
-		size_t dynamicMemoryUsage(const NewTypeless& value) const override
+		size_t dynamicMemoryUsage(const Typeless& value) const override
 		{
 			return dynamicMemoryUsage(reinterpret_cast<const T&>(value));
 		}
@@ -191,7 +191,7 @@ namespace dots::type
 			return 0;
 		}
 
-		void fromString(NewTypeless& storage, const std::string_view& value) const override
+		void fromString(Typeless& storage, const std::string_view& value) const override
 		{
 			fromString(storage.to<T>(), value);
 		}
@@ -230,11 +230,11 @@ namespace dots::type
 			}
 			else
 			{
-				return NewDescriptor<>::fromString(NewTypeless::From(storage), value);
+				return Descriptor<>::fromString(Typeless::From(storage), value);
 			}
 		}
 		
-		std::string toString(const NewTypeless& value) const override
+		std::string toString(const Typeless& value) const override
 		{
 			return toString(value.to<T>());
 		}
@@ -273,17 +273,17 @@ namespace dots::type
 			}
 			else
 			{
-				return NewDescriptor<>::toString(NewTypeless::From(value));
+				return Descriptor<>::toString(Typeless::From(value));
 			}
 		}
 
-		static const std::shared_ptr<NewDescriptor<T>>& InstancePtr()
+		static const std::shared_ptr<Descriptor<T>>& InstancePtr()
 		{
-			static std::shared_ptr<NewDescriptor<T>> InstancePtr_ = NewStaticDescriptorMap::Emplace(NewDescriptor<T>{});
+			static std::shared_ptr<Descriptor<T>> InstancePtr_ = StaticDescriptorMap::Emplace(Descriptor<T>{});
 			return InstancePtr_;
 		}
 
-		static const NewDescriptor<T>& Instance()
+		static const Descriptor<T>& Instance()
 		{
 			return *InstancePtr();
 		}
@@ -308,6 +308,6 @@ namespace dots::type
 		template <typename U>
 		static constexpr bool is_istreamable_v = is_istreamable_t<U>::value;
 
-		inline static const std::shared_ptr<NewDescriptor<T>>& M_Descriptor = InstancePtr();
+		inline static const std::shared_ptr<Descriptor<T>>& M_Descriptor = InstancePtr();
 	};
 }

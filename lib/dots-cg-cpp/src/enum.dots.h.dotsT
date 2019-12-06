@@ -27,13 +27,13 @@ namespace dots::types
 namespace dots::type
 {
     template <>
-    struct NewDescriptor<types::{{name}}> : NewEnumDescriptor<types::{{name}}>
+    struct Descriptor<types::{{name}}> : EnumDescriptor<types::{{name}}>
     {
         using value_t = types::{{name}};
         
-        NewDescriptor() : NewEnumDescriptor("{{name}}", {
+        Descriptor() : EnumDescriptor("{{name}}", {
             {% for elem in items %}
-                NewEnumeratorDescriptor{ {{elem.tag}}, "{{elem.name}}", types::{{name}}::{{elem.name}} }{% if not loop.last %},{% endif %}
+                EnumeratorDescriptor{ {{elem.tag}}, "{{elem.name}}", types::{{name}}::{{elem.name}} }{% if not loop.last %},{% endif %}
 
             {% endfor %}
             })

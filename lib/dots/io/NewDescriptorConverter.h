@@ -6,24 +6,24 @@
 
 namespace dots::io
 {
-    struct NewDescriptorConverter
+    struct DescriptorConverter
     {
-        NewDescriptorConverter(NewRegistry& registry = transceiver().registry());
-        NewDescriptorConverter(const NewDescriptorConverter& other) = default;
-        NewDescriptorConverter(NewDescriptorConverter&& other) noexcept = default;
-        ~NewDescriptorConverter() = default;
+        DescriptorConverter(Registry& registry = transceiver().registry());
+        DescriptorConverter(const DescriptorConverter& other) = default;
+        DescriptorConverter(DescriptorConverter&& other) noexcept = default;
+        ~DescriptorConverter() = default;
 
-        NewDescriptorConverter& operator = (const NewDescriptorConverter& rhs) = default;
-        NewDescriptorConverter& operator = (NewDescriptorConverter&& rhs) noexcept = default;
+        DescriptorConverter& operator = (const DescriptorConverter& rhs) = default;
+        DescriptorConverter& operator = (DescriptorConverter&& rhs) noexcept = default;
 
-    	std::shared_ptr<type::NewEnumDescriptor<types::int32_t>> operator () (const types::EnumDescriptorData& structDescriptorData);
-		std::shared_ptr<type::NewStructDescriptor<>> operator () (const types::StructDescriptorData& structData);
+    	std::shared_ptr<type::EnumDescriptor<types::int32_t>> operator () (const types::EnumDescriptorData& structDescriptorData);
+		std::shared_ptr<type::StructDescriptor<>> operator () (const types::StructDescriptorData& structData);
 
-		types::EnumDescriptorData operator () (const type::NewEnumDescriptor<>& enumDescriptor);
-		types::StructDescriptorData operator () (const type::NewStructDescriptor<>& structDescriptor);
+		types::EnumDescriptorData operator () (const type::EnumDescriptor<>& enumDescriptor);
+		types::StructDescriptorData operator () (const type::StructDescriptor<>& structDescriptor);
 
     private:
 
-		std::reference_wrapper<NewRegistry> m_registry;
+		std::reference_wrapper<Registry> m_registry;
 	};
 }

@@ -15,7 +15,7 @@ namespace dots
         asyncReceiveImpl();
     }
 
-    void Channel::transmit(const DotsTransportHeader& header, const type::NewStruct& instance)
+    void Channel::transmit(const DotsTransportHeader& header, const type::Struct& instance)
     {
         transmitImpl(header, instance);
     }

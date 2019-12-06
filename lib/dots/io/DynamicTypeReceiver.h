@@ -12,10 +12,10 @@ public:
     DynamicTypeReceiver(const std::vector<string>& whiteList  = {});
     ~DynamicTypeReceiver() = default;
 
-    pnxs::Signal<void (const type::NewStructDescriptor<>*)> onNewStruct;
+    pnxs::Signal<void (const type::StructDescriptor<>*)> onNewStruct;
 
 private:
-    void emitStruct(const type::NewStructDescriptor<>*);
+    void emitStruct(const type::StructDescriptor<>*);
 
 };
 

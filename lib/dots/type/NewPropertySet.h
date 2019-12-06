@@ -5,7 +5,7 @@
 
 namespace dots::type
 {
-	struct NewPropertySet
+	struct PropertySet
 	{
 		using value_t = uint32_t;
 		using index_t = uint32_t;
@@ -26,135 +26,135 @@ namespace dots::type
 		static constexpr none_t None{};
 		static constexpr all_t All{};
 
-		explicit constexpr NewPropertySet(value_t value) :
+		explicit constexpr PropertySet(value_t value) :
 			m_value(value)
 		{
 			/* do nothing */
 		}
 
-		constexpr NewPropertySet() : NewPropertySet(0u)
+		constexpr PropertySet() : PropertySet(0u)
 		{
 			/* do nothing */
 		}
 
-		constexpr NewPropertySet(none_t) : NewPropertySet(0u)
+		constexpr PropertySet(none_t) : PropertySet(0u)
 		{
 			/* do nothing */
 		}
 
-		constexpr NewPropertySet(all_t) : NewPropertySet(~0u)
+		constexpr PropertySet(all_t) : PropertySet(~0u)
 		{
 			/* do nothing */
 		}
 
-		constexpr NewPropertySet(const NewPropertySet& other) = default;
-		constexpr NewPropertySet(NewPropertySet&& other) noexcept = default;
-		~NewPropertySet() = default;
+		constexpr PropertySet(const PropertySet& other) = default;
+		constexpr PropertySet(PropertySet&& other) noexcept = default;
+		~PropertySet() = default;
 
-		constexpr NewPropertySet& operator = (const NewPropertySet& rhs) = default;
-		constexpr NewPropertySet& operator = (NewPropertySet&& rhs) noexcept = default;
+		constexpr PropertySet& operator = (const PropertySet& rhs) = default;
+		constexpr PropertySet& operator = (PropertySet&& rhs) noexcept = default;
 
 		constexpr operator bool () const
 		{
 			return !empty();
 		}
 
-		constexpr bool operator == (const NewPropertySet& rhs) const
+		constexpr bool operator == (const PropertySet& rhs) const
 	    {
 	        return m_value == rhs.m_value;
 	    }
 	    
-	    constexpr bool operator != (const NewPropertySet& rhs) const
+	    constexpr bool operator != (const PropertySet& rhs) const
 	    {
 	        return !(*this == rhs);
 	    }
 
-		constexpr bool operator < (const NewPropertySet& rhs) const
+		constexpr bool operator < (const PropertySet& rhs) const
 	    {
 	        return m_value != rhs.m_value && *this <= rhs;
 	    }
 
-		constexpr bool operator > (const NewPropertySet& rhs) const
+		constexpr bool operator > (const PropertySet& rhs) const
 	    {
 	        return rhs < *this;
 	    }
 
-		constexpr bool operator <= (const NewPropertySet& rhs) const
+		constexpr bool operator <= (const PropertySet& rhs) const
 	    {
 	        return (m_value & rhs.m_value) == m_value;
 	    }
 
-		constexpr bool operator >= (const NewPropertySet& rhs) const
+		constexpr bool operator >= (const PropertySet& rhs) const
 	    {
 	        return rhs <= *this;
 	    }
 
-		constexpr NewPropertySet operator + (const NewPropertySet& rhs) const
+		constexpr PropertySet operator + (const PropertySet& rhs) const
 		{
-			NewPropertySet result = *this;
+			PropertySet result = *this;
 			result += rhs;
 
 			return result;
 		}
 
-		constexpr NewPropertySet operator - (const NewPropertySet& rhs) const
+		constexpr PropertySet operator - (const PropertySet& rhs) const
 		{
-			NewPropertySet result = *this;
+			PropertySet result = *this;
 			result -= rhs;
 
 			return result;
 		}
 
-		constexpr NewPropertySet operator ^ (const NewPropertySet& rhs) const
+		constexpr PropertySet operator ^ (const PropertySet& rhs) const
 		{
-			NewPropertySet result = *this;
+			PropertySet result = *this;
 			result ^= rhs;
 			
 			return result;
 		}
 
-		constexpr NewPropertySet operator ~ () const
+		constexpr PropertySet operator ~ () const
 	    {
-			return NewPropertySet{ ~m_value };
+			return PropertySet{ ~m_value };
 	    }
 
-		constexpr NewPropertySet& operator += (const NewPropertySet& rhs)
+		constexpr PropertySet& operator += (const PropertySet& rhs)
 		{
 			m_value |= rhs.m_value;
 			return *this;
 		}
 
-		constexpr NewPropertySet& operator -= (const NewPropertySet& rhs)
+		constexpr PropertySet& operator -= (const PropertySet& rhs)
 		{
 			m_value &= ~rhs.m_value;
 			return *this;
 		}
 
-		constexpr NewPropertySet& operator ^= (const NewPropertySet& rhs)
+		constexpr PropertySet& operator ^= (const PropertySet& rhs)
 		{
 			m_value &= rhs.m_value;
 			return *this;
 		}
 
-		constexpr NewPropertySet intersection(const NewPropertySet& rhs) const
+		constexpr PropertySet intersection(const PropertySet& rhs) const
 		{
-			NewPropertySet result = *this;
+			PropertySet result = *this;
 			return result.intersect(rhs);
 		}
 
-		constexpr NewPropertySet& intersect(const NewPropertySet& rhs)
+		constexpr PropertySet& intersect(const PropertySet& rhs)
 		{
 			m_value &= rhs.m_value;
 			return *this;
 		}
 
-		constexpr NewPropertySet symmetricDifference(const NewPropertySet& rhs) const
+		constexpr PropertySet symmetricDifference(const PropertySet& rhs) const
 		{
-			NewPropertySet result = *this;
+			PropertySet result = *this;
 			return result.symmetricSubtract(rhs);
 		}
 
-		constexpr NewPropertySet& symmetricSubtract(const NewPropertySet& rhs)
+		constexpr PropertySet& symmetricSubtract(const PropertySet& rhs)
 		{
 			m_value ^= rhs.m_value;
 			return *this;
@@ -225,9 +225,9 @@ namespace dots::type
 			return m_value;
 		}
 
-		static constexpr NewPropertySet FromIndex(index_t index)
+		static constexpr PropertySet FromIndex(index_t index)
 		{
-			return NewPropertySet{ 0x1u << index };
+			return PropertySet{ 0x1u << index };
 		}
 
 		[[deprecated("only available for backwards compatibility")]]

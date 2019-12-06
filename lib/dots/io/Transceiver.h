@@ -25,9 +25,9 @@ class Transceiver: public Publisher
 {
 public:
 
-	template <typename T = type::NewStruct>
+	template <typename T = type::Struct>
 	using receive_handler_t = Dispatcher::receive_handler_t<T>;
-	template <typename T = type::NewStruct>
+	template <typename T = type::Struct>
 	using event_handler_t = Dispatcher::event_handler_t<T>;
 
     Transceiver();
@@ -35,14 +35,14 @@ public:
     bool start(const string &name, channel_ptr_t channel);
     void stop();
 
-	const io::NewRegistry& registry() const;
-	io::NewRegistry& registry();
+	const io::Registry& registry() const;
+	io::Registry& registry();
 
 	const ContainerPool& pool() const;
-	const Container<>& container(const type::NewStructDescriptor<>& descriptor);
+	const Container<>& container(const type::StructDescriptor<>& descriptor);
 
-	Subscription subscribe(const type::NewStructDescriptor<>& descriptor, receive_handler_t<>&& handler);
-    Subscription subscribe(const type::NewStructDescriptor<>& descriptor, event_handler_t<>&& handler);
+	Subscription subscribe(const type::StructDescriptor<>& descriptor, receive_handler_t<>&& handler);
+    Subscription subscribe(const type::StructDescriptor<>& descriptor, event_handler_t<>&& handler);
 
 	Subscription subscribe(const std::string_view& name, receive_handler_t<>&& handler);
 	Subscription subscribe(const std::string_view& name, event_handler_t<>&& handler);
@@ -57,7 +57,7 @@ public:
 
     bool connected() const;
 
-    void publish(const type::NewStructDescriptor<>* td, const type::NewStruct& instance, types::property_set_t what, bool remove) override;
+    void publish(const type::StructDescriptor<>* td, const type::Struct& instance, types::property_set_t what, bool remove) override;
 
 	template <typename T>
 	const Container<T>& container()
@@ -85,13 +85,13 @@ public:
 private:
     void onConnect();
     void onEarlySubscribe();
-	const type::NewStructDescriptor<>& getDescriptorFromName(const std::string_view& name) const;
+	const type::StructDescriptor<>& getDescriptorFromName(const std::string_view& name) const;
 
     ServerConnection m_serverConnection;
 
     bool m_connected = false;
 
-	io::NewRegistry m_registry;
+	io::Registry m_registry;
     Dispatcher m_dispatcher;
     //Receiver m_receiver;
     //Transmitter m_transmitter;

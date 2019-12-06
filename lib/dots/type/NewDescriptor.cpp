@@ -1,8 +1,8 @@
-#include "NewDescriptor.h"
+#include <dots/type/NewDescriptor.h>
 
 namespace dots::type
 {
-	NewDescriptor<NewTypeless>::NewDescriptor(NewType type, std::string name, size_t size, size_t alignment):
+	Descriptor<Typeless>::Descriptor(Type type, std::string name, size_t size, size_t alignment):
 		m_type(type),
 		m_name(std::move(name)),
 		m_size(size),
@@ -11,82 +11,82 @@ namespace dots::type
 		/* do nothing */
 	}
 
-	NewType NewDescriptor<NewTypeless>::type() const
+	Type Descriptor<Typeless>::type() const
 	{
 		return m_type;
 	}
 
-	bool NewDescriptor<NewTypeless>::isFundamentalType() const
+	bool Descriptor<Typeless>::isFundamentalType() const
 	{
 		return IsFundamentalType(type());
 	}
 
-	const std::string& NewDescriptor<NewTypeless>::name() const
+	const std::string& Descriptor<Typeless>::name() const
 	{
 		return m_name;
 	}
 
-	size_t NewDescriptor<NewTypeless>::size() const
+	size_t Descriptor<Typeless>::size() const
 	{
 		return m_size;
 	}
 
-	size_t NewDescriptor<NewTypeless>::alignment() const
+	size_t Descriptor<Typeless>::alignment() const
 	{
 		return m_alignment;
 	}
 
-	bool NewDescriptor<NewTypeless>::usesDynamicMemory() const
+	bool Descriptor<Typeless>::usesDynamicMemory() const
 	{
 		return false;
 	}
 
-	size_t NewDescriptor<NewTypeless>::dynamicMemoryUsage(const NewTypeless&/* value*/) const
+	size_t Descriptor<Typeless>::dynamicMemoryUsage(const Typeless&/* value*/) const
 	{
 		return 0;
 	}
 
-	void NewDescriptor<NewTypeless>::fromString(NewTypeless&/* storage*/, const std::string_view&/* value*/) const
+	void Descriptor<Typeless>::fromString(Typeless&/* storage*/, const std::string_view&/* value*/) const
 	{
 		throw std::logic_error{ "from string construction not available for type: " + name() };
 	}
 
-	std::string NewDescriptor<NewTypeless>::toString(const NewTypeless&/* value*/) const
+	std::string Descriptor<Typeless>::toString(const Typeless&/* value*/) const
 	{
 		throw std::logic_error{ "to string conversion not available for type: " + name() };
 	}
 
-	bool NewDescriptor<NewTypeless>::IsFundamentalType(const NewDescriptor& descriptor)
+	bool Descriptor<Typeless>::IsFundamentalType(const Descriptor& descriptor)
 	{
 		return IsFundamentalType(descriptor.type());
 	}
 
-	bool NewDescriptor<NewTypeless>::IsFundamentalType(NewType type)
+	bool Descriptor<Typeless>::IsFundamentalType(Type type)
 	{
 		switch (type)
 	    {
-	        case NewType::boolean:
-	        case NewType::int8:
-	        case NewType::int16:
-	        case NewType::int32:
-	        case NewType::int64:
-	        case NewType::uint8:
-	        case NewType::uint16:
-	        case NewType::uint32:
-	        case NewType::uint64:
-	        case NewType::float32:
-	        case NewType::float64:
-	        case NewType::property_set:
-	        case NewType::timepoint:
-	        case NewType::steady_timepoint:
-	        case NewType::duration:
-	        case NewType::string:
-	        case NewType::uuid:
+	        case Type::boolean:
+	        case Type::int8:
+	        case Type::int16:
+	        case Type::int32:
+	        case Type::int64:
+	        case Type::uint8:
+	        case Type::uint16:
+	        case Type::uint32:
+	        case Type::uint64:
+	        case Type::float32:
+	        case Type::float64:
+	        case Type::property_set:
+	        case Type::timepoint:
+	        case Type::steady_timepoint:
+	        case Type::duration:
+	        case Type::string:
+	        case Type::uuid:
 	            return true;
 
-	        case NewType::Vector:
-	        case NewType::Enum:
-	        case NewType::Struct:
+	        case Type::Vector:
+	        case Type::Enum:
+	        case Type::Struct:
 	            return false;
 	    }
 

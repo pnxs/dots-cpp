@@ -8,7 +8,7 @@ namespace
 {
 	namespace test_helpers
 	{
-		DotsHeader make_header(const dots::type::NewStruct& instance, uint32_t sender, bool remove = false)
+		DotsHeader make_header(const dots::type::Struct& instance, uint32_t sender, bool remove = false)
 		{
 			return DotsHeader{
 				DotsHeader::typeName_i{ instance._descriptor().name() },

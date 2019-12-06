@@ -6,26 +6,26 @@
 
 namespace dots::types
 {
-    struct TestStruct : type::NewStaticStruct<TestStruct>
+    struct TestStruct : type::StaticStruct<TestStruct>
     {
-        struct intProperty_t : type::NewStaticProperty<int32_t, intProperty_t>
+        struct intProperty_t : type::StaticProperty<int32_t, intProperty_t>
         {
-			inline static auto Descriptor = type::NewPropertyDescriptor<int32_t>("intProperty", 1, true);
+			inline static auto Descriptor = type::PropertyDescriptor<int32_t>("intProperty", 1, true);
         };
     	
-        struct stringProperty_t : type::NewStaticProperty<string_t, stringProperty_t>
+        struct stringProperty_t : type::StaticProperty<string_t, stringProperty_t>
         {
-			inline static auto Descriptor = dots::type::NewPropertyDescriptor<string_t>("stringProperty", intProperty_t::Descriptor, 2, false);
+			inline static auto Descriptor = dots::type::PropertyDescriptor<string_t>("stringProperty", intProperty_t::Descriptor, 2, false);
         };
 
-    	struct boolProperty_t : type::NewStaticProperty<bool_t, boolProperty_t>
+    	struct boolProperty_t : type::StaticProperty<bool_t, boolProperty_t>
         {
-			inline static auto Descriptor = dots::type::NewPropertyDescriptor<bool_t>("boolProperty", stringProperty_t::Descriptor, 3, false);
+			inline static auto Descriptor = dots::type::PropertyDescriptor<bool_t>("boolProperty", stringProperty_t::Descriptor, 3, false);
         };
     	
-        struct floatVectorProperty_t : type::NewStaticProperty<vector_t<float32_t>, floatVectorProperty_t>
+        struct floatVectorProperty_t : type::StaticProperty<vector_t<float32_t>, floatVectorProperty_t>
         {
-			inline static auto Descriptor = type::NewPropertyDescriptor<vector_t<float32_t>>("floatVectorProperty", boolProperty_t::Descriptor, 4, false);
+			inline static auto Descriptor = type::PropertyDescriptor<vector_t<float32_t>>("floatVectorProperty", boolProperty_t::Descriptor, 4, false);
         };
 
     	using intProperty_i = type::TPropertyInitializer<intProperty_t>;
@@ -36,7 +36,7 @@ namespace dots::types
         using _key_properties_t = std::tuple<intProperty_t*>;
         using _properties_t     = std::tuple<intProperty_t*, stringProperty_t*, boolProperty_t*, floatVectorProperty_t*>;
 
-		using NewStaticStruct::NewStaticStruct;
+		using StaticStruct::StaticStruct;
 		TestStruct(const TestStruct& other) = default;
 		TestStruct(TestStruct&& other) = default;
 		~TestStruct() = default;
@@ -54,10 +54,10 @@ namespace dots::types
 namespace dots::type
 {
 	template <>
-	struct NewDescriptor<types::TestStruct> : NewStructDescriptor<types::TestStruct>
+	struct Descriptor<types::TestStruct> : StructDescriptor<types::TestStruct>
 	{
-		NewDescriptor() :
-			NewStructDescriptor("TestStruct", Cached, {
+		Descriptor() :
+			StructDescriptor("TestStruct", Cached, {
         		nullptr,
 	            &types::TestStruct::intProperty_t::Descriptor,
 	            &types::TestStruct::stringProperty_t::Descriptor,
@@ -69,12 +69,12 @@ namespace dots::type
 
 using namespace dots::types;
 
-struct TestNewStaticStruct : ::testing::Test
+struct TestStaticStruct : ::testing::Test
 {
 protected:
 };
 
-TEST_F(TestNewStaticStruct, PropertyOffsetsMatchActualOffsets)
+TEST_F(TestStaticStruct, PropertyOffsetsMatchActualOffsets)
 {
 	TestStruct sut;
 	
@@ -85,7 +85,7 @@ TEST_F(TestNewStaticStruct, PropertyOffsetsMatchActualOffsets)
 	EXPECT_EQ(TestStruct::floatVectorProperty_t::Offset(), determine_offset(sut.floatVectorProperty));
 }
 
-TEST_F(TestNewStaticStruct, PropertiesHaveExpectedTags)
+TEST_F(TestStaticStruct, PropertiesHaveExpectedTags)
 {
 	EXPECT_EQ(TestStruct::intProperty_t::Tag(), 1);
 	EXPECT_EQ(TestStruct::stringProperty_t::Tag(), 2);
@@ -93,7 +93,7 @@ TEST_F(TestNewStaticStruct, PropertiesHaveExpectedTags)
 	EXPECT_EQ(TestStruct::floatVectorProperty_t::Tag(), 4);
 }
 
-TEST_F(TestNewStaticStruct, PropertiesHaveExpectedNames)
+TEST_F(TestStaticStruct, PropertiesHaveExpectedNames)
 {
 	EXPECT_EQ(TestStruct::intProperty_t::Name(), "intProperty");
 	EXPECT_EQ(TestStruct::stringProperty_t::Name(), "stringProperty");
@@ -101,15 +101,15 @@ TEST_F(TestNewStaticStruct, PropertiesHaveExpectedNames)
 	EXPECT_EQ(TestStruct::floatVectorProperty_t::Name(), "floatVectorProperty");
 }
 
-TEST_F(TestNewStaticStruct, PropertiesHaveExpectedSet)
+TEST_F(TestStaticStruct, PropertiesHaveExpectedSet)
 {
-	EXPECT_EQ(TestStruct::intProperty_t::Set(), dots::type::NewPropertySet{ 0x1 << 1 });
-	EXPECT_EQ(TestStruct::stringProperty_t::Set(), dots::type::NewPropertySet{ 0x1 << 2 });
-	EXPECT_EQ(TestStruct::boolProperty_t::Set(), dots::type::NewPropertySet{ 0x1 << 3 });
-	EXPECT_EQ(TestStruct::floatVectorProperty_t::Set(), dots::type::NewPropertySet{ 0x1 << 4 });
+	EXPECT_EQ(TestStruct::intProperty_t::Set(), dots::type::PropertySet{ 0x1 << 1 });
+	EXPECT_EQ(TestStruct::stringProperty_t::Set(), dots::type::PropertySet{ 0x1 << 2 });
+	EXPECT_EQ(TestStruct::boolProperty_t::Set(), dots::type::PropertySet{ 0x1 << 3 });
+	EXPECT_EQ(TestStruct::floatVectorProperty_t::Set(), dots::type::PropertySet{ 0x1 << 4 });
 }
 
-TEST_F(TestNewStaticStruct, _Descriptor_PropertyOffsetsMatchActualOffsets)
+TEST_F(TestStaticStruct, _Descriptor_PropertyOffsetsMatchActualOffsets)
 {
 	TestStruct sut;
 	
@@ -120,17 +120,17 @@ TEST_F(TestNewStaticStruct, _Descriptor_PropertyOffsetsMatchActualOffsets)
 	EXPECT_EQ(TestStruct::_Descriptor().propertyDescriptors()[4]->offset(), determine_offset(sut.floatVectorProperty));
 }
 
-TEST_F(TestNewStaticStruct, _Descriptor_SizeMatchesActualSize)
+TEST_F(TestStaticStruct, _Descriptor_SizeMatchesActualSize)
 {
 	EXPECT_EQ(TestStruct::_Descriptor().size(), sizeof(TestStruct));
 }
 
-TEST_F(TestNewStaticStruct, _Descriptor_AlignmentMatchesActualAlignment)
+TEST_F(TestStaticStruct, _Descriptor_AlignmentMatchesActualAlignment)
 {
 	EXPECT_EQ(TestStruct::_Descriptor().alignment(), alignof(TestStruct));
 }
 
-TEST_F(TestNewStaticStruct, _Descriptor_FlagsHaveExpectedValues)
+TEST_F(TestStaticStruct, _Descriptor_FlagsHaveExpectedValues)
 {
 	EXPECT_TRUE(TestStruct::_Descriptor().cached());
 	EXPECT_FALSE(TestStruct::_Descriptor().internal());
@@ -140,12 +140,12 @@ TEST_F(TestNewStaticStruct, _Descriptor_FlagsHaveExpectedValues)
 	EXPECT_FALSE(TestStruct::_Descriptor().substructOnly());
 }
 
-TEST_F(TestNewStaticStruct, _KeyProperties)
+TEST_F(TestStaticStruct, _KeyProperties)
 {
 	EXPECT_EQ(TestStruct::_KeyProperties(), TestStruct::intProperty_t::Set());
 }
 
-TEST_F(TestNewStaticStruct, ctor_Initializer)
+TEST_F(TestStaticStruct, ctor_Initializer)
 {
 	TestStruct sut{
 		TestStruct::intProperty_i{ 1 },
@@ -159,7 +159,7 @@ TEST_F(TestNewStaticStruct, ctor_Initializer)
 	EXPECT_EQ(sut.floatVectorProperty, vector_t<float32_t>({ 3.1415f, 2.7183f }));
 }
 
-TEST_F(TestNewStaticStruct, ctor_Copy)
+TEST_F(TestStaticStruct, ctor_Copy)
 {
 	TestStruct sutOther{
 		TestStruct::intProperty_i{ 1 },
@@ -174,7 +174,7 @@ TEST_F(TestNewStaticStruct, ctor_Copy)
 	EXPECT_EQ(sutThis.floatVectorProperty, sutOther.floatVectorProperty);
 }
 
-TEST_F(TestNewStaticStruct, ctor_Move)
+TEST_F(TestStaticStruct, ctor_Move)
 {
 	TestStruct sutOther{
 		TestStruct::intProperty_i{ 1 },
@@ -194,7 +194,7 @@ TEST_F(TestNewStaticStruct, ctor_Move)
 	EXPECT_FALSE(sutOther.floatVectorProperty.isValid());
 }
 
-TEST_F(TestNewStaticStruct, assignment_Copy)
+TEST_F(TestStaticStruct, assignment_Copy)
 {
 	TestStruct sutOther{
 		TestStruct::intProperty_i{ 1 },
@@ -209,7 +209,7 @@ TEST_F(TestNewStaticStruct, assignment_Copy)
 	EXPECT_EQ(sutThis.floatVectorProperty, sutOther.floatVectorProperty);
 }
 
-TEST_F(TestNewStaticStruct, assignment_Move)
+TEST_F(TestStaticStruct, assignment_Move)
 {
 	TestStruct sutOther{
 		TestStruct::intProperty_i{ 1 },
@@ -229,7 +229,7 @@ TEST_F(TestNewStaticStruct, assignment_Move)
 	EXPECT_FALSE(sutOther.floatVectorProperty.isValid());
 }
 
-TEST_F(TestNewStaticStruct, assign_CompleteAssign)
+TEST_F(TestStaticStruct, assign_CompleteAssign)
 {
 	TestStruct sutThis{
 		TestStruct::intProperty_i{ 1 },
@@ -251,7 +251,7 @@ TEST_F(TestNewStaticStruct, assign_CompleteAssign)
 	EXPECT_EQ(sutThis.floatVectorProperty, vector_t<float32_t>{ 2.7183f });
 }
 
-TEST_F(TestNewStaticStruct, assign_PartialAssign)
+TEST_F(TestStaticStruct, assign_PartialAssign)
 {
 	TestStruct sutThis{
 		TestStruct::intProperty_i{ 1 },
@@ -272,7 +272,7 @@ TEST_F(TestNewStaticStruct, assign_PartialAssign)
 	EXPECT_FALSE(sutThis.floatVectorProperty.isValid());
 }
 
-TEST_F(TestNewStaticStruct, copy_CompleteCopy)
+TEST_F(TestStaticStruct, copy_CompleteCopy)
 {
 	TestStruct sutThis{
 		TestStruct::intProperty_i{ 1 },
@@ -294,7 +294,7 @@ TEST_F(TestNewStaticStruct, copy_CompleteCopy)
 	EXPECT_EQ(sutThis.floatVectorProperty, vector_t<float32_t>{ 2.7183f });
 }
 
-TEST_F(TestNewStaticStruct, copy_PartialCopy)
+TEST_F(TestStaticStruct, copy_PartialCopy)
 {
 	TestStruct sutThis{
 		TestStruct::intProperty_i{ 1 },
@@ -315,7 +315,7 @@ TEST_F(TestNewStaticStruct, copy_PartialCopy)
 	EXPECT_EQ(sutThis.floatVectorProperty, vector_t<float32_t>{ 3.1415f });
 }
 
-TEST_F(TestNewStaticStruct, merge_CompleteMerge)
+TEST_F(TestStaticStruct, merge_CompleteMerge)
 {
 	TestStruct sutThis{
 		TestStruct::intProperty_i{ 1 },
@@ -336,7 +336,7 @@ TEST_F(TestNewStaticStruct, merge_CompleteMerge)
 	EXPECT_EQ(sutThis.floatVectorProperty, vector_t<float32_t>{ 3.1415f });
 }
 
-TEST_F(TestNewStaticStruct, merge_PartialMerge)
+TEST_F(TestStaticStruct, merge_PartialMerge)
 {
 	TestStruct sutThis{
 		TestStruct::intProperty_i{ 1 },
@@ -358,7 +358,7 @@ TEST_F(TestNewStaticStruct, merge_PartialMerge)
 	EXPECT_EQ(sutThis.floatVectorProperty, vector_t<float32_t>{ 2.7183f });
 }
 
-TEST_F(TestNewStaticStruct, swap_CompleteSwap)
+TEST_F(TestStaticStruct, swap_CompleteSwap)
 {
 	TestStruct sutThis{
 		TestStruct::intProperty_i{ 1 },
@@ -384,7 +384,7 @@ TEST_F(TestNewStaticStruct, swap_CompleteSwap)
 	EXPECT_EQ(sutOther.floatVectorProperty, vector_t<float32_t>{ 3.1415f });
 }
 
-TEST_F(TestNewStaticStruct, swap_PartialSwap)
+TEST_F(TestStaticStruct, swap_PartialSwap)
 {
 	TestStruct sutThis{
 		TestStruct::intProperty_i{ 1 },
@@ -411,7 +411,7 @@ TEST_F(TestNewStaticStruct, swap_PartialSwap)
 	EXPECT_EQ(sutOther.floatVectorProperty, vector_t<float32_t>{ 3.1415f });
 }
 
-TEST_F(TestNewStaticStruct, clear_CompleteClear)
+TEST_F(TestStaticStruct, clear_CompleteClear)
 {
 	TestStruct sut{
 		TestStruct::intProperty_i{ 1 },
@@ -427,7 +427,7 @@ TEST_F(TestNewStaticStruct, clear_CompleteClear)
 	EXPECT_FALSE(sut.floatVectorProperty.isValid());
 }
 
-TEST_F(TestNewStaticStruct, clear_PartialClear)
+TEST_F(TestStaticStruct, clear_PartialClear)
 {
 	TestStruct sut{
 		TestStruct::intProperty_i{ 1 },
@@ -443,7 +443,7 @@ TEST_F(TestNewStaticStruct, clear_PartialClear)
 	EXPECT_FALSE(sut.floatVectorProperty.isValid());
 }
 
-TEST_F(TestNewStaticStruct, equal)
+TEST_F(TestStaticStruct, equal)
 {
 	TestStruct sutLhs{
 		TestStruct::intProperty_i{ 2 },
@@ -466,7 +466,7 @@ TEST_F(TestNewStaticStruct, equal)
 	EXPECT_FALSE(sutLhs._equal(sutRhs, TestStruct::intProperty_t::Set() + TestStruct::stringProperty_t::Set()));
 }
 
-TEST_F(TestNewStaticStruct, same)
+TEST_F(TestStaticStruct, same)
 {
 	TestStruct sut1{
 		TestStruct::intProperty_i{ 1 },
@@ -491,7 +491,7 @@ TEST_F(TestNewStaticStruct, same)
 	EXPECT_FALSE(sut1._same(sut3));
 }
 
-TEST_F(TestNewStaticStruct, less_lessEqual_greater_greaterEqual)
+TEST_F(TestStaticStruct, less_lessEqual_greater_greaterEqual)
 {
 	TestStruct sutLhs{
 		TestStruct::intProperty_i{ 2 },
@@ -530,7 +530,7 @@ TEST_F(TestNewStaticStruct, less_lessEqual_greater_greaterEqual)
 	EXPECT_TRUE(sutLhs._greaterEqual(sutLhs, TestStruct::boolProperty_t::Set()));
 }
 
-TEST_F(TestNewStaticStruct, diffProperties)
+TEST_F(TestStaticStruct, diffProperties)
 {
 	TestStruct sutLhs{
 		TestStruct::intProperty_i{ 2 },

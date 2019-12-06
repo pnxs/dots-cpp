@@ -4,12 +4,12 @@
 
 namespace dots::type
 {
-	NewStructDescriptor<NewTypeless, void>::NewStructDescriptor(std::string name, uint8_t flags, const new_property_descriptor_container_t& propertyDescriptors, size_t size, size_t alignment) :
-		NewDescriptor<NewTypeless>(NewType::Struct, std::move(name), size, alignment),
+	StructDescriptor<Typeless, void>::StructDescriptor(std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptors, size_t size, size_t alignment) :
+		Descriptor<Typeless>(Type::Struct, std::move(name), size, alignment),
 		m_flags(flags),
 		m_propertyDescriptors(propertyDescriptors)
 	{
-		for (const NewPropertyDescriptor<>* propertyDescriptor : m_propertyDescriptors)
+		for (const PropertyDescriptor<>* propertyDescriptor : m_propertyDescriptors)
 		{
 			if (propertyDescriptor != nullptr)
 			{
@@ -28,25 +28,25 @@ namespace dots::type
 		}
 	}
 
-	NewTypeless& NewStructDescriptor<NewTypeless, void>::construct(NewTypeless& value) const
+	Typeless& StructDescriptor<Typeless, void>::construct(Typeless& value) const
 	{
-		return NewTypeless::From(construct(value.to<NewStruct>()));
+		return Typeless::From(construct(value.to<Struct>()));
 	}
 
-	NewStruct& NewStructDescriptor<NewTypeless, void>::construct(NewStruct& instance) const
+	Struct& StructDescriptor<Typeless, void>::construct(Struct& instance) const
 	{
-		::new(static_cast<void*>(::std::addressof(instance))) NewStruct{ *this };
+		::new(static_cast<void*>(::std::addressof(instance))) Struct{ *this };
 		return instance;
 	}
 
-	NewTypeless& NewStructDescriptor<NewTypeless, void>::construct(NewTypeless& value, const NewTypeless& other) const
+	Typeless& StructDescriptor<Typeless, void>::construct(Typeless& value, const Typeless& other) const
 	{
-		return NewTypeless::From(construct(value.to<NewStruct>(), other.to<NewStruct>()));
+		return Typeless::From(construct(value.to<Struct>(), other.to<Struct>()));
 	}
 
-	NewStruct& NewStructDescriptor<NewTypeless, void>::construct(NewStruct& instance, const NewStruct& other) const
+	Struct& StructDescriptor<Typeless, void>::construct(Struct& instance, const Struct& other) const
 	{
-		::new(static_cast<void*>(::std::addressof(instance))) NewStruct{ other };
+		::new(static_cast<void*>(::std::addressof(instance))) Struct{ other };
 		
 		for (auto& property : instance._propertyRange())
         {
@@ -56,14 +56,14 @@ namespace dots::type
 		return instance;
 	}
 
-	NewTypeless& NewStructDescriptor<NewTypeless, void>::construct(NewTypeless& value, NewTypeless&& other) const
+	Typeless& StructDescriptor<Typeless, void>::construct(Typeless& value, Typeless&& other) const
 	{
-		return NewTypeless::From(construct(value.to<NewStruct>(), other.to<NewStruct>()));
+		return Typeless::From(construct(value.to<Struct>(), other.to<Struct>()));
 	}
 
-	NewStruct& NewStructDescriptor<NewTypeless, void>::construct(NewStruct& instance, NewStruct&& other) const
+	Struct& StructDescriptor<Typeless, void>::construct(Struct& instance, Struct&& other) const
 	{
-		::new(static_cast<void*>(::std::addressof(instance))) NewStruct{ std::move(other) };
+		::new(static_cast<void*>(::std::addressof(instance))) Struct{ std::move(other) };
 		
 		for (auto& property : instance._propertyRange())
         {
@@ -73,12 +73,12 @@ namespace dots::type
 		return instance;
 	}
 	
-	void NewStructDescriptor<NewTypeless, void>::destruct(NewTypeless& value) const
+	void StructDescriptor<Typeless, void>::destruct(Typeless& value) const
 	{
-		NewTypeless::From(destruct(value.to<NewStruct>()));
+		Typeless::From(destruct(value.to<Struct>()));
 	}
 
-	NewStruct& NewStructDescriptor<NewTypeless, void>::destruct(NewStruct& instance) const
+	Struct& StructDescriptor<Typeless, void>::destruct(Struct& instance) const
 	{
 		for (auto& property : instance._propertyRange())
         {
@@ -88,63 +88,63 @@ namespace dots::type
 		return instance;
 	}
 
-	NewTypeless& NewStructDescriptor<NewTypeless, void>::assign(NewTypeless& lhs, const NewTypeless& rhs) const
+	Typeless& StructDescriptor<Typeless, void>::assign(Typeless& lhs, const Typeless& rhs) const
 	{
-		return NewTypeless::From(assign(lhs.to<NewStruct>(), rhs.to<NewStruct>(), NewPropertySet::All));
+		return Typeless::From(assign(lhs.to<Struct>(), rhs.to<Struct>(), PropertySet::All));
 	}
 	
-	NewTypeless& NewStructDescriptor<NewTypeless, void>::assign(NewTypeless& lhs, NewTypeless&& rhs) const
+	Typeless& StructDescriptor<Typeless, void>::assign(Typeless& lhs, Typeless&& rhs) const
 	{
-		return NewTypeless::From(assign(lhs.to<NewStruct>(), rhs.to<NewStruct>(), NewPropertySet::All));
+		return Typeless::From(assign(lhs.to<Struct>(), rhs.to<Struct>(), PropertySet::All));
 	}
 	
-	void NewStructDescriptor<NewTypeless, void>::swap(NewTypeless& value, NewTypeless& other) const
+	void StructDescriptor<Typeless, void>::swap(Typeless& value, Typeless& other) const
 	{
-		return swap(value.to<NewStruct>(), other.to<NewStruct>(), NewPropertySet::All);
+		return swap(value.to<Struct>(), other.to<Struct>(), PropertySet::All);
 	}
 	
-	bool NewStructDescriptor<NewTypeless, void>::equal(const NewTypeless& lhs, const NewTypeless& rhs) const
+	bool StructDescriptor<Typeless, void>::equal(const Typeless& lhs, const Typeless& rhs) const
 	{
-		return equal(lhs.to<NewStruct>(), rhs.to<NewStruct>(), NewPropertySet::All);
+		return equal(lhs.to<Struct>(), rhs.to<Struct>(), PropertySet::All);
 	}
 	
-	bool NewStructDescriptor<NewTypeless, void>::less(const NewTypeless& lhs, const NewTypeless& rhs) const
+	bool StructDescriptor<Typeless, void>::less(const Typeless& lhs, const Typeless& rhs) const
 	{
-		return less(lhs.to<NewStruct>(), rhs.to<NewStruct>(), NewPropertySet::All);
+		return less(lhs.to<Struct>(), rhs.to<Struct>(), PropertySet::All);
 	}
 	
-	bool NewStructDescriptor<NewTypeless, void>::lessEqual(const NewTypeless& lhs, const NewTypeless& rhs) const
+	bool StructDescriptor<Typeless, void>::lessEqual(const Typeless& lhs, const Typeless& rhs) const
 	{
-		return lessEqual(lhs.to<NewStruct>(), rhs.to<NewStruct>(), NewPropertySet::All);
+		return lessEqual(lhs.to<Struct>(), rhs.to<Struct>(), PropertySet::All);
 	}
 	
-	bool NewStructDescriptor<NewTypeless, void>::greater(const NewTypeless& lhs, const NewTypeless& rhs) const
+	bool StructDescriptor<Typeless, void>::greater(const Typeless& lhs, const Typeless& rhs) const
 	{
-		return greater(lhs.to<NewStruct>(), rhs.to<NewStruct>(), NewPropertySet::All);
+		return greater(lhs.to<Struct>(), rhs.to<Struct>(), PropertySet::All);
 	}
 	
-	bool NewStructDescriptor<NewTypeless, void>::greaterEqual(const NewTypeless& lhs, const NewTypeless& rhs) const
+	bool StructDescriptor<Typeless, void>::greaterEqual(const Typeless& lhs, const Typeless& rhs) const
 	{
-		return greaterEqual(lhs.to<NewStruct>(), rhs.to<NewStruct>(), NewPropertySet::All);
+		return greaterEqual(lhs.to<Struct>(), rhs.to<Struct>(), PropertySet::All);
 	}
 
-	bool NewStructDescriptor<NewTypeless, void>::usesDynamicMemory() const
+	bool StructDescriptor<Typeless, void>::usesDynamicMemory() const
 	{
 		return m_dynamicMemoryProperties.empty();
 	}
 
-	size_t NewStructDescriptor<NewTypeless, void>::dynamicMemoryUsage(const NewTypeless& instance) const
+	size_t StructDescriptor<Typeless, void>::dynamicMemoryUsage(const Typeless& instance) const
 	{
-		return dynamicMemoryUsage(instance.to<NewStruct>());
+		return dynamicMemoryUsage(instance.to<Struct>());
 	}
 
-	size_t NewStructDescriptor<NewTypeless, void>::dynamicMemoryUsage(const NewStruct& instance) const
+	size_t StructDescriptor<Typeless, void>::dynamicMemoryUsage(const Struct& instance) const
 	{
 		if (usesDynamicMemory())
 		{
 			size_t dynMemUsage = 0;
 
-			for (const NewProxyProperty<>& property : instance._propertyRange(m_dynamicMemoryProperties))
+			for (const ProxyProperty<>& property : instance._propertyRange(m_dynamicMemoryProperties))
 			{
 				dynMemUsage += property.descriptor().valueDescriptor().dynamicMemoryUsage(property);
 			}
@@ -157,9 +157,9 @@ namespace dots::type
 		}
 	}
 
-	NewStruct& NewStructDescriptor<NewTypeless, void>::assign(NewStruct& instance, const NewStruct& other, const NewPropertySet& includedProperties) const
+	Struct& StructDescriptor<Typeless, void>::assign(Struct& instance, const Struct& other, const PropertySet& includedProperties) const
 	{
-		NewPropertySet assignProperties = other._validProperties() ^ includedProperties;
+		PropertySet assignProperties = other._validProperties() ^ includedProperties;
 
         for (auto&[propertyThis, propertyOther] : instance._propertyRange(other))
         {
@@ -176,9 +176,9 @@ namespace dots::type
         return instance;
 	}
 	
-	NewStruct& NewStructDescriptor<NewTypeless, void>::copy(NewStruct& instance, const NewStruct& other, const NewPropertySet& includedProperties) const
+	Struct& StructDescriptor<Typeless, void>::copy(Struct& instance, const Struct& other, const PropertySet& includedProperties) const
 	{
-		NewPropertySet copyProperties = (instance._validProperties() + other._validProperties()) ^ includedProperties;
+		PropertySet copyProperties = (instance._validProperties() + other._validProperties()) ^ includedProperties;
 
         for (auto&[propertyThis, propertyOther] : instance._propertyRange(other, copyProperties))
         {
@@ -195,13 +195,13 @@ namespace dots::type
         return instance;
 	}
 	
-	NewStruct& NewStructDescriptor<NewTypeless, void>::merge(NewStruct& instance, const NewStruct& other, const NewPropertySet& includedProperties) const
+	Struct& StructDescriptor<Typeless, void>::merge(Struct& instance, const Struct& other, const PropertySet& includedProperties) const
 	{
-		NewPropertySet mergePropertySet = other._validProperties() ^ includedProperties;
+		PropertySet mergePropertySet = other._validProperties() ^ includedProperties;
         return instance._copy(other, mergePropertySet);
 	}
 	
-	void NewStructDescriptor<NewTypeless, void>::swap(NewStruct& instance, NewStruct& other, const NewPropertySet& includedProperties) const
+	void StructDescriptor<Typeless, void>::swap(Struct& instance, Struct& other, const PropertySet& includedProperties) const
 	{
 		for (auto&[propertyThis, propertyOther] : instance._propertyRange(other, includedProperties))
         {
@@ -209,7 +209,7 @@ namespace dots::type
         }
 	}
 	
-	void NewStructDescriptor<NewTypeless, void>::clear(NewStruct& instance, const NewPropertySet& includedProperties) const
+	void StructDescriptor<Typeless, void>::clear(Struct& instance, const PropertySet& includedProperties) const
 	{
 		for (auto& property : instance._propertyRange(includedProperties))
         {
@@ -217,7 +217,7 @@ namespace dots::type
         }
 	}
 	
-	bool NewStructDescriptor<NewTypeless, void>::equal(const NewStruct& lhs, const NewStruct& rhs, const NewPropertySet& includedProperties) const
+	bool StructDescriptor<Typeless, void>::equal(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const
 	{
 		for (const auto&[propertyThis, propertyOther] : lhs._propertyRange(rhs, includedProperties))
         {
@@ -230,12 +230,12 @@ namespace dots::type
         return true;
 	}
 	
-	bool NewStructDescriptor<NewTypeless, void>::same(const NewStruct& lhs, const NewStruct& rhs) const
+	bool StructDescriptor<Typeless, void>::same(const Struct& lhs, const Struct& rhs) const
 	{
 		return lhs._equal(rhs, lhs._keyProperties());
 	}
 	
-	bool NewStructDescriptor<NewTypeless, void>::less(const NewStruct& lhs, const NewStruct& rhs, const NewPropertySet& includedProperties) const
+	bool StructDescriptor<Typeless, void>::less(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const
 	{
 		if (includedProperties.empty())
         {
@@ -259,25 +259,25 @@ namespace dots::type
         }
 	}
 	
-	bool NewStructDescriptor<NewTypeless, void>::lessEqual(const NewStruct& lhs, const NewStruct& rhs, const NewPropertySet& includedProperties) const
+	bool StructDescriptor<Typeless, void>::lessEqual(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const
 	{
 		return !lhs._greater(rhs, includedProperties);
 	}
 	
-	bool NewStructDescriptor<NewTypeless, void>::greater(const NewStruct& lhs, const NewStruct& rhs, const NewPropertySet& includedProperties) const
+	bool StructDescriptor<Typeless, void>::greater(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const
 	{
 		return rhs._less(lhs, includedProperties);
 	}
 	
-	bool NewStructDescriptor<NewTypeless, void>::greaterEqual(const NewStruct& lhs, const NewStruct& rhs, const NewPropertySet& includedProperties) const
+	bool StructDescriptor<Typeless, void>::greaterEqual(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const
 	{
 		return !lhs._less(rhs, includedProperties);
 	}
 	
-	NewPropertySet NewStructDescriptor<NewTypeless, void>::diffProperties(const NewStruct& instance, const NewStruct& other, const NewPropertySet& includedProperties) const
+	PropertySet StructDescriptor<Typeless, void>::diffProperties(const Struct& instance, const Struct& other, const PropertySet& includedProperties) const
 	{
-		NewPropertySet symmetricDiff = instance._validProperties().symmetricDifference(other._validProperties()) ^ includedProperties;
-        NewPropertySet intersection = instance._validProperties() ^ other._validProperties() ^ includedProperties;
+		PropertySet symmetricDiff = instance._validProperties().symmetricDifference(other._validProperties()) ^ includedProperties;
+        PropertySet intersection = instance._validProperties() ^ other._validProperties() ^ includedProperties;
 
         if (!intersection.empty())
         {
@@ -293,93 +293,93 @@ namespace dots::type
         return symmetricDiff;
 	}
 
-	const NewPropertyArea& NewStructDescriptor<NewTypeless, void>::propertyArea(const NewStruct& instance) const
+	const PropertyArea& StructDescriptor<Typeless, void>::propertyArea(const Struct& instance) const
 	{
 		return instance._propertyArea();
 	}
 
-	NewPropertyArea& NewStructDescriptor<NewTypeless, void>::propertyArea(NewStruct& instance) const
+	PropertyArea& StructDescriptor<Typeless, void>::propertyArea(Struct& instance) const
 	{
 		return instance._propertyArea();
 	}
 
-	uint8_t NewStructDescriptor<NewTypeless, void>::flags() const
+	uint8_t StructDescriptor<Typeless, void>::flags() const
 	{
 		return m_flags;
 	}
 
-	bool NewStructDescriptor<NewTypeless, void>::cached() const
+	bool StructDescriptor<Typeless, void>::cached() const
 	{
 		return static_cast<bool>(m_flags & Cached);
 	}
 
-	bool NewStructDescriptor<NewTypeless, void>::cleanup() const
+	bool StructDescriptor<Typeless, void>::cleanup() const
 	{
 		return static_cast<bool>(m_flags & Cleanup);
 	}
 
-	bool NewStructDescriptor<NewTypeless, void>::local() const
+	bool StructDescriptor<Typeless, void>::local() const
 	{
 		return static_cast<bool>(m_flags & Local);
 	}
 
-	bool NewStructDescriptor<NewTypeless, void>::persistent() const
+	bool StructDescriptor<Typeless, void>::persistent() const
 	{
 		return static_cast<bool>(m_flags & Persistent);
 	}
 
-	bool NewStructDescriptor<NewTypeless, void>::internal() const
+	bool StructDescriptor<Typeless, void>::internal() const
 	{
 		return static_cast<bool>(m_flags & Internal);
 	}
 
-	bool NewStructDescriptor<NewTypeless, void>::substructOnly() const
+	bool StructDescriptor<Typeless, void>::substructOnly() const
 	{
 		return static_cast<bool>(m_flags & SubstructOnly);
 	}
 
-	const new_property_descriptor_container_t& NewStructDescriptor<NewTypeless, void>::propertyDescriptors() const
+	const property_descriptor_container_t& StructDescriptor<Typeless, void>::propertyDescriptors() const
 	{
 		return m_propertyDescriptors;
 	}
 
-	const NewPropertySet& NewStructDescriptor<NewTypeless, void>::properties() const
+	const PropertySet& StructDescriptor<Typeless, void>::properties() const
 	{
 		return m_properties;
 	}
 
-	const NewPropertySet& NewStructDescriptor<NewTypeless, void>::keyProperties() const
+	const PropertySet& StructDescriptor<Typeless, void>::keyProperties() const
 	{
 		return m_keyProperties;
 	}
 
-	const NewPropertySet& NewStructDescriptor<NewTypeless, void>::keys() const
+	const PropertySet& StructDescriptor<Typeless, void>::keys() const
 	{
 		return m_keyProperties;
 	}
 
-	const NewPropertySet& NewStructDescriptor<NewTypeless, void>::validProperties(const void* instance) const
+	const PropertySet& StructDescriptor<Typeless, void>::validProperties(const void* instance) const
 	{
-		return propertyArea(*reinterpret_cast<const NewStruct*>(instance)).validProperties();
+		return propertyArea(*reinterpret_cast<const Struct*>(instance)).validProperties();
 	}
 
-	NewPropertySet& NewStructDescriptor<NewTypeless, void>::validProperties(void* instance) const
+	PropertySet& StructDescriptor<Typeless, void>::validProperties(void* instance) const
 	{
-		return propertyArea(*reinterpret_cast<NewStruct*>(instance)).validProperties();
+		return propertyArea(*reinterpret_cast<Struct*>(instance)).validProperties();
 	}
 
-	const types::StructDescriptorData& NewStructDescriptor<NewTypeless, void>::descriptorData() const
+	const types::StructDescriptorData& StructDescriptor<Typeless, void>::descriptorData() const
 	{
 		if (m_descriptorData == nullptr)
 		{
-			m_descriptorData = new types::StructDescriptorData{ io::NewDescriptorConverter{}(*this) };
+			m_descriptorData = new types::StructDescriptorData{ io::DescriptorConverter{}(*this) };
 		}
 		
 		return *m_descriptorData;
 	}
 
-	const NewStructDescriptor<>* NewStructDescriptor<NewTypeless, void>::createFromStructDescriptorData(const types::StructDescriptorData& sd)
+	const StructDescriptor<>* StructDescriptor<Typeless, void>::createFromStructDescriptorData(const types::StructDescriptorData& sd)
 	{
-		return io::NewDescriptorConverter{}(sd).get();
+		return io::DescriptorConverter{}(sd).get();
 	}
 }

@@ -248,7 +248,7 @@ bool Connection::onControlMessage(const DotsTransportHeader& transportHeader, Tr
             {
                 auto enumDescriptorData = static_cast<const EnumDescriptorData&>(transmission.instance().get());
                 enumDescriptorData.publisherId = id();
-                type::NewEnumDescriptor<>::createFromEnumDescriptorData(enumDescriptorData);
+                type::EnumDescriptor<>::createFromEnumDescriptorData(enumDescriptorData);
                 m_connectionManager.deliver(transportHeader, std::move(transmission));
                 handled = true;
             }
@@ -257,7 +257,7 @@ bool Connection::onControlMessage(const DotsTransportHeader& transportHeader, Tr
                 auto structDescriptorData = static_cast<const StructDescriptorData&>(transmission.instance().get());
                 structDescriptorData.publisherId = id();
                 LOG_DEBUG_S("received struct descriptor: " << structDescriptorData.name);
-            	const type::NewStructDescriptor<>* descriptor = type::NewStructDescriptor<>::createFromStructDescriptorData(structDescriptorData);
+            	const type::StructDescriptor<>* descriptor = type::StructDescriptor<>::createFromStructDescriptorData(structDescriptorData);
             	LOG_INFO_S("register type " << descriptor->name() << " published by " << m_clientName);
             	m_connectionManager.onNewType(descriptor);
                 m_connectionManager.deliver(transportHeader, std::move(transmission));
@@ -327,7 +327,7 @@ void Connection::setConnectionState(const DotsConnectionState& state)
 	DotsClient{ DotsClient::id_i{ id() }, DotsClient::connectionState_i{ state } }._publish();
 }
 
-void Connection::send(const DotsTransportHeader& header, const type::NewStruct& instance)
+void Connection::send(const DotsTransportHeader& header, const type::Struct& instance)
 {
     try
     {
@@ -394,9 +394,9 @@ void Connection::onChannelError(const std::exception& e)
 }
 
 void Connection::sendNs(const string &nameSpace,
-                        const type::NewStructDescriptor<> *td,
-                        const type::NewStruct& instance,
-                        type::NewPropertySet properties,
+                        const type::StructDescriptor<> *td,
+                        const type::Struct& instance,
+                        type::PropertySet properties,
                         bool remove)
 {
     DotsTransportHeader header;

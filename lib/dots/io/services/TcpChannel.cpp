@@ -45,7 +45,7 @@ namespace dots
 		asynReadHeaderLength();
 	}
 
-	void TcpChannel::transmitImpl(const DotsTransportHeader& header, const type::NewStruct& instance)
+	void TcpChannel::transmitImpl(const DotsTransportHeader& header, const type::Struct& instance)
 	{
 		std::string serializedInstance = to_cbor(instance, header.dotsHeader->attributes);
 
@@ -121,7 +121,7 @@ namespace dots
 			{
 				verifyErrorCode(ec);
 
-				const type::NewStructDescriptor<>* descriptor = transceiver().registry().findStructType(*m_header.dotsHeader->typeName).get();
+				const type::StructDescriptor<>* descriptor = transceiver().registry().findStructType(*m_header.dotsHeader->typeName).get();
 
 				if (descriptor == nullptr)
 				{

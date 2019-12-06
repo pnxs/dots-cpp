@@ -2,7 +2,7 @@
 
 namespace dots
 {
-    Event<type::NewStruct>::Event(const DotsHeader& header, const type::NewStruct& transmitted, const type::NewStruct& updated, const DotsCloneInformation& cloneInfo) :
+    Event<type::Struct>::Event(const DotsHeader& header, const type::Struct& transmitted, const type::Struct& updated, const DotsCloneInformation& cloneInfo) :
         m_header(header),
         m_transmitted(transmitted),
         m_updated(updated),
@@ -14,57 +14,57 @@ namespace dots
     /**
     * @return contained DOTS object
     */
-    const type::NewStruct& Event<type::NewStruct>::operator () () const 
+    const type::Struct& Event<type::Struct>::operator () () const 
     {
         return m_updated; 
     }
 
-    const DotsHeader& Event<type::NewStruct>::header() const
+    const DotsHeader& Event<type::Struct>::header() const
     {
         return m_header;
     }
 
-    const type::NewStruct& Event<type::NewStruct>::transmitted() const
+    const type::Struct& Event<type::Struct>::transmitted() const
     {
         return m_transmitted;
     }
 
-    const type::NewStruct& Event<type::NewStruct>::updated() const
+    const type::Struct& Event<type::Struct>::updated() const
     {
         return m_updated;
     }
 
-    const DotsCloneInformation& Event<type::NewStruct>::cloneInfo() const
+    const DotsCloneInformation& Event<type::Struct>::cloneInfo() const
     {
         return m_cloneInfo; 
     }
 
-    const type::NewStructDescriptor<>& Event<type::NewStruct>::descriptor() const
+    const type::StructDescriptor<>& Event<type::Struct>::descriptor() const
     {
 	    return m_updated._descriptor();
     }
 
-    DotsMt Event<type::NewStruct>::mt() const
+    DotsMt Event<type::Struct>::mt() const
     {
         return m_cloneInfo.lastOperation;
     }
 
-    bool Event<type::NewStruct>::isCreate() const
+    bool Event<type::Struct>::isCreate() const
     {
         return mt() == DotsMt::create; 
     }
 
-    bool Event<type::NewStruct>::isUpdate() const 
+    bool Event<type::Struct>::isUpdate() const 
     {
         return mt() == DotsMt::update;
     }
 
-    bool Event<type::NewStruct>::isRemove() const
+    bool Event<type::Struct>::isRemove() const
     { 
         return mt() == DotsMt::remove;
     }
 
-    bool Event<type::NewStruct>::isOwnUpdate() const
+    bool Event<type::Struct>::isOwnUpdate() const
     {
         return m_header.isFromMyself; 
     }

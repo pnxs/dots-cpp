@@ -3,38 +3,38 @@
 
 namespace dots::type
 {
-	struct NewPropertyArea
+	struct PropertyArea
 	{
-		constexpr NewPropertyArea() = default;
+		constexpr PropertyArea() = default;
 		
-		constexpr NewPropertyArea(const NewPropertyArea& /*other*/)
+		constexpr PropertyArea(const PropertyArea& /*other*/)
 		{
 			/* do nothing */
 		}
 		
-		constexpr NewPropertyArea(NewPropertyArea&& /*other*/) noexcept
+		constexpr PropertyArea(PropertyArea&& /*other*/) noexcept
 		{
 			/* do nothing */
 		}
 		
-		~NewPropertyArea() = default;
+		~PropertyArea() = default;
 
-		constexpr NewPropertyArea& operator = (const NewPropertyArea& /*rhs*/)
+		constexpr PropertyArea& operator = (const PropertyArea& /*rhs*/)
 		{
 			return *this;
 		}
 		
-		constexpr NewPropertyArea& operator = (NewPropertyArea&& /*rhs*/) noexcept
+		constexpr PropertyArea& operator = (PropertyArea&& /*rhs*/) noexcept
 		{
 			return *this;
 		}
 
-		constexpr const NewPropertySet& validProperties() const
+		constexpr const PropertySet& validProperties() const
 		{
 			return m_validProperties;
 		}
 
-		constexpr NewPropertySet& validProperties()
+		constexpr PropertySet& validProperties()
 		{
 			return m_validProperties;
 		}
@@ -64,31 +64,31 @@ namespace dots::type
 		}
 
 		template <typename P>
-    	static const NewPropertyArea& GetArea(const P& property, size_t offset)
+    	static const PropertyArea& GetArea(const P& property, size_t offset)
 		{
-			return *reinterpret_cast<const NewPropertyArea*>(reinterpret_cast<const char*>(&property) - offset);
+			return *reinterpret_cast<const PropertyArea*>(reinterpret_cast<const char*>(&property) - offset);
 		}
 
     	template <typename P>
-		static NewPropertyArea& GetArea(P& property, size_t offset)
+		static PropertyArea& GetArea(P& property, size_t offset)
 		{
-			return const_cast<NewPropertyArea&>(GetProperty(std::as_const(property), offset));
+			return const_cast<PropertyArea&>(GetProperty(std::as_const(property), offset));
 		}
 
 		template <typename P>
-    	static const NewPropertyArea& GetArea(const P& /*property*/)
+    	static const PropertyArea& GetArea(const P& /*property*/)
 		{
 			return GetArea(P::Offset());
 		}
 
     	template <typename P>
-		static NewPropertyArea& GetArea(P& property)
+		static PropertyArea& GetArea(P& property)
 		{
-			return const_cast<NewPropertyArea&>(GetProperty(std::as_const(property)));
+			return const_cast<PropertyArea&>(GetProperty(std::as_const(property)));
 		}
 
 	private:
 
-		NewPropertySet m_validProperties;
+		PropertySet m_validProperties;
 	};
 }

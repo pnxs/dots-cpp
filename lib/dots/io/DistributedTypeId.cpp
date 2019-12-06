@@ -18,7 +18,7 @@ DistributedTypeId::DistributedTypeId(bool master)
     }
 }
 
-DistributedTypeId::TypeId DistributedTypeId::createTypeId(const type::NewDescriptor<> *td)
+DistributedTypeId::TypeId DistributedTypeId::createTypeId(const type::Descriptor<> *td)
 {
     registerTypeId(m_nextTypeId, td);
 
@@ -31,7 +31,7 @@ DistributedTypeId::TypeId DistributedTypeId::createTypeId(const type::NewDescrip
     return m_nextTypeId++;
 }
 
-void DistributedTypeId::registerTypeId(const DistributedTypeId::TypeId id, const type::NewDescriptor<> *td)
+void DistributedTypeId::registerTypeId(const DistributedTypeId::TypeId id, const type::Descriptor<> *td)
 {
     auto ret = m_typeMap.insert({id, td});
     if (ret.second == false) {
@@ -49,7 +49,7 @@ void DistributedTypeId::removeTypeId(const DistributedTypeId::TypeId id)
     m_typeMap.erase(id);
 }
 
-const type::NewDescriptor<> *DistributedTypeId::findDescriptor(const DistributedTypeId::TypeId id) const
+const type::Descriptor<> *DistributedTypeId::findDescriptor(const DistributedTypeId::TypeId id) const
 {
     auto iter = m_typeMap.find(id);
     if (iter != m_typeMap.end()) {
@@ -58,12 +58,12 @@ const type::NewDescriptor<> *DistributedTypeId::findDescriptor(const Distributed
     return nullptr;
 }
 
-const type::NewStructDescriptor<>* DistributedTypeId::findStructDescriptor(const DistributedTypeId::TypeId id) const
+const type::StructDescriptor<>* DistributedTypeId::findStructDescriptor(const DistributedTypeId::TypeId id) const
 {
     return dots::type::toStructDescriptor(findDescriptor(id));
 }
 
-const type::NewDescriptor<> *DistributedTypeId::findDescriptor(const std::string& name) const
+const type::Descriptor<> *DistributedTypeId::findDescriptor(const std::string& name) const
 {
     auto typeId = findTypeId(name);
     if (typeId > 0) {

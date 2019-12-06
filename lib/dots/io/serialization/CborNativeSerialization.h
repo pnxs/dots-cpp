@@ -8,10 +8,10 @@
 namespace dots {
 
 namespace type {
-    struct NewStruct;
+    struct Struct;
 }
 
-std::string to_cbor(const type::NewStruct& instance, types::property_set_t properties = types::property_set_t::All);
+std::string to_cbor(const type::Struct& instance, types::property_set_t properties = types::property_set_t::All);
 
 [[deprecated("only available for backwards compatibility")]]
 std::string to_cbor(DynamicInstance instance, types::property_set_t properties = types::property_set_t::All);
@@ -24,10 +24,10 @@ std::string to_cbor(DynamicInstance instance, types::property_set_t properties =
  * @param data Pointer to an allocated Object of the correct type
  * @return nr of bytes read from input-data (size of CBOR object)
  */
-int from_cbor(const uint8_t* cborData, std::size_t cborSize, type::NewStruct& instance);
+int from_cbor(const uint8_t* cborData, std::size_t cborSize, type::Struct& instance);
 
 [[deprecated("only available for backwards compatibility")]]
-int from_cbor(const uint8_t* cborData, std::size_t cborSize, const dots::type::NewStructDescriptor<>* td, void* data);
+int from_cbor(const uint8_t* cborData, std::size_t cborSize, const dots::type::StructDescriptor<>* td, void* data);
 
 /**
  * Skips over a CBOR element

@@ -4,113 +4,113 @@
 
 namespace dots::type
 {
-    NewStruct::NewStruct(const NewStructDescriptor<>& descriptor) :
+    Struct::Struct(const StructDescriptor<>& descriptor) :
         _desc(&descriptor)
     {
         /* do nothing */
     }
 
-    const NewStructDescriptor<>& NewStruct::_descriptor() const
+    const StructDescriptor<>& Struct::_descriptor() const
     {
         return *_desc;
     }
 
-    bool NewStruct::_usesDynamicMemory() const
+    bool Struct::_usesDynamicMemory() const
     {
         return _desc->usesDynamicMemory();
     }
 
-    size_t NewStruct::_dynamicMemoryUsage() const
+    size_t Struct::_dynamicMemoryUsage() const
     {
-        return _desc->dynamicMemoryUsage(NewTypeless::From(*this));
+        return _desc->dynamicMemoryUsage(Typeless::From(*this));
     }
 
-    size_t NewStruct::_staticMemoryUsage() const
+    size_t Struct::_staticMemoryUsage() const
     {
         return _desc->size();
     }
 
-    size_t NewStruct::_totalMemoryUsage() const
+    size_t Struct::_totalMemoryUsage() const
     {
         return _staticMemoryUsage() + _dynamicMemoryUsage();
     }
 
-    const NewPropertySet& NewStruct::_keyProperties() const
+    const PropertySet& Struct::_keyProperties() const
     {
         return _desc->keyProperties();
     }
 
-    NewStruct& NewStruct::_assign(const NewStruct& other, const NewPropertySet& includedProperties/* = NewPropertySet:All*/)
+    Struct& Struct::_assign(const Struct& other, const PropertySet& includedProperties/* = PropertySet:All*/)
     {
         return _desc->assign(*this, other, includedProperties);
     }
 
-    NewStruct& NewStruct::_copy(const NewStruct& other, const NewPropertySet& includedProperties/* = NewPropertySet:All*/)
+    Struct& Struct::_copy(const Struct& other, const PropertySet& includedProperties/* = PropertySet:All*/)
     {
         return _desc->copy(*this, other, includedProperties);
     }
 
-    NewStruct& NewStruct::_merge(const NewStruct& other, const NewPropertySet& includedProperties/* = NewPropertySet:All*/)
+    Struct& Struct::_merge(const Struct& other, const PropertySet& includedProperties/* = PropertySet:All*/)
     {
         return _desc->merge(*this, other, includedProperties);
     }
 
-    void NewStruct::_swap(NewStruct& other, const NewPropertySet& includedProperties/* = NewPropertySet:All*/)
+    void Struct::_swap(Struct& other, const PropertySet& includedProperties/* = PropertySet:All*/)
     {
         return _desc->swap(*this, other, includedProperties);
     }
 
-    void NewStruct::_clear(const NewPropertySet& includedProperties/* = NewPropertySet:All*/)
+    void Struct::_clear(const PropertySet& includedProperties/* = PropertySet:All*/)
     {
         _desc->clear(*this, includedProperties);
     }
 
-    bool NewStruct::_equal(const NewStruct& rhs, const NewPropertySet& includedProperties/* = NewPropertySet:All*/) const
+    bool Struct::_equal(const Struct& rhs, const PropertySet& includedProperties/* = PropertySet:All*/) const
     {
         return _desc->equal(*this, rhs, includedProperties);
     }
 
-    bool NewStruct::_same(const NewStruct& rhs) const
+    bool Struct::_same(const Struct& rhs) const
     {
 	    return _desc->same(*this, rhs);
     }
 
-    bool NewStruct::_less(const NewStruct& rhs, const NewPropertySet& includedProperties/* = NewPropertySet:All*/) const
+    bool Struct::_less(const Struct& rhs, const PropertySet& includedProperties/* = PropertySet:All*/) const
     {
         return _desc->less(*this, rhs, includedProperties);      
     }
 
-	bool NewStruct::_lessEqual(const NewStruct& rhs, const NewPropertySet& includedProperties/* = NewPropertySet::All*/) const
+	bool Struct::_lessEqual(const Struct& rhs, const PropertySet& includedProperties/* = PropertySet::All*/) const
     {
 	    return _desc->lessEqual(*this, rhs, includedProperties);
     }
 	
-    bool NewStruct::_greater(const NewStruct& rhs, const NewPropertySet& includedProperties/* = NewPropertySet::All*/) const
+    bool Struct::_greater(const Struct& rhs, const PropertySet& includedProperties/* = PropertySet::All*/) const
     {
 	    return _desc->greater(*this, rhs, includedProperties);
     }
 	
-    bool NewStruct::_greaterEqual(const NewStruct& rhs, const NewPropertySet& includedProperties/* = NewPropertySet::All*/) const
+    bool Struct::_greaterEqual(const Struct& rhs, const PropertySet& includedProperties/* = PropertySet::All*/) const
     {
 	    return _desc->greaterEqual(*this, rhs, includedProperties);
     }
 
-    NewPropertySet NewStruct::_diffProperties(const NewStruct& other, const NewPropertySet& includedProperties/* = NewPropertySet::All*/) const
+    PropertySet Struct::_diffProperties(const Struct& other, const PropertySet& includedProperties/* = PropertySet::All*/) const
     {
         return _desc->diffProperties(*this, other, includedProperties);
     }
 
-    bool NewStruct::_hasProperties(const NewPropertySet properties) const
+    bool Struct::_hasProperties(const PropertySet properties) const
     {
         return properties <= _validProperties();
     }
 
-	void NewStruct::_publish(const NewPropertySet& includedProperties/* = NewPropertySet::All*/, bool remove/* = false*/) const
+	void Struct::_publish(const PropertySet& includedProperties/* = PropertySet::All*/, bool remove/* = false*/) const
     {
     	onPublishObject->publish(&_descriptor(), *this, includedProperties ^ _validProperties(), remove);
     }
 
-    void NewStruct::_remove(const NewPropertySet& includedProperties/* = NewPropertySet::All*/) const
+    void Struct::_remove(const PropertySet& includedProperties/* = PropertySet::All*/) const
     {
         _publish(includedProperties, true);
     }

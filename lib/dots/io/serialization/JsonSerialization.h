@@ -21,10 +21,10 @@ struct ToJsonOptions
  * @param opts allows to set options that change the JSON output
  * @return the JSON-serialized string of the DOTS-object
  */
-std::string to_json(const type::NewStruct& instance, types::property_set_t properties = types::property_set_t::All, const ToJsonOptions& opts = {});
+std::string to_json(const type::Struct& instance, types::property_set_t properties = types::property_set_t::All, const ToJsonOptions& opts = {});
 
 [[deprecated("only available for backwards compatibility")]]
-std::string to_json(const dots::type::NewStructDescriptor<>* td, const void* data, types::property_set_t properties = types::property_set_t::All, const ToJsonOptions& opts = {});
+std::string to_json(const dots::type::StructDescriptor<>* td, const void* data, types::property_set_t properties = types::property_set_t::All, const ToJsonOptions& opts = {});
 
 /**
  * Deserializes a DOTS-object, encoded in JSON
@@ -33,9 +33,9 @@ std::string to_json(const dots::type::NewStructDescriptor<>* td, const void* dat
  * @param data Pointer to an allocated Object of the correct type
  * @return nr of bytes read from input-data (size of JSON object)
  */
-int from_json(const std::string& jsonString, type::NewStruct& instance);
+int from_json(const std::string& jsonString, type::Struct& instance);
 
 [[deprecated("only available for backwards compatibility")]]
-int from_json(const std::string& jsonString, const dots::type::NewStructDescriptor<>* td, void* data);
+int from_json(const std::string& jsonString, const dots::type::StructDescriptor<>* td, void* data);
 
 }
