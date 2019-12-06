@@ -39,6 +39,16 @@ void Transceiver::stop()
     connection().stop();
 }
 
+const io::NewRegistry& Transceiver::registry() const
+{
+	return m_registry;	
+}
+
+io::NewRegistry& Transceiver::registry()
+{
+	return m_registry;
+}
+
 const ContainerPool& Transceiver::pool() const
 {
 	return m_dispatcher.pool();

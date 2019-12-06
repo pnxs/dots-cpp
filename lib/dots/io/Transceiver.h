@@ -9,6 +9,7 @@
 #include "Subscription.h"
 #include <dots/io/services/Channel.h>
 #include "Publisher.h"
+#include <dots/io/NewRegistry.h>
 
 
 namespace dots
@@ -29,6 +30,9 @@ public:
 
     bool start(const string &name, channel_ptr_t channel);
     void stop();
+
+	const io::NewRegistry& registry() const;
+	io::NewRegistry& registry();
 
 	const ContainerPool& pool() const;
 	const Container<>& container(const type::StructDescriptor& descriptor);
@@ -84,6 +88,7 @@ private:
 
     bool m_connected = false;
 
+	io::NewRegistry m_registry;
     Dispatcher m_dispatcher;
 
     //Receiver m_receiver;
