@@ -18,10 +18,14 @@ namespace dots::type
     {
 		using Cbd = dots::Event<Derived>;
 
-		template <typename... PropertyInitializers>
+    	NewStaticStruct() : NewStruct(_Descriptor())
+    	{
+    		/* do nothing */
+    	}
+
+		template <typename... PropertyInitializers, std::enable_if_t<sizeof...(PropertyInitializers) >= 1 && std::conjunction_v<is_t_property_initializer_t<std::remove_pointer_t<std::decay_t<PropertyInitializers>>>...>, int> = 0>
 		explicit NewStaticStruct(PropertyInitializers&&... propertyInitializers) : NewStruct(_Descriptor())
 		{
-			static_assert(std::conjunction_v<is_t_property_initializer_t<strip_t<PropertyInitializers>>...>, "a struct can only be constructed by its property initializers");
 			(getProperty<strip_t<typename strip_t<PropertyInitializers>::property_t>>().construct(std::forward<decltype(propertyInitializers.value)>(propertyInitializers.value)), ...);
 		}
 
