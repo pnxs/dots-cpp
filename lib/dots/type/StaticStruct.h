@@ -59,144 +59,64 @@ namespace dots::type
 			return _greaterEqual(rhs);
 		}
 
-		auto _properties()
-		{
-			return std::apply([this](auto&&... args)
-			{
-				return std::forward_as_tuple(getProperty<strip_t<decltype(args)>>()...);
-			}, typename Derived::_properties_t{});
-		}
-
-		auto _properties() const
-		{
-			return std::apply([this](auto&&... args)
-			{
-				return std::forward_as_tuple(getProperty<strip_t<decltype(args)>>()...);
-			}, typename Derived::_properties_t{});
-		}
-
-		auto _keyProperties()
-		{
-			return std::apply([this](auto&&... args)
-			{
-				return std::forward_as_tuple(getProperty<strip_t<decltype(args)>>()...);
-			}, typename Derived::_key_properties_t{});
-		}
-
-		auto _keyProperties() const
-		{
-			return std::apply([this](auto&&... args)
-			{
-				return std::forward_as_tuple(getProperty<strip_t<decltype(args)>>()...);
-			}, typename Derived::_key_properties_t{});
-		}
-
-		auto _propertyPairs(Derived& other)
-		{
-			return std::apply([this, &other](auto&&... args)
-			{
-				return std::make_tuple(std::pair<strip_t<decltype(args)>&, strip_t<decltype(args)>&>(getProperty<strip_t<decltype(args)>>(), other.template getProperty<strip_t<decltype(args)>>())...);
-			}, typename Derived::_properties_t{});
-		}
-
-		auto _propertyPairs(const Derived& other)
-		{
-			return std::apply([this, &other](auto&&... args)
-			{
-				return std::make_tuple(std::pair<strip_t<decltype(args)>&, const strip_t<decltype(args)>&>(getProperty<strip_t<decltype(args)>>(), other.template getProperty<strip_t<decltype(args)>>())...);
-			}, typename Derived::_properties_t{});
-		}
-
-		auto _propertyPairs(const Derived& other) const
-		{
-			return std::apply([this, &other](auto&&... args)
-			{
-				return std::make_tuple(std::pair<const strip_t<decltype(args)>&, const strip_t<decltype(args)>&>(getProperty<strip_t<decltype(args)>>(), other.template getProperty<strip_t<decltype(args)>>())...);
-			}, typename Derived::_properties_t{});
-		}
-
-		auto _keyPropertyPairs(Derived& other)
-		{
-			return std::apply([this, &other](auto&&... args)
-			{
-				return std::make_tuple(std::pair<strip_t<decltype(args)>&, strip_t<decltype(args)>&>(getProperty<strip_t<decltype(args)>>(), other.template getProperty<strip_t<decltype(args)>>())...);
-			}, typename Derived::_key_properties_t{});
-		}
-
-		auto _keyPropertyPairs(const Derived& other)
-		{
-			return std::apply([this, &other](auto&&... args)
-			{
-				return std::make_tuple(std::pair<strip_t<decltype(args)>&, const strip_t<decltype(args)>&>(getProperty<strip_t<decltype(args)>>(), other.template getProperty<strip_t<decltype(args)>>())...);
-			}, typename Derived::_key_properties_t{});
-		}
-
-		auto _keyPropertyPairs(const Derived& other) const
-		{
-			return std::apply([this, &other](auto&&... args)
-			{
-				return std::make_tuple(std::pair<const strip_t<decltype(args)>&, const strip_t<decltype(args)>&>(getProperty<strip_t<decltype(args)>>(), other.template getProperty<strip_t<decltype(args)>>())...);
-			}, typename Derived::_key_properties_t{});
-		}
-
 		template <typename Callable>
 		auto _applyProperties(Callable&& callable)
 		{
-			return std::apply(std::forward<Callable>(callable), _properties());
+			return _applyProperties(std::forward<Callable>(callable), typename Derived::_properties_t{});
 		}
 
 		template <typename Callable>
 		auto _applyProperties(Callable&& callable) const
 		{
-			return std::apply(std::forward<Callable>(callable), _properties());
+			return _applyProperties(std::forward<Callable>(callable), typename Derived::_properties_t{});
 		}
 
     	template <typename Callable>
 		auto _applyKeyProperties(Callable&& callable)
 		{
-			return std::apply(std::forward<Callable>(callable), _keyProperties());
+			return _applyProperties(std::forward<Callable>(callable), typename Derived::_key_properties_t{});
 		}
 
 		template <typename Callable>
 		auto _applyKeyProperties(Callable&& callable) const
 		{
-			return std::apply(std::forward<Callable>(callable), _keyProperties());
+			return _applyProperties(std::forward<Callable>(callable), typename Derived::_key_properties_t{});
 		}
 
 		template <typename Callable>
 		auto _applyPropertyPairs(Derived& other, Callable&& callable)
 		{
-			return std::apply(std::forward<Callable>(callable), _propertyPairs(other));
+			return _applyPropertyPairs(other, std::forward<Callable>(callable), typename Derived::_properties_t{});
 		}
 
 		template <typename Callable>
 		auto _applyPropertyPairs(const Derived& other, Callable&& callable)
 		{
-			return std::apply(std::forward<Callable>(callable), _propertyPairs(other));
+			return _applyPropertyPairs(other, std::forward<Callable>(callable), typename Derived::_properties_t{});
 		}
 
 		template <typename Callable>
 		auto _applyPropertyPairs(const Derived& other, Callable&& callable) const
 		{
-			return std::apply(std::forward<Callable>(callable), _propertyPairs(other));
+			return _applyPropertyPairs(other, std::forward<Callable>(callable), typename Derived::_properties_t{});
 		}
 
     	template <typename Callable>
 		auto _applyKeyPropertyPairs(Derived& other, Callable&& callable)
 		{
-			return std::apply(std::forward<Callable>(callable), _keyPropertyPairs(other));
+			return _applyPropertyPairs(other, std::forward<Callable>(callable), typename Derived::_key_properties_t{});
 		}
 
 		template <typename Callable>
 		auto _applyKeyPropertyPairs(const Derived& other, Callable&& callable)
 		{
-			return std::apply(std::forward<Callable>(callable), _keyPropertyPairs(other));
+			return _applyPropertyPairs(other, std::forward<Callable>(callable), typename Derived::_key_properties_t{});
 		}
 
 		template <typename Callable>
 		auto _applyKeyPropertyPairs(const Derived& other, Callable&& callable) const
 		{
-			return std::apply(std::forward<Callable>(callable), _keyPropertyPairs(other));
+			return _applyPropertyPairs(other, std::forward<Callable>(callable), typename Derived::_key_properties_t{});
 		}
 
 		Derived& _assign(const Derived& other, const PropertySet& includedProperties = PropertySet::All)
@@ -286,7 +206,7 @@ namespace dots::type
 				};
 
 				(destroy(properties), ...);
-			});
+			}, typename Derived::_properties_t{});
 		}
 
 		bool _equal(const Derived& rhs, const PropertySet& includedProperties = PropertySet::All) const
@@ -380,7 +300,7 @@ namespace dots::type
 
     	void _publish(const PropertySet& includedProperties = PropertySet::All, bool remove = false) const
 		{
-			static_assert(!Derived::_SubstructOnly, "a substruct-only type cannot be published");
+    		static_assert(!Derived::_SubstructOnly, "a substruct-only type cannot be published");
     		
 			registerTypeUsage<Derived, PublishedType>();
 			Struct::_publish(includedProperties, remove);
@@ -388,7 +308,7 @@ namespace dots::type
 
 		void _remove(const PropertySet& includedProperties = PropertySet::All) const
 		{
-			static_assert(!Derived::_SubstructOnly, "a substruct-only type cannot be removed");
+    		static_assert(!Derived::_SubstructOnly, "a substruct-only type cannot be removed");
     		
 			registerTypeUsage<Derived, PublishedType>();
 			Struct::_remove(includedProperties);
@@ -462,6 +382,36 @@ namespace dots::type
 
 		using Struct::_publish;
 		using Struct::_remove;
+
+    	template <typename Callable, typename... Properties>
+    	auto _applyProperties(Callable&& callable, std::tuple<Properties...>) const
+    	{
+    		return callable(getProperty<strip_t<Properties>>()...);
+    	}
+
+    	template <typename Callable, typename... Properties>
+    	auto _applyProperties(Callable&& callable, std::tuple<Properties...>)
+    	{
+    		return callable(getProperty<strip_t<Properties>>()...);
+    	}
+
+    	template <typename Callable, typename... Properties>
+		auto _applyPropertyPairs(const Derived& other, Callable&& callable, std::tuple<Properties...>) const
+		{
+			return callable(std::pair<const strip_t<Properties>&, const strip_t<Properties>&>{ getProperty<strip_t<Properties>>(), other.template getProperty<strip_t<Properties>>() }...);
+		}
+
+    	template <typename Callable, typename... Properties>
+		auto _applyPropertyPairs(const Derived& other, Callable&& callable, std::tuple<Properties...>)
+		{
+			return callable(std::pair<strip_t<Properties>&, const strip_t<Properties>&>{ getProperty<strip_t<Properties>>(), other.template getProperty<strip_t<Properties>>() }...);
+		}
+
+    	template <typename Callable, typename... Properties>
+		auto _applyPropertyPairs(Derived& other, Callable&& callable, std::tuple<Properties...>)
+		{
+			return callable(std::pair<strip_t<Properties>&, strip_t<Properties>&>{ getProperty<strip_t<Properties>>(), other.template getProperty<strip_t<Properties>>() }...);
+		}
 
     	template <typename PropertyPair, typename... PropertyPairs>
     	bool _less(const PropertySet& includedProperties, const PropertyPair& firstPair, const PropertyPairs&... remainingPairs) const
