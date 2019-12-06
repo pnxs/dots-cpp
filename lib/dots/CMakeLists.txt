@@ -89,6 +89,7 @@ target_sources(${TARGET_NAME}
 		io/recording/DynamicLoader.cpp
 		io/recording/Player.cpp
 		io/recording/FileReader.cpp
+		io/NewRegistry.cpp
 		type/AnyStruct.cpp
 		type/ChronoDescriptor.cpp
 		type/Descriptor.cpp
