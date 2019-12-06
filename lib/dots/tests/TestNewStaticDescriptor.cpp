@@ -25,7 +25,7 @@ struct Composite
 		return i < rhs.i || (i == rhs.i && s < rhs.s);
 	}
 
-	int i;
+	int i = 0;
 	std::string s;
 };
 
@@ -321,4 +321,8 @@ TEST_F(TestNewStaticDescriptor, fromString)
 	EXPECT_EQ(i, 73);
 	EXPECT_EQ(s, "meow");
 	EXPECT_EQ(c, Composite(7, "moo"));
+
+	EXPECT_THROW(m_sutInt.fromString(i, "foo"), std::ios_base::failure);
+	m_sutString.fromString(s, "");
+	EXPECT_THROW(m_sutComposite.fromString(c, ",moo"), std::ios_base::failure);
 }
