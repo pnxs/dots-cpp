@@ -13,10 +13,8 @@ target_sources(${TARGET_NAME}
 	PRIVATE
         TestAsciiSerialization.cpp
         TestCborSerialization.cpp
-        TestChronoDescriptor.cpp
 		TestDispatcher.cpp
         TestDistributedTypeId.cpp
-        TestEnumDescriptor.cpp
         TestFileStore.cpp
         TestJsonSerialization.cpp
         TestPropertyIterator.cpp
@@ -31,13 +29,11 @@ target_sources(${TARGET_NAME}
 		TestNewProxyProperty.cpp
 		TestNewProxyPropertyIterator.cpp
         TestRecord.cpp
-        TestRegistry.cpp
         TestStruct.cpp
 		TestTProperty.cpp
 		TestTStruct.cpp
         TestVectorDescriptor.cpp
         TestJsonStore.cpp
-        TestFileReader.cpp
 )	
 target_include_directories(${TARGET_NAME}
 	PRIVATE

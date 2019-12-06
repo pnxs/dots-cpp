@@ -33,7 +33,6 @@ GENERATE_DOTS_TYPES(MODEL_SOURCES MODEL_HEADERS
 target_sources(${TARGET_NAME}
 	PRIVATE
 		dots.cpp
-		dots_base.cpp
 		Uuid.cpp
 
 		common/Chrono.cpp
@@ -48,7 +47,6 @@ target_sources(${TARGET_NAME}
 		io/Transceiver.cpp
 		io/ServerConnection.cpp
 		io/Subscription.cpp
-		io/Chained.cpp
 
 		io/Io.cpp
 		io/Container.cpp
