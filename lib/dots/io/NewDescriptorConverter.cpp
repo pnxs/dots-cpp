@@ -3,7 +3,7 @@
 
 namespace dots::io
 {
-	NewDescriptorConverter::NewDescriptorConverter(NewRegistry& registry) :
+	NewDescriptorConverter::NewDescriptorConverter(NewRegistry& registry/* = transceiver().registry()*/) :
 		m_registry(std::ref(registry))
 	{
 		/* do nothing */

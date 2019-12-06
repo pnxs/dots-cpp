@@ -8,7 +8,7 @@ namespace dots::io
 {
     struct NewDescriptorConverter
     {
-        NewDescriptorConverter(NewRegistry& registry);
+        NewDescriptorConverter(NewRegistry& registry = transceiver().registry());
         NewDescriptorConverter(const NewDescriptorConverter& other) = default;
         NewDescriptorConverter(NewDescriptorConverter&& other) noexcept = default;
         ~NewDescriptorConverter() = default;
