@@ -84,6 +84,6 @@ namespace dots::type
 	[[deprecated("only available for backwards compatibility")]]
 	inline const VectorDescriptor* toVectorDescriptor(const Descriptor<>* descriptor)
 	{
-	    return dynamic_cast<const VectorDescriptor*>(descriptor);
+	    return descriptor->type() == Type::Vector ? static_cast<const VectorDescriptor*>(descriptor) : nullptr;
 	}
 }

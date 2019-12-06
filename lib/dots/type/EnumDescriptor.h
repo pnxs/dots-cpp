@@ -233,7 +233,7 @@ namespace dots::type
 	[[deprecated("only available for backwards compatibility")]]
 	inline const EnumDescriptor<>* toEnumDescriptor(const Descriptor<>* descriptor)
 	{
-		return dynamic_cast<const EnumDescriptor<>*>(descriptor);
+		return descriptor->type() == Type::Enum ? static_cast<const EnumDescriptor<>*>(descriptor) : nullptr;
 	}
 }
 namespace dots::type

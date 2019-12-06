@@ -264,6 +264,6 @@ namespace dots::type
 	[[deprecated("only available for backwards compatibility")]]
 	inline const StructDescriptor<>* toStructDescriptor(const Descriptor<>* descriptor)
 	{
-		return dynamic_cast<const StructDescriptor<>*>(descriptor);
+		return descriptor->type() == Type::Struct ? static_cast<const StructDescriptor<>*>(descriptor) : nullptr;
 	}
 }
