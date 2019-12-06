@@ -380,12 +380,16 @@ namespace dots::type
 
     	void _publish(const NewPropertySet& includedProperties = NewPropertySet::All, bool remove = false) const
 		{
+			static_assert(!Derived::_SubstructOnly, "a substruct-only type cannot be published");
+    		
 			registerTypeUsage<Derived, PublishedType>();
 			NewStruct::_publish(includedProperties, remove);
 		}
 
 		void _remove(const NewPropertySet& includedProperties = NewPropertySet::All) const
 		{
+			static_assert(!Derived::_SubstructOnly, "a substruct-only type cannot be removed");
+    		
 			registerTypeUsage<Derived, PublishedType>();
 			NewStruct::_remove(includedProperties);
 		}
