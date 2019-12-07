@@ -57,6 +57,14 @@ namespace dots::type
 		StaticDescriptor& operator = (const StaticDescriptor& rhs) = default;
 		StaticDescriptor& operator = (StaticDescriptor&& rhs) = default;
 
+		using Base::assign;
+		using Base::swap;
+		using Base::equal;
+		using Base::less;
+		using Base::lessEqual;
+		using Base::greater;
+		using Base::greaterEqual;
+
 		Typeless& construct(Typeless& value) const override
 		{
 			if constexpr (std::is_default_constructible_v<T>)
