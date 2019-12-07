@@ -324,6 +324,11 @@ namespace dots::type
 			return m_propertyArea;
 		}
 
+    	const PropertySet& _validProperties() const
+		{
+			return m_propertyArea.validProperties();
+		}
+
     	template <typename P>
     	const P& getProperty() const
 		{
@@ -392,6 +397,9 @@ namespace dots::type
 
 		using Struct::_publish;
 		using Struct::_remove;
+
+    	using Struct::_propertyArea;
+    	using Struct::_validProperties;
 
     	template <typename Callable, typename... Properties>
     	auto _applyProperties(Callable&& callable, std::tuple<Properties...>) const
