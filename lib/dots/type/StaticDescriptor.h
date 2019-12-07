@@ -39,7 +39,7 @@ namespace dots::type
 	struct StaticDescriptor : Base
 	{
 		template <typename Base_ = Base, std::enable_if_t<std::is_same_v<Base_, Descriptor<Typeless>>, int> = 0>
-		constexpr StaticDescriptor(Type type, std::string name) : Base(type, std::move(name), sizeof(T), alignof(T))
+		StaticDescriptor(Type type, std::string name) : Base(type, std::move(name), sizeof(T), alignof(T))
 		{
 			/* do nothing */
 		}
@@ -216,7 +216,7 @@ namespace dots::type
 			return 0;
 		}
 
-		constexpr void fromString(T& storage, const std::string_view& value) const
+		void fromString(T& storage, const std::string_view& value) const
 		{
 			// TODO: use std::from_chars where applicable
 			
