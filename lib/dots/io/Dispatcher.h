@@ -56,9 +56,9 @@ namespace dots
 		{
 			return subscribe(T::_Descriptor(), [_handler(std::move(handler))](const DotsHeader& header, const type::Struct& instance)
 			{
-				_handler(static_cast<const T&>(instance));
+				_handler(header, static_cast<const T&>(instance));
 			});
-		}	
+		}
 
 		template<typename T>
 		Subscription subscribe(event_handler_t<T>&& handler)
