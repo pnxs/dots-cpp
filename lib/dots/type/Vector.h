@@ -30,6 +30,8 @@ namespace dots::type
 		virtual const Typeless* typelessData() const = 0;
 		virtual Typeless* typelessData() = 0;
 		virtual void typelessResize(size_t n) = 0;
+		virtual void typelessPushBack(const Typeless& value) = 0;
+		virtual void typelessPushBack(Typeless&& value) = 0;
 
 	protected:
 
@@ -123,6 +125,16 @@ namespace dots::type
 		void typelessResize(size_t n) override 
 		{
 			vector_t::resize(n);
+		}
+
+		void typelessPushBack(const Typeless& value) override
+		{
+			vector_t::push_back(value.to<T>());
+		}
+		
+		void typelessPushBack(Typeless&& value) override
+		{
+			vector_t::push_back(std::move(value).to<T>());
 		}
 	};
 }
