@@ -1,7 +1,7 @@
 #include <dots/type/StaticStruct.h>
 #include <dots/type/StaticProperty.h>
 #include <dots/type/FundamentalTypes.h>
-#include <dots/type/TPropertyInitializer.h>
+#include <dots/type/PropertyInitializer.h>
 #include <gtest/gtest.h>
 
 namespace dots::types
@@ -28,10 +28,10 @@ namespace dots::types
 			inline static auto Descriptor = type::PropertyDescriptor<vector_t<float32_t>>("floatVectorProperty", boolProperty_t::Descriptor, 4, false);
         };
 
-    	using intProperty_i = type::TPropertyInitializer<intProperty_t>;
-    	using stringProperty_i = type::TPropertyInitializer<stringProperty_t>;
-    	using boolProperty_i = type::TPropertyInitializer<boolProperty_t>;
-    	using floatVectorProperty_i = type::TPropertyInitializer<floatVectorProperty_t>;
+    	using intProperty_i = type::PropertyInitializer<intProperty_t>;
+    	using stringProperty_i = type::PropertyInitializer<stringProperty_t>;
+    	using boolProperty_i = type::PropertyInitializer<boolProperty_t>;
+    	using floatVectorProperty_i = type::PropertyInitializer<floatVectorProperty_t>;
     	
         using _key_properties_t = std::tuple<intProperty_t*>;
         using _properties_t     = std::tuple<intProperty_t*, stringProperty_t*, boolProperty_t*, floatVectorProperty_t*>;

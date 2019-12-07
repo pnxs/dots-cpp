@@ -9,32 +9,32 @@ namespace dots::type
 	// even though the usage of the 'typename' keyword should specify to the compiler that the identifier refers to the alias in the
 	// property base, it actually refers to the constructor. this is correctly remarked by Clang and just fails up to at least GCC 8.
 	template <typename P, typename V = typename P::value_t>
-	struct TPropertyInitializer
+	struct PropertyInitializer
 	{
 		using property_t = P;
 		using value_t = V;
 
 		template <typename... Args>
-		TPropertyInitializer(Args&&... args) : value(std::forward<Args>(args)...) {}
-		TPropertyInitializer(const TPropertyInitializer& other) = default;
-		TPropertyInitializer(TPropertyInitializer&& other) = default;
-		~TPropertyInitializer() = default;
+		PropertyInitializer(Args&&... args) : value(std::forward<Args>(args)...) {}
+		PropertyInitializer(const PropertyInitializer& other) = default;
+		PropertyInitializer(PropertyInitializer&& other) = default;
+		~PropertyInitializer() = default;
 
-		TPropertyInitializer& operator = (const TPropertyInitializer& rhs) = default;
-		TPropertyInitializer& operator = (TPropertyInitializer&& rhs) = default;
+		PropertyInitializer& operator = (const PropertyInitializer& rhs) = default;
+		PropertyInitializer& operator = (PropertyInitializer&& rhs) = default;
 
 		value_t value;
 	};
 
 	template <typename T>
-	struct is_t_property_initializer : std::false_type {};
+	struct is_property_initializer : std::false_type {};
 
 	template <typename P, typename V>
-	struct is_t_property_initializer<TPropertyInitializer<P, V>> : std::true_type {};
+	struct is_property_initializer<PropertyInitializer<P, V>> : std::true_type {};
 
 	template <typename T>
-	using is_t_property_initializer_t = typename is_t_property_initializer<T>::type;
+	using is_property_initializer_t = typename is_property_initializer<T>::type;
 
 	template <typename T>
-	constexpr bool is_t_property_initializer_v = is_t_property_initializer_t<T>::value;
+	constexpr bool is_property_initializer_v = is_property_initializer_t<T>::value;
 }

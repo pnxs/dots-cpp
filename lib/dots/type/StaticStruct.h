@@ -2,7 +2,7 @@
 #include <type_traits>
 #include <utility>
 #include <dots/type/Struct.h>
-#include <dots/type/TPropertyInitializer.h>
+#include <dots/type/PropertyInitializer.h>
 #include <dots/io/Subscription.h>
 
 namespace dots
@@ -23,7 +23,7 @@ namespace dots::type
     		/* do nothing */
     	}
 
-		template <typename... PropertyInitializers, std::enable_if_t<sizeof...(PropertyInitializers) >= 1 && std::conjunction_v<is_t_property_initializer_t<std::remove_pointer_t<std::decay_t<PropertyInitializers>>>...>, int> = 0>
+		template <typename... PropertyInitializers, std::enable_if_t<sizeof...(PropertyInitializers) >= 1 && std::conjunction_v<is_property_initializer_t<std::remove_pointer_t<std::decay_t<PropertyInitializers>>>...>, int> = 0>
 		explicit StaticStruct(PropertyInitializers&&... propertyInitializers) : Struct(_Descriptor())
 		{
 			(getProperty<strip_t<typename strip_t<PropertyInitializers>::property_t>>().construct(std::forward<decltype(propertyInitializers.value)>(propertyInitializers.value)), ...);

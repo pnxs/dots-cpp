@@ -57,7 +57,7 @@ namespace dots::types
 			{{property.name}}_t({{property.name}}_t&& other) = default;
 			~{{property.name}}_t() = default;
         };
-		using {{property.name}}_i = type::TPropertyInitializer<{{property.name}}_t, types::{{property.cxx_type}}>;
+		using {{property.name}}_i = type::PropertyInitializer<{{property.name}}_t, types::{{property.cxx_type}}>;
 		static constexpr types::property_set_t {{property.name}}_p = types::property_set_t::FromIndex({{property.tag}});
 
 {% endfor %}
