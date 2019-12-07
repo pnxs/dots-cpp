@@ -81,7 +81,7 @@ namespace dots::type
 			return Descriptor<underlying_type_t>::Instance();			
 		}
 
-		const Typeless& valueTypeless() const
+		const Typeless& valueTypeless() const override
 		{
 			return Typeless::From(m_value);
 		}
