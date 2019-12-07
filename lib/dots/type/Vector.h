@@ -29,7 +29,6 @@ namespace dots::type
 		virtual const Typeless& typelessAt(size_t pos) const = 0;
 		virtual const Typeless* typelessData() const = 0;
 		virtual Typeless* typelessData() = 0;
-		virtual void typelessResize(size_t n) = 0;
 		virtual void typelessPushBack(const Typeless& value) = 0;
 		virtual void typelessPushBack(Typeless&& value) = 0;
 
@@ -120,11 +119,6 @@ namespace dots::type
 		const Typeless* typelessData() const override
 		{
 			return Typeless::From(vector_t::data());
-		}
-
-		void typelessResize(size_t n) override 
-		{
-			vector_t::resize(n);
 		}
 
 		void typelessPushBack(const Typeless& value) override
