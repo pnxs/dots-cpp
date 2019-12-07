@@ -79,26 +79,9 @@ namespace dots::type
 			return reinterpret_cast<Typeless&>(construct(reinterpret_cast<T&>(value), reinterpret_cast<T&&>(other)));
 		}
 
-		template <typename... Args>
-		constexpr T& construct(T& value, Args&&... args) const
-		{
-			static_assert(std::is_constructible_v<T, Args...>, "type is not constructible from passed arguments");
-			if constexpr (std::is_constructible_v<T, Args...>)
-			{
-				::new(static_cast<void*>(::std::addressof(value))) T(std::forward<Args>(args)...);
-			}
-
-			return value;
-		}
-
 		void destruct(Typeless& value) const override
 		{
 			destruct(reinterpret_cast<T&>(value));
-		}
-
-		constexpr void destruct(T& value) const
-		{
-			value.~T();
 		}
 
 		Typeless& assign(Typeless& lhs, const Typeless& rhs) const override
@@ -111,6 +94,73 @@ namespace dots::type
 			return reinterpret_cast<Typeless&>(assign(reinterpret_cast<T&>(lhs), reinterpret_cast<T&&>(rhs)));
 		}
 
+		void swap(Typeless& value, Typeless& other) const override
+		{
+			swap(reinterpret_cast<T&>(value), reinterpret_cast<T&>(other));
+		}
+
+		bool equal(const Typeless& lhs, const Typeless& rhs) const override
+		{
+			return equal(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
+		}
+
+		bool less(const Typeless& lhs, const Typeless& rhs) const override
+		{
+			return less(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
+		}
+
+		bool lessEqual(const Typeless& lhs, const Typeless& rhs) const override
+		{
+			return lessEqual(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
+		}
+
+		bool greater(const Typeless& lhs, const Typeless& rhs) const override
+		{
+			return greater(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
+		}
+
+		bool greaterEqual(const Typeless& lhs, const Typeless& rhs) const override
+		{
+			return greaterEqual(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
+		}
+
+		size_t dynamicMemoryUsage(const Typeless& value) const override
+		{
+			return dynamicMemoryUsage(reinterpret_cast<const T&>(value));
+		}
+
+		bool usesDynamicMemory() const override
+		{
+			return false;
+		}
+
+		void fromString(Typeless& storage, const std::string_view& value) const override
+		{
+			fromString(storage.to<T>(), value);
+		}
+
+		std::string toString(const Typeless& value) const override
+		{
+			return toString(value.to<T>());
+		}
+
+		template <typename... Args>
+		constexpr T& construct(T& value, Args&&... args) const
+		{
+			static_assert(std::is_constructible_v<T, Args...>, "type is not constructible from passed arguments");
+			if constexpr (std::is_constructible_v<T, Args...>)
+			{
+				::new(static_cast<void*>(::std::addressof(value))) T(std::forward<Args>(args)...);
+			}
+
+			return value;
+		}
+
+		constexpr void destruct(T& value) const
+		{
+			value.~T();
+		}
+		
 		template <typename... Args>
 		constexpr T& assign(T& value, Args&&... args) const
 		{
@@ -123,19 +173,9 @@ namespace dots::type
 			return value;
 		}
 
-		void swap(Typeless& value, Typeless& other) const override
-		{
-			swap(reinterpret_cast<T&>(value), reinterpret_cast<T&>(other));
-		}
-
 		constexpr void swap(T& lhs, T& rhs) const
 		{
 			std::swap(lhs, rhs);
-		}
-
-		bool equal(const Typeless& lhs, const Typeless& rhs) const override
-		{
-			return equal(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
 		}
 
 		constexpr bool equal(const T& lhs, const T& rhs) const
@@ -143,19 +183,9 @@ namespace dots::type
 			return std::equal_to<T>{}(lhs, rhs);
 		}
 
-		bool less(const Typeless& lhs, const Typeless& rhs) const override
-		{
-			return less(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
-		}
-
 		constexpr bool less(const T& lhs, const T& rhs) const
 		{
 			return std::less<T>{}(lhs, rhs);
-		}
-
-		bool lessEqual(const Typeless& lhs, const Typeless& rhs) const override
-		{
-			return lessEqual(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
 		}
 
 		constexpr bool lessEqual(const T& lhs, const T& rhs) const
@@ -163,44 +193,19 @@ namespace dots::type
 			return !greater(lhs, rhs);
 		}
 
-		bool greater(const Typeless& lhs, const Typeless& rhs) const override
-		{
-			return greater(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
-		}
-
 		constexpr bool greater(const T& lhs, const T& rhs) const
 		{
 			return less(rhs, lhs);
-		}
-
-		bool greaterEqual(const Typeless& lhs, const Typeless& rhs) const override
-		{
-			return greaterEqual(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
 		}
 
 		constexpr bool greaterEqual(const T& lhs, const T& rhs) const
 		{
 			return !less(lhs, rhs);
 		}
-
-		bool usesDynamicMemory() const override
-		{
-			return false;
-		}
-
-		size_t dynamicMemoryUsage(const Typeless& value) const override
-		{
-			return dynamicMemoryUsage(reinterpret_cast<const T&>(value));
-		}
-
+		
 		constexpr size_t dynamicMemoryUsage(const T&/* value*/) const
 		{
 			return 0;
-		}
-
-		void fromString(Typeless& storage, const std::string_view& value) const override
-		{
-			fromString(storage.to<T>(), value);
 		}
 
 		constexpr void fromString(T& storage, const std::string_view& value) const
@@ -241,11 +246,6 @@ namespace dots::type
 			}
 		}
 		
-		std::string toString(const Typeless& value) const override
-		{
-			return toString(value.to<T>());
-		}
-
 		std::string toString(const T& value) const
 		{
 			// TODO: use std::to_chars where applicable
