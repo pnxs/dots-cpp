@@ -10,6 +10,7 @@
 #include <iostream>
 #include <algorithm>
 #include <string>
+#include <cstddef>
 
 namespace dots {
 
@@ -223,11 +224,26 @@ void from_cbor_recursive(const type::StructDescriptor<>& td, type::Struct& insta
 
 static void read_from_array_recursive(const type::VectorDescriptor& vd, type::Vector<>& data, cbor::decoder& decoder)
 {
-	data.typelessResize(decoder.read_array());
-
-    for (size_t i = 0; i < data.typelessSize(); ++i)
+    std::byte staticBuffer[1024];
+	std::unique_ptr<std::byte[]> dynamicBuffer;
+	std::byte& valueData = [&]() -> std::byte&
+	{
+		if (vd.valueDescriptor().size() <= sizeof(staticBuffer))
+        {
+        	return staticBuffer[0];
+        }
+        else
+        {
+	        dynamicBuffer = std::make_unique<std::byte[]>(vd.valueDescriptor().size());
+        	return dynamicBuffer[0];
+        }
+	}();
+	
+    for (size_t i = 0, arraySize = decoder.read_array(); i < arraySize; ++i)
     {
-        read_cbor(vd.valueDescriptor(), data.typelessAt(i), decoder);
+    	read_cbor(vd.valueDescriptor(), type::Typeless::From(valueData), decoder);
+    	data.typelessPushBack(std::move(type::Typeless::From(valueData)));
+    	vd.valueDescriptor().destruct(type::Typeless::From(valueData));
     }
 }
 

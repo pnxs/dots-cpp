@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <algorithm>
+#include <cstddef>
 
 using namespace rapidjson;
 
@@ -260,13 +261,27 @@ void read_from_json_array_recursive(const type::VectorDescriptor& vd, type::Vect
     if (!value.IsArray()) {
         throw std::runtime_error("JSON value is not an array");
     }
-	
-	data.typelessResize(value.Size());
 
-	auto item = value.Begin();
-    for (size_t i = 0; i < data.typelessSize(); ++i, ++item)
+	std::byte staticBuffer[1024];
+	std::unique_ptr<std::byte[]> dynamicBuffer;
+	std::byte& valueData = [&]() -> std::byte&
+	{
+		if (vd.valueDescriptor().size() <= sizeof(staticBuffer))
+        {
+        	return staticBuffer[0];
+        }
+        else
+        {
+	        dynamicBuffer = std::make_unique<std::byte[]>(vd.valueDescriptor().size());
+        	return dynamicBuffer[0];
+        }
+	}();
+	
+    for (auto item = value.Begin(); item != value.End(); ++item)
     {
-        read_json(vd.valueDescriptor(), data.typelessAt(i), *item);
+        read_json(vd.valueDescriptor(), type::Typeless::From(valueData), *item);
+    	data.typelessPushBack(std::move(type::Typeless::From(valueData)));
+    	vd.valueDescriptor().destruct(type::Typeless::From(valueData));
     }
 }
 
