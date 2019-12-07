@@ -59,8 +59,15 @@ namespace dots::type
 
 		Typeless& construct(Typeless& value) const override
 		{
+			if constexpr (std::is_default_constructible_v<T>)
+			{
 				return reinterpret_cast<Typeless&>(construct(reinterpret_cast<T&>(value)));
 			}
+			else
+			{
+				throw std::logic_error{ "construct has to be overridden in sub-class because T is not default constructible" };
+			}
+		}
 
 		Typeless& construct(Typeless& value, const Typeless& other) const override
 		{
@@ -279,8 +286,14 @@ namespace dots::type
 
 		static const std::shared_ptr<Descriptor<T>>& InstancePtr()
 		{
-			static std::shared_ptr<Descriptor<T>> InstancePtr_ = StaticDescriptorMap::Emplace(Descriptor<T>{});
-			return InstancePtr_;
+			if constexpr (std::is_default_constructible_v<Descriptor<T>>)
+			{
+				return InstanceUnchecked();
+			}
+			else
+			{
+				throw std::logic_error{ "global descriptor not available because Descriptor<T> is not default constructible" };
+			}
 		}
 
 		static const Descriptor<T>& Instance()
@@ -308,6 +321,23 @@ namespace dots::type
 		template <typename U>
 		static constexpr bool is_istreamable_v = is_istreamable_t<U>::value;
 
-		inline static const std::shared_ptr<Descriptor<T>>& M_Descriptor = InstancePtr();
+		static const std::shared_ptr<Descriptor<T>>& InstanceUnchecked()
+		{
+			static std::shared_ptr<Descriptor<T>> Instance_ = []()
+			{
+				if constexpr (std::is_default_constructible_v<Descriptor<T>>)
+				{
+					return StaticDescriptorMap::Emplace(Descriptor<T>{});
+				}
+				else
+				{
+					return nullptr;
+				}
+			}();
+
+			return Instance_;
+		}
+
+		inline static const std::shared_ptr<Descriptor<T>>& M_descriptor = InstanceUnchecked();
 	};
 }
