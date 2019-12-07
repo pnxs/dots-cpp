@@ -20,9 +20,15 @@ namespace dots::type
 		}
 
 		template <typename T>
-		T& to()
+		T& to() &
 		{
-			return const_cast<T&>(std::as_const(*this).to<T>());
+			return reinterpret_cast<T&>(*this);
+		}
+
+		template <typename T>
+		T&& to() &&
+		{
+			return reinterpret_cast<T&&>(*this);
 		}
 
 		template <typename T>
