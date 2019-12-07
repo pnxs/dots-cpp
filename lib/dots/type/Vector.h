@@ -40,7 +40,7 @@ namespace dots::type
 	};
 
 	template <typename T>
-	struct Vector<T> : Vector<Typeless>, std::vector<std::conditional_t<std::is_same_v<T, bool>, uint8_t, T>>
+	struct Vector<T> : Vector<Typeless, void>, std::vector<std::conditional_t<std::is_same_v<T, bool>, uint8_t, T>>
 	{
 		using vector_t = std::vector<std::conditional_t<std::is_same_v<T, bool>, uint8_t, T>>;
 		
@@ -49,7 +49,7 @@ namespace dots::type
 		Vector(const Vector& other) = default;
 		Vector(Vector&& other) = default;
 
-		using vector_t::vector;
+		using std::vector<std::conditional_t<std::is_same_v<T, bool>, uint8_t, T>>::vector;
 
 		Vector(const vector_t& other) noexcept :
 			vector_t(other)
