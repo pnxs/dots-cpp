@@ -1,4 +1,5 @@
 #include <dots/io/DescriptorConverter.h>
+#include <dots/type/DynamicStruct.h>
 #include <dots/dots.h>
 
 namespace dots::io
@@ -79,7 +80,7 @@ namespace dots::io
 				else if (valueTypeDescriptor->type() == type::Type::Struct)
 				{
 					throw std::logic_error{ "dynamic struct vector types are currently not supported" };
-				}
+					}
 				else
 				{
 					throw std::logic_error{ "unsupported dynamic vector type: " + valueTypeName };
@@ -101,7 +102,7 @@ namespace dots::io
 		size_t currentOffset = last->offset() + last->valueDescriptor().size();
 		size = sizeof(void*) + currentOffset + (alignment - (currentOffset % alignment)) % alignment;
 
-		std::shared_ptr<type::StructDescriptor<>> descriptor = m_registry.get().registerType(type::StructDescriptor<>{ structData.name, flags, propertyDescriptors, size, alignment });
+		std::shared_ptr<type::StructDescriptor<>> descriptor = m_registry.get().registerType(type::Descriptor<type::DynamicStruct>{ structData.name, flags, propertyDescriptors, size, alignment });
 
 		return descriptor;
 	}

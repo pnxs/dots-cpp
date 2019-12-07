@@ -91,6 +91,7 @@ target_sources(${TARGET_NAME}
 		io/DescriptorConverter.cpp
 		type/AnyStruct.cpp		
 		type/Descriptor.cpp
+		type/DynamicStruct.cpp
 		type/EnumDescriptor.cpp
 		type/PropertyDescriptor.cpp
 		type/ProxyPropertyIterator.cpp

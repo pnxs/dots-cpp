@@ -314,10 +314,20 @@ namespace dots::type
 			Struct::_remove(includedProperties);
 		}
 
+    	const PropertyArea& _propertyArea() const
+		{
+			return m_propertyArea;
+		}
+
+    	PropertyArea& _propertyArea()
+		{
+			return m_propertyArea;
+		}
+
     	template <typename P>
     	const P& getProperty() const
 		{
-			return _propertyArea().getProperty<P>();
+			return m_propertyArea.getProperty<P>();
 		}
 
     	template <typename P>
@@ -440,5 +450,7 @@ namespace dots::type
 
 		template <typename T>
 		using strip_t = std::remove_pointer_t<std::decay_t<T>>;
+
+    	PropertyArea m_propertyArea;
     };
 }
