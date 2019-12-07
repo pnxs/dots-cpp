@@ -30,7 +30,6 @@ public:
 private:
     void handleDotsType(const DotsTypes::Cbd& cbd);
 
-    bool m_master = false;
     TypeId m_nextTypeId = 1;
     std::map<TypeId, const type::Descriptor<>*> m_typeMap;
     std::map<std::string, TypeId> m_nameIdMap;

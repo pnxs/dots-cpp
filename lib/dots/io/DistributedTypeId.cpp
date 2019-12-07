@@ -6,7 +6,6 @@ namespace dots
 {
 
 DistributedTypeId::DistributedTypeId(bool master)
-:m_master(master)
 {
     if (not master)
     {
