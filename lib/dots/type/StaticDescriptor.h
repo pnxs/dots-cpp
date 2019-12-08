@@ -69,7 +69,7 @@ namespace dots::type
 		{
 			if constexpr (std::is_default_constructible_v<T>)
 			{
-				return reinterpret_cast<Typeless&>(construct(reinterpret_cast<T&>(value)));
+				return reinterpret_cast<Typeless&>(StaticDescriptor::construct(reinterpret_cast<T&>(value)));
 			}
 			else
 			{
@@ -79,62 +79,62 @@ namespace dots::type
 
 		Typeless& construct(Typeless& value, const Typeless& other) const override
 		{
-			return reinterpret_cast<Typeless&>(construct(reinterpret_cast<T&>(value), reinterpret_cast<const T&>(other)));
+			return reinterpret_cast<Typeless&>(StaticDescriptor::construct(reinterpret_cast<T&>(value), reinterpret_cast<const T&>(other)));
 		}
 
 		Typeless& construct(Typeless& value, Typeless&& other) const override
 		{
-			return reinterpret_cast<Typeless&>(construct(reinterpret_cast<T&>(value), reinterpret_cast<T&&>(other)));
+			return reinterpret_cast<Typeless&>(StaticDescriptor::construct(reinterpret_cast<T&>(value), reinterpret_cast<T&&>(other)));
 		}
 
 		void destruct(Typeless& value) const override
 		{
-			destruct(reinterpret_cast<T&>(value));
+			StaticDescriptor::destruct(reinterpret_cast<T&>(value));
 		}
 
 		Typeless& assign(Typeless& lhs, const Typeless& rhs) const override
 		{
-			return reinterpret_cast<Typeless&>(assign(reinterpret_cast<T&>(lhs), reinterpret_cast<const T&>(rhs)));
+			return reinterpret_cast<Typeless&>(StaticDescriptor::assign(reinterpret_cast<T&>(lhs), reinterpret_cast<const T&>(rhs)));
 		}
 
 		Typeless& assign(Typeless& lhs, Typeless&& rhs) const override
 		{
-			return reinterpret_cast<Typeless&>(assign(reinterpret_cast<T&>(lhs), reinterpret_cast<T&&>(rhs)));
+			return reinterpret_cast<Typeless&>(StaticDescriptor::assign(reinterpret_cast<T&>(lhs), reinterpret_cast<T&&>(rhs)));
 		}
 
 		void swap(Typeless& value, Typeless& other) const override
 		{
-			swap(reinterpret_cast<T&>(value), reinterpret_cast<T&>(other));
+			StaticDescriptor::swap(reinterpret_cast<T&>(value), reinterpret_cast<T&>(other));
 		}
 
 		bool equal(const Typeless& lhs, const Typeless& rhs) const override
 		{
-			return equal(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
+			return StaticDescriptor::equal(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
 		}
 
 		bool less(const Typeless& lhs, const Typeless& rhs) const override
 		{
-			return less(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
+			return StaticDescriptor::less(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
 		}
 
 		bool lessEqual(const Typeless& lhs, const Typeless& rhs) const override
 		{
-			return lessEqual(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
+			return StaticDescriptor::lessEqual(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
 		}
 
 		bool greater(const Typeless& lhs, const Typeless& rhs) const override
 		{
-			return greater(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
+			return StaticDescriptor::greater(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
 		}
 
 		bool greaterEqual(const Typeless& lhs, const Typeless& rhs) const override
 		{
-			return greaterEqual(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
+			return StaticDescriptor::greaterEqual(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
 		}
 
 		size_t dynamicMemoryUsage(const Typeless& value) const override
 		{
-			return dynamicMemoryUsage(reinterpret_cast<const T&>(value));
+			return StaticDescriptor::dynamicMemoryUsage(reinterpret_cast<const T&>(value));
 		}
 
 		bool usesDynamicMemory() const override
@@ -153,7 +153,7 @@ namespace dots::type
 		}
 
 		template <typename... Args>
-		constexpr T& construct(T& value, Args&&... args) const
+		static constexpr T& construct(T& value, Args&&... args)
 		{
 			static_assert(std::is_constructible_v<T, Args...>, "type is not constructible from passed arguments");
 			if constexpr (std::is_constructible_v<T, Args...>)
@@ -164,13 +164,13 @@ namespace dots::type
 			return value;
 		}
 
-		constexpr void destruct(T& value) const
+		static constexpr void destruct(T& value)
 		{
 			value.~T();
 		}
 		
 		template <typename... Args>
-		constexpr T& assign(T& value, Args&&... args) const
+		static constexpr T& assign(T& value, Args&&... args)
 		{
 			static_assert(std::is_constructible_v<T, Args...>, "type is not constructible from passed arguments");
 			if constexpr (std::is_constructible_v<T, Args...>)
@@ -181,37 +181,37 @@ namespace dots::type
 			return value;
 		}
 
-		constexpr void swap(T& lhs, T& rhs) const
+		static constexpr void swap(T& lhs, T& rhs)
 		{
 			std::swap(lhs, rhs);
 		}
 
-		constexpr bool equal(const T& lhs, const T& rhs) const
+		static constexpr bool equal(const T& lhs, const T& rhs)
 		{
 			return std::equal_to<T>{}(lhs, rhs);
 		}
 
-		constexpr bool less(const T& lhs, const T& rhs) const
+		static constexpr bool less(const T& lhs, const T& rhs)
 		{
 			return std::less<T>{}(lhs, rhs);
 		}
 
-		constexpr bool lessEqual(const T& lhs, const T& rhs) const
+		static constexpr bool lessEqual(const T& lhs, const T& rhs)
 		{
 			return !greater(lhs, rhs);
 		}
 
-		constexpr bool greater(const T& lhs, const T& rhs) const
+		static constexpr bool greater(const T& lhs, const T& rhs)
 		{
 			return less(rhs, lhs);
 		}
 
-		constexpr bool greaterEqual(const T& lhs, const T& rhs) const
+		static constexpr bool greaterEqual(const T& lhs, const T& rhs)
 		{
 			return !less(lhs, rhs);
 		}
 		
-		constexpr size_t dynamicMemoryUsage(const T&/* value*/) const
+		static constexpr size_t dynamicMemoryUsage(const T&/* value*/)
 		{
 			return 0;
 		}

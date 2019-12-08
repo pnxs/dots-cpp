@@ -142,140 +142,140 @@ namespace dots::type
 
 		Struct& assign(Struct& instance, const Struct& other, const PropertySet& includedProperties) const override
 		{
-			return assign(static_cast<T&>(instance), static_cast<const T&>(other), includedProperties);
+			return StructDescriptor::assign(static_cast<T&>(instance), static_cast<const T&>(other), includedProperties);
 		}
 
 		Struct& copy(Struct& instance, const Struct& other, const PropertySet& includedProperties) const override
 		{
-			return copy(static_cast<T&>(instance), static_cast<const T&>(other), includedProperties);
+			return StructDescriptor::copy(static_cast<T&>(instance), static_cast<const T&>(other), includedProperties);
 		}
 
 		Struct& merge(Struct& instance, const Struct& other, const PropertySet& includedProperties) const override
 		{
-			return merge(static_cast<T&>(instance), static_cast<const T&>(other), includedProperties);
+			return StructDescriptor::merge(static_cast<T&>(instance), static_cast<const T&>(other), includedProperties);
 		}
 
 		void swap(Struct& instance, Struct& other, const PropertySet& includedProperties) const override
 		{
-			swap(static_cast<T&>(instance), static_cast<T&>(other), includedProperties);
+			StructDescriptor::swap(static_cast<T&>(instance), static_cast<T&>(other), includedProperties);
 		}
 
 		void clear(Struct& instance, const PropertySet& includedProperties) const override
 		{
-			clear(static_cast<T&>(instance), includedProperties);
+			StructDescriptor::clear(static_cast<T&>(instance), includedProperties);
 		}
 
 		bool equal(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const override
 		{
-			return equal(static_cast<const T&>(lhs), static_cast<const T&>(rhs), includedProperties);
+			return StructDescriptor::equal(static_cast<const T&>(lhs), static_cast<const T&>(rhs), includedProperties);
 		}
 
 		bool same(const Struct& lhs, const Struct& rhs) const override
 		{
-			return same(static_cast<const T&>(lhs), static_cast<const T&>(rhs));
+			return StructDescriptor::same(static_cast<const T&>(lhs), static_cast<const T&>(rhs));
 		}
 
 		bool less(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const override
 		{
-			return less(static_cast<const T&>(lhs), static_cast<const T&>(rhs), includedProperties);
+			return StructDescriptor::less(static_cast<const T&>(lhs), static_cast<const T&>(rhs), includedProperties);
 		}
 
 		bool lessEqual(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const override
 		{
-			return lessEqual(static_cast<const T&>(lhs), static_cast<const T&>(rhs), includedProperties);
+			return StructDescriptor::lessEqual(static_cast<const T&>(lhs), static_cast<const T&>(rhs), includedProperties);
 		}
 
 		bool greater(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const override
 		{
-			return greater(static_cast<const T&>(lhs), static_cast<const T&>(rhs), includedProperties);
+			return StructDescriptor::greater(static_cast<const T&>(lhs), static_cast<const T&>(rhs), includedProperties);
 		}
 
 		bool greaterEqual(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const override
 		{
-			return greaterEqual(static_cast<const T&>(lhs), static_cast<const T&>(rhs), includedProperties);
+			return StructDescriptor::greaterEqual(static_cast<const T&>(lhs), static_cast<const T&>(rhs), includedProperties);
 		}
 
 		PropertySet diffProperties(const Struct& instance, const Struct& other, const PropertySet& includedProperties) const override
 		{
-			return diffProperties(static_cast<const T&>(instance), static_cast<const T&>(other), includedProperties);
+			return StructDescriptor::diffProperties(static_cast<const T&>(instance), static_cast<const T&>(other), includedProperties);
 		}
 
 		const PropertyArea& propertyArea(const Struct& instance) const override
 		{
-			return propertyArea(static_cast<const T&>(instance));
+			return StructDescriptor::propertyArea(static_cast<const T&>(instance));
 		}
 
 		PropertyArea& propertyArea(Struct& instance) const override
 		{
-			return propertyArea(static_cast<T&>(instance));
+			return StructDescriptor::propertyArea(static_cast<T&>(instance));
 		}
 
-		T& assign(T& instance, const T& other, const PropertySet& includedProperties) const
+		static T& assign(T& instance, const T& other, const PropertySet& includedProperties)
 		{
 			return instance._assign(other, includedProperties);
 		}
 
-		T& copy(T& instance, const T& other, const PropertySet& includedProperties) const
+		static T& copy(T& instance, const T& other, const PropertySet& includedProperties)
 		{
 			return instance._copy(other, includedProperties);
 		}
 
-		T& merge(T& instance, const T& other, const PropertySet& includedProperties) const
+		static T& merge(T& instance, const T& other, const PropertySet& includedProperties)
 		{
 			return instance._merge(other, includedProperties);
 		}
 
-		void swap(T& instance, T& other, const PropertySet& includedProperties) const
+		static void swap(T& instance, T& other, const PropertySet& includedProperties)
 		{
 			instance._swap(other, includedProperties);
 		}
 
-		void clear(T& instance, const PropertySet& includedProperties) const
+		static void clear(T& instance, const PropertySet& includedProperties)
 		{
 			instance._clear(includedProperties);
 		}
 
-		bool equal(const T& lhs, const T& rhs, const PropertySet& includedProperties) const
+		static bool equal(const T& lhs, const T& rhs, const PropertySet& includedProperties)
 		{
 			return lhs._equal(rhs, includedProperties);
 		}
 
-		bool same(const T& lhs, const T& rhs) const
+		static bool same(const T& lhs, const T& rhs)
 		{
 			return lhs._same(rhs);
 		}
 
-		bool less(const T& lhs, const T& rhs, const PropertySet& includedProperties) const
+		static bool less(const T& lhs, const T& rhs, const PropertySet& includedProperties)
 		{
 			return lhs._less(rhs, includedProperties);
 		}
 
-		bool lessEqual(const T& lhs, const T& rhs, const PropertySet& includedProperties) const
+		static bool lessEqual(const T& lhs, const T& rhs, const PropertySet& includedProperties)
 		{
 			return lhs._lessEqual(rhs, includedProperties);
 		}
 
-		bool greater(const T& lhs, const T& rhs, const PropertySet& includedProperties) const
+		static bool greater(const T& lhs, const T& rhs, const PropertySet& includedProperties)
 		{
 			return lhs._greater(rhs, includedProperties);
 		}
 
-		bool greaterEqual(const T& lhs, const T& rhs, const PropertySet& includedProperties) const
+		static bool greaterEqual(const T& lhs, const T& rhs, const PropertySet& includedProperties)
 		{
 			return lhs._greaterEqual(rhs, includedProperties);
 		}
 
-		PropertySet diffProperties(const T& instance, const T& other, const PropertySet& includedProperties) const
+		static PropertySet diffProperties(const T& instance, const T& other, const PropertySet& includedProperties)
 		{
 			return instance._diffProperties(other, includedProperties);
 		}
 
-		const PropertyArea& propertyArea(const T& instance) const
+		static const PropertyArea& propertyArea(const T& instance)
 		{
 			return instance._propertyArea();
 		}
 
-		PropertyArea& propertyArea(T& instance) const
+		static PropertyArea& propertyArea(T& instance)
 		{
 			return instance._propertyArea();
 		}

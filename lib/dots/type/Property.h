@@ -157,10 +157,17 @@ namespace dots::type
 				throw std::runtime_error{ std::string{ "attempt to construct already valid property: " } + metadata().name().data() };
 			}
 
-			static_assert(!IsTypeless || sizeof...(Args) <= 1, "typeless construction only supports default construction or a single argument");
-			if constexpr (!IsTypeless || sizeof...(Args) <= 1)
+			if constexpr (!IsTypeless)
 			{
-				valueDescriptor().construct(storage(), std::forward<Args>(args)...);
+				Descriptor<T>::construct(storage(), std::forward<Args>(args)...);
+			}
+			else if constexpr (sizeof...(Args) == 1)
+			{
+				descriptor().valueDescriptor().construct(storage(), std::forward<Args>(args)...);
+			}
+			else if constexpr (sizeof...(Args) == 0)
+			{
+				descriptor().valueDescriptor().construct(storage());
 			}
 			
 			setValid();
@@ -172,7 +179,15 @@ namespace dots::type
 		{
 			if (isValid())
 			{
-				valueDescriptor().destruct(storage());
+				if constexpr (IsTypeless)
+				{
+					descriptor().valueDescriptor().destruct(storage());
+				}
+				else
+				{
+					Descriptor<T>::destruct(storage());
+				}
+				
 				setInvalid();
 			}
 		}
@@ -239,9 +254,17 @@ namespace dots::type
 			}
 
 			static_assert(!IsTypeless || sizeof...(Args) <= 1, "typeless assignment only supports a single argument");
-			if constexpr (!IsTypeless || sizeof...(Args) <= 1)
+			if constexpr (!IsTypeless)
 			{
-				valueDescriptor().assign(storage(), std::forward<Args>(args)...);
+				Descriptor<T>::assign(storage(), std::forward<Args>(args)...);
+			}
+			else if constexpr (sizeof...(Args) == 1)
+			{
+				descriptor().valueDescriptor().assign(storage(), std::forward<Args>(args)...);
+			}
+			else if constexpr (sizeof...(Args) == 0)
+			{
+				descriptor().valueDescriptor().assign(storage());
 			}
 			
 			setValid();
@@ -268,7 +291,14 @@ namespace dots::type
 			{
 				if (other.isValid())
 				{
-					valueDescriptor().swap(storage(), other);
+					if constexpr (IsTypeless)
+					{
+						return descriptor().valueDescriptor().swap(storage(), other);
+					}
+					else
+					{
+						return Descriptor<T>::swap(storage(), other);
+					}
 				}
 				else
 				{
@@ -285,7 +315,21 @@ namespace dots::type
 
 		bool equal(const T& rhs) const
 		{
-			return isValid() && valueDescriptor().equal(storage(), rhs);
+			if (isValid())
+			{
+				if constexpr (IsTypeless)
+				{
+					return descriptor().valueDescriptor().equal(storage(), rhs);
+				}
+				else
+				{
+					return Descriptor<T>::equal(storage(), rhs);
+				}
+			}
+			else
+			{
+				return false;
+			}
 		}
 
 		bool equal(const Derived& rhs) const
@@ -302,7 +346,21 @@ namespace dots::type
 
 		bool less(const T& rhs) const
 		{
-			return isValid() && valueDescriptor().less(storage(), rhs);
+			if (isValid())
+			{
+				if constexpr (IsTypeless)
+				{
+					return descriptor().valueDescriptor().less(storage(), rhs);
+				}
+				else
+				{
+					return Descriptor<T>::less(storage(), rhs);
+				}
+			}
+			else
+			{
+				return false;
+			}
 		}
 
 		bool less(const Derived& rhs) const
@@ -329,7 +387,21 @@ namespace dots::type
 
 		bool greater(const T& rhs) const
 		{
-			return !isValid() || valueDescriptor().less(rhs, storage());
+			if (isValid())
+			{
+				if constexpr (IsTypeless)
+				{
+					return descriptor().valueDescriptor().less(rhs, storage());
+				}
+				else
+				{
+					return Descriptor<T>::less(rhs, storage());
+				}
+			}
+			else
+			{
+				return true;
+			}
 		}
 
 		bool greater(const Derived& rhs) const
@@ -355,18 +427,6 @@ namespace dots::type
 		constexpr const PropertyDescriptor& descriptor() const
 		{
 			return static_cast<const Derived&>(*this).derivedDescriptor();
-		}
-
-		constexpr const Descriptor<T>& valueDescriptor() const
-		{
-			if constexpr (IsTypeless)
-			{
-				return descriptor().valueDescriptor();
-			}
-			else
-			{
-				return Descriptor<T>::Instance();
-			}
 		}
 
 		constexpr bool isPartOf(const PropertySet& propertySet) const
