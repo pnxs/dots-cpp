@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 #include <dots/type/Descriptor.h>
-#include <dots/type/PropertySet.h>
+#include <dots/type/PropertyMetadata.h>
 
 namespace dots::type
 {
@@ -12,18 +12,21 @@ namespace dots::type
 	template <>
 	struct PropertyDescriptor<>
 	{
+		PropertyDescriptor(const std::shared_ptr<Descriptor<>>& descriptor, PropertyMetadata<> metadata);
 		PropertyDescriptor(const std::shared_ptr<Descriptor<>>& descriptor, std::string name, size_t offset, uint32_t tag, bool isKey);
 		PropertyDescriptor(const std::shared_ptr<Descriptor<>>& descriptor, std::string name, uint32_t tag, bool isKey);
-		PropertyDescriptor(const std::shared_ptr<Descriptor<>>& descriptor, std::string name, const PropertyDescriptor<>& previous, uint32_t tag, bool isKey);
+		PropertyDescriptor(const std::shared_ptr<Descriptor<>>& descriptor, std::string name, const PropertyDescriptor<>& previous, uint32_t tag, bool isKey);		
 		PropertyDescriptor(const PropertyDescriptor& other) = default;
 		PropertyDescriptor(PropertyDescriptor&& other) = default;
 		~PropertyDescriptor() = default;
 
-		PropertyDescriptor& operator = (const PropertyDescriptor& rhs) = default;
-		PropertyDescriptor& operator = (PropertyDescriptor&& rhs) = default;
+		PropertyDescriptor& operator =(const PropertyDescriptor& rhs) = default;
+		PropertyDescriptor& operator =(PropertyDescriptor&& rhs) = default;
 
 		const std::shared_ptr<Descriptor<>>& valueDescriptorPtr() const;
 		const Descriptor<>& valueDescriptor() const;
+		
+		const PropertyMetadata<>& metadata() const;
 		const std::string& name() const;
 		size_t offset() const;
 		uint32_t tag() const;
@@ -38,20 +41,19 @@ namespace dots::type
 
 	private:
 
-		static size_t CalculateOffset(const Descriptor<>& descriptor, const PropertyDescriptor<>& previous);
-		static size_t CalculateOffset(const Descriptor<>& descriptor, size_t previousOffset, size_t previousSize);
-
 		std::shared_ptr<Descriptor<>> m_descriptor;
 		std::string m_name;
-		size_t m_offset;
-		uint32_t m_tag;
-		bool m_isKey;
-		PropertySet m_set;
+		PropertyMetadata<> m_metadata;
 	};
 
 	template <typename T>
 	struct PropertyDescriptor<T> : PropertyDescriptor<>
 	{
+		PropertyDescriptor(PropertyMetadata<T> metadata) :
+			PropertyDescriptor<>(valueDescriptorPtr(), std::move(metadata))
+		{
+			/* do nothing */
+		}
 		PropertyDescriptor(std::string name, size_t offset, uint32_t tag, bool isKey) :
 			PropertyDescriptor<>(valueDescriptorPtr(), std::move(name), offset, tag, isKey)
 		{
