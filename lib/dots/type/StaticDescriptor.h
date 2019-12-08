@@ -14,7 +14,7 @@ namespace dots::type
     	static std::shared_ptr<D> Emplace(D&& descriptor)
     	{
 			auto descriptor_ = std::make_shared<D>(std::forward<D>(descriptor));
-			auto [it, emplaced] = M_descriptors.try_emplace(descriptor_->name(), descriptor_);
+			auto [it, emplaced] = Descriptors().try_emplace(descriptor_->name(), descriptor_);
 			
 			if (!emplaced)
 			{
@@ -26,13 +26,17 @@ namespace dots::type
 
     	static std::shared_ptr<Descriptor<>> Find(const std::string_view& name)
     	{
-    		auto it = M_descriptors.find(name);
-			return it == M_descriptors.end() ? nullptr : it->second;
+    		auto it = Descriptors().find(name);
+			return it == Descriptors().end() ? nullptr : it->second;
     	}
 		
 	private:
 
-		inline static std::map<std::string_view, std::shared_ptr<Descriptor<>>> M_descriptors;
+		static std::map<std::string_view, std::shared_ptr<Descriptor<>>>& Descriptors()
+		{
+			static std::map<std::string_view, std::shared_ptr<Descriptor<>>> Descriptors_;
+			return Descriptors_;
+		}
 	};
 	
 	template <typename T, typename Base = Descriptor<Typeless>>
