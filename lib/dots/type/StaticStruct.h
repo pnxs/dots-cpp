@@ -341,14 +341,9 @@ namespace dots::type
 			return const_cast<P&>(std::as_const(*this).template getProperty<P>());
 		}
 
-    	static const std::shared_ptr<Descriptor<>>& _DescriptorPtr()
-        {
-			return Descriptor<Derived>::InstancePtr();
-        }
-
     	static const Descriptor<Derived>& _Descriptor()
         {
-			return Descriptor<Derived>::Instance();
+			return M_descriptor;
         }
 
 		static PropertySet _KeyProperties()
@@ -470,6 +465,7 @@ namespace dots::type
 		template <typename T>
 		using strip_t = std::remove_pointer_t<std::decay_t<T>>;
 
+    	inline static const Descriptor<Derived>& M_descriptor = Descriptor<Derived>::Instance();
     	PropertyArea m_propertyArea;
     };
 }
