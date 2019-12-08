@@ -10,22 +10,26 @@ namespace dots::types
     {
         struct intProperty_t : type::StaticProperty<int32_t, intProperty_t>
         {
-			inline static auto Descriptor = type::PropertyDescriptor<int32_t>("intProperty", 1, true);
+        	static constexpr auto Metadata = type::PropertyMetadata<types::int32_t>{ "intProperty", 1, true };
+			inline static auto Descriptor = type::PropertyDescriptor<int32_t>{ Metadata };
         };
     	
         struct stringProperty_t : type::StaticProperty<string_t, stringProperty_t>
         {
-			inline static auto Descriptor = dots::type::PropertyDescriptor<string_t>("stringProperty", intProperty_t::Descriptor, 2, false);
+        	static constexpr auto Metadata = type::PropertyMetadata<types::string_t>{ "stringProperty", 2, false, intProperty_t::Metadata };
+			inline static auto Descriptor = dots::type::PropertyDescriptor<string_t>{ Metadata };
         };
 
     	struct boolProperty_t : type::StaticProperty<bool_t, boolProperty_t>
         {
-			inline static auto Descriptor = dots::type::PropertyDescriptor<bool_t>("boolProperty", stringProperty_t::Descriptor, 3, false);
+    		static constexpr auto Metadata = type::PropertyMetadata<types::bool_t>{ "boolProperty", 3, false, stringProperty_t::Metadata };
+			inline static auto Descriptor = dots::type::PropertyDescriptor<bool_t>{ Metadata };
         };
     	
         struct floatVectorProperty_t : type::StaticProperty<vector_t<float32_t>, floatVectorProperty_t>
         {
-			inline static auto Descriptor = type::PropertyDescriptor<vector_t<float32_t>>("floatVectorProperty", boolProperty_t::Descriptor, 4, false);
+        	static constexpr auto Metadata = type::PropertyMetadata<types::vector_t<float32_t>>{ "floatVectorProperty", 4, false, boolProperty_t::Metadata };
+			inline static auto Descriptor = type::PropertyDescriptor<vector_t<float32_t>>{ Metadata };
         };
 
     	using intProperty_i = type::PropertyInitializer<intProperty_t>;

@@ -28,7 +28,8 @@ protected:
 		friend struct Property<T, test_property_t<T>>;
 
 		T& derivedStorage()	{ return m_value; }
-		const T& derivedStorage() const { return const_cast<test_property_t&>(*this).derivedStorage();	}
+		const T& derivedStorage() const { return const_cast<test_property_t&>(*this).derivedStorage(); }
+		const PropertyMetadata<T>& derivedMetadata() const { return static_cast<const PropertyMetadata<T>&>(m_descriptor.metadata()); }
 		const PropertyDescriptor<T>& derivedDescriptor() const { return m_descriptor; }
 
 		union {	T m_value; };

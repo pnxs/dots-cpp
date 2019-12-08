@@ -121,14 +121,14 @@ namespace dots::type
 
 		bool isValid() const
 		{
-			return descriptor().set() <= validProperties();
+			return metadata().set() <= validProperties();
 		}
 
 		T& construct(const Derived& rhs)
 		{
 			if (!rhs.isValid())
 			{
-				throw std::runtime_error{ std::string{ "attempt to construct from invalid property: " } + descriptor().name().data() };
+				throw std::runtime_error{ std::string{ "attempt to construct from invalid property: " } + metadata().name().data() };
 			}
 			
 			construct(rhs.storage());
@@ -140,7 +140,7 @@ namespace dots::type
 		{
 			if (!rhs.isValid())
 			{
-				throw std::runtime_error{ std::string{ "attempt to construct from invalid property: " } + descriptor().name().data() };
+				throw std::runtime_error{ std::string{ "attempt to construct from invalid property: " } + metadata().name().data() };
 			}
 
 			construct(std::move(rhs.storage()));
@@ -154,7 +154,7 @@ namespace dots::type
 		{
 			if (isValid())
 			{
-				throw std::runtime_error{ std::string{ "attempt to construct already valid property: " } + descriptor().name().data() };
+				throw std::runtime_error{ std::string{ "attempt to construct already valid property: " } + metadata().name().data() };
 			}
 
 			static_assert(!IsTypeless || sizeof...(Args) <= 1, "typeless construction only supports default construction or a single argument");
@@ -181,7 +181,7 @@ namespace dots::type
 		{
 			if (!isValid())
 			{
-				throw std::runtime_error{ std::string{ "attempt to access invalid property: " } + descriptor().name().data() };
+				throw std::runtime_error{ std::string{ "attempt to access invalid property: " } + metadata().name().data() };
 			}
 
 			return storage();
@@ -209,7 +209,7 @@ namespace dots::type
 		{
 			if (!rhs.isValid())
 			{
-				throw std::runtime_error{ std::string{ "attempt to assign from invalid property: " } + descriptor().name().data() };
+				throw std::runtime_error{ std::string{ "attempt to assign from invalid property: " } + metadata().name().data() };
 			}
 			
 			assign(rhs.storage());
@@ -221,7 +221,7 @@ namespace dots::type
 		{
 			if (!rhs.isValid())
 			{
-				throw std::runtime_error{ std::string{ "attempt to assign from invalid property: " } + descriptor().name().data() };
+				throw std::runtime_error{ std::string{ "attempt to assign from invalid property: " } + metadata().name().data() };
 			}
 
 			assign(std::move(rhs.storage()));
@@ -235,7 +235,7 @@ namespace dots::type
 		{
 			if (!isValid())
 			{
-				throw std::runtime_error{ std::string{ "attempt to assign invalid property: " } + descriptor().name().data() };
+				throw std::runtime_error{ std::string{ "attempt to assign invalid property: " } + metadata().name().data() };
 			}
 
 			static_assert(!IsTypeless || sizeof...(Args) <= 1, "typeless assignment only supports a single argument");
@@ -347,6 +347,11 @@ namespace dots::type
 			return !less(rhs);
 		}
 
+		constexpr const PropertyMetadata<T>& metadata() const
+		{
+			return static_cast<const Derived&>(*this).derivedMetadata();
+		}
+
 		constexpr const PropertyDescriptor<T>& descriptor() const
 		{
 			return static_cast<const Derived&>(*this).derivedDescriptor();
@@ -364,7 +369,7 @@ namespace dots::type
 
 		constexpr bool isPartOf(const PropertySet& propertySet) const
 		{
-			return descriptor().set() <= propertySet;
+			return metadata().set() <= propertySet;
 		}
 
 		constexpr T& storage()
@@ -391,7 +396,7 @@ namespace dots::type
 
 		const PropertySet& validProperties() const
 		{
-			return PropertyArea::GetArea(storage(), descriptor().offset()).validProperties();
+			return PropertyArea::GetArea(storage(), metadata().offset()).validProperties();
 		}
 
 		PropertySet& validProperties()
@@ -401,12 +406,12 @@ namespace dots::type
 
 		void setValid()
 		{
-			validProperties() += descriptor().set();
+			validProperties() += metadata().set();
 		}
 
 		void setInvalid()
 		{
-			validProperties() -= descriptor().set();
+			validProperties() -= metadata().set();
 		}
 	};
 

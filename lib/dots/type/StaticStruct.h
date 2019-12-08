@@ -285,7 +285,7 @@ namespace dots::type
 					{
 						using property_t = strip_t<decltype(propertyThis)>;
 
-						if (property_t::IsPartOf(intersection) && !property_t::ValueDescriptor().equal(propertyThis, propertyOther))
+						if (property_t::IsPartOf(intersection) && propertyThis != propertyOther)
 						{
 							symmetricDiff += property_t::Set();
 						}

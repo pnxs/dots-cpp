@@ -8,35 +8,30 @@ namespace dots::type
 	struct StaticProperty : Property<T, Derived>
 	{
 		using Property<T, Derived>::operator=;
-		
-		static constexpr const Descriptor<T>& ValueDescriptor()
-		{
-			return Derived::Descriptor.valueDescriptor();
-		}
 
-		static constexpr const std::string& Name()
+		static constexpr const std::string_view& Name()
 		{
-			return Derived::Descriptor.name();
+			return Derived::Metadata.name();
 		}
 
 		static constexpr size_t Offset()
 		{
-			return Derived::Descriptor.offset();
+			return Derived::Metadata.offset();
 		}
 
 		static constexpr uint32_t Tag()
 		{
-			return Derived::Descriptor.tag();
+			return Derived::Metadata.tag();
 		}
 
 		static constexpr bool IsKey()
 		{
-			return Derived::Descriptor.isKey();
+			return Derived::Metadata.isKey();
 		}
 
 		static constexpr PropertySet Set()
 		{
-			return Derived::Descriptor.set();
+			return Derived::Metadata.set();
 		}
 
 		static constexpr bool IsPartOf(const PropertySet& propertySet)
@@ -112,6 +107,11 @@ namespace dots::type
 		const T& derivedStorage() const
 		{
 			return const_cast<StaticProperty&>(*this).derivedStorage();
+		}
+
+		static constexpr const PropertyMetadata<T>& derivedMetadata()
+		{
+			return Derived::Metadata;
 		}
 
 		static const PropertyDescriptor<T>& derivedDescriptor()
