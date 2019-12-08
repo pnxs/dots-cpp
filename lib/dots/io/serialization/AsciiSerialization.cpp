@@ -370,16 +370,16 @@ static void to_ascii_recursive(const type::StructDescriptor<>& td, const void *d
     const auto& prop_list = td.propertyDescriptors();
     for (const auto& prop : prop_list)
     {
-        auto set = prop->set();
+        auto set = prop.set();
 
         if (!(set <= serializePropertySet))
             continue;
 
-        auto propertyValue = prop->address(data);
+        auto propertyValue = prop.address(data);
 
         //std::cout << "cbor write property '" << prop.name() << "' tag: " << tag << ":\n";
 
-        const std::string name = prop->name().data();
+        const std::string name = prop.name().data();
 
         if (set <= highlight) {
             writer.BeginHighlight();
@@ -391,7 +391,7 @@ static void to_ascii_recursive(const type::StructDescriptor<>& td, const void *d
             writer.EndHightlight();
         }
 
-        write_ascii(prop->valueDescriptor(), propertyValue, writer);
+        write_ascii(prop.valueDescriptor(), propertyValue, writer);
     }
 
     writer.EndObject();

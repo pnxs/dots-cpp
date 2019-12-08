@@ -411,13 +411,13 @@ TEST(TestCborSerialization, deserializeCustomType)
 
     for (auto& property : descriptor->propertyDescriptors())
     {
-        auto iter = expectProperties.find(property->name().data());
+        auto iter = expectProperties.find(property.name().data());
         if (iter != expectProperties.end()) expectProperties.erase(iter);
-        else FAIL() << "unexpected property " << property->name();
+        else FAIL() << "unexpected property " << property.name();
 
-        if (property->name() == "Created") {
-            EXPECT_EQ(property->valueDescriptor().name(), "timepoint");
-            auto tp = reinterpret_cast<pnxs::TimePoint*>(property->address(customObj));
+        if (property.name() == "Created") {
+            EXPECT_EQ(property.valueDescriptor().name(), "timepoint");
+            auto tp = reinterpret_cast<pnxs::TimePoint*>(property.address(customObj));
             EXPECT_EQ(tp->value().toSeconds(), 1492084921.7466583);
         }
     }
@@ -486,8 +486,8 @@ TEST(TestCborSerialization, dynamicEnum)
 
     ASSERT_TRUE(structDescriptor->propertyDescriptors().size() > 0);
 
-    EXPECT_EQ(enumDescriptor->enumeratorFromValue(*Typeless::From(structDescriptor->propertyDescriptors()[0]->address(myStructObj))).name(), "myvalue2");
-    EXPECT_EQ(enumDescriptor->enumeratorFromValue(*Typeless::From(structDescriptor->propertyDescriptors()[0]->address(myStructObj))).valueTypeless().to<int32_t>(), 11);
+    EXPECT_EQ(enumDescriptor->enumeratorFromValue(*Typeless::From(structDescriptor->propertyDescriptors()[0].address(myStructObj))).name(), "myvalue2");
+    EXPECT_EQ(enumDescriptor->enumeratorFromValue(*Typeless::From(structDescriptor->propertyDescriptors()[0].address(myStructObj))).valueTypeless().to<int32_t>(), 11);
 
     EXPECT_THAT(dots::to_cbor({structDescriptor, myStructObj}, PropertySet::All), ElementsAreArray(myStructData));
 

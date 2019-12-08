@@ -131,9 +131,9 @@ static void to_json_recursive(const type::Struct& instance, types::property_set_
     const auto& prop_list = instance._descriptor().propertyDescriptors();
     for (const auto& prop : prop_list)
     {
-        const auto name = prop->name();
+        const auto name = prop.name();
 
-        if (!(prop->set() <= serializePropertySet))
+        if (!(prop.set() <= serializePropertySet))
         {
             if (allFields)
             {
@@ -143,10 +143,10 @@ static void to_json_recursive(const type::Struct& instance, types::property_set_
         }
         else
         {
-            auto propertyValue = prop->address(&instance);
+            auto propertyValue = prop.address(&instance);
             //std::cout << "cbor write property '" << prop.name() << "' tag: " << tag << ":\n";
             writer.String(name.data(), static_cast<rapidjson::SizeType>(name.length()), false);
-            write_json(prop->valueDescriptor(), *type::Typeless::From(propertyValue), writer);
+            write_json(prop.valueDescriptor(), *type::Typeless::From(propertyValue), writer);
         }
     }
 
@@ -295,14 +295,14 @@ void from_json_recursive(const type::StructDescriptor<>& sd, type::Struct& insta
         auto& jsonPropertyValue = members->value;
         string name = members->name.GetString();
 
-        auto propertyIter = std::find_if(structProperties.begin(), structProperties.end(), [&name](auto prop) { return prop->name() == name; });
+        auto propertyIter = std::find_if(structProperties.begin(), structProperties.end(), [&name](auto prop) { return prop.name() == name; });
         if (propertyIter != structProperties.end())
         {
             auto property = *propertyIter;
-            auto propertyValue = property->address(&instance);
+            auto propertyValue = property.address(&instance);
 
-            read_json(property->valueDescriptor(), *type::Typeless::From(propertyValue), jsonPropertyValue);
-            sd.propertyArea(instance).validProperties() += property->set();
+            read_json(property.valueDescriptor(), *type::Typeless::From(propertyValue), jsonPropertyValue);
+            sd.propertyArea(instance).validProperties() += property.set();
         }
         else
         {

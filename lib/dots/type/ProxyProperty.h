@@ -6,13 +6,13 @@ namespace dots::type
 	template <typename T = Typeless>
 	struct ProxyProperty : Property<T, ProxyProperty<T>>
 	{
-		ProxyProperty(T& value, const PropertyDescriptor<T>& descriptor) :
+		ProxyProperty(T& value, const PropertyDescriptor& descriptor) :
 			m_value(&value),
 			m_descriptor(&descriptor)
 		{
 			/* do nothing */
 		}
-		ProxyProperty(PropertyArea& area, const PropertyDescriptor<T>& descriptor) :
+		ProxyProperty(PropertyArea& area, const PropertyDescriptor& descriptor) :
 			ProxyProperty(area.getProperty<T>(descriptor.offset()), descriptor)
 		{
 			/* do nothing */
@@ -55,12 +55,12 @@ namespace dots::type
 			return static_cast<const PropertyMetadata<T>&>(m_descriptor->metadata());
 		}
 
-		const PropertyDescriptor<T>& derivedDescriptor() const
+		const PropertyDescriptor& derivedDescriptor() const
 		{
 			return *m_descriptor;
 		}
 
 		T* m_value;
-		const PropertyDescriptor<T>* m_descriptor;
+		const PropertyDescriptor* m_descriptor;
 	};
 }

@@ -15,7 +15,7 @@ protected:
 	struct test_property_t : Property<T, test_property_t<T>>
 	{
 		test_property_t(const dots::type::PropertyArea& area, std::string name, uint32_t tag) :
-			m_descriptor{ dots::type::PropertyDescriptor<T>{ std::move(name), static_cast<uint32_t>(reinterpret_cast<char*>(this) - reinterpret_cast<const char*>(&area)), tag, false } } {}
+			m_descriptor{ dots::type::PropertyDescriptor{ Descriptor<T>::InstancePtr(), std::move(name), static_cast<uint32_t>(reinterpret_cast<char*>(this) - reinterpret_cast<const char*>(&area)), tag, false } } {}
 		test_property_t(const test_property_t& other) = delete;
 		test_property_t(test_property_t&& other) = delete;
 		~test_property_t() { Property<T, test_property_t<T>>::destroy(); }
@@ -30,10 +30,10 @@ protected:
 		T& derivedStorage()	{ return m_value; }
 		const T& derivedStorage() const { return const_cast<test_property_t&>(*this).derivedStorage(); }
 		const PropertyMetadata<T>& derivedMetadata() const { return static_cast<const PropertyMetadata<T>&>(m_descriptor.metadata()); }
-		const PropertyDescriptor<T>& derivedDescriptor() const { return m_descriptor; }
+		const PropertyDescriptor& derivedDescriptor() const { return m_descriptor; }
 
 		union {	T m_value; };
-		const PropertyDescriptor<T> m_descriptor;
+		const PropertyDescriptor m_descriptor;
 	};
 
 	struct test_property_area_t : dots::type::PropertyArea

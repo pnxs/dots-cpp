@@ -9,21 +9,18 @@ namespace dots::type
 		m_flags(flags),
 		m_propertyDescriptors(propertyDescriptors)
 	{
-		for (const PropertyDescriptor<>* propertyDescriptor : m_propertyDescriptors)
+		for (const PropertyDescriptor& propertyDescriptor : m_propertyDescriptors)
 		{
-			if (propertyDescriptor != nullptr)
+			m_properties += propertyDescriptor.set();
+
+			if (propertyDescriptor.isKey())
 			{
-				m_properties += propertyDescriptor->set();
+				m_keyProperties += propertyDescriptor.set();
+			}
 
-				if (propertyDescriptor->isKey())
-				{
-					m_keyProperties += propertyDescriptor->set();
-				}
-
-				if (propertyDescriptor->valueDescriptor().usesDynamicMemory())
-				{
-					m_dynamicMemoryProperties += propertyDescriptor->set();
-				}
+			if (propertyDescriptor.valueDescriptor().usesDynamicMemory())
+			{
+				m_dynamicMemoryProperties += propertyDescriptor.set();
 			}
 		}
 	}

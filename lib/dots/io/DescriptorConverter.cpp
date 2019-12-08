@@ -51,7 +51,7 @@ namespace dots::io
 			if (structData.flags->substructOnly) flags |= type::StructDescriptor<>::SubstructOnly;
 		}		
 
-		const type::PropertyDescriptor<>* last = nullptr;
+		const type::PropertyDescriptor* last = nullptr;
 
 		for (const StructPropertyData& propertyData : *structData.properties)
 		{
@@ -97,11 +97,11 @@ namespace dots::io
 			
 			if (last == nullptr)
 			{
-				last = propertyDescriptors.emplace_back(new type::PropertyDescriptor<>{ descriptor, propertyData.name, propertyData.tag, propertyData.isKey });
+				last = &propertyDescriptors.emplace_back(descriptor, propertyData.name, propertyData.tag, propertyData.isKey);
 			}
 			else
 			{
-				last = propertyDescriptors.emplace_back(new type::PropertyDescriptor<>{ descriptor, propertyData.name, *last, propertyData.tag, propertyData.isKey });
+				last = &propertyDescriptors.emplace_back(descriptor, propertyData.name, *last, propertyData.tag, propertyData.isKey);
 			}
 
 			alignment = std::max(last->valueDescriptor().alignment(), alignment);
@@ -146,13 +146,13 @@ namespace dots::io
 
 	    auto& properties = structData.properties();
 
-	    for (const type::PropertyDescriptor<>* propertyDescriptor : structDescriptor.propertyDescriptors())
+	    for (const type::PropertyDescriptor& propertyDescriptor : structDescriptor.propertyDescriptors())
 	    {
 	        StructPropertyData propertyData;
-	        propertyData.tag(propertyDescriptor->tag());
-	        propertyData.name(propertyDescriptor->name());
-	        propertyData.isKey(propertyDescriptor->isKey());
-	        propertyData.type(propertyDescriptor->valueDescriptor().name());
+	        propertyData.tag(propertyDescriptor.tag());
+	        propertyData.name(propertyDescriptor.name());
+	        propertyData.isKey(propertyDescriptor.isKey());
+	        propertyData.type(propertyDescriptor.valueDescriptor().name());
 	        properties.emplace_back(propertyData);
 	    }
 

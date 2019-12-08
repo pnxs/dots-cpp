@@ -12,7 +12,7 @@ protected:
 	struct TestProperty : Property<T, TestProperty<T>>
 	{
 		TestProperty(const dots::type::PropertyArea& area, std::string name, uint32_t tag) :
-			m_descriptor{ dots::type::PropertyDescriptor<T>{ std::move(name), static_cast<uint32_t>(reinterpret_cast<char*>(this) - reinterpret_cast<const char*>(&area)), tag, false } } {}
+			m_descriptor{ dots::type::PropertyDescriptor{ Descriptor<T>::InstancePtr(), std::move(name), static_cast<uint32_t>(reinterpret_cast<char*>(this) - reinterpret_cast<const char*>(&area)), tag, false } } {}
 		TestProperty(const TestProperty& other) = delete;
 		TestProperty(TestProperty&& other) = delete;
 		~TestProperty() { Property<T, TestProperty<T>>::destroy(); }
@@ -27,10 +27,10 @@ protected:
 		T& derivedStorage()	{ return m_value; }
 		const T& derivedValue() const {	return const_cast<TestProperty&>(*this).derivedValue();	}
 		const PropertyMetadata<T>& derivedMetadata() const { return static_cast<const PropertyMetadata<T>&>(m_descriptor.metadata()); }
-		const PropertyDescriptor<T>& derivedDescriptor() const { return m_descriptor; }
+		const PropertyDescriptor& derivedDescriptor() const { return m_descriptor; }
 
 		union {	T m_value; };
-		const PropertyDescriptor<T> m_descriptor;
+		const PropertyDescriptor m_descriptor;
 	};
 
 	struct TestPropertyArea : dots::type::PropertyArea
@@ -49,12 +49,10 @@ protected:
 	
 	TestProxyPropertyIterator() :
 		m_propertyDescriptors{
-			nullptr,
-			&m_propertyArea.intProperty.descriptor(),
-			&m_propertyArea.stringProperty.descriptor(),
-			&m_propertyArea.floatProperty.descriptor(),
-			nullptr,
-			&m_propertyArea.shortProperty.descriptor()
+			m_propertyArea.intProperty.descriptor(),
+			m_propertyArea.stringProperty.descriptor(),
+			m_propertyArea.floatProperty.descriptor(),
+			m_propertyArea.shortProperty.descriptor()
 		},
 		m_forwardBegin{ m_propertyArea, m_propertyDescriptors, m_propertyDescriptors.begin() },
 		m_forwardEnd{ m_propertyArea, m_propertyDescriptors, m_propertyDescriptors.end() },

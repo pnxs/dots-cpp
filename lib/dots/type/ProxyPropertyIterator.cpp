@@ -9,7 +9,7 @@ namespace dots::type
 		m_descriptorIt(std::move(descriptorIt)),
 		m_properties(properties)
 	{
-		if (!onEnd() && (*m_descriptorIt == nullptr || !emplaceProxy().isPartOf(m_properties)))
+		if (!onEnd() && !emplaceProxy().isPartOf(m_properties))
 		{
 			++(*this);
 		}
@@ -37,7 +37,7 @@ namespace dots::type
 		{
 			++m_descriptorIt;
 
-			if (onEnd() || (*m_descriptorIt != nullptr && emplaceProxy().isPartOf(m_properties)))
+			if (onEnd() || emplaceProxy().isPartOf(m_properties))
 			{
 				break;
 			}
@@ -53,7 +53,7 @@ namespace dots::type
 		{
 			--m_descriptorIt;
 
-			if (*m_descriptorIt != nullptr && emplaceProxy().isPartOf(m_properties))
+			if (emplaceProxy().isPartOf(m_properties))
 			{
 				break;
 			}
@@ -152,11 +152,11 @@ namespace dots::type
 	{
 		if constexpr (IsConst)
 		{
-			return m_proxy.emplace(const_cast<std::remove_const_t<area_t>&>(*m_area), **m_descriptorIt);
+			return m_proxy.emplace(const_cast<std::remove_const_t<area_t>&>(*m_area), *m_descriptorIt);
 		}
 		else
 		{
-			return m_proxy.emplace(*m_area, **m_descriptorIt);
+			return m_proxy.emplace(*m_area, *m_descriptorIt);
 		}
 	}
 

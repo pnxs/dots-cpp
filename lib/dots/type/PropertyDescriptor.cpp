@@ -3,14 +3,14 @@
 
 namespace dots::type
 {
-	PropertyDescriptor<Typeless, void>::PropertyDescriptor(const std::shared_ptr<Descriptor<>>& descriptor, PropertyMetadata<> metadata) :
+	PropertyDescriptor::PropertyDescriptor(const std::shared_ptr<Descriptor<>>& descriptor, PropertyMetadata<> metadata) :
 		m_descriptor{ descriptor },
 		m_metadata{ std::move(metadata) }
 	{
 		m_name = m_metadata.name();
 	}
 
-	PropertyDescriptor<Typeless, void>::PropertyDescriptor(const std::shared_ptr<Descriptor<>>& descriptor, std::string name, size_t offset, uint32_t tag, bool isKey) :
+	PropertyDescriptor::PropertyDescriptor(const std::shared_ptr<Descriptor<>>& descriptor, std::string name, size_t offset, uint32_t tag, bool isKey) :
 		m_descriptor{ descriptor },
 		m_name{ std::move(name) },
 		m_metadata{ m_name, tag, isKey, descriptor->size(), descriptor->alignment(), offset }
@@ -18,7 +18,7 @@ namespace dots::type
 		/* do nothing */
 	}
 
-	PropertyDescriptor<Typeless, void>::PropertyDescriptor(const std::shared_ptr<Descriptor<>>& descriptor, std::string name, uint32_t tag, bool isKey) :
+	PropertyDescriptor::PropertyDescriptor(const std::shared_ptr<Descriptor<>>& descriptor, std::string name, uint32_t tag, bool isKey) :
 		m_descriptor{ descriptor },
 		m_name{ std::move(name) },
 		m_metadata{ m_name, tag, isKey, descriptor->size(), descriptor->alignment() }
@@ -26,7 +26,7 @@ namespace dots::type
 		/* do nothing */
 	}
 
-	PropertyDescriptor<Typeless, void>::PropertyDescriptor(const std::shared_ptr<Descriptor<>>& descriptor, std::string name, const PropertyDescriptor<>& previous, uint32_t tag, bool isKey) :
+	PropertyDescriptor::PropertyDescriptor(const std::shared_ptr<Descriptor<>>& descriptor, std::string name, const PropertyDescriptor& previous, uint32_t tag, bool isKey) :
 		m_descriptor{ descriptor },
 		m_name{ std::move(name) },
 		m_metadata{ m_name, tag, isKey, descriptor->size(), descriptor->alignment(), previous.metadata() }
@@ -34,52 +34,52 @@ namespace dots::type
 		/* do nothing */
 	}
 
-	const std::shared_ptr<Descriptor<>>& PropertyDescriptor<Typeless, void>::valueDescriptorPtr() const
+	const std::shared_ptr<Descriptor<>>& PropertyDescriptor::valueDescriptorPtr() const
 	{
 		return m_descriptor;
 	}
 
-	const Descriptor<>& PropertyDescriptor<Typeless, void>::valueDescriptor() const
+	const Descriptor<>& PropertyDescriptor::valueDescriptor() const
 	{
 		return *m_descriptor;
 	}
 
-	const PropertyMetadata<>& PropertyDescriptor<Typeless, void>::metadata() const
+	const PropertyMetadata<>& PropertyDescriptor::metadata() const
 	{
 		return m_metadata;
 	}
 
-	const std::string& PropertyDescriptor<Typeless, void>::name() const
+	const std::string& PropertyDescriptor::name() const
 	{
 		return m_name;
 	}
 
-	size_t PropertyDescriptor<Typeless, void>::offset() const
+	size_t PropertyDescriptor::offset() const
 	{
 		return m_metadata.offset();
 	}
 
-	uint32_t PropertyDescriptor<Typeless, void>::tag() const
+	uint32_t PropertyDescriptor::tag() const
 	{
 		return m_metadata.tag();
 	}
 
-	bool PropertyDescriptor<Typeless, void>::isKey() const
+	bool PropertyDescriptor::isKey() const
 	{
 		return m_metadata.isKey();
 	}
 
-	PropertySet PropertyDescriptor<Typeless, void>::set() const
+	PropertySet PropertyDescriptor::set() const
 	{
 		return m_metadata.set();
 	}
 
-	char* PropertyDescriptor<Typeless, void>::address(void* p) const
+	char* PropertyDescriptor::address(void* p) const
 	{
 		return reinterpret_cast<char*>(&reinterpret_cast<Struct*>(p)->_propertyArea()) + offset();
 	}
 
-	const char* PropertyDescriptor<Typeless, void>::address(const void* p) const
+	const char* PropertyDescriptor::address(const void* p) const
 	{
 		return reinterpret_cast<const char*>(&reinterpret_cast<const Struct*>(p)->_propertyArea()) + offset();
 	}

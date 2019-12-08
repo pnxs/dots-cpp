@@ -98,17 +98,17 @@ static void to_cbor_recursive(const type::Struct& instance, types::property_set_
     const auto& prop_list = instance._descriptor().propertyDescriptors();
     for (const auto& prop : prop_list)
     {
-        if (!(prop->set() <= serializePropertySet))
+        if (!(prop.set() <= serializePropertySet))
             continue;
 
-        auto propertyValue = prop->address(&instance);
+        auto propertyValue = prop.address(&instance);
 
         //std::cout << "cbor write property '" << prop.name() << "' tag: " << tag << ":\n";
 
         // Write Tag
-        encoder.write_int(prop->tag());
+        encoder.write_int(prop.tag());
 
-        write_cbor(prop->valueDescriptor(), *type::Typeless::From(propertyValue), encoder);
+        write_cbor(prop.valueDescriptor(), *type::Typeless::From(propertyValue), encoder);
     }
 }
 
@@ -193,11 +193,11 @@ void from_cbor_recursive(const type::StructDescriptor<>& td, type::Struct& insta
         uint32_t tag = decoder.read_uint();
 
         // find structProperty with Tag <tag>
-        auto propertyIter = std::find_if(structProperties.begin(), structProperties.end(), [&tag](auto prop) { return prop->tag() == tag; });
+        auto propertyIter = std::find_if(structProperties.begin(), structProperties.end(), [&tag](auto prop) { return prop.tag() == tag; });
         if (propertyIter != structProperties.end())
         {
             auto property = *propertyIter;
-            auto propertyValue = property->address(&instance);
+            auto propertyValue = property.address(&instance);
 
             //auto cbor_type = decoder.peekType();
 
@@ -206,12 +206,12 @@ void from_cbor_recursive(const type::StructDescriptor<>& td, type::Struct& insta
 
             if (1) // TODO: wireTypeCompatible
             {
-                read_cbor(property->valueDescriptor(), *type::Typeless::From(propertyValue), decoder);
+                read_cbor(property.valueDescriptor(), *type::Typeless::From(propertyValue), decoder);
             }
 
             //td.propertyArea(instance).validProperties() += property->set();
         	type::PropertySet& validProperties = td.propertyArea(instance).validProperties();
-        	validProperties += property->set();
+        	validProperties += property.set();
         }
         else
         {

@@ -11,25 +11,21 @@ namespace dots::types
         struct intProperty_t : type::StaticProperty<int32_t, intProperty_t>
         {
         	static constexpr auto Metadata = type::PropertyMetadata<types::int32_t>{ "intProperty", 1, true };
-			inline static auto Descriptor = type::PropertyDescriptor<int32_t>{ Metadata };
         };
     	
         struct stringProperty_t : type::StaticProperty<string_t, stringProperty_t>
         {
         	static constexpr auto Metadata = type::PropertyMetadata<types::string_t>{ "stringProperty", 2, false, intProperty_t::Metadata };
-			inline static auto Descriptor = dots::type::PropertyDescriptor<string_t>{ Metadata };
         };
 
     	struct boolProperty_t : type::StaticProperty<bool_t, boolProperty_t>
         {
     		static constexpr auto Metadata = type::PropertyMetadata<types::bool_t>{ "boolProperty", 3, false, stringProperty_t::Metadata };
-			inline static auto Descriptor = dots::type::PropertyDescriptor<bool_t>{ Metadata };
         };
     	
-        struct floatVectorProperty_t : type::StaticProperty<vector_t<float32_t>, floatVectorProperty_t>
+        struct floatVectorProperty_t : type::StaticProperty<vector_t<types::float32_t>, floatVectorProperty_t>
         {
-        	static constexpr auto Metadata = type::PropertyMetadata<types::vector_t<float32_t>>{ "floatVectorProperty", 4, false, boolProperty_t::Metadata };
-			inline static auto Descriptor = type::PropertyDescriptor<vector_t<float32_t>>{ Metadata };
+        	static constexpr auto Metadata = type::PropertyMetadata<types::vector_t<types::float32_t>>{ "floatVectorProperty", 4, false, boolProperty_t::Metadata };
         };
 
     	using intProperty_i = type::PropertyInitializer<intProperty_t>;
@@ -61,13 +57,7 @@ namespace dots::type
 	struct Descriptor<types::TestStruct> : StructDescriptor<types::TestStruct>
 	{
 		Descriptor() :
-			StructDescriptor("TestStruct", Cached, {
-        		nullptr,
-	            &types::TestStruct::intProperty_t::Descriptor,
-	            &types::TestStruct::stringProperty_t::Descriptor,
-				&types::TestStruct::boolProperty_t::Descriptor,
-	            &types::TestStruct::floatVectorProperty_t::Descriptor
-			}){}
+			StructDescriptor("TestStruct", Cached, types::TestStruct::_MakePropertyDescriptors()){}
 	};
 }
 
@@ -118,10 +108,10 @@ TEST_F(TestStaticStruct, _Descriptor_PropertyOffsetsMatchActualOffsets)
 	TestStruct sut;
 	
 	auto determine_offset = [&](const auto& property) { return reinterpret_cast<size_t>(&property) - reinterpret_cast<size_t>(&sut._propertyArea()); };
-	EXPECT_EQ(TestStruct::_Descriptor().propertyDescriptors()[1]->offset(), determine_offset(sut.intProperty));
-	EXPECT_EQ(TestStruct::_Descriptor().propertyDescriptors()[2]->offset(), determine_offset(sut.stringProperty));
-	EXPECT_EQ(TestStruct::_Descriptor().propertyDescriptors()[3]->offset(), determine_offset(sut.boolProperty));
-	EXPECT_EQ(TestStruct::_Descriptor().propertyDescriptors()[4]->offset(), determine_offset(sut.floatVectorProperty));
+	EXPECT_EQ(TestStruct::_Descriptor().propertyDescriptors()[0].offset(), determine_offset(sut.intProperty));
+	EXPECT_EQ(TestStruct::_Descriptor().propertyDescriptors()[1].offset(), determine_offset(sut.stringProperty));
+	EXPECT_EQ(TestStruct::_Descriptor().propertyDescriptors()[2].offset(), determine_offset(sut.boolProperty));
+	EXPECT_EQ(TestStruct::_Descriptor().propertyDescriptors()[3].offset(), determine_offset(sut.floatVectorProperty));
 }
 
 TEST_F(TestStaticStruct, _Descriptor_SizeMatchesActualSize)

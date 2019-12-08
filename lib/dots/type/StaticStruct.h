@@ -368,6 +368,11 @@ namespace dots::type
 			return KeyProperties;
 		}
 
+    	static property_descriptor_container_t _MakePropertyDescriptors()
+    	{
+    		return _MakePropertyDescriptors(typename Derived::_properties_t{});
+    	}
+
     protected:
 
 		StaticStruct(const StaticStruct& other) = default;
@@ -400,6 +405,12 @@ namespace dots::type
 
     	using Struct::_propertyArea;
     	using Struct::_validProperties;
+
+    	template <typename... Properties>
+    	static property_descriptor_container_t _MakePropertyDescriptors(std::tuple<Properties...>)
+    	{
+    		return property_descriptor_container_t{ strip_t<Properties>::MakeDescriptor()... };
+    	}
 
     	template <typename Callable, typename... Properties>
     	auto _applyProperties(Callable&& callable, std::tuple<Properties...>) const

@@ -39,6 +39,11 @@ namespace dots::type
 			return Set() <= propertySet;
 		}
 
+		static PropertyDescriptor MakeDescriptor()
+		{
+			return PropertyDescriptor{ Descriptor<T>::InstancePtr(), Derived::Metadata };
+		}
+
 		template <typename... Args>
 		static void Publish(Args&&... args)
 		{
@@ -114,7 +119,7 @@ namespace dots::type
 			return Derived::Metadata;
 		}
 
-		static const PropertyDescriptor<T>& derivedDescriptor()
+		static const PropertyDescriptor& derivedDescriptor()
 		{
 			return Derived::Descriptor;
 		}

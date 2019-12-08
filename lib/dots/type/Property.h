@@ -352,19 +352,21 @@ namespace dots::type
 			return static_cast<const Derived&>(*this).derivedMetadata();
 		}
 
-		constexpr const PropertyDescriptor<T>& descriptor() const
+		constexpr const PropertyDescriptor& descriptor() const
 		{
 			return static_cast<const Derived&>(*this).derivedDescriptor();
 		}
 
-		constexpr const Descriptor<T>& valueDescriptorPtr() const
-		{
-			return descriptor().valueDescriptorPtr();
-		}
-
 		constexpr const Descriptor<T>& valueDescriptor() const
 		{
-			return descriptor().valueDescriptor();
+			if constexpr (IsTypeless)
+			{
+				return descriptor().valueDescriptor();
+			}
+			else
+			{
+				return Descriptor<T>::Instance();
+			}
 		}
 
 		constexpr bool isPartOf(const PropertySet& propertySet) const

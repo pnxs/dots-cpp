@@ -44,7 +44,6 @@ namespace dots::types
         {
 			using struct_t = {{name}};
 			static constexpr auto Metadata = type::PropertyMetadata<types::{{property.cxx_type}}>{ "{{property.name}}", {{property.tag}}, {% if property.key %}true{% else %}false{% endif %}{% if not loop.first %}, {{loop.previtem.name}}_t::Metadata{% endif %} };
-			inline static auto Descriptor = type::PropertyDescriptor<types::{{property.cxx_type}}>{ Metadata };
 		
 			{{property.name}}_t& operator = (const {{property.name}}_t& rhs) = default;
 			{{property.name}}_t& operator = ({{property.name}}_t&& rhs) = default;
@@ -85,12 +84,7 @@ namespace dots::type
 	struct Descriptor<types::{{name}}> : StructDescriptor<types::{{name}}>
 	{
 		Descriptor() :
-			StructDescriptor(types::{{name}}::_Name, types::{{name}}::_Cached | types::{{name}}::_Internal | types::{{name}}::_Persistent | types::{{name}}::_Cleanup | types::{{name}}::_Local | types::{{name}}::_SubstructOnly, {
-{% for property in attributes %}
-                &types::{{name}}::{{property.name}}_t::Descriptor{% if not loop.last %},{% endif %}
-				
-{% endfor %}
-			}){}
+			StructDescriptor(types::{{name}}::_Name, types::{{name}}::_Cached | types::{{name}}::_Internal | types::{{name}}::_Persistent | types::{{name}}::_Cleanup | types::{{name}}::_Local | types::{{name}}::_SubstructOnly, types::{{name}}::_MakePropertyDescriptors()){}
 	};
 }
 

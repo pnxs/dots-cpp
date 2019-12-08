@@ -143,9 +143,9 @@ namespace dots::io
 		{
 			auto structDescriptor = std::static_pointer_cast<type::StructDescriptor<>>(descriptor);
 
-			for (const type::PropertyDescriptor<>* propertyDescriptor : structDescriptor->propertyDescriptors())
+			for (const type::PropertyDescriptor& propertyDescriptor : structDescriptor->propertyDescriptors())
 			{
-				registerType(propertyDescriptor->valueDescriptorPtr(), false);
+				registerType(propertyDescriptor.valueDescriptorPtr(), false);
 			}
 		}
 
