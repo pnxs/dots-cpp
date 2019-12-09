@@ -59,12 +59,18 @@ namespace dots::type
 
 		StaticProperty(const StaticProperty& other) : Property<T, Derived>()
 		{
-			*this = other;
+			if (other.isValid())
+			{
+				Property<T, Derived>::template construct<false>(static_cast<const Derived&>(other));
+			}
 		}
 
 		StaticProperty(StaticProperty&& other)
 		{
-			*this = std::move(other);
+			if (other.isValid())
+			{
+				Property<T, Derived>::template construct<false>(static_cast<Derived&&>(other));
+			}
 		}
 
 		~StaticProperty()

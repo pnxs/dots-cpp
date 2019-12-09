@@ -124,37 +124,31 @@ namespace dots::type
 			return metadata().set() <= validProperties();
 		}
 
+		template <bool AssertInvalidity = true>
 		T& construct(const Derived& rhs)
 		{
-			if (!rhs.isValid())
-			{
-				throw std::runtime_error{ std::string{ "attempt to construct from invalid property: " } + metadata().name().data() };
-			}
-			
-			construct(rhs.storage());
-
+			construct<AssertInvalidity>(rhs.storage());
 			return *this;
 		}
 
+		template <bool AssertInvalidity = true>
 		T& construct(Derived&& rhs)
 		{
-			if (!rhs.isValid())
-			{
-				throw std::runtime_error{ std::string{ "attempt to construct from invalid property: " } + metadata().name().data() };
-			}
-
-			construct(std::move(rhs.storage()));
+			construct<AssertInvalidity>(std::move(rhs.storage()));
 			rhs.destroy();
 
 			return *this;
 		}
 
-		template <typename... Args>
+		template <bool AssertInvalidity = true, typename... Args>
 		T& construct(Args&&... args)
 		{
-			if (isValid())
+			if constexpr (AssertInvalidity)
 			{
-				throw std::runtime_error{ std::string{ "attempt to construct already valid property: " } + metadata().name().data() };
+				if (isValid())
+				{
+					throw std::runtime_error{ std::string{ "attempt to construct already valid property: " } + metadata().name().data() };
+				}
 			}
 
 			if constexpr (!IsTypeless)
@@ -216,41 +210,35 @@ namespace dots::type
 			}
 			else
 			{
-				return construct(std::forward<Args>(args)...);
+				return construct<false>(std::forward<Args>(args)...);
 			}
 		}
 
+		template <bool AssertValidity = true>
 		T& assign(const Derived& rhs)
 		{
-			if (!rhs.isValid())
-			{
-				throw std::runtime_error{ std::string{ "attempt to assign from invalid property: " } + metadata().name().data() };
-			}
-			
-			assign(rhs.storage());
-
+			assign<AssertValidity>(rhs.storage());
 			return *this;
 		}
 
+		template <bool AssertValidity = true>
 		T& assign(Derived&& rhs)
 		{
-			if (!rhs.isValid())
-			{
-				throw std::runtime_error{ std::string{ "attempt to assign from invalid property: " } + metadata().name().data() };
-			}
-
-			assign(std::move(rhs.storage()));
+			assign<AssertValidity>(std::move(rhs.storage()));
 			rhs.destroy();
 
 			return *this;
 		}
 
-		template <typename... Args>
+		template <bool AssertValidity = true, typename... Args>
 		T& assign(Args&&... args)
 		{
-			if (!isValid())
+			if constexpr (AssertValidity)
 			{
-				throw std::runtime_error{ std::string{ "attempt to assign invalid property: " } + metadata().name().data() };
+				if (!isValid())
+				{
+					throw std::runtime_error{ std::string{ "attempt to assign invalid property: " } + metadata().name().data() };
+				}
 			}
 
 			static_assert(!IsTypeless || sizeof...(Args) <= 1, "typeless assignment only supports a single argument");
@@ -277,11 +265,11 @@ namespace dots::type
 		{
 			if (isValid())
 			{
-				return assign(std::forward<Args>(args)...);
+				return assign<false>(std::forward<Args>(args)...);
 			}
 			else
 			{
-				return construct(std::forward<Args>(args)...);
+				return construct<false>(std::forward<Args>(args)...);
 			}
 		}
 
@@ -302,13 +290,13 @@ namespace dots::type
 				}
 				else
 				{
-					other.construct(std::move(storage()));
+					other.template construct<false>(std::move(storage()));
 					destroy();
 				}
 			}
 			else if (other.isValid())
 			{
-				construct(std::move(other.storage()));
+				construct<false>(std::move(other.storage()));
 				other.destroy();
 			}
 		}

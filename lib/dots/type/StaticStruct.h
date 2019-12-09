@@ -26,7 +26,7 @@ namespace dots::type
 		template <typename... PropertyInitializers, std::enable_if_t<sizeof...(PropertyInitializers) >= 1 && std::conjunction_v<is_property_initializer_t<std::remove_pointer_t<std::decay_t<PropertyInitializers>>>...>, int> = 0>
 		explicit StaticStruct(PropertyInitializers&&... propertyInitializers) : Struct(_Descriptor())
 		{
-			(getProperty<strip_t<typename strip_t<PropertyInitializers>::property_t>>().construct(std::forward<decltype(propertyInitializers.value)>(propertyInitializers.value)), ...);
+			(getProperty<strip_t<typename strip_t<PropertyInitializers>::property_t>>().template construct<false>(std::forward<decltype(propertyInitializers.value)>(propertyInitializers.value)), ...);
 		}
 
 		bool operator == (const Derived& rhs) const
