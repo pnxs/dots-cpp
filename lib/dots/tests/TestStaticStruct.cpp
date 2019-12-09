@@ -36,13 +36,19 @@ namespace dots::types
         using _key_properties_t = std::tuple<intProperty_t*>;
         using _properties_t     = std::tuple<intProperty_t*, stringProperty_t*, boolProperty_t*, floatVectorProperty_t*>;
 
-		using StaticStruct::StaticStruct;
+		TestStruct() = default;
 		TestStruct(const TestStruct& other) = default;
 		TestStruct(TestStruct&& other) = default;
 		~TestStruct() = default;
 
 		TestStruct& operator = (const TestStruct& sutRhs) = default;
 		TestStruct& operator = (TestStruct&& sutRhs) = default;
+
+    	template <typename... PropertyInitializers, std::enable_if_t<sizeof...(PropertyInitializers) >= 1 && std::conjunction_v<type::is_property_initializer_t<std::remove_pointer_t<std::decay_t<PropertyInitializers>>>...>, int> = 0>
+		explicit TestStruct(PropertyInitializers&&... propertyInitializers)
+		{
+			(_getProperty<typename std::remove_pointer_t<std::decay_t<PropertyInitializers>>::property_t>().template construct<false>(std::forward<decltype(propertyInitializers)>(propertyInitializers).value), ...);
+		}
 
     	template <typename P>
 		const P& _getProperty() const
