@@ -42,7 +42,38 @@ namespace dots::types
 		~TestStruct() = default;
 
 		TestStruct& operator = (const TestStruct& sutRhs) = default;
-		TestStruct& operator = (TestStruct&& sutRhs) = default;        
+		TestStruct& operator = (TestStruct&& sutRhs) = default;
+
+    	template <typename P>
+		const P& _getProperty() const
+		{
+			if constexpr (std::is_same_v<P, intProperty_t>)
+			{
+				return intProperty;
+			}
+			else if constexpr (std::is_same_v<P, stringProperty_t>)
+			{
+				return stringProperty;
+			}
+			else if constexpr (std::is_same_v<P, boolProperty_t>)
+			{
+				return boolProperty;
+			}
+			else if constexpr (std::is_same_v<P, floatVectorProperty_t>)
+			{
+				return floatVectorProperty;
+			}
+			else
+			{
+				static_assert(std::is_same_v<P, void>, "P is not a property of struct type DotsTestStruct");
+			}
+		}
+
+		template <typename P>
+		P& _getProperty()
+		{
+			return const_cast<P&>(std::as_const(*this).template _getProperty<P>());
+		}
 
         intProperty_t intProperty;
         stringProperty_t stringProperty;

@@ -329,18 +329,6 @@ namespace dots::type
 			return m_propertyArea.validProperties();
 		}
 
-    	template <typename P>
-    	const P& getProperty() const
-		{
-			return m_propertyArea.getProperty<P>();
-		}
-
-    	template <typename P>
-		P& getProperty()
-		{
-			return const_cast<P&>(std::as_const(*this).template getProperty<P>());
-		}
-
     	static const Descriptor<Derived>& _Descriptor()
         {
 			return M_descriptor;
@@ -400,6 +388,18 @@ namespace dots::type
 
     	using Struct::_propertyArea;
     	using Struct::_validProperties;
+
+    	template <typename P>
+    	const P& getProperty() const
+		{
+			return static_cast<const Derived&>(*this).template _getProperty<P>();
+		}
+
+    	template <typename P>
+		P& getProperty()
+		{
+			return static_cast<Derived&>(*this).template _getProperty<P>();
+		}
 
     	template <typename... Properties>
     	static property_descriptor_container_t _MakePropertyDescriptors(std::tuple<Properties...>)

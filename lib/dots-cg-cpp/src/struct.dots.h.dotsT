@@ -70,7 +70,28 @@ namespace dots::types
 		~{{name}}() = default;
 
 		{{name}}& operator = (const {{name}}& rhs) = default;
-		{{name}}& operator = ({{name}}&& rhs) = default;        
+		{{name}}& operator = ({{name}}&& rhs) = default;
+
+		template <typename P>
+		const P& _getProperty() const
+		{
+			{% for property in attributes %}
+			{% if not loop.first %}else {% endif %}if constexpr (std::is_same_v<P, {{property.name}}_t>)
+			{
+				return {{property.name}};
+			}
+			{% endfor %}
+			else
+			{
+				static_assert(std::is_same_v<P, void>, "P is not a property of struct type {{name}}");
+			}
+		}
+
+		template <typename P>
+		P& _getProperty()
+		{
+			return const_cast<P&>(std::as_const(*this).template _getProperty<P>());
+		}
 
 {% for property in attributes %}
         {{property.name}}_t {{property.name}}; // {{property.comment}} (key: {{property.key | lower }})
