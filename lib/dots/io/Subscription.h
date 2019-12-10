@@ -35,11 +35,8 @@ namespace dots
 			return m_obj;
 		}
 	private:
-		static S m_obj;
+		inline static S m_obj = &type::Descriptor<T>::Instance();
 	};
-
-	template<class T, class S>
-	S RegisterTypeUsage<T, S>::m_obj(&T::_Descriptor());
 
 	/**
 	* Registeres usage of type T in the given Chained-List
