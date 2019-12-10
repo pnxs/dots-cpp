@@ -453,7 +453,7 @@ void Connection::sendContainerContent(const Container<>& container)
         m_transmitter.prepareHeader(thead, &td, instance->_validProperties(), false);
 
         auto& dotsHeader = *thead.dotsHeader;
-        dotsHeader.sentTime = cloneInfo.modified;
+        dotsHeader.sentTime = cloneInfo.modified.isValid() ? *cloneInfo.modified : *cloneInfo.created;
         dotsHeader.serverSentTime =pnxs::SystemNow();
         dotsHeader.sender = cloneInfo.lastUpdateFrom;
         dotsHeader.fromCache = --remainingCacheObjects;
