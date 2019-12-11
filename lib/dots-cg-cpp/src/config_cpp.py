@@ -14,7 +14,7 @@ type_mapping     = {
     "uint64": "uint64_t",
     "float32": "float32_t",
     "float64": "float64_t",
-    "float128": "float64_t",
+    "float128": "float128_t",
     "duration": "duration_t",
     "timepoint": "timepoint_t",
     "steady_timepoint": "steady_timepoint_t",

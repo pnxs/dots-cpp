@@ -33,6 +33,12 @@ namespace dots::types
 
 	template <typename T>
 	using vector_t           = type::Vector<T>;
+
+	template <typename T = void>
+	struct float128_t
+	{
+		static_assert(std::is_base_of_v<T, T>, "float128 type is currently not supported");
+	};
 }
 
 namespace dots::type
