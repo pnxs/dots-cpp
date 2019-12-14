@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string_view>
+#include <map>
 #include "dots/cpp_config.h"
 #include "Dispatcher.h"
 #include "TD_Traversal.h"
@@ -27,9 +28,11 @@ namespace dots
 		template <typename T = type::Struct>
 		using event_handler_t = Dispatcher::event_handler_t<T>;
 
+		using descriptor_map_t = std::map<std::string_view, type::StructDescriptor<>*>;
+
 		Transceiver();
 
-		bool start(const string& name, channel_ptr_t channel);
+		bool start(const std::string& name, channel_ptr_t channel, descriptor_map_t preloadPublishTypes, descriptor_map_t preloadSubscribeTypes);
 		void stop();
 
 		const io::Registry& registry() const;
@@ -45,10 +48,6 @@ namespace dots
 		Subscription subscribe(const std::string_view& name, event_handler_t<>&& handler);
 
 		ServerConnection& connection();
-
-		type::StructDescriptorSet getPublishedDescriptors() const;
-		type::StructDescriptorSet getSubscribedDescriptors() const;
-		type::StructDescriptorSet getDescriptors() const;
 
 		bool connected() const;
 
@@ -89,5 +88,7 @@ namespace dots
 
 		io::Registry m_registry;
 		Dispatcher m_dispatcher;
+		descriptor_map_t m_preloadPublishTypes;
+		descriptor_map_t m_preloadSubscribeTypes;
 	};
 }

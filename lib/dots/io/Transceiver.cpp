@@ -3,47 +3,8 @@
 #include "DotsMsgConnect.dots.h"
 #include <dots/common/logging.h>
 
-namespace dots::type
-{
-	struct TypeNameLessThan
-	{
-		bool operator() (const type::StructDescriptor<>* lhs, const type::StructDescriptor<>* rhs) const
-		{
-			return lhs->name() < rhs->name();
-		}
-	};
-
-	class StructDescriptorSet : public std::set<const type::StructDescriptor<>*, TypeNameLessThan>
-	{
-		typedef std::set<const type::StructDescriptor<>*, TypeNameLessThan> base_type;
-
-	public:
-		template<class T>
-		void insert()
-		{
-			base_type::insert(T::_td());
-		}
-
-		using base_type::insert;
-
-		template<class T>
-		void erase()
-		{
-			base_type::erase(T::_td());
-		}
-
-		using base_type::erase;
-
-		void merge(const StructDescriptorSet& rhs)
-		{
-			insert(rhs.begin(), rhs.end());
-		}
-	};
-}
-
 namespace dots
 {
-
 	Publisher* onPublishObject = nullptr;
 
 	Transceiver::Transceiver()
@@ -55,9 +16,11 @@ namespace dots
 		onPublishObject = this;
 	}
 
-	bool Transceiver::start(const std::string& name, channel_ptr_t channel)
+	bool Transceiver::start(const std::string& name, channel_ptr_t channel, descriptor_map_t preloadPublishTypes, descriptor_map_t preloadSubscribeTypes)
 	{
 		LOG_DEBUG_S("start transceiver");
+		m_preloadPublishTypes = std::move(preloadPublishTypes);
+		m_preloadSubscribeTypes = std::move(preloadSubscribeTypes);
 
 		// start communication
 		if (connection().start(name, channel))
@@ -157,8 +120,19 @@ namespace dots
 	{
 		TD_Traversal traversal;
 
-		for (const auto& td : getDescriptors())
+		for (const auto& [name, td] : m_preloadPublishTypes)
 		{
+			(void)name;
+			if (td->internal()) continue;
+
+			traversal.traverseDescriptorData(td, [this](auto td, auto body) {
+				this->connection().publishNs("SYS", td, *reinterpret_cast<const type::Struct*>(body), td->validProperties(body), false);
+			});
+		}
+
+		for (const auto& [name, td] : m_preloadSubscribeTypes)
+		{
+			(void)name;
 			if (td->internal()) continue;
 
 			traversal.traverseDescriptorData(td, [this](auto td, auto body) {
@@ -167,9 +141,10 @@ namespace dots
 		}
 
 		// Send all subscribes
-		for (auto& descriptor : getSubscribedDescriptors())
+		for (const auto& [name, td] : m_preloadSubscribeTypes)
 		{
-			connection().joinGroup(descriptor->name());
+			(void)name;
+			connection().joinGroup(td->name());
 		}
 
 		// Send preloadClientFinished
@@ -177,58 +152,6 @@ namespace dots
 		cm.preloadClientFinished(true);
 
 		connection().publishNs("SYS", &cm._Descriptor(), cm);
-	}
-
-	type::StructDescriptorSet Transceiver::getPublishedDescriptors() const
-	{
-		type::StructDescriptorSet sds;
-
-		for (const auto& e : dots::PublishedType::allChained())
-		{
-			auto td = m_registry.findStructType(e->td->name());
-			if (!td) {
-				throw std::runtime_error("struct decriptor not found for " + e->td->name());
-			}
-			if (td) {
-				sds.insert(td.get());
-			}
-			else
-			{
-				LOG_ERROR_S("td is NULL: " << e->td->name())
-			}
-		}
-		return sds;
-	}
-
-	type::StructDescriptorSet Transceiver::getSubscribedDescriptors() const
-	{
-		type::StructDescriptorSet sds;
-
-		for (const auto& e : dots::SubscribedType::allChained())
-		{
-			auto td = m_registry.findStructType(e->td->name());
-			if (!td) {
-				throw std::runtime_error("struct decriptor1 not found for " + e->td->name());
-			}
-			if (td) {
-				sds.insert(td.get());
-			}
-			else
-			{
-				LOG_ERROR_S("td is NULL: " << e->td->name());
-			}
-		}
-		return sds;
-	}
-
-	type::StructDescriptorSet Transceiver::getDescriptors() const
-	{
-		type::StructDescriptorSet sds;
-
-		sds.merge(getPublishedDescriptors());
-		sds.merge(getSubscribedDescriptors());
-
-		return sds;
 	}
 
 	const type::StructDescriptor<>& Transceiver::getDescriptorFromName(const std::string_view& name) const
