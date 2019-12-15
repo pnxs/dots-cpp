@@ -26,7 +26,7 @@ namespace dots
 		bool start(const string& name, channel_ptr_t channel);
 		void stop();
 
-		const ClientId& clientId() const { return m_serversideClientname; }
+		const ClientId& id() const { return m_id; }
 
 		Channel& channel();
 
@@ -51,7 +51,7 @@ namespace dots
 		bool m_running = false;
 		channel_ptr_t m_channel;
 		DotsConnectionState m_connectionState = DotsConnectionState::connecting;
-		string m_clientName;
-		ClientId m_serversideClientname;
+		string m_name;
+		ClientId m_id;
 	};
 }

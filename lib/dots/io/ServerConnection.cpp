@@ -24,7 +24,7 @@ namespace dots
 		m_channel->asyncReceive(FUN(*this, handleReceivedMessage), nullptr);
 
 		m_running = true;
-		m_clientName = name;
+		m_name = name;
 
 		handleConnected(name);
 
@@ -143,7 +143,7 @@ namespace dots
 				}
 
 				DotsHeader dotsHeader = transportHeader.dotsHeader;
-				dotsHeader.isFromMyself(dotsHeader.sender == m_serversideClientname);
+				dotsHeader.isFromMyself(dotsHeader.sender == m_id);
 				onReceiveMessage(dotsHeader, transmission.instance());
 			}
 
@@ -167,7 +167,7 @@ namespace dots
 			case DotsConnectionState::connected:
 			{
 				DotsHeader dotsHeader = transportHeader.dotsHeader;
-				dotsHeader.isFromMyself(dotsHeader.sender == m_serversideClientname);
+				dotsHeader.isFromMyself(dotsHeader.sender == m_id);
 				onReceiveMessage(dotsHeader, transmission.instance());
 			}
 				break;
@@ -204,7 +204,7 @@ namespace dots
 		
 		if (connectResponse.clientId.isValid())
 		{
-			m_serversideClientname = connectResponse.clientId;
+			m_id = connectResponse.clientId;
 		}
 		
 		if (connectResponse.preload == true && (!connectResponse.preloadFinished.isValid() || connectResponse.preloadFinished == false))
@@ -237,7 +237,7 @@ namespace dots
 			LOG_DATA_S("send DotsMsgConnect");
 
 			DotsMsgConnect{
-                DotsMsgConnect::clientName_i{ m_clientName },
+                DotsMsgConnect::clientName_i{ m_name },
                 DotsMsgConnect::preloadCache_i{ true }
             }._publish();
 		}
