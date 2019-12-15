@@ -10,7 +10,7 @@ namespace dots
 {
 	bool ServerConnection::start(const string& name, channel_ptr_t channel)
 	{
-		if (running())
+		if (m_running)
 		{
 			LOG_WARN_S("already started");
 			return true;
@@ -33,21 +33,11 @@ namespace dots
 
 	void ServerConnection::stop()
 	{
-		if (!running()) return;
+		if (!m_running) return;
 
-		disconnect();
+		m_channel.reset();
 
 		m_running = false;
-	}
-
-	bool ServerConnection::running()
-	{
-		return m_running;
-	}
-
-	void ServerConnection::disconnect()
-	{
-		m_channel.reset();
 	}
 
 	Channel& ServerConnection::channel()

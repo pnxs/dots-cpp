@@ -26,8 +26,6 @@ namespace dots
 		bool start(const string& name, channel_ptr_t channel);
 		void stop();
 
-		bool running();
-
 		const ClientId& clientId() const { return m_serversideClientname; }
 
 		Channel& channel();
@@ -49,8 +47,6 @@ namespace dots
 		void processHello(const DotsMsgHello&);
 
 		void setConnectionState(DotsConnectionState state);
-
-		void disconnect();
 
 		bool m_running = false;
 		channel_ptr_t m_channel;
