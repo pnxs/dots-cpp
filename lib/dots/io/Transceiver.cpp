@@ -2,6 +2,7 @@
 #include <set>
 #include "DotsMsgConnect.dots.h"
 #include <dots/common/logging.h>
+#include <dots/io/serialization/AsciiSerialization.h>
 #include <DotsMember.dots.h>
 
 namespace dots
@@ -108,7 +109,36 @@ namespace dots
 			throw std::logic_error{ "attempt to publish substruct-only type" };
 		}
 
-		connection().publish(instance, what, remove);
+		const type::StructDescriptor<>& descriptor = instance._descriptor();
+		
+		if (remove)
+	    {
+	        what ^= descriptor.keyProperties();
+	    }
+
+	    if (!(what <= descriptor.keyProperties()))
+	    {
+	        throw std::runtime_error("tried to publish instance with invalid key (not all key-fields are set) what=" + what.toString() + " tdkeys=" + descriptor.keyProperties().toString());
+	    }
+		
+		DotsTransportHeader header{
+            DotsTransportHeader::destinationGroup_i{ descriptor.name() },
+            DotsTransportHeader::dotsHeader_i{
+                DotsHeader::typeName_i{ descriptor.name() },
+                DotsHeader::sentTime_i{ pnxs::SystemNow() },
+                DotsHeader::attributes_i{ what ==  types::property_set_t::All ? instance._validProperties() : what },
+                DotsHeader::removeObj_i{ remove },
+            }
+        };
+		
+		if (descriptor.internal())
+		{
+			header.nameSpace("SYS");
+			LOG_DEBUG_S("publish ns=" << *header.nameSpace << " type=" << descriptor.name());
+		}
+		
+		LOG_DATA_S("data:" << to_ascii(&descriptor, &instance, what));
+		m_serverConnection.channel().transmit(header, instance);
 	}
 
 	void Transceiver::onConnect()
@@ -149,7 +179,7 @@ namespace dots
 			if (td->internal()) continue;
 
 			traversal.traverseDescriptorData(td, [this](auto td, auto body) {
-				this->connection().publish(*reinterpret_cast<const type::Struct*>(body), td->validProperties(body), false);
+				publish(*reinterpret_cast<const type::Struct*>(body), td->validProperties(body), false);
 			});
 		}
 
@@ -159,7 +189,7 @@ namespace dots
 			if (td->internal()) continue;
 
 			traversal.traverseDescriptorData(td, [this](auto td, auto body) {
-				this->connection().publish(*reinterpret_cast<const type::Struct*>(body), td->validProperties(body), false);
+				publish(*reinterpret_cast<const type::Struct*>(body), td->validProperties(body), false);
 			});
 		}
 
@@ -174,6 +204,6 @@ namespace dots
 		DotsMsgConnect cm;
 		cm.preloadClientFinished(true);
 
-		connection().publish(cm);
+		publish(cm);
 	}
 }

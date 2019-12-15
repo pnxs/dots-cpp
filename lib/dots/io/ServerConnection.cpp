@@ -207,40 +207,6 @@ namespace dots
 		}
 	}
 
-	void ServerConnection::publish(const type::Struct& instance, types::property_set_t what, bool remove)
-	{
-		const type::StructDescriptor<>& descriptor = instance._descriptor();
-		
-		if (remove)
-	    {
-	        what ^= descriptor.keyProperties();
-	    }
-
-	    if (!(what <= descriptor.keyProperties()))
-	    {
-	        throw std::runtime_error("tried to publish instance with invalid key (not all key-fields are set) what=" + what.toString() + " tdkeys=" + descriptor.keyProperties().toString());
-	    }
-		
-		DotsTransportHeader header{
-            DotsTransportHeader::destinationGroup_i{ descriptor.name() },
-            DotsTransportHeader::dotsHeader_i{
-                DotsHeader::typeName_i{ descriptor.name() },
-                DotsHeader::sentTime_i{ pnxs::SystemNow() },
-                DotsHeader::attributes_i{ what ==  types::property_set_t::All ? instance._validProperties() : what },
-                DotsHeader::removeObj_i{ remove },
-            }
-        };
-		
-		if (descriptor.internal())
-		{
-			header.nameSpace("SYS");
-			LOG_DEBUG_S("publish ns=" << *header.nameSpace << " type=" << descriptor.name());
-		}
-		
-		LOG_DATA_S("data:" << to_ascii(&descriptor, &instance, what));
-		channel().transmit(header, instance);
-	}
-
 	void ServerConnection::processConnectResponse(const DotsMsgConnectResponse& connectResponse)
 	{
 		const std::string& serverName = connectResponse.serverName.isValid() ? *connectResponse.serverName : "<unknown>";
@@ -280,10 +246,10 @@ namespace dots
 			LOG_DEBUG_S("received hello from '" << *hello.serverName << "' authChallenge=" << hello.authChallenge);
 			LOG_DATA_S("send DotsMsgConnect");
 
-			publish(DotsMsgConnect{
+			DotsMsgConnect{
                 DotsMsgConnect::clientName_i{ m_clientName },
                 DotsMsgConnect::preloadCache_i{ true }
-            });
+            }._publish();
 		}
 		else
 		{
