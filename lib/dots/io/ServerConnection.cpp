@@ -208,43 +208,56 @@ namespace dots
 		}
 	}
 
-	Transmitter& ServerConnection::transmitter()
+	void ServerConnection::publishNs(const string& nameSpace, const type::Struct& instance, types::property_set_t what, bool remove)
 	{
-		return m_transmitter;
-	}
+		const type::StructDescriptor<>& descriptor = instance._descriptor();
+		
+		if (remove)
+	    {
+	        what ^= descriptor.keyProperties();
+	    }
 
-	void ServerConnection::publishNs(const string& nameSpace, const type::StructDescriptor<>* td, const type::Struct& instance, types::property_set_t what, bool remove)
-	{
-		DotsTransportHeader header;
-		transmitter().prepareHeader(header, td, what, remove); //< Modifies header and what
+	    if (!(what <= descriptor.keyProperties()))
+	    {
+	        throw std::runtime_error("tried to publish instance with invalid key (not all key-fields are set) what=" + what.toString() + " tdkeys=" + descriptor.keyProperties().toString());
+	    }
+		
+		DotsTransportHeader header{
+            DotsTransportHeader::destinationGroup_i{ descriptor.name() },
+            DotsTransportHeader::dotsHeader_i{
+                DotsHeader::typeName_i{ descriptor.name() },
+                DotsHeader::sentTime_i{ pnxs::SystemNow() },
+                DotsHeader::attributes_i{ what ==  types::property_set_t::All ? instance._validProperties() : what },
+                DotsHeader::removeObj_i{ remove },
+            }
+        };
+		
 		if (!nameSpace.empty())
 		{
 			header.nameSpace(nameSpace);
 		}
 
-		// Send to peer or group
-
-		LOG_DEBUG_S("publish ns=" << nameSpace << " type=" << td->name());
-		LOG_DATA_S("data:" << to_ascii(td, &instance, what));
+		LOG_DEBUG_S("publish ns=" << nameSpace << " type=" << descriptor.name());
+		LOG_DATA_S("data:" << to_ascii(&descriptor, &instance, what));
 		channel().transmit(header, instance);
 	}
 
-	void ServerConnection::publish(const type::StructDescriptor<>* td, const type::Struct& instance, types::property_set_t what, bool remove)
+	void ServerConnection::publish(const type::Struct& instance, types::property_set_t what, bool remove)
 	{
-		publishNs(string(), td, instance, what, remove);
+		publishNs(instance._descriptor().internal() ? "SYS" : "", instance, what, remove);
 	}
 
-	void ServerConnection::processConnectResponse(const DotsMsgConnectResponse& cr)
+	void ServerConnection::processConnectResponse(const DotsMsgConnectResponse& connectResponse)
 	{
-		string serverName = cr.serverName.isValid() ? *cr.serverName : "<unknown>";
-		LOG_DEBUG_S("connectResponse: serverName=" << serverName << " accepted=" << *cr.accepted);
-		if (cr.clientId.isValid())
+		const std::string& serverName = connectResponse.serverName.isValid() ? *connectResponse.serverName : "<unknown>";
+		LOG_DEBUG_S("connectResponse: serverName=" << serverName << " accepted=" << *connectResponse.accepted);
+		
+		if (connectResponse.clientId.isValid())
 		{
-			m_serversideClientname = cr.clientId;
+			m_serversideClientname = connectResponse.clientId;
 		}
-		if (cr.preload.isValid() && cr.preload &&
-		    (!cr.preloadFinished.isValid() ||
-		     (cr.preloadFinished.isValid() && !cr.preloadFinished)))
+		
+		if (connectResponse.preload == true && (!connectResponse.preloadFinished.isValid() || connectResponse.preloadFinished == false))
 		{
 			setConnectionState(DotsConnectionState::early_subscribe);
 		}
@@ -254,9 +267,9 @@ namespace dots
 		}
 	}
 
-	void ServerConnection::processEarlySubscribe(const DotsMsgConnectResponse& cr)
+	void ServerConnection::processEarlySubscribe(const DotsMsgConnectResponse& connectResponse)
 	{
-		if (cr.preloadFinished.isValid() && cr.preloadFinished)
+		if (connectResponse.preloadFinished == true)
 		{
 			setConnectionState(DotsConnectionState::connected);
 		}
@@ -272,7 +285,11 @@ namespace dots
 		{
 			LOG_DEBUG_S("received hello from '" << *hello.serverName << "' authChallenge=" << hello.authChallenge);
 			LOG_DATA_S("send DotsMsgConnect");
-			requestConnection(m_clientName, ConnectMode::preload);
+
+			publish(DotsMsgConnect{
+                DotsMsgConnect::clientName_i{ m_clientName },
+                DotsMsgConnect::preloadCache_i{ true }
+            });
 		}
 		else
 		{
@@ -280,37 +297,21 @@ namespace dots
 		}
 	}
 
-	void ServerConnection::joinGroup(const GroupName& groupName)
+	void ServerConnection::joinGroup(const std::string_view& name)
 	{
-		DotsMember member;
-		member.groupName(groupName);
-		member.event(DotsMemberEvent::join);
-
-		LOG_DEBUG_S("send DotsMember (join " << groupName << ")");
-		publishNs("SYS", &member._Descriptor(), member);
+		LOG_DEBUG_S("send DotsMember (join " << name << ")");
+		publish(DotsMember{
+            DotsMember::groupName_i{ name },
+            DotsMember::event_i{ DotsMemberEvent::join }
+        });
 	}
 
-	void ServerConnection::requestConnection(const ServerConnection::ClientName& name, ServerConnection::ConnectMode mode)
+	void ServerConnection::leaveGroup(const std::string_view& name)
 	{
-		DotsMsgConnect cm;
-		cm.clientName(name);
-		switch (mode)
-		{
-			case ConnectMode::direct: cm.preloadCache(false);
-				break;
-			case ConnectMode::preload: cm.preloadCache(true);
-				break;
-		}
-		publishNs("SYS", &cm._Descriptor(), cm);
-	}
-
-	void ServerConnection::leaveGroup(const ServerConnection::GroupName& groupName)
-	{
-		DotsMember member;
-		member.groupName(groupName);
-		member.event(DotsMemberEvent::leave);
-
-		LOG_INFO_S("send DotsMember (leave " << groupName << ")");
-		publishNs("SYS", &member._Descriptor(), member);
+		LOG_INFO_S("send DotsMember (leave " << name << ")");
+		publish(DotsMember{
+            DotsMember::groupName_i{ name },
+            DotsMember::event_i{ DotsMemberEvent::leave }
+        });
 	}
 }

@@ -1,10 +1,10 @@
 #pragma once
 
+#include <string_view>
 #include "dots/cpp_config.h"
 #include <dots/dots_base.h>
 #include <dots/functional/signal.h>
 #include <dots/io/services/Channel.h>
-#include "Transmitter.h"
 
 #include "DotsConnectionState.dots.h"
 #include "DotsMsgConnectResponse.dots.h"
@@ -28,23 +28,13 @@ namespace dots
 
 		bool running();
 
-		Transmitter& transmitter();
-
-		// Server actions BEGIN
-		typedef string GroupName;
-		typedef string ClientName;
-
-		enum class ConnectMode { direct, preload };
-
 		typedef std::vector<string> DescriptorList;
 
-		void joinGroup(const GroupName&);
-		void leaveGroup(const GroupName&);
+		void joinGroup(const std::string_view& name);
+		void leaveGroup(const std::string_view& name);
 
-		void requestConnection(const ClientName&, ConnectMode);
-
-		void publish(const type::StructDescriptor<>* td, const type::Struct& instance, types::property_set_t what = types::property_set_t::All, bool remove = false);
-		void publishNs(const string& nameSpace, const type::StructDescriptor<>* td, const type::Struct& instance, types::property_set_t what = types::property_set_t::All, bool remove = false);
+		void publish(const type::Struct& instance, types::property_set_t what = types::property_set_t::All, bool remove = false);
+		void publishNs(const string& nameSpace, const type::Struct& instance, types::property_set_t what = types::property_set_t::All, bool remove = false);
 		// Server actions END
 
 		const ClientId& clientId() const { return m_serversideClientname; }
@@ -63,7 +53,7 @@ namespace dots
 		void onRegularMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission);
 		bool handleReceivedMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission);
 
-		void processConnectResponse(const DotsMsgConnectResponse& cr);
+		void processConnectResponse(const DotsMsgConnectResponse& connectResponse);
 		void processEarlySubscribe(const DotsMsgConnectResponse& cr);
 		void processHello(const DotsMsgHello&);
 
@@ -74,7 +64,6 @@ namespace dots
 		bool m_running = false;
 		channel_ptr_t m_channel;
 		DotsConnectionState m_connectionState = DotsConnectionState::connecting;
-		Transmitter m_transmitter;
 		string m_clientName;
 		ClientId m_serversideClientname;
 	};

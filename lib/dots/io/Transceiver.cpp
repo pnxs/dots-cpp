@@ -103,7 +103,7 @@ namespace dots
 			throw std::logic_error{ "attempt to publish substruct-only type" };
 		}
 
-		connection().publish(td, instance, what, remove);
+		connection().publish(instance, what, remove);
 	}
 
 	void Transceiver::onConnect()
@@ -126,7 +126,7 @@ namespace dots
 			if (td->internal()) continue;
 
 			traversal.traverseDescriptorData(td, [this](auto td, auto body) {
-				this->connection().publishNs("SYS", td, *reinterpret_cast<const type::Struct*>(body), td->validProperties(body), false);
+				this->connection().publishNs("SYS", *reinterpret_cast<const type::Struct*>(body), td->validProperties(body), false);
 			});
 		}
 
@@ -136,7 +136,7 @@ namespace dots
 			if (td->internal()) continue;
 
 			traversal.traverseDescriptorData(td, [this](auto td, auto body) {
-				this->connection().publishNs("SYS", td, *reinterpret_cast<const type::Struct*>(body), td->validProperties(body), false);
+				this->connection().publishNs("SYS", *reinterpret_cast<const type::Struct*>(body), td->validProperties(body), false);
 			});
 		}
 
@@ -151,7 +151,7 @@ namespace dots
 		DotsMsgConnect cm;
 		cm.preloadClientFinished(true);
 
-		connection().publishNs("SYS", &cm._Descriptor(), cm);
+		connection().publishNs("SYS", cm);
 	}
 
 	const type::StructDescriptor<>& Transceiver::getDescriptorFromName(const std::string_view& name) const
