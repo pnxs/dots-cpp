@@ -40,7 +40,6 @@ namespace dots
 
 		void joinGroup(const GroupName&);
 		void leaveGroup(const GroupName&);
-		void requestDescriptors(const DescriptorList& whiteList = {}, const DescriptorList& blackList = {});
 
 		void requestConnection(const ClientName&, ConnectMode);
 

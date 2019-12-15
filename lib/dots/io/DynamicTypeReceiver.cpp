@@ -5,6 +5,7 @@
 #include "DynamicTypeReceiver.h"
 #include "dots/io/Registry.h"
 #include <dots/dots.h>
+#include "DotsDescriptorRequest.dots.h"
 
 namespace dots {
 
@@ -22,7 +23,19 @@ DynamicTypeReceiver::DynamicTypeReceiver(const std::vector<std::string> &whiteLi
         emitStruct(descriptor);
     }).discard();
 
-    transceiver().connection().requestDescriptors(whiteList);
+    DotsDescriptorRequest request;
+
+	if (!whiteList.empty())
+	{
+		request.whitelist();
+		
+		for (auto& e : whiteList)
+		{
+			request.whitelist->push_back(e);
+		}
+	}
+
+	request._publish();
 }
 
 void DynamicTypeReceiver::emitStruct(const type::StructDescriptor<> *sd)

@@ -4,7 +4,6 @@
 #include "DotsMsgConnect.dots.h"
 #include "DotsMember.dots.h"
 #include "DotsCacheInfo.dots.h"
-#include "DotsDescriptorRequest.dots.h"
 #include "dots/io/serialization/AsciiSerialization.h"
 #include "Transmitter.h"
 
@@ -303,26 +302,6 @@ namespace dots
 				break;
 		}
 		publishNs("SYS", &cm._Descriptor(), cm);
-	}
-
-	void ServerConnection::requestDescriptors(const DescriptorList& whiteList, const DescriptorList& blackList)
-	{
-		DotsDescriptorRequest req;
-
-		if (!whiteList.empty())
-		{
-			req.whitelist();
-			for (auto& e : whiteList)
-				req.whitelist->push_back(e);
-		}
-		if (!blackList.empty())
-		{
-			req.blacklist();
-			for (auto& e : blackList)
-				req.blacklist->push_back(e);
-		}
-
-		publish(&req._Descriptor(), req);
 	}
 
 	void ServerConnection::leaveGroup(const ServerConnection::GroupName& groupName)
