@@ -207,7 +207,7 @@ namespace dots
 		}
 	}
 
-	void ServerConnection::publishNs(const string& nameSpace, const type::Struct& instance, types::property_set_t what, bool remove)
+	void ServerConnection::publish(const type::Struct& instance, types::property_set_t what, bool remove)
 	{
 		const type::StructDescriptor<>& descriptor = instance._descriptor();
 		
@@ -231,19 +231,14 @@ namespace dots
             }
         };
 		
-		if (!nameSpace.empty())
+		if (descriptor.internal())
 		{
-			header.nameSpace(nameSpace);
+			header.nameSpace("SYS");
+			LOG_DEBUG_S("publish ns=" << *header.nameSpace << " type=" << descriptor.name());
 		}
-
-		LOG_DEBUG_S("publish ns=" << nameSpace << " type=" << descriptor.name());
+		
 		LOG_DATA_S("data:" << to_ascii(&descriptor, &instance, what));
 		channel().transmit(header, instance);
-	}
-
-	void ServerConnection::publish(const type::Struct& instance, types::property_set_t what, bool remove)
-	{
-		publishNs(instance._descriptor().internal() ? "SYS" : "", instance, what, remove);
 	}
 
 	void ServerConnection::processConnectResponse(const DotsMsgConnectResponse& connectResponse)

@@ -149,7 +149,7 @@ namespace dots
 			if (td->internal()) continue;
 
 			traversal.traverseDescriptorData(td, [this](auto td, auto body) {
-				this->connection().publishNs("SYS", *reinterpret_cast<const type::Struct*>(body), td->validProperties(body), false);
+				this->connection().publish(*reinterpret_cast<const type::Struct*>(body), td->validProperties(body), false);
 			});
 		}
 
@@ -159,7 +159,7 @@ namespace dots
 			if (td->internal()) continue;
 
 			traversal.traverseDescriptorData(td, [this](auto td, auto body) {
-				this->connection().publishNs("SYS", *reinterpret_cast<const type::Struct*>(body), td->validProperties(body), false);
+				this->connection().publish(*reinterpret_cast<const type::Struct*>(body), td->validProperties(body), false);
 			});
 		}
 
@@ -174,6 +174,6 @@ namespace dots
 		DotsMsgConnect cm;
 		cm.preloadClientFinished(true);
 
-		connection().publishNs("SYS", cm);
+		connection().publish(cm);
 	}
 }

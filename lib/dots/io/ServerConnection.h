@@ -31,7 +31,6 @@ namespace dots
 		typedef std::vector<string> DescriptorList;
 
 		void publish(const type::Struct& instance, types::property_set_t what = types::property_set_t::All, bool remove = false);
-		void publishNs(const string& nameSpace, const type::Struct& instance, types::property_set_t what = types::property_set_t::All, bool remove = false);
 		// Server actions END
 
 		const ClientId& clientId() const { return m_serversideClientname; }
