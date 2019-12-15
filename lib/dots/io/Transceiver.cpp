@@ -173,37 +173,34 @@ namespace dots
 	{
 		TD_Traversal traversal;
 
-		for (const auto& [name, td] : m_preloadPublishTypes)
+		for (const auto& [name, descriptor] : m_preloadPublishTypes)
 		{
-			(void)name;
-			if (td->internal()) continue;
-
-			traversal.traverseDescriptorData(td, [this](auto td, auto body) {
-				publish(*reinterpret_cast<const type::Struct*>(body), td->validProperties(body), false);
-			});
+			if (!descriptor->internal())
+			{
+				traversal.traverseDescriptorData(descriptor, [this](auto td, auto body) 
+				{
+					publish(*reinterpret_cast<const type::Struct*>(body), td->validProperties(body), false);
+				});
+			}
 		}
 
-		for (const auto& [name, td] : m_preloadSubscribeTypes)
+		for (const auto& [name, descriptor] : m_preloadSubscribeTypes)
 		{
 			(void)name;
-			if (td->internal()) continue;
-
-			traversal.traverseDescriptorData(td, [this](auto td, auto body) {
-				publish(*reinterpret_cast<const type::Struct*>(body), td->validProperties(body), false);
-			});
+			
+			if (!descriptor->internal())
+			{
+				traversal.traverseDescriptorData(descriptor, [this](auto td, auto body) 
+				{
+					publish(*reinterpret_cast<const type::Struct*>(body), td->validProperties(body), false);
+				});
+			}
+			
+			joinGroup(descriptor->name());
 		}
 
-		// Send all subscribes
-		for (const auto& [name, td] : m_preloadSubscribeTypes)
-		{
-			(void)name;
-			joinGroup(td->name());
-		}
-
-		// Send preloadClientFinished
-		DotsMsgConnect cm;
-		cm.preloadClientFinished(true);
-
-		publish(cm);
+		publish(DotsMsgConnect{
+			DotsMsgConnect::preloadClientFinished_i{ true }
+		});
 	}
 }
