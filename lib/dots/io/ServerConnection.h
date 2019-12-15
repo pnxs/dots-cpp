@@ -13,74 +13,70 @@
 
 namespace dots
 {
+	typedef pnxs::Signal<void(const DotsHeader& header, const type::AnyStruct& instance)> ReceiveMessageSignal;
 
-typedef pnxs::Signal<void (const DotsHeader& header, const type::AnyStruct& instance)> ReceiveMessageSignal;
+	/**
+	 * This class is a proxy to a dotsd server
+	 * Is contains the actions, that can be done with the server
+	 */
+	class ServerConnection
+	{
+	public:
 
-/**
- * This class is a proxy to a dotsd server
- * Is contains the actions, that can be done with the server
- */
-class ServerConnection
-{
-public:
+		bool start(const string& name, channel_ptr_t channel);
+		void stop();
 
-    bool start(const string &name, channel_ptr_t channel);
-    void stop();
+		bool running();
 
-    bool running();
+		Transmitter& transmitter();
 
-    Transmitter& transmitter();
+		// Server actions BEGIN
+		typedef string GroupName;
+		typedef string ClientName;
 
-    // Server actions BEGIN
-    typedef string GroupName;
-    typedef string ClientName;
-    enum class ConnectMode { direct, preload };
-    typedef std::vector<string> DescriptorList;
+		enum class ConnectMode { direct, preload };
 
-    void joinGroup(const GroupName&);
-    void leaveGroup(const GroupName&);
-    void requestDescriptors(const DescriptorList &whiteList = {}, const DescriptorList &blackList = {});
+		typedef std::vector<string> DescriptorList;
 
-    void requestConnection(const ClientName&, ConnectMode);
+		void joinGroup(const GroupName&);
+		void leaveGroup(const GroupName&);
+		void requestDescriptors(const DescriptorList& whiteList = {}, const DescriptorList& blackList = {});
 
-    void publish(const type::StructDescriptor<>* td, const type::Struct& instance, types::property_set_t what = types::property_set_t::All, bool remove = false);
-    void publishNs(const string& nameSpace, const type::StructDescriptor<>* td, const type::Struct& instance, types::property_set_t what = types::property_set_t::All, bool remove = false);
-    // Server actions END
+		void requestConnection(const ClientName&, ConnectMode);
 
-    const ClientId& clientId() const { return m_serversideClientname; }
+		void publish(const type::StructDescriptor<>* td, const type::Struct& instance, types::property_set_t what = types::property_set_t::All, bool remove = false);
+		void publishNs(const string& nameSpace, const type::StructDescriptor<>* td, const type::Struct& instance, types::property_set_t what = types::property_set_t::All, bool remove = false);
+		// Server actions END
 
-    Channel& channel();
+		const ClientId& clientId() const { return m_serversideClientname; }
 
-    // Signals:
-    ReceiveMessageSignal onReceiveMessage;
-    pnxs::Signal<void()> onConnected;
-    pnxs::Signal<void()> onEarlyConnect;
+		Channel& channel();
 
-private:
-    void handleConnected(const string &name);
-    void handleDisconnected();
-    void onControlMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission);
-    void onRegularMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission);
-    bool handleReceivedMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission);
+		// Signals:
+		ReceiveMessageSignal onReceiveMessage;
+		pnxs::Signal<void()> onConnected;
+		pnxs::Signal<void()> onEarlyConnect;
 
-    void processConnectResponse(const DotsMsgConnectResponse &cr);
-    void processEarlySubscribe(const DotsMsgConnectResponse &cr);
-    void processHello(const DotsMsgHello&);
+	private:
+		void handleConnected(const string& name);
+		void handleDisconnected();
+		void onControlMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission);
+		void onRegularMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission);
+		bool handleReceivedMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission);
 
-    void setConnectionState(DotsConnectionState state);
+		void processConnectResponse(const DotsMsgConnectResponse& cr);
+		void processEarlySubscribe(const DotsMsgConnectResponse& cr);
+		void processHello(const DotsMsgHello&);
 
-    //bool connect(const string& host, int port, const string& name);
-    void disconnect();
+		void setConnectionState(DotsConnectionState state);
 
-    //int receive();
-    //int send(const DotsMessageHeader& header, const vector<uint8_t>& data = {});
+		void disconnect();
 
-    bool m_running = false;
-    channel_ptr_t m_channel;
-    DotsConnectionState m_connectionState = DotsConnectionState::connecting;
-    Transmitter m_transmitter;
-    string m_clientName;
-    ClientId m_serversideClientname;
-};
-
+		bool m_running = false;
+		channel_ptr_t m_channel;
+		DotsConnectionState m_connectionState = DotsConnectionState::connecting;
+		Transmitter m_transmitter;
+		string m_clientName;
+		ClientId m_serversideClientname;
+	};
 }
