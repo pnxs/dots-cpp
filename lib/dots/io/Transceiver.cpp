@@ -82,12 +82,12 @@ namespace dots
 
 	Subscription Transceiver::subscribe(const std::string_view& name, receive_handler_t<>&& handler)
 	{
-		return subscribe(getDescriptorFromName(name), std::move(handler));
+		return subscribe(m_registry.getStructType(name), std::move(handler));
 	}
 
 	Subscription Transceiver::subscribe(const std::string_view& name, event_handler_t<>&& handler)
 	{
-		return subscribe(getDescriptorFromName(name), std::move(handler));
+		return subscribe(m_registry.getStructType(name), std::move(handler));
 	}
 
 	ServerConnection& Transceiver::connection()
@@ -153,22 +153,4 @@ namespace dots
 
 		connection().publishNs("SYS", cm);
 	}
-
-	const type::StructDescriptor<>& Transceiver::getDescriptorFromName(const std::string_view& name) const
-	{
-		const type::Descriptor<>* descriptor = m_registry.findType(name.data()).get();
-
-		if (descriptor == nullptr)
-		{
-			throw std::logic_error{ "could not find a struct type with name: " + std::string{ name.data() } };
-		}
-
-		if (descriptor->type() != type::Type::Struct)
-		{
-			throw std::logic_error{ "type with name is not a struct type: " + std::string{ name.data() } };
-		}
-
-		return *static_cast<const type::StructDescriptor<>*>(descriptor);
-	}
-
 }

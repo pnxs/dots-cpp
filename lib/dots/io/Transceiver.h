@@ -80,7 +80,6 @@ namespace dots
 		
 		void onConnect();
 		void onEarlySubscribe();
-		const type::StructDescriptor<>& getDescriptorFromName(const std::string_view& name) const;
 
 		ServerConnection m_serverConnection;
 
