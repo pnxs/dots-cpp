@@ -10,34 +10,35 @@ namespace dots
 	Publisher* onPublishObject = nullptr;
 
 	Transceiver::Transceiver()
+		: m_connectionState(DotsConnectionState::closed)
+		, m_id(0)
 	{
-		connection().onConnected.connect(FUN(*this, onConnect));
-		connection().onEarlyConnect.connect(FUN(*this, onEarlySubscribe));
-		connection().onReceiveMessage.connect(FUN(m_dispatcher, dispatch));
-
 		onPublishObject = this;
 	}
 
-	bool Transceiver::start(const std::string& name, channel_ptr_t channel, descriptor_map_t preloadPublishTypes, descriptor_map_t preloadSubscribeTypes)
+	bool Transceiver::start(std::string name, channel_ptr_t channel, descriptor_map_t preloadPublishTypes/* = {}*/, descriptor_map_t preloadSubscribeTypes/* = {}*/)
 	{
+		if (m_connectionState != DotsConnectionState::closed)
+		{
+			throw std::logic_error{ "already receiving from an open channel" };
+		}
+		
 		LOG_DEBUG_S("start transceiver");
+		m_name = std::move(name);
+		m_channel = std::move(channel);
 		m_preloadPublishTypes = std::move(preloadPublishTypes);
 		m_preloadSubscribeTypes = std::move(preloadSubscribeTypes);
+		
+		m_channel->asyncReceive([this](const DotsTransportHeader& transportHeader, Transmission&& transmission){ return handleReceive(transportHeader, std::move(transmission)); }, nullptr);
+		setConnectionState(DotsConnectionState::connecting);
 
-		// start communication
-		if (connection().start(name, channel))
-		{
-			 // publish types
-			return true;
-		}
-
-		return false;
+		return true;
 	}
 
 	void Transceiver::stop()
 	{
-		// stop communication
-		connection().stop();
+		m_channel.reset();
+		setConnectionState(DotsConnectionState::closed);
 	}
 
 	const io::Registry& Transceiver::registry() const
@@ -92,14 +93,19 @@ namespace dots
 		return subscribe(m_registry.getStructType(name), std::move(handler));
 	}
 
-	ServerConnection& Transceiver::connection()
+	DotsConnectionState Transceiver::connectionState() const
 	{
-		return m_serverConnection;
+		return m_connectionState;
+	}
+	
+	uint32_t Transceiver::id() const
+	{
+		return m_id;
 	}
 
 	void Transceiver::publish(const type::Struct& instance, types::property_set_t includedProperties/*t = types::property_set_t::All*/, bool remove/* = false*/)
 	{
-		publish(instance._descriptor(), includedProperties, remove);
+		publish(&instance._descriptor(), instance, includedProperties, remove);
 	}
 	
 	void Transceiver::publish(const type::StructDescriptor<>* td, const type::Struct& instance, types::property_set_t what, bool remove)
@@ -117,9 +123,9 @@ namespace dots
 	    }
 
 	    if (!(what <= descriptor.keyProperties()))
-	    {
-	        throw std::runtime_error("tried to publish instance with invalid key (not all key-fields are set) what=" + what.toString() + " tdkeys=" + descriptor.keyProperties().toString());
-	    }
+		{
+		    throw std::runtime_error("tried to publish instance with invalid key (not all key-fields are set) what=" + what.toString() + " tdkeys=" + descriptor.keyProperties().toString());
+		}
 		
 		DotsTransportHeader header{
             DotsTransportHeader::destinationGroup_i{ descriptor.name() },
@@ -138,17 +144,12 @@ namespace dots
 		}
 		
 		LOG_DATA_S("data:" << to_ascii(&descriptor, &instance, what));
-		m_serverConnection.channel().transmit(header, instance);
-	}
-
-	void Transceiver::onConnect()
-	{
-		m_connected = true;
+		m_channel->transmit(header, instance);
 	}
 
 	bool Transceiver::connected() const
 	{
-		return m_connected;
+		return m_connectionState == DotsConnectionState::connected;
 	}
 
 	void Transceiver::joinGroup(const std::string_view& name)
@@ -202,5 +203,155 @@ namespace dots
 		publish(DotsMsgConnect{
 			DotsMsgConnect::preloadClientFinished_i{ true }
 		});
+	}
+
+	bool Transceiver::handleReceive(const DotsTransportHeader& transportHeader, Transmission&& transmission)
+	{
+		try 
+        {
+            if (transportHeader.nameSpace == "SYS")
+            {
+                handleControlMessage(transportHeader, std::move(transmission));
+            } 
+            else
+            {
+                handleRegularMessage(transportHeader, std::move(transmission));
+            }
+
+            return true;
+        }
+        catch (const std::exception& e) 
+        {
+            LOG_ERROR_S("exception in receive: " << e.what());
+
+            return false;
+        }
+	}
+	
+	void Transceiver::handleControlMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission)
+	{
+		const std::string& typeName = transportHeader.dotsHeader->typeName;
+		
+        switch(m_connectionState)
+        {
+            case DotsConnectionState::connecting:
+                if (typeName == "DotsMsgHello")
+                {
+                    processHello(static_cast<const DotsMsgHello&>(transmission.instance().get()));
+                }
+                else if (typeName == "DotsMsgConnectResponse")
+                {
+                    processConnectResponse(static_cast<const DotsMsgConnectResponse&>(transmission.instance().get()));
+                }
+                break;
+            case DotsConnectionState::early_subscribe:
+                if (typeName == "DotsMsgConnectResponse")
+                {
+                    processEarlySubscribe(static_cast<const DotsMsgConnectResponse&>(transmission.instance().get()));
+                }
+                // No break here: falltrough
+                // process all messages, put non-cache messages into buffer
+                [[fallthrough]];
+            case DotsConnectionState::connected:
+                {
+                    if (typeName == "DotsCacheInfo") 
+                    {
+                        // TODO: implement handling of DotsCacheInfo
+                        // for now let trough like an normal object
+                    }
+
+                    DotsHeader dotsHeader = transportHeader.dotsHeader;
+                    dotsHeader.isFromMyself(dotsHeader.sender == m_id);
+                    m_dispatcher.dispatch(dotsHeader, transmission.instance());
+                }
+
+                break;
+            case DotsConnectionState::suspended:
+                // buffer outgoing messages
+                break;
+            case DotsConnectionState::closed:
+                // do nothing
+                break;
+        }
+	}
+	
+	void Transceiver::handleRegularMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission)
+	{
+		switch(m_connectionState)
+        {
+            case DotsConnectionState::connecting:
+                break;
+            case DotsConnectionState::early_subscribe:
+            case DotsConnectionState::connected:
+                {
+                    DotsHeader dotsHeader = transportHeader.dotsHeader;
+                    dotsHeader.isFromMyself(dotsHeader.sender == m_id);
+                    m_dispatcher.dispatch(dotsHeader, transmission.instance());
+                }
+                break;
+            case DotsConnectionState::suspended:
+                // buffer outgoing messages
+                break;
+            case DotsConnectionState::closed:
+                // do nothing
+                break;
+        }
+	}
+	
+	void Transceiver::processConnectResponse(const DotsMsgConnectResponse& connectResponse)
+	{
+		const std::string& serverName = connectResponse.serverName.isValid() ? *connectResponse.serverName : "<unknown>";
+		LOG_DEBUG_S("connectResponse: serverName=" << serverName << " accepted=" << *connectResponse.accepted);
+		
+		if (connectResponse.clientId.isValid())
+		{
+			m_id = connectResponse.clientId;
+		}
+		
+		if (connectResponse.preload == true && (!connectResponse.preloadFinished.isValid() || connectResponse.preloadFinished == false))
+		{
+			setConnectionState(DotsConnectionState::early_subscribe);
+			onEarlySubscribe();
+		}
+		else
+		{
+			setConnectionState(DotsConnectionState::connected);
+		}
+	}
+	
+	void Transceiver::processEarlySubscribe(const DotsMsgConnectResponse& connectResponse)
+	{
+		if (connectResponse.preloadFinished == true)
+        {
+            setConnectionState(DotsConnectionState::connected);
+        }
+        else
+        {
+            LOG_ERROR_S("invalid DotsMsgConnectResponse");
+        }
+	}
+	
+	void Transceiver::processHello(const DotsMsgHello& hello)
+	{
+		if (hello.authChallenge.isValid() && hello.serverName.isValid())
+		{
+			LOG_DEBUG_S("received hello from '" << *hello.serverName << "' authChallenge=" << hello.authChallenge);
+			LOG_DATA_S("send DotsMsgConnect");
+
+			publish(DotsMsgConnect{
+                DotsMsgConnect::clientName_i{ m_name },
+                DotsMsgConnect::preloadCache_i{ true }
+            });
+		}
+		else
+		{
+			LOG_WARN_S("Invalid hello from server valatt:" << hello._validProperties().toString());
+		}
+	}
+
+	void Transceiver::setConnectionState(DotsConnectionState state)
+	{
+		LOG_DEBUG_S("change connection state to " << to_string(state));
+		m_connectionState = state;
 	}
 }

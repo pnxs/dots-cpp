@@ -4,6 +4,7 @@
 
 #include "DotsTestStruct.dots.h"
 #include "DotsTestVectorStruct.dots.h"
+#include <dots/functional/fun.h>
 
 class MyClientClass
 {

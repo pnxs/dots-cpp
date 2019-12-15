@@ -45,7 +45,6 @@ target_sources(${TARGET_NAME}
 
 		io/Transmitter.cpp
 		io/Transceiver.cpp
-		io/ServerConnection.cpp
 		io/Subscription.cpp
 
 		io/Io.cpp

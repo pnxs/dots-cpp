@@ -5,12 +5,14 @@
 #include "dots/cpp_config.h"
 #include "Dispatcher.h"
 #include "TD_Traversal.h"
-#include "Transmitter.h"
-#include "ServerConnection.h"
 #include "Subscription.h"
 #include <dots/io/services/Channel.h>
 #include "Publisher.h"
 #include <dots/io/Registry.h>
+#include <DotsConnectionState.dots.h>
+#include <DotsTransportHeader.dots.h>
+#include <DotsMsgHello.dots.h>
+#include <DotsMsgConnectResponse.dots.h>
 
 namespace dots::type
 {
@@ -32,7 +34,7 @@ namespace dots
 
 		Transceiver();
 
-		bool start(const std::string& name, channel_ptr_t channel, descriptor_map_t preloadPublishTypes, descriptor_map_t preloadSubscribeTypes);
+		bool start(std::string name, channel_ptr_t channel, descriptor_map_t preloadPublishTypes = {}, descriptor_map_t preloadSubscribeTypes = {});
 		void stop();
 
 		const io::Registry& registry() const;
@@ -47,8 +49,8 @@ namespace dots
 		Subscription subscribe(const std::string_view& name, receive_handler_t<>&& handler);
 		Subscription subscribe(const std::string_view& name, event_handler_t<>&& handler);
 
-		ServerConnection& connection();
-
+		DotsConnectionState connectionState() const;
+        uint32_t id() const;
 		bool connected() const;
 
 		void publish(const type::StructDescriptor<>* td, const type::Struct& instance, types::property_set_t includedProperties, bool remove) override;
@@ -82,15 +84,26 @@ namespace dots
 		void joinGroup(const std::string_view& name);
 		void leaveGroup(const std::string_view& name);
 		
-		void onConnect();
 		void onEarlySubscribe();
 
-		ServerConnection m_serverConnection;
+		bool handleReceive(const DotsTransportHeader& transportHeader, Transmission&& transmission);
+        void handleControlMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission);
+        void handleRegularMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission);
 
-		bool m_connected = false;
+        void processConnectResponse(const DotsMsgConnectResponse& connectResponse);
+        void processEarlySubscribe(const DotsMsgConnectResponse& connectResponse);
+        void processHello(const DotsMsgHello& hello);
+
+		void setConnectionState(DotsConnectionState state);
 
 		io::Registry m_registry;
 		Dispatcher m_dispatcher;
+		
+		DotsConnectionState m_connectionState;
+        uint32_t m_id;
+        std::string m_name;
+		
+        channel_ptr_t m_channel;
 		descriptor_map_t m_preloadPublishTypes;
 		descriptor_map_t m_preloadSubscribeTypes;
 	};
