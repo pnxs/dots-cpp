@@ -30,9 +30,6 @@ namespace dots
 
 		typedef std::vector<string> DescriptorList;
 
-		void joinGroup(const std::string_view& name);
-		void leaveGroup(const std::string_view& name);
-
 		void publish(const type::Struct& instance, types::property_set_t what = types::property_set_t::All, bool remove = false);
 		void publishNs(const string& nameSpace, const type::Struct& instance, types::property_set_t what = types::property_set_t::All, bool remove = false);
 		// Server actions END

@@ -2,6 +2,7 @@
 #include <set>
 #include "DotsMsgConnect.dots.h"
 #include <dots/common/logging.h>
+#include <DotsMember.dots.h>
 
 namespace dots
 {
@@ -65,7 +66,7 @@ namespace dots
 			throw std::logic_error{ "attempt to subscribe to substruct-only type" };
 		}
 
-		connection().joinGroup(descriptor.name());
+		joinGroup(descriptor.name());
 		return m_dispatcher.subscribe(descriptor, std::move(handler));
 	}
 
@@ -76,7 +77,7 @@ namespace dots
 			throw std::logic_error{ "attempt to subscribe to substruct-only type" };
 		}
 
-		connection().joinGroup(descriptor.name());
+		joinGroup(descriptor.name());
 		return m_dispatcher.subscribe(descriptor, std::move(handler));
 	}
 
@@ -95,7 +96,11 @@ namespace dots
 		return m_serverConnection;
 	}
 
-
+	void Transceiver::publish(const type::Struct& instance, types::property_set_t includedProperties/*t = types::property_set_t::All*/, bool remove/* = false*/)
+	{
+		publish(instance._descriptor(), includedProperties, remove);
+	}
+	
 	void Transceiver::publish(const type::StructDescriptor<>* td, const type::Struct& instance, types::property_set_t what, bool remove)
 	{
 		if (td->substructOnly())
@@ -114,6 +119,24 @@ namespace dots
 	bool Transceiver::connected() const
 	{
 		return m_connected;
+	}
+
+	void Transceiver::joinGroup(const std::string_view& name)
+	{
+		LOG_DEBUG_S("send DotsMember (join " << name << ")");
+		publish(DotsMember{
+            DotsMember::groupName_i{ name },
+            DotsMember::event_i{ DotsMemberEvent::join }
+        });
+	}
+
+	void Transceiver::leaveGroup(const std::string_view& name)
+	{
+		LOG_INFO_S("send DotsMember (leave " << name << ")");
+		publish(DotsMember{
+            DotsMember::groupName_i{ name },
+            DotsMember::event_i{ DotsMemberEvent::leave }
+        });
 	}
 
 	void Transceiver::onEarlySubscribe()
@@ -144,7 +167,7 @@ namespace dots
 		for (const auto& [name, td] : m_preloadSubscribeTypes)
 		{
 			(void)name;
-			connection().joinGroup(td->name());
+			joinGroup(td->name());
 		}
 
 		// Send preloadClientFinished

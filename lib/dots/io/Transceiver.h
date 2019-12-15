@@ -51,7 +51,8 @@ namespace dots
 
 		bool connected() const;
 
-		void publish(const type::StructDescriptor<>* td, const type::Struct& instance, types::property_set_t what, bool remove) override;
+		void publish(const type::StructDescriptor<>* td, const type::Struct& instance, types::property_set_t includedProperties, bool remove) override;
+		void publish(const type::Struct& instance, types::property_set_t what = types::property_set_t::All, bool remove = false);
 
 		template <typename T>
 		const Container<T>& container()
@@ -63,7 +64,7 @@ namespace dots
 		Subscription subscribe(receive_handler_t<T>&& handler)
 		{
 			static_assert(!T::_SubstructOnly, "it is not allowed to subscribe to a struct that is marked with 'substruct_only'!");
-			connection().joinGroup(T::_Descriptor().name());
+			joinGroup(T::_Descriptor().name());
 			return m_dispatcher.subscribe<T>(std::move(handler));
 		}
 
@@ -71,12 +72,15 @@ namespace dots
 		Subscription subscribe(event_handler_t<T>&& handler)
 		{
 			static_assert(!T::_SubstructOnly, "it is not allowed to subscribe to a struct that is marked with 'substruct_only'!");
-			connection().joinGroup(T::_Descriptor().name());
+			joinGroup(T::_Descriptor().name());
 
 			return m_dispatcher.subscribe<T>(std::move(handler));
 		}
 
 	private:
+
+		void joinGroup(const std::string_view& name);
+		void leaveGroup(const std::string_view& name);
 		
 		void onConnect();
 		void onEarlySubscribe();

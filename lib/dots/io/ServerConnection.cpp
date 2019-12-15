@@ -2,7 +2,6 @@
 
 #include "DotsTransportHeader.dots.h"
 #include "DotsMsgConnect.dots.h"
-#include "DotsMember.dots.h"
 #include "DotsCacheInfo.dots.h"
 #include "dots/io/serialization/AsciiSerialization.h"
 #include "Transmitter.h"
@@ -295,23 +294,5 @@ namespace dots
 		{
 			LOG_WARN_S("Invalid hello from server valatt:" << hello._validProperties().toString());
 		}
-	}
-
-	void ServerConnection::joinGroup(const std::string_view& name)
-	{
-		LOG_DEBUG_S("send DotsMember (join " << name << ")");
-		publish(DotsMember{
-            DotsMember::groupName_i{ name },
-            DotsMember::event_i{ DotsMemberEvent::join }
-        });
-	}
-
-	void ServerConnection::leaveGroup(const std::string_view& name)
-	{
-		LOG_INFO_S("send DotsMember (leave " << name << ")");
-		publish(DotsMember{
-            DotsMember::groupName_i{ name },
-            DotsMember::event_i{ DotsMemberEvent::leave }
-        });
 	}
 }
