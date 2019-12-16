@@ -1,7 +1,6 @@
 #include "TcpChannel.h"
 #include <dots/io/Io.h>
 #include <dots/io/serialization/CborNativeSerialization.h>
-#include <dots/dots.h>
 
 namespace dots
 {
@@ -121,7 +120,7 @@ namespace dots
 			{
 				verifyErrorCode(ec);
 
-				const type::StructDescriptor<>* descriptor = transceiver().registry().findStructType(*m_header.dotsHeader->typeName).get();
+				const type::StructDescriptor<>* descriptor = registry().findStructType(*m_header.dotsHeader->typeName).get();
 
 				if (descriptor == nullptr)
 				{

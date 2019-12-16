@@ -13,6 +13,7 @@
 #include "EnumDescriptorData.dots.h"
 #include "StructDescriptorData.dots.h"
 
+#include <dots/dots.h>
 
 #define CEXPANSION "Connection[" << clientName() << "," << id() << "]: "
 #define PEXPSTR_PRE "Connection[%p,%s]: "
@@ -36,7 +37,7 @@ Connection::Connection(channel_ptr_t channel, ConnectionManager &manager)
 
     LOG_INFO_S("connected");
 
-	m_channel->asyncReceive(FUN(*this, onReceivedMessage), FUN(*this, onChannelError));
+	m_channel->asyncReceive(transceiver().registry(), FUN(*this, onReceivedMessage), FUN(*this, onChannelError));
 }
 
 void Connection::start()

@@ -2,7 +2,7 @@
 
 namespace dots
 {
-    void Channel::asyncReceive(receive_handler_t&& receiveHandler, error_handler_t&& errorHandler)
+    void Channel::asyncReceive(io::Registry& registry, receive_handler_t&& receiveHandler, error_handler_t&& errorHandler)
     {
         if (m_asyncReceiveActive)
         {
@@ -10,6 +10,7 @@ namespace dots
         }
 
         m_asyncReceiveActive = true;
+    	m_registry = &registry;
         m_receiveHandler = std::move(receiveHandler);
         m_errorHandler = std::move(errorHandler);
         asyncReceiveImpl();
@@ -23,6 +24,16 @@ namespace dots
     void Channel::transmit(const DotsTransportHeader& header, const Transmission& transmission)
     {
         transmitImpl(header, transmission);
+    }
+
+    const io::Registry& Channel::registry() const
+    {
+	    return *m_registry;
+    }
+	
+    io::Registry& Channel::registry()
+    {
+	    return *m_registry;
     }
 
     void Channel::transmitImpl(const DotsTransportHeader& header, const Transmission& transmission)

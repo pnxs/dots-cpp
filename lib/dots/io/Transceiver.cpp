@@ -32,7 +32,7 @@ namespace dots
 		m_preloadPublishTypes = std::move(preloadPublishTypes);
 		m_preloadSubscribeTypes = std::move(preloadSubscribeTypes);
 		
-		m_channel->asyncReceive([this](const DotsTransportHeader& transportHeader, Transmission&& transmission){ return handleReceive(transportHeader, std::move(transmission)); }, nullptr);
+		m_channel->asyncReceive(m_registry, [this](const DotsTransportHeader& transportHeader, Transmission&& transmission){ return handleReceive(transportHeader, std::move(transmission)); }, nullptr);
 		setConnectionState(DotsConnectionState::connecting);
 
 		return true;
