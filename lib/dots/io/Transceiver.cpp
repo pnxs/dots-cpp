@@ -122,10 +122,10 @@ namespace dots
 	        what ^= descriptor.keyProperties();
 	    }
 
-	    if (!(what <= descriptor.keyProperties()))
-		{
-		    throw std::runtime_error("tried to publish instance with invalid key (not all key-fields are set) what=" + what.toString() + " tdkeys=" + descriptor.keyProperties().toString());
-		}
+	    if (!(descriptor.keyProperties() <= what))
+	    {
+	        throw std::runtime_error("tried to publish instance with invalid key (not all key-fields are set) what=" + what.toString() + " tdkeys=" + descriptor.keyProperties().toString());
+	    }
 		
 		DotsTransportHeader header{
             DotsTransportHeader::destinationGroup_i{ descriptor.name() },
