@@ -5,6 +5,8 @@
 #include <dots/io/serialization/AsciiSerialization.h>
 #include <DotsMember.dots.h>
 #include <DotsCacheInfo.dots.h>
+#include <DotsClient.dots.h>
+#include <DotsDescriptorRequest.dots.h>
 
 namespace dots
 {
@@ -138,7 +140,7 @@ namespace dots
             }
         };
 		
-		if (descriptor.internal())
+		if (descriptor.internal() && !instance._is<DotsClient>() && !instance._is<DotsDescriptorRequest>())
 		{
 			header.nameSpace("SYS");
 			LOG_DEBUG_S("publish ns=" << *header.nameSpace << " type=" << descriptor.name());
