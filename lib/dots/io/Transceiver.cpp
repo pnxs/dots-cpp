@@ -233,31 +233,29 @@ namespace dots
 	
 	void Transceiver::handleControlMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission)
 	{
-		const std::string& typeName = transportHeader.dotsHeader->typeName;
-		
         switch(m_connectionState)
         {
             case DotsConnectionState::connecting:
-                if (typeName == "DotsMsgHello")
+                if (auto* dotsMsgHello = transmission.instance()->_as<DotsMsgHello>())
                 {
-                    processHello(static_cast<const DotsMsgHello&>(transmission.instance().get()));
+                    processHello(*dotsMsgHello);
                 }
-                else if (typeName == "DotsMsgConnectResponse")
+                else if (auto* dotsMsgConnectResponse = transmission.instance()->_as<DotsMsgConnectResponse>())
                 {
-                    processConnectResponse(static_cast<const DotsMsgConnectResponse&>(transmission.instance().get()));
+                    processConnectResponse(*dotsMsgConnectResponse);
                 }
                 break;
             case DotsConnectionState::early_subscribe:
-                if (typeName == "DotsMsgConnectResponse")
+                if (auto* dotsMsgConnectResponse = transmission.instance()->_as<DotsMsgConnectResponse>())
                 {
-                    processEarlySubscribe(static_cast<const DotsMsgConnectResponse&>(transmission.instance().get()));
+                    processEarlySubscribe(*dotsMsgConnectResponse);
                 }
                 // No break here: falltrough
                 // process all messages, put non-cache messages into buffer
                 [[fallthrough]];
             case DotsConnectionState::connected:
                 {
-                    if (typeName == "DotsCacheInfo") 
+                    if (transmission.instance()->_is<DotsCacheInfo>()) 
                     {
                         // TODO: implement handling of DotsCacheInfo
                         // for now let trough like an normal object
