@@ -4,6 +4,7 @@
 #include <dots/common/logging.h>
 #include <dots/io/serialization/AsciiSerialization.h>
 #include <DotsMember.dots.h>
+#include <DotsCacheInfo.dots.h>
 
 namespace dots
 {
