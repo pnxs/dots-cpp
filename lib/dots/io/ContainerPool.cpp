@@ -45,13 +45,13 @@ namespace dots
 	    return m_pool.size();
     }
 
-    const Container<>* ContainerPool::find(const type::StructDescriptor& descriptor) const
+    const Container<>* ContainerPool::find(const type::StructDescriptor<>& descriptor) const
     {
 		auto it = m_pool.find(&descriptor);
 		return it == m_pool.end() ? nullptr : &it->second;
     }
 
-    const Container<>& ContainerPool::get(const type::StructDescriptor& descriptor, bool insertIfNotExist/* = true*/) const
+    const Container<>& ContainerPool::get(const type::StructDescriptor<>& descriptor, bool insertIfNotExist/* = true*/) const
     {
 		if (insertIfNotExist)
         {
@@ -78,12 +78,12 @@ namespace dots
         }
     }
 
-    Container<>* ContainerPool::find(const type::StructDescriptor& descriptor)
+    Container<>* ContainerPool::find(const type::StructDescriptor<>& descriptor)
     {
 		return const_cast<Container<>*>(std::as_const(*this).find(descriptor));
     }
 
-    Container<>& ContainerPool::get(const type::StructDescriptor& descriptor, bool insertIfNotExist/* = true*/)
+    Container<>& ContainerPool::get(const type::StructDescriptor<>& descriptor, bool insertIfNotExist/* = true*/)
     {
         return const_cast<Container<>&>(std::as_const(*this).get(descriptor, insertIfNotExist));
     }
@@ -116,7 +116,7 @@ namespace dots
 	    return const_cast<Container<>&>(std::as_const(*this).get(name));
     }
 
-    auto ContainerPool::remove(const type::StructDescriptor& descriptor) -> node_t
+    auto ContainerPool::remove(const type::StructDescriptor<>& descriptor) -> node_t
     {
         node_t node = m_pool.extract(&descriptor);
 

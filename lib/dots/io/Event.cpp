@@ -39,7 +39,7 @@ namespace dots
         return m_cloneInfo; 
     }
 
-    const type::StructDescriptor& Event<type::Struct>::descriptor() const
+    const type::StructDescriptor<>& Event<type::Struct>::descriptor() const
     {
 	    return m_updated._descriptor();
     }

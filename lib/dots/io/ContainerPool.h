@@ -8,7 +8,7 @@ namespace dots
 {
     struct ContainerPool
     {
-        using pool_t = std::unordered_map<const type::StructDescriptor*, Container<>>;
+        using pool_t = std::unordered_map<const type::StructDescriptor<>*, Container<>>;
 		using iterator_t = pool_t::iterator;
         using const_iterator_t = pool_t::const_iterator;
         using value_t = pool_t::value_type;
@@ -34,11 +34,11 @@ namespace dots
 		bool empty() const;
 		size_t size() const;
 
-        const Container<>* find(const type::StructDescriptor& descriptor) const;
-        const Container<>& get(const type::StructDescriptor& descriptor, bool insertIfNotExist = true) const;
+        const Container<>* find(const type::StructDescriptor<>& descriptor) const;
+        const Container<>& get(const type::StructDescriptor<>& descriptor, bool insertIfNotExist = true) const;
 
-		Container<>* find(const type::StructDescriptor& descriptor);
-		Container<>& get(const type::StructDescriptor& descriptor, bool insertIfNotExist = true);
+		Container<>* find(const type::StructDescriptor<>& descriptor);
+		Container<>& get(const type::StructDescriptor<>& descriptor, bool insertIfNotExist = true);
 
 		const Container<>* find(const std::string_view& name) const;
         const Container<>& get(const std::string_view& name) const;
@@ -46,7 +46,7 @@ namespace dots
 		Container<>* find(const std::string_view& name);
 		Container<>& get(const std::string_view& name);
 
-        node_t remove(const type::StructDescriptor& descriptor);
+        node_t remove(const type::StructDescriptor<>& descriptor);
 
         void forEach(const std::function<void(const Container<>&)>& f) const;
 

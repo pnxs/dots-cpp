@@ -1,6 +1,7 @@
 #include "ConnectionManager.h"
 #include "dots/io/TD_Traversal.h"
-#include "dots/type/Registry.h"
+#include "dots/io/Registry.h"
+#include <dots/dots.h>
 
 #include "DotsCacheInfo.dots.h"
 #include "DotsClient.dots.h"
@@ -12,7 +13,6 @@ ConnectionManager::ConnectionManager(GroupManager &groupManager, ServerInfo &ser
         :m_groupManager(groupManager), m_serverInfo(server)
 {
 	m_dispatcher.pool().get<DotsClient>();
-    dots::type::Descriptor::registry().onNewStruct.connect(FUN(*this, onNewType));
     m_dispatcher.subscribe<DotsDescriptorRequest>(FUN(*this, handleDescriptorRequest)).discard();
     m_dispatcher.subscribe<DotsClearCache>(FUN(*this, handleClearCache)).discard();
 }
@@ -22,9 +22,9 @@ void ConnectionManager::init()
     m_distributedTypeId = std::make_unique<DistributedTypeId>(true);
 
     // Register all types, that are registered before this instance was created
-    for (auto& t : type::Descriptor::registry().getTypes())
+    for (auto& t : transceiver().registry().getTypes())
     {
-        m_distributedTypeId->createTypeId(t.second);
+        m_distributedTypeId->createTypeId(t.second.get());
     }
 }
 
@@ -70,7 +70,7 @@ void ConnectionManager::stop_all()
  * @param td the structdescriptor from which the flags should be processed.
  * @return short string containing the flags.
  */
-static std::string flags2String(const dots::type::StructDescriptor* td)
+static std::string flags2String(const dots::type::StructDescriptor<>* td)
 {
     std::string ret = ".....";
     if (td->cached())       ret[0] = 'C';
@@ -85,10 +85,8 @@ static std::string flags2String(const dots::type::StructDescriptor* td)
  * Called for newly registered DOTS types.
  * @param td typedescriptor of the new type.
  */
-void ConnectionManager::onNewType(const dots::type::StructDescriptor* td)
+void ConnectionManager::onNewType(const dots::type::StructDescriptor<>* td)
 {
-    LOG_INFO_S("register type " << td->name() << " published by " << clientId2Name(td->publisherId()));
-
     LOG_DEBUG_S("onNewType name=" << td->name() << " flags:" << flags2String(td));
 
     // Only continue, if type is a cached type
@@ -274,7 +272,7 @@ void ConnectionManager::handleDescriptorRequest(const DotsDescriptorRequest::Cbd
 {
     if (cbd.isOwnUpdate()) return;
 
-    auto& wl = cbd().whitelist.IsPartOf(cbd.updatedProperties()) ? *cbd().whitelist : dots::Vector<string>();
+    auto& wl = cbd().whitelist.IsPartOf(cbd.updatedProperties()) ? *cbd().whitelist : dots::type::Vector<string>();
 
     dots::TD_Traversal traversal;
 
@@ -329,7 +327,7 @@ void ConnectionManager::handleDescriptorRequest(const DotsDescriptorRequest::Cbd
 
 void ConnectionManager::handleClearCache(const DotsClearCache::Cbd& cbd)
 {
-    auto& whitelist = cbd().typeNames.isValid() ? *cbd().typeNames : dots::Vector<string>();
+    auto& whitelist = cbd().typeNames.isValid() ? *cbd().typeNames : dots::type::Vector<string>();
 
     for (auto& cpItem : m_dispatcher.pool())
     {
@@ -382,9 +380,9 @@ void ConnectionManager::cleanupObjects(Connection *connection)
 }
 
 void ConnectionManager::publishNs(const string &nameSpace,
-                                  const type::StructDescriptor *td,
+                                  const type::StructDescriptor<> *td,
                                   const type::Struct& instance,
-                                  property_set properties,
+                                  type::PropertySet properties,
                                   bool remove, bool processLocal)
 {
     DotsTransportHeader header;
@@ -448,7 +446,7 @@ void ConnectionManager::addClient(Connection* connection)
 }
 
 void
-ConnectionManager::publish(const type::StructDescriptor *td, const type::Struct& instance, property_set properties, bool remove)
+ConnectionManager::publish(const type::StructDescriptor<> *td, const type::Struct& instance, type::PropertySet properties, bool remove)
 {
     publishNs("SYS", td, instance, properties, remove, true);
 }
@@ -472,7 +470,7 @@ string ConnectionManager::clientId2Name(ClientId id) const
         return m_serverInfo.name();
     }
 
-    return to_string(id);
+    return std::to_string(id);
 }
 
 const DistributedTypeId &ConnectionManager::distributedTypeId() const

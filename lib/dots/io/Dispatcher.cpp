@@ -39,17 +39,17 @@ namespace dots
 		return m_containerPool;
 	}
 
-	const Container<>& Dispatcher::container(const type::StructDescriptor& descriptor) const
+	const Container<>& Dispatcher::container(const type::StructDescriptor<>& descriptor) const
 	{
 		return m_containerPool.get(descriptor);
 	}
 
-	Container<>& Dispatcher::container(const type::StructDescriptor& descriptor)
+	Container<>& Dispatcher::container(const type::StructDescriptor<>& descriptor)
 	{
 		return m_containerPool.get(descriptor);
 	}
 
-	Subscription Dispatcher::subscribe(const type::StructDescriptor& descriptor, receive_handler_t<>&& handler)
+	Subscription Dispatcher::subscribe(const type::StructDescriptor<>& descriptor, receive_handler_t<>&& handler)
 	{
 		Subscription subscription{ m_this, descriptor };
 		m_receiveHandlerPool[&descriptor].emplace(subscription.id(), std::move(handler));
@@ -57,7 +57,7 @@ namespace dots
 		return subscription;
 	}
 
-	Subscription Dispatcher::subscribe(const type::StructDescriptor& descriptor, event_handler_t<>&& handler)
+	Subscription Dispatcher::subscribe(const type::StructDescriptor<>& descriptor, event_handler_t<>&& handler)
 	{
 		Subscription subscription{ m_this, descriptor };
 		const event_handler_t<>& handler_ = m_eventHandlerPool[&descriptor].emplace(subscription.id(), std::move(handler)).first->second;
@@ -111,7 +111,7 @@ namespace dots
 
 	void Dispatcher::dispatchReceive(const DotsHeader& header, const type::AnyStruct& instance)
 	{
-		const type::StructDescriptor& descriptor = instance->_descriptor();
+		const type::StructDescriptor<>& descriptor = instance->_descriptor();
 
 		auto itHandlers = m_receiveHandlerPool.find(&descriptor);
 
@@ -131,7 +131,7 @@ namespace dots
 
 	void Dispatcher::dispatchEvent(const DotsHeader& header, const type::AnyStruct& instance)
 	{
-		const type::StructDescriptor& descriptor = instance->_descriptor();
+		const type::StructDescriptor<>& descriptor = instance->_descriptor();
 
 		auto itHandlers = m_eventHandlerPool.find(&descriptor);
 

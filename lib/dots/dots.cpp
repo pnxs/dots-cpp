@@ -31,17 +31,17 @@ namespace dots
 		return transceiver;
 	}
 
-	void publish(const type::StructDescriptor* td, const type::Struct& instance, property_set what, bool remove)
+	void publish(const type::StructDescriptor<>* td, const type::Struct& instance, types::property_set_t what, bool remove)
 	{
 	    onPublishObject->publish(td, instance, what, remove);
 	}
 
-	Subscription subscribe(const type::StructDescriptor& descriptor, Transceiver::receive_handler_t<>&& handler)
+	Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::receive_handler_t<>&& handler)
 	{
 		return transceiver().subscribe(descriptor, std::move(handler));
 	}
 
-	Subscription subscribe(const type::StructDescriptor& descriptor, Transceiver::event_handler_t<>&& handler)
+	Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::event_handler_t<>&& handler)
 	{
 		return transceiver().subscribe(descriptor, std::move(handler));
 	}
@@ -51,7 +51,7 @@ namespace dots
 		return transceiver().pool();
 	}
 
-	const Container<>& container(const type::StructDescriptor& descriptor)
+	const Container<>& container(const type::StructDescriptor<>& descriptor)
 	{
 		return transceiver().container(descriptor);
 	}

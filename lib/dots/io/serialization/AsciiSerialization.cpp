@@ -1,6 +1,5 @@
 #include "AsciiSerialization.h"
-#include "dots/type/Registry.h"
-
+#include <dots/type/EnumDescriptor.h>
 #include <stack>
 #include <iostream>
 
@@ -20,7 +19,7 @@ struct Printer {
     virtual void Uint64(uint64_t i) = 0;
     virtual void Double(double d) = 0;
     virtual void Null() = 0;
-    virtual void Enum(const void* e, const type::EnumDescriptor* ed) = 0;
+    virtual void Enum(const void* e, const type::EnumDescriptor<>* ed) = 0;
     virtual std::string GetString() const = 0;
     virtual void BeginHighlight() = 0;
     virtual void EndHightlight() = 0;
@@ -93,10 +92,10 @@ struct PrettyPrinter: public Printer
         writeValue("'null'");
     }
 
-    void Enum(const void* e, const type::EnumDescriptor* ed) override {
+    void Enum(const void* e, const type::EnumDescriptor<>* ed) override {
         //auto enumValue = enumDescriptor->to_int(data);
         //writer.Int(enumDescriptor->value2key(enumValue));
-        writeValue(ed->to_string(e));
+        writeValue(ed->enumeratorFromValue(*type::Typeless::From(e)).name());
     }
 
     void BeginHighlight() override {}
@@ -227,14 +226,13 @@ struct SingleLinePrinter: public Printer
         writeValue("'null'");
     }
 
-    void Enum(const void* e, const type::EnumDescriptor* ed) override {
+    void Enum(const void* e, const type::EnumDescriptor<>* ed) override {
         if (enumAsTag) {
-            auto enumValue = ed->to_int(e);
-            Int(ed->value2key(enumValue));
+            Int(ed->enumeratorFromValue(*type::Typeless::From(e)).tag());
         }
         else {
             if (m_cs) m_result += m_cs->enumValue();
-            writeValue(ed->to_string(e));
+            writeValue(ed->enumeratorFromValue(*type::Typeless::From(e)).name());
         }
     }
 
@@ -288,14 +286,14 @@ private:
     bool enumAsTag = false;
 };
 
-static void to_ascii_recursive(const dots::type::StructDescriptor *td, const void *data, property_set what, Printer& writer, property_set highlight);
-static void write_array_to_ascii(const type::VectorDescriptor* vd, const void* data, Printer& writer);
+static void to_ascii_recursive(const dots::type::StructDescriptor<>& td, const void *data, types::property_set_t what, Printer& writer, types::property_set_t highlight);
+static void write_array_to_ascii(const type::VectorDescriptor& vd, const type::Vector<>& data, Printer& writer);
 
-static void write_atomic_types_to_ascii(const type::Descriptor* td, const void* data, Printer& writer)
+static void write_atomic_types_to_ascii(const type::Descriptor<>& td, const void* data, Printer& writer)
 {
     //std::cout << "write atomic is_arithmetic:" << t.is_arithmetic() << " is_enum:" << t.is_enumeration() << " t:" << t.get_name() << "\n";
     //std::cout << "var ptr: " << var.get_ptr() << " type=" << var.get_type().get_name() << "\n";
-    switch (td->dotsType()) {
+    switch (td.dotsType()) {
         case type::DotsType::int8:            writer.Int(*(const int8_t *) data); break;
         case type::DotsType::int16:           writer.Int(*(const int16_t *) data); break;
         case type::DotsType::int32:           writer.Int(*(const int32_t *) data); break;
@@ -305,46 +303,40 @@ static void write_atomic_types_to_ascii(const type::Descriptor* td, const void* 
         case type::DotsType::uint32:          writer.Uint(*(const uint32_t *) data); break;
         case type::DotsType::uint64:          writer.Uint64(*(const unsigned long long *) data); break;
         case type::DotsType::boolean:         writer.Bool(*(const bool *) data); break;
-        case type::DotsType::float16:         writer.Double(*(const float *) data); break;
         case type::DotsType::float32:         writer.Double(*(const float *) data);break;
         case type::DotsType::float64:         writer.Double(*(const double *) data);break;
         case type::DotsType::string:          writer.String(*(const std::string*) data);break;
-        case type::DotsType::property_set:    writer.Int(((const dots::property_set*)data)->value()); break;
+        case type::DotsType::property_set:    writer.Int(((const dots::types::property_set_t*)data)->toValue()); break;
         case type::DotsType::timepoint:       writer.Double(((const pnxs::TimePoint*)data)->value()); break;
         case type::DotsType::steady_timepoint:writer.Double(((const pnxs::SteadyTimePoint*)data)->value()); break;
         case type::DotsType::duration:        writer.Double(*(const pnxs::Duration*)data); break;
         case type::DotsType::uuid:            writer.String(((const dots::uuid*)data)->toString()); break;
         case type::DotsType::Enum:
         {
-            auto enumDescriptor = dynamic_cast<const type::EnumDescriptor*>(td);
-            writer.Enum(data, enumDescriptor);
+            writer.Enum(data, static_cast<const type::EnumDescriptor<>*>(&td));
         }
             break;
         case type::DotsType::Vector:
         case type::DotsType::Struct:
 
-            throw std::runtime_error("unknown type: " + td->name());
-        case type::DotsType::pointer:
-            throw std::runtime_error("unable to serialize pointer-type");
+            throw std::runtime_error("unknown type: " + td.name());
     }
 }
 
 
-static inline void write_ascii(const type::Descriptor* td, const void* data, Printer& writer)
+static inline void write_ascii(const type::Descriptor<>& td, const void* data, Printer& writer)
 {
-    if (td->dotsType() == type::DotsType::Vector)
+    if (td.dotsType() == type::DotsType::Vector)
     {
-        auto vectorDescriptor = type::toVectorDescriptor(td);
-        write_array_to_ascii(vectorDescriptor, data, writer);
+        write_array_to_ascii(static_cast<const type::VectorDescriptor&>(td), *reinterpret_cast<const type::Vector<>*>(data), writer);
     }
-    else if (isDotsBaseType(td->dotsType()))
+    else if (isDotsBaseType(td.dotsType()))
     {
         write_atomic_types_to_ascii(td, data, writer);
     }
-    else if (td->dotsType() == type::DotsType::Struct) // object
+    else if (td.dotsType() == type::DotsType::Struct) // object
     {
-        auto structDescriptor = type::toStructDescriptor(td);
-        to_ascii_recursive(structDescriptor, data, PROPERTY_SET_ALL, writer, PROPERTY_SET_NONE);
+        to_ascii_recursive(static_cast<const type::StructDescriptor<>&>(td), data, types::property_set_t::All, writer, types::property_set_t::None);
     }
     else
     {
@@ -352,38 +344,35 @@ static inline void write_ascii(const type::Descriptor* td, const void* data, Pri
     }
 }
 
-static void write_array_to_ascii(const type::VectorDescriptor* vd, const void* data, Printer& writer)
+static void write_array_to_ascii(const type::VectorDescriptor& vd, const type::Vector<>& data, Printer& writer)
 {
-    auto vectorSize = vd->get_size(data);
     writer.StartArray();
 
-    auto itemDescriptor = vd->vtd();
-
-    for (unsigned int i = 0; i < vectorSize; ++i)
+    for (unsigned int i = 0; i < data.typelessSize(); ++i)
     {
-        write_ascii(itemDescriptor, vd->get_data(data, i), writer);
+        write_ascii(vd.valueDescriptor(), reinterpret_cast<const void*>(&data.typelessAt(i)), writer);
     }
 
     writer.EndArray();
 }
 
-static void to_ascii_recursive(const dots::type::StructDescriptor *td, const void *data, property_set what, Printer& writer, property_set highlight)
+static void to_ascii_recursive(const type::StructDescriptor<>& td, const void *data, types::property_set_t what, Printer& writer, types::property_set_t highlight)
 {
-    property_set validProperties = td->validProperties(data);
+    types::property_set_t validProperties = td.propertyArea(*reinterpret_cast<const type::Struct*>(data)).validProperties();
 
     /// attributes which should be serialized 'and' are valid
-    const property_set serializePropertySet = (what & validProperties);
+    const types::property_set_t serializePropertySet = (what ^ validProperties);
 
     //size_t nrElements = serializePropertySet.count();
 
     writer.StartObject();
 
-    auto prop_list = td->properties();
-    for (auto prop : prop_list)
+    const auto& prop_list = td.propertyDescriptors();
+    for (const auto& prop : prop_list)
     {
-        auto tag = prop.tag();
+        auto set = prop.set();
 
-        if (not serializePropertySet.test(tag))
+        if (!(set <= serializePropertySet))
             continue;
 
         auto propertyValue = prop.address(data);
@@ -392,24 +381,24 @@ static void to_ascii_recursive(const dots::type::StructDescriptor *td, const voi
 
         const std::string name = prop.name().data();
 
-        if (highlight.test(tag)) {
+        if (set <= highlight) {
             writer.BeginHighlight();
         }
 
         writer.String(name);
 
-        if (highlight.test(tag)) {
+        if (set <= highlight) {
             writer.EndHightlight();
         }
 
-        write_ascii(prop.td(), propertyValue, writer);
+        write_ascii(prop.valueDescriptor(), propertyValue, writer);
     }
 
     writer.EndObject();
 }
 
 
-std::string to_ascii(const dots::type::StructDescriptor *td, const void *data, property_set properties, const ToAsciiOptions& cs)
+std::string to_ascii(const type::StructDescriptor<>* td, const void* data, types::property_set_t properties/* = types::property_set_t::All*/, const ToAsciiOptions& cs/* = {}*/)
 {
     std::unique_ptr<Printer> printer;
 
@@ -420,7 +409,7 @@ std::string to_ascii(const dots::type::StructDescriptor *td, const void *data, p
         printer = std::make_unique<PrettyPrinter>();
     }
 
-    to_ascii_recursive(td, data, properties, *printer.get(), cs.highlightAttributes);
+    to_ascii_recursive(*td, data, properties, *printer.get(), cs.highlightAttributes);
 
     return printer->GetString();
 }

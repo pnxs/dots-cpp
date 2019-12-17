@@ -2,7 +2,7 @@
 #include "Connection.h"
 #include "ConnectionManager.h"
 #include "AuthManager.h"
-#include "dots/type/Registry.h"
+#include "dots/io/Registry.h"
 
 #include "DotsMsgConnectResponse.dots.h"
 #include "DotsMsgError.dots.h"
@@ -248,7 +248,7 @@ bool Connection::onControlMessage(const DotsTransportHeader& transportHeader, Tr
             {
                 auto enumDescriptorData = static_cast<const EnumDescriptorData&>(transmission.instance().get());
                 enumDescriptorData.publisherId = id();
-                type::EnumDescriptor::createFromEnumDescriptorData(enumDescriptorData);
+                type::EnumDescriptor<>::createFromEnumDescriptorData(enumDescriptorData);
                 m_connectionManager.deliver(transportHeader, std::move(transmission));
                 handled = true;
             }
@@ -257,7 +257,9 @@ bool Connection::onControlMessage(const DotsTransportHeader& transportHeader, Tr
                 auto structDescriptorData = static_cast<const StructDescriptorData&>(transmission.instance().get());
                 structDescriptorData.publisherId = id();
                 LOG_DEBUG_S("received struct descriptor: " << structDescriptorData.name);
-                type::StructDescriptor::createFromStructDescriptorData(structDescriptorData);
+            	const type::StructDescriptor<>* descriptor = type::StructDescriptor<>::createFromStructDescriptorData(structDescriptorData);
+            	LOG_INFO_S("register type " << descriptor->name() << " published by " << m_clientName);
+            	m_connectionManager.onNewType(descriptor);
                 m_connectionManager.deliver(transportHeader, std::move(transmission));
                 handled = true;
             }
@@ -392,9 +394,9 @@ void Connection::onChannelError(const std::exception& e)
 }
 
 void Connection::sendNs(const string &nameSpace,
-                        const type::StructDescriptor *td,
+                        const type::StructDescriptor<> *td,
                         const type::Struct& instance,
-                        property_set properties,
+                        type::PropertySet properties,
                         bool remove)
 {
     DotsTransportHeader header;
@@ -451,7 +453,7 @@ void Connection::sendContainerContent(const Container<>& container)
         m_transmitter.prepareHeader(thead, &td, instance->_validProperties(), false);
 
         auto& dotsHeader = *thead.dotsHeader;
-        dotsHeader.sentTime = cloneInfo.modified;
+        dotsHeader.sentTime = cloneInfo.modified.isValid() ? *cloneInfo.modified : *cloneInfo.created;
         dotsHeader.serverSentTime =pnxs::SystemNow();
         dotsHeader.sender = cloneInfo.lastUpdateFrom;
         dotsHeader.fromCache = --remainingCacheObjects;

@@ -14,18 +14,18 @@ namespace dots
 
 	Transceiver& transceiver();
 
-	void publish(const type::StructDescriptor* td, const type::Struct& instance, property_set what, bool remove);
+	void publish(const type::StructDescriptor<>* td, const type::Struct& instance, types::property_set_t what, bool remove);
 
 	template<class T>
-	void publish(const T& instance, const property_set& what = PROPERTY_SET_ALL, bool remove = false);
+	void publish(const T& instance, const types::property_set_t& what = types::property_set_t::All, bool remove = false);
 	template<class T>
 	void publish(const T& data);
 
 	template<class T>
 	void remove(const T& data);
 
-	Subscription subscribe(const type::StructDescriptor& descriptor, Transceiver::receive_handler_t<>&& handler);
-	Subscription subscribe(const type::StructDescriptor& descriptor, Transceiver::event_handler_t<>&& handler);
+	Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::receive_handler_t<>&& handler);
+	Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::event_handler_t<>&& handler);
 
 	template<class T>
 	Subscription subscribe(Dispatcher::receive_handler_t<T>&& handler);
@@ -34,12 +34,12 @@ namespace dots
 
 	const ContainerPool& pool();
 
-	const Container<>& container(const type::StructDescriptor& descriptor);
+	const Container<>& container(const type::StructDescriptor<>& descriptor);
 	template <typename T>
 	const Container<T>& container();
 
 	template<class T>
-	void publish(const T& instance, const property_set& what/* = PROPERTY_SET_ALL*/, bool remove/* = false*/)
+	void publish(const T& instance, const types::property_set_t& what/* = types::property_set_t::All*/, bool remove/* = false*/)
 	{
 	    static_assert(!T::_IsSubstructOnly(), "it is not allowed to publish to a struct that is marked with 'substruct_only'!");
 	    registerTypeUsage<T, PublishedType>();

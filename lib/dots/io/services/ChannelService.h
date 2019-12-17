@@ -15,11 +15,11 @@ namespace dots
 			/* do nothing */
 		}
 		ChannelService(const ChannelService& other) = delete;
-		ChannelService(ChannelService&& other) noexcept(false) = default;
+		ChannelService(ChannelService&& other) noexcept(false) = delete;
 		~ChannelService() = default;
 
 		ChannelService& operator = (const ChannelService& rhs) = delete;
-		ChannelService& operator = (ChannelService&& rhs) noexcept(false) = default;
+		ChannelService& operator = (ChannelService&& rhs) noexcept(false) = delete;
 
 		template <typename TListener, typename... Args>
 		std::unique_ptr<Listener> listen(Args&&... args)

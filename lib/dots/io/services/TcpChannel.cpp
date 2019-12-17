@@ -1,6 +1,7 @@
 #include "TcpChannel.h"
 #include <dots/io/Io.h>
 #include <dots/io/serialization/CborNativeSerialization.h>
+#include <dots/dots.h>
 
 namespace dots
 {
@@ -94,7 +95,7 @@ namespace dots
 				verifyErrorCode(ec);
 
 				m_header = DotsTransportHeader{};
-				from_cbor(&m_headerBuffer[0], m_headerSize, &m_header._Descriptor(), &m_header);
+				from_cbor(&m_headerBuffer[0], m_headerSize, m_header);
 
 				if (!m_header.payloadSize.isValid())
 				{
@@ -120,7 +121,7 @@ namespace dots
 			{
 				verifyErrorCode(ec);
 
-				const type::StructDescriptor* descriptor = type::Descriptor::registry().findStructDescriptor(m_header.dotsHeader->typeName);
+				const type::StructDescriptor<>* descriptor = transceiver().registry().findStructType(*m_header.dotsHeader->typeName).get();
 
 				if (descriptor == nullptr)
 				{
@@ -128,7 +129,7 @@ namespace dots
 				}
 
 				type::AnyStruct instance{ *descriptor };
-				from_cbor(m_instanceBuffer.data(), m_instanceBuffer.size(), descriptor, &instance.get());
+				from_cbor(m_instanceBuffer.data(), m_instanceBuffer.size(), instance.get());
 				processReceive(m_header, Transmission{ std::move(instance) });
 			}
 			catch (const std::exception& e)

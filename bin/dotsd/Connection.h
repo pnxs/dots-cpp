@@ -86,7 +86,7 @@ public:
      * @param properties which properties should be send?
      * @param remove send normal or remove object?
      */
-    void sendNs(const string& nameSpace, const type::StructDescriptor* td, const type::Struct& instance, property_set properties, bool remove);
+    void sendNs(const string& nameSpace, const type::StructDescriptor<>* td, const type::Struct& instance, type::PropertySet properties, bool remove);
 
     void sendContainerContent(const Container<>& container);
     void sendCacheEnd(const std::string& typeName);

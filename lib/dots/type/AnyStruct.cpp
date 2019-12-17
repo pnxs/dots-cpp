@@ -2,10 +2,10 @@
 
 namespace dots::type
 {
-	AnyStruct::AnyStruct(const StructDescriptor& descriptor):
-		_instance{ reinterpret_cast<Struct*>(::operator new(descriptor.sizeOf())) }
+	AnyStruct::AnyStruct(const StructDescriptor<>& descriptor):
+		_instance{ reinterpret_cast<Struct*>(::operator new(descriptor.size())) }
 	{
-		descriptor.construct(_instance.get());
+		descriptor.construct(Typeless::From(*_instance));
 	}
 
 	AnyStruct::AnyStruct(const Struct& instance) :
@@ -24,7 +24,7 @@ namespace dots::type
 	{
 		if (_instance != nullptr)
 		{
-			_instance->_descriptor().destruct(_instance.get());
+			_instance->_descriptor().destruct(Typeless::From(*_instance));
 		}		
 	}
 
@@ -35,7 +35,7 @@ namespace dots::type
 
 	AnyStruct& AnyStruct::operator = (const Struct& rhs)
 	{
-		_instance->_descriptor().copy(_instance.get(), &rhs);
+		_instance->_assign(rhs);
 		return *this;
 	}
 

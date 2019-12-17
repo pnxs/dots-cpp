@@ -1,88 +1,95 @@
-#include "Descriptor.h"
-#include "Registry.h"
+#include <dots/type/Descriptor.h>
 
-namespace dots {
-namespace type {
-
-bool isDotsBaseType(type::DotsType dotsType)
+namespace dots::type
 {
-    switch (dotsType)
-    {
-        case type::DotsType::int8:
-        case type::DotsType::int16:
-        case type::DotsType::int32:
-        case type::DotsType::int64:
-        case type::DotsType::uint8:
-        case type::DotsType::uint16:
-        case type::DotsType::uint32:
-        case type::DotsType::uint64:
-        case type::DotsType::boolean:
-        case type::DotsType::float16:
-        case type::DotsType::float32:
-        case type::DotsType::float64:
-        case type::DotsType::string:
-        case type::DotsType::property_set:
-        case type::DotsType::timepoint:
-        case type::DotsType::steady_timepoint:
-        case type::DotsType::duration:
-        case type::DotsType::uuid:
-        case type::DotsType::Enum:
-        case type::DotsType::pointer:
-            return true;
+	Descriptor<Typeless>::Descriptor(Type type, std::string name, size_t size, size_t alignment):
+		m_type(type),
+		m_name(std::move(name)),
+		m_size(size),
+		m_alignment(alignment)
+	{
+		/* do nothing */
+	}
 
-        case type::DotsType::Vector:
-        case type::DotsType::Struct:
-            return false;
-    }
-    return false;
-}
+	Type Descriptor<Typeless>::type() const
+	{
+		return m_type;
+	}
 
-void *Descriptor::New() const
-{
-    void *obj = ::operator new(sizeOf());
-    construct(obj);
-    return obj;
-}
+	bool Descriptor<Typeless>::isFundamentalType() const
+	{
+		return IsFundamentalType(type());
+	}
 
-void Descriptor::Delete(void *obj) const
-{
-    destruct(obj);
-    ::operator delete(obj);
-}
+	const std::string& Descriptor<Typeless>::name() const
+	{
+		return m_name;
+	}
 
-std::shared_ptr<void> Descriptor::make_shared() const
-{
-    return {New(), bind(&Descriptor::Delete, this, _1)};
-}
+	size_t Descriptor<Typeless>::size() const
+	{
+		return m_size;
+	}
 
-Descriptor::Descriptor(const std::string &dotsName, DotsType dotsType, std::size_t sizeOf,
-                             std::size_t alignOf)
-        : m_dotsTypeName(dotsName), m_dotsType(dotsType), m_sizeOf(sizeOf), m_alignOf(alignOf)
-{
-    //printf("add dots::Descriptor(%s <-> %s, %d, %d)\n", name().c_str(), name.c_str(), sizeOf(), alignOf());
-    registry().insertType(dotsName, this);
-}
+	size_t Descriptor<Typeless>::alignment() const
+	{
+		return m_alignment;
+	}
 
-Descriptor::~Descriptor()
-{
-}
+	bool Descriptor<Typeless>::usesDynamicMemory() const
+	{
+		return false;
+	}
 
-bool type::Descriptor::usesDynamicMemory() const
-{
-    return false;
-}
+	size_t Descriptor<Typeless>::dynamicMemoryUsage(const Typeless&/* value*/) const
+	{
+		return 0;
+	}
 
-size_t type::Descriptor::dynamicMemoryUsage(const void* /*lhs*/) const
-{
-    return 0;
-}
+	void Descriptor<Typeless>::fromString(Typeless&/* storage*/, const std::string_view&/* value*/) const
+	{
+		throw std::logic_error{ "from string construction not available for type: " + name() };
+	}
 
-Registry &type::Descriptor::registry()
-{
-    static Registry *registry = new Registry;
-    registry->checkPopulate();
-    return *registry;
-}
+	std::string Descriptor<Typeless>::toString(const Typeless&/* value*/) const
+	{
+		throw std::logic_error{ "to string conversion not available for type: " + name() };
+	}
 
-}
+	bool Descriptor<Typeless>::IsFundamentalType(const Descriptor& descriptor)
+	{
+		return IsFundamentalType(descriptor.type());
+	}
+
+	bool Descriptor<Typeless>::IsFundamentalType(Type type)
+	{
+		switch (type)
+	    {
+	        case Type::boolean:
+	        case Type::int8:
+	        case Type::int16:
+	        case Type::int32:
+	        case Type::int64:
+	        case Type::uint8:
+	        case Type::uint16:
+	        case Type::uint32:
+	        case Type::uint64:
+	        case Type::float32:
+	        case Type::float64:
+	        case Type::property_set:
+	        case Type::timepoint:
+	        case Type::steady_timepoint:
+	        case Type::duration:
+	        case Type::string:
+	        case Type::uuid:
+	            return true;
+
+	        case Type::Vector:
+	        case Type::Enum:
+	        case Type::Struct:
+	            return false;
+	    }
+
+		return false;
+	}
 }

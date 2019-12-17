@@ -29,9 +29,9 @@ TEST(TestDistributedTypeId, createId)
 
     dots::DistributedTypeId dtid(true); // Master
 
-    const Descriptor* p1 = &DotsTestStruct::_Descriptor();
-    const Descriptor* p2 = &DotsTestSubStruct::_Descriptor();
-    const Descriptor* p3 = &dots::type::enum_type_t<DotsTestEnum>::Descriptor();
+    const Descriptor<>* p1 = &DotsTestStruct::_Descriptor();
+    const Descriptor<>* p2 = &DotsTestSubStruct::_Descriptor();
+    const Descriptor<>* p3 = &Descriptor<DotsTestEnum>::Instance();
 
     DotsTypes t1;
     t1.id = 1;

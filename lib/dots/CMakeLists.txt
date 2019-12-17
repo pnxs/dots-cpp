@@ -33,7 +33,6 @@ GENERATE_DOTS_TYPES(MODEL_SOURCES MODEL_HEADERS
 target_sources(${TARGET_NAME}
 	PRIVATE
 		dots.cpp
-		dots_base.cpp
 		Uuid.cpp
 
 		common/Chrono.cpp
@@ -48,7 +47,6 @@ target_sources(${TARGET_NAME}
 		io/Transceiver.cpp
 		io/ServerConnection.cpp
 		io/Subscription.cpp
-		io/Chained.cpp
 
 		io/Io.cpp
 		io/Container.cpp
@@ -89,22 +87,18 @@ target_sources(${TARGET_NAME}
 		io/recording/DynamicLoader.cpp
 		io/recording/Player.cpp
 		io/recording/FileReader.cpp
-		type/AnyStruct.cpp
-		type/ChronoDescriptor.cpp
+		io/Registry.cpp
+		io/DescriptorConverter.cpp
+		type/AnyStruct.cpp		
 		type/Descriptor.cpp
-		type/Enum.cpp
+		type/DynamicStruct.cpp
 		type/EnumDescriptor.cpp
-		type/PropertyIterator.cpp
-		type/PropertyPairIterator.cpp
-		type/EnumDescriptor.cpp
-		type/Registry.cpp
-		type/StandardTypes.cpp
-		type/StructDescriptor.cpp
-		type/StructProperty.cpp
-		type/UuidDescriptor.cpp
-		type/Vector.cpp
-		type/VectorDescriptor.cpp
+		type/PropertyDescriptor.cpp
+		type/ProxyPropertyIterator.cpp
+		type/ProxyPropertyPairIterator.cpp
 		type/Struct.cpp
+		type/StructDescriptor.cpp
+		type/VectorDescriptor.cpp
 
 		${MODEL_SOURCES}
 )
@@ -120,7 +114,7 @@ target_compile_features(${TARGET_NAME}
 )
 target_compile_options(${TARGET_NAME}
 	PRIVATE
-		$<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-O2 -flto -Wall -Wextra -Wpedantic -Werror>>		
+		$<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-O2 -flto -Wall -Wextra -Wpedantic -Werror -Wno-deprecated-declarations>>		
 )
 target_compile_definitions(${TARGET_NAME}
 	PUBLIC

@@ -13,24 +13,19 @@ target_sources(${TARGET_NAME}
 	PRIVATE
         TestAsciiSerialization.cpp
         TestCborSerialization.cpp
-        TestChronoDescriptor.cpp
 		TestDispatcher.cpp
         TestDistributedTypeId.cpp
-        TestEnumDescriptor.cpp
         TestFileStore.cpp
         TestJsonSerialization.cpp
-        TestPropertyIterator.cpp
-		TestPropertyProxy.cpp
-		TestPropertyProxyVoid.cpp
+		TestEnumDescriptor.cpp
+		TestStaticDescriptor.cpp
+		TestStaticStruct.cpp
 		TestPropertySet.cpp
+		TestProperty.cpp
+		TestProxyProperty.cpp
+		TestProxyPropertyIterator.cpp
         TestRecord.cpp
-        TestRegistry.cpp
-        TestStruct.cpp
-		TestTProperty.cpp
-		TestTStruct.cpp
-        TestVectorDescriptor.cpp
         TestJsonStore.cpp
-        TestFileReader.cpp
 )	
 target_include_directories(${TARGET_NAME}
 	PRIVATE
@@ -38,7 +33,7 @@ target_include_directories(${TARGET_NAME}
 )
 target_compile_options(${TARGET_NAME}
 	PRIVATE
-		$<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-O2 -flto -Wall -Wextra -Wpedantic -Werror>>
+		$<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-O2 -flto -Wall -Wextra -Wpedantic -Werror -Wno-deprecated-declarations>>
 )
 target_compile_features(${TARGET_NAME}
 	PRIVATE

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "dots/cpp_config.h"
+#include <dots/dots_base.h>
 #include <dots/functional/signal.h>
 #include <dots/io/services/Channel.h>
 #include "Transmitter.h"
@@ -34,7 +35,7 @@ public:
     typedef string GroupName;
     typedef string ClientName;
     enum class ConnectMode { direct, preload };
-    typedef vector<string> DescriptorList;
+    typedef std::vector<string> DescriptorList;
 
     void joinGroup(const GroupName&);
     void leaveGroup(const GroupName&);
@@ -42,8 +43,8 @@ public:
 
     void requestConnection(const ClientName&, ConnectMode);
 
-    void publish(const type::StructDescriptor* td, const type::Struct& instance, property_set what = PROPERTY_SET_ALL, bool remove = false);
-    void publishNs(const string& nameSpace, const type::StructDescriptor* td, const type::Struct& instance, property_set what = PROPERTY_SET_ALL, bool remove = false);
+    void publish(const type::StructDescriptor<>* td, const type::Struct& instance, types::property_set_t what = types::property_set_t::All, bool remove = false);
+    void publishNs(const string& nameSpace, const type::StructDescriptor<>* td, const type::Struct& instance, types::property_set_t what = types::property_set_t::All, bool remove = false);
     // Server actions END
 
     const ClientId& clientId() const { return m_serversideClientname; }

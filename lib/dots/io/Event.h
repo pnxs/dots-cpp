@@ -26,7 +26,7 @@ namespace dots
         const type::Struct& updated() const;
         const DotsCloneInformation& cloneInfo() const;
 
-		const type::StructDescriptor& descriptor() const;
+		const type::StructDescriptor<>& descriptor() const;
 
         DotsMt mt() const;
         bool isCreate() const;
@@ -34,8 +34,8 @@ namespace dots
         bool isRemove() const;
 
         bool isOwnUpdate() const;		
-	    property_set newProperties() const { return header().attributes; }
-	    property_set updatedProperties() const { return newProperties() & updated()._validProperties(); }
+	    types::property_set_t newProperties() const { return header().attributes; }
+	    types::property_set_t updatedProperties() const { return newProperties() ^ updated()._validProperties(); }
 
         template <typename T>
         const Event<T>& as() const

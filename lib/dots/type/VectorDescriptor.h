@@ -1,53 +1,89 @@
 #pragma once
-#include <dots/cpp_config.h>
-#include "Descriptor.h"
+#include <dots/type/StaticDescriptor.h>
+#include <dots/type/Vector.h>
 
-namespace dots
+namespace dots::type
 {
-namespace type
-{
+	struct VectorDescriptor : Descriptor<Typeless>
+	{
+		VectorDescriptor(std::string name, const std::shared_ptr<Descriptor<>>& valueDescriptor, size_t size, size_t alignment);
+		VectorDescriptor(const VectorDescriptor& other) = default;
+		VectorDescriptor(VectorDescriptor&& other) = default;
+		~VectorDescriptor() = default;
 
+		VectorDescriptor& operator = (const VectorDescriptor& rhs) = default;
+		VectorDescriptor& operator = (VectorDescriptor&& rhs) = default;
 
-class VectorDescriptor: public Descriptor
-{
-public:
-    static const VectorDescriptor* createDescriptor(const string& vectorTypeName);
+		const std::shared_ptr<Descriptor<>>& valueDescriptorPtr() const;
+		const Descriptor<Typeless>& valueDescriptor() const;
 
+	private:
 
-    void construct(void*) const final override;
-    void destruct(void*) const final override;
+		std::shared_ptr<Descriptor<>> m_valueDescriptor;
+	};
 
-    bool usesDynamicMemory() const override;
-    size_t dynamicMemoryUsage(const void* lhs) const override;
+	template <typename T>
+	struct Descriptor<Vector<T>> : StaticDescriptor<Vector<T>, VectorDescriptor>
+	{
+		Descriptor() :
+			StaticDescriptor<Vector<T>, VectorDescriptor>("vector<" + valueDescriptor().name() + ">", valueDescriptorPtr(), sizeof(Vector<T>), alignof(Vector<T>))
+		{
+			/* do nothing */
+		}
+		Descriptor(const std::shared_ptr<Descriptor<>>& valueDescriptorOverride) :
+			StaticDescriptor<Vector<T>, VectorDescriptor>("vector<" + valueDescriptorOverride->name() + ">", valueDescriptorOverride, sizeof(Vector<T>), alignof(Vector<T>))
+		{
+			if (valueDescriptorOverride->size() != sizeof(T) || valueDescriptorOverride->alignment() != alignof(T))
+			{
+				throw std::logic_error{ "attempt to create vector descriptor with incompatible value type" };
+			}
+		}
 
-    virtual std::string to_string(const void* lhs) const final override;
-    virtual bool from_string(void* lhs, const std::string& str) const final override;
+		bool usesDynamicMemory() const override
+		{
+			return true;
+		}
 
-    bool equal(const void* lhs, const void* rhs) const final override;
-    bool lessThan(const void* lhs, const void* rhs) const final override;
-    void copy(void* lhs, const void* rhs) const final override;
-    void swap(void* lhs, void* rhs) const final override;
-    void clear(void* obj) const override;
+		size_t dynamicMemoryUsage(const Typeless& lhs) const override
+		{
+			return dynamicMemoryUsage(lhs.to<Vector<T>>());
+		}
 
-    void resize(const void* obj, size_t size) const;
-    size_t get_size(const void *obj) const;
-    char * get_data(const void *obj, size_t idx = 0) const;
+		size_t dynamicMemoryUsage(const Vector<T>& lhs) const
+		{
+			size_t size = lhs.size();
+		    size_t dynMemUsage = size * valueDescriptor().size();
 
-    const Descriptor* vtd() const;
+			if (valueDescriptor().usesDynamicMemory())
+			{
+				for (const T& value : lhs)
+				{
+					dynMemUsage += valueDescriptor().dynamicMemoryUsage(value);
+				}
+			}			
 
-private:
-    VectorDescriptor(const Descriptor* vtd);
+		    return dynMemUsage;
+		}
 
-    const Descriptor* m_valueTypeDescriptor = nullptr;
-};
+		static const std::shared_ptr<Descriptor<T>>& valueDescriptorPtr()
+		{
+			return Descriptor<T>::InstancePtr();
+		}
 
-static
-inline
-const VectorDescriptor* toVectorDescriptor(const Descriptor* d)
-{
-    return dynamic_cast<const VectorDescriptor*>(d);
-}
+		static const Descriptor<T>& valueDescriptor()
+		{
+			return Descriptor<T>::Instance();
+		}
 
+	private:
 
-}
+		using VectorDescriptor::valueDescriptorPtr;
+		using VectorDescriptor::valueDescriptor;
+	};
+
+	[[deprecated("only available for backwards compatibility")]]
+	inline const VectorDescriptor* toVectorDescriptor(const Descriptor<>* descriptor)
+	{
+	    return descriptor->type() == Type::Vector ? static_cast<const VectorDescriptor*>(descriptor) : nullptr;
+	}
 }

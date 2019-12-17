@@ -13,11 +13,11 @@ namespace dots
 
 		explicit TimerService(asio::execution_context& executionContext);
 		TimerService(const TimerService& other) = delete;
-		TimerService(TimerService&& other) noexcept(false) = default;
+		TimerService(TimerService&& other) noexcept(false) = delete;
 		~TimerService() = default;
 
 		TimerService& operator = (const TimerService& rhs) = delete;
-		TimerService& operator = (TimerService&& rhs) noexcept(false) = default;
+		TimerService& operator = (TimerService&& rhs) noexcept(false) = delete;
 
 		Timer::id_t addTimer(const pnxs::chrono::Duration& timeout, const callback_t& cb, bool periodic);
 		void removeTimer(Timer::id_t id);

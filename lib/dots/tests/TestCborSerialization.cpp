@@ -5,7 +5,8 @@
 #include "DotsTransportHeader.dots.h"
 #include "DotsTestVectorStruct.dots.h"
 #include "EnumDescriptorData.dots.h"
-#include "dots/type/Registry.h"
+#include "dots/io/Registry.h"
+#include <dots/dots.h>
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
@@ -214,15 +215,9 @@ TEST(TestCborSerialization, deserializeDynamic)
             0x61,0x43,0x6f,0x6d,0x6d,0x65,0x6e,0x74 // "aComment"
     };
 
-    // Register a new type StructDescriptorDataTest and deserialize into it
-    //auto descriptorData = Registry::toStructDescriptorData(type::get<StructDescriptorData>());
-    auto descriptorData = StructDescriptorData::_Descriptor().descriptorData();
-    descriptorData.name = "StructDescriptorDataTest";
-    auto descriptor = StructDescriptor::createFromStructDescriptorData(descriptorData);
-
     StructDescriptorData sd;
 
-    dots::from_cbor(inputData.data(), inputData.size(), descriptor, &sd);
+    dots::from_cbor(inputData.data(), inputData.size(), sd);
 
     ASSERT_TRUE(sd.name.isValid());
     ASSERT_TRUE(sd.properties.isValid());
@@ -342,7 +337,7 @@ TEST(TestCborSerialization, deserializeTransportHeader)
     ASSERT_FALSE(dots_header.sender.isValid());
 
     EXPECT_EQ(dots_header.typeName, "DotsMsgHello");
-    EXPECT_EQ(dots_header.attributes, dots::property_set(1));
+    EXPECT_EQ(dots_header.attributes, dots::type::PropertySet(1));
     EXPECT_EQ(dots_header.removeObj, false);
     EXPECT_EQ(dots_header.sentTime, pnxs::TimePoint(1));
 }
@@ -406,7 +401,7 @@ TEST(TestCborSerialization, deserializeCustomType)
     };
 
     auto sd = dots::decodeInto_cbor<StructDescriptorData>(customTypeDescriptorData);
-    auto descriptor = StructDescriptor::createFromStructDescriptorData(sd);
+    auto descriptor = dots::type::StructDescriptor<>::createFromStructDescriptorData(sd);
 
     auto customObj = descriptor->New();
 
@@ -414,14 +409,14 @@ TEST(TestCborSerialization, deserializeCustomType)
 
     std::set<std::string> expectProperties = { "ID", "Created", "Text" };
 
-    for (auto& property : descriptor->properties())
+    for (auto& property : descriptor->propertyDescriptors())
     {
         auto iter = expectProperties.find(property.name().data());
         if (iter != expectProperties.end()) expectProperties.erase(iter);
         else FAIL() << "unexpected property " << property.name();
 
         if (property.name() == "Created") {
-            EXPECT_EQ(property.td()->name(), "timepoint");
+            EXPECT_EQ(property.valueDescriptor().name(), "timepoint");
             auto tp = reinterpret_cast<pnxs::TimePoint*>(property.address(customObj));
             EXPECT_EQ(tp->value().toSeconds(), 1492084921.7466583);
         }
@@ -430,7 +425,7 @@ TEST(TestCborSerialization, deserializeCustomType)
     EXPECT_EQ(expectProperties.size(), 0u); // All expected properties are found
 
 
-    auto json = dots::to_json(descriptor, customObj, PROPERTY_SET_ALL);
+    auto json = dots::to_json(descriptor, customObj, PropertySet::All);
 
     std::cout << "Json: " << json << "\n";
 
@@ -477,8 +472,8 @@ TEST(TestCborSerialization, dynamicEnum)
         0xa1, 0x01, 0x02
     };
 
-    auto enumDescriptor = EnumDescriptor::createFromEnumDescriptorData(ed);
-    auto structDescriptor = StructDescriptor::createFromStructDescriptorData(sd);
+    auto enumDescriptor = dots::type::EnumDescriptor<>::createFromEnumDescriptorData(ed);
+    auto structDescriptor = dots::type::StructDescriptor<>::createFromStructDescriptorData(sd);
 
     //auto et = rttr::type::get_by_name("MyEnum");
     //auto enumt = et.get_enumeration();
@@ -489,12 +484,12 @@ TEST(TestCborSerialization, dynamicEnum)
 
     dots::from_cbor(myStructData.data(), myStructData.size(), structDescriptor, myStructObj);
 
-    ASSERT_TRUE(structDescriptor->properties().size() > 0);
+    ASSERT_TRUE(structDescriptor->propertyDescriptors().size() > 0);
 
-    EXPECT_EQ(enumDescriptor->to_string(structDescriptor->properties()[0].address(myStructObj)), "myvalue2");
-    EXPECT_EQ(enumDescriptor->to_int(structDescriptor->properties()[0].address(myStructObj)), 11);
+    EXPECT_EQ(enumDescriptor->enumeratorFromValue(*Typeless::From(structDescriptor->propertyDescriptors()[0].address(myStructObj))).name(), "myvalue2");
+    EXPECT_EQ(enumDescriptor->enumeratorFromValue(*Typeless::From(structDescriptor->propertyDescriptors()[0].address(myStructObj))).valueTypeless().to<int32_t>(), 11);
 
-    EXPECT_THAT(dots::to_cbor({structDescriptor, myStructObj}, PROPERTY_SET_ALL), ElementsAreArray(myStructData));
+    EXPECT_THAT(dots::to_cbor({structDescriptor, myStructObj}, PropertySet::All), ElementsAreArray(myStructData));
 
     structDescriptor->Delete(myStructObj);
 }
@@ -524,9 +519,6 @@ TEST(TestCborSerialization, serializeDynamicRegisteredIntVector)
 {
     // Register a new type StructDescriptorDataTest and deserialize into it
     //auto descriptorData = Registry::toStructDescriptorData(type::get<DotsTestVectorStruct>());
-    auto descriptorData = DotsTestVectorStruct::_Descriptor().descriptorData();
-    descriptorData.name = "DotsTestVectorStruct_IntVec";
-    auto descriptor = StructDescriptor::createFromStructDescriptorData(descriptorData);
 
     DotsTestVectorStruct ts;
 
@@ -542,16 +534,11 @@ TEST(TestCborSerialization, serializeDynamicRegisteredIntVector)
             0x02                 // int 2
     };
 
-    EXPECT_THAT(dots::to_cbor({descriptor, &ts}, PROPERTY_SET_ALL), ElementsAreArray(expectData));
+    EXPECT_THAT(dots::to_cbor(ts, PropertySet::All), ElementsAreArray(expectData));
 }
 
 TEST(TestCborSerialization, deserializeDynamicRegisteredIntVector)
 {
-    // Register a new type StructDescriptorDataTest and deserialize into it
-    auto descriptorData = DotsTestVectorStruct::_Descriptor().descriptorData();
-    descriptorData.name = "DotsTestVectorStruct_IntVecDeser";
-    auto descriptor = StructDescriptor::createFromStructDescriptorData(descriptorData);
-
     DotsTestVectorStruct ts;
 
     std::vector<uint8_t> inputData = {
@@ -562,7 +549,7 @@ TEST(TestCborSerialization, deserializeDynamicRegisteredIntVector)
             0x02                 // int 2
     };
 
-    dots::from_cbor(inputData.data(), inputData.size(), descriptor, &ts);
+    dots::from_cbor(inputData.data(), inputData.size(), &ts._descriptor(), &ts);
 
     ASSERT_TRUE(ts.intList.isValid());
     ASSERT_EQ(ts.intList->size(), 2u);
@@ -572,11 +559,6 @@ TEST(TestCborSerialization, deserializeDynamicRegisteredIntVector)
 
 TEST(TestCborSerialization, serializeDynamicRegisteredStringVector)
 {
-    // Register a new type StructDescriptorDataTest and deserialize into it
-    auto descriptorData = DotsTestVectorStruct::_Descriptor().descriptorData();
-    descriptorData.name = "DotsTestVectorStruct_StringVector";
-    auto descriptor = StructDescriptor::createFromStructDescriptorData(descriptorData);
-
     DotsTestVectorStruct ts;
 
     auto& sl = ts.stringList();
@@ -593,16 +575,11 @@ TEST(TestCborSerialization, serializeDynamicRegisteredStringVector)
             0x53,0x74,0x72,0x69,0x6E,0x67,0x32 // "String2"
     };
 
-    EXPECT_THAT(dots::to_cbor({descriptor, &ts}, PROPERTY_SET_ALL), ElementsAreArray(expectData));
+    EXPECT_THAT(dots::to_cbor(ts, PropertySet::All), ElementsAreArray(expectData));
 }
 
 TEST(TestCborSerialization, deserializeDynamicRegisteredStringVector)
 {
-    // Register a new type StructDescriptorDataTest and deserialize into it
-    auto descriptorData = DotsTestVectorStruct::_Descriptor().descriptorData();
-    descriptorData.name = "DotsTestVectorStruct_StringVectorDeser";
-    auto descriptor = StructDescriptor::createFromStructDescriptorData(descriptorData);
-
     DotsTestVectorStruct ts;
 
     std::vector<uint8_t> inputData = {
@@ -615,7 +592,7 @@ TEST(TestCborSerialization, deserializeDynamicRegisteredStringVector)
             0x53,0x74,0x72,0x69,0x6E,0x67,0x32 // "String2"
     };
 
-    dots::from_cbor(inputData.data(), inputData.size(), descriptor, &ts);
+    dots::from_cbor(inputData.data(), inputData.size(), ts);
 
     ASSERT_TRUE(ts.stringList.isValid());
     ASSERT_EQ(ts.stringList->size(), 2u);
@@ -659,7 +636,7 @@ TEST(TestCborSerialization, deserializeUuid)
             0x50,0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f
     };
 
-    dots::from_cbor(inputData.data(), inputData.size(), &ts._Descriptor(), &ts);
+    dots::from_cbor(inputData.data(), inputData.size(), ts);
 
     ASSERT_TRUE(ts.indKeyfField.isValid());
     ASSERT_TRUE(ts.uuid.isValid());

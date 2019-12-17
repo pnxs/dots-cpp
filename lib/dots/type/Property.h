@@ -4,9 +4,8 @@
 #include <type_traits>
 #include <iostream>
 #include <cstddef>
-#include "StructProperty.h"
-#include "Struct.h"
-#include "property_set.h"
+#include <dots/type/PropertyArea.h>
+#include <dots/type/PropertyDescriptor.h>
 
 namespace dots::type
 {
@@ -14,8 +13,8 @@ namespace dots::type
 	struct Property
 	{
 		static_assert(std::conjunction_v<std::negation<std::is_pointer<T>>, std::negation<std::is_reference<T>>>);
-		static constexpr bool IsTypeless = std::is_same_v<T, void>;
-		using value_t = std::conditional_t<IsTypeless, std::byte, T>;
+		using value_t = T;
+		static constexpr bool IsTypeless = std::is_same_v<T, Typeless>;
 
 		template <typename U, std::enable_if_t<!std::disjunction_v<std::is_same<std::remove_reference_t<U>, Property>, std::is_same<std::remove_reference_t<U>, Derived>>, int> = 0>
 		Derived& operator = (U&& rhs)
@@ -25,42 +24,42 @@ namespace dots::type
 		}
 
 		template <typename... Args>
-		value_t& operator () (Args&&... args)
+		T& operator () (Args&&... args)
 		{
 			return construct(std::forward<Args>(args)...);
 		}
 
-		value_t& operator * ()
+		T& operator * ()
 		{
 			return value();
 		}
 
-		const value_t& operator * () const
+		const T& operator * () const
 		{
 			return value();
 		}
 
-		value_t* operator -> ()
+		T* operator -> ()
 		{
 			return &value();
 		}
 
-		const value_t* operator -> () const
+		const T* operator -> () const
 		{
 			return &value();
 		}
 
-		operator value_t& ()
+		operator T& ()
 		{
 			return value();
 		}
 
-		operator const value_t& () const
+		operator const T& () const
 		{
 			return value();
 		}
 
-		bool operator == (const value_t& rhs) const
+		bool operator == (const T& rhs) const
 		{
 			return equal(rhs);
 		}
@@ -70,7 +69,7 @@ namespace dots::type
 			return equal(rhs);
 		}
 
-		bool operator != (const value_t& rhs) const
+		bool operator != (const T& rhs) const
 		{
 			return !(*this == rhs);
 		}
@@ -80,7 +79,7 @@ namespace dots::type
 			return !(*this == rhs);
 		}
 
-		bool operator < (const value_t& rhs) const
+		bool operator < (const T& rhs) const
 		{
 			return less(rhs);
 		}
@@ -90,134 +89,187 @@ namespace dots::type
 			return less(rhs);
 		}
 
+		bool operator <= (const T& rhs) const
+		{
+			return lessEqual(rhs);
+		}
+
+		bool operator <= (const Derived& rhs) const
+		{
+			return lessEqual(rhs);
+		}
+
+		bool operator > (const T& rhs) const
+		{
+			return greater(rhs);
+		}
+
+		bool operator > (const Derived& rhs) const
+		{
+			return greater(rhs);
+		}
+
+		bool operator >= (const T& rhs) const
+		{
+			return greaterEqual(rhs);
+		}
+
+		bool operator >= (const Derived& rhs) const
+		{
+			return greaterEqual(rhs);
+		}
+
 		bool isValid() const
 		{
-			return validPropertySet().test(tag());
+			return metadata().set() <= validProperties();
 		}
 
-		value_t& construct(const Derived& rhs)
+		template <bool AssertInvalidity = true>
+		T& construct(const Derived& rhs)
 		{
-			if (!rhs.isValid())
+			construct<AssertInvalidity>(rhs.storage());
+			return *this;
+		}
+
+		template <bool AssertInvalidity = true>
+		T& construct(Derived&& rhs)
+		{
+			construct<AssertInvalidity>(std::move(rhs.storage()));
+			rhs.destroy();
+
+			return *this;
+		}
+
+		template <bool AssertInvalidity = true, typename... Args>
+		T& construct(Args&&... args)
+		{
+			if constexpr (AssertInvalidity)
 			{
-				throw std::runtime_error{ std::string{ "attempt to construct from invalid property: " } + qualifiedName() };
+				if (isValid())
+				{
+					throw std::runtime_error{ std::string{ "attempt to construct already valid property: " } + metadata().name().data() };
+				}
+			}
+
+			if constexpr (!IsTypeless)
+			{
+				Descriptor<T>::construct(storage(), std::forward<Args>(args)...);
+			}
+			else if constexpr (sizeof...(Args) == 1)
+			{
+				descriptor().valueDescriptor().construct(storage(), std::forward<Args>(args)...);
+			}
+			else if constexpr (sizeof...(Args) == 0)
+			{
+				descriptor().valueDescriptor().construct(storage());
 			}
 			
-			construct(rhs.valueReference());
+			setValid();
 
-			return *this;
-		}
-
-		value_t& construct(Derived&& rhs)
-		{
-			if (!rhs.isValid())
-			{
-				throw std::runtime_error{ std::string{ "attempt to construct from invalid property: " } + qualifiedName() };
-			}
-
-			construct(rhs.extractUnchecked());
-
-			return *this;
-		}
-
-		template <typename... Args>
-		value_t& construct(Args&&... args)
-		{
-			if (isValid())
-			{
-				throw std::runtime_error{ std::string{ "attempt to construct already valid property: " } + qualifiedName() };
-			}
-
-			valueConstruct(std::forward<Args>(args)...);
-			validPropertySet().set(tag(), true);
-
-			return valueReference();
+			return storage();
 		}
 
 		void destroy()
 		{
 			if (isValid())
 			{
-				valueDestroy();
-				validPropertySet().set(tag(), false);
+				if constexpr (IsTypeless)
+				{
+					descriptor().valueDescriptor().destruct(storage());
+				}
+				else
+				{
+					Descriptor<T>::destruct(storage());
+				}
+				
+				setInvalid();
 			}
 		}
 
-		value_t& value()
+		T& value()
 		{
 			if (!isValid())
 			{
-				throw std::runtime_error{ std::string{ "attempt to access invalid property: " } + qualifiedName() };
+				throw std::runtime_error{ std::string{ "attempt to access invalid property: " } + metadata().name().data() };
 			}
 
-			return valueReference();
+			return storage();
 		}
 
-		const value_t& value() const
+		const T& value() const
 		{
 			return const_cast<Property&>(*this).value();
 		}
 
 		template <typename... Args>
-		value_t& constructOrValue(Args&&... args)
+		T& constructOrValue(Args&&... args)
 		{
 			if (isValid())
 			{
-				return valueReference();
+				return storage();
 			}
 			else
 			{
-				return construct(std::forward<Args>(args)...);
+				return construct<false>(std::forward<Args>(args)...);
 			}
 		}
 
-		value_t& assign(const Derived& rhs)
+		template <bool AssertValidity = true>
+		T& assign(const Derived& rhs)
 		{
-			if (!rhs.isValid())
+			assign<AssertValidity>(rhs.storage());
+			return *this;
+		}
+
+		template <bool AssertValidity = true>
+		T& assign(Derived&& rhs)
+		{
+			assign<AssertValidity>(std::move(rhs.storage()));
+			rhs.destroy();
+
+			return *this;
+		}
+
+		template <bool AssertValidity = true, typename... Args>
+		T& assign(Args&&... args)
+		{
+			if constexpr (AssertValidity)
 			{
-				throw std::runtime_error{ std::string{ "attempt to assign from invalid property: " } + qualifiedName() };
+				if (!isValid())
+				{
+					throw std::runtime_error{ std::string{ "attempt to assign invalid property: " } + metadata().name().data() };
+				}
+			}
+
+			static_assert(!IsTypeless || sizeof...(Args) <= 1, "typeless assignment only supports a single argument");
+			if constexpr (!IsTypeless)
+			{
+				Descriptor<T>::assign(storage(), std::forward<Args>(args)...);
+			}
+			else if constexpr (sizeof...(Args) == 1)
+			{
+				descriptor().valueDescriptor().assign(storage(), std::forward<Args>(args)...);
+			}
+			else if constexpr (sizeof...(Args) == 0)
+			{
+				descriptor().valueDescriptor().assign(storage());
 			}
 			
-			assign(rhs.valueReference());
+			setValid();
 
-			return *this;
-		}
-
-		value_t& assign(Derived&& rhs)
-		{
-			if (!rhs.isValid())
-			{
-				throw std::runtime_error{ std::string{ "attempt to assign from invalid property: " } + qualifiedName() };
-			}
-
-			assign(rhs.extractUnchecked());
-
-			return *this;
+			return storage();
 		}
 
 		template <typename... Args>
-		value_t& assign(Args&&... args)
-		{
-			if (!isValid())
-			{
-				throw std::runtime_error{ std::string{ "attempt to assign invalid property: " } + qualifiedName() };
-			}
-
-			valueAssign(std::forward<Args>(args)...);
-			validPropertySet().set(tag(), true);
-
-			return valueReference();
-		}
-
-		template <typename... Args>
-		value_t& constructOrAssign(Args&&... args)
+		T& constructOrAssign(Args&&... args)
 		{
 			if (isValid())
 			{
-				return assign(std::forward<Args>(args)...);
+				return assign<false>(std::forward<Args>(args)...);
 			}
 			else
 			{
-				return construct(std::forward<Args>(args)...);
+				return construct<false>(std::forward<Args>(args)...);
 			}
 		}
 
@@ -227,154 +279,157 @@ namespace dots::type
 			{
 				if (other.isValid())
 				{
-					valueSwap(other.valueReference());
-				}
-				else
-				{
 					if constexpr (IsTypeless)
 					{
-						other.construct(valueReference());
-						destroy();
+						return descriptor().valueDescriptor().swap(storage(), other);
 					}
 					else
 					{
-						other.construct(extractUnchecked());
+						return Descriptor<T>::swap(storage(), other);
 					}
+				}
+				else
+				{
+					other.template construct<false>(std::move(storage()));
+					destroy();
 				}
 			}
 			else if (other.isValid())
 			{
+				construct<false>(std::move(other.storage()));
+				other.destroy();
+			}
+		}
+
+		bool equal(const T& rhs) const
+		{
+			if (isValid())
+			{
 				if constexpr (IsTypeless)
 				{
-					construct(other.valueReference());
-					other.destroy();
+					return descriptor().valueDescriptor().equal(storage(), rhs);
 				}
 				else
 				{
-					construct(other.extractUnchecked());
+					return Descriptor<T>::equal(storage(), rhs);
 				}
 			}
-		}
-
-		template <bool IsTypeless_ = IsTypeless, std::enable_if_t<!IsTypeless_, int> = 0>
-		value_t&& extract()
-		{
-			if (!isValid())
+			else
 			{
-				throw std::runtime_error{ std::string{ "attempt to extract invalid property: " } +qualifiedName()  };
+				return false;
 			}
-
-			return extractUnchecked();
-		}
-
-		bool equal(const value_t& rhs) const
-		{
-			return isValid() && valueEqual(rhs);
 		}
 
 		bool equal(const Derived& rhs) const
 		{
-			if (isValid())
+			if (rhs.isValid())
 			{
-				return rhs.isValid() && valueEqual(*rhs);
+				return equal(rhs.storage());
 			}
 			else
 			{
-				return !rhs.isValid();
+				return !isValid();
 			}			
 		}
 
-		bool less(const value_t& rhs) const
+		bool less(const T& rhs) const
 		{
-			return isValid() && valueLess(rhs);
+			if (isValid())
+			{
+				if constexpr (IsTypeless)
+				{
+					return descriptor().valueDescriptor().less(storage(), rhs);
+				}
+				else
+				{
+					return Descriptor<T>::less(storage(), rhs);
+				}
+			}
+			else
+			{
+				return false;
+			}
 		}
 
 		bool less(const Derived& rhs) const
 		{
-			return !rhs.isValid() || less(*rhs);
-		}
-
-		void publish() const
-		{
-			if (!isValid())
+			if (rhs.isValid())
 			{
-				throw std::runtime_error{ std::string{ "attempt to publish invalid property: " } + qualifiedName() };
+				return less(rhs.storage());
 			}
-
-			instance()._publish(set());
+			else
+			{
+				return isValid();
+			}
 		}
 
-		void* address()
+		bool lessEqual(const T& rhs) const
 		{
-			return &valueReference();
+			return !greater(rhs);
 		}
 
-		const void* address() const
+		bool lessEqual(const Derived& rhs) const
 		{
-			return const_cast<Property&>(*this).address();
+			return !greater(rhs);
 		}
 
-		constexpr const StructProperty& structProperty() const
+		bool greater(const T& rhs) const
+		{
+			if (isValid())
+			{
+				if constexpr (IsTypeless)
+				{
+					return descriptor().valueDescriptor().less(rhs, storage());
+				}
+				else
+				{
+					return Descriptor<T>::less(rhs, storage());
+				}
+			}
+			else
+			{
+				return true;
+			}
+		}
+
+		bool greater(const Derived& rhs) const
+		{
+			return rhs.less(*this);
+		}
+
+		bool greaterEqual(const T& rhs) const
+		{
+			return !less(rhs);
+		}
+
+		bool greaterEqual(const Derived& rhs) const
+		{
+			return !less(rhs);
+		}
+
+		constexpr const PropertyMetadata<T>& metadata() const
+		{
+			return static_cast<const Derived&>(*this).derivedMetadata();
+		}
+
+		constexpr const PropertyDescriptor& descriptor() const
 		{
 			return static_cast<const Derived&>(*this).derivedDescriptor();
 		}
 
-		constexpr size_t offset() const
+		constexpr bool isPartOf(const PropertySet& propertySet) const
 		{
-			return structProperty().offset();
+			return metadata().set() <= propertySet;
 		}
 
-		constexpr uint32_t tag() const
+		constexpr T& storage()
 		{
-			return structProperty().tag();
+			return static_cast<Derived&>(*this).derivedStorage();
 		}
 
-		constexpr bool isKey() const
+		constexpr const T& storage() const
 		{
-			return structProperty().isKey();
-		}
-
-		constexpr const std::string& name() const
-		{
-			return structProperty().name();
-		}
-
-		std::string qualifiedName() const
-		{
-			return instance()._descriptor().name() + "." + name().data();
-		}
-
-		constexpr const std::string& typeName() const
-		{
-			return structProperty().typeName();
-		}
-
-		const Descriptor& td() const
-		{
-			return *structProperty().td();
-		}
-
-		bool hasType(DotsType type) const
-		{
-			return td().dotsType() == type;
-		}
-
-		bool hasFundamentalType() const
-		{
-			return dots::type::isDotsBaseType(td().dotsType());
-		}
-
-		constexpr property_set set() const
-		{
-			property_set propertySet;
-			propertySet.set(tag());
-
-			return propertySet;
-		}
-
-		constexpr bool isPartOf(const property_set& propertySet) const
-		{
-			return propertySet.test(tag());
+			return const_cast<Property&>(*this).storage();
 		}
 
 	protected:
@@ -387,176 +442,26 @@ namespace dots::type
 		constexpr Property& operator = (const Property& rhs) = default;
 		constexpr Property& operator = (Property&& rhs) = default;
 
-		static StructProperty MakePropertyDescriptor(const PropertyDescription& description)
-		{
-			return StructProperty{ description };
-		}
-
 	private:
 
-		template <bool IsTypeless_ = IsTypeless, std::enable_if_t<!IsTypeless_, int> = 0>
-		value_t&& extractUnchecked()
+		const PropertySet& validProperties() const
 		{
-			validPropertySet().set(tag(), false);
-			return std::move(valueReference());
+			return PropertyArea::GetArea(storage(), metadata().offset()).validProperties();
 		}
 
-		constexpr value_t& valueReference()
+		PropertySet& validProperties()
 		{
-			return static_cast<Derived&>(*this).derivedValue();
+			return const_cast<PropertySet&>(std::as_const(*this).validProperties());
+		}		
+
+		void setValid()
+		{
+			validProperties() += metadata().set();
 		}
 
-		constexpr const value_t& valueReference() const
+		void setInvalid()
 		{
-			return const_cast<Property&>(*this).valueReference();
-		}
-
-		template <typename... Args>
-		constexpr value_t& valueConstruct(Args&&... args)
-		{
-			// note: the redundant if constexpr statements are intentional to improve readability when the build stops due to a static assertion error
-
-			if constexpr (IsTypeless)
-			{				
-				static_assert(sizeof...(Args) <= 1, "typeless construction only supports default construction or a single argument");
-
-				if constexpr (sizeof...(Args) <= 1)
-				{
-					td().construct(&valueReference());
-
-					if constexpr (sizeof...(Args) == 1)
-					{
-						valueAssign(std::forward<Args>(args)...);
-					}
-				}
-			}
-			else
-			{
-				static_assert(std::is_constructible_v<T, Args...>, "property value is not constructible from passed arguments");
-				
-				if constexpr (std::is_constructible_v<T, Args...>)
-				{
-					::new (static_cast<void *>(::std::addressof(valueReference()))) T(std::forward<Args>(args)...);
-				}				
-			}
-
-			return valueReference();
-		}
-
-		constexpr void valueDestroy()
-		{
-			if constexpr (IsTypeless)
-			{
-				td().destruct(&valueReference());
-			}
-			else
-			{
-				valueReference().~T();
-			}
-		}
-
-		template <typename... Args>
-		constexpr value_t& valueAssign(Args&&... args)
-		{
-			// note: the redundant if constexpr statements are intentional to improve readability when the build stops due to a static assertion error
-
-			if constexpr (IsTypeless)
-			{
-				static_assert(sizeof...(Args) == 1, "typeless assignment only supports a single argument");
-
-				if constexpr (sizeof...(Args) == 1)
-				{
-					static_assert(std::is_same_v<std::remove_reference_t<std::common_type_t<Args...>>, value_t>, "typeless assignment only supports a typeless argument");
-
-					if constexpr (std::is_same_v<std::remove_reference_t<std::common_type_t<Args...>>, value_t>)
-					{
-						const value_t& rhs = static_cast<const value_t&>(std::get<0>(std::forward_as_tuple(args...)));
-						td().copy(&valueReference(), &rhs);
-					}
-				}
-
-				return valueReference();
-			}
-			else
-			{
-				static_assert(std::is_constructible_v<T, Args...>, "property value is not constructible from passed arguments");
-
-				if constexpr (std::is_constructible_v<T, Args...>)
-				{
-					valueReference() = T(std::forward<Args>(args)...);
-				}
-
-				return valueReference();
-			}
-		}
-
-		constexpr value_t& valueMove(value_t&& rhs)
-		{
-			if constexpr (IsTypeless)
-			{
-				td().copy(&valueReference(), &rhs);
-				return valueReference();
-			}
-			else
-			{
-				return valueReference() = std::move(rhs);
-			}
-		}
-
-		void valueSwap(value_t& rhs)
-		{
-			if constexpr (IsTypeless)
-			{
-				td().swap(&valueReference(), &rhs);
-			}
-			else
-			{
-				std::swap(valueReference(), rhs);
-			}
-		}
-
-		constexpr bool valueEqual(const value_t& rhs) const
-		{
-			if constexpr (IsTypeless)
-			{
-				return td().equal(&valueReference(), &rhs);
-			}
-			else
-			{
-				return valueReference() == rhs;
-			}
-		}
-
-		constexpr bool valueLess(const value_t& rhs) const
-		{
-			if constexpr (IsTypeless)
-			{
-				return td().lessThan(&valueReference(), &rhs);
-			}
-			else
-			{
-				return valueReference() < rhs;
-			}
-		}
-
-		Struct& instance()
-		{
-			return *reinterpret_cast<Struct*>(reinterpret_cast<char*>(&valueReference()) - offset());
-		}
-
-		const Struct& instance() const
-		{
-			return const_cast<Property&>(*this).instance();
-		}
-
-		property_set& validPropertySet()
-		{
-			return const_cast<property_set&>(instance()._validProperties());
-		}
-
-		const property_set& validPropertySet() const
-		{
-			return const_cast<Property&>(*this).validPropertySet();
+			validProperties() -= metadata().set();
 		}
 	};
 

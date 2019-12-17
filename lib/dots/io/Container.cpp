@@ -4,13 +4,13 @@
 
 namespace dots
 {
-	Container<type::Struct>::Container(const type::StructDescriptor& descriptor) :
+	Container<type::Struct>::Container(const type::StructDescriptor<>& descriptor) :
 		m_descriptor(&descriptor)
 	{
 		/* do nothing */
 	}
 
-	const type::StructDescriptor& Container<type::Struct>::descriptor() const
+	const type::StructDescriptor<>& Container<type::Struct>::descriptor() const
 	{
 		return *m_descriptor;
 	}

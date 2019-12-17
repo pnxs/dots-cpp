@@ -1,118 +1,183 @@
-#include "dots/type/EnumDescriptor.h"
-#include "dots/type/Registry.h"
-#include "DotsTestEnum.dots.h"
+#include <sstream>
+#include <dots/type/EnumDescriptor.h>
+#include <dots/type/FundamentalTypes.h>
 #include <gtest/gtest.h>
 
+namespace dots::types
+{
+    enum class TestEnumSimple : int32_t
+    {
+        enumerator2 = 2,
+        enumerator3 = 3, 
+        enumerator5 = 5, 
+        enumerator7 = 7,
+        enumerator11 = 11,
+    	enumerator13 = 13
+    };
+}
 
-//using namespace rttr;
+namespace dots::type
+{
+	template <>
+	struct Descriptor<types::TestEnumSimple> : EnumDescriptor<types::TestEnumSimple>
+	{
+		Descriptor() : EnumDescriptor("TestEnumSimple", {
+			EnumeratorDescriptor{ 2, "enumerator2", types::TestEnumSimple::enumerator2 },
+			EnumeratorDescriptor{ 3, "enumerator3", types::TestEnumSimple::enumerator3 },
+			EnumeratorDescriptor{ 5, "enumerator5", types::TestEnumSimple::enumerator5 },
+			EnumeratorDescriptor{ 7, "enumerator7", types::TestEnumSimple::enumerator7 },
+			EnumeratorDescriptor{ 11, "enumerator11", types::TestEnumSimple::enumerator11 },
+			EnumeratorDescriptor{ 13, "enumerator13", types::TestEnumSimple::enumerator13 }
+		}){}
+	};
+}
+
 using namespace dots::type;
+using namespace dots::types;
 
-TEST(TestEnumDescriptor, construct)
+struct TestEnumDescriptor : ::testing::Test
 {
-#if 0
-    auto t = type::get<DotsTestEnum>();
+protected:
 
-    ASSERT_TRUE(t.is_valid());
-    ASSERT_TRUE(t.is_enumeration());
+	TestEnumDescriptor() :
+		m_sutGeneric{ "TestEnumGeneric", {
+			EnumeratorDescriptor<vector_t<string_t>>{ 1, "enumerator1", { "foo", "bar"} },
+			EnumeratorDescriptor<vector_t<string_t>>{ 4, "enumerator4", { "baz", "qux" } },
+			EnumeratorDescriptor<vector_t<string_t>>{ 6, "enumerator6", { "bla", "blubb" } },
+			EnumeratorDescriptor<vector_t<string_t>>{ 8, "enumerator8", { "meow", "bark" } },
+			EnumeratorDescriptor<vector_t<string_t>>{ 9, "enumerator9", { "1", "3", "5" } },
+			EnumeratorDescriptor<vector_t<string_t>>{ 14, "enumerator14", { "a", "b" } },
+			EnumeratorDescriptor<vector_t<string_t>>{ 16, "enumerator16", { "alpha", "beta", "delta" } }
+		} } {}
 
-    {
-        auto e = t.get_enumeration();
-        EXPECT_EQ(e.get_names().size(), 5);
-        //std::cout << "Enum size: " << t.get_sizeof() << "\n";
-        //std::cout << "Enum align: " << t.get_alignof() << "\n";
-    }
-#endif
+	Descriptor<TestEnumSimple> m_sutSimple;
+	EnumDescriptor<vector_t<string_t>> m_sutGeneric;
+};
 
-#if 0
-
-    auto ed = Registry::toEnumDescriptorData(t);
-
-    EXPECT_TRUE(ed.name.isValid());
-    EXPECT_TRUE(ed.elements.isValid());
-
-    ASSERT_FALSE(type::get_by_name("DotsTestEnumA").is_valid());
-    ed.name = "DotsTestEnumA";
-
-    auto newEnum = EnumDescriptor::createFromEnumDescriptorData(ed);
-    EXPECT_TRUE(newEnum != nullptr);
-
-    EXPECT_TRUE(newEnum->dotsType() == dots::type::DotsType::Enum);
-
-    EXPECT_EQ(newEnum->sizeOf(), 4); //TODO: 4 is not valid on all platforms
-    EXPECT_EQ(newEnum->alignOf(), 4);
-#endif
-
-    // TODO: rework without rttr
-#if 0
-    {
-        auto e = nt.get_enumeration();
-        EXPECT_EQ(e.get_names().size(), 5);
-
-        EXPECT_EQ(e.value_to_name(0), "value1");
-        EXPECT_EQ(e.value_to_name(1), "value2");
-        EXPECT_EQ(e.value_to_name(2), "value3");
-        EXPECT_EQ(e.value_to_name(3), "value4");
-        EXPECT_EQ(e.value_to_name(4), "value5");
-
-        EXPECT_EQ(e.name_to_value("value1"), 0);
-        EXPECT_EQ(e.name_to_value("value2"), 1);
-        EXPECT_EQ(e.name_to_value("value3"), 2);
-        EXPECT_EQ(e.name_to_value("value4"), 3);
-        EXPECT_EQ(e.name_to_value("value5"), 4);
-    }
-
-
-    auto enumInstance = newEnum->New();
-
-    newEnum->from_string(enumInstance, "value4");
-
-    EXPECT_EQ(newEnum->to_int(enumInstance), 3);
-
-    newEnum->Delete(enumInstance);
-    //Descriptor::registry().clear();
-
-    //
-    // Test if toEnumDescriptorData can read the previously dynamically
-    // registered type with metadata
-    //
-    auto edA = Registry::toEnumDescriptorData(nt);
-
-    EXPECT_EQ(edA.name(), "DotsTestEnumA");
-    ASSERT_TRUE(edA.elements.isValid());
-    ASSERT_EQ(edA.elements().size(), 5);
-
-    EXPECT_EQ(edA.elements().at(0).name(), "value1");
-    EXPECT_EQ(edA.elements().at(0).enum_value(), 0);
-    EXPECT_EQ(edA.elements().at(0).tag(), 1);
-
-    EXPECT_EQ(edA.elements().at(1).name(), "value2");
-    EXPECT_EQ(edA.elements().at(1).enum_value(), 1);
-    EXPECT_EQ(edA.elements().at(1).tag(), 2);
-
-    EXPECT_EQ(edA.elements().at(2).name(), "value3");
-    EXPECT_EQ(edA.elements().at(2).enum_value(), 2);
-    EXPECT_EQ(edA.elements().at(2).tag(), 3);
-
-    EXPECT_EQ(edA.elements().at(3).name(), "value4");
-    EXPECT_EQ(edA.elements().at(3).enum_value(), 3);
-    EXPECT_EQ(edA.elements().at(3).tag(), 5);
-
-    EXPECT_EQ(edA.elements().at(4).name(), "value5");
-    EXPECT_EQ(edA.elements().at(4).enum_value(), 4);
-    EXPECT_EQ(edA.elements().at(4).tag(), 19);
-#endif
+TEST_F(TestEnumDescriptor, underlyingDescriptor)
+{
+	EXPECT_EQ(m_sutSimple.underlyingDescriptor().name(), "int32");
+	EXPECT_EQ(m_sutGeneric.underlyingDescriptor().name(), "vector<string>");
 }
 
-#if 0
-TEST(TestEnumDescriptor, testRttrEnum)
+TEST_F(TestEnumDescriptor, enumerators_expectedSize)
 {
-    auto t = type::get_by_name("DotsStructScope");
-    ASSERT_TRUE(t.is_valid());
-    ASSERT_TRUE(t.is_enumeration());
-
-    auto enumeration = t.get_enumeration();
-
-    EXPECT_EQ(enumeration.get_values().size(), 4);
-
+	EXPECT_EQ(m_sutSimple.enumerators().size(), 6);
+	EXPECT_EQ(m_sutGeneric.enumerators().size(), 7);
 }
-#endif
+
+TEST_F(TestEnumDescriptor, enumeratorsTypeless_expectedSize)
+{
+	EXPECT_EQ(m_sutSimple.enumeratorsTypeless().size(), 6);
+	EXPECT_EQ(m_sutGeneric.enumeratorsTypeless().size(), 7);
+}
+
+TEST_F(TestEnumDescriptor, enumerators_expectedElements)
+{
+	auto expect_eq_enumerator = [](const auto& enumerator, uint32_t tag, const std::string_view& name, const auto& value)
+	{
+		EXPECT_EQ(enumerator.tag(), tag);
+		EXPECT_EQ(enumerator.name(), name);
+		EXPECT_EQ(enumerator.value(), value);
+	};
+	
+	expect_eq_enumerator(m_sutSimple.enumerators()[0], 2, "enumerator2", TestEnumSimple::enumerator2);
+	expect_eq_enumerator(m_sutSimple.enumerators()[1], 3, "enumerator3", TestEnumSimple::enumerator3);
+	expect_eq_enumerator(m_sutSimple.enumerators()[2], 5, "enumerator5", TestEnumSimple::enumerator5);
+	expect_eq_enumerator(m_sutSimple.enumerators()[3], 7, "enumerator7", TestEnumSimple::enumerator7);
+	expect_eq_enumerator(m_sutSimple.enumerators()[4], 11, "enumerator11", TestEnumSimple::enumerator11);
+	expect_eq_enumerator(m_sutSimple.enumerators()[5], 13, "enumerator13", TestEnumSimple::enumerator13);
+
+	expect_eq_enumerator(m_sutGeneric.enumerators()[0], 1, "enumerator1", vector_t<string_t>{ "foo", "bar"});
+	expect_eq_enumerator(m_sutGeneric.enumerators()[1], 4, "enumerator4", vector_t<string_t>{ "baz", "qux" });
+	expect_eq_enumerator(m_sutGeneric.enumerators()[2], 6, "enumerator6", vector_t<string_t>{ "bla", "blubb" });
+	expect_eq_enumerator(m_sutGeneric.enumerators()[3], 8, "enumerator8", vector_t<string_t>{ "meow", "bark" });
+	expect_eq_enumerator(m_sutGeneric.enumerators()[4], 9, "enumerator9", vector_t<string_t>{ "1", "3", "5" });
+	expect_eq_enumerator(m_sutGeneric.enumerators()[5], 14, "enumerator14", vector_t<string_t>{ "a", "b" });
+	expect_eq_enumerator(m_sutGeneric.enumerators()[6], 16, "enumerator16", vector_t<string_t>{ "alpha", "beta", "delta" } );
+}
+
+TEST_F(TestEnumDescriptor, enumeratorsTypeless_expectedElements)
+{
+	auto expect_eq_enumerator_simple = [&](const EnumeratorDescriptor<>& enumerator, uint32_t tag, const std::string_view& name, const TestEnumSimple& value)
+	{
+		EXPECT_EQ(enumerator.tag(), tag);
+		EXPECT_EQ(enumerator.name(), name);
+		EXPECT_TRUE(enumerator.underlyingDescriptor().equal(enumerator.valueTypeless(), Typeless::From(value)));
+	};
+	
+	expect_eq_enumerator_simple(m_sutSimple.enumeratorsTypeless()[0], 2, "enumerator2", TestEnumSimple::enumerator2);
+	expect_eq_enumerator_simple(m_sutSimple.enumeratorsTypeless()[1], 3, "enumerator3", TestEnumSimple::enumerator3);
+	expect_eq_enumerator_simple(m_sutSimple.enumeratorsTypeless()[2], 5, "enumerator5", TestEnumSimple::enumerator5);
+	expect_eq_enumerator_simple(m_sutSimple.enumeratorsTypeless()[3], 7, "enumerator7", TestEnumSimple::enumerator7);
+	expect_eq_enumerator_simple(m_sutSimple.enumeratorsTypeless()[4], 11, "enumerator11", TestEnumSimple::enumerator11);
+	expect_eq_enumerator_simple(m_sutSimple.enumeratorsTypeless()[5], 13, "enumerator13", TestEnumSimple::enumerator13);
+
+	auto expect_eq_enumerator_generic = [&](const EnumeratorDescriptor<>& enumerator, uint32_t tag, const std::string_view& name, const vector_t<string_t>& value)
+	{
+		EXPECT_EQ(enumerator.tag(), tag);
+		EXPECT_EQ(enumerator.name(), name);
+		EXPECT_TRUE(enumerator.underlyingDescriptor().equal(enumerator.valueTypeless(), Typeless::From(value)));
+	};
+
+	expect_eq_enumerator_generic(m_sutGeneric.enumeratorsTypeless()[0], 1, "enumerator1", vector_t<string_t>{ "foo", "bar"});
+	expect_eq_enumerator_generic(m_sutGeneric.enumeratorsTypeless()[1], 4, "enumerator4", vector_t<string_t>{ "baz", "qux" });
+	expect_eq_enumerator_generic(m_sutGeneric.enumeratorsTypeless()[2], 6, "enumerator6", vector_t<string_t>{ "bla", "blubb" });
+	expect_eq_enumerator_generic(m_sutGeneric.enumeratorsTypeless()[3], 8, "enumerator8", vector_t<string_t>{ "meow", "bark" });
+	expect_eq_enumerator_generic(m_sutGeneric.enumeratorsTypeless()[4], 9, "enumerator9", vector_t<string_t>{ "1", "3", "5" });
+	expect_eq_enumerator_generic(m_sutGeneric.enumeratorsTypeless()[5], 14, "enumerator14", vector_t<string_t>{ "a", "b" });
+	expect_eq_enumerator_generic(m_sutGeneric.enumeratorsTypeless()[6], 16, "enumerator16", vector_t<string_t>{ "alpha", "beta", "delta" });
+}
+
+TEST_F(TestEnumDescriptor, enumeratorFromTag)
+{
+	EXPECT_EQ(m_sutSimple.enumeratorFromTag(2).name(), "enumerator2");
+	EXPECT_EQ(m_sutSimple.enumeratorFromTag(7).value(), TestEnumSimple::enumerator7);
+
+	EXPECT_EQ(m_sutGeneric.enumeratorFromTag(1).name(), "enumerator1");
+	EXPECT_EQ(m_sutGeneric.enumeratorFromTag(8).value(), vector_t<string_t>({ "meow", "bark" }));
+
+	EXPECT_THROW(m_sutSimple.enumeratorFromTag(1), std::logic_error);
+	EXPECT_THROW(m_sutGeneric.enumeratorFromTag(2), std::logic_error);
+}
+
+TEST_F(TestEnumDescriptor, enumeratorFromName)
+{
+	EXPECT_EQ(m_sutSimple.enumeratorFromName("enumerator3").tag(), 3);
+	EXPECT_EQ(m_sutSimple.enumeratorFromName("enumerator5").value(), TestEnumSimple::enumerator5);
+
+	EXPECT_EQ(m_sutGeneric.enumeratorFromName("enumerator4").tag(), 4);
+	EXPECT_EQ(m_sutGeneric.enumeratorFromName("enumerator9").value(), vector_t<string_t>({ "1", "3", "5" }));
+
+	EXPECT_THROW(m_sutSimple.enumeratorFromName("enumerator4"), std::logic_error);
+	EXPECT_THROW(m_sutGeneric.enumeratorFromName("enumerator3"), std::logic_error);
+}
+
+TEST_F(TestEnumDescriptor, enumeratorFromValue)
+{
+	EXPECT_EQ(m_sutSimple.enumeratorFromValue(TestEnumSimple::enumerator11).tag(), 11);
+	EXPECT_EQ(m_sutSimple.enumeratorFromValue(TestEnumSimple::enumerator13).name(), "enumerator13");
+
+	EXPECT_EQ(m_sutGeneric.enumeratorFromValue(vector_t<string_t>{ "bla", "blubb" }).tag(), 6);
+	EXPECT_EQ(m_sutGeneric.enumeratorFromValue(vector_t<string_t>{ "a", "b" }).name(), "enumerator14");
+
+	EXPECT_THROW(m_sutSimple.enumeratorFromValue(static_cast<TestEnumSimple>(6)), std::logic_error);
+	EXPECT_THROW(m_sutGeneric.enumeratorFromValue(vector_t<string_t>({ "1", "2", "3" })), std::logic_error);
+}
+
+TEST_F(TestEnumDescriptor, global_op_ostream)
+{
+	std::ostringstream oss;
+	oss << TestEnumSimple::enumerator2;	
+	EXPECT_EQ(oss.str(), "enumerator2");
+
+	oss = std::ostringstream{};
+	oss << TestEnumSimple::enumerator11;
+	EXPECT_EQ(oss.str(), "enumerator11");
+}
+
+TEST_F(TestEnumDescriptor, global_to_string)
+{
+	EXPECT_EQ(to_string(TestEnumSimple::enumerator2), "enumerator2");
+	EXPECT_EQ(to_string(TestEnumSimple::enumerator11), "enumerator11");
+}

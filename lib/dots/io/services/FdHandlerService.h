@@ -13,11 +13,11 @@ namespace dots
 
 		explicit FdHandlerService(asio::execution_context& executionContext);
 		FdHandlerService(const FdHandlerService& other) = delete;
-		FdHandlerService(FdHandlerService&& other) noexcept(false) = default;
+		FdHandlerService(FdHandlerService&& other) noexcept(false) = delete;
 		~FdHandlerService() = default;
 
 		FdHandlerService& operator = (const FdHandlerService& rhs) = delete;
-		FdHandlerService& operator = (FdHandlerService&& rhs) noexcept(false) = default;
+		FdHandlerService& operator = (FdHandlerService&& rhs) noexcept(false) = delete;
 
 		void addInEventHandler(int fileDescriptor, const callback_t& callback);
 		void removeInEventHandler(int fileDescriptor);

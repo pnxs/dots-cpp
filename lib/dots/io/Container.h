@@ -28,7 +28,7 @@ namespace dots
 		using value_t = container_t::value_type;
 		using node_t = container_t::node_type;
 
-		Container(const type::StructDescriptor& descriptor);
+		Container(const type::StructDescriptor<>& descriptor);
 		Container(const Container& other) = default;
 		Container(Container&& other) = default;
 		~Container() = default;
@@ -36,7 +36,7 @@ namespace dots
 		Container& operator = (const Container& rhs) = default;
 		Container& operator = (Container&& rhs) = default;
 
-		const type::StructDescriptor& descriptor() const;
+		const type::StructDescriptor<>& descriptor() const;
 
 		const_iterator_t begin() const;
 		const_iterator_t end() const;
@@ -84,7 +84,7 @@ namespace dots
 
 	private:
 
-		const type::StructDescriptor* m_descriptor;
+		const type::StructDescriptor<>* m_descriptor;
 		container_t m_instances;
 	};
 

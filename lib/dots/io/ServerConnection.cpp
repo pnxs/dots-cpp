@@ -228,7 +228,7 @@ Transmitter &ServerConnection::transmitter()
     return m_transmitter;
 }
 
-void ServerConnection::publishNs(const string& nameSpace, const type::StructDescriptor* td, const type::Struct& instance, property_set what, bool remove)
+void ServerConnection::publishNs(const string& nameSpace, const type::StructDescriptor<>* td, const type::Struct& instance, types::property_set_t what, bool remove)
 {
     DotsTransportHeader header;
     transmitter().prepareHeader(header, td, what, remove); //< Modifies header and what
@@ -247,7 +247,7 @@ void ServerConnection::publishNs(const string& nameSpace, const type::StructDesc
     channel().transmit(header, instance);
 }
 
-void ServerConnection::publish(const type::StructDescriptor *td, const type::Struct& instance, property_set what, bool remove)
+void ServerConnection::publish(const type::StructDescriptor<> *td, const type::Struct& instance, types::property_set_t what, bool remove)
 {
     publishNs(string(), td, instance, what, remove);
 }
@@ -292,7 +292,7 @@ void ServerConnection::processHello(const DotsMsgHello &hello)
     }
     else
     {
-        LOG_WARN_S("Invalid hello from server valatt:" << hello._validProperties().to_string());
+        LOG_WARN_S("Invalid hello from server valatt:" << hello._validProperties().toString());
     }
 }
 

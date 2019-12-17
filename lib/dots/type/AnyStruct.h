@@ -1,12 +1,12 @@
 #pragma once
 #include <memory>
-#include "Struct.h"
+#include <dots/type/Struct.h>
 
 namespace dots::type
 {
 	struct AnyStruct
 	{
-		AnyStruct(const StructDescriptor& descriptor);
+		AnyStruct(const StructDescriptor<>& descriptor);
 		AnyStruct(const Struct& instance);
 		AnyStruct(const AnyStruct& other);
 		AnyStruct(AnyStruct&& other) = default;

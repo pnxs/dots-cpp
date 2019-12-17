@@ -36,7 +36,7 @@ namespace dots
     
     void VirtualChannel::spoof(uint32_t sender, const type::Struct& instance, bool remove/* = false*/)
     {
-        const type::StructDescriptor& descriptor = instance._descriptor();
+        const type::StructDescriptor<>& descriptor = instance._descriptor();
 
         DotsTransportHeader transportHeader{
             DotsTransportHeader::destinationGroup_i{ descriptor.name() },

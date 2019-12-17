@@ -1,90 +1,120 @@
-
-#include "dots/type/property_set.h"
 #include <gtest/gtest.h>
+#include <dots/type/PropertySet.h>
 
-TEST(TestPropertyTest, testCount)
+using dots::type::PropertySet;
+
+TEST(TestPropertySet, ctor)
 {
-    dots::property_set all = PROPERTY_SET_ALL;
-    EXPECT_EQ(all.count(), 32u);
+	EXPECT_TRUE(PropertySet{}.empty());
+	EXPECT_TRUE(PropertySet{ 0x00000000 }.empty());
+	EXPECT_TRUE(PropertySet{ PropertySet::None }.empty());
 
-    EXPECT_EQ(dots::property_set(0x01).count(), 1u);
-    EXPECT_EQ(dots::property_set(0x02).count(), 1u);
-    EXPECT_EQ(dots::property_set(0x04).count(), 1u);
-    EXPECT_EQ(dots::property_set(0x10).count(), 1u);
-    EXPECT_EQ(dots::property_set(0x100000).count(), 1u);
-    EXPECT_EQ(dots::property_set(0x800000).count(), 1u);
-
-    EXPECT_EQ(dots::property_set(0x11).count(), 2u);
-    EXPECT_EQ(dots::property_set(0x12).count(), 2u);
-    EXPECT_EQ(dots::property_set(0x14).count(), 2u);
-    EXPECT_EQ(dots::property_set(0x1040).count(), 2u);
-    EXPECT_EQ(dots::property_set(0x100080).count(), 2u);
-    EXPECT_EQ(dots::property_set(0x800020).count(), 2u);
-
-    EXPECT_EQ(dots::property_set(0xFFFFFFFE).count(), 31u);
+	EXPECT_FALSE(PropertySet{ 0xFFFFFFFF }.empty());
+	EXPECT_FALSE(PropertySet{ PropertySet::All }.empty());
 }
 
-TEST(TestPropertyTest, testInvert)
+TEST(TestPropertySet, count)
 {
-    dots::property_set all = PROPERTY_SET_ALL;
-
-    dots::property_set p = ~all;
-    EXPECT_EQ(p.count(), 0u);
-
-    p = dots::property_set(0x0000FFFF);
-    EXPECT_EQ(p, dots::property_set(0x0000FFFF));
-    EXPECT_EQ(p.count(), 16u);
-
-    p = ~p;
-    EXPECT_EQ(p, dots::property_set(0xFFFF0000));
-    EXPECT_EQ(p.count(), 16u);
+	EXPECT_EQ(PropertySet{ 0x00000000 }.count(), 0);	
+	EXPECT_EQ(PropertySet{ 0xFFFFFFFF }.count(), 32);
+	EXPECT_EQ(PropertySet{ 0x11FFF387 }.count(), 20);
+	EXPECT_EQ(PropertySet{ 0x00408231 }.count(), 6);
 }
 
-TEST(TestPropertyTest, testAnd)
+TEST(TestPropertySet, operator_equal)
 {
-    dots::property_set lhs(0x10);
-    dots::property_set rhs(0x01);
+	EXPECT_EQ(PropertySet{ PropertySet::None }, PropertySet{ 0x00000000 });
+	EXPECT_EQ(PropertySet{ PropertySet::All }, PropertySet{ 0xFFFFFFFF });
 
-    auto r = lhs & rhs;
-    EXPECT_EQ(r, dots::property_set(0));
-
-    lhs &= rhs;
-    EXPECT_EQ(lhs, dots::property_set(0));
-
-    lhs = dots::property_set(0x11);
-    rhs = dots::property_set(0x01);
-
-    r = lhs & rhs;
-    EXPECT_EQ(r, dots::property_set(0x01));
-
-    lhs &= rhs;
-    EXPECT_EQ(lhs, dots::property_set(0x01));
+	EXPECT_EQ(PropertySet{ 0x00000000 }, PropertySet{ 0x00000000 });
+	EXPECT_EQ(PropertySet{ 0xFFFFFFFF }, PropertySet{ 0xFFFFFFFF });
+	EXPECT_EQ(PropertySet{ 0x12345678 }, PropertySet{ 0x12345678 });
+	
+	EXPECT_NE(PropertySet{ 0x00000000 }, PropertySet{ 0xFFFFFFFF });
+	EXPECT_NE(PropertySet{ 0x12345678 }, PropertySet{ 0x87654321 });
 }
 
-TEST(TestPropertyTest, testLogic)
+TEST(TestPropertySet, operator_union)
 {
-    //dots::property_set all = PROPERTY_SET_ALL;
-
-    dots::property_set lhs(0x16);
-    dots::property_set rhs(0x06);
-
-    dots::property_set props = PROPERTY_SET_ALL;
-
-    lhs &= ~props; // Clear all flags in lhs that are set in props
-    EXPECT_EQ(lhs.count(), 0u);
-
-    props &= rhs; // Combine (AND) props and rhs
-    EXPECT_EQ(props, dots::property_set(0x06));
-
-    lhs |= props;
-    EXPECT_EQ(lhs, dots::property_set(0x06));
+	EXPECT_EQ(PropertySet{ 0x00000000 } + PropertySet{ 0x00000000 }, PropertySet{ 0x00000000 });
+	EXPECT_EQ(PropertySet{ 0x00000000 } + PropertySet{ 0xFFFFFFFF }, PropertySet{ 0xFFFFFFFF });
+	EXPECT_EQ(PropertySet{ 0xFFFFFFFF } + PropertySet{ 0x00000000 }, PropertySet{ 0xFFFFFFFF });
+	EXPECT_EQ(PropertySet{ 0xFFFFFFFF } + PropertySet{ 0xFFFFFFFF }, PropertySet{ 0xFFFFFFFF });
+	
+	EXPECT_EQ(PropertySet{ 0x00FF00FF } + PropertySet{ 0x0000FF00 }, PropertySet{ 0x00FFFFFF });
+	EXPECT_EQ(PropertySet{ 0x00FF00FF } + PropertySet{ 0x00FF0100 }, PropertySet{ 0x00FF01FF });
 }
 
-TEST(TestPropertyTest, testCompare)
+TEST(TestPropertySet, operator_difference)
 {
-    dots::property_set lhs(0x02);
-    dots::property_set rhs(0x06);
+	EXPECT_EQ(PropertySet{ 0x00000000 } - PropertySet{ 0x00000000 }, PropertySet{ 0x00000000 });
+	EXPECT_EQ(PropertySet{ 0x00000000 } - PropertySet{ 0xFFFFFFFF }, PropertySet{ 0x00000000 });
+	EXPECT_EQ(PropertySet{ 0xFFFFFFFF } - PropertySet{ 0xFFFFFFFF }, PropertySet{ 0x00000000 });
+	EXPECT_EQ(PropertySet{ 0xFFFFFFFF } - PropertySet{ 0x00000000 }, PropertySet{ 0xFFFFFFFF });
+	
+	EXPECT_EQ(PropertySet{ 0x00FF00FF } - PropertySet{ 0x000000FF }, PropertySet{ 0x00FF0000 });
+	EXPECT_EQ(PropertySet{ 0x00FF00FF } - PropertySet{ 0xFFFF0000 }, PropertySet{ 0x000000FF });
+}
 
-    EXPECT_FALSE(lhs == rhs);
-    EXPECT_TRUE(lhs != rhs);
+TEST(TestPropertySet, operator_intersection)
+{
+	EXPECT_EQ(PropertySet{ 0x00000000 } ^ PropertySet{ 0x00000000 }, PropertySet{ 0x00000000 });
+	EXPECT_EQ(PropertySet{ 0x00000000 } ^ PropertySet{ 0xFFFFFFFF }, PropertySet{ 0x00000000 });
+	EXPECT_EQ(PropertySet{ 0xFFFFFFFF } ^ PropertySet{ 0xFFFFFFFF }, PropertySet{ 0xFFFFFFFF });
+	EXPECT_EQ(PropertySet{ 0xFFFFFFFF } ^ PropertySet{ 0x00000000 }, PropertySet{ 0x00000000 });
+	
+	EXPECT_EQ(PropertySet{ 0x00FF00FF } ^ PropertySet{ 0x000000FF }, PropertySet{ 0x000000FF });
+	EXPECT_EQ(PropertySet{ 0x00FF00FF } ^ PropertySet{ 0xFFFF0000 }, PropertySet{ 0x00FF0000 });
+}
+
+TEST(TestPropertySet, operator_subset)
+{
+	EXPECT_TRUE(PropertySet{ 0x00000000 } <= PropertySet{ 0x00000000 });
+	EXPECT_TRUE(PropertySet{ 0x00000000 } <= PropertySet{ 0xFFFFFFFF });
+	EXPECT_TRUE(PropertySet{ 0xFFFFFFFF } <= PropertySet{ 0xFFFFFFFF });
+	EXPECT_FALSE(PropertySet{ 0xFFFFFFFF } <= PropertySet{ 0x00000000 });
+	
+	EXPECT_TRUE(PropertySet{ 0x000000FF } <= PropertySet{ 0x00FF00FF });
+	EXPECT_FALSE(PropertySet{ 0x00FF00FF } <= PropertySet{ 0x00FF00F0 });
+}
+
+TEST(TestPropertySet, operator_strict_subset)
+{
+	EXPECT_FALSE(PropertySet{ 0x00000000 } < PropertySet{ 0x00000000 });
+	EXPECT_TRUE(PropertySet{ 0x00000000 } < PropertySet{ 0xFFFFFFFF });
+	EXPECT_FALSE(PropertySet{ 0xFFFFFFFF } < PropertySet{ 0xFFFFFFFF });
+	EXPECT_FALSE(PropertySet{ 0xFFFFFFFF } < PropertySet{ 0x00000000 });
+	
+	EXPECT_TRUE(PropertySet{ 0x000000FF } < PropertySet{ 0x00FF00FF });
+	EXPECT_FALSE(PropertySet{ 0x00FF00FF } < PropertySet{ 0x00FF00F0 });
+}
+
+TEST(TestPropertySet, operator_superset)
+{
+	EXPECT_TRUE(PropertySet{ 0x00000000 } >= PropertySet{ 0x00000000 });
+	EXPECT_FALSE(PropertySet{ 0x00000000 } >= PropertySet{ 0xFFFFFFFF });
+	EXPECT_TRUE(PropertySet{ 0xFFFFFFFF } >= PropertySet{ 0xFFFFFFFF });
+	EXPECT_TRUE(PropertySet{ 0xFFFFFFFF } >= PropertySet{ 0x00000000 });
+	
+	EXPECT_FALSE(PropertySet{ 0x000000FF } >= PropertySet{ 0x00FF00FF });
+	EXPECT_TRUE(PropertySet{ 0x00FF00FF } >= PropertySet{ 0x00FF00F0 });
+}
+
+TEST(TestPropertySet, operator_strict_superset)
+{
+	EXPECT_FALSE(PropertySet{ 0x00000000 } > PropertySet{ 0x00000000 });
+	EXPECT_FALSE(PropertySet{ 0x00000000 } > PropertySet{ 0xFFFFFFFF });
+	EXPECT_FALSE(PropertySet{ 0xFFFFFFFF } > PropertySet{ 0xFFFFFFFF });
+	EXPECT_TRUE(PropertySet{ 0xFFFFFFFF } > PropertySet{ 0x00000000 });
+	
+	EXPECT_FALSE(PropertySet{ 0x000000FF } > PropertySet{ 0x00FF00FF });
+	EXPECT_TRUE(PropertySet{ 0x00FF00FF } > PropertySet{ 0x00FF00F0 });
+}
+
+TEST(TestPropertySet, toString)
+{
+	EXPECT_EQ(PropertySet{ 0b00000000000000000000000000000000 }.toString(), "00000000000000000000000000000000");
+	EXPECT_EQ(PropertySet{ 0b11111111111111111111111111111111 }.toString(), "11111111111111111111111111111111");
+	EXPECT_EQ(PropertySet{ 0b10101010101010101010101010101010 }.toString(), "10101010101010101010101010101010");
+	EXPECT_EQ(PropertySet{ 0b10101010101010101010101010101010 }.toString('B', 'A'), "ABABABABABABABABABABABABABABABAB");
 }
