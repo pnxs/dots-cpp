@@ -90,9 +90,9 @@ namespace dots
         void handleControlMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission);
         void handleRegularMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission);
 
+        void processHello(const DotsMsgHello& hello);
         void processConnectResponse(const DotsMsgConnectResponse& connectResponse);
         void processEarlySubscribe(const DotsMsgConnectResponse& connectResponse);
-        void processHello(const DotsMsgHello& hello);
 
 		void setConnectionState(DotsConnectionState state);
 

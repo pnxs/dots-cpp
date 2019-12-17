@@ -298,6 +298,24 @@ namespace dots
                 break;
         }
 	}
+
+	void Transceiver::processHello(const DotsMsgHello& hello)
+	{
+		if (hello.authChallenge.isValid() && hello.serverName.isValid())
+		{
+			LOG_DEBUG_S("received hello from '" << *hello.serverName << "' authChallenge=" << hello.authChallenge);
+			LOG_DATA_S("send DotsMsgConnect");
+
+			publish(DotsMsgConnect{
+                DotsMsgConnect::clientName_i{ m_name },
+                DotsMsgConnect::preloadCache_i{ true }
+            });
+		}
+		else
+		{
+			LOG_WARN_S("Invalid hello from server valatt:" << hello._validProperties().toString());
+		}
+	}
 	
 	void Transceiver::processConnectResponse(const DotsMsgConnectResponse& connectResponse)
 	{
@@ -330,24 +348,6 @@ namespace dots
         {
             LOG_ERROR_S("invalid DotsMsgConnectResponse");
         }
-	}
-	
-	void Transceiver::processHello(const DotsMsgHello& hello)
-	{
-		if (hello.authChallenge.isValid() && hello.serverName.isValid())
-		{
-			LOG_DEBUG_S("received hello from '" << *hello.serverName << "' authChallenge=" << hello.authChallenge);
-			LOG_DATA_S("send DotsMsgConnect");
-
-			publish(DotsMsgConnect{
-                DotsMsgConnect::clientName_i{ m_name },
-                DotsMsgConnect::preloadCache_i{ true }
-            });
-		}
-		else
-		{
-			LOG_WARN_S("Invalid hello from server valatt:" << hello._validProperties().toString());
-		}
 	}
 
 	void Transceiver::setConnectionState(DotsConnectionState state)
