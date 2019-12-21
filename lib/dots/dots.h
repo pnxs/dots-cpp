@@ -43,7 +43,7 @@ namespace dots
 	{
 	    static_assert(!T::_IsSubstructOnly(), "it is not allowed to publish to a struct that is marked with 'substruct_only'!");
 	    registerTypeUsage<T, PublishedType>();
-	    onPublishObject->publish(T::_Descriptor(), &instance, what, remove);
+	    publish(T::_Descriptor(), &instance, what, remove);
 	}
 
 	template<class T>
@@ -51,7 +51,7 @@ namespace dots
 	{
 	    static_assert(!T::_IsSubstructOnly(), "it is not allowed to remove to a struct that is marked with 'substruct_only'!");
 	    registerTypeUsage<T, PublishedType>();
-	    onPublishObject->publish(T::_Descriptor(), &instance, instance.validProperties(), true);
+	    publish(T::_Descriptor(), &instance, instance.validProperties(), true);
 	}
 
 	template<class T>
