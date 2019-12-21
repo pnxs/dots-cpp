@@ -32,7 +32,9 @@ namespace dots
 		m_preloadPublishTypes = std::move(preloadPublishTypes);
 		m_preloadSubscribeTypes = std::move(preloadSubscribeTypes);
 		
-		m_channel->asyncReceive(m_registry, [this](const DotsTransportHeader& transportHeader, Transmission&& transmission){ return handleReceive(transportHeader, std::move(transmission)); }, nullptr);
+		m_channel->asyncReceive(m_registry, 
+			[this](const DotsTransportHeader& transportHeader, Transmission&& transmission){ return handleReceive(transportHeader, std::move(transmission)); },
+			[this](const std::exception& e){ handleError(e); });
 		setConnectionState(DotsConnectionState::connecting);
 
 		return true;
@@ -214,7 +216,7 @@ namespace dots
             return false;
         }
 	}
-	
+
 	void Transceiver::handleControlMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission)
 	{
         switch(m_connectionState)
@@ -281,6 +283,12 @@ namespace dots
                 // do nothing
                 break;
         }
+	}
+
+	void Transceiver::handleError(const std::exception& e)
+	{
+		LOG_ERROR_S("channel error in async receive: " << e.what());
+		stop();
 	}
 
 	void Transceiver::processHello(const DotsMsgHello& hello)
