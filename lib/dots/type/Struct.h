@@ -54,6 +54,12 @@ namespace dots::type
             return &T::_Descriptor() == _desc;
         }
 
+    	template <typename... Ts>
+        bool _isAny() const
+        {
+            return (_is<Ts>() || ...);
+        }
+
         template <typename T>
         const T* _as() const
         {
