@@ -119,35 +119,19 @@ namespace dots
 		}
 
 		const type::StructDescriptor<>& descriptor = instance._descriptor();
+
+    	if (!(descriptor.keyProperties() <= what))
+	    {
+	        throw std::runtime_error("tried to publish instance with invalid key (not all key-fields are set) what=" + what.toString() + " tdkeys=" + descriptor.keyProperties().toString());
+	    }
 		
 		if (remove)
 	    {
 	        what ^= descriptor.keyProperties();
 	    }
-
-	    if (!(descriptor.keyProperties() <= what))
-	    {
-	        throw std::runtime_error("tried to publish instance with invalid key (not all key-fields are set) what=" + what.toString() + " tdkeys=" + descriptor.keyProperties().toString());
-	    }
-		
-		DotsTransportHeader header{
-            DotsTransportHeader::destinationGroup_i{ descriptor.name() },
-            DotsTransportHeader::dotsHeader_i{
-                DotsHeader::typeName_i{ descriptor.name() },
-                DotsHeader::sentTime_i{ pnxs::SystemNow() },
-                DotsHeader::attributes_i{ what ==  types::property_set_t::All ? instance._validProperties() : what },
-                DotsHeader::removeObj_i{ remove },
-            }
-        };
-		
-		if (descriptor.internal() && !instance._is<DotsClient>() && !instance._is<DotsDescriptorRequest>())
-		{
-			header.nameSpace("SYS");
-			LOG_DEBUG_S("publish ns=" << *header.nameSpace << " type=" << descriptor.name());
-		}
 		
 		LOG_DATA_S("data:" << to_ascii(&descriptor, &instance, what));
-		m_channel->transmit(header, instance);
+		m_channel->transmit(instance);
 	}
 
 	bool Transceiver::connected() const
