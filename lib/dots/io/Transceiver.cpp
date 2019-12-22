@@ -111,31 +111,32 @@ namespace dots
 
 	void Transceiver::publish(const type::Struct& instance, types::property_set_t includedProperties/*t = types::property_set_t::All*/, bool remove/* = false*/)
 	{
-		publish(&instance._descriptor(), instance, includedProperties, remove);
-	}
-	
-	void Transceiver::publish(const type::StructDescriptor<>* td, const type::Struct& instance, types::property_set_t what, bool remove)
-	{
-		if (td->substructOnly())
+		const type::StructDescriptor<>& descriptor = instance._descriptor();
+		
+		if (descriptor.substructOnly())
 		{
 			throw std::logic_error{ "attempt to publish substruct-only type" };
-		}
+		}		
 
-		const type::StructDescriptor<>& descriptor = instance._descriptor();
-
-    	if (!(descriptor.keyProperties() <= what))
+    	if (!(descriptor.keyProperties() <= includedProperties))
 	    {
-	        throw std::runtime_error("tried to publish instance with invalid key (not all key-fields are set) what=" + what.toString() + " tdkeys=" + descriptor.keyProperties().toString());
+	        throw std::runtime_error("tried to publish instance with invalid key (not all key-fields are set) what=" + includedProperties.toString() + " tdkeys=" + descriptor.keyProperties().toString());
 	    }
 		
 		if (remove)
 	    {
-	        what ^= descriptor.keyProperties();
+	        includedProperties ^= descriptor.keyProperties();
 	    }
 		
-		LOG_DATA_S("data:" << to_ascii(&descriptor, &instance, what));
+		LOG_DATA_S("data:" << to_ascii(&descriptor, &instance, includedProperties));
 		exportType(instance._descriptor());
-		m_channel->transmit(instance, what, remove);
+		m_channel->transmit(instance, includedProperties, remove);
+		
+	}
+	
+	void Transceiver::publish(const type::StructDescriptor<>*/* td*/, const type::Struct& instance, types::property_set_t what, bool remove)
+	{
+		publish(instance, what, remove);
 	}
 
 	bool Transceiver::connected() const

@@ -54,7 +54,6 @@ namespace dots
         uint32_t id() const;
 		bool connected() const;
 
-		void publish(const type::StructDescriptor<>* td, const type::Struct& instance, types::property_set_t includedProperties, bool remove) override;
 		void publish(const type::Struct& instance, types::property_set_t what = types::property_set_t::All, bool remove = false);
 
 		template <typename T>
@@ -79,6 +78,9 @@ namespace dots
 
 			return m_dispatcher.subscribe<T>(std::move(handler));
 		}
+
+		[[deprecated("only available for backwards compatibility")]]
+		void publish(const type::StructDescriptor<>* td, const type::Struct& instance, types::property_set_t includedProperties, bool remove) override;
 
 	private:
 
