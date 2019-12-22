@@ -1,24 +1,17 @@
 #pragma once
-
 #include <string_view>
 #include <map>
 #include <set>
-#include "dots/cpp_config.h"
-#include "Dispatcher.h"
-#include "TD_Traversal.h"
-#include "Subscription.h"
+#include <dots/io/Dispatcher.h>
+#include <dots/io/TD_Traversal.h>
+#include <dots/io/Subscription.h>
 #include <dots/io/services/Channel.h>
-#include "Publisher.h"
+#include <dots/io/Publisher.h>
 #include <dots/io/Registry.h>
 #include <DotsConnectionState.dots.h>
 #include <DotsTransportHeader.dots.h>
 #include <DotsMsgHello.dots.h>
 #include <DotsMsgConnectResponse.dots.h>
-
-namespace dots::type
-{
-	class StructDescriptorSet;
-}
 
 namespace dots
 {
@@ -34,6 +27,12 @@ namespace dots
 		using descriptor_map_t = std::map<std::string_view, type::StructDescriptor<>*>;
 
 		Transceiver();
+		Transceiver(const Transceiver& other) = delete;
+		Transceiver(Transceiver&& other) = default;
+		virtual ~Transceiver() = default;
+
+		Transceiver& operator = (const Transceiver& rhs) = delete;
+		Transceiver& operator = (Transceiver&& rhs) = default;
 
 		bool start(std::string name, channel_ptr_t channel, descriptor_map_t preloadPublishTypes = {}, descriptor_map_t preloadSubscribeTypes = {});
 		void stop();
