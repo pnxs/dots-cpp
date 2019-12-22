@@ -160,25 +160,6 @@ namespace dots
         });
 	}
 
-	void Transceiver::onEarlySubscribe()
-	{
-		for (const auto& [name, descriptor] : m_preloadPublishTypes)
-		{
-			(void)name;
-			exportType(*descriptor);
-		}
-
-		for (const auto& [name, descriptor] : m_preloadSubscribeTypes)
-		{
-			exportType(*descriptor);			
-			joinGroup(name);
-		}
-
-		publish(DotsMsgConnect{
-			DotsMsgConnect::preloadClientFinished_i{ true }
-		});
-	}
-
 	bool Transceiver::handleReceive(const DotsTransportHeader& transportHeader, Transmission&& transmission)
 	{
 		try 
@@ -309,7 +290,25 @@ namespace dots
 		if (connectResponse.preload == true && (!connectResponse.preloadFinished.isValid() || connectResponse.preloadFinished == false))
 		{
 			setConnectionState(DotsConnectionState::early_subscribe);
-			onEarlySubscribe();
+			
+			for (const auto& [name, descriptor] : m_preloadPublishTypes)
+			{
+				(void)name;
+				exportType(*descriptor);
+			}
+
+			for (const auto& [name, descriptor] : m_preloadSubscribeTypes)
+			{
+				exportType(*descriptor);			
+				joinGroup(name);
+			}
+
+			publish(DotsMsgConnect{
+				DotsMsgConnect::preloadClientFinished_i{ true }
+			});
+
+			m_preloadPublishTypes.clear();
+			m_preloadSubscribeTypes.clear();
 		}
 		else
 		{

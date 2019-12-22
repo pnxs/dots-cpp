@@ -83,8 +83,6 @@ namespace dots
 
 		void joinGroup(const std::string_view& name);
 		void leaveGroup(const std::string_view& name);
-		
-		void onEarlySubscribe();
 
 		bool handleReceive(const DotsTransportHeader& transportHeader, Transmission&& transmission);
         void handleControlMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission);
