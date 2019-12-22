@@ -1,6 +1,7 @@
 #include "Channel.h"
 #include <DotsClient.dots.h>
 #include <DotsDescriptorRequest.dots.h>
+#include <DotsMsgError.dots.h>
 
 namespace dots
 {
