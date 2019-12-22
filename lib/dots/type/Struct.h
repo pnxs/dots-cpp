@@ -45,7 +45,7 @@ namespace dots::type
 		bool _hasProperties(const PropertySet properties) const;
 
 		void _publish(const PropertySet& includedProperties = PropertySet::All, bool remove = false) const;
-		void _remove(const PropertySet& includedProperties = PropertySet::All) const;
+		void _remove() const;
 
         template <typename T>
         bool _is() const

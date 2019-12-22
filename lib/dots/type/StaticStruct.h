@@ -300,12 +300,12 @@ namespace dots::type
 			Struct::_publish(includedProperties, remove);
 		}
 
-		void _remove(const PropertySet& includedProperties = PropertySet::All) const
+		void _remove() const
 		{
     		static_assert(!Derived::_SubstructOnly, "a substruct-only type cannot be removed");
     		
 			registerTypeUsage<Derived, PublishedType>();
-			Struct::_remove(includedProperties);
+			Struct::_remove();
 		}
 
     	const PropertyArea& _propertyArea() const

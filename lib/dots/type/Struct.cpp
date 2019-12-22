@@ -107,11 +107,11 @@ namespace dots::type
 
 	void Struct::_publish(const PropertySet& includedProperties/* = PropertySet::All*/, bool remove/* = false*/) const
     {
-    	publish(&_descriptor(), *this, includedProperties ^ _validProperties(), remove);
+    	publish(*this, includedProperties ^ _validProperties(), remove);
     }
 
-    void Struct::_remove(const PropertySet& includedProperties/* = PropertySet::All*/) const
+    void Struct::_remove() const
     {
-        _publish(includedProperties, true);
+        remove(*this);
     }
 }
