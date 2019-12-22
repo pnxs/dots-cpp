@@ -162,32 +162,16 @@ namespace dots
 
 	void Transceiver::onEarlySubscribe()
 	{
-		TD_Traversal traversal;
-
 		for (const auto& [name, descriptor] : m_preloadPublishTypes)
 		{
-			if (!descriptor->internal())
-			{
-				traversal.traverseDescriptorData(descriptor, [this](auto td, auto body) 
-				{
-					publish(*reinterpret_cast<const type::Struct*>(body), td->validProperties(body), false);
-				});
-			}
+			(void)name;
+			exportType(*descriptor);
 		}
 
 		for (const auto& [name, descriptor] : m_preloadSubscribeTypes)
 		{
-			(void)name;
-			
-			if (!descriptor->internal())
-			{
-				traversal.traverseDescriptorData(descriptor, [this](auto td, auto body) 
-				{
-					publish(*reinterpret_cast<const type::Struct*>(body), td->validProperties(body), false);
-				});
-			}
-			
-			joinGroup(descriptor->name());
+			exportType(*descriptor);			
+			joinGroup(name);
 		}
 
 		publish(DotsMsgConnect{

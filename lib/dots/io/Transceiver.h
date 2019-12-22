@@ -3,7 +3,6 @@
 #include <map>
 #include <set>
 #include <dots/io/Dispatcher.h>
-#include <dots/io/TD_Traversal.h>
 #include <dots/io/Subscription.h>
 #include <dots/io/services/Channel.h>
 #include <dots/io/Publisher.h>

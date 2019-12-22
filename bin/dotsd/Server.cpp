@@ -3,6 +3,7 @@
 #include <dots/io/ResourceUsage.h>
 #include <dots/io/Transceiver.h>
 #include "DotsClient.dots.h"
+#include <StructDescriptorData.dots.h>
 #include "EnumDescriptorData.dots.h"
 
 namespace dots
