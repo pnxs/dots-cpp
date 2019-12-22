@@ -11,13 +11,11 @@
 
 namespace dots
 {
-	Publisher* onPublishObject = nullptr;
-
 	Transceiver::Transceiver()
 		: m_connectionState(DotsConnectionState::closed)
 		, m_id(0)
 	{
-		onPublishObject = this;
+		/* do nothing */
 	}
 
 	bool Transceiver::start(std::string name, channel_ptr_t channel, descriptor_map_t preloadPublishTypes/* = {}*/, descriptor_map_t preloadSubscribeTypes/* = {}*/)

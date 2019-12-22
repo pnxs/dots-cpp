@@ -3,6 +3,7 @@
 #include <dots/common/Chrono.h>
 #include <dots/io/services/Timer.h>
 #include <dots/io/Transceiver.h>
+#include <dots/io/Publisher.h>
 
 namespace dots
 {
@@ -12,6 +13,7 @@ namespace dots
 	void add_fd_handler(int fileDescriptor, const std::function<void()>& handler);
 	void remove_fd_handler(int fileDescriptor);
 
+	Publisher*& publisher();
 	Transceiver& transceiver();
 
 	void publish(const type::Struct& instance, types::property_set_t includedProperties, bool remove);

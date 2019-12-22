@@ -7,7 +7,7 @@
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <dots/io/Transceiver.h>
+#include <dots/dots.h>
 
 #include "MockPublisher.h"
 
@@ -25,7 +25,7 @@ void expect_publish(F& mock, const T& instance)
 TEST(TestDistributedTypeId, createId)
 {
     dots::MockPublisher mockPublisher;
-    dots::onPublishObject = &mockPublisher;
+    dots::publisher() = &mockPublisher;
 
     dots::DistributedTypeId dtid(true); // Master
 

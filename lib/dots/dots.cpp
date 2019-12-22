@@ -25,15 +25,27 @@ namespace dots
 		global_service<FdHandlerService>().removeInEventHandler(fileDescriptor);
 	}
 
+	Publisher*& publisher()
+	{
+		static Publisher* publisher = nullptr;
+		return publisher;
+	}
+
 	Transceiver& transceiver()
 	{
 		static Transceiver transceiver;
+
+		if (Publisher*& p = publisher(); p == nullptr)
+		{
+			p = &transceiver;
+		}
+		
 		return transceiver;
 	}
 
 	void publish(const type::Struct& instance, types::property_set_t includedProperties, bool remove)
 	{
-		onPublishObject->publish(&instance._descriptor(), instance, includedProperties, remove);
+		publisher()->publish(&instance._descriptor(), instance, includedProperties, remove);
 	}
 
 	void remove(const type::Struct& instance)

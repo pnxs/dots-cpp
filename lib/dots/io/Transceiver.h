@@ -15,8 +15,6 @@
 
 namespace dots
 {
-	extern Publisher* onPublishObject;
-
 	struct Transceiver : Publisher
 	{
 		template <typename T = type::Struct>

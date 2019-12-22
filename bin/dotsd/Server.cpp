@@ -14,7 +14,7 @@ Server::Server(std::unique_ptr<Listener>&& listener, const string& name)
 ,m_listener(std::move(listener))
 {
 	transceiver();
-    onPublishObject = &m_connectionManager;
+    publisher() = &m_connectionManager;
 
     for (const auto& e : dots::PublishedType::allChained())
     {
