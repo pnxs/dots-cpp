@@ -3,6 +3,7 @@
 #include "DotsMsgConnect.dots.h"
 #include <dots/common/logging.h>
 #include <dots/io/serialization/AsciiSerialization.h>
+#include <dots/io/DescriptorConverter.h>
 #include <DotsMember.dots.h>
 #include <DotsCacheInfo.dots.h>
 #include <DotsClient.dots.h>
@@ -133,7 +134,8 @@ namespace dots
 	    }
 		
 		LOG_DATA_S("data:" << to_ascii(&descriptor, &instance, what));
-		m_channel->transmit(instance);
+		exportType(instance._descriptor());
+		m_channel->transmit(instance, what, remove);
 	}
 
 	bool Transceiver::connected() const
@@ -247,6 +249,8 @@ namespace dots
                         // for now let trough like an normal object
                     }
 
+            		importType(transmission.instance());
+
                     DotsHeader dotsHeader = transportHeader.dotsHeader;
                     dotsHeader.isFromMyself(dotsHeader.sender == m_id);
                     m_dispatcher.dispatch(dotsHeader, transmission.instance());
@@ -347,4 +351,47 @@ namespace dots
 		LOG_DEBUG_S("change connection state to " << to_string(state));
 		m_connectionState = state;
 	}
+
+	void Transceiver::importType(const type::Struct& instance)
+    {
+        if (auto* structDescriptorData = instance._as<StructDescriptorData>())
+        {
+        	if (bool isNewSharedType = m_sharedTypes.emplace(structDescriptorData->name).second; isNewSharedType)
+        	{
+        		io::DescriptorConverter{ m_registry }(*structDescriptorData);
+        	}
+        }
+        else if (auto* enumDescriptorData = instance._as<EnumDescriptorData>())
+        {
+        	if (bool isNewSharedType = m_sharedTypes.emplace(enumDescriptorData->name).second; isNewSharedType)
+        	{
+        		io::DescriptorConverter{ m_registry }(*enumDescriptorData);
+        	}
+        }
+    }
+
+    void Transceiver::exportType(const type::Descriptor<>& descriptor)
+    {
+        if (bool isNewSharedType = m_sharedTypes.emplace(descriptor.name()).second; isNewSharedType)
+    	{
+    		if (descriptor.type() == type::Type::Enum)
+		    {
+			    auto& enumDescriptor = static_cast<const type::EnumDescriptor<>&>(descriptor);
+    			exportType(enumDescriptor.underlyingDescriptor());
+	    		publish(io::DescriptorConverter{ m_registry }(enumDescriptor));
+		    }
+	        else if (descriptor.type() == type::Type::Struct)
+	        {
+	        	if (auto& structDescriptor = static_cast<const type::StructDescriptor<>&>(descriptor); !structDescriptor.internal())
+	        	{
+	        		for (const type::PropertyDescriptor& propertyDescriptor : structDescriptor.propertyDescriptors())
+    				{
+    					exportType(propertyDescriptor.valueDescriptor());
+    				}
+
+    				publish(io::DescriptorConverter{ m_registry }(structDescriptor));
+	        	}
+	        }
+    	}
+    }
 }

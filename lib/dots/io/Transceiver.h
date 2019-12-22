@@ -2,6 +2,7 @@
 
 #include <string_view>
 #include <map>
+#include <set>
 #include "dots/cpp_config.h"
 #include "Dispatcher.h"
 #include "TD_Traversal.h"
@@ -97,6 +98,9 @@ namespace dots
 
 		void setConnectionState(DotsConnectionState state);
 
+		void importType(const type::Struct& instance);
+		void exportType(const type::Descriptor<>& descriptor);
+
 		io::Registry m_registry;
 		Dispatcher m_dispatcher;
 		
@@ -107,5 +111,7 @@ namespace dots
         channel_ptr_t m_channel;
 		descriptor_map_t m_preloadPublishTypes;
 		descriptor_map_t m_preloadSubscribeTypes;
+
+		std::set<std::string> m_sharedTypes;
 	};
 }
