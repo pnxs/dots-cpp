@@ -54,6 +54,7 @@ namespace dots
 		bool connected() const;
 
 		void publish(const type::Struct& instance, types::property_set_t what = types::property_set_t::All, bool remove = false);
+		void remove(const type::Struct& instance);
 
 		template <typename T>
 		const Container<T>& container()

@@ -123,17 +123,17 @@ namespace dots
 	        throw std::runtime_error("tried to publish instance with invalid key (not all key-fields are set) what=" + includedProperties.toString() + " tdkeys=" + descriptor.keyProperties().toString());
 	    }
 		
-		if (remove)
-	    {
-	        includedProperties ^= descriptor.keyProperties();
-	    }
-		
 		LOG_DATA_S("data:" << to_ascii(&descriptor, &instance, includedProperties));
 		exportType(instance._descriptor());
 		m_channel->transmit(instance, includedProperties, remove);
 		
 	}
-	
+
+	void Transceiver::remove(const type::Struct& instance)
+	{
+		publish(instance, instance._keyProperties(), true);
+	}
+
 	void Transceiver::publish(const type::StructDescriptor<>*/* td*/, const type::Struct& instance, types::property_set_t what, bool remove)
 	{
 		publish(instance, what, remove);
