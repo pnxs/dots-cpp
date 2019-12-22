@@ -18,7 +18,7 @@ namespace dots
 		/* do nothing */
 	}
 
-	bool Transceiver::start(std::string name, channel_ptr_t channel, descriptor_map_t preloadPublishTypes/* = {}*/, descriptor_map_t preloadSubscribeTypes/* = {}*/)
+	bool Transceiver::openChannel(channel_ptr_t channel, std::string name, descriptor_map_t preloadPublishTypes/* = {}*/, descriptor_map_t preloadSubscribeTypes/* = {}*/)
 	{
 		if (m_connectionState != DotsConnectionState::closed)
 		{
@@ -39,7 +39,7 @@ namespace dots
 		return true;
 	}
 
-	void Transceiver::stop()
+	void Transceiver::closeChannel()
 	{
 		m_channel.reset();
 		setConnectionState(DotsConnectionState::closed);
@@ -291,7 +291,7 @@ namespace dots
 	void Transceiver::handleError(const std::exception& e)
 	{
 		LOG_ERROR_S("channel error in async receive: " << e.what());
-		stop();
+		closeChannel();
 	}
 
 	void Transceiver::processHello(const DotsMsgHello& hello)

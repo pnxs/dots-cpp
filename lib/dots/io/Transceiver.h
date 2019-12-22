@@ -32,8 +32,8 @@ namespace dots
 		Transceiver& operator = (const Transceiver& rhs) = delete;
 		Transceiver& operator = (Transceiver&& rhs) = default;
 
-		bool start(std::string name, channel_ptr_t channel, descriptor_map_t preloadPublishTypes = {}, descriptor_map_t preloadSubscribeTypes = {});
-		void stop();
+		bool openChannel(channel_ptr_t channel, std::string name, descriptor_map_t preloadPublishTypes = {}, descriptor_map_t preloadSubscribeTypes = {});
+		void closeChannel();
 
 		const io::Registry& registry() const;
 		io::Registry& registry();

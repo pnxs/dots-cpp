@@ -16,9 +16,9 @@ namespace dots
 		// Start Transceiver
 		// Connect to dotsd
 
-		auto channel = global_service<ChannelService>().open<TcpChannel>(m_serverAddress, m_serverPort);
+		auto channel = global_service<ChannelService>().makeChannel<TcpChannel>(m_serverAddress, m_serverPort);
 		
-		if (!transceiver().start(name, channel, getPreloadPublishTypes(), getPreloadSubscribeTypes()))
+		if (!transceiver().openChannel(channel, name, getPreloadPublishTypes(), getPreloadSubscribeTypes()))
 		{
 			throw std::runtime_error("unable to start transceiver");
 		}
