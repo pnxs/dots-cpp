@@ -218,53 +218,50 @@ bool Connection::onReceivedMessage(const DotsTransportHeader& transportHeader, T
  */
 bool Connection::onControlMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission)
 {
-    const auto& typeName = *transportHeader.dotsHeader->typeName;
     bool handled = false;
 
     switch(m_connectionState)
     {
         case DotsConnectionState::connecting:
             // Only accept DotsMsgConnect messages (MsgType connect)
-            if (typeName == "DotsMsgConnect")
+            if (auto* dotsMsgConnect = transmission.instance()->_as<DotsMsgConnect>())
             {    // Check authentication and authorization;
-                 processConnectRequest(static_cast<const DotsMsgConnect&>(transmission.instance().get()));
+                 processConnectRequest(*dotsMsgConnect);
                 handled = true;
             }
             break;
         case DotsConnectionState::early_subscribe:
-            if (typeName == "DotsMsgConnect")
+            if (auto* dotsMsgConnect = transmission.instance()->_as<DotsMsgConnect>())
             {    // Check authentication and authorization;
-                processConnectPreloadClientFinished(static_cast<const DotsMsgConnect&>(transmission.instance().get()));
+                processConnectPreloadClientFinished(*dotsMsgConnect);
                 handled = true;
             }
             //No break here: Falltrough
 			[[fallthrough]];
         case DotsConnectionState::connected:
-            if (typeName == "DotsMember")
+            if (auto* dotsMember = transmission.instance()->_as<DotsMember>())
             {
-                processMemberMessage(transportHeader, static_cast<const DotsMember&>(transmission.instance().get()), this);
+                processMemberMessage(transportHeader, *dotsMember, this);
                 handled = true;
             }
-            else if (typeName == "EnumDescriptorData")
+            else if (auto* enumDescriptorData = transmission.instance()->_as<EnumDescriptorData>())
             {
-                auto enumDescriptorData = static_cast<const EnumDescriptorData&>(transmission.instance().get());
-                enumDescriptorData.publisherId = id();
-                type::EnumDescriptor<>::createFromEnumDescriptorData(enumDescriptorData);
+                //enumDescriptorData->publisherId = id();
+                type::EnumDescriptor<>::createFromEnumDescriptorData(*enumDescriptorData);
                 m_connectionManager.deliver(transportHeader, std::move(transmission));
                 handled = true;
             }
-            else if (typeName == "StructDescriptorData")
+            else if (auto* structDescriptorData = transmission.instance()->_as<StructDescriptorData>())
             {
-                auto structDescriptorData = static_cast<const StructDescriptorData&>(transmission.instance().get());
-                structDescriptorData.publisherId = id();
-                LOG_DEBUG_S("received struct descriptor: " << structDescriptorData.name);
-            	const type::StructDescriptor<>* descriptor = type::StructDescriptor<>::createFromStructDescriptorData(structDescriptorData);
+                //structDescriptorData->publisherId = id();
+                LOG_DEBUG_S("received struct descriptor: " << structDescriptorData->name);
+            	const type::StructDescriptor<>* descriptor = type::StructDescriptor<>::createFromStructDescriptorData(*structDescriptorData);
             	LOG_INFO_S("register type " << descriptor->name() << " published by " << m_clientName);
             	m_connectionManager.onNewType(descriptor);
                 m_connectionManager.deliver(transportHeader, std::move(transmission));
                 handled = true;
             }
-            else if (typeName == "DotsClearCache")
+            else if (transmission.instance()->_is<DotsClearCache>())
             {
                 m_connectionManager.deliver(transportHeader, std::move(transmission));
                 handled = true;
