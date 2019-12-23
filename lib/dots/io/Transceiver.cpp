@@ -164,31 +164,9 @@ namespace dots
 	{
 		try 
         {
-            if (transportHeader.nameSpace == "SYS")
-            {
-                handleControlMessage(transportHeader, std::move(transmission));
-            } 
-            else
-            {
-                handleRegularMessage(transportHeader, std::move(transmission));
-            }
-
-            return true;
-        }
-        catch (const std::exception& e) 
-        {
-            LOG_ERROR_S("exception in receive: " << e.what());
-
-            return false;
-        }
-	}
-
-	void Transceiver::handleControlMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission)
-	{
-        switch(m_connectionState)
-        {
-            case DotsConnectionState::connecting:
-                if (auto* dotsMsgHello = transmission.instance()->_as<DotsMsgHello>())
+			if (m_connectionState == DotsConnectionState::connecting)
+			{
+				if (auto* dotsMsgHello = transmission.instance()->_as<DotsMsgHello>())
                 {
                     processHello(*dotsMsgHello);
                 }
@@ -196,60 +174,39 @@ namespace dots
                 {
                     processConnectResponse(*dotsMsgConnectResponse);
                 }
-                break;
-            case DotsConnectionState::early_subscribe:
-                if (auto* dotsMsgConnectResponse = transmission.instance()->_as<DotsMsgConnectResponse>())
-                {
-                    processEarlySubscribe(*dotsMsgConnectResponse);
-                }
-                // No break here: falltrough
-                // process all messages, put non-cache messages into buffer
-                [[fallthrough]];
-            case DotsConnectionState::connected:
-                {
-                    if (transmission.instance()->_is<DotsCacheInfo>()) 
-                    {
-                        // TODO: implement handling of DotsCacheInfo
-                        // for now let trough like an normal object
-                    }
+				else
+				{
+					throw std::runtime_error{ "received unexpected instance during connecting: " + transmission.instance()->_descriptor().name() };
+				}
+			}
+			else 
+			{
+				if (auto* dotsMsgConnectResponse = transmission.instance()->_as<DotsMsgConnectResponse>())
+				{
+					if (m_connectionState == DotsConnectionState::early_subscribe)
+	                {
+	                    processEarlySubscribe(*dotsMsgConnectResponse);
+	                }
+					else
+					{
+						throw std::runtime_error{ "received unexpected DotsMsgConnectResponse during early_subscribe" };
+					}
+				}
+				else
+				{
+					importType(transmission.instance());
+					DotsHeader dotsHeader = transportHeader.dotsHeader;
+	                dotsHeader.isFromMyself(dotsHeader.sender == m_id);
+	                m_dispatcher.dispatch(dotsHeader, transmission.instance());
+				}
+			}
 
-            		importType(transmission.instance());
-
-                    DotsHeader dotsHeader = transportHeader.dotsHeader;
-                    dotsHeader.isFromMyself(dotsHeader.sender == m_id);
-                    m_dispatcher.dispatch(dotsHeader, transmission.instance());
-                }
-
-                break;
-            case DotsConnectionState::suspended:
-                // buffer outgoing messages
-                break;
-            case DotsConnectionState::closed:
-                // do nothing
-                break;
+            return true;
         }
-	}
-	
-	void Transceiver::handleRegularMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission)
-	{
-		switch(m_connectionState)
+        catch (const std::exception& e) 
         {
-            case DotsConnectionState::connecting:
-                break;
-            case DotsConnectionState::early_subscribe:
-            case DotsConnectionState::connected:
-                {
-                    DotsHeader dotsHeader = transportHeader.dotsHeader;
-                    dotsHeader.isFromMyself(dotsHeader.sender == m_id);
-                    m_dispatcher.dispatch(dotsHeader, transmission.instance());
-                }
-                break;
-            case DotsConnectionState::suspended:
-                // buffer outgoing messages
-                break;
-            case DotsConnectionState::closed:
-                // do nothing
-                break;
+            handleError(e);
+            return false;
         }
 	}
 
