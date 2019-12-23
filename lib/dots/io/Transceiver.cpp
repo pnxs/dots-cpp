@@ -69,7 +69,7 @@ namespace dots
 	{
 		if (descriptor.substructOnly())
 		{
-			throw std::logic_error{ "attempt to subscribe to substruct-only type" };
+			throw std::logic_error{ "attempt to subscribe to substruct-only type: " + descriptor.name() };
 		}
 
 		joinGroup(descriptor.name());
@@ -80,7 +80,7 @@ namespace dots
 	{
 		if (descriptor.substructOnly())
 		{
-			throw std::logic_error{ "attempt to subscribe to substruct-only type" };
+			throw std::logic_error{ "attempt to subscribe to substruct-only type: " + descriptor.name() };
 		}
 
 		joinGroup(descriptor.name());
@@ -113,7 +113,7 @@ namespace dots
 		
 		if (descriptor.substructOnly())
 		{
-			throw std::logic_error{ "attempt to publish substruct-only type" };
+			throw std::logic_error{ "attempt to publish substruct-only type: " + descriptor.name() };
 		}		
 
     	if (!(descriptor.keyProperties() <= includedProperties))
