@@ -85,6 +85,8 @@ namespace dots
 		void leaveGroup(const std::string_view& name);
 
 		bool handleReceive(const DotsTransportHeader& transportHeader, Transmission&& transmission);
+        void handleControlMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission);
+        void handleRegularMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission);
 		void handleError(const std::exception& e);
 
         void processHello(const DotsMsgHello& hello);
