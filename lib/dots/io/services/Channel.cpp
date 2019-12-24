@@ -1,4 +1,5 @@
-#include "Channel.h"
+#include <dots/io/services/Channel.h>
+#include <dots/io/Registry.h>
 #include <DotsClient.dots.h>
 #include <DotsDescriptorRequest.dots.h>
 #include <DotsMsgError.dots.h>
@@ -75,6 +76,7 @@ namespace dots
         else
         {
             m_asyncReceiveActive = false;
+        	m_registry = nullptr;
             m_receiveHandler = nullptr;
             m_errorHandler = nullptr;
         }

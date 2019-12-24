@@ -1,5 +1,6 @@
 #include "TcpChannel.h"
 #include <dots/io/Io.h>
+#include <dots/io/Registry.h>
 #include <dots/io/serialization/CborNativeSerialization.h>
 
 namespace dots

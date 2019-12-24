@@ -1,10 +1,13 @@
 #pragma once
 #include <string>
-#include <vector>
 #include <system_error>
-#include <dots/io/Registry.h>
 #include <dots/io/services/Transmission.h>
 #include <DotsTransportHeader.dots.h>
+
+namespace dots::io
+{
+	struct Registry;
+}
 
 namespace dots
 {

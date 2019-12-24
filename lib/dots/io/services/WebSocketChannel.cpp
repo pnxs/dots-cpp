@@ -1,5 +1,6 @@
 #include "WebSocketChannel.h"
 #include <dots/io/Io.h>
+#include <dots/io/Registry.h>
 #include <dots/io/serialization/JsonSerializationRapidJson.h>
 
 namespace dots
