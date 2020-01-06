@@ -6,7 +6,6 @@
 #include "dots/io/Publisher.h"
 #include "dots/io/DistributedTypeId.h"
 #include "GroupManager.h"
-#include "AuthManager.h"
 
 #include "DotsClearCache.dots.h"
 #include "DotsDescriptorRequest.dots.h"
@@ -46,19 +45,6 @@ public:
      * @return shared-ptr to Connection object. Null if none was found.
      */
     connection_ptr findConnection(const Connection::ConnectionId &id);
-
-    /*!
-     * Find a Connection-object by it's peer address.
-     * @param pa PeerAddress of the connection-object.
-     * @return shared-ptr to Connection object. Null if none was found.
-     */
-    //connection_ptr findConnection(const DotsPeerAddress& pa);
-
-    /*!
-     * Returns the AuthManager as reference
-     * @return the Authentication Manager object
-     */
-    AuthManager& authManager() { return m_authManager; }
 
     /*!
      * Returns the name of the DOTS server
@@ -137,7 +123,6 @@ private:
 
     std::set<connection_ptr> m_cleanupConnections; ///< old connection-object.
 
-    AuthManager m_authManager;
     ClientId m_serverId = 1;
     GroupManager& m_groupManager;
     string m_name;

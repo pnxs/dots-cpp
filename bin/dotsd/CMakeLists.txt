@@ -11,7 +11,6 @@ add_executable(${TARGET_NAME} main.cpp)
 # properties
 target_sources(${TARGET_NAME}
 	PRIVATE
-		AuthManager.cpp
         Connection.cpp
 		ConnectionManager.cpp
 		Group.cpp

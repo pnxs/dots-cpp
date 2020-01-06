@@ -1,7 +1,6 @@
 #include <dots/type/EnumDescriptor.h>
 #include "Connection.h"
 #include "ConnectionManager.h"
-#include "AuthManager.h"
 #include "dots/io/Registry.h"
 
 #include "DotsMsgConnectResponse.dots.h"
@@ -45,7 +44,7 @@ namespace dots
     {
         DotsMsgHello hello;
         hello.serverName(m_connectionManager.name());
-        hello.authChallenge(m_connectionManager.authManager().newChallenge()); // Random-Number
+        hello.authChallenge(0); // Random-Number
         sendNs("SYS", hello);
     }
 
