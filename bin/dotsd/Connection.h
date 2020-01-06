@@ -36,7 +36,6 @@ namespace dots
         DotsConnectionState state() const;
         const ConnectionId& id() const; ///< return client-id
         const string& clientName() const; ///< return client-supplied name
-        ConnectionManager& connectionManager() const;
 
         void start();
         void stop();
@@ -49,11 +48,6 @@ namespace dots
         void send(const DotsTransportHeader& header, const type::Struct& instance);
 
         void send(const DotsTransportHeader& header, const Transmission& transmission);
-
-        /*!
-         * @return true if the client said, the it is intrested in DotsMember-messages.
-         */
-        bool wantMemberMessages() const;
 
         /*!
          * Send a DOTS-object with a specific name-space to the client.

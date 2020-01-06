@@ -70,7 +70,7 @@ namespace dots
         m_clientName = msg.clientName;
 
         LOG_INFO_S("authorized");
-        connectionManager().addClient(this);
+        m_connectionManager.addClient(this);
 
         DotsMsgConnectResponse cr;
         cr.serverName(m_connectionManager.name());
@@ -352,11 +352,6 @@ namespace dots
         }
     }
 
-    ConnectionManager& Connection::connectionManager() const
-    {
-        return m_connectionManager;
-    }
-
     void Connection::processMemberMessage(const DotsTransportHeader& header, const DotsMember& member, Connection* connection)
     {
         DotsMember memberMod = member;
@@ -366,7 +361,7 @@ namespace dots
             LOG_WARN_S("member message without event");
         }
         LOG_DEBUG_S(*member.event << " " << member.groupName);
-        connectionManager().processMemberMessage(header, member, connection);
+        m_connectionManager.processMemberMessage(header, member, connection);
     }
 
     const Connection::ConnectionId& Connection::id() const
