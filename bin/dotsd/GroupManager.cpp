@@ -2,11 +2,6 @@
 
 namespace dots {
 
-GroupManager::GroupManager()
-{
-}
-
-
 void GroupManager::handleJoin(const string &groupKey, Connection *connection)
 {
     auto group = getGroup(groupKey);

@@ -355,11 +355,6 @@ namespace dots
         }
     }
 
-    bool Connection::wantMemberMessages() const
-    {
-        return m_wantMemberMessages;
-    }
-
     ConnectionManager& Connection::connectionManager() const
     {
         return m_connectionManager;

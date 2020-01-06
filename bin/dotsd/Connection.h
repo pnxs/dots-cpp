@@ -17,7 +17,7 @@ namespace dots
     /*!
      * Represents a connection to a DOTS client.
      */
-    class Connection : public std::enable_shared_from_this<Connection>
+    class Connection
     {
     public:
         typedef uint32_t ConnectionId;
@@ -31,29 +31,29 @@ namespace dots
          * @param manager
          */
         explicit Connection(channel_ptr_t channel, ConnectionManager& manager);
-        virtual ~Connection();
+        ~Connection();
 
-        virtual DotsConnectionState state() const;
-        virtual const ConnectionId& id() const; ///< return client-id
-        virtual const string& clientName() const; ///< return client-supplied name
-        virtual ConnectionManager& connectionManager() const;
+        DotsConnectionState state() const;
+        const ConnectionId& id() const; ///< return client-id
+        const string& clientName() const; ///< return client-supplied name
+        ConnectionManager& connectionManager() const;
 
-        virtual void start();
-        virtual void stop();
-        virtual void kill();
+        void start();
+        void stop();
+        void kill();
 
         /*!
          * Directly send a Message to the client.
          * @param msg Message-object
          */
-        virtual void send(const DotsTransportHeader& header, const type::Struct& instance);
+        void send(const DotsTransportHeader& header, const type::Struct& instance);
 
-        virtual void send(const DotsTransportHeader& header, const Transmission& transmission);
+        void send(const DotsTransportHeader& header, const Transmission& transmission);
 
         /*!
          * @return true if the client said, the it is intrested in DotsMember-messages.
          */
-        virtual bool wantMemberMessages() const;
+        bool wantMemberMessages() const;
 
         /*!
          * Send a DOTS-object with a specific name-space to the client.
@@ -115,7 +115,6 @@ namespace dots
         channel_ptr_t m_channel;
         ConnectionManager& m_connectionManager;
         DotsConnectionState m_connectionState = DotsConnectionState::connecting;
-        bool m_wantMemberMessages = false;
         ConnectionId m_id;
         string m_clientName = "<not_set>";
     };

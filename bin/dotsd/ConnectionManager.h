@@ -34,7 +34,6 @@ public:
      * @param c shared-ptr to Connection-object
      */
     void start(connection_ptr c);
-   // void stop(connection_ptr c);
 
     /*!
      * Stops all connections.
@@ -131,7 +130,6 @@ private:
 
     std::set<connection_ptr> m_cleanupConnections; ///< old connection-object.
 
-    bool m_CacheEnabled = true;
     GroupManager& m_groupManager;
     ServerInfo& m_serverInfo;
     dots::Dispatcher m_dispatcher;

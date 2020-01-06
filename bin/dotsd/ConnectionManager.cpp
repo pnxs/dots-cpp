@@ -34,14 +34,6 @@ void ConnectionManager::start(connection_ptr c)
     c->start();
 }
 
-/*
-void ConnectionManager::stop(connection_ptr c)
-{
-    m_connections.erase(c);
-    c->stop();
-}
- */
-
 void ConnectionManager::stop_all()
 {
     for (auto c : m_connections)
@@ -110,12 +102,9 @@ void ConnectionManager::deliver(const DotsTransportHeader& transportHeader, Tran
 {
     if(transportHeader.destinationGroup.isValid())
     {
-        if(m_CacheEnabled)
-        {
-            DotsHeader dotsHeader = transportHeader.dotsHeader;
-            dotsHeader.isFromMyself(dotsHeader.sender == 1u);
-            m_dispatcher.dispatch(dotsHeader, transmission.instance());
-        }
+        DotsHeader dotsHeader = transportHeader.dotsHeader;
+        dotsHeader.isFromMyself(dotsHeader.sender == 1u);
+        m_dispatcher.dispatch(dotsHeader, transmission.instance());
 
         Group *grp = m_groupManager.getGroup({ transportHeader.destinationGroup });
         if (grp) grp->deliver(transportHeader, transmission);
@@ -152,9 +141,6 @@ void ConnectionManager::processMemberMessage(const DotsTransportHeader& /*header
     {
         m_groupManager.handleJoin(member.groupName, connection);
 
-        if (not m_CacheEnabled) return;
-        // Check for system_group?
-
         auto& typeName = member.groupName;
 
         const Container<>* container = m_dispatcher.pool().find(*typeName);
@@ -180,18 +166,6 @@ connection_ptr ConnectionManager::findConnection(const Connection::ConnectionId 
     }
     return {};
 }
-
-#if 0
-connection_ptr ConnectionManager::findConnection(const DotsPeerAddress &pa)
-{
-    for (auto& c : m_connections)
-    {
-        if (c.second->peerAddress() == pa)
-            return c.second;
-    }
-    return {};
-}
-#endif
 
 void ConnectionManager::handleKill(Connection *connection)
 {
@@ -248,7 +222,6 @@ void ConnectionManager::cleanup()
         const auto& client = static_cast<const DotsClient&>(element.first);
         if (client.connectionState == DotsConnectionState::closed) {
             // Search for a ClientId reference in all containers
-            //LOG_DATA_S("check closed conn state of " << client->name());
             if (isClientIdInContainers(client.id)) {
                 continue;
             }

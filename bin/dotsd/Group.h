@@ -34,27 +34,21 @@ class Group
         return it != m_membersList.end() ? &*it : NULL;
     }
 
-    void sendLeave(Connection *connection);
-    void sendMemberMessage(const DotsMemberEvent &event, const ClientId &changeMember);
-
     void removeConnection(Connection *connection);
 
     ConnectionList m_connections; // local group members
 public:
 
     Group(const string &name);
-    virtual ~Group();
+    ~Group();
 
-    virtual bool empty() const { return m_membersList.empty(); }
-    virtual const string &name() const { return m_name; }
+    const string &name() const { return m_name; }
 
-    virtual void handleJoin(Connection *connection);
-    virtual void handleLeave(Connection *connection);
-    virtual void handleKill(Connection *connection);
+    void handleJoin(Connection *connection);
+    void handleLeave(Connection *connection);
+    void handleKill(Connection *connection);
 
-    virtual const ConnectionList& connections() const { return m_connections; }
-
-    virtual void deliver(const DotsTransportHeader& transportHeader, const Transmission& transmission);
+    void deliver(const DotsTransportHeader& transportHeader, const Transmission& transmission);
 };
 
 typedef string GroupKey;
