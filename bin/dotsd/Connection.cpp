@@ -77,13 +77,13 @@ namespace dots
         cr.serverName(m_connectionManager.name());
         cr.accepted(true);
         cr.clientId(id());
-        if (msg.preloadCache.isValid() && msg.preloadCache.isValid())
+        if (msg.preloadCache == true)
         {
             cr.preload(true);
         }
         sendNs("SYS", cr);
 
-        if (msg.preloadCache.isValid() && msg.preloadCache.isValid())
+        if (msg.preloadCache == true)
         {
             setConnectionState(DotsConnectionState::early_subscribe);
         }
@@ -96,7 +96,7 @@ namespace dots
     void Connection::processConnectPreloadClientFinished(const DotsMsgConnect& msg)
     {
         // Check authentication and authorization;
-        if (!msg.preloadClientFinished.isValid() || !msg.preloadClientFinished.isValid())
+        if (!msg.preloadClientFinished.isValid() || msg.preloadClientFinished == false)
         {
             LOG_WARN_S("invalid DotsMsgConnect in state early_connect");
             return;
