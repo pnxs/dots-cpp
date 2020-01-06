@@ -10,27 +10,27 @@
 #include "DotsMsgConnect.dots.h"
 #include "DotsMember.dots.h"
 
-namespace dots {
-
+namespace dots
+{
     class ConnectionManager;
 
     /*!
      * Represents a connection to a DOTS client.
      */
-    class Connection: public std::enable_shared_from_this<Connection>
+    class Connection : public std::enable_shared_from_this<Connection>
     {
     public:
         typedef uint32_t ConnectionId;
 
-        Connection(const Connection &) = delete;
-        Connection &operator=(const Connection &) = delete;
+        Connection(const Connection&) = delete;
+        Connection& operator = (const Connection&) = delete;
 
         /*!
          * Create a Connection from a Channel.
          * @param channel Channel, that is moved into this Connection.
          * @param manager
          */
-        explicit Connection(channel_ptr_t channel, ConnectionManager &manager);
+        explicit Connection(channel_ptr_t channel, ConnectionManager& manager);
         virtual ~Connection();
 
         virtual DotsConnectionState state() const;
@@ -61,7 +61,7 @@ namespace dots {
          * @param nameSpace used name-space
          * @param data A reference to the DOTS-object
          */
-        template<class T>
+        template <typename T>
         void sendNs(const string& nameSpace, const T& instance)
         {
             sendNs(nameSpace, &instance._Descriptor(), instance, instance._validProperties(), false);
@@ -72,7 +72,7 @@ namespace dots {
          * @tparam T The DOTS-object type
          * @param data A reference to the DOTS-object
          */
-        template<class T>
+        template <typename T>
         void send(const T& instance)
         {
             sendNs({}, &T::_Descriptor(), instance, instance._validProperties(), false);
@@ -92,14 +92,15 @@ namespace dots {
         void sendCacheEnd(const std::string& typeName);
 
     protected:
-        Connection(ConnectionManager &manager);
+        Connection(ConnectionManager& manager);
 
     private:
         void processConnectRequest(const DotsMsgConnect& msg);
         void processConnectPreloadClientFinished(const DotsMsgConnect& msg);
-        void processMemberMessage(const DotsTransportHeader& header, const DotsMember &member, Connection* connection);
+        void processMemberMessage(const DotsTransportHeader& header, const DotsMember& member, Connection* connection);
 
         enum class RxTx { rx, tx };
+
         void logRxTx(RxTx, const DotsTransportHeader& header);
 
         void onChannelError(const std::exception& e);
@@ -111,14 +112,13 @@ namespace dots {
 
         dots::Transmitter m_transmitter;
 
-	    channel_ptr_t m_channel;
+        channel_ptr_t m_channel;
         ConnectionManager& m_connectionManager;
-        DotsConnectionState  m_connectionState = DotsConnectionState::connecting;
+        DotsConnectionState m_connectionState = DotsConnectionState::connecting;
         bool m_wantMemberMessages = false;
         ConnectionId m_id;
         string m_clientName = "<not_set>";
     };
 
     typedef std::shared_ptr<Connection> connection_ptr;
-
 }
