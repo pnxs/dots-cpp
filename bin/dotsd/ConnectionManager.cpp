@@ -404,11 +404,6 @@ DotsCacheStatus ConnectionManager::cacheStatus() const
     return cs;
 }
 
-Connection::ConnectionId ConnectionManager::getUniqueClientId()
-{
-    return ++m_lastConnectionId;
-}
-
 void ConnectionManager::addClient(Connection* connection)
 {
     // Send DotsClient when Client is added to network.

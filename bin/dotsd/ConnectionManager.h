@@ -113,12 +113,6 @@ public:
      */
     void addClient(Connection*);
 
-    /*!
-     * Creates a new unique clientId
-     * @return new clientId
-     */
-    Connection::ConnectionId getUniqueClientId();
-
     DotsStatistics receiveStatistics() const;
     DotsStatistics sendStatistics() const;
     DotsCacheStatus cacheStatus() const;
@@ -149,7 +143,6 @@ private:
     string m_name;
     dots::Dispatcher m_dispatcher;
     dots::Transmitter m_transmitter;
-    Connection::ConnectionId m_lastConnectionId = 1; // 0 is used for unitialized, 1 is used for the server.
     std::unique_ptr<DistributedTypeId> m_distributedTypeId;
 };
 

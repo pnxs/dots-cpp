@@ -110,6 +110,8 @@ namespace dots
 
         void setConnectionState(const DotsConnectionState& state);
 
+        inline static ConnectionId m_lastConnectionId = 1; // 0 is used for unitialized, 1 is used for the server.
+
         dots::Transmitter m_transmitter;
 
         channel_ptr_t m_channel;

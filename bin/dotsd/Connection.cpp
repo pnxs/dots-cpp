@@ -34,7 +34,7 @@ namespace dots
         StructDescriptorData::_Descriptor();
 
         // Create connection-name
-        m_id = m_connectionManager.getUniqueClientId();
+        m_id = ++m_lastConnectionId;
 
         LOG_INFO_S("connected");
 
