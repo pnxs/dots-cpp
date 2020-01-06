@@ -10,8 +10,7 @@ namespace dots
 {
 
 Server::Server(std::unique_ptr<Listener>&& listener, const string& name)
-:m_name(name)
-,m_connectionManager(m_groupManager, *this)
+:m_connectionManager(m_groupManager, name)
 ,m_listener(std::move(listener))
 {
 	transceiver();
@@ -35,7 +34,7 @@ Server::Server(std::unique_ptr<Listener>&& listener, const string& name)
 
 	asyncAccept();
 
-    m_daemonStatus.serverName = m_name;
+    m_daemonStatus.serverName = name;
     m_daemonStatus.startTime = pnxs::SystemNow();
 
     m_connectionManager.init();
@@ -49,11 +48,6 @@ void Server::stop()
 {
 	m_listener.reset();
     m_connectionManager.stop_all();
-}
-    
-const ClientId& Server::id() const
-{
-    return m_serverId;
 }
 
 /*!

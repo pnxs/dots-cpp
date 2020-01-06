@@ -43,11 +43,9 @@ namespace dots
 
     void Connection::start()
     {
-        auto& server = m_connectionManager.serverInfo();
-
         DotsMsgHello hello;
-        hello.serverName(server.name());
-        hello.authChallenge(server.authManager().newChallenge()); // Random-Number
+        hello.serverName(m_connectionManager.name());
+        hello.authChallenge(m_connectionManager.authManager().newChallenge()); // Random-Number
         sendNs("SYS", hello);
     }
 
@@ -76,7 +74,7 @@ namespace dots
         connectionManager().addClient(this);
 
         DotsMsgConnectResponse cr;
-        cr.serverName(m_connectionManager.serverInfo().name());
+        cr.serverName(m_connectionManager.name());
         cr.accepted(true);
         cr.clientId(id());
         if (msg.preloadCache.isValid() && msg.preloadCache.isValid())
@@ -397,7 +395,7 @@ namespace dots
         DotsTransportHeader header;
         m_transmitter.prepareHeader(header, td, properties, remove);
         if (!nameSpace.empty()) header.nameSpace(nameSpace);
-        header.dotsHeader->sender(m_connectionManager.serverInfo().id());
+        header.dotsHeader->sender(m_connectionManager.id());
 
         // Send to peer or group
         send(header, instance);

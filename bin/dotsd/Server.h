@@ -2,8 +2,6 @@
 
 #include "dots/cpp_config.h"
 #include "ConnectionManager.h"
-#include "AuthManager.h"
-#include "ServerInfo.h"
 #include <dots/io/services/Listener.h>
 
 #include "DotsDaemonStatus.dots.h"
@@ -13,7 +11,7 @@ namespace dots
 /*!
  * This class provides the server functionality of the DOTS system.
  */
-class Server: public ServerInfo
+class Server
 {
 public:
     Server(const Server&) = delete;
@@ -29,43 +27,21 @@ public:
     explicit Server(std::unique_ptr<Listener>&& listener, const string& name);
 
     /*!
-     * Returns the AuthManager as reference
-     * @return the Authentication Manager object
-     */
-    AuthManager& authManager() override { return m_authManager; }
-
-    /*!
-     * Returns the name of the DOTS server
-     * @return servername as string
-     */
-    const string& name() const override { return m_name; }
-
-    /*!
      * Stops the DOTS server
      */
     void stop();
-    
-    /*!
-     * Returns the servers connection ID
-     * @return connection id of the server
-     */
-    const ClientId& id() const override;
 
 private:
     void asyncAccept();
 	void handleCleanupTimer();
     void updateServerStatus();
 
-	string m_name;
+	
 
     GroupManager m_groupManager;
     ConnectionManager m_connectionManager;
-    AuthManager m_authManager;  
-
 	std::unique_ptr<Listener> m_listener;
-
     DotsDaemonStatus m_daemonStatus;
-    ClientId m_serverId = 1;
 };
 
 }

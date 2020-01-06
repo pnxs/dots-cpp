@@ -9,8 +9,8 @@
 namespace dots {
 
 
-ConnectionManager::ConnectionManager(GroupManager &groupManager, ServerInfo &server)
-        :m_groupManager(groupManager), m_serverInfo(server)
+ConnectionManager::ConnectionManager(GroupManager &groupManager, const std::string& name)
+        :m_groupManager(groupManager), m_name(name)
 {
 	m_dispatcher.pool().get<DotsClient>();
     m_dispatcher.subscribe<DotsDescriptorRequest>(FUN(*this, handleDescriptorRequest)).discard();
@@ -285,7 +285,7 @@ void ConnectionManager::handleDescriptorRequest(const DotsDescriptorRequest::Cbd
             DotsTransportHeader thead;
             m_transmitter.prepareHeader(thead, td, td->validProperties(body), false);
             thead.dotsHeader->sentTime = pnxs::SystemNow();
-            thead.dotsHeader->sender(this->serverInfo().id());
+            thead.dotsHeader->sender(m_serverId);
 
             // Send to peer or group
             connection->send(thead, *reinterpret_cast<const type::Struct*>(body));
@@ -361,7 +361,7 @@ void ConnectionManager::publishNs(const string &nameSpace,
     DotsTransportHeader header;
     m_transmitter.prepareHeader(header, td, properties, remove);
     header.dotsHeader->serverSentTime(pnxs::SystemNow());
-    header.dotsHeader->sender(serverInfo().id());
+    header.dotsHeader->sender(m_serverId);
     if (not nameSpace.empty()) header.nameSpace(nameSpace);
 
     // TODO: avoid local copy
@@ -440,7 +440,7 @@ string ConnectionManager::clientId2Name(ClientId id) const
 
     if (id == 0)
     {
-        return m_serverInfo.name();
+        return m_name;
     }
 
     return std::to_string(id);

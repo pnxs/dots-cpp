@@ -6,7 +6,7 @@
 #include "dots/io/Publisher.h"
 #include "dots/io/DistributedTypeId.h"
 #include "GroupManager.h"
-#include "ServerInfo.h"
+#include "AuthManager.h"
 
 #include "DotsClearCache.dots.h"
 #include "DotsDescriptorRequest.dots.h"
@@ -25,7 +25,7 @@ public:
     ConnectionManager(const ConnectionManager&) = delete;
     ConnectionManager&operator=(const ConnectionManager&) = delete;
 
-    ConnectionManager(GroupManager &groupManager, ServerInfo &server);
+    ConnectionManager(GroupManager &groupManager, const std::string& name);
 
     void init();
 
@@ -55,9 +55,22 @@ public:
     //connection_ptr findConnection(const DotsPeerAddress& pa);
 
     /*!
-     * @return ServerInfo reference
+     * Returns the AuthManager as reference
+     * @return the Authentication Manager object
      */
-    ServerInfo & serverInfo() const { return m_serverInfo; }
+    AuthManager& authManager() { return m_authManager; }
+
+    /*!
+     * Returns the name of the DOTS server
+     * @return servername as string
+     */
+    const string& name() const { return m_name; }
+
+    /*!
+     * Returns the servers connection ID
+     * @return connection id of the server
+     */
+    const ClientId& id() const { return m_serverId; }
 
     // Space things:
     /*!
@@ -130,8 +143,10 @@ private:
 
     std::set<connection_ptr> m_cleanupConnections; ///< old connection-object.
 
+    AuthManager m_authManager;
+    ClientId m_serverId = 1;
     GroupManager& m_groupManager;
-    ServerInfo& m_serverInfo;
+    string m_name;
     dots::Dispatcher m_dispatcher;
     dots::Transmitter m_transmitter;
     Connection::ConnectionId m_lastConnectionId = 1; // 0 is used for unitialized, 1 is used for the server.
