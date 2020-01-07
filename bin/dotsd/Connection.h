@@ -21,7 +21,7 @@ namespace dots
     {
     public:
         typedef uint32_t ConnectionId;
-
+        static constexpr ConnectionId ServerId = 1;
         Connection(const Connection&) = delete;
         Connection& operator = (const Connection&) = delete;
 
@@ -70,7 +70,7 @@ namespace dots
 
         void setConnectionState(const DotsConnectionState& state);
 
-        inline static ConnectionId m_lastConnectionId = 1; // 0 is used for unitialized, 1 is used for the server.
+        inline static ConnectionId m_lastConnectionId = ServerId; // 0 is used for unitialized, 1 is used for the server.
 
         dots::Transmitter m_transmitter;
 

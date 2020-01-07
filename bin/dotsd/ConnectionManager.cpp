@@ -285,7 +285,7 @@ void ConnectionManager::handleDescriptorRequest(const DotsDescriptorRequest::Cbd
             DotsTransportHeader thead;
             m_transmitter.prepareHeader(thead, td, td->validProperties(body), false);
             thead.dotsHeader->sentTime = pnxs::SystemNow();
-            thead.dotsHeader->sender(m_serverId);
+            thead.dotsHeader->sender(Connection::ServerId);
 
             // Send to peer or group
             connection->send(thead, *reinterpret_cast<const type::Struct*>(body));
@@ -361,7 +361,7 @@ void ConnectionManager::publishNs(const string &nameSpace,
     DotsTransportHeader header;
     m_transmitter.prepareHeader(header, td, properties, remove);
     header.dotsHeader->serverSentTime(pnxs::SystemNow());
-    header.dotsHeader->sender(m_serverId);
+    header.dotsHeader->sender(Connection::ServerId);
     if (not nameSpace.empty()) header.nameSpace(nameSpace);
 
     // TODO: avoid local copy

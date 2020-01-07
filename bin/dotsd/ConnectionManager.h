@@ -52,12 +52,6 @@ public:
      */
     const string& name() const { return m_name; }
 
-    /*!
-     * Returns the servers connection ID
-     * @return connection id of the server
-     */
-    const ClientId& id() const { return m_serverId; }
-
     // Space things:
     /*!
      * Deliver a message to all subscribed connections.
@@ -123,7 +117,6 @@ private:
 
     std::set<connection_ptr> m_cleanupConnections; ///< old connection-object.
 
-    ClientId m_serverId = 1;
     GroupManager& m_groupManager;
     string m_name;
     dots::Dispatcher m_dispatcher;

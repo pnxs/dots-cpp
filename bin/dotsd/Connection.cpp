@@ -362,7 +362,7 @@ namespace dots
                 DotsHeader::typeName_i{ descriptor.name() },
                 DotsHeader::sentTime_i{ pnxs::SystemNow() },
                 DotsHeader::attributes_i{ includedProperties ==  types::property_set_t::All ? instance._validProperties() : includedProperties },
-                DotsHeader::sender_i{ m_connectionManager.id() },
+                DotsHeader::sender_i{ ServerId },
                 DotsHeader::removeObj_i{ remove }
             }
         };
