@@ -295,7 +295,7 @@ void ConnectionManager::handleDescriptorRequest(const DotsDescriptorRequest::Cbd
     DotsCacheInfo dotsCacheInfo {
         DotsCacheInfo::endDescriptorRequest_i{true}
     };
-    connection->sendNs("SYS", dotsCacheInfo);
+    connection->send(dotsCacheInfo);
 }
 
 void ConnectionManager::handleClearCache(const DotsClearCache::Cbd& cbd)

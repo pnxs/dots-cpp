@@ -49,44 +49,10 @@ namespace dots
 
         void send(const DotsTransportHeader& header, const Transmission& transmission);
 
-        /*!
-         * Send a DOTS-object with a specific name-space to the client.
-         * @tparam T The DOTS-object type
-         * @param nameSpace used name-space
-         * @param data A reference to the DOTS-object
-         */
-        template <typename T>
-        void sendNs(const string& nameSpace, const T& instance)
-        {
-            sendNs(nameSpace, &instance._Descriptor(), instance, instance._validProperties(), false);
-        }
-
-        /*!
-         * Send a DOTS-object on 'global' name-space to the client.
-         * @tparam T The DOTS-object type
-         * @param data A reference to the DOTS-object
-         */
-        template <typename T>
-        void send(const T& instance)
-        {
-            sendNs({}, &T::_Descriptor(), instance, instance._validProperties(), false);
-        }
-
-        /*!
-         * Sends a DOTS-object using a StructDescriptor
-         * @param nameSpace used name-space
-         * @param td pointer to StructDescriptor
-         * @param data pointer to DOTS-object
-         * @param properties which properties should be send?
-         * @param remove send normal or remove object?
-         */
-        void sendNs(const string& nameSpace, const type::StructDescriptor<>* td, const type::Struct& instance, type::PropertySet properties, bool remove);
+        void send(const type::Struct& instance, types::property_set_t includedProperties = types::property_set_t::All, bool remove = false);
 
         void sendContainerContent(const Container<>& container);
         void sendCacheEnd(const std::string& typeName);
-
-    protected:
-        Connection(ConnectionManager& manager);
 
     private:
         void processConnectRequest(const DotsMsgConnect& msg);

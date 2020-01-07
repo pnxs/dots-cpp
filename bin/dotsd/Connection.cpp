@@ -45,7 +45,7 @@ namespace dots
         DotsMsgHello hello;
         hello.serverName(m_connectionManager.name());
         hello.authChallenge(0); // Random-Number
-        sendNs("SYS", hello);
+        send(hello);
     }
 
     void Connection::stop()
@@ -80,7 +80,7 @@ namespace dots
         {
             cr.preload(true);
         }
-        sendNs("SYS", cr);
+        send(cr);
 
         if (msg.preloadCache == true)
         {
@@ -106,7 +106,7 @@ namespace dots
         // When all cache items are sent to client, send fin-message
         DotsMsgConnectResponse cr;
         cr.preloadFinished(true);
-        sendNs("SYS", cr);
+        send(cr);
     }
 
     /**
@@ -352,6 +352,29 @@ namespace dots
         }
     }
 
+    void Connection::send(const type::Struct& instance, types::property_set_t includedProperties/* = types::property_set_t::All*/, bool remove/* = false*/)
+    {
+        const type::StructDescriptor<>& descriptor = instance._descriptor();
+
+        DotsTransportHeader header{
+            DotsTransportHeader::destinationGroup_i{ descriptor.name() },
+            DotsTransportHeader::dotsHeader_i{
+                DotsHeader::typeName_i{ descriptor.name() },
+                DotsHeader::sentTime_i{ pnxs::SystemNow() },
+                DotsHeader::attributes_i{ includedProperties ==  types::property_set_t::All ? instance._validProperties() : includedProperties },
+                DotsHeader::sender_i{ m_connectionManager.id() },
+                DotsHeader::removeObj_i{ remove }
+            }
+        };
+
+        if (descriptor.internal() && !instance._is<DotsClient>() && !instance._is<DotsDescriptorRequest>())
+        {
+            header.nameSpace("SYS");
+        }
+
+        send(header, instance);
+    }
+
     void Connection::processMemberMessage(const DotsTransportHeader& header, const DotsMember& member, Connection* connection)
     {
         DotsMember memberMod = member;
@@ -369,30 +392,10 @@ namespace dots
         return m_id;
     }
 
-    Connection::Connection(ConnectionManager& manager) :
-        m_connectionManager(manager)
-    {
-    }
-
     void Connection::onChannelError(const std::exception& e)
     {
         LOG_ERROR_S("channel error: " << e.what());
         kill();
-    }
-
-    void Connection::sendNs(const string& nameSpace,
-                            const type::StructDescriptor<>* td,
-                            const type::Struct& instance,
-                            type::PropertySet properties,
-                            bool remove)
-    {
-        DotsTransportHeader header;
-        m_transmitter.prepareHeader(header, td, properties, remove);
-        if (!nameSpace.empty()) header.nameSpace(nameSpace);
-        header.dotsHeader->sender(m_connectionManager.id());
-
-        // Send to peer or group
-        send(header, instance);
     }
 
     void Connection::logRxTx(Connection::RxTx rxtx, const DotsTransportHeader& header)
@@ -465,6 +468,6 @@ namespace dots
             DotsCacheInfo::typeName_i{ typeName },
             DotsCacheInfo::endTransmission_i{ true }
         };
-        sendNs("SYS", dotsCacheInfo);
+        send(dotsCacheInfo);
     }
 }
