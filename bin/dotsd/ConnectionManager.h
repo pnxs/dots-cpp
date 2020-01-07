@@ -46,12 +46,6 @@ public:
      */
     connection_ptr findConnection(const Connection::ConnectionId &id);
 
-    /*!
-     * Returns the name of the DOTS server
-     * @return servername as string
-     */
-    const string& name() const { return m_name; }
-
     // Space things:
     /*!
      * Deliver a message to all subscribed connections.

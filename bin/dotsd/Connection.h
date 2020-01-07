@@ -30,7 +30,7 @@ namespace dots
          * @param channel Channel, that is moved into this Connection.
          * @param manager
          */
-        explicit Connection(channel_ptr_t channel, ConnectionManager& manager);
+        explicit Connection(channel_ptr_t channel, std::string serverName, ConnectionManager& manager);
         ~Connection();
 
         DotsConnectionState state() const;
@@ -75,9 +75,10 @@ namespace dots
         dots::Transmitter m_transmitter;
 
         channel_ptr_t m_channel;
+        string m_serverName;
         ConnectionManager& m_connectionManager;
         DotsConnectionState m_connectionState = DotsConnectionState::connecting;
-        ConnectionId m_id;
+        ConnectionId m_clientId;
         string m_clientName = "<not_set>";
     };
 

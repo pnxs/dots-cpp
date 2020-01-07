@@ -23,8 +23,9 @@ namespace dots
 {
     using namespace std::placeholders;
 
-    Connection::Connection(channel_ptr_t channel, ConnectionManager& manager) :
+    Connection::Connection(channel_ptr_t channel, string serverName, ConnectionManager& manager) :
         m_channel(std::move(channel)),
+        m_serverName(std::move(serverName)),
         m_connectionManager(manager)
     {
         DotsMsgConnect::_Descriptor();
@@ -33,7 +34,7 @@ namespace dots
         StructDescriptorData::_Descriptor();
 
         // Create connection-name
-        m_id = ++m_lastConnectionId;
+        m_clientId = ++m_lastConnectionId;
 
         LOG_INFO_S("connected");
 
@@ -43,7 +44,7 @@ namespace dots
     void Connection::start()
     {
         DotsMsgHello hello;
-        hello.serverName(m_connectionManager.name());
+        hello.serverName(m_serverName);
         hello.authChallenge(0); // Random-Number
         send(hello);
     }
@@ -73,7 +74,7 @@ namespace dots
         m_connectionManager.addClient(this);
 
         DotsMsgConnectResponse cr;
-        cr.serverName(m_connectionManager.name());
+        cr.serverName(m_serverName);
         cr.accepted(true);
         cr.clientId(id());
         if (msg.preloadCache == true)
@@ -389,7 +390,7 @@ namespace dots
 
     const Connection::ConnectionId& Connection::id() const
     {
-        return m_id;
+        return m_clientId;
     }
 
     void Connection::onChannelError(const std::exception& e)

@@ -10,7 +10,8 @@ namespace dots
 {
 
 Server::Server(std::unique_ptr<Listener>&& listener, const string& name)
-:m_connectionManager(m_groupManager, name)
+:m_name(name)
+,m_connectionManager(m_groupManager, name)
 ,m_listener(std::move(listener))
 {
 	transceiver();
@@ -57,7 +58,7 @@ void Server::asyncAccept()
 {
     Listener::accept_handler_t acceptHandler = [this](channel_ptr_t channel)
 	{
-		auto connection = std::make_shared<Connection>(std::move(channel), m_connectionManager);
+		auto connection = std::make_shared<Connection>(std::move(channel), m_name, m_connectionManager);
 		m_connectionManager.start(connection);
 
 		return true;
