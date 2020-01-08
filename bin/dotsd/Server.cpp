@@ -11,8 +11,7 @@ namespace dots
 
 Server::Server(std::unique_ptr<Listener>&& listener, const string& name)
 :m_name(name)
-,m_connectionManager(name)
-,m_listener(std::move(listener))
+,m_connectionManager(std::move(listener), name)
 {
 	transceiver();
     publisher() = &m_connectionManager;
@@ -33,8 +32,6 @@ Server::Server(std::unique_ptr<Listener>&& listener, const string& name)
 		DotsCloneInformation::_Descriptor();
     }
 
-	asyncAccept();
-
     m_daemonStatus.serverName = name;
     m_daemonStatus.startTime = pnxs::SystemNow();
 
@@ -47,29 +44,7 @@ Server::Server(std::unique_ptr<Listener>&& listener, const string& name)
 
 void Server::stop()
 {
-	m_listener.reset();
     m_connectionManager.stop_all();
-}
-
-/*!
- * Starts an asynchronous Accept.
- */
-void Server::asyncAccept()
-{
-    Listener::accept_handler_t acceptHandler = [this](channel_ptr_t channel)
-	{
-		auto connection = std::make_shared<Connection>(std::move(channel), m_name, m_connectionManager);
-		m_connectionManager.start(connection);
-
-		return true;
-	};
-
-    Listener::error_handler_t errorHandler = [](const std::exception& e)
-    {
-        LOG_ERROR_S("error while listening for incoming channels -> " << e.what());
-    };
-
-	m_listener->asyncAccept(std::move(acceptHandler), std::move(errorHandler));
 }
 
 /*!
@@ -80,7 +55,7 @@ void Server::handleCleanupTimer()
 {
     m_connectionManager.cleanup();
 
-    if (m_listener != nullptr)
+    if (m_connectionManager.running())
     {
         add_timer(1, FUN(*this, handleCleanupTimer));
     }
@@ -110,7 +85,7 @@ void Server::updateServerStatus()
         LOG_ERROR_S("exception in updateServerStatus: " << e.what());
     }
 
-    if (m_listener != nullptr)
+    if (m_connectionManager.running())
     {
         add_timer(1, FUN(*this, updateServerStatus));
     }

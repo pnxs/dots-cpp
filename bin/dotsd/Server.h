@@ -2,8 +2,6 @@
 
 #include "dots/cpp_config.h"
 #include "ConnectionManager.h"
-#include <dots/io/services/Listener.h>
-
 #include "DotsDaemonStatus.dots.h"
 
 namespace dots
@@ -32,14 +30,12 @@ public:
     void stop();
 
 private:
-    void asyncAccept();
 	void handleCleanupTimer();
     void updateServerStatus();
 
 	
     std::string m_name;
     ConnectionManager m_connectionManager;
-	std::unique_ptr<Listener> m_listener;
     DotsDaemonStatus m_daemonStatus;
 };
 

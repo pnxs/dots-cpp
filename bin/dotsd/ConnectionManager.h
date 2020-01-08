@@ -6,6 +6,7 @@
 #include "dots/io/Publisher.h"
 #include "dots/io/DistributedTypeId.h"
 #include "GroupManager.h"
+#include <dots/io/services/Listener.h>
 
 #include "DotsClearCache.dots.h"
 #include "DotsDescriptorRequest.dots.h"
@@ -24,7 +25,7 @@ public:
     ConnectionManager(const ConnectionManager&) = delete;
     ConnectionManager&operator=(const ConnectionManager&) = delete;
 
-    ConnectionManager(const std::string& name);
+    ConnectionManager(std::unique_ptr<Listener>&& listener, const std::string& name);
 
     void init();
 
@@ -38,6 +39,8 @@ public:
      * Stops all connections.
      */
     void stop_all();
+
+    bool running() const;
 
     /*!
      * Find a Connection-object by it's name.
@@ -98,6 +101,8 @@ public:
 
 private:
 
+    void asyncAccept();
+
     void removeConnection(connection_ptr c);
 
     void handleDescriptorRequest(const DotsDescriptorRequest::Cbd& cbd);
@@ -111,8 +116,10 @@ private:
 
     std::set<connection_ptr> m_cleanupConnections; ///< old connection-object.
 
-    GroupManager m_groupManager;
+    bool m_running;
     string m_name;
+    std::unique_ptr<Listener> m_listener;
+    GroupManager m_groupManager;
     dots::Dispatcher m_dispatcher;
     dots::Transmitter m_transmitter;
     std::unique_ptr<DistributedTypeId> m_distributedTypeId;

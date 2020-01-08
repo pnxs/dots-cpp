@@ -9,12 +9,14 @@
 namespace dots {
 
 
-ConnectionManager::ConnectionManager(const std::string& name)
-        :m_name(name)
+ConnectionManager::ConnectionManager(std::unique_ptr<Listener>&& listener, const std::string& name)
+        :m_running(false),m_name(name),m_listener(std::move(listener))
 {
 	m_dispatcher.pool().get<DotsClient>();
     m_dispatcher.subscribe<DotsDescriptorRequest>(FUN(*this, handleDescriptorRequest)).discard();
     m_dispatcher.subscribe<DotsClearCache>(FUN(*this, handleClearCache)).discard();
+
+    asyncAccept();
 }
 
 void ConnectionManager::init()
@@ -36,12 +38,19 @@ void ConnectionManager::start(connection_ptr c)
 
 void ConnectionManager::stop_all()
 {
+    m_listener.reset();
+
     for (auto c : m_connections)
     {
         c.second->stop();
     }
     m_connections.clear();
+    m_running = false;
+}
 
+bool ConnectionManager::running() const
+{
+    return m_running;
 }
 
 /*!
@@ -182,6 +191,28 @@ void ConnectionManager::handleKill(Connection *connection)
         // Look if objects has to be cleaned up
         cleanupObjects(connection);
     }
+}
+
+/*!
+ * Starts an asynchronous Accept.
+ */
+void ConnectionManager::asyncAccept()
+{
+    Listener::accept_handler_t acceptHandler = [this](channel_ptr_t channel)
+	{
+		auto connection = std::make_shared<Connection>(std::move(channel), m_name, *this);
+		start(connection);
+
+		return true;
+	};
+
+    Listener::error_handler_t errorHandler = [](const std::exception& e)
+    {
+        LOG_ERROR_S("error while listening for incoming channels -> " << e.what());
+    };
+
+	m_listener->asyncAccept(std::move(acceptHandler), std::move(errorHandler));
+    m_running = true;
 }
 
 void ConnectionManager::removeConnection(connection_ptr c)
