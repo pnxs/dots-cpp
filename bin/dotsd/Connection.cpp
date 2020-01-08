@@ -41,6 +41,26 @@ namespace dots
         m_channel->asyncReceive(transceiver().registry(), FUN(*this, onReceivedMessage), FUN(*this, onChannelError));
     }
 
+    Connection::~Connection()
+    {
+        LOG_DEBUG_S("DTOR");
+    }
+
+    DotsConnectionState Connection::state() const
+    {
+        return m_connectionState;
+    }
+
+    const Connection::ConnectionId& Connection::id() const
+    {
+        return m_clientId;
+    }
+
+    const string& Connection::clientName() const
+    {
+        return m_clientName;
+    }
+
     void Connection::start()
     {
         DotsMsgHello hello;
@@ -61,53 +81,103 @@ namespace dots
         m_connectionManager.handleKill(this);
     }
 
-    Connection::~Connection()
+    void Connection::send(const type::Struct& instance, types::property_set_t includedProperties/* = types::property_set_t::All*/, bool remove/* = false*/)
     {
-        LOG_DEBUG_S("DTOR");
+        const type::StructDescriptor<>& descriptor = instance._descriptor();
+
+        DotsTransportHeader header{
+            DotsTransportHeader::destinationGroup_i{ descriptor.name() },
+            DotsTransportHeader::dotsHeader_i{
+                DotsHeader::typeName_i{ descriptor.name() },
+                DotsHeader::sentTime_i{ pnxs::SystemNow() },
+                DotsHeader::attributes_i{ includedProperties ==  types::property_set_t::All ? instance._validProperties() : includedProperties },
+                DotsHeader::sender_i{ ServerId },
+                DotsHeader::removeObj_i{ remove }
+            }
+        };
+
+        if (descriptor.internal() && !instance._is<DotsClient>() && !instance._is<DotsDescriptorRequest>())
+        {
+            header.nameSpace("SYS");
+        }
+
+        send(header, instance);
     }
 
-    void Connection::processConnectRequest(const DotsMsgConnect& msg)
+    void Connection::send(const DotsTransportHeader& header, const type::Struct& instance)
     {
-        m_clientName = msg.clientName;
-
-        LOG_INFO_S("authorized");
-        m_connectionManager.addClient(this);
-
-        DotsMsgConnectResponse cr;
-        cr.serverName(m_serverName);
-        cr.accepted(true);
-        cr.clientId(id());
-        if (msg.preloadCache == true)
+        try
         {
-            cr.preload(true);
+            logRxTx(RxTx::tx, header);
+            m_channel->transmit(header, instance);
         }
-        send(cr);
-
-        if (msg.preloadCache == true)
+        catch (const std::exception& e)
         {
-            setConnectionState(DotsConnectionState::early_subscribe);
-        }
-        else
-        {
-            setConnectionState(DotsConnectionState::connected);
+            LOG_WARN_S("exception: " << e.what())
+            kill();
         }
     }
 
-    void Connection::processConnectPreloadClientFinished(const DotsMsgConnect& msg)
+    void Connection::send(const DotsTransportHeader& header, const Transmission& transmission)
     {
-        // Check authentication and authorization;
-        if (!msg.preloadClientFinished.isValid() || msg.preloadClientFinished == false)
+        try
         {
-            LOG_WARN_S("invalid DotsMsgConnect in state early_connect");
-            return;
+            logRxTx(RxTx::tx, header);
+            m_channel->transmit(header, transmission);
+        }
+        catch (const std::exception& e)
+        {
+            LOG_WARN_S("exception: " << e.what())
+            kill();
+        }
+    }
+
+    void Connection::sendContainerContent(const Container<>& container)
+    {
+        const auto& td = container.descriptor();
+
+        LOG_DEBUG_S("send cache for " << td.name() << " size=" << container.size());
+        uint32_t remainingCacheObjects = container.size();
+        for (const auto& [instance, cloneInfo] : container)
+        {
+            const char* lop = "";
+            switch (cloneInfo.lastOperation)
+            {
+                case DotsMt::create: lop = "C";
+                    break;
+                case DotsMt::update: lop = "U";
+                    break;
+                case DotsMt::remove: lop = "R";
+                    break;
+            }
+
+            LOG_DATA_S("clone-info: lastOp=" << lop << ", lastUpdateFrom=" << cloneInfo.lastUpdateFrom
+                << ", created=" << cloneInfo.created->toString() << ", creator=" << cloneInfo.createdFrom
+                << ", modified=" << cloneInfo.modified->toString() << ", localUpdateTime=" << cloneInfo.localUpdateTime->toString());
+
+            DotsTransportHeader thead;
+            m_transmitter.prepareHeader(thead, &td, instance->_validProperties(), false);
+
+            auto& dotsHeader = *thead.dotsHeader;
+            dotsHeader.sentTime = cloneInfo.modified.isValid() ? *cloneInfo.modified : *cloneInfo.created;
+            dotsHeader.serverSentTime = pnxs::SystemNow();
+            dotsHeader.sender = cloneInfo.lastUpdateFrom;
+            dotsHeader.fromCache = --remainingCacheObjects;
+
+            // Send to peer or group
+            send(thead, instance);
         }
 
-        setConnectionState(DotsConnectionState::connected);
+        sendCacheEnd(td.name());
+    }
 
-        // When all cache items are sent to client, send fin-message
-        DotsMsgConnectResponse cr;
-        cr.preloadFinished(true);
-        send(cr);
+    void Connection::sendCacheEnd(const std::string& typeName)
+    {
+        DotsCacheInfo dotsCacheInfo{
+            DotsCacheInfo::typeName_i{ typeName },
+            DotsCacheInfo::endTransmission_i{ true }
+        };
+        send(dotsCacheInfo);
     }
 
     /**
@@ -312,68 +382,48 @@ namespace dots
         return handled;
     }
 
-    DotsConnectionState Connection::state() const
+    void Connection::processConnectRequest(const DotsMsgConnect& msg)
     {
-        return m_connectionState;
-    }
+        m_clientName = msg.clientName;
 
-    void Connection::setConnectionState(const DotsConnectionState& state)
-    {
-        LOG_DEBUG_S("change connection state to " << state);
-        m_connectionState = state;
+        LOG_INFO_S("authorized");
+        m_connectionManager.addClient(this);
 
-        DotsClient{ DotsClient::id_i{ id() }, DotsClient::connectionState_i{ state } }._publish();
-    }
-
-    void Connection::send(const DotsTransportHeader& header, const type::Struct& instance)
-    {
-        try
+        DotsMsgConnectResponse cr;
+        cr.serverName(m_serverName);
+        cr.accepted(true);
+        cr.clientId(id());
+        if (msg.preloadCache == true)
         {
-            logRxTx(RxTx::tx, header);
-            m_channel->transmit(header, instance);
+            cr.preload(true);
         }
-        catch (const std::exception& e)
-        {
-            LOG_WARN_S("exception: " << e.what())
-            kill();
-        }
-    }
+        send(cr);
 
-    void Connection::send(const DotsTransportHeader& header, const Transmission& transmission)
-    {
-        try
+        if (msg.preloadCache == true)
         {
-            logRxTx(RxTx::tx, header);
-            m_channel->transmit(header, transmission);
+            setConnectionState(DotsConnectionState::early_subscribe);
         }
-        catch (const std::exception& e)
+        else
         {
-            LOG_WARN_S("exception: " << e.what())
-            kill();
+            setConnectionState(DotsConnectionState::connected);
         }
     }
 
-    void Connection::send(const type::Struct& instance, types::property_set_t includedProperties/* = types::property_set_t::All*/, bool remove/* = false*/)
+    void Connection::processConnectPreloadClientFinished(const DotsMsgConnect& msg)
     {
-        const type::StructDescriptor<>& descriptor = instance._descriptor();
-
-        DotsTransportHeader header{
-            DotsTransportHeader::destinationGroup_i{ descriptor.name() },
-            DotsTransportHeader::dotsHeader_i{
-                DotsHeader::typeName_i{ descriptor.name() },
-                DotsHeader::sentTime_i{ pnxs::SystemNow() },
-                DotsHeader::attributes_i{ includedProperties ==  types::property_set_t::All ? instance._validProperties() : includedProperties },
-                DotsHeader::sender_i{ ServerId },
-                DotsHeader::removeObj_i{ remove }
-            }
-        };
-
-        if (descriptor.internal() && !instance._is<DotsClient>() && !instance._is<DotsDescriptorRequest>())
+        // Check authentication and authorization;
+        if (!msg.preloadClientFinished.isValid() || msg.preloadClientFinished == false)
         {
-            header.nameSpace("SYS");
+            LOG_WARN_S("invalid DotsMsgConnect in state early_connect");
+            return;
         }
 
-        send(header, instance);
+        setConnectionState(DotsConnectionState::connected);
+
+        // When all cache items are sent to client, send fin-message
+        DotsMsgConnectResponse cr;
+        cr.preloadFinished(true);
+        send(cr);
     }
 
     void Connection::processMemberMessage(const DotsTransportHeader& header, const DotsMember& member, Connection* connection)
@@ -386,11 +436,6 @@ namespace dots
         }
         LOG_DEBUG_S(*member.event << " " << member.groupName);
         m_connectionManager.processMemberMessage(header, member, connection);
-    }
-
-    const Connection::ConnectionId& Connection::id() const
-    {
-        return m_clientId;
     }
 
     void Connection::onChannelError(const std::exception& e)
@@ -419,56 +464,11 @@ namespace dots
         LOG_DEBUG_S(rxtxColor << msg << ns << header.destinationGroup << allOff);
     }
 
-    const string& Connection::clientName() const
+    void Connection::setConnectionState(const DotsConnectionState& state)
     {
-        return m_clientName;
-    }
+        LOG_DEBUG_S("change connection state to " << state);
+        m_connectionState = state;
 
-    void Connection::sendContainerContent(const Container<>& container)
-    {
-        const auto& td = container.descriptor();
-
-        LOG_DEBUG_S("send cache for " << td.name() << " size=" << container.size());
-        uint32_t remainingCacheObjects = container.size();
-        for (const auto& [instance, cloneInfo] : container)
-        {
-            const char* lop = "";
-            switch (cloneInfo.lastOperation)
-            {
-                case DotsMt::create: lop = "C";
-                    break;
-                case DotsMt::update: lop = "U";
-                    break;
-                case DotsMt::remove: lop = "R";
-                    break;
-            }
-
-            LOG_DATA_S("clone-info: lastOp=" << lop << ", lastUpdateFrom=" << cloneInfo.lastUpdateFrom
-                << ", created=" << cloneInfo.created->toString() << ", creator=" << cloneInfo.createdFrom
-                << ", modified=" << cloneInfo.modified->toString() << ", localUpdateTime=" << cloneInfo.localUpdateTime->toString());
-
-            DotsTransportHeader thead;
-            m_transmitter.prepareHeader(thead, &td, instance->_validProperties(), false);
-
-            auto& dotsHeader = *thead.dotsHeader;
-            dotsHeader.sentTime = cloneInfo.modified.isValid() ? *cloneInfo.modified : *cloneInfo.created;
-            dotsHeader.serverSentTime = pnxs::SystemNow();
-            dotsHeader.sender = cloneInfo.lastUpdateFrom;
-            dotsHeader.fromCache = --remainingCacheObjects;
-
-            // Send to peer or group
-            send(thead, instance);
-        }
-
-        sendCacheEnd(td.name());
-    }
-
-    void Connection::sendCacheEnd(const std::string& typeName)
-    {
-        DotsCacheInfo dotsCacheInfo{
-            DotsCacheInfo::typeName_i{ typeName },
-            DotsCacheInfo::endTransmission_i{ true }
-        };
-        send(dotsCacheInfo);
+        DotsClient{ DotsClient::id_i{ id() }, DotsClient::connectionState_i{ state } }._publish();
     }
 }
