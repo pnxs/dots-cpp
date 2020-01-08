@@ -83,7 +83,7 @@ public:
     /*!
      * Handle kill()-Method from a Connection-Object. Mark the connection for cleanup.
      */
-    void handleKill(Connection* );
+    void handleError(Connection::ConnectionId id, const std::exception& e);
 
     DotsStatistics receiveStatistics() const;
     DotsStatistics sendStatistics() const;

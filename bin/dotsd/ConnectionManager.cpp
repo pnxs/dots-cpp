@@ -36,7 +36,7 @@ void ConnectionManager::start(connection_ptr c)
     m_connections.insert({c->id(), c});
     c->asyncReceive(transceiver().registry(), 
         [this](const DotsTransportHeader& header, Transmission&& transmission){ return handleReceive(header, std::move(transmission)); },
-        nullptr
+        [this](Connection::ConnectionId id, const std::exception& e){ handleError(id, e); }
     );
 }
 
@@ -193,8 +193,9 @@ connection_ptr ConnectionManager::findConnection(const Connection::ConnectionId 
     return {};
 }
 
-void ConnectionManager::handleKill(Connection *connection)
+void ConnectionManager::handleError(Connection::ConnectionId id, const std::exception&/* e*/)
 {
+    Connection* connection = m_connections.find(id)->second.get();
     m_groupManager.handleKill(connection);
 
     auto connPtr = findConnection(connection->id());

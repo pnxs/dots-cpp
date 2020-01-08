@@ -89,12 +89,6 @@ namespace dots
         setConnectionState(DotsConnectionState::closed);
     }
 
-    void Connection::kill()
-    {
-        LOG_INFO_S("killed");
-        m_connectionManager.handleKill(this);
-    }
-
     void Connection::transmit(const type::Struct& instance, types::property_set_t includedProperties/* = types::property_set_t::All*/, bool remove/* = false*/)
     {
         const type::StructDescriptor<>& descriptor = instance._descriptor();
@@ -127,8 +121,7 @@ namespace dots
         }
         catch (const std::exception& e)
         {
-            LOG_WARN_S("exception: " << e.what())
-            kill();
+            handleError(e);
         }
     }
 
@@ -141,8 +134,7 @@ namespace dots
         }
         catch (const std::exception& e)
         {
-            LOG_WARN_S("exception: " << e.what())
-            kill();
+           handleError(e);
         }
     }
 
@@ -422,8 +414,15 @@ namespace dots
 
     void Connection::handleError(const std::exception& e)
     {
-        LOG_ERROR_S("channel error: " << e.what());
-        kill();
+        LOG_ERROR_S("channel error in async receive: " << e.what());
+        error_handler_t errorHandler;
+        errorHandler.swap(m_errorHandler);
+
+        m_registry = nullptr;
+		m_receiveHandler = nullptr;
+		setConnectionState(DotsConnectionState::closed);
+
+        errorHandler(m_clientId, e);
     }
 
     void Connection::logRxTx(Connection::RxTx rxtx, const DotsTransportHeader& header)

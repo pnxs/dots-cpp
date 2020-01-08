@@ -30,7 +30,7 @@ namespace dots
         static constexpr ConnectionId ServerId = 1;
 
         using receive_handler_t = std::function<bool(const DotsTransportHeader&, Transmission&&)>;
-		using error_handler_t = std::function<void(const std::exception&)>;
+		using error_handler_t = std::function<void(ConnectionId, const std::exception&)>;
 
         /*!
          * Create a Connection from a Channel.
@@ -48,7 +48,6 @@ namespace dots
 
         void asyncReceive(io::Registry& registry, receive_handler_t&& receiveHandler, error_handler_t&& errorHandler);
         void stop();
-        void kill();
 
         /*!
          * Directly send a Message to the client.
