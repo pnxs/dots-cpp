@@ -38,7 +38,6 @@ private:
 
 	
     std::string m_name;
-    GroupManager m_groupManager;
     ConnectionManager m_connectionManager;
 	std::unique_ptr<Listener> m_listener;
     DotsDaemonStatus m_daemonStatus;

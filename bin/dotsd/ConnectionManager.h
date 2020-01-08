@@ -24,7 +24,7 @@ public:
     ConnectionManager(const ConnectionManager&) = delete;
     ConnectionManager&operator=(const ConnectionManager&) = delete;
 
-    ConnectionManager(GroupManager &groupManager, const std::string& name);
+    ConnectionManager(const std::string& name);
 
     void init();
 
@@ -111,7 +111,7 @@ private:
 
     std::set<connection_ptr> m_cleanupConnections; ///< old connection-object.
 
-    GroupManager& m_groupManager;
+    GroupManager m_groupManager;
     string m_name;
     dots::Dispatcher m_dispatcher;
     dots::Transmitter m_transmitter;

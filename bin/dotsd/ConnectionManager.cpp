@@ -9,8 +9,8 @@
 namespace dots {
 
 
-ConnectionManager::ConnectionManager(GroupManager &groupManager, const std::string& name)
-        :m_groupManager(groupManager),m_name(name)
+ConnectionManager::ConnectionManager(const std::string& name)
+        :m_name(name)
 {
 	m_dispatcher.pool().get<DotsClient>();
     m_dispatcher.subscribe<DotsDescriptorRequest>(FUN(*this, handleDescriptorRequest)).discard();

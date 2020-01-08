@@ -11,7 +11,7 @@ namespace dots
 
 Server::Server(std::unique_ptr<Listener>&& listener, const string& name)
 :m_name(name)
-,m_connectionManager(m_groupManager, name)
+,m_connectionManager(name)
 ,m_listener(std::move(listener))
 {
 	transceiver();
