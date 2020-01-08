@@ -105,7 +105,7 @@ void Group::deliver(const DotsTransportHeader& transportHeader, const Transmissi
             if (connection->state() == DotsConnectionState::connected
                 or connection->state() == DotsConnectionState::suspended)
             {
-                connection->send(transportHeader, transmission);
+                connection->transmit(transportHeader, transmission);
             }
         }
     }

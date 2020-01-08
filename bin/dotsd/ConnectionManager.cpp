@@ -127,7 +127,7 @@ void ConnectionManager::deliver(const DotsTransportHeader& transportHeader, Tran
         auto dstConnection = findConnection(transportHeader.destinationClientId);
         if (dstConnection)
         {
-            dstConnection->send(transportHeader, transmission);
+            dstConnection->transmit(transportHeader, transmission);
         }
     }
 }
@@ -319,14 +319,14 @@ void ConnectionManager::handleDescriptorRequest(const DotsDescriptorRequest::Cbd
             thead.dotsHeader->sender(Connection::ServerId);
 
             // Send to peer or group
-            connection->send(thead, *reinterpret_cast<const type::Struct*>(body));
+            connection->transmit(thead, *reinterpret_cast<const type::Struct*>(body));
         });
     }
 
     DotsCacheInfo dotsCacheInfo {
         DotsCacheInfo::endDescriptorRequest_i{true}
     };
-    connection->send(dotsCacheInfo);
+    connection->transmit(dotsCacheInfo);
 }
 
 void ConnectionManager::handleClearCache(const DotsClearCache::Cbd& cbd)

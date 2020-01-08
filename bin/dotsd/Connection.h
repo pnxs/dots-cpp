@@ -45,9 +45,9 @@ namespace dots
          * Directly send a Message to the client.
          * @param msg Message-object
          */
-        void send(const type::Struct& instance, types::property_set_t includedProperties = types::property_set_t::All, bool remove = false);
-        void send(const DotsTransportHeader& header, const type::Struct& instance);
-        void send(const DotsTransportHeader& header, const Transmission& transmission);
+        void transmit(const type::Struct& instance, types::property_set_t includedProperties = types::property_set_t::All, bool remove = false);
+        void transmit(const DotsTransportHeader& header, const type::Struct& instance);
+        void transmit(const DotsTransportHeader& header, const Transmission& transmission);
 
         void sendContainerContent(const Container<>& container);
         void sendCacheEnd(const std::string& typeName);
@@ -56,15 +56,15 @@ namespace dots
 
         enum class RxTx { rx, tx };
 
-        bool onReceivedMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission);
-        bool onControlMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission);
-        bool onRegularMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission);
+        bool handleReceive(const DotsTransportHeader& transportHeader, Transmission&& transmission);
+        bool handleControlMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission);
+        bool handleRegularMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission);
 
         void processConnectRequest(const DotsMsgConnect& msg);
         void processConnectPreloadClientFinished(const DotsMsgConnect& msg);
         void processMemberMessage(const DotsTransportHeader& header, const DotsMember& member, Connection* connection);
 
-        void onChannelError(const std::exception& e);
+        void handleError(const std::exception& e);
 
         void logRxTx(RxTx, const DotsTransportHeader& header);
         void setConnectionState(const DotsConnectionState& state);

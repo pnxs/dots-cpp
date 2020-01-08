@@ -38,7 +38,7 @@ namespace dots
 
         LOG_INFO_S("connected");
 
-        m_channel->asyncReceive(transceiver().registry(), FUN(*this, onReceivedMessage), FUN(*this, onChannelError));
+        m_channel->asyncReceive(transceiver().registry(), FUN(*this, handleReceive), FUN(*this, handleError));
     }
 
     Connection::~Connection()
@@ -66,7 +66,7 @@ namespace dots
         DotsMsgHello hello;
         hello.serverName(m_serverName);
         hello.authChallenge(0); // Random-Number
-        send(hello);
+        transmit(hello);
     }
 
     void Connection::stop()
@@ -81,7 +81,7 @@ namespace dots
         m_connectionManager.handleKill(this);
     }
 
-    void Connection::send(const type::Struct& instance, types::property_set_t includedProperties/* = types::property_set_t::All*/, bool remove/* = false*/)
+    void Connection::transmit(const type::Struct& instance, types::property_set_t includedProperties/* = types::property_set_t::All*/, bool remove/* = false*/)
     {
         const type::StructDescriptor<>& descriptor = instance._descriptor();
 
@@ -101,10 +101,10 @@ namespace dots
             header.nameSpace("SYS");
         }
 
-        send(header, instance);
+        transmit(header, instance);
     }
 
-    void Connection::send(const DotsTransportHeader& header, const type::Struct& instance)
+    void Connection::transmit(const DotsTransportHeader& header, const type::Struct& instance)
     {
         try
         {
@@ -118,7 +118,7 @@ namespace dots
         }
     }
 
-    void Connection::send(const DotsTransportHeader& header, const Transmission& transmission)
+    void Connection::transmit(const DotsTransportHeader& header, const Transmission& transmission)
     {
         try
         {
@@ -165,7 +165,7 @@ namespace dots
             dotsHeader.fromCache = --remainingCacheObjects;
 
             // Send to peer or group
-            send(thead, instance);
+            transmit(thead, instance);
         }
 
         sendCacheEnd(td.name());
@@ -177,7 +177,7 @@ namespace dots
             DotsCacheInfo::typeName_i{ typeName },
             DotsCacheInfo::endTransmission_i{ true }
         };
-        send(dotsCacheInfo);
+        transmit(dotsCacheInfo);
     }
 
     /**
@@ -199,9 +199,9 @@ namespace dots
      * -----------+--------------------------+
      * @endcode
      */
-    bool Connection::onReceivedMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission)
+    bool Connection::handleReceive(const DotsTransportHeader& transportHeader, Transmission&& transmission)
     {
-        LOG_DEBUG_S("onReceivedMessage:");
+        LOG_DEBUG_S("handleReceive:");
         bool handled = false;
 
         auto modifiedHeader = transportHeader;
@@ -223,11 +223,11 @@ namespace dots
             // Check for DOTS control message-types
             if (transportHeader.nameSpace.isValid() && *transportHeader.nameSpace == "SYS")
             {
-                handled = onControlMessage(modifiedHeader, std::move(transmission));
+                handled = handleControlMessage(modifiedHeader, std::move(transmission));
             }
             else
             {
-                handled = onRegularMessage(modifiedHeader, std::move(transmission));
+                handled = handleRegularMessage(modifiedHeader, std::move(transmission));
             }
 
             if (!handled)
@@ -242,7 +242,7 @@ namespace dots
                 error.errorCode(1);
                 error.errorText(errorText);
 
-                send(error);
+                transmit(error);
             }
         }
         catch (const std::exception& e)
@@ -257,7 +257,7 @@ namespace dots
             DotsMsgError error;
             error.errorCode(2);
             error.errorText(errorReport);
-            send(error);
+            transmit(error);
 
             stop();
         }
@@ -286,7 +286,7 @@ namespace dots
      *                           |            |                 |           |           |
      * @endcode
      */
-    bool Connection::onControlMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission)
+    bool Connection::handleControlMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission)
     {
         bool handled = false;
 
@@ -352,7 +352,7 @@ namespace dots
         return handled;
     }
 
-    bool Connection::onRegularMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission)
+    bool Connection::handleRegularMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission)
     {
         bool handled = false;
         switch (m_connectionState)
@@ -397,7 +397,7 @@ namespace dots
         {
             cr.preload(true);
         }
-        send(cr);
+        transmit(cr);
 
         if (msg.preloadCache == true)
         {
@@ -423,7 +423,7 @@ namespace dots
         // When all cache items are sent to client, send fin-message
         DotsMsgConnectResponse cr;
         cr.preloadFinished(true);
-        send(cr);
+        transmit(cr);
     }
 
     void Connection::processMemberMessage(const DotsTransportHeader& header, const DotsMember& member, Connection* connection)
@@ -438,7 +438,7 @@ namespace dots
         m_connectionManager.processMemberMessage(header, member, connection);
     }
 
-    void Connection::onChannelError(const std::exception& e)
+    void Connection::handleError(const std::exception& e)
     {
         LOG_ERROR_S("channel error: " << e.what());
         kill();
