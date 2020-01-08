@@ -324,31 +324,9 @@ namespace dots
                 }
                 [[fallthrough]];
             case DotsConnectionState::connected:
-                if (transmission.instance()->_is<DotsMember>())
-                {
-                    m_receiveHandler(transportHeader, std::move(transmission));
-                    handled = true;
-                }
-                else if (auto* enumDescriptorData = transmission.instance()->_as<EnumDescriptorData>())
-                {
-                    //enumDescriptorData->publisherId = id();
-                    importType(*enumDescriptorData);
-                    m_receiveHandler(transportHeader, std::move(transmission));
-                    handled = true;
-                }
-                else if (auto* structDescriptorData = transmission.instance()->_as<StructDescriptorData>())
-                {
-                    //structDescriptorData->publisherId = id();
-                    LOG_DEBUG_S("received struct descriptor: " << structDescriptorData->name);
-                    importType(*structDescriptorData);
-                    m_receiveHandler(transportHeader, std::move(transmission));
-                    handled = true;
-                }
-                else if (transmission.instance()->_is<DotsClearCache>())
-                {
-                    m_receiveHandler(transportHeader, std::move(transmission));
-                    handled = true;
-                }
+                importType(transmission.instance());
+                m_receiveHandler(transportHeader, std::move(transmission));
+                handled = true;
                 break;
             case DotsConnectionState::suspended:
                 LOG_WARN_S("state suspended not implemented");
