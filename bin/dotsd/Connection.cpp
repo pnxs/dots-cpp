@@ -37,8 +37,6 @@ namespace dots
         m_clientId = ++m_lastConnectionId;
 
         LOG_INFO_S("connected");
-
-        m_channel->asyncReceive(transceiver().registry(), FUN(*this, handleReceive), FUN(*this, handleError));
     }
 
     Connection::~Connection()
@@ -61,13 +59,28 @@ namespace dots
         return m_clientName;
     }
 
-    void Connection::start()
-    {
+    void Connection::asyncReceive(io::Registry& registry, receive_handler_t&& receiveHandler, error_handler_t&& errorHandler)
+	{
+		if (m_connectionState != DotsConnectionState::closed)
+        {
+            throw std::logic_error{ "only one async receive can be active at the same time" };
+        }
+
+		m_registry = &registry;
+		m_receiveHandler = std::move(receiveHandler);
+		m_errorHandler = std::move(errorHandler);
+		
+		m_connectionState = DotsConnectionState::connecting;
+		m_channel->asyncReceive(registry,
+			[this](const DotsTransportHeader& transportHeader, Transmission&& transmission){ return handleReceive(transportHeader, std::move(transmission)); },
+			[this](const std::exception& e){ handleError(e); }
+		);
+
         DotsMsgHello hello;
         hello.serverName(m_serverName);
         hello.authChallenge(0); // Random-Number
         transmit(hello);
-    }
+	}
 
     void Connection::stop()
     {
@@ -319,7 +332,7 @@ namespace dots
                 {
                     //enumDescriptorData->publisherId = id();
                     type::EnumDescriptor<>::createFromEnumDescriptorData(*enumDescriptorData);
-                    m_connectionManager.deliver(transportHeader, std::move(transmission));
+                    m_receiveHandler(transportHeader, std::move(transmission));
                     handled = true;
                 }
                 else if (auto* structDescriptorData = transmission.instance()->_as<StructDescriptorData>())
@@ -329,12 +342,12 @@ namespace dots
                     const type::StructDescriptor<>* descriptor = type::StructDescriptor<>::createFromStructDescriptorData(*structDescriptorData);
                     LOG_INFO_S("register type " << descriptor->name() << " published by " << m_clientName);
                     m_connectionManager.onNewType(descriptor);
-                    m_connectionManager.deliver(transportHeader, std::move(transmission));
+                    m_receiveHandler(transportHeader, std::move(transmission));
                     handled = true;
                 }
                 else if (transmission.instance()->_is<DotsClearCache>())
                 {
-                    m_connectionManager.deliver(transportHeader, std::move(transmission));
+                    m_receiveHandler(transportHeader, std::move(transmission));
                     handled = true;
                 }
                 break;
@@ -364,7 +377,7 @@ namespace dots
             case DotsConnectionState::connected:
                 {
                     // Normal operation
-                    m_connectionManager.deliver(transportHeader, std::move(transmission));
+                    m_receiveHandler(transportHeader, std::move(transmission));
                     handled = true;
                 }
                 break;

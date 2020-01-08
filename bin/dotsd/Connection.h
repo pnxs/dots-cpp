@@ -10,6 +10,11 @@
 #include "DotsMsgConnect.dots.h"
 #include "DotsMember.dots.h"
 
+namespace dots::io
+{
+	struct Registry;
+}
+
 namespace dots
 {
     class ConnectionManager;
@@ -22,6 +27,9 @@ namespace dots
     public:
         typedef uint32_t ConnectionId;
         static constexpr ConnectionId ServerId = 1;
+
+        using receive_handler_t = std::function<bool(const DotsTransportHeader&, Transmission&&)>;
+		using error_handler_t = std::function<void(const std::exception&)>;
 
         /*!
          * Create a Connection from a Channel.
@@ -37,7 +45,7 @@ namespace dots
         const ConnectionId& id() const; ///< return client-id
         const string& clientName() const; ///< return client-supplied name
 
-        void start();
+        void asyncReceive(io::Registry& registry, receive_handler_t&& receiveHandler, error_handler_t&& errorHandler);
         void stop();
         void kill();
 
@@ -73,9 +81,12 @@ namespace dots
 
         dots::Transmitter m_transmitter;
         channel_ptr_t m_channel;
+        io::Registry* m_registry;
+        receive_handler_t m_receiveHandler;
+		error_handler_t m_errorHandler;
         string m_serverName;
         ConnectionManager& m_connectionManager;
-        DotsConnectionState m_connectionState = DotsConnectionState::connecting;
+        DotsConnectionState m_connectionState = DotsConnectionState::closed;
         ConnectionId m_clientId;
         string m_clientName = "<not_set>";
     };

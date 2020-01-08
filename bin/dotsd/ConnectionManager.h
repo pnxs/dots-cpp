@@ -54,7 +54,7 @@ public:
      * Deliver a message to all subscribed connections.
      * @param message
      */
-    void deliver(const DotsTransportHeader& transportHeader, Transmission&& transmission);
+    bool handleReceive(const DotsTransportHeader& transportHeader, Transmission&& transmission);
 
     /*!
      * Publishes a Object with a namespace

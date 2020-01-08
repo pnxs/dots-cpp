@@ -33,7 +33,10 @@ void ConnectionManager::init()
 void ConnectionManager::start(connection_ptr c)
 {
     m_connections.insert({c->id(), c});
-    c->start();
+    c->asyncReceive(transceiver().registry(), 
+        [this](const DotsTransportHeader& header, Transmission&& transmission){ return handleReceive(header, std::move(transmission)); },
+        nullptr
+    );
 }
 
 void ConnectionManager::stop_all()
@@ -107,7 +110,7 @@ void ConnectionManager::onNewType(const dots::type::StructDescriptor<>* td)
 	m_dispatcher.subscribe(*td, [](const Event<>&){}).discard();
 }
 
-void ConnectionManager::deliver(const DotsTransportHeader& transportHeader, Transmission&& transmission)
+bool ConnectionManager::handleReceive(const DotsTransportHeader& transportHeader, Transmission&& transmission)
 {
     if(transportHeader.destinationGroup.isValid())
     {
@@ -118,7 +121,7 @@ void ConnectionManager::deliver(const DotsTransportHeader& transportHeader, Tran
         Group *grp = m_groupManager.getGroup({ transportHeader.destinationGroup });
         if (grp) grp->deliver(transportHeader, transmission);
 
-        return;
+        return true;
     }
 
     // Send to a specific client (unicast)
@@ -130,6 +133,8 @@ void ConnectionManager::deliver(const DotsTransportHeader& transportHeader, Tran
             dstConnection->transmit(transportHeader, transmission);
         }
     }
+
+    return true;
 }
 
 void ConnectionManager::processMemberMessage(const DotsTransportHeader& /*header*/, const DotsMember &member, Connection *connection)
@@ -401,7 +406,7 @@ void ConnectionManager::publishNs(const string &nameSpace,
     // Send to peer or group
     if (processLocal)
     {
-        deliver(header, std::move(transmission));
+        handleReceive(header, std::move(transmission));
     }
     else {
         if(header.destinationGroup.isValid())
