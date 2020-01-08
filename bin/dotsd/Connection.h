@@ -71,7 +71,6 @@ namespace dots
 
         void processConnectRequest(const DotsMsgConnect& msg);
         void processConnectPreloadClientFinished(const DotsMsgConnect& msg);
-        void processMemberMessage(const DotsTransportHeader& header, const DotsMember& member, Connection* connection);
 
         void handleError(const std::exception& e);
 

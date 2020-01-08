@@ -13,6 +13,7 @@ ConnectionManager::ConnectionManager(std::unique_ptr<Listener>&& listener, const
         :m_running(false),m_name(name),m_listener(std::move(listener))
 {
 	m_dispatcher.pool().get<DotsClient>();
+    m_dispatcher.subscribe<DotsMember>(FUN(*this, handleMemberMessage)).discard();
     m_dispatcher.subscribe<DotsDescriptorRequest>(FUN(*this, handleDescriptorRequest)).discard();
     m_dispatcher.subscribe<DotsClearCache>(FUN(*this, handleClearCache)).discard();
 
@@ -137,8 +138,19 @@ bool ConnectionManager::handleReceive(const DotsTransportHeader& transportHeader
     return true;
 }
 
-void ConnectionManager::processMemberMessage(const DotsTransportHeader& /*header*/, const DotsMember &member, Connection *connection)
+void ConnectionManager::handleMemberMessage(const DotsMember::Cbd& cbd)
 {
+    Connection* connection = m_connections.find(cbd.header().sender)->second.get();
+
+    const DotsMember& member = cbd();
+    DotsMember memberMod = member;
+    memberMod.client(connection->id());
+    if (!member.event.isValid())
+    {
+        LOG_WARN_S("member message without event");
+    }
+    LOG_DEBUG_S(*member.event << " " << member.groupName);
+
     if (member.event == DotsMemberEvent::kill) {
         m_groupManager.handleKill(connection);
 

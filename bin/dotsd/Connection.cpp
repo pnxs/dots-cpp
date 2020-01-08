@@ -324,9 +324,9 @@ namespace dots
                 }
                 [[fallthrough]];
             case DotsConnectionState::connected:
-                if (auto* dotsMember = transmission.instance()->_as<DotsMember>())
+                if (transmission.instance()->_is<DotsMember>())
                 {
-                    processMemberMessage(transportHeader, *dotsMember, this);
+                    m_receiveHandler(transportHeader, std::move(transmission));
                     handled = true;
                 }
                 else if (auto* enumDescriptorData = transmission.instance()->_as<EnumDescriptorData>())
@@ -440,18 +440,6 @@ namespace dots
         DotsMsgConnectResponse cr;
         cr.preloadFinished(true);
         transmit(cr);
-    }
-
-    void Connection::processMemberMessage(const DotsTransportHeader& header, const DotsMember& member, Connection* connection)
-    {
-        DotsMember memberMod = member;
-        memberMod.client(connection->id());
-        if (!member.event.isValid())
-        {
-            LOG_WARN_S("member message without event");
-        }
-        LOG_DEBUG_S(*member.event << " " << member.groupName);
-        m_connectionManager.processMemberMessage(header, member, connection);
     }
 
     void Connection::handleError(const std::exception& e)

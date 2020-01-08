@@ -73,7 +73,7 @@ public:
      * Process DotsMember-message. Do Join or Leave from Groups.
      * @param member DotsMember-Object
      */
-    void processMemberMessage(const DotsTransportHeader&, const DotsMember& member, Connection*);
+    void handleMemberMessage(const DotsMember::Cbd& cbd);
 
     /*!
      * Stops and remove all connections contained in m_cleanupConnections.
