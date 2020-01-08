@@ -399,7 +399,11 @@ namespace dots
         m_clientName = msg.clientName;
 
         LOG_INFO_S("authorized");
-        m_connectionManager.addClient(this);
+        // Send DotsClient when Client is added to network.
+        DotsClient client(DotsClient::id_i{ m_clientId });
+        client.name(m_clientName);
+        client.connectionState(m_connectionState);
+        client._publish();
 
         DotsMsgConnectResponse cr;
         cr.serverName(m_serverName);

@@ -85,11 +85,6 @@ public:
      */
     void handleKill(Connection* );
 
-    /*!
-     * Send DotsClient information about the connected client/connection.
-     */
-    void addClient(Connection*);
-
     DotsStatistics receiveStatistics() const;
     DotsStatistics sendStatistics() const;
     DotsCacheStatus cacheStatus() const;

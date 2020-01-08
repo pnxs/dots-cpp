@@ -440,15 +440,6 @@ DotsCacheStatus ConnectionManager::cacheStatus() const
     return cs;
 }
 
-void ConnectionManager::addClient(Connection* connection)
-{
-    // Send DotsClient when Client is added to network.
-    DotsClient client(DotsClient::id_i{ connection->id() });
-    client.name(connection->clientName());
-    client.connectionState(connection->state());
-    client._publish();
-}
-
 void
 ConnectionManager::publish(const type::StructDescriptor<> *td, const type::Struct& instance, type::PropertySet properties, bool remove)
 {
