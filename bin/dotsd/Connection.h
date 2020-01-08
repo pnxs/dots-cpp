@@ -1,5 +1,6 @@
 #pragma once
 
+#include <set>
 #include "dots/cpp_config.h"
 #include <dots/io/services/Channel.h>
 
@@ -77,6 +78,8 @@ namespace dots
         void logRxTx(RxTx, const DotsTransportHeader& header);
         void setConnectionState(const DotsConnectionState& state);
 
+        void importType(const type::Struct& instance);
+
         inline static ConnectionId m_lastConnectionId = ServerId; // 0 is used for unitialized, 1 is used for the server.
 
         dots::Transmitter m_transmitter;
@@ -89,6 +92,8 @@ namespace dots
         DotsConnectionState m_connectionState = DotsConnectionState::closed;
         ConnectionId m_clientId;
         string m_clientName = "<not_set>";
+
+        std::set<std::string> m_sharedTypes;
     };
 
     typedef std::shared_ptr<Connection> connection_ptr;

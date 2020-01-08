@@ -2,6 +2,7 @@
 #include "Connection.h"
 #include "ConnectionManager.h"
 #include "dots/io/Registry.h"
+#include <dots/io/DescriptorConverter.h>
 
 #include "DotsMsgConnectResponse.dots.h"
 #include "DotsMsgError.dots.h"
@@ -331,7 +332,7 @@ namespace dots
                 else if (auto* enumDescriptorData = transmission.instance()->_as<EnumDescriptorData>())
                 {
                     //enumDescriptorData->publisherId = id();
-                    type::EnumDescriptor<>::createFromEnumDescriptorData(*enumDescriptorData);
+                    importType(*enumDescriptorData);
                     m_receiveHandler(transportHeader, std::move(transmission));
                     handled = true;
                 }
@@ -339,9 +340,7 @@ namespace dots
                 {
                     //structDescriptorData->publisherId = id();
                     LOG_DEBUG_S("received struct descriptor: " << structDescriptorData->name);
-                    const type::StructDescriptor<>* descriptor = type::StructDescriptor<>::createFromStructDescriptorData(*structDescriptorData);
-                    LOG_INFO_S("register type " << descriptor->name() << " published by " << m_clientName);
-                    m_connectionManager.onNewType(descriptor);
+                    importType(*structDescriptorData);
                     m_receiveHandler(transportHeader, std::move(transmission));
                     handled = true;
                 }
@@ -483,5 +482,25 @@ namespace dots
         m_connectionState = state;
 
         DotsClient{ DotsClient::id_i{ id() }, DotsClient::connectionState_i{ state } }._publish();
+    }
+
+    void Connection::importType(const type::Struct& instance)
+    {
+        if (auto* structDescriptorData = instance._as<StructDescriptorData>())
+        {
+        	if (bool isNewSharedType = m_sharedTypes.emplace(structDescriptorData->name).second; isNewSharedType)
+        	{
+        		std::shared_ptr<type::StructDescriptor<>> structDescriptor = io::DescriptorConverter{ *m_registry }(*structDescriptorData);
+                LOG_INFO_S("register type " << structDescriptor->name() << " published by " << m_clientName);
+                m_connectionManager.onNewType(structDescriptor.get());
+        	}
+        }
+        else if (auto* enumDescriptorData = instance._as<EnumDescriptorData>())
+        {
+        	if (bool isNewSharedType = m_sharedTypes.emplace(enumDescriptorData->name).second; isNewSharedType)
+        	{
+        		io::DescriptorConverter{ *m_registry }(*enumDescriptorData);
+        	}
+        }
     }
 }
