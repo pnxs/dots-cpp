@@ -24,10 +24,9 @@ namespace dots
 {
     using namespace std::placeholders;
 
-    Connection::Connection(channel_ptr_t channel, string serverName) :
+    Connection::Connection(channel_ptr_t channel) :
         m_connectionState(DotsConnectionState::closed),
         m_channel(std::move(channel)),
-        m_serverName(std::move(serverName)),
         m_clientName("<not_set>"),
         m_clientId(++M_lastConnectionId)
     {
@@ -54,7 +53,7 @@ namespace dots
         return m_clientName;
     }
 
-    void Connection::asyncReceive(io::Registry& registry, receive_handler_t&& receiveHandler, error_handler_t&& errorHandler)
+    void Connection::asyncReceive(io::Registry& registry, const std::string& serverName, receive_handler_t&& receiveHandler, error_handler_t&& errorHandler)
 	{
 		if (m_connectionState != DotsConnectionState::closed)
         {
@@ -72,7 +71,7 @@ namespace dots
 		);
 
         DotsMsgHello hello;
-        hello.serverName(m_serverName);
+        hello.serverName(serverName);
         hello.authChallenge(0); // Random-Number
         transmit(hello);
 	}
@@ -96,7 +95,7 @@ namespace dots
         {
             header.nameSpace("SYS");
         }
-
+        
         transmit(header, instance);
     }
 
@@ -316,7 +315,6 @@ namespace dots
         client._publish();
 
         DotsMsgConnectResponse cr;
-        cr.serverName(m_serverName);
         cr.accepted(true);
         cr.clientId(id());
         if (msg.preloadCache == true)

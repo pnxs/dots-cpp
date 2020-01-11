@@ -35,7 +35,7 @@ void ConnectionManager::init()
 void ConnectionManager::start(connection_ptr c)
 {
     m_connections.insert({c->id(), c});
-    c->asyncReceive(transceiver().registry(), 
+    c->asyncReceive(transceiver().registry(), m_name,
         [this](const DotsTransportHeader& header, Transmission&& transmission){ return handleReceive(header, std::move(transmission)); },
         [this](Connection::id_t id, const std::exception& e){ handleError(id, e); }
     );
@@ -214,7 +214,7 @@ void ConnectionManager::asyncAccept()
 {
     Listener::accept_handler_t acceptHandler = [this](channel_ptr_t channel)
 	{
-		auto connection = std::make_shared<Connection>(std::move(channel), m_name);
+		auto connection = std::make_shared<Connection>(std::move(channel));
 		start(connection);
 
 		return true;

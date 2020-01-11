@@ -37,7 +37,7 @@ namespace dots
          * @param channel Channel, that is moved into this Connection.
          * @param manager
          */
-        explicit Connection(channel_ptr_t channel, std::string serverName);
+        explicit Connection(channel_ptr_t channel);
         ~Connection();
         Connection(const Connection&) = delete;
         Connection& operator = (const Connection&) = delete;
@@ -46,7 +46,7 @@ namespace dots
         const id_t& id() const; ///< return client-id
         const string& clientName() const; ///< return client-supplied name
 
-        void asyncReceive(io::Registry& registry, receive_handler_t&& receiveHandler, error_handler_t&& errorHandler);
+        void asyncReceive(io::Registry& registry, const std::string& serverName, receive_handler_t&& receiveHandler, error_handler_t&& errorHandler);
 
         /*!
          * Directly send a Message to the client.
@@ -78,7 +78,6 @@ namespace dots
 
         DotsConnectionState m_connectionState;
         channel_ptr_t m_channel;
-        std::string m_serverName;
         std::string m_clientName;
         id_t m_clientId;
         std::set<std::string> m_sharedTypes;
