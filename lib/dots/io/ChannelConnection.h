@@ -17,7 +17,7 @@ namespace dots::io
 {
 	struct ChannelConnection
 	{
-		using receive_handler_t = std::function<bool(const DotsHeader&, Transmission&&)>;
+		using receive_handler_t = std::function<bool(const DotsTransportHeader&, Transmission&&)>;
 		using error_handler_t = std::function<void(const std::exception&)>;
 		using descriptor_map_t = std::map<std::string_view, type::StructDescriptor<>*>;
 		
