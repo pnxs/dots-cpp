@@ -219,7 +219,7 @@ void ConnectionManager::asyncAccept()
 {
     Listener::accept_handler_t acceptHandler = [this](channel_ptr_t channel)
 	{
-		auto connection = std::make_shared<Connection>(std::move(channel), m_name, *this);
+		auto connection = std::make_shared<Connection>(std::move(channel), m_name);
 		start(connection);
 
 		return true;

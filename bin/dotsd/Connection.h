@@ -37,7 +37,7 @@ namespace dots
          * @param channel Channel, that is moved into this Connection.
          * @param manager
          */
-        explicit Connection(channel_ptr_t channel, std::string serverName, ConnectionManager& manager);
+        explicit Connection(channel_ptr_t channel, std::string serverName);
         ~Connection();
         Connection(const Connection&) = delete;
         Connection& operator = (const Connection&) = delete;
@@ -77,13 +77,11 @@ namespace dots
 
         inline static ConnectionId m_lastConnectionId = ServerId; // 0 is used for unitialized, 1 is used for the server.
 
-        dots::Transmitter m_transmitter;
         channel_ptr_t m_channel;
         io::Registry* m_registry;
         receive_handler_t m_receiveHandler;
 		error_handler_t m_errorHandler;
         string m_serverName;
-        ConnectionManager& m_connectionManager;
         DotsConnectionState m_connectionState = DotsConnectionState::closed;
         ConnectionId m_clientId;
         string m_clientName = "<not_set>";

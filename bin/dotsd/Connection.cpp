@@ -24,10 +24,9 @@ namespace dots
 {
     using namespace std::placeholders;
 
-    Connection::Connection(channel_ptr_t channel, string serverName, ConnectionManager& manager) :
+    Connection::Connection(channel_ptr_t channel, string serverName) :
         m_channel(std::move(channel)),
-        m_serverName(std::move(serverName)),
-        m_connectionManager(manager)
+        m_serverName(std::move(serverName))
     {
         DotsMsgConnect::_Descriptor();
         DotsMember::_Descriptor();
