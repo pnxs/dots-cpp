@@ -6,6 +6,7 @@
 #include <dots/type/FundamentalTypes.h>
 #include <dots/type/EnumDescriptor.h>
 #include <dots/type/StructDescriptor.h>
+#include <dots/functional/signal.h>
 
 namespace dots::io
 {
@@ -40,6 +41,9 @@ namespace dots::io
     	void deregisterType(const std::shared_ptr<type::Descriptor<>>& descriptor, bool assertRegisteredType = true);
     	void deregisterType(const type::Descriptor<>& descriptor, bool assertRegisteredType = true);
     	void deregisterType(const std::string_view& name, bool assertRegisteredType = true);
+
+        [[deprecated("only available for backwards compatibility")]]
+        pnxs::Signal<void (const type::StructDescriptor<>*)> onNewStruct;
 
     	[[deprecated("only available for backwards compatibility")]]
     	const type::Descriptor<>* findDescriptor(const std::string& name) const;

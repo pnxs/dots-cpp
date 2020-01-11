@@ -147,6 +147,8 @@ namespace dots::io
 			{
 				registerType(propertyDescriptor.valueDescriptorPtr(), false);
 			}
+
+			onNewStruct(structDescriptor.get());
 		}
 
 		return it->second;			
