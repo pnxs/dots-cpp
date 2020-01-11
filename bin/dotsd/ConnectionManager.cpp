@@ -45,10 +45,6 @@ void ConnectionManager::stop_all()
 {
     m_listener.reset();
 
-    for (auto c : m_connections)
-    {
-        c.second->stop();
-    }
     m_connections.clear();
     m_running = false;
 }
@@ -204,7 +200,6 @@ void ConnectionManager::handleError(Connection::ConnectionId id, const std::exce
     {
         // Move connection to m_cleanupConnection for later deletion.
         m_cleanupConnections.insert(connPtr);
-        connPtr->stop();
         removeConnection(connPtr);
 
         // Look if objects has to be cleaned up
@@ -260,9 +255,6 @@ bool ConnectionManager::isClientIdInContainers(ClientId id)
 
 void ConnectionManager::cleanup()
 {
-    for (auto& c : m_cleanupConnections) {
-        c->stop();
-    }
     m_cleanupConnections.clear();
 
     const auto& container = m_dispatcher.container<DotsClient>();

@@ -47,7 +47,6 @@ namespace dots
         const string& clientName() const; ///< return client-supplied name
 
         void asyncReceive(io::Registry& registry, receive_handler_t&& receiveHandler, error_handler_t&& errorHandler);
-        void stop();
 
         /*!
          * Directly send a Message to the client.

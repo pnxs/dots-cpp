@@ -77,12 +77,6 @@ namespace dots
         transmit(hello);
 	}
 
-    void Connection::stop()
-    {
-        LOG_INFO_S("stopped");
-        setConnectionState(DotsConnectionState::closed);
-    }
-
     void Connection::transmit(const type::Struct& instance, types::property_set_t includedProperties/* = types::property_set_t::All*/, bool remove/* = false*/)
     {
         const type::StructDescriptor<>& descriptor = instance._descriptor();
@@ -211,7 +205,7 @@ namespace dots
             error.errorText(errorReport);
             transmit(error);
 
-            stop();
+            handleError(e);
         }
 
         return m_connectionState != DotsConnectionState::closed;
