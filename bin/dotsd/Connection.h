@@ -75,18 +75,18 @@ namespace dots
 
         void importType(const type::Struct& instance);
 
-        inline static ConnectionId m_lastConnectionId = ServerId; // 0 is used for unitialized, 1 is used for the server.
+        inline static ConnectionId M_lastConnectionId = ServerId; // 0 is used for unitialized, 1 is used for the server.
 
+        DotsConnectionState m_connectionState;
         channel_ptr_t m_channel;
+        std::string m_serverName;
+        std::string m_clientName;
+        ConnectionId m_clientId;
+        std::set<std::string> m_sharedTypes;
+
         io::Registry* m_registry;
         receive_handler_t m_receiveHandler;
 		error_handler_t m_errorHandler;
-        string m_serverName;
-        DotsConnectionState m_connectionState = DotsConnectionState::closed;
-        ConnectionId m_clientId;
-        string m_clientName = "<not_set>";
-
-        std::set<std::string> m_sharedTypes;
     };
 
     typedef std::shared_ptr<Connection> connection_ptr;

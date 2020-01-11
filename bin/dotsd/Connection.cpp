@@ -25,17 +25,12 @@ namespace dots
     using namespace std::placeholders;
 
     Connection::Connection(channel_ptr_t channel, string serverName) :
+        m_connectionState(DotsConnectionState::closed),
         m_channel(std::move(channel)),
-        m_serverName(std::move(serverName))
+        m_serverName(std::move(serverName)),
+        m_clientName("<not_set>"),
+        m_clientId(++M_lastConnectionId)
     {
-        DotsMsgConnect::_Descriptor();
-        DotsMember::_Descriptor();
-        EnumDescriptorData::_Descriptor();
-        StructDescriptorData::_Descriptor();
-
-        // Create connection-name
-        m_clientId = ++m_lastConnectionId;
-
         LOG_INFO_S("connected");
     }
 
