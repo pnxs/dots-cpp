@@ -70,10 +70,10 @@ namespace dots
 			[this](const std::exception& e){ handleError(e); }
 		);
 
-        DotsMsgHello hello;
-        hello.serverName(serverName);
-        hello.authChallenge(0); // Random-Number
-        transmit(hello);
+        transmit(DotsMsgHello{
+            DotsMsgHello::serverName_i{ serverName },
+            DotsMsgHello::authChallenge_i{ 0 }
+        });
 	}
 
     void Connection::transmit(const type::Struct& instance, types::property_set_t includedProperties/* = types::property_set_t::All*/, bool remove/* = false*/)
@@ -182,12 +182,12 @@ namespace dots
                 objName += *transportHeader.destinationGroup;
                 string errorText = "invalid message received while in state " + to_string(m_connectionState) + ": " + objName;
                 LOG_WARN_S(errorText);
-                // send false response
-                DotsMsgError error;
-                error.errorCode(1);
-                error.errorText(errorText);
+                // send false response;
 
-                transmit(error);
+                transmit(DotsMsgError{
+                    DotsMsgError::errorCode_i{ 1 },
+                    DotsMsgError::errorText_i{ errorText }
+                });
             }
         }
         catch (const std::exception& e)
@@ -199,10 +199,10 @@ namespace dots
 
             LOG_ERROR_S(errorReport);
 
-            DotsMsgError error;
-            error.errorCode(2);
-            error.errorText(errorReport);
-            transmit(error);
+            transmit(DotsMsgError{
+                DotsMsgError::errorCode_i{ 2 },
+                DotsMsgError::errorText_i{ errorReport }
+            });
 
             handleError(e);
         }
@@ -309,19 +309,22 @@ namespace dots
 
         LOG_INFO_S("authorized");
         // Send DotsClient when Client is added to network.
-        DotsClient client(DotsClient::id_i{ m_clientId });
-        client.name(m_clientName);
-        client.connectionState(m_connectionState);
-        client._publish();
+        DotsClient{
+            DotsClient::id_i{ m_clientId },
+            DotsClient::name_i{ m_clientName },
+            DotsClient::connectionState_i{ m_connectionState }
+        }._publish();
 
-        DotsMsgConnectResponse cr;
-        cr.accepted(true);
-        cr.clientId(id());
+        DotsMsgConnectResponse connectResponse{
+            DotsMsgConnectResponse::accepted_i{ true },
+            DotsMsgConnectResponse::clientId_i{ m_clientId }
+        };
+
         if (msg.preloadCache == true)
         {
-            cr.preload(true);
+            connectResponse.preload(true);
         }
-        transmit(cr);
+        transmit(connectResponse);
 
         if (msg.preloadCache == true)
         {
@@ -345,9 +348,9 @@ namespace dots
         setConnectionState(DotsConnectionState::connected);
 
         // When all cache items are sent to client, send fin-message
-        DotsMsgConnectResponse cr;
-        cr.preloadFinished(true);
-        transmit(cr);
+        transmit(DotsMsgConnectResponse{
+            DotsMsgConnectResponse::preloadFinished_i{ true }
+        });
     }
 
     void Connection::handleError(const std::exception& e)
