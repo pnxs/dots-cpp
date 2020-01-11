@@ -27,7 +27,7 @@ void Group::handleJoin(Connection *connection)
 
     if (member)
     {
-        LOG_WARN_S(connection->clientName() << " is already member of group " << name());
+        LOG_WARN_S(connection->name() << " is already member of group " << name());
         return;
     }
 

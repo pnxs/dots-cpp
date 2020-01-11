@@ -15,7 +15,7 @@
 
 #include <dots/dots.h>
 
-#define CEXPANSION "Connection[" << clientName() << "," << id() << "]: "
+#define CEXPANSION "Connection[" << name() << "," << id() << "]: "
 #define PEXPSTR_PRE "Connection[%p,%s]: "
 #define PEXPARGS_PRE ,this, name().c_str(),
 #include "dots/common/ext_logging.h"
@@ -27,8 +27,8 @@ namespace dots
     Connection::Connection(channel_ptr_t channel) :
         m_connectionState(DotsConnectionState::closed),
         m_channel(std::move(channel)),
-        m_clientName("<not_set>"),
-        m_clientId(++M_lastConnectionId)
+        m_name("<not_set>"),
+        m_id(M_nextClientId++)
     {
         LOG_INFO_S("connected");
     }
@@ -45,12 +45,12 @@ namespace dots
 
     const Connection::id_t& Connection::id() const
     {
-        return m_clientId;
+        return m_id;
     }
 
-    const string& Connection::clientName() const
+    const string& Connection::name() const
     {
-        return m_clientName;
+        return m_name;
     }
 
     void Connection::asyncReceive(io::Registry& registry, const std::string& serverName, receive_handler_t&& receiveHandler, error_handler_t&& errorHandler)
@@ -305,19 +305,19 @@ namespace dots
 
     void Connection::processConnectRequest(const DotsMsgConnect& msg)
     {
-        m_clientName = msg.clientName;
+        m_name = msg.clientName;
 
         LOG_INFO_S("authorized");
         // Send DotsClient when Client is added to network.
         DotsClient{
-            DotsClient::id_i{ m_clientId },
-            DotsClient::name_i{ m_clientName },
+            DotsClient::id_i{ m_id },
+            DotsClient::name_i{ m_name },
             DotsClient::connectionState_i{ m_connectionState }
         }._publish();
 
         DotsMsgConnectResponse connectResponse{
             DotsMsgConnectResponse::accepted_i{ true },
-            DotsMsgConnectResponse::clientId_i{ m_clientId }
+            DotsMsgConnectResponse::clientId_i{ m_id }
         };
 
         if (msg.preloadCache == true)
@@ -363,7 +363,7 @@ namespace dots
 		m_receiveHandler = nullptr;
 		setConnectionState(DotsConnectionState::closed);
 
-        errorHandler(m_clientId, e);
+        errorHandler(m_id, e);
     }
 
     void Connection::logRxTx(Connection::RxTx rxtx, const DotsTransportHeader& header)
@@ -401,7 +401,7 @@ namespace dots
         	if (bool isNewSharedType = m_sharedTypes.emplace(structDescriptorData->name).second; isNewSharedType)
         	{
         		std::shared_ptr<type::StructDescriptor<>> structDescriptor = io::DescriptorConverter{ *m_registry }(*structDescriptorData);
-                LOG_INFO_S("register type " << structDescriptor->name() << " published by " << m_clientName);
+                LOG_INFO_S("register type " << structDescriptor->name() << " published by " << m_name);
         	}
         }
         else if (auto* enumDescriptorData = instance._as<EnumDescriptorData>())

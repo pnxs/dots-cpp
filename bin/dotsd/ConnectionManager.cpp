@@ -299,7 +299,7 @@ void ConnectionManager::handleDescriptorRequest(const DotsDescriptorRequest::Cbd
         return;
     }
 
-    LOG_INFO_S("received DescriptorRequest from " << connection->clientName() << "(" << connection->id() << ")");
+    LOG_INFO_S("received DescriptorRequest from " << connection->name() << "(" << connection->id() << ")");
 
     for (const auto& cpItem : m_dispatcher.pool())
     {
@@ -327,7 +327,7 @@ void ConnectionManager::handleDescriptorRequest(const DotsDescriptorRequest::Cbd
             DotsTransportHeader thead;
             m_transmitter.prepareHeader(thead, td, td->validProperties(body), false);
             thead.dotsHeader->sentTime = pnxs::SystemNow();
-            thead.dotsHeader->sender(Connection::ServerId);
+            thead.dotsHeader->sender(Connection::ServerIdDeprecated);
 
             // Send to peer or group
             connection->transmit(thead, *reinterpret_cast<const type::Struct*>(body));
@@ -403,7 +403,7 @@ void ConnectionManager::publishNs(const string &nameSpace,
     DotsTransportHeader header;
     m_transmitter.prepareHeader(header, td, properties, remove);
     header.dotsHeader->serverSentTime(pnxs::SystemNow());
-    header.dotsHeader->sender(Connection::ServerId);
+    header.dotsHeader->sender(Connection::ServerIdDeprecated);
     if (not nameSpace.empty()) header.nameSpace(nameSpace);
 
     // TODO: avoid local copy
