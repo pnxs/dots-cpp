@@ -9,12 +9,11 @@
 
 namespace dots::io
 {
-	ChannelConnection::ChannelConnection(channel_ptr_t channel, std::string name, descriptor_map_t preloadPublishTypes/* = {}*/, descriptor_map_t preloadSubscribeTypes/* = {}*/) :
+	ChannelConnection::ChannelConnection(channel_ptr_t channel, descriptor_map_t preloadPublishTypes/* = {}*/, descriptor_map_t preloadSubscribeTypes/* = {}*/) :
 		m_connectionState(DotsConnectionState::closed),
 		m_id(0),
 		m_channel(std::move(channel)),
 		m_registry(nullptr),
-		m_name(std::move(name)),
 		m_preloadPublishTypes(std::move(preloadPublishTypes)),
 		m_preloadSubscribeTypes(preloadSubscribeTypes)
 	{
@@ -36,7 +35,7 @@ namespace dots::io
 		return m_connectionState == DotsConnectionState::connected;
 	}
 
-	void ChannelConnection::asyncReceive(Registry& registry, receive_handler_t&& receiveHandler, error_handler_t&& errorHandler)
+	void ChannelConnection::asyncReceive(Registry& registry, const std::string& name, receive_handler_t&& receiveHandler, error_handler_t&& errorHandler)
 	{
 		if (m_connectionState != DotsConnectionState::closed)
         {
@@ -52,6 +51,11 @@ namespace dots::io
 			[this](const DotsTransportHeader& transportHeader, Transmission&& transmission){ return handleReceive(transportHeader, std::move(transmission)); },
 			[this](const std::exception& e){ handleError(e); }
 		);
+
+		transmit(DotsMsgConnect{
+            DotsMsgConnect::clientName_i{ m_name },
+            DotsMsgConnect::preloadCache_i{ true }
+        });
 	}
 
 	void ChannelConnection::transmit(const type::Struct& instance, types::property_set_t includedProperties, bool remove)
@@ -180,12 +184,6 @@ namespace dots::io
 		if (hello.authChallenge.isValid() && hello.serverName.isValid())
 		{
 			LOG_DEBUG_S("received hello from '" << *hello.serverName << "' authChallenge=" << hello.authChallenge);
-			LOG_DATA_S("send DotsMsgConnect");
-
-			transmit(DotsMsgConnect{
-                DotsMsgConnect::clientName_i{ m_name },
-                DotsMsgConnect::preloadCache_i{ true }
-            });
 		}
 		else
 		{

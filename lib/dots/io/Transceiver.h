@@ -24,7 +24,7 @@ namespace dots
 		Transceiver& operator = (const Transceiver& rhs) = delete;
 		Transceiver& operator = (Transceiver&& rhs) = default;
 
-		const io::ChannelConnection& openConnection(io::ChannelConnection connection);
+		const io::ChannelConnection& openConnection(io::ChannelConnection connection, const std::string& clientName);
 		void closeConnection();
 
 		const io::Registry& registry() const;

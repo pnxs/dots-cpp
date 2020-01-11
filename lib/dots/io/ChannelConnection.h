@@ -21,7 +21,7 @@ namespace dots::io
 		using error_handler_t = std::function<void(const std::exception&)>;
 		using descriptor_map_t = std::map<std::string_view, type::StructDescriptor<>*>;
 		
-		ChannelConnection(channel_ptr_t channel, std::string name, descriptor_map_t preloadPublishTypes = {}, descriptor_map_t preloadSubscribeTypes = {});
+		ChannelConnection(channel_ptr_t channel, descriptor_map_t preloadPublishTypes = {}, descriptor_map_t preloadSubscribeTypes = {});
 		ChannelConnection(const ChannelConnection& other) = delete;
 		ChannelConnection(ChannelConnection&& other) = default;
 		~ChannelConnection() = default;
@@ -33,7 +33,7 @@ namespace dots::io
         uint32_t id() const;
 		bool connected() const;
 
-		void asyncReceive(Registry& registry, receive_handler_t&& receiveHandler, error_handler_t&& errorHandler);
+		void asyncReceive(Registry& registry, const std::string& name, receive_handler_t&& receiveHandler, error_handler_t&& errorHandler);
 		void transmit(const type::Struct& instance, types::property_set_t includedProperties = types::property_set_t::All, bool remove = false);
 
 		void joinGroup(const std::string_view& name);

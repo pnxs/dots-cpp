@@ -17,7 +17,7 @@ namespace dots
 		// Connect to dotsd
 
 		auto channel = global_service<ChannelService>().makeChannel<TcpChannel>(m_serverAddress, m_serverPort);
-		const io::ChannelConnection& connection = transceiver().openConnection(io::ChannelConnection{ std::move(channel), name, getPreloadPublishTypes(), getPreloadSubscribeTypes() });
+		const io::ChannelConnection& connection = transceiver().openConnection(io::ChannelConnection{ std::move(channel), getPreloadPublishTypes(), getPreloadSubscribeTypes() }, name);
 
 		LOG_DEBUG_S("run until state connected...");
 		while (!connection.connected())

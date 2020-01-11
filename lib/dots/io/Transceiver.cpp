@@ -4,7 +4,7 @@
 
 namespace dots
 {
-	const io::ChannelConnection& Transceiver::openConnection(io::ChannelConnection connection)
+	const io::ChannelConnection& Transceiver::openConnection(io::ChannelConnection connection, const std::string& clientName)
 	{
 		if (m_connection != std::nullopt)
         {
@@ -12,7 +12,7 @@ namespace dots
         }
 		
 		m_connection.emplace(std::move(connection));
-		m_connection->asyncReceive(m_registry,
+		m_connection->asyncReceive(m_registry, clientName,
 			[this](const DotsTransportHeader& header, Transmission&& transmission){ return handleReceive(header, std::move(transmission)); },
 			[this](const std::exception& e){ handleError(e); }
 		);
