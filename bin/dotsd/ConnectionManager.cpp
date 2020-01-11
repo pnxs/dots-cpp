@@ -16,6 +16,7 @@ ConnectionManager::ConnectionManager(std::unique_ptr<Listener>&& listener, const
     m_dispatcher.subscribe<DotsMember>(FUN(*this, handleMemberMessage)).discard();
     m_dispatcher.subscribe<DotsDescriptorRequest>(FUN(*this, handleDescriptorRequest)).discard();
     m_dispatcher.subscribe<DotsClearCache>(FUN(*this, handleClearCache)).discard();
+    m_onNewStruct = transceiver().registry().onNewStruct.connect(FUN(*this, onNewType));
 
     asyncAccept();
 }

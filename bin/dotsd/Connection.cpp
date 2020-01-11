@@ -461,7 +461,6 @@ namespace dots
         	{
         		std::shared_ptr<type::StructDescriptor<>> structDescriptor = io::DescriptorConverter{ *m_registry }(*structDescriptorData);
                 LOG_INFO_S("register type " << structDescriptor->name() << " published by " << m_clientName);
-                m_connectionManager.onNewType(structDescriptor.get());
         	}
         }
         else if (auto* enumDescriptorData = instance._as<EnumDescriptorData>())

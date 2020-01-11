@@ -7,6 +7,7 @@
 #include "dots/io/DistributedTypeId.h"
 #include "GroupManager.h"
 #include <dots/io/services/Listener.h>
+#include <dots/functional/signal.h>
 
 #include "DotsClearCache.dots.h"
 #include "DotsDescriptorRequest.dots.h"
@@ -118,6 +119,7 @@ private:
     dots::Dispatcher m_dispatcher;
     dots::Transmitter m_transmitter;
     std::unique_ptr<DistributedTypeId> m_distributedTypeId;
+    pnxs::SignalConnection m_onNewStruct;
 };
 
 }
