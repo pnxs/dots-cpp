@@ -138,54 +138,6 @@ namespace dots
         }
     }
 
-    void Connection::sendContainerContent(const Container<>& container)
-    {
-        const auto& td = container.descriptor();
-
-        LOG_DEBUG_S("send cache for " << td.name() << " size=" << container.size());
-        uint32_t remainingCacheObjects = container.size();
-        for (const auto& [instance, cloneInfo] : container)
-        {
-            const char* lop = "";
-            switch (cloneInfo.lastOperation)
-            {
-                case DotsMt::create: lop = "C";
-                    break;
-                case DotsMt::update: lop = "U";
-                    break;
-                case DotsMt::remove: lop = "R";
-                    break;
-            }
-
-            LOG_DATA_S("clone-info: lastOp=" << lop << ", lastUpdateFrom=" << cloneInfo.lastUpdateFrom
-                << ", created=" << cloneInfo.created->toString() << ", creator=" << cloneInfo.createdFrom
-                << ", modified=" << cloneInfo.modified->toString() << ", localUpdateTime=" << cloneInfo.localUpdateTime->toString());
-
-            DotsTransportHeader thead;
-            m_transmitter.prepareHeader(thead, &td, instance->_validProperties(), false);
-
-            auto& dotsHeader = *thead.dotsHeader;
-            dotsHeader.sentTime = cloneInfo.modified.isValid() ? *cloneInfo.modified : *cloneInfo.created;
-            dotsHeader.serverSentTime = pnxs::SystemNow();
-            dotsHeader.sender = cloneInfo.lastUpdateFrom;
-            dotsHeader.fromCache = --remainingCacheObjects;
-
-            // Send to peer or group
-            transmit(thead, instance);
-        }
-
-        sendCacheEnd(td.name());
-    }
-
-    void Connection::sendCacheEnd(const std::string& typeName)
-    {
-        DotsCacheInfo dotsCacheInfo{
-            DotsCacheInfo::typeName_i{ typeName },
-            DotsCacheInfo::endTransmission_i{ true }
-        };
-        transmit(dotsCacheInfo);
-    }
-
     /**
      * Central method to process received messages
      * @param msg

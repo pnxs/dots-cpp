@@ -107,6 +107,9 @@ private:
     bool isClientIdInContainers(ClientId id);
     string clientId2Name(ClientId id) const;
 
+    void sendContainerContent(Connection& connection, const Container<>& container);
+    void sendCacheEnd(Connection& connection, const std::string& typeName);
+
     std::map<Connection::ConnectionId, connection_ptr> m_connections;
     std::vector<const Container<>*> m_cleanupContainer; ///< all containers with cleanup-flag.
 

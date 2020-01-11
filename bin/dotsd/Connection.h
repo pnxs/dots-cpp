@@ -57,9 +57,6 @@ namespace dots
         void transmit(const DotsTransportHeader& header, const type::Struct& instance);
         void transmit(const DotsTransportHeader& header, const Transmission& transmission);
 
-        void sendContainerContent(const Container<>& container);
-        void sendCacheEnd(const std::string& typeName);
-
     private:
 
         enum class RxTx { rx, tx };

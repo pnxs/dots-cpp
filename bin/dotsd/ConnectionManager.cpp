@@ -175,11 +175,11 @@ void ConnectionManager::handleMemberMessage(const DotsMember::Cbd& cbd)
 
         if (container->descriptor().cached())
         {
-            connection->sendContainerContent(*container);
+            sendContainerContent(*connection, *container);
         }
         else
         {
-            connection->sendCacheEnd(typeName);
+            sendCacheEnd(*connection, typeName);
         }
     }
 }
@@ -489,6 +489,54 @@ const DistributedTypeId &ConnectionManager::distributedTypeId() const
         return *m_distributedTypeId.get();
     }
     throw std::runtime_error("distributedTypeId not initialized");
+}
+
+void ConnectionManager::sendContainerContent(Connection& connection, const Container<>& container)
+{
+    const auto& td = container.descriptor();
+
+    LOG_DEBUG_S("send cache for " << td.name() << " size=" << container.size());
+    uint32_t remainingCacheObjects = container.size();
+    for (const auto& [instance, cloneInfo] : container)
+    {
+        const char* lop = "";
+        switch (cloneInfo.lastOperation)
+        {
+            case DotsMt::create: lop = "C";
+                break;
+            case DotsMt::update: lop = "U";
+                break;
+            case DotsMt::remove: lop = "R";
+                break;
+        }
+
+        LOG_DATA_S("clone-info: lastOp=" << lop << ", lastUpdateFrom=" << cloneInfo.lastUpdateFrom
+            << ", created=" << cloneInfo.created->toString() << ", creator=" << cloneInfo.createdFrom
+            << ", modified=" << cloneInfo.modified->toString() << ", localUpdateTime=" << cloneInfo.localUpdateTime->toString());
+
+        DotsTransportHeader thead;
+        m_transmitter.prepareHeader(thead, &td, instance->_validProperties(), false);
+
+        auto& dotsHeader = *thead.dotsHeader;
+        dotsHeader.sentTime = cloneInfo.modified.isValid() ? *cloneInfo.modified : *cloneInfo.created;
+        dotsHeader.serverSentTime = pnxs::SystemNow();
+        dotsHeader.sender = cloneInfo.lastUpdateFrom;
+        dotsHeader.fromCache = --remainingCacheObjects;
+
+        // Send to peer or group
+        connection.transmit(thead, instance);
+    }
+
+    sendCacheEnd(connection, td.name());
+}
+
+void ConnectionManager::sendCacheEnd(Connection& connection, const std::string& typeName)
+{
+    DotsCacheInfo dotsCacheInfo{
+        DotsCacheInfo::typeName_i{ typeName },
+        DotsCacheInfo::endTransmission_i{ true }
+    };
+    connection.transmit(dotsCacheInfo);
 }
 
 }
