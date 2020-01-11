@@ -44,7 +44,7 @@ namespace dots
         return m_connectionState;
     }
 
-    const Connection::ConnectionId& Connection::id() const
+    const Connection::id_t& Connection::id() const
     {
         return m_clientId;
     }

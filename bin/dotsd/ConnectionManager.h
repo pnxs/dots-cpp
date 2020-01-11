@@ -48,7 +48,7 @@ public:
      * @param name of the connection-object.
      * @return shared-ptr to Connection object. Null if none was found.
      */
-    connection_ptr findConnection(const Connection::ConnectionId &id);
+    connection_ptr findConnection(const Connection::id_t &id);
 
     // Space things:
     /*!
@@ -84,7 +84,7 @@ public:
     /*!
      * Handle kill()-Method from a Connection-Object. Mark the connection for cleanup.
      */
-    void handleError(Connection::ConnectionId id, const std::exception& e);
+    void handleError(Connection::id_t id, const std::exception& e);
 
     DotsStatistics receiveStatistics() const;
     DotsStatistics sendStatistics() const;
@@ -110,7 +110,7 @@ private:
     void sendContainerContent(Connection& connection, const Container<>& container);
     void sendCacheEnd(Connection& connection, const std::string& typeName);
 
-    std::map<Connection::ConnectionId, connection_ptr> m_connections;
+    std::map<Connection::id_t, connection_ptr> m_connections;
     std::vector<const Container<>*> m_cleanupContainer; ///< all containers with cleanup-flag.
 
     std::set<connection_ptr> m_cleanupConnections; ///< old connection-object.

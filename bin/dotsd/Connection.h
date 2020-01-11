@@ -26,11 +26,11 @@ namespace dots
     class Connection
     {
     public:
-        typedef uint32_t ConnectionId;
-        static constexpr ConnectionId ServerId = 1;
+        using id_t = uint32_t;
+        static constexpr id_t ServerId = 1;
 
         using receive_handler_t = std::function<bool(const DotsTransportHeader&, Transmission&&)>;
-		using error_handler_t = std::function<void(ConnectionId, const std::exception&)>;
+		using error_handler_t = std::function<void(id_t, const std::exception&)>;
 
         /*!
          * Create a Connection from a Channel.
@@ -43,7 +43,7 @@ namespace dots
         Connection& operator = (const Connection&) = delete;
 
         DotsConnectionState state() const;
-        const ConnectionId& id() const; ///< return client-id
+        const id_t& id() const; ///< return client-id
         const string& clientName() const; ///< return client-supplied name
 
         void asyncReceive(io::Registry& registry, receive_handler_t&& receiveHandler, error_handler_t&& errorHandler);
@@ -74,13 +74,13 @@ namespace dots
 
         void importType(const type::Struct& instance);
 
-        inline static ConnectionId M_lastConnectionId = ServerId; // 0 is used for unitialized, 1 is used for the server.
+        inline static id_t M_lastConnectionId = ServerId; // 0 is used for unitialized, 1 is used for the server.
 
         DotsConnectionState m_connectionState;
         channel_ptr_t m_channel;
         std::string m_serverName;
         std::string m_clientName;
-        ConnectionId m_clientId;
+        id_t m_clientId;
         std::set<std::string> m_sharedTypes;
 
         io::Registry* m_registry;
