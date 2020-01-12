@@ -220,7 +220,7 @@ namespace dots::io
             case DotsConnectionState::early_subscribe:
             case DotsConnectionState::connected:
                 {
-                    m_receiveHandler(transportHeader, std::move(transmission), transportHeader.dotsHeader->sender == m_id);
+                    m_receiveHandler(transportHeader, std::move(transmission), transportHeader.dotsHeader->sender == (m_server ? ServerId : m_id));
                 }
                 break;
             case DotsConnectionState::suspended:
@@ -328,7 +328,7 @@ namespace dots::io
         auto modifiedHeader = transportHeader;
         // Overwrite sender to known client peerAddress
         auto& dotsHeader = *modifiedHeader.dotsHeader;
-        dotsHeader.sender = id();
+        dotsHeader.sender = m_id;
 
         dotsHeader.serverSentTime = pnxs::SystemNow();
 
@@ -346,7 +346,8 @@ namespace dots::io
             }
             else
             {
-                handled = handleRegularMessageServer(modifiedHeader, std::move(transmission));
+                handleRegularMessage(modifiedHeader, std::move(transmission));
+                handled = true;
             }
 
             if (!handled)
@@ -444,36 +445,6 @@ namespace dots::io
                 break;
         }
 
-        return handled;
-    }
-
-    bool Connection::handleRegularMessageServer(const DotsTransportHeader& transportHeader, Transmission&& transmission)
-    {
-        bool handled = false;
-        switch (m_connectionState)
-        {
-            case DotsConnectionState::connecting:
-            case DotsConnectionState::early_subscribe: // Only accept DotsMsgConnect messages (MsgType connect)
-                break;
-
-            case DotsConnectionState::connected:
-                {
-                    // Normal operation
-                    m_receiveHandler(transportHeader, std::move(transmission), transportHeader.dotsHeader->sender == ServerId);
-                    handled = true;
-                }
-                break;
-
-            case DotsConnectionState::suspended:
-                LOG_WARN_S("state suspended not implemented");
-                // Connection is temporarily not available
-                break;
-
-            case DotsConnectionState::closed:
-                LOG_WARN_S("state closed not implemented");
-                // Connection is closed and will never be open again
-                break;
-        }
         return handled;
     }
 
@@ -577,7 +548,7 @@ namespace dots::io
 
         if (m_server)
         {
-            DotsClient{ DotsClient::id_i{ id() }, DotsClient::connectionState_i{ state } }._publish();
+            DotsClient{ DotsClient::id_i{ m_id }, DotsClient::connectionState_i{ state } }._publish();
         }
 	}
 }

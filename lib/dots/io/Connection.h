@@ -63,7 +63,6 @@ namespace dots::io
 
 		bool handleReceiveServer(const DotsTransportHeader& transportHeader, Transmission&& transmission);
         bool handleControlMessageServer(const DotsTransportHeader& transportHeader, Transmission&& transmission);
-        bool handleRegularMessageServer(const DotsTransportHeader& transportHeader, Transmission&& transmission);
 
         void processConnectRequest(const DotsMsgConnect& msg);
         void processConnectPreloadClientFinished(const DotsMsgConnect& msg);
