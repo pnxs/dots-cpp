@@ -38,7 +38,7 @@ namespace dots
          * @param manager
          */
         explicit Connection(channel_ptr_t channel);
-        ~Connection();
+        ~Connection() = default;
         Connection(const Connection&) = delete;
         Connection& operator = (const Connection&) = delete;
 
@@ -58,8 +58,6 @@ namespace dots
 
     private:
 
-        enum class RxTx { rx, tx };
-
         static constexpr id_t UninitializedId = 0;
         static constexpr id_t ServerId = 1;
         static constexpr id_t FirstClientId = 2;
@@ -73,7 +71,6 @@ namespace dots
 
         void handleError(const std::exception& e);
 
-        void logRxTx(RxTx, const DotsTransportHeader& header);
         void setConnectionState(const DotsConnectionState& state);
 
         void importType(const type::Struct& instance);

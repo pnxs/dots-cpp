@@ -81,7 +81,7 @@ static std::string flags2String(const dots::type::StructDescriptor<>* td)
 void ConnectionManager::onNewType(const dots::type::StructDescriptor<>* td)
 {
     LOG_DEBUG_S("onNewType name=" << td->name() << " flags:" << flags2String(td));
-
+    LOG_INFO_S("register type " << td->name() << " published by " << m_name);
     // Only continue, if type is a cached type
     if(not td->cached())
     {

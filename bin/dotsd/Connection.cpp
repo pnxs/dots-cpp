@@ -30,12 +30,7 @@ namespace dots
         m_name("<not_set>"),
         m_id(M_nextClientId++)
     {
-        LOG_INFO_S("connected");
-    }
-
-    Connection::~Connection()
-    {
-        LOG_DEBUG_S("DTOR");
+        /* do nothing */
     }
 
     DotsConnectionState Connection::state() const
@@ -103,7 +98,6 @@ namespace dots
     {
         try
         {
-            logRxTx(RxTx::tx, header);
             m_channel->transmit(header, instance);
         }
         catch (const std::exception& e)
@@ -116,7 +110,6 @@ namespace dots
     {
         try
         {
-            logRxTx(RxTx::tx, header);
             m_channel->transmit(header, transmission);
         }
         catch (const std::exception& e)
@@ -160,8 +153,6 @@ namespace dots
         {
             dotsHeader.sentTime = dotsHeader.serverSentTime;
         }
-
-        logRxTx(RxTx::rx, modifiedHeader);
 
         try
         {
@@ -366,26 +357,6 @@ namespace dots
         errorHandler(m_id, e);
     }
 
-    void Connection::logRxTx(Connection::RxTx rxtx, const DotsTransportHeader& header)
-    {
-        const char* rxtxColor = "\33[1;31m";
-        const char* msg = "";
-        const char* allOff = "\33[0m";
-
-        string ns = header.nameSpace.isValid() ? *header.nameSpace + "::" : "";
-
-        switch (rxtx)
-        {
-            case RxTx::rx: rxtxColor = "\33[1;32m";
-                msg = "rx ";
-                break;
-            case RxTx::tx: rxtxColor = "\33[1;31m";
-                msg = "tx ";
-                break;
-        }
-        LOG_DEBUG_S(rxtxColor << msg << ns << header.destinationGroup << allOff);
-    }
-
     void Connection::setConnectionState(const DotsConnectionState& state)
     {
         LOG_DEBUG_S("change connection state to " << state);
@@ -400,8 +371,7 @@ namespace dots
         {
         	if (bool isNewSharedType = m_sharedTypes.emplace(structDescriptorData->name).second; isNewSharedType)
         	{
-        		std::shared_ptr<type::StructDescriptor<>> structDescriptor = io::DescriptorConverter{ *m_registry }(*structDescriptorData);
-                LOG_INFO_S("register type " << structDescriptor->name() << " published by " << m_name);
+        		io::DescriptorConverter{ *m_registry }(*structDescriptorData);
         	}
         }
         else if (auto* enumDescriptorData = instance._as<EnumDescriptorData>())
