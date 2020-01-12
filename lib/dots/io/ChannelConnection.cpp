@@ -20,7 +20,7 @@ namespace dots::io
 		/* do nothing */
 	}
 
-	DotsConnectionState ChannelConnection::connectionState() const
+	DotsConnectionState ChannelConnection::state() const
 	{
 		return m_connectionState;
 	}

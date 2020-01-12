@@ -29,7 +29,7 @@ namespace dots::io
 		ChannelConnection& operator = (const ChannelConnection& rhs) = delete;
 		ChannelConnection& operator = (ChannelConnection&& rhs) = default;
 
-		DotsConnectionState connectionState() const;
+		DotsConnectionState state() const;
         uint32_t id() const;
 		bool connected() const;
 
