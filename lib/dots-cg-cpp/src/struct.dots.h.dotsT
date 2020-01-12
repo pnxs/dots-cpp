@@ -18,13 +18,13 @@ namespace dots::types
 {% endfor %}
     ///
 {% for property in attributes %}
-    /// @param {{property.name}} {{property.comment}}
+    /// @param {{property.name}} {% if property.options is defined and 'deprecated' in property.options %}[DEPRECATED] {% endif %}{{property.comment}}
 {% endfor %}
     ///
     /// @code
     /// Structure {
 {% for property in attributes %}
-    ///    {{property.tag}}: {{property.type}} {{property.name}} // {{property.comment}}
+    ///    {{property.tag}}: {{property.type}} {{property.name}} // {% if property.options is defined and 'deprecated' in property.options %}[DEPRECATED] {% endif %}{{property.comment}}
 {% endfor %}
     /// }
     /// @endcode
@@ -100,7 +100,7 @@ namespace dots::types
 		}
 
 {% for property in attributes %}
-        {{property.name}}_t {{property.name}}; // {{property.comment}} (key: {{property.key | lower }})
+        {% if property.options is defined and 'deprecated' in property.options %}[[deprecated]] {% endif %}{{property.name}}_t {{property.name}}; // {% if property.options is defined and 'deprecated' in property.options %}[DEPRECATED] {% endif %}{{property.comment}} (key: {{property.key | lower }})
 {% endfor %}
     };
 }
