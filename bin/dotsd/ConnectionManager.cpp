@@ -101,27 +101,12 @@ void ConnectionManager::onNewType(const dots::type::StructDescriptor<>* td)
 
 bool ConnectionManager::handleReceive(const DotsTransportHeader& transportHeader, Transmission&& transmission)
 {
-    if(transportHeader.destinationGroup.isValid())
-    {
-        DotsHeader dotsHeader = transportHeader.dotsHeader;
-        dotsHeader.isFromMyself(dotsHeader.sender == 1u);
-        m_dispatcher.dispatch(dotsHeader, transmission.instance());
+    DotsHeader dotsHeader = transportHeader.dotsHeader;
+    dotsHeader.isFromMyself(dotsHeader.sender == 1u);
+    m_dispatcher.dispatch(dotsHeader, transmission.instance());
 
-        Group *grp = m_groupManager.getGroup({ transportHeader.destinationGroup });
-        if (grp) grp->deliver(transportHeader, transmission);
-
-        return true;
-    }
-
-    // Send to a specific client (unicast)
-    if (transportHeader.destinationClientId.isValid())
-    {
-        auto dstConnection = findConnection(transportHeader.destinationClientId);
-        if (dstConnection)
-        {
-            dstConnection->transmit(transportHeader, transmission);
-        }
-    }
+    Group *grp = m_groupManager.getGroup({ transportHeader.destinationGroup });
+    if (grp) grp->deliver(transportHeader, transmission);
 
     return true;
 }
