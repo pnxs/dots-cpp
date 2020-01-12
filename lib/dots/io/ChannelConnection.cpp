@@ -6,16 +6,19 @@
 #include <DotsCacheInfo.dots.h>
 #include <DotsClient.dots.h>
 #include <DotsDescriptorRequest.dots.h>
+#include <DotsMsgError.dots.h>
 
 namespace dots::io
 {
-	ChannelConnection::ChannelConnection(channel_ptr_t channel, descriptor_map_t preloadPublishTypes/* = {}*/, descriptor_map_t preloadSubscribeTypes/* = {}*/) :
-		m_connectionState(DotsConnectionState::closed),
-		m_id(0),
+	ChannelConnection::ChannelConnection(channel_ptr_t channel, bool server, descriptor_map_t preloadPublishTypes/* = {}*/, descriptor_map_t preloadSubscribeTypes/* = {}*/) :
+		m_server(server),
+        m_connectionState(DotsConnectionState::closed),
+		m_id(m_server ? M_nextClientId++ : 0),
 		m_channel(std::move(channel)),
 		m_registry(nullptr),
+	    m_name("<not_set>"),
 		m_preloadPublishTypes(std::move(preloadPublishTypes)),
-		m_preloadSubscribeTypes(preloadSubscribeTypes)
+		m_preloadSubscribeTypes(std::move(preloadSubscribeTypes))
 	{
 		/* do nothing */
 	}
@@ -25,7 +28,7 @@ namespace dots::io
 		return m_connectionState;
 	}
 	
-	uint32_t ChannelConnection::id() const
+	id_t ChannelConnection::id() const
 	{
 		return m_id;
 	}
@@ -40,7 +43,7 @@ namespace dots::io
 		return m_connectionState == DotsConnectionState::connected;
 	}
 
-	void ChannelConnection::asyncReceive(Registry& registry, const std::string& clientName, receive_handler_t&& receiveHandler, error_handler_t&& errorHandler)
+	void ChannelConnection::asyncReceive(Registry& registry, const std::string& name, receive_handler_t&& receiveHandler, error_handler_t&& errorHandler)
 	{
 		if (m_connectionState != DotsConnectionState::closed)
         {
@@ -57,8 +60,18 @@ namespace dots::io
 			[this](const std::exception& e){ handleError(e); }
 		);
 
+		if (m_server)
+		{
+		    transmit(DotsMsgHello{
+                DotsMsgHello::serverName_i{ name },
+                DotsMsgHello::authChallenge_i{ 0 }
+            });
+
+			return;
+		}
+		
 		transmit(DotsMsgConnect{
-            DotsMsgConnect::clientName_i{ clientName },
+            DotsMsgConnect::clientName_i{ name },
             DotsMsgConnect::preloadCache_i{ true }
         });
 	}
@@ -74,6 +87,7 @@ namespace dots::io
                 DotsHeader::typeName_i{ descriptor.name() },
                 DotsHeader::sentTime_i{ pnxs::SystemNow() },
                 DotsHeader::attributes_i{ includedProperties ==  types::property_set_t::All ? instance._validProperties() : includedProperties },
+				DotsHeader::sender_i{ m_server ? ServerId : m_id },
                 DotsHeader::removeObj_i{ remove }
             }
         };
@@ -85,6 +99,30 @@ namespace dots::io
 
 		m_channel->transmit(header, instance);
 	}
+
+    void ChannelConnection::transmit(const DotsTransportHeader& header, const type::Struct& instance)
+    {
+        try
+        {
+            m_channel->transmit(header, instance);
+        }
+        catch (const std::exception& e)
+        {
+            handleError(e);
+        }
+    }
+
+    void ChannelConnection::transmit(const DotsTransportHeader& header, const Transmission& transmission)
+    {
+        try
+        {
+            m_channel->transmit(header, transmission);
+        }
+        catch (const std::exception& e)
+        {
+           handleError(e);
+        }
+    }
 
 	void ChannelConnection::joinGroup(const std::string_view& name)
 	{
@@ -106,6 +144,11 @@ namespace dots::io
 
 	bool ChannelConnection::handleReceive(const DotsTransportHeader& transportHeader, Transmission&& transmission)
 	{
+		if (m_server)
+		{
+		    return handleReceiveServer(transportHeader, std::move(transmission));
+		}
+
 		try 
         {
             if (transportHeader.nameSpace == "SYS")
@@ -194,6 +237,21 @@ namespace dots::io
 
 	void ChannelConnection::handleError(const std::exception& e)
 	{
+        if (m_server)
+        {
+            LOG_ERROR_S("channel error in async receive: " << e.what());
+            error_handler_t errorHandler;
+            errorHandler.swap(m_errorHandler);
+
+            m_registry = nullptr;
+		    m_receiveHandler = nullptr;
+		    setConnectionState(DotsConnectionState::closed);
+
+            errorHandler(m_id, e);
+
+            return;
+        }
+
 		LOG_ERROR_S("channel error in async receive: " << e.what());
 		m_registry = nullptr;
 		m_receiveHandler = nullptr;
@@ -264,6 +322,213 @@ namespace dots::io
             LOG_ERROR_S("invalid DotsMsgConnectResponse");
         }
 	}
+
+	bool ChannelConnection::handleReceiveServer(const DotsTransportHeader& transportHeader, Transmission&& transmission)
+    {
+        LOG_DEBUG_S("handleReceive:");
+        bool handled = false;
+
+        auto modifiedHeader = transportHeader;
+        // Overwrite sender to known client peerAddress
+        auto& dotsHeader = *modifiedHeader.dotsHeader;
+        dotsHeader.sender = id();
+
+        dotsHeader.serverSentTime = pnxs::SystemNow();
+
+        if (!dotsHeader.sentTime.isValid())
+        {
+            dotsHeader.sentTime = dotsHeader.serverSentTime;
+        }
+
+        try
+        {
+            // Check for DOTS control message-types
+            if (transportHeader.nameSpace.isValid() && *transportHeader.nameSpace == "SYS")
+            {
+                handled = handleControlMessageServer(modifiedHeader, std::move(transmission));
+            }
+            else
+            {
+                handled = handleRegularMessageServer(modifiedHeader, std::move(transmission));
+            }
+
+            if (!handled)
+            {
+                string objName;
+                if (transportHeader.nameSpace.isValid()) objName = "::" + *transportHeader.nameSpace + "::";
+                objName += *transportHeader.destinationGroup;
+                string errorText = "invalid message received while in state " + to_string(m_connectionState) + ": " + objName;
+                LOG_WARN_S(errorText);
+                // send false response;
+
+                transmit(DotsMsgError{
+                    DotsMsgError::errorCode_i{ 1 },
+                    DotsMsgError::errorText_i{ errorText }
+                });
+            }
+        }
+        catch (const std::exception& e)
+        {
+            string errorReport = "exception in receive [";
+            errorReport += "dstGrp=" + *transportHeader.destinationGroup;
+            errorReport += ",state=" + to_string(m_connectionState);
+            errorReport += string("]:") + e.what();
+
+            LOG_ERROR_S(errorReport);
+
+            transmit(DotsMsgError{
+                DotsMsgError::errorCode_i{ 2 },
+                DotsMsgError::errorText_i{ errorReport }
+            });
+
+            handleError(e);
+        }
+
+        return m_connectionState != DotsConnectionState::closed;
+    }
+
+    /**
+     *
+     * @code
+     * Receive-Table:
+     * *State                    | connecting | early_subscribe | connected | suspended | closed
+     * --------------------------+------------+-----------------+-----------+-----------+---------
+     * SYS::DotsMsgConnect       |     X      |                 |           |           |
+     * SYS::DotsMember           |            |        X        |     X     |           |
+     * SYS::EnumDescriptorData   |            |        X        |     X     |           |
+     * SYS::StructDescriptorData |            |        X        |     X     |           |
+     *                           |            |                 |           |           |
+     *                           |            |                 |           |           |
+     *                           |            |                 |           |           |
+     *                           |            |                 |           |           |
+     *                           |            |                 |           |           |
+     *                           |            |                 |           |           |
+     * *Other*                   |            |                 |     X     |           |
+     *                           |            |                 |           |           |
+     *                           |            |                 |           |           |
+     * @endcode
+     */
+    bool ChannelConnection::handleControlMessageServer(const DotsTransportHeader& transportHeader, Transmission&& transmission)
+    {
+        bool handled = false;
+
+        switch (m_connectionState)
+        {
+            case DotsConnectionState::connecting:
+                // Only accept DotsMsgConnect messages (MsgType connect)
+                if (auto* dotsMsgConnect = transmission.instance()->_as<DotsMsgConnect>())
+                {
+                    // Check authentication and authorization;
+                    processConnectRequest(*dotsMsgConnect);
+                    handled = true;
+                }
+                break;
+            case DotsConnectionState::early_subscribe:
+                if (auto* dotsMsgConnect = transmission.instance()->_as<DotsMsgConnect>())
+                {
+                    // Check authentication and authorization;
+                    processConnectPreloadClientFinished(*dotsMsgConnect);
+                    handled = true;
+                }
+                [[fallthrough]];
+            case DotsConnectionState::connected:
+                importType(transmission.instance());
+                m_receiveHandler(transportHeader, std::move(transmission));
+                handled = true;
+                break;
+            case DotsConnectionState::suspended:
+                LOG_WARN_S("state suspended not implemented");
+                // Connection is temporarly not available
+                break;
+
+            case DotsConnectionState::closed:
+                LOG_WARN_S("state closed not implemented");
+                // Connection is closed and will never be open again
+                break;
+        }
+
+        return handled;
+    }
+
+    bool ChannelConnection::handleRegularMessageServer(const DotsTransportHeader& transportHeader, Transmission&& transmission)
+    {
+        bool handled = false;
+        switch (m_connectionState)
+        {
+            case DotsConnectionState::connecting:
+            case DotsConnectionState::early_subscribe: // Only accept DotsMsgConnect messages (MsgType connect)
+                break;
+
+            case DotsConnectionState::connected:
+                {
+                    // Normal operation
+                    m_receiveHandler(transportHeader, std::move(transmission));
+                    handled = true;
+                }
+                break;
+
+            case DotsConnectionState::suspended:
+                LOG_WARN_S("state suspended not implemented");
+                // Connection is temporarily not available
+                break;
+
+            case DotsConnectionState::closed:
+                LOG_WARN_S("state closed not implemented");
+                // Connection is closed and will never be open again
+                break;
+        }
+        return handled;
+    }
+
+    void ChannelConnection::processConnectRequest(const DotsMsgConnect& msg)
+    {
+        m_name = msg.clientName;
+
+        LOG_INFO_S("authorized");
+        // Send DotsClient when Client is added to network.
+        DotsClient{
+            DotsClient::id_i{ m_id },
+            DotsClient::name_i{ m_name },
+            DotsClient::connectionState_i{ m_connectionState }
+        }._publish();
+
+        DotsMsgConnectResponse connectResponse{
+            DotsMsgConnectResponse::accepted_i{ true },
+            DotsMsgConnectResponse::clientId_i{ m_id }
+        };
+
+        if (msg.preloadCache == true)
+        {
+            connectResponse.preload(true);
+        }
+        transmit(connectResponse);
+
+        if (msg.preloadCache == true)
+        {
+            setConnectionState(DotsConnectionState::early_subscribe);
+        }
+        else
+        {
+            setConnectionState(DotsConnectionState::connected);
+        }
+    }
+
+    void ChannelConnection::processConnectPreloadClientFinished(const DotsMsgConnect& msg)
+    {
+        // Check authentication and authorization;
+        if (!msg.preloadClientFinished.isValid() || msg.preloadClientFinished == false)
+        {
+            LOG_WARN_S("invalid DotsMsgConnect in state early_connect");
+            return;
+        }
+
+        setConnectionState(DotsConnectionState::connected);
+
+        // When all cache items are sent to client, send fin-message
+        transmit(DotsMsgConnectResponse{
+            DotsMsgConnectResponse::preloadFinished_i{ true }
+        });
+    }
 	
 	void ChannelConnection::importType(const type::Struct& instance)
     {
@@ -312,5 +577,10 @@ namespace dots::io
 	{
 		LOG_DEBUG_S("change connection state to " << to_string(state));
 		m_connectionState = state;
+
+        if (m_server)
+        {
+            DotsClient{ DotsClient::id_i{ id() }, DotsClient::connectionState_i{ state } }._publish();
+        }
 	}
 }

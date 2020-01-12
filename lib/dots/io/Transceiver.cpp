@@ -14,7 +14,7 @@ namespace dots
 		m_connection.emplace(std::move(connection));
 		m_connection->asyncReceive(m_registry, clientName,
 			[this](const DotsTransportHeader& header, Transmission&& transmission){ return handleReceive(header, std::move(transmission)); },
-			[this](const std::exception& e){ handleError(e); }
+			[this](io::ChannelConnection::id_t /*id*/, const std::exception& e){ handleError(e); }
 		);
 		
 		return *m_connection;

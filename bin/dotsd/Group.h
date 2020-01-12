@@ -7,10 +7,14 @@
 #include "DotsMember.dots.h"
 #include <DotsTransportHeader.dots.h>
 
+namespace dots::io
+{
+    struct ChannelConnection;
+}
+
 namespace dots {
 
 typedef ClientId GroupMember;
-class Connection;
 
 /**
  * A representation of a messaging-group in DOTS.
@@ -19,7 +23,7 @@ class Connection;
  */
 class Group
 {
-    typedef std::vector<Connection*> ConnectionList;
+    typedef std::vector<io::ChannelConnection*> ConnectionList;
     const string m_name;
     std::set<GroupMember> m_membersList; // all groups members
 
@@ -34,7 +38,7 @@ class Group
         return it != m_membersList.end() ? &*it : NULL;
     }
 
-    void removeConnection(Connection *connection);
+    void removeConnection(io::ChannelConnection *connection);
 
     ConnectionList m_connections; // local group members
 public:
@@ -44,9 +48,9 @@ public:
 
     const string &name() const { return m_name; }
 
-    void handleJoin(Connection *connection);
-    void handleLeave(Connection *connection);
-    void handleKill(Connection *connection);
+    void handleJoin(io::ChannelConnection *connection);
+    void handleLeave(io::ChannelConnection *connection);
+    void handleKill(io::ChannelConnection *connection);
 
     void deliver(const DotsTransportHeader& transportHeader, const Transmission& transmission);
 };

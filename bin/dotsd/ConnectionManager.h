@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Connection.h"
+#include <dots/io/ChannelConnection.h>
+#include <dots/io/Transmitter.h>
 #include <set>
 #include <dots/io/Dispatcher.h>
 #include "dots/io/Publisher.h"
@@ -42,7 +43,7 @@ public:
      * @param name of the connection-object.
      * @return shared-ptr to Connection object. Null if none was found.
      */
-    connection_ptr findConnection(const Connection::id_t &id);
+    io::channel_connection_ptr_t findConnection(const io::ChannelConnection::id_t &id);
 
     // Space things:
     /*!
@@ -78,7 +79,7 @@ public:
     /*!
      * Handle kill()-Method from a Connection-Object. Mark the connection for cleanup.
      */
-    void handleError(Connection::id_t id, const std::exception& e);
+    void handleError(io::ChannelConnection::id_t id, const std::exception& e);
 
     DotsStatistics receiveStatistics() const;
     DotsStatistics sendStatistics() const;
@@ -93,21 +94,21 @@ private:
 
     void asyncAccept();
 
-    void removeConnection(connection_ptr c);
+    void removeConnection(io::channel_connection_ptr_t c);
 
     void handleDescriptorRequest(const DotsDescriptorRequest::Cbd& cbd);
     void handleClearCache(const DotsClearCache::Cbd& cbd);
-    void cleanupObjects(Connection *connection);
+    void cleanupObjects(io::ChannelConnection *connection);
     bool isClientIdInContainers(ClientId id);
     string clientId2Name(ClientId id) const;
 
-    void sendContainerContent(Connection& connection, const Container<>& container);
-    void sendCacheEnd(Connection& connection, const std::string& typeName);
+    void sendContainerContent(io::ChannelConnection& connection, const Container<>& container);
+    void sendCacheEnd(io::ChannelConnection& connection, const std::string& typeName);
 
-    std::map<Connection::id_t, connection_ptr> m_connections;
+    std::map<io::ChannelConnection::id_t, io::channel_connection_ptr_t> m_connections;
     std::vector<const Container<>*> m_cleanupContainer; ///< all containers with cleanup-flag.
 
-    std::set<connection_ptr> m_cleanupConnections; ///< old connection-object.
+    std::set<io::channel_connection_ptr_t> m_cleanupConnections; ///< old connection-object.
 
     bool m_running;
     string m_name;

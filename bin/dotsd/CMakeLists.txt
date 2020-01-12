@@ -11,7 +11,6 @@ add_executable(${TARGET_NAME} main.cpp)
 # properties
 target_sources(${TARGET_NAME}
 	PRIVATE
-        Connection.cpp
 		ConnectionManager.cpp
 		Group.cpp
         GroupManager.cpp

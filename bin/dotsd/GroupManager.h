@@ -35,20 +35,20 @@ public:
      * @param groupKey
      * @param connection
      */
-    void handleJoin(const GroupKey& groupKey, Connection *connection);
+    void handleJoin(const GroupKey& groupKey, io::ChannelConnection *connection);
 
     /*!
      * Remove a Connection from a group.
      * @param groupKey
      * @param connection
      */
-    void handleLeave(const GroupKey& groupKey, Connection *connection);
+    void handleLeave(const GroupKey& groupKey, io::ChannelConnection *connection);
 
     /*!
      * Removes a killed Connection from all groups.
      * @param connection
      */
-    void handleKill(Connection *connection);
+    void handleKill(io::ChannelConnection *connection);
 };
 
 }

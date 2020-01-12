@@ -128,7 +128,7 @@ bool ConnectionManager::handleReceive(const DotsTransportHeader& transportHeader
 
 void ConnectionManager::handleMemberMessage(const DotsMember::Cbd& cbd)
 {
-    Connection* connection = m_connections.find(cbd.header().sender)->second.get();
+    io::ChannelConnection* connection = m_connections.find(cbd.header().sender)->second.get();
 
     const DotsMember& member = cbd();
     DotsMember memberMod = member;
@@ -171,7 +171,7 @@ void ConnectionManager::handleMemberMessage(const DotsMember::Cbd& cbd)
     }
 }
 
-connection_ptr ConnectionManager::findConnection(const Connection::id_t &id)
+io::channel_connection_ptr_t ConnectionManager::findConnection(const io::ChannelConnection::id_t &id)
 {
     auto it = m_connections.find(id);
     if (it != m_connections.end())
@@ -181,9 +181,9 @@ connection_ptr ConnectionManager::findConnection(const Connection::id_t &id)
     return {};
 }
 
-void ConnectionManager::handleError(Connection::id_t id, const std::exception&/* e*/)
+void ConnectionManager::handleError(io::ChannelConnection::id_t id, const std::exception&/* e*/)
 {
-    Connection* connection = m_connections.find(id)->second.get();
+    io::ChannelConnection* connection = m_connections.find(id)->second.get();
     m_groupManager.handleKill(connection);
 
     auto connPtr = findConnection(connection->id());
@@ -205,11 +205,11 @@ void ConnectionManager::asyncAccept()
 {
     Listener::accept_handler_t acceptHandler = [this](channel_ptr_t channel)
 	{
-		auto connection = std::make_shared<Connection>(std::move(channel));
+		auto connection = std::make_shared<io::ChannelConnection>(std::move(channel), true);
 		m_connections.insert({ connection->id(), connection });
         connection->asyncReceive(transceiver().registry(), m_name,
             [this](const DotsTransportHeader& header, Transmission&& transmission){ return handleReceive(header, std::move(transmission)); },
-            [this](Connection::id_t id, const std::exception& e){ handleError(id, e); }
+            [this](io::ChannelConnection::id_t id, const std::exception& e){ handleError(id, e); }
         );
 
 		return true;
@@ -224,7 +224,7 @@ void ConnectionManager::asyncAccept()
     m_running = true;
 }
 
-void ConnectionManager::removeConnection(connection_ptr c)
+void ConnectionManager::removeConnection(io::channel_connection_ptr_t c)
 {
     auto it = m_connections.find(c->id());
     if (it != m_connections.end())
@@ -322,7 +322,7 @@ void ConnectionManager::handleDescriptorRequest(const DotsDescriptorRequest::Cbd
             DotsTransportHeader thead;
             m_transmitter.prepareHeader(thead, td, td->validProperties(body), false);
             thead.dotsHeader->sentTime = pnxs::SystemNow();
-            thead.dotsHeader->sender(Connection::ServerIdDeprecated);
+            thead.dotsHeader->sender(io::ChannelConnection::ServerIdDeprecated);
 
             // Send to peer or group
             connection->transmit(thead, *reinterpret_cast<const type::Struct*>(body));
@@ -366,7 +366,7 @@ void ConnectionManager::handleClearCache(const DotsClearCache::Cbd& cbd)
  * object is disconnected.
  * @param connection - Connection of the client, that is disconnected
  */
-void ConnectionManager::cleanupObjects(Connection *connection)
+void ConnectionManager::cleanupObjects(io::ChannelConnection *connection)
 {
     for (const auto& container : m_cleanupContainer)
     {
@@ -398,7 +398,7 @@ void ConnectionManager::publishNs(const string &nameSpace,
     DotsTransportHeader header;
     m_transmitter.prepareHeader(header, td, properties, remove);
     header.dotsHeader->serverSentTime(pnxs::SystemNow());
-    header.dotsHeader->sender(Connection::ServerIdDeprecated);
+    header.dotsHeader->sender(io::ChannelConnection::ServerIdDeprecated);
     if (not nameSpace.empty()) header.nameSpace(nameSpace);
 
     // TODO: avoid local copy
@@ -478,7 +478,7 @@ const DistributedTypeId &ConnectionManager::distributedTypeId() const
     throw std::runtime_error("distributedTypeId not initialized");
 }
 
-void ConnectionManager::sendContainerContent(Connection& connection, const Container<>& container)
+void ConnectionManager::sendContainerContent(io::ChannelConnection& connection, const Container<>& container)
 {
     const auto& td = container.descriptor();
 
@@ -517,7 +517,7 @@ void ConnectionManager::sendContainerContent(Connection& connection, const Conta
     sendCacheEnd(connection, td.name());
 }
 
-void ConnectionManager::sendCacheEnd(Connection& connection, const std::string& typeName)
+void ConnectionManager::sendCacheEnd(io::ChannelConnection& connection, const std::string& typeName)
 {
     DotsCacheInfo dotsCacheInfo{
         DotsCacheInfo::typeName_i{ typeName },

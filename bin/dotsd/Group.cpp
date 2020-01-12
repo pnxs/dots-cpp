@@ -1,6 +1,6 @@
 #include "Group.h"
 #include "DotsMember.dots.h"
-#include "Connection.h"
+#include <dots/io/ChannelConnection.h>
 #include "ConnectionManager.h"
 
 namespace dots {
@@ -20,9 +20,9 @@ Group::~Group()
  * @param groupMember
  * @param connection
  */
-void Group::handleJoin(Connection *connection)
+void Group::handleJoin(io::ChannelConnection *connection)
 {
-    auto& groupMember = connection->id();
+    const auto& groupMember = connection->id();
     auto member = getMember(groupMember);
 
     if (member)
@@ -39,9 +39,9 @@ void Group::handleJoin(Connection *connection)
     }
 }
 
-void Group::handleLeave(Connection *connection)
+void Group::handleLeave(io::ChannelConnection *connection)
 {
-    auto& groupMember = connection->id();
+    const auto& groupMember = connection->id();
     auto member = getMember(groupMember);
 
     if (not member)
@@ -60,9 +60,9 @@ void Group::handleLeave(Connection *connection)
     m_membersList.erase(*member);
 }
 
-void Group::handleKill(Connection *connection)
+void Group::handleKill(io::ChannelConnection *connection)
 {
-    auto& groupMember = connection->id();
+    const auto& groupMember = connection->id();
     auto member = getMember(groupMember);
     if (member == nullptr) return;
 
@@ -71,7 +71,7 @@ void Group::handleKill(Connection *connection)
     m_membersList.erase(*member);
 }
 
-void Group::removeConnection(Connection *connection)
+void Group::removeConnection(io::ChannelConnection *connection)
 {
     if (not connection)
     {
