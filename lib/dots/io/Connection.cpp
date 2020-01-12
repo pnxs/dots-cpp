@@ -68,7 +68,7 @@ namespace dots::io
                 DotsMsgHello::authChallenge_i{ 0 }
             });
 
-            expectSystemType<DotsMsgConnect>(&Connection::processConnectRequest);
+            expectSystemType<DotsMsgConnect>(&Connection::handleConnect);
 		}
         else
         {
@@ -77,7 +77,7 @@ namespace dots::io
                 DotsMsgConnect::preloadCache_i{ true }
             });
 
-            expectSystemType<DotsMsgHello>(&Connection::processHello);
+            expectSystemType<DotsMsgHello>(&Connection::handleHello);
         }
 	}
 
@@ -248,7 +248,7 @@ namespace dots::io
 		m_errorHandler = nullptr;
 	}
 
-	void Connection::processHello(const DotsMsgHello& hello)
+	void Connection::handleHello(const DotsMsgHello& hello)
 	{
 		if (hello.authChallenge.isValid() && hello.serverName.isValid())
 		{
@@ -260,10 +260,10 @@ namespace dots::io
 			LOG_WARN_S("Invalid hello from server valatt:" << hello._validProperties().toString());
 		}
 
-        expectSystemType<DotsMsgConnectResponse>(&Connection::processConnectResponse);
+        expectSystemType<DotsMsgConnectResponse>(&Connection::handleAuthorizationRequest);
 	}
 	
-	void Connection::processConnectResponse(const DotsMsgConnectResponse& connectResponse)
+	void Connection::handleAuthorizationRequest(const DotsMsgConnectResponse& connectResponse)
 	{
 		const std::string& serverName = connectResponse.serverName.isValid() ? *connectResponse.serverName : "<unknown>";
 		LOG_DEBUG_S("connectResponse: serverName=" << serverName << " accepted=" << *connectResponse.accepted);
@@ -296,7 +296,7 @@ namespace dots::io
 			m_preloadPublishTypes.clear();
 			m_preloadSubscribeTypes.clear();
 
-            expectSystemType<DotsMsgConnectResponse>(&Connection::processEarlySubscribe);
+            expectSystemType<DotsMsgConnectResponse>(&Connection::handlePreloadFinished);
 		}
 		else
 		{
@@ -304,7 +304,7 @@ namespace dots::io
 		}
 	}
 	
-	void Connection::processEarlySubscribe(const DotsMsgConnectResponse& connectResponse)
+	void Connection::handlePreloadFinished(const DotsMsgConnectResponse& connectResponse)
 	{
 		if (connectResponse.preloadFinished == true)
         {
@@ -316,9 +316,9 @@ namespace dots::io
         }
 	}
 
-    void Connection::processConnectRequest(const DotsMsgConnect& msg)
+    void Connection::handleConnect(const DotsMsgConnect& connect)
     {
-        m_name = msg.clientName;
+        m_name = connect.clientName;
 
         LOG_INFO_S("authorized");
         // Send DotsClient when Client is added to network.
@@ -333,16 +333,16 @@ namespace dots::io
             DotsMsgConnectResponse::clientId_i{ m_id }
         };
 
-        if (msg.preloadCache == true)
+        if (connect.preloadCache == true)
         {
             connectResponse.preload(true);
         }
         transmit(connectResponse);
 
-        if (msg.preloadCache == true)
+        if (connect.preloadCache == true)
         {
             setConnectionState(DotsConnectionState::early_subscribe);
-            expectSystemType<DotsMsgConnect>(&Connection::processConnectPreloadClientFinished);
+            expectSystemType<DotsMsgConnect>(&Connection::handlePreloadClientFinished);
         }
         else
         {
@@ -350,10 +350,10 @@ namespace dots::io
         }
     }
 
-    void Connection::processConnectPreloadClientFinished(const DotsMsgConnect& msg)
+    void Connection::handlePreloadClientFinished(const DotsMsgConnect& connect)
     {
         // Check authentication and authorization;
-        if (!msg.preloadClientFinished.isValid() || msg.preloadClientFinished == false)
+        if (!connect.preloadClientFinished.isValid() || connect.preloadClientFinished == false)
         {
             LOG_WARN_S("invalid DotsMsgConnect in state early_connect");
             return;

@@ -57,12 +57,12 @@ namespace dots::io
 		bool handleReceive(const DotsTransportHeader& transportHeader, Transmission&& transmission);
 		void handleError(const std::exception& e);
 
-        void processHello(const DotsMsgHello& hello);
-        void processConnectResponse(const DotsMsgConnectResponse& connectResponse);
-        void processEarlySubscribe(const DotsMsgConnectResponse& connectResponse);
+        void handleHello(const DotsMsgHello& hello);
+        void handleAuthorizationRequest(const DotsMsgConnectResponse& connectResponse);
+        void handlePreloadFinished(const DotsMsgConnectResponse& connectResponse);
 
-        void processConnectRequest(const DotsMsgConnect& msg);
-        void processConnectPreloadClientFinished(const DotsMsgConnect& msg);
+        void handleConnect(const DotsMsgConnect& connect);
+        void handlePreloadClientFinished(const DotsMsgConnect& connect);
 
 		void setConnectionState(DotsConnectionState state);
 
