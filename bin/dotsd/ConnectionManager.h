@@ -1,6 +1,6 @@
 #pragma once
 
-#include <dots/io/ChannelConnection.h>
+#include <dots/io/Connection.h>
 #include <dots/io/Transmitter.h>
 #include <set>
 #include <dots/io/Dispatcher.h>
@@ -43,7 +43,7 @@ public:
      * @param name of the connection-object.
      * @return shared-ptr to Connection object. Null if none was found.
      */
-    io::channel_connection_ptr_t findConnection(const io::ChannelConnection::id_t &id);
+    io::channel_connection_ptr_t findConnection(const io::Connection::id_t &id);
 
     // Space things:
     /*!
@@ -79,7 +79,7 @@ public:
     /*!
      * Handle kill()-Method from a Connection-Object. Mark the connection for cleanup.
      */
-    void handleError(io::ChannelConnection::id_t id, const std::exception& e);
+    void handleError(io::Connection::id_t id, const std::exception& e);
 
     DotsStatistics receiveStatistics() const;
     DotsStatistics sendStatistics() const;
@@ -98,14 +98,14 @@ private:
 
     void handleDescriptorRequest(const DotsDescriptorRequest::Cbd& cbd);
     void handleClearCache(const DotsClearCache::Cbd& cbd);
-    void cleanupObjects(io::ChannelConnection *connection);
+    void cleanupObjects(io::Connection *connection);
     bool isClientIdInContainers(ClientId id);
     string clientId2Name(ClientId id) const;
 
-    void sendContainerContent(io::ChannelConnection& connection, const Container<>& container);
-    void sendCacheEnd(io::ChannelConnection& connection, const std::string& typeName);
+    void sendContainerContent(io::Connection& connection, const Container<>& container);
+    void sendCacheEnd(io::Connection& connection, const std::string& typeName);
 
-    std::map<io::ChannelConnection::id_t, io::channel_connection_ptr_t> m_connections;
+    std::map<io::Connection::id_t, io::channel_connection_ptr_t> m_connections;
     std::vector<const Container<>*> m_cleanupContainer; ///< all containers with cleanup-flag.
 
     std::set<io::channel_connection_ptr_t> m_cleanupConnections; ///< old connection-object.

@@ -9,7 +9,7 @@
 
 namespace dots::io
 {
-    struct ChannelConnection;
+    struct Connection;
 }
 
 namespace dots {
@@ -23,7 +23,7 @@ typedef ClientId GroupMember;
  */
 class Group
 {
-    typedef std::vector<io::ChannelConnection*> ConnectionList;
+    typedef std::vector<io::Connection*> ConnectionList;
     const string m_name;
     std::set<GroupMember> m_membersList; // all groups members
 
@@ -38,7 +38,7 @@ class Group
         return it != m_membersList.end() ? &*it : NULL;
     }
 
-    void removeConnection(io::ChannelConnection *connection);
+    void removeConnection(io::Connection *connection);
 
     ConnectionList m_connections; // local group members
 public:
@@ -48,9 +48,9 @@ public:
 
     const string &name() const { return m_name; }
 
-    void handleJoin(io::ChannelConnection *connection);
-    void handleLeave(io::ChannelConnection *connection);
-    void handleKill(io::ChannelConnection *connection);
+    void handleJoin(io::Connection *connection);
+    void handleLeave(io::Connection *connection);
+    void handleKill(io::Connection *connection);
 
     void deliver(const DotsTransportHeader& transportHeader, const Transmission& transmission);
 };

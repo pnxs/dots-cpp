@@ -17,7 +17,7 @@ namespace dots
 		// Connect to dotsd
 
 		auto channel = global_service<ChannelService>().makeChannel<TcpChannel>(m_serverAddress, m_serverPort);
-		const io::ChannelConnection& connection = transceiver().openConnection(io::ChannelConnection{ std::move(channel), false, getPreloadPublishTypes(), getPreloadSubscribeTypes() }, name);
+		const io::Connection& connection = transceiver().openConnection(io::Connection{ std::move(channel), false, getPreloadPublishTypes(), getPreloadSubscribeTypes() }, name);
 
 		LOG_DEBUG_S("run until state connected...");
 		while (!connection.connected())
@@ -91,9 +91,9 @@ namespace dots
 		m_serverPort = vm["dots-port"].as<string>();
 	}
 
-	io::ChannelConnection::descriptor_map_t Application::getPreloadPublishTypes() const
+	io::Connection::descriptor_map_t Application::getPreloadPublishTypes() const
 	{
-		io::ChannelConnection::descriptor_map_t sds;
+		io::Connection::descriptor_map_t sds;
 
 		for (const auto& e : dots::PublishedType::allChained())
 		{
@@ -112,9 +112,9 @@ namespace dots
 		return sds;
 	}
 
-	io::ChannelConnection::descriptor_map_t Application::getPreloadSubscribeTypes() const
+	io::Connection::descriptor_map_t Application::getPreloadSubscribeTypes() const
 	{
-		io::ChannelConnection::descriptor_map_t sds;
+		io::Connection::descriptor_map_t sds;
 
 		for (const auto& e : dots::SubscribedType::allChained())
 		{

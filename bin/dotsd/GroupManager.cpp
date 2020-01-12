@@ -2,7 +2,7 @@
 
 namespace dots {
 
-void GroupManager::handleJoin(const string &groupKey, io::ChannelConnection *connection)
+void GroupManager::handleJoin(const string &groupKey, io::Connection *connection)
 {
     auto group = getGroup(groupKey);
     if (group == nullptr)
@@ -14,7 +14,7 @@ void GroupManager::handleJoin(const string &groupKey, io::ChannelConnection *con
     group->handleJoin(connection);
 }
 
-void GroupManager::handleLeave(const string &groupKey, io::ChannelConnection *connection)
+void GroupManager::handleLeave(const string &groupKey, io::Connection *connection)
 {
     auto group = getGroup(groupKey);
     if (group == nullptr)
@@ -26,7 +26,7 @@ void GroupManager::handleLeave(const string &groupKey, io::ChannelConnection *co
     group->handleLeave(connection);
 }
 
-void GroupManager::handleKill(io::ChannelConnection *connection)
+void GroupManager::handleKill(io::Connection *connection)
 {
     for (auto& i : m_allGroups)
     {

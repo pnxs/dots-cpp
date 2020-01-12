@@ -16,7 +16,7 @@ namespace dots::io
 
 namespace dots::io
 {
-	struct ChannelConnection
+	struct Connection
 	{
 		using id_t = uint32_t;
         static constexpr id_t ServerIdDeprecated = 1;
@@ -25,13 +25,13 @@ namespace dots::io
 		using error_handler_t = std::function<void(id_t, const std::exception&)>;
 		using descriptor_map_t = std::map<std::string_view, type::StructDescriptor<>*>;
 		
-		ChannelConnection(channel_ptr_t channel, bool server, descriptor_map_t preloadPublishTypes = {}, descriptor_map_t preloadSubscribeTypes = {});
-		ChannelConnection(const ChannelConnection& other) = delete;
-		ChannelConnection(ChannelConnection&& other) = default;
-		~ChannelConnection() = default;
+		Connection(channel_ptr_t channel, bool server, descriptor_map_t preloadPublishTypes = {}, descriptor_map_t preloadSubscribeTypes = {});
+		Connection(const Connection& other) = delete;
+		Connection(Connection&& other) = default;
+		~Connection() = default;
 
-		ChannelConnection& operator = (const ChannelConnection& rhs) = delete;
-		ChannelConnection& operator = (ChannelConnection&& rhs) = default;
+		Connection& operator = (const Connection& rhs) = delete;
+		Connection& operator = (Connection&& rhs) = default;
 
 		DotsConnectionState state() const;
         id_t id() const;
@@ -90,5 +90,5 @@ namespace dots::io
 		std::set<std::string> m_sharedTypes;
 	};
 
-	using channel_connection_ptr_t = std::shared_ptr<ChannelConnection>;
+	using channel_connection_ptr_t = std::shared_ptr<Connection>;
 }

@@ -1,7 +1,7 @@
 #pragma once
 #include <string_view>
 #include <optional>
-#include <dots/io/ChannelConnection.h>
+#include <dots/io/Connection.h>
 #include <dots/io/Dispatcher.h>
 #include <dots/io/Subscription.h>
 #include <dots/io/Publisher.h>
@@ -24,7 +24,7 @@ namespace dots
 		Transceiver& operator = (const Transceiver& rhs) = delete;
 		Transceiver& operator = (Transceiver&& rhs) = default;
 
-		const io::ChannelConnection& openConnection(io::ChannelConnection connection, const std::string& clientName);
+		const io::Connection& openConnection(io::Connection connection, const std::string& clientName);
 		void closeConnection();
 
 		const io::Registry& registry() const;
@@ -75,6 +75,6 @@ namespace dots
 
 		io::Registry m_registry;
 		Dispatcher m_dispatcher;
-		std::optional<io::ChannelConnection> m_connection;
+		std::optional<io::Connection> m_connection;
 	};
 }

@@ -1,4 +1,4 @@
-#include <dots/io/ChannelConnection.h>
+#include <dots/io/Connection.h>
 #include <dots/io/Registry.h>
 #include <dots/io/DescriptorConverter.h>
 #include <DotsMsgConnect.dots.h>
@@ -10,7 +10,7 @@
 
 namespace dots::io
 {
-	ChannelConnection::ChannelConnection(channel_ptr_t channel, bool server, descriptor_map_t preloadPublishTypes/* = {}*/, descriptor_map_t preloadSubscribeTypes/* = {}*/) :
+	Connection::Connection(channel_ptr_t channel, bool server, descriptor_map_t preloadPublishTypes/* = {}*/, descriptor_map_t preloadSubscribeTypes/* = {}*/) :
 		m_server(server),
         m_connectionState(DotsConnectionState::closed),
 		m_id(m_server ? M_nextClientId++ : 0),
@@ -23,27 +23,27 @@ namespace dots::io
 		/* do nothing */
 	}
 
-	DotsConnectionState ChannelConnection::state() const
+	DotsConnectionState Connection::state() const
 	{
 		return m_connectionState;
 	}
 	
-	id_t ChannelConnection::id() const
+	id_t Connection::id() const
 	{
 		return m_id;
 	}
 
-    const std::string& ChannelConnection::name() const
+    const std::string& Connection::name() const
     {
 		return m_name;
     }
 
-    bool ChannelConnection::connected() const
+    bool Connection::connected() const
 	{
 		return m_connectionState == DotsConnectionState::connected;
 	}
 
-	void ChannelConnection::asyncReceive(Registry& registry, const std::string& name, receive_handler_t&& receiveHandler, error_handler_t&& errorHandler)
+	void Connection::asyncReceive(Registry& registry, const std::string& name, receive_handler_t&& receiveHandler, error_handler_t&& errorHandler)
 	{
 		if (m_connectionState != DotsConnectionState::closed)
         {
@@ -76,7 +76,7 @@ namespace dots::io
         });
 	}
 
-	void ChannelConnection::transmit(const type::Struct& instance, types::property_set_t includedProperties, bool remove)
+	void Connection::transmit(const type::Struct& instance, types::property_set_t includedProperties, bool remove)
 	{
 		const type::StructDescriptor<>& descriptor = instance._descriptor();
 		exportType(descriptor);
@@ -100,7 +100,7 @@ namespace dots::io
 		m_channel->transmit(header, instance);
 	}
 
-    void ChannelConnection::transmit(const DotsTransportHeader& header, const type::Struct& instance)
+    void Connection::transmit(const DotsTransportHeader& header, const type::Struct& instance)
     {
         try
         {
@@ -112,7 +112,7 @@ namespace dots::io
         }
     }
 
-    void ChannelConnection::transmit(const DotsTransportHeader& header, const Transmission& transmission)
+    void Connection::transmit(const DotsTransportHeader& header, const Transmission& transmission)
     {
         try
         {
@@ -124,7 +124,7 @@ namespace dots::io
         }
     }
 
-	void ChannelConnection::joinGroup(const std::string_view& name)
+	void Connection::joinGroup(const std::string_view& name)
 	{
 		LOG_DEBUG_S("send DotsMember (join " << name << ")");
 		transmit(DotsMember{
@@ -133,7 +133,7 @@ namespace dots::io
         });
 	}
 
-	void ChannelConnection::leaveGroup(const std::string_view& name)
+	void Connection::leaveGroup(const std::string_view& name)
 	{
 		LOG_INFO_S("send DotsMember (leave " << name << ")");
 		transmit(DotsMember{
@@ -142,7 +142,7 @@ namespace dots::io
         });
 	}
 
-	bool ChannelConnection::handleReceive(const DotsTransportHeader& transportHeader, Transmission&& transmission)
+	bool Connection::handleReceive(const DotsTransportHeader& transportHeader, Transmission&& transmission)
 	{
 		if (m_server)
 		{
@@ -169,7 +169,7 @@ namespace dots::io
         }
 	}
 
-	void ChannelConnection::handleControlMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission)
+	void Connection::handleControlMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission)
 	{
         switch(m_connectionState)
         {
@@ -211,7 +211,7 @@ namespace dots::io
         }
 	}
 	
-	void ChannelConnection::handleRegularMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission)
+	void Connection::handleRegularMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission)
 	{
 		switch(m_connectionState)
         {
@@ -235,7 +235,7 @@ namespace dots::io
         }
 	}
 
-	void ChannelConnection::handleError(const std::exception& e)
+	void Connection::handleError(const std::exception& e)
 	{
         if (m_server)
         {
@@ -259,7 +259,7 @@ namespace dots::io
 		setConnectionState(DotsConnectionState::closed);
 	}
 
-	void ChannelConnection::processHello(const DotsMsgHello& hello)
+	void Connection::processHello(const DotsMsgHello& hello)
 	{
 		if (hello.authChallenge.isValid() && hello.serverName.isValid())
 		{
@@ -272,7 +272,7 @@ namespace dots::io
 		}
 	}
 	
-	void ChannelConnection::processConnectResponse(const DotsMsgConnectResponse& connectResponse)
+	void Connection::processConnectResponse(const DotsMsgConnectResponse& connectResponse)
 	{
 		const std::string& serverName = connectResponse.serverName.isValid() ? *connectResponse.serverName : "<unknown>";
 		LOG_DEBUG_S("connectResponse: serverName=" << serverName << " accepted=" << *connectResponse.accepted);
@@ -311,7 +311,7 @@ namespace dots::io
 		}
 	}
 	
-	void ChannelConnection::processEarlySubscribe(const DotsMsgConnectResponse& connectResponse)
+	void Connection::processEarlySubscribe(const DotsMsgConnectResponse& connectResponse)
 	{
 		if (connectResponse.preloadFinished == true)
         {
@@ -323,7 +323,7 @@ namespace dots::io
         }
 	}
 
-	bool ChannelConnection::handleReceiveServer(const DotsTransportHeader& transportHeader, Transmission&& transmission)
+	bool Connection::handleReceiveServer(const DotsTransportHeader& transportHeader, Transmission&& transmission)
     {
         LOG_DEBUG_S("handleReceive:");
         bool handled = false;
@@ -408,7 +408,7 @@ namespace dots::io
      *                           |            |                 |           |           |
      * @endcode
      */
-    bool ChannelConnection::handleControlMessageServer(const DotsTransportHeader& transportHeader, Transmission&& transmission)
+    bool Connection::handleControlMessageServer(const DotsTransportHeader& transportHeader, Transmission&& transmission)
     {
         bool handled = false;
 
@@ -450,7 +450,7 @@ namespace dots::io
         return handled;
     }
 
-    bool ChannelConnection::handleRegularMessageServer(const DotsTransportHeader& transportHeader, Transmission&& transmission)
+    bool Connection::handleRegularMessageServer(const DotsTransportHeader& transportHeader, Transmission&& transmission)
     {
         bool handled = false;
         switch (m_connectionState)
@@ -480,7 +480,7 @@ namespace dots::io
         return handled;
     }
 
-    void ChannelConnection::processConnectRequest(const DotsMsgConnect& msg)
+    void Connection::processConnectRequest(const DotsMsgConnect& msg)
     {
         m_name = msg.clientName;
 
@@ -513,7 +513,7 @@ namespace dots::io
         }
     }
 
-    void ChannelConnection::processConnectPreloadClientFinished(const DotsMsgConnect& msg)
+    void Connection::processConnectPreloadClientFinished(const DotsMsgConnect& msg)
     {
         // Check authentication and authorization;
         if (!msg.preloadClientFinished.isValid() || msg.preloadClientFinished == false)
@@ -530,7 +530,7 @@ namespace dots::io
         });
     }
 	
-	void ChannelConnection::importType(const type::Struct& instance)
+	void Connection::importType(const type::Struct& instance)
     {
         if (auto* structDescriptorData = instance._as<StructDescriptorData>())
         {
@@ -548,7 +548,7 @@ namespace dots::io
         }
     }
 
-    void ChannelConnection::exportType(const type::Descriptor<>& descriptor)
+    void Connection::exportType(const type::Descriptor<>& descriptor)
     {
         if (bool isNewSharedType = m_sharedTypes.emplace(descriptor.name()).second; isNewSharedType)
     	{
@@ -573,7 +573,7 @@ namespace dots::io
     	}
     }
 
-	void ChannelConnection::setConnectionState(DotsConnectionState state)
+	void Connection::setConnectionState(DotsConnectionState state)
 	{
 		LOG_DEBUG_S("change connection state to " << to_string(state));
 		m_connectionState = state;
