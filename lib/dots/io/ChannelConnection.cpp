@@ -30,12 +30,17 @@ namespace dots::io
 		return m_id;
 	}
 
-	bool ChannelConnection::connected() const
+    const std::string& ChannelConnection::name() const
+    {
+		return m_name;
+    }
+
+    bool ChannelConnection::connected() const
 	{
 		return m_connectionState == DotsConnectionState::connected;
 	}
 
-	void ChannelConnection::asyncReceive(Registry& registry, const std::string& name, receive_handler_t&& receiveHandler, error_handler_t&& errorHandler)
+	void ChannelConnection::asyncReceive(Registry& registry, const std::string& clientName, receive_handler_t&& receiveHandler, error_handler_t&& errorHandler)
 	{
 		if (m_connectionState != DotsConnectionState::closed)
         {
@@ -53,7 +58,7 @@ namespace dots::io
 		);
 
 		transmit(DotsMsgConnect{
-            DotsMsgConnect::clientName_i{ m_name },
+            DotsMsgConnect::clientName_i{ clientName },
             DotsMsgConnect::preloadCache_i{ true }
         });
 	}
@@ -184,6 +189,7 @@ namespace dots::io
 		if (hello.authChallenge.isValid() && hello.serverName.isValid())
 		{
 			LOG_DEBUG_S("received hello from '" << *hello.serverName << "' authChallenge=" << hello.authChallenge);
+			m_name = hello.serverName;
 		}
 		else
 		{

@@ -31,6 +31,7 @@ namespace dots::io
 
 		DotsConnectionState state() const;
         uint32_t id() const;
+		const std::string& name() const;
 		bool connected() const;
 
 		void asyncReceive(Registry& registry, const std::string& name, receive_handler_t&& receiveHandler, error_handler_t&& errorHandler);
