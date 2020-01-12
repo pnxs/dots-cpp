@@ -220,10 +220,7 @@ namespace dots::io
             case DotsConnectionState::early_subscribe:
             case DotsConnectionState::connected:
                 {
-					DotsTransportHeader transportHeader_ = transportHeader;
-                    DotsHeader dotsHeader = transportHeader_.dotsHeader;
-                    dotsHeader.isFromMyself(dotsHeader.sender == m_id);
-                    m_receiveHandler(transportHeader_, std::move(transmission));
+                    m_receiveHandler(transportHeader, std::move(transmission), transportHeader.dotsHeader->sender == m_id);
                 }
                 break;
             case DotsConnectionState::suspended:
@@ -433,7 +430,7 @@ namespace dots::io
                 [[fallthrough]];
             case DotsConnectionState::connected:
                 importType(transmission.instance());
-                m_receiveHandler(transportHeader, std::move(transmission));
+                m_receiveHandler(transportHeader, std::move(transmission), transportHeader.dotsHeader->sender == ServerId);
                 handled = true;
                 break;
             case DotsConnectionState::suspended:
@@ -462,7 +459,7 @@ namespace dots::io
             case DotsConnectionState::connected:
                 {
                     // Normal operation
-                    m_receiveHandler(transportHeader, std::move(transmission));
+                    m_receiveHandler(transportHeader, std::move(transmission), transportHeader.dotsHeader->sender == ServerId);
                     handled = true;
                 }
                 break;

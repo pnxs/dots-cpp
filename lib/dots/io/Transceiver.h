@@ -70,7 +70,7 @@ namespace dots
 
 	private:
 
-		bool handleReceive(const DotsTransportHeader& header, Transmission&& transmission);
+		bool handleReceive(const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself);
 		void handleError(const std::exception& e);
 
 		io::Registry m_registry;

@@ -50,7 +50,7 @@ public:
      * Deliver a message to all subscribed connections.
      * @param message
      */
-    bool handleReceive(const DotsTransportHeader& transportHeader, Transmission&& transmission);
+    bool handleReceive(const DotsTransportHeader& transportHeader, Transmission&& transmission, bool isFromMyself);
 
     /*!
      * Publishes a Object with a namespace

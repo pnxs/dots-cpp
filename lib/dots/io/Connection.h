@@ -21,7 +21,7 @@ namespace dots::io
 		using id_t = uint32_t;
         static constexpr id_t ServerIdDeprecated = 1;
 
-		using receive_handler_t = std::function<bool(const DotsTransportHeader&, Transmission&&)>;
+		using receive_handler_t = std::function<bool(const DotsTransportHeader&, Transmission&&, bool)>;
 		using error_handler_t = std::function<void(id_t, const std::exception&)>;
 		using descriptor_map_t = std::map<std::string_view, type::StructDescriptor<>*>;
 		

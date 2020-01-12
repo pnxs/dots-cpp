@@ -13,7 +13,7 @@ namespace dots
 		
 		m_connection.emplace(std::move(connection));
 		m_connection->asyncReceive(m_registry, clientName,
-			[this](const DotsTransportHeader& header, Transmission&& transmission){ return handleReceive(header, std::move(transmission)); },
+			[this](const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself){ return handleReceive(header, std::move(transmission), isFromMyself); },
 			[this](io::Connection::id_t /*id*/, const std::exception& e){ handleError(e); }
 		);
 		
@@ -106,11 +106,11 @@ namespace dots
 		publish(instance, what, remove);
 	}
 
-	bool Transceiver::handleReceive(const DotsTransportHeader& header, Transmission&& transmission)
+	bool Transceiver::handleReceive(const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself)
 	{
 		try 
         {
-            m_dispatcher.dispatch(header.dotsHeader, transmission.instance());
+            m_dispatcher.dispatch(header.dotsHeader, transmission.instance(), isFromMyself);
             return true;
         }
         catch (const std::exception& e) 

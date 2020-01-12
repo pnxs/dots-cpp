@@ -99,11 +99,9 @@ void ConnectionManager::onNewType(const dots::type::StructDescriptor<>* td)
 	m_dispatcher.subscribe(*td, [](const Event<>&){}).discard();
 }
 
-bool ConnectionManager::handleReceive(const DotsTransportHeader& transportHeader, Transmission&& transmission)
+bool ConnectionManager::handleReceive(const DotsTransportHeader& transportHeader, Transmission&& transmission, bool isFromMyself)
 {
-    DotsHeader dotsHeader = transportHeader.dotsHeader;
-    dotsHeader.isFromMyself(dotsHeader.sender == 1u);
-    m_dispatcher.dispatch(dotsHeader, transmission.instance());
+    m_dispatcher.dispatch(transportHeader.dotsHeader, transmission.instance(), isFromMyself);
 
     Group *grp = m_groupManager.getGroup({ transportHeader.destinationGroup });
     if (grp) grp->deliver(transportHeader, transmission);
@@ -193,7 +191,7 @@ void ConnectionManager::asyncAccept()
 		auto connection = std::make_shared<io::Connection>(std::move(channel), true);
 		m_connections.insert({ connection->id(), connection });
         connection->asyncReceive(transceiver().registry(), m_name,
-            [this](const DotsTransportHeader& header, Transmission&& transmission){ return handleReceive(header, std::move(transmission)); },
+            [this](const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself){ return handleReceive(header, std::move(transmission), isFromMyself); },
             [this](io::Connection::id_t id, const std::exception& e){ handleError(id, e); }
         );
 
@@ -392,7 +390,7 @@ void ConnectionManager::publishNs(const string &nameSpace,
     // Send to peer or group
     if (processLocal)
     {
-        handleReceive(header, std::move(transmission));
+        handleReceive(header, std::move(transmission), true);
     }
     else {
         if(header.destinationGroup.isValid())

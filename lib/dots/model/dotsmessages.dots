@@ -12,7 +12,7 @@ struct DotsHeader [internal,cached=false] {
     5: uint32 sender; // originating sender of this update.
     8: uint32 fromCache; // number of objects that will be sent from cache. Not-set or 0 means "not from cache".
     4: bool removeObj; // true of the contained object should be removed.
-    6: bool isFromMyself; // is set to true in the client's callback when the sender-name matches the specific client name.
+    6: [deprecated] bool isFromMyself; // is set to true in the client's callback when the sender-name matches the specific client name.
 }
 
 // With DotsMember, a client can join or leave groups.
