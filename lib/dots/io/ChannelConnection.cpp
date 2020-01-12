@@ -65,8 +65,25 @@ namespace dots::io
 
 	void ChannelConnection::transmit(const type::Struct& instance, types::property_set_t includedProperties, bool remove)
 	{
-		exportType(instance._descriptor());
-		m_channel->transmit(instance, includedProperties, remove);
+		const type::StructDescriptor<>& descriptor = instance._descriptor();
+		exportType(descriptor);
+
+        DotsTransportHeader header{
+            DotsTransportHeader::destinationGroup_i{ descriptor.name() },
+            DotsTransportHeader::dotsHeader_i{
+                DotsHeader::typeName_i{ descriptor.name() },
+                DotsHeader::sentTime_i{ pnxs::SystemNow() },
+                DotsHeader::attributes_i{ includedProperties ==  types::property_set_t::All ? instance._validProperties() : includedProperties },
+                DotsHeader::removeObj_i{ remove }
+            }
+        };
+
+        if (descriptor.internal() && !instance._is<DotsClient>() && !instance._is<DotsDescriptorRequest>())
+        {
+            header.nameSpace("SYS");
+        }
+
+		m_channel->transmit(header, instance);
 	}
 
 	void ChannelConnection::joinGroup(const std::string_view& name)

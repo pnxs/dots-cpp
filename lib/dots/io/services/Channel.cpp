@@ -20,28 +20,6 @@ namespace dots
         asyncReceiveImpl();
     }
 
-    void Channel::transmit(const type::Struct& instance, types::property_set_t includedProperties/* = types::property_set_t::All*/, bool remove/* = false*/)
-    {
-	    const type::StructDescriptor<>& descriptor = instance._descriptor();
-
-        DotsTransportHeader header{
-            DotsTransportHeader::destinationGroup_i{ descriptor.name() },
-            DotsTransportHeader::dotsHeader_i{
-                DotsHeader::typeName_i{ descriptor.name() },
-                DotsHeader::sentTime_i{ pnxs::SystemNow() },
-                DotsHeader::attributes_i{ includedProperties ==  types::property_set_t::All ? instance._validProperties() : includedProperties },
-                DotsHeader::removeObj_i{ remove }
-            }
-        };
-
-        if (descriptor.internal() && !instance._is<DotsClient>() && !instance._is<DotsDescriptorRequest>())
-        {
-            header.nameSpace("SYS");
-        }
-
-    	transmit(header, instance);
-    }
-
     void Channel::transmit(const DotsTransportHeader& header, const type::Struct& instance)
     {
         transmitImpl(header, instance);

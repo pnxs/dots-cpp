@@ -25,7 +25,6 @@ namespace dots
 		Channel& operator = (Channel&& rhs) = delete;
 
 		void asyncReceive(io::Registry& registry, receive_handler_t&& receiveHandler, error_handler_t&& errorHandler);
-		void transmit(const type::Struct& instance, types::property_set_t includedProperties = types::property_set_t::All, bool remove = false);
 		void transmit(const DotsTransportHeader& header, const type::Struct& instance);
 		void transmit(const DotsTransportHeader& header, const Transmission& transmission);
 
