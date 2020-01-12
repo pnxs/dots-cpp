@@ -48,21 +48,18 @@ namespace dots::io
 
 	private:
 
+		using system_type_t = std::pair<const type::StructDescriptor<>*, std::function<void(const type::Struct&)>>;
+
 		static constexpr id_t UninitializedId = 0;
         static constexpr id_t ServerId = 1;
         static constexpr id_t FirstClientId = 2;
 
 		bool handleReceive(const DotsTransportHeader& transportHeader, Transmission&& transmission);
-        void handleControlMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission);
-        void handleRegularMessage(const DotsTransportHeader& transportHeader, Transmission&& transmission);
 		void handleError(const std::exception& e);
 
         void processHello(const DotsMsgHello& hello);
         void processConnectResponse(const DotsMsgConnectResponse& connectResponse);
         void processEarlySubscribe(const DotsMsgConnectResponse& connectResponse);
-
-		bool handleReceiveServer(const DotsTransportHeader& transportHeader, Transmission&& transmission);
-        bool handleControlMessageServer(const DotsTransportHeader& transportHeader, Transmission&& transmission);
 
         void processConnectRequest(const DotsMsgConnect& msg);
         void processConnectPreloadClientFinished(const DotsMsgConnect& msg);
@@ -71,6 +68,9 @@ namespace dots::io
 
 		void importType(const type::Struct& instance);
 		void exportType(const type::Descriptor<>& descriptor);
+
+		template <typename T>
+		void expectSystemType(void(Connection::* handler)(const T&));
 
         inline static id_t M_nextClientId = FirstClientId;
 
@@ -87,7 +87,8 @@ namespace dots::io
 		error_handler_t m_errorHandler;
 		
 		std::set<std::string> m_sharedTypes;
+		system_type_t m_expectedSystemType;
 	};
 
-	using channel_connection_ptr_t = std::shared_ptr<Connection>;
+    using channel_connection_ptr_t = std::shared_ptr<Connection>;
 }
