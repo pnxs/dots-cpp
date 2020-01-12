@@ -31,12 +31,6 @@ public:
     void init();
 
     /*!
-     * Register and start a connection.
-     * @param c shared-ptr to Connection-object
-     */
-    void start(connection_ptr c);
-
-    /*!
      * Stops all connections.
      */
     void stop_all();
