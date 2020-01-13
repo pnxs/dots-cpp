@@ -8,14 +8,11 @@
 
 namespace dots
 {
-    ConnectionManager::ConnectionManager(std::unique_ptr<Listener>&& listener, const std::string& name) :
-        m_name(name),
-        m_listener(std::move(listener))
+    ConnectionManager::ConnectionManager(std::string callSign) :
+        m_callSign(std::move(callSign))
     {
         m_dispatcher.pool().get<DotsClient>();
         m_onNewStruct = transceiver().registry().onNewStruct.connect(FUN(*this, onNewType));
-
-        asyncAccept();
     }
 
     void ConnectionManager::init()
@@ -28,6 +25,34 @@ namespace dots
         }
 
         add_timer(1, [&](){ clientCleanup(); }, true);
+    }
+
+    void ConnectionManager::listen(listener_ptr_t&& listener)
+    {
+        if (m_listener != nullptr)
+        {
+            throw std::logic_error{ "already listening" };
+        }
+
+        m_listener = std::move(listener);
+        Listener::accept_handler_t acceptHandler = [this](channel_ptr_t channel)
+        {
+            auto connection = std::make_shared<io::Connection>(std::move(channel), true);
+            connection->asyncReceive(transceiver().registry(), m_callSign,
+                [this](io::Connection& connection, const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself) { return handleReceive(connection, header, std::move(transmission), isFromMyself); },
+                [this](io::Connection& connection, const std::exception* e) { handleClose(connection, e); }
+            );
+            m_openConnections.emplace(connection.get(), std::move(connection));
+
+            return true;
+        };
+
+        Listener::error_handler_t errorHandler = [](const std::exception& e)
+        {
+            LOG_ERROR_S("error while listening for incoming channels -> " << e.what());
+        };
+
+        m_listener->asyncAccept(std::move(acceptHandler), std::move(errorHandler));
     }
 
     const ContainerPool& ConnectionManager::pool() const
@@ -130,7 +155,7 @@ namespace dots
     void ConnectionManager::onNewType(const dots::type::StructDescriptor<>* td)
     {
         LOG_DEBUG_S("onNewType name=" << td->name() << " flags:" << flags2String(td));
-        LOG_INFO_S("register type " << td->name() << " published by " << m_name);
+        //LOG_INFO_S("register type " << td->name() << " published by " << m_name);
         
         if (!td->cached())
         {
@@ -145,28 +170,6 @@ namespace dots
         }
 
         m_dispatcher.subscribe(*td, [](const Event<>&){}).discard();
-    }
-
-    void ConnectionManager::asyncAccept()
-    {
-        Listener::accept_handler_t acceptHandler = [this](channel_ptr_t channel)
-        {
-            auto connection = std::make_shared<io::Connection>(std::move(channel), true);
-            connection->asyncReceive(transceiver().registry(), m_name,
-                [this](io::Connection& connection, const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself) { return handleReceive(connection, header, std::move(transmission), isFromMyself); },
-                [this](io::Connection& connection, const std::exception* e) { handleClose(connection, e); }
-            );
-            m_openConnections.emplace(connection.get(), std::move(connection));
-
-            return true;
-        };
-
-        Listener::error_handler_t errorHandler = [](const std::exception& e)
-        {
-            LOG_ERROR_S("error while listening for incoming channels -> " << e.what());
-        };
-
-        m_listener->asyncAccept(std::move(acceptHandler), std::move(errorHandler));
     }
 
     bool ConnectionManager::handleReceive(io::Connection& connection, const DotsTransportHeader& transportHeader, Transmission&& transmission, bool isFromMyself)

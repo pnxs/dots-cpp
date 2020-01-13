@@ -1,5 +1,6 @@
 #pragma once
 #include <functional>
+#include <memory>
 #include <dots/io/services/Channel.h>
 
 namespace dots
@@ -33,4 +34,6 @@ namespace dots
 		accept_handler_t m_acceptHandler;
 		error_handler_t m_errorHandler;
 	};
+
+	using listener_ptr_t = std::unique_ptr<Listener>;
 }

@@ -21,15 +21,15 @@ namespace dots
     class ConnectionManager : public Publisher
     {
     public:
-        ConnectionManager(std::unique_ptr<Listener>&& listener, const std::string& name);
+        ConnectionManager(std::string callSign);
         ConnectionManager(const ConnectionManager&) = delete;
         ConnectionManager& operator=(const ConnectionManager&) = delete;
 
         void init();
 
-        const ContainerPool& pool() const;
+        void listen(listener_ptr_t&& listener);
 
-        
+        const ContainerPool& pool() const;
 
         void publish(const type::Struct& instance, types::property_set_t includedProperties = types::property_set_t::All, bool remove = false);
         void remove(const type::Struct& instance);
@@ -46,8 +46,6 @@ namespace dots
         using group_t = std::unordered_set<io::Connection*>;
         using group_map_t = std::unordered_map<std::string, group_t>;
 
-        void asyncAccept();
-
         bool handleReceive(io::Connection& connection, const DotsTransportHeader& transportHeader, Transmission&& transmission, bool isFromMyself);
         void handleClose(io::Connection& connection, const std::exception* e);
 
@@ -59,12 +57,12 @@ namespace dots
 
         static std::string flags2String(const dots::type::StructDescriptor<>* td);
 
+        std::string m_callSign;
         connection_map_t m_openConnections;
         connection_map_t m_closedConnections;
         group_map_t m_groups;
         std::vector<const Container<>*> m_cleanupContainers;
-        string m_name;
-        std::unique_ptr<Listener> m_listener;
+        listener_ptr_t m_listener;
         Dispatcher m_dispatcher;
         Transmitter m_transmitter;
         std::unique_ptr<DistributedTypeId> m_distributedTypeId;

@@ -12,7 +12,7 @@ namespace dots
         Server(const Server&) = delete;
         Server& operator=(const Server&) = delete;
 
-        explicit Server(std::unique_ptr<Listener>&& listener, const string& name);
+        explicit Server(listener_ptr_t&& listener, const string& name);
 
     private:
         void updateServerStatus();

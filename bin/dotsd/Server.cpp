@@ -8,9 +8,9 @@
 
 namespace dots
 {
-    Server::Server(std::unique_ptr<Listener>&& listener, const string& name):
+    Server::Server(listener_ptr_t&& listener, const string& name) :
         m_name(name),
-        m_connectionManager(std::move(listener), name)
+        m_connectionManager(name)
     {
         transceiver();
         publisher() = &m_connectionManager;
@@ -31,10 +31,11 @@ namespace dots
             DotsCloneInformation::_Descriptor();
         }
 
-        m_daemonStatus.serverName = name;
+        m_daemonStatus.serverName = m_name;
         m_daemonStatus.startTime = pnxs::SystemNow();
 
         m_connectionManager.init();
+        m_connectionManager.listen(std::move(listener));
 
         add_timer(1, FUN(*this, updateServerStatus));
     }

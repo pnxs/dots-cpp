@@ -22,7 +22,7 @@ namespace dots
 		ChannelService& operator = (ChannelService&& rhs) noexcept(false) = delete;
 
 		template <typename TListener, typename... Args>
-		std::unique_ptr<Listener> makeListener(Args&&... args)
+		listener_ptr_t makeListener(Args&&... args)
 		{
 			return std::make_unique<TListener>(static_cast<asio::io_context&>(context()), std::forward<Args>(args)...);
 		}

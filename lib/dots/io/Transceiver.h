@@ -24,7 +24,7 @@ namespace dots
 		Transceiver& operator = (const Transceiver& rhs) = delete;
 		Transceiver& operator = (Transceiver&& rhs) = default;
 
-		const io::Connection& open(const std::string_view& clientName, channel_ptr_t channel, bool server, io::Connection::descriptor_map_t preloadPublishTypes = {}, io::Connection::descriptor_map_t preloadSubscribeTypes = {});
+		const io::Connection& open(const std::string_view& callSign, channel_ptr_t channel, bool server, io::Connection::descriptor_map_t preloadPublishTypes = {}, io::Connection::descriptor_map_t preloadSubscribeTypes = {});
 
 		const io::Registry& registry() const;
 		io::Registry& registry();
