@@ -363,7 +363,8 @@ namespace dots::io
         else
         {
             std::string what = "received DOTS error: (";
-            what += error.errorCode.isValid() ? std::to_string(error.errorCode) : std::string{ "<unknown error code>" } + ") ";
+            what += error.errorCode.isValid() ? std::to_string(error.errorCode) : std::string{ "<unknown error code>" };
+            what += ") ";
             what += error.errorText.isValid() ? *error.errorText : std::string{ "<unknown error>" };
             handleError(std::runtime_error{ what });
         }
