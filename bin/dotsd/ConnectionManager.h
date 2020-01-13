@@ -22,21 +22,16 @@ namespace dots
     class ConnectionManager : public Publisher
     {
     public:
+        ConnectionManager(std::unique_ptr<Listener>&& listener, const std::string& name);
         ConnectionManager(const ConnectionManager&) = delete;
         ConnectionManager& operator=(const ConnectionManager&) = delete;
 
-        ConnectionManager(std::unique_ptr<Listener>&& listener, const std::string& name);
-
         void init();
 
-        io::connection_ptr_t findConnection(const io::Connection::id_t& id);
-        bool handleReceive(const DotsTransportHeader& transportHeader, Transmission&& transmission, bool isFromMyself);
         void publishNs(const string& nameSpace, const type::StructDescriptor<>* td, const type::Struct& instance, type::PropertySet properties, bool remove, bool processLocal = true);
-
         void publish(const type::StructDescriptor<>* td, const type::Struct& instance, type::PropertySet properties, bool remove) override;
-        void handleMemberMessage(const DotsMember::Cbd& cbd);
+        
         void cleanup();
-        void handleClose(io::Connection::id_t id, const std::exception* e);
 
         DotsStatistics receiveStatistics() const;
         DotsCacheStatus cacheStatus() const;
@@ -47,16 +42,15 @@ namespace dots
 
         void asyncAccept();
 
+        bool handleReceive(const DotsTransportHeader& transportHeader, Transmission&& transmission, bool isFromMyself);
+        void handleClose(io::Connection::id_t id, const std::exception* e);
+
+        io::connection_ptr_t findConnection(const io::Connection::id_t& id);
         void removeConnection(io::connection_ptr_t c);
 
+        void handleMemberMessage(const DotsMember::Cbd& cbd);
         void handleDescriptorRequest(const DotsDescriptorRequest::Cbd& cbd);
         void handleClearCache(const DotsClearCache::Cbd& cbd);
-        void cleanupObjects(io::Connection* connection);
-        bool isClientIdInContainers(ClientId id);
-        string clientId2Name(ClientId id) const;
-
-        void sendContainerContent(io::Connection& connection, const Container<>& container);
-        void sendCacheEnd(io::Connection& connection, const std::string& typeName);
 
         Group* getGroup(const GroupKey& groupKey)
         {
@@ -67,6 +61,16 @@ namespace dots
         void handleJoin(const GroupKey& groupKey, io::Connection* connection);
         void handleLeave(const GroupKey& groupKey, io::Connection* connection);
         void handleKill(io::Connection* connection);
+
+        void sendContainerContent(io::Connection& connection, const Container<>& container);
+        void sendCacheEnd(io::Connection& connection, const std::string& typeName);
+
+        void cleanupObjects(io::Connection* connection);
+
+        bool isClientIdInContainers(ClientId id);
+        string clientId2Name(ClientId id) const;
+
+        static std::string flags2String(const dots::type::StructDescriptor<>* td);
 
         std::map<io::Connection::id_t, io::connection_ptr_t> m_connections;
         std::vector<const Container<>*> m_cleanupContainer;

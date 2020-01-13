@@ -31,33 +31,89 @@ namespace dots
         }
     }
 
-    /*!
-     * Returns a short string-representation of the DotsStructFlags.
-     * The String consists of 5 chars (5 flags). Every flag has a static place in
-     * this string:
-     * @code
-     * "....." No flags are set.
-     * Flags:
-     * "CIPcL"
-     *  ||||\- local (L)
-     *  |||\-- cleanup (c)
-     *  ||\--- persistent (P)
-     *  |\---- internal (I)
-     *  \----- cached (C)
-     * @endcode
-     *
-     * @param td the structdescriptor from which the flags should be processed.
-     * @return short string containing the flags.
-     */
-    static std::string flags2String(const dots::type::StructDescriptor<>* td)
+    void ConnectionManager::publishNs(const string& nameSpace,
+                                      const type::StructDescriptor<>* td,
+                                      const type::Struct& instance,
+                                      type::PropertySet properties,
+                                      bool remove, bool processLocal)
     {
-        std::string ret = ".....";
-        if (td->cached()) ret[0] = 'C';
-        if (td->internal()) ret[1] = 'I';
-        if (td->persistent()) ret[2] = 'P';
-        if (td->cleanup()) ret[3] = 'c';
-        if (td->local()) ret[4] = 'L';
-        return ret;
+        DotsTransportHeader header;
+        m_transmitter.prepareHeader(header, td, properties, remove);
+        header.dotsHeader->serverSentTime(pnxs::SystemNow());
+        header.dotsHeader->sender(io::Connection::ServerIdDeprecated);
+        if (!nameSpace.empty())
+        header.nameSpace(nameSpace);
+
+        // TODO: avoid local copy
+        Transmission transmission{ type::AnyStruct{ instance } };
+
+        // Send to peer or group
+        if (processLocal)
+        {
+            handleReceive(header, std::move(transmission), true);
+        }
+        else
+        {
+            if (header.destinationGroup.isValid())
+            {
+                Group* grp = getGroup({ header.destinationGroup });
+                if (grp) grp->deliver(header, std::move(transmission));
+            }
+        }
+    }
+
+    void ConnectionManager::publish(const type::StructDescriptor<>* td, const type::Struct& instance, type::PropertySet properties, bool remove)
+    {
+        publishNs("SYS", td, instance, properties, remove, true);
+    }
+
+    void ConnectionManager::cleanup()
+    {
+        m_cleanupConnections.clear();
+
+        const auto& container = m_dispatcher.container<DotsClient>();
+        std::vector<ClientId> clientsToRemove;
+
+        for (auto& element : container)
+        {
+            const auto& client = static_cast<const DotsClient&>(element.first);
+            if (client.connectionState == DotsConnectionState::closed)
+            {
+                // Search for a ClientId reference in all containers
+                if (isClientIdInContainers(client.id))
+                {
+                    continue;
+                }
+                else
+                {
+                    clientsToRemove.push_back(client.id);
+                }
+            }
+        }
+
+        for (auto& id : clientsToRemove)
+        {
+            DotsClient client(DotsClient::id_i{ id });
+            client._remove();
+        }
+    }
+
+    DotsStatistics ConnectionManager::receiveStatistics() const
+    {
+        //return m_dispatcher.statistics();
+        // TODO: determine if still necessary
+        return DotsStatistics{};
+    }
+
+    DotsCacheStatus ConnectionManager::cacheStatus() const
+    {
+        DotsCacheStatus cs;
+
+        auto& pool = m_dispatcher.pool();
+
+        cs.nrTypes(pool.size());
+        cs.size(pool.totalMemoryUsage());
+        return cs;
     }
 
     void ConnectionManager::onNewType(const dots::type::StructDescriptor<>* td)
@@ -82,6 +138,28 @@ namespace dots
         }).discard();
     }
 
+    void ConnectionManager::asyncAccept()
+    {
+        Listener::accept_handler_t acceptHandler = [this](channel_ptr_t channel)
+        {
+            auto connection = std::make_shared<io::Connection>(std::move(channel), true);
+            m_connections.insert({ connection->id(), connection });
+            connection->asyncReceive(transceiver().registry(), m_name,
+                                     [this](const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself) { return handleReceive(header, std::move(transmission), isFromMyself); },
+                                     [this](io::Connection::id_t id, const std::exception* e) { handleClose(id, e); }
+            );
+
+            return true;
+        };
+
+        Listener::error_handler_t errorHandler = [](const std::exception& e)
+        {
+            LOG_ERROR_S("error while listening for incoming channels -> " << e.what());
+        };
+
+        m_listener->asyncAccept(std::move(acceptHandler), std::move(errorHandler));
+    }
+
     bool ConnectionManager::handleReceive(const DotsTransportHeader& transportHeader, Transmission&& transmission, bool isFromMyself)
     {
         m_dispatcher.dispatch(transportHeader.dotsHeader, transmission.instance(), isFromMyself);
@@ -90,6 +168,53 @@ namespace dots
         if (grp) grp->deliver(transportHeader, transmission);
 
         return true;
+    }
+
+    void ConnectionManager::handleClose(io::Connection::id_t id, const std::exception* e)
+    {
+        if (e != nullptr)
+        {
+            LOG_ERROR_S("connection error: " << e->what());
+        }
+
+        const io::connection_ptr_t& connection = findConnection(id);
+
+        if (connection == nullptr)
+        {
+            LOG_WARN_S("cannot close unknown connection -> id: " << id);
+            return;
+        }
+
+        handleKill(connection.get());
+
+        // move connection to m_cleanupConnection for later deletion.
+        m_cleanupConnections.insert(connection);
+        removeConnection(connection);
+
+        // look if instances have to be cleaned up
+        cleanupObjects(connection.get());
+
+        LOG_INFO_S("connection closed -> id: " << connection->id() << ", name: " << connection->name());
+    }
+
+    io::connection_ptr_t ConnectionManager::findConnection(const io::Connection::id_t& id)
+    {
+        auto it = m_connections.find(id);
+        if (it != m_connections.end())
+        {
+            return it->second;
+        }
+        return {};
+    }
+
+    void ConnectionManager::removeConnection(io::connection_ptr_t c)
+    {
+        auto it = m_connections.find(c->id());
+        if (it != m_connections.end())
+        {
+            m_connections.erase(it);
+            return;
+        }
     }
 
     void ConnectionManager::handleMemberMessage(const DotsMember::Cbd& cbd)
@@ -136,120 +261,6 @@ namespace dots
             {
                 sendCacheEnd(*connection, typeName);
             }
-        }
-    }
-
-    io::connection_ptr_t ConnectionManager::findConnection(const io::Connection::id_t& id)
-    {
-        auto it = m_connections.find(id);
-        if (it != m_connections.end())
-        {
-            return it->second;
-        }
-        return {};
-    }
-
-    void ConnectionManager::handleClose(io::Connection::id_t id, const std::exception* e)
-    {
-        if (e != nullptr)
-        {
-            LOG_ERROR_S("connection error: " << e->what());
-        }
-
-        const io::connection_ptr_t& connection = findConnection(id);
-
-        if (connection == nullptr)
-        {
-            LOG_WARN_S("cannot close unknown connection -> id: " << id);
-            return;
-        }
-
-        handleKill(connection.get());
-
-        // move connection to m_cleanupConnection for later deletion.
-        m_cleanupConnections.insert(connection);
-        removeConnection(connection);
-
-        // look if instances have to be cleaned up
-        cleanupObjects(connection.get());
-
-        LOG_INFO_S("connection closed -> id: " << connection->id() << ", name: " << connection->name());
-    }
-
-    void ConnectionManager::asyncAccept()
-    {
-        Listener::accept_handler_t acceptHandler = [this](channel_ptr_t channel)
-        {
-            auto connection = std::make_shared<io::Connection>(std::move(channel), true);
-            m_connections.insert({ connection->id(), connection });
-            connection->asyncReceive(transceiver().registry(), m_name,
-                                     [this](const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself) { return handleReceive(header, std::move(transmission), isFromMyself); },
-                                     [this](io::Connection::id_t id, const std::exception* e) { handleClose(id, e); }
-            );
-
-            return true;
-        };
-
-        Listener::error_handler_t errorHandler = [](const std::exception& e)
-        {
-            LOG_ERROR_S("error while listening for incoming channels -> " << e.what());
-        };
-
-        m_listener->asyncAccept(std::move(acceptHandler), std::move(errorHandler));
-    }
-
-    void ConnectionManager::removeConnection(io::connection_ptr_t c)
-    {
-        auto it = m_connections.find(c->id());
-        if (it != m_connections.end())
-        {
-            m_connections.erase(it);
-            return;
-        }
-    }
-
-    bool ConnectionManager::isClientIdInContainers(ClientId id)
-    {
-        for (auto& poolIter : m_dispatcher.pool())
-        {
-            auto& container = poolIter.second;
-            for (auto& element : container)
-            {
-                if (element.second.createdFrom == id) return true;
-                if (element.second.lastUpdateFrom == id) return true;
-            }
-        }
-        return false;
-    }
-
-    void ConnectionManager::cleanup()
-    {
-        m_cleanupConnections.clear();
-
-        const auto& container = m_dispatcher.container<DotsClient>();
-        std::vector<ClientId> clientsToRemove;
-
-        for (auto& element : container)
-        {
-            const auto& client = static_cast<const DotsClient&>(element.first);
-            if (client.connectionState == DotsConnectionState::closed)
-            {
-                // Search for a ClientId reference in all containers
-                if (isClientIdInContainers(client.id))
-                {
-                    continue;
-                }
-                else
-                {
-                    clientsToRemove.push_back(client.id);
-                }
-            }
-        }
-
-        for (auto& id : clientsToRemove)
-        {
-            DotsClient client(DotsClient::id_i{ id });
-            client._remove();
         }
     }
 
@@ -339,103 +350,37 @@ namespace dots
         }
     }
 
-    void ConnectionManager::cleanupObjects(io::Connection* connection)
+    void ConnectionManager::handleJoin(const string& groupKey, io::Connection* connection)
     {
-        for (const auto& container : m_cleanupContainer)
+        auto group = getGroup(groupKey);
+        if (group == nullptr)
         {
-            vector<const type::Struct*> remove;
-
-            // Search for objects which where sent by this killed Connection.
-            for (const auto& [instance, cloneInfo] : *container)
-            {
-                if (connection->id() == cloneInfo.lastUpdateFrom)
-                {
-                    remove.push_back(&*instance);
-                }
-            }
-
-            for (auto item : remove)
-            {
-                publishNs({}, &container->descriptor(), *reinterpret_cast<const type::Struct*>(item), container->descriptor().keys(), true);
-            }
-        }
-    }
-
-    void ConnectionManager::publishNs(const string& nameSpace,
-                                      const type::StructDescriptor<>* td,
-                                      const type::Struct& instance,
-                                      type::PropertySet properties,
-                                      bool remove, bool processLocal)
-    {
-        DotsTransportHeader header;
-        m_transmitter.prepareHeader(header, td, properties, remove);
-        header.dotsHeader->serverSentTime(pnxs::SystemNow());
-        header.dotsHeader->sender(io::Connection::ServerIdDeprecated);
-        if (!nameSpace.empty())
-        header.nameSpace(nameSpace);
-
-        // TODO: avoid local copy
-        Transmission transmission{ type::AnyStruct{ instance } };
-
-        // Send to peer or group
-        if (processLocal)
-        {
-            handleReceive(header, std::move(transmission), true);
-        }
-        else
-        {
-            if (header.destinationGroup.isValid())
-            {
-                Group* grp = getGroup({ header.destinationGroup });
-                if (grp) grp->deliver(header, std::move(transmission));
-            }
-        }
-    }
-
-    DotsStatistics ConnectionManager::receiveStatistics() const
-    {
-        //return m_dispatcher.statistics();
-        // TODO: determine if still necessary
-        return DotsStatistics{};
-    }
-
-    DotsCacheStatus ConnectionManager::cacheStatus() const
-    {
-        DotsCacheStatus cs;
-
-        auto& pool = m_dispatcher.pool();
-
-        cs.nrTypes(pool.size());
-        cs.size(pool.totalMemoryUsage());
-        return cs;
-    }
-
-    void
-    ConnectionManager::publish(const type::StructDescriptor<>* td, const type::Struct& instance, type::PropertySet properties, bool remove)
-    {
-        publishNs("SYS", td, instance, properties, remove, true);
-    }
-
-    string ConnectionManager::clientId2Name(ClientId id) const
-    {
-        const auto& container = m_dispatcher.container<DotsClient>();
-
-        const DotsClient* client = container.find(DotsClient{
-            DotsClient::id_i{ id }
-        });
-
-        if (client != nullptr)
-        {
-            if (client->name.isValid())
-                return client->name;
+            group = new Group(groupKey);
+            m_allGroups.insert({ group->name(), group });
         }
 
-        if (id == 0)
+        group->handleJoin(connection);
+    }
+
+    void ConnectionManager::handleLeave(const string& groupKey, io::Connection* connection)
+    {
+        auto group = getGroup(groupKey);
+        if (group == nullptr)
         {
-            return m_name;
+            LOG_ERROR_S("group does not exist");
+            return;
         }
 
-        return std::to_string(id);
+        group->handleLeave(connection);
+    }
+
+    void ConnectionManager::handleKill(io::Connection* connection)
+    {
+        for (auto& i : m_allGroups)
+        {
+            auto& group = i.second;
+            group->handleKill(connection);
+        }
     }
 
     void ConnectionManager::sendContainerContent(io::Connection& connection, const Container<>& container)
@@ -485,36 +430,90 @@ namespace dots
         connection.transmit(dotsCacheInfo);
     }
 
-    void ConnectionManager::handleJoin(const string& groupKey, io::Connection* connection)
+    void ConnectionManager::cleanupObjects(io::Connection* connection)
     {
-        auto group = getGroup(groupKey);
-        if (group == nullptr)
+        for (const auto& container : m_cleanupContainer)
         {
-            group = new Group(groupKey);
-            m_allGroups.insert({ group->name(), group });
-        }
+            vector<const type::Struct*> remove;
 
-        group->handleJoin(connection);
-    }
+            // Search for objects which where sent by this killed Connection.
+            for (const auto& [instance, cloneInfo] : *container)
+            {
+                if (connection->id() == cloneInfo.lastUpdateFrom)
+                {
+                    remove.push_back(&*instance);
+                }
+            }
 
-    void ConnectionManager::handleLeave(const string& groupKey, io::Connection* connection)
-    {
-        auto group = getGroup(groupKey);
-        if (group == nullptr)
-        {
-            LOG_ERROR_S("group does not exist");
-            return;
-        }
-
-        group->handleLeave(connection);
-    }
-
-    void ConnectionManager::handleKill(io::Connection* connection)
-    {
-        for (auto& i : m_allGroups)
-        {
-            auto& group = i.second;
-            group->handleKill(connection);
+            for (auto item : remove)
+            {
+                publishNs({}, &container->descriptor(), *reinterpret_cast<const type::Struct*>(item), container->descriptor().keys(), true);
+            }
         }
     }
+
+    bool ConnectionManager::isClientIdInContainers(ClientId id)
+    {
+        for (auto& poolIter : m_dispatcher.pool())
+        {
+            auto& container = poolIter.second;
+            for (auto& element : container)
+            {
+                if (element.second.createdFrom == id) return true;
+                if (element.second.lastUpdateFrom == id) return true;
+            }
+        }
+        return false;
+    }
+
+    string ConnectionManager::clientId2Name(ClientId id) const
+    {
+        const auto& container = m_dispatcher.container<DotsClient>();
+
+        const DotsClient* client = container.find(DotsClient{
+            DotsClient::id_i{ id }
+        });
+
+        if (client != nullptr)
+        {
+            if (client->name.isValid())
+                return client->name;
+        }
+
+        if (id == 0)
+        {
+            return m_name;
+        }
+
+        return std::to_string(id);
+    }
+
+    /*!
+     * Returns a short string-representation of the DotsStructFlags.
+     * The String consists of 5 chars (5 flags). Every flag has a static place in
+     * this string:
+     * @code
+     * "....." No flags are set.
+     * Flags:
+     * "CIPcL"
+     *  ||||\- local (L)
+     *  |||\-- cleanup (c)
+     *  ||\--- persistent (P)
+     *  |\---- internal (I)
+     *  \----- cached (C)
+     * @endcode
+     *
+     * @param td the structdescriptor from which the flags should be processed.
+     * @return short string containing the flags.
+     */
+    std::string ConnectionManager::flags2String(const dots::type::StructDescriptor<>* td)
+    {
+        std::string ret = ".....";
+        if (td->cached()) ret[0] = 'C';
+        if (td->internal()) ret[1] = 'I';
+        if (td->persistent()) ret[2] = 'P';
+        if (td->cleanup()) ret[3] = 'c';
+        if (td->local()) ret[4] = 'L';
+        return ret;
+    } 
 }
