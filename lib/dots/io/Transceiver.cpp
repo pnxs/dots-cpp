@@ -128,7 +128,7 @@ namespace dots
 		    
 		}
 
-		m_connection != std::nullopt;
+		m_connection = std::nullopt;
 		LOG_INFO_S("connection closed -> id: " << connection.id() << ", name: " << connection.name());
 	}
 }
