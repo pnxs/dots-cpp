@@ -51,7 +51,7 @@ namespace dots::io
 		return m_connectionState == DotsConnectionState::connected;
 	}
 
-	void Connection::asyncReceive(Registry& registry, const std::string& name, receive_handler_t&& receiveHandler, close_handler_t&& closeHandler)
+	void Connection::asyncReceive(Registry& registry, const std::string_view& name, receive_handler_t&& receiveHandler, close_handler_t&& closeHandler)
 	{
 		if (m_connectionState != DotsConnectionState::suspended)
         {

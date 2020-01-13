@@ -4,25 +4,20 @@
 
 namespace dots
 {
-	const io::Connection& Transceiver::openConnection(io::Connection connection, const std::string& clientName)
+	const io::Connection& Transceiver::open(const std::string_view& clientName, channel_ptr_t channel, bool server, io::Connection::descriptor_map_t preloadPublishTypes/* = {}*/, io::Connection::descriptor_map_t preloadSubscribeTypes/* = {}*/)
 	{
 		if (m_connection != std::nullopt)
         {
             throw std::logic_error{ "already connected" };
         }
 		
-		m_connection.emplace(std::move(connection));
+		m_connection.emplace(std::move(channel), server, std::move(preloadPublishTypes), std::move(preloadSubscribeTypes));
 		m_connection->asyncReceive(m_registry, clientName,
 			[this](io::Connection& connection, const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself){ return handleReceive(connection, header, std::move(transmission), isFromMyself); },
 			[this](io::Connection& connection, const std::exception* e){ handleClose(connection, e); }
 		);
 		
 		return *m_connection;
-	}
-
-	void Transceiver::closeConnection()
-	{
-		handleClose(*m_connection, nullptr);
 	}
 
 	const io::Registry& Transceiver::registry() const

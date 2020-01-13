@@ -40,7 +40,7 @@ namespace dots::io
 		const std::string& name() const;
 		bool connected() const;
 
-		void asyncReceive(Registry& registry, const std::string& name, receive_handler_t&& receiveHandler, close_handler_t&& closeHandler);
+		void asyncReceive(Registry& registry, const std::string_view& name, receive_handler_t&& receiveHandler, close_handler_t&& closeHandler);
 		void transmit(const type::Struct& instance, types::property_set_t includedProperties = types::property_set_t::All, bool remove = false);
 		void transmit(const DotsTransportHeader& header, const type::Struct& instance);
         void transmit(const DotsTransportHeader& header, const Transmission& transmission);
