@@ -28,14 +28,12 @@ namespace dots
 
         void init();
 
+        const ContainerPool& pool() const;
+
         void publishNs(const string& nameSpace, const type::StructDescriptor<>* td, const type::Struct& instance, type::PropertySet properties, bool remove, bool processLocal = true);
         void publish(const type::StructDescriptor<>* td, const type::Struct& instance, type::PropertySet properties, bool remove) override;
         
         void cleanup();
-
-        DotsStatistics receiveStatistics() const;
-        DotsCacheStatus cacheStatus() const;
-
         void onNewType(const type::StructDescriptor<>*);
 
     private:

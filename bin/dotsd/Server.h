@@ -18,6 +18,9 @@ namespace dots
         void handleCleanupTimer();
         void updateServerStatus();
 
+        DotsStatistics receiveStatistics() const;
+        DotsCacheStatus cacheStatus() const;
+
         std::string m_name;
         ConnectionManager m_connectionManager;
         DotsDaemonStatus m_daemonStatus;

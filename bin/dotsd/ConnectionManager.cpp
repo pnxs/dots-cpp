@@ -31,6 +31,11 @@ namespace dots
         }
     }
 
+    const ContainerPool& ConnectionManager::pool() const
+	{
+		return m_dispatcher.pool();
+	}
+
     void ConnectionManager::publishNs(const string& nameSpace,
                                       const type::StructDescriptor<>* td,
                                       const type::Struct& instance,
@@ -96,24 +101,6 @@ namespace dots
             DotsClient client(DotsClient::id_i{ id });
             client._remove();
         }
-    }
-
-    DotsStatistics ConnectionManager::receiveStatistics() const
-    {
-        //return m_dispatcher.statistics();
-        // TODO: determine if still necessary
-        return DotsStatistics{};
-    }
-
-    DotsCacheStatus ConnectionManager::cacheStatus() const
-    {
-        DotsCacheStatus cs;
-
-        auto& pool = m_dispatcher.pool();
-
-        cs.nrTypes(pool.size());
-        cs.size(pool.totalMemoryUsage());
-        return cs;
     }
 
     void ConnectionManager::onNewType(const dots::type::StructDescriptor<>* td)
