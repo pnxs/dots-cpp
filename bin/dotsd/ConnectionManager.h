@@ -1,9 +1,8 @@
 #pragma once
 
+#include <unordered_map>
 #include <dots/io/Connection.h>
 #include <dots/io/Transmitter.h>
-#include <set>
-#include <unordered_map>
 #include <dots/io/Dispatcher.h>
 #include "dots/io/Publisher.h"
 #include "dots/io/DistributedTypeId.h"
@@ -45,8 +44,6 @@ namespace dots
         bool handleReceive(io::Connection& connection, const DotsTransportHeader& transportHeader, Transmission&& transmission, bool isFromMyself);
         void handleClose(io::Connection& connection, const std::exception* e);
 
-        io::connection_ptr_t findConnection(const io::Connection::id_t& id);
-
         void handleMemberMessage(io::Connection& connection, const DotsMember& member);
         void handleDescriptorRequest(io::Connection& connection, const DotsDescriptorRequest& descriptorRequest);
         void handleClearCache(io::Connection& connection, const DotsClearCache& clearCache);
@@ -61,16 +58,14 @@ namespace dots
 
         static std::string flags2String(const dots::type::StructDescriptor<>* td);
 
-        std::map<io::Connection::id_t, io::connection_ptr_t> m_connections;
+        std::unordered_map<io::Connection*, io::connection_ptr_t> m_openConnections;
+        std::unordered_map<io::Connection*, io::connection_ptr_t> m_closedConnections;
         std::vector<const Container<>*> m_cleanupContainers;
-
-        std::set<io::connection_ptr_t> m_cleanupConnections;
-
         string m_name;
         std::unique_ptr<Listener> m_listener;
         std::unordered_map<GroupKey, Group*> m_allGroups;
-        dots::Dispatcher m_dispatcher;
-        dots::Transmitter m_transmitter;
+        Dispatcher m_dispatcher;
+        Transmitter m_transmitter;
         std::unique_ptr<DistributedTypeId> m_distributedTypeId;
         pnxs::SignalConnection m_onNewStruct;
     };

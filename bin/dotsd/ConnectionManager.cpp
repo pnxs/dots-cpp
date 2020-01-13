@@ -77,7 +77,7 @@ namespace dots
 
     void ConnectionManager::clientCleanup()
     {
-        m_cleanupConnections.clear();
+        m_closedConnections.clear();
 
         std::set<io::Connection::id_t> obsoleteClients;
 
@@ -137,11 +137,11 @@ namespace dots
         Listener::accept_handler_t acceptHandler = [this](channel_ptr_t channel)
         {
             auto connection = std::make_shared<io::Connection>(std::move(channel), true);
-            m_connections.insert({ connection->id(), connection });
             connection->asyncReceive(transceiver().registry(), m_name,
                 [this](io::Connection& connection, const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself) { return handleReceive(connection, header, std::move(transmission), isFromMyself); },
                 [this](io::Connection& connection, const std::exception* e) { handleClose(connection, e); }
             );
+            m_openConnections.emplace(connection.get(), std::move(connection));
 
             return true;
         };
@@ -193,12 +193,7 @@ namespace dots
             group->handleKill(&connection);
         }
         
-        if (auto it = m_connections.find(connection.id()); it != m_connections.end())
-        {
-            m_cleanupConnections.insert(it->second);
-            m_connections.erase(it);
-            return;
-        }
+        m_closedConnections.insert(m_openConnections.extract(&connection));
 
         for (const Container<>* container : m_cleanupContainers)
         {
@@ -219,16 +214,6 @@ namespace dots
         }
 
         LOG_INFO_S("connection closed -> id: " << connection.id() << ", name: " << connection.name());
-    }
-
-    io::connection_ptr_t ConnectionManager::findConnection(const io::Connection::id_t& id)
-    {
-        auto it = m_connections.find(id);
-        if (it != m_connections.end())
-        {
-            return it->second;
-        }
-        return {};
     }
 
     void ConnectionManager::handleMemberMessage(io::Connection& connection, const DotsMember& member)
