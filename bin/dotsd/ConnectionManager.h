@@ -30,10 +30,9 @@ namespace dots
 
         const ContainerPool& pool() const;
 
-        void publishNs(const string& nameSpace, const type::StructDescriptor<>* td, const type::Struct& instance, type::PropertySet properties, bool remove, bool processLocal = true);
         void publish(const type::StructDescriptor<>* td, const type::Struct& instance, type::PropertySet properties, bool remove) override;
 
-        void publish(const type::Struct& instance, types::property_set_t what = types::property_set_t::All, bool remove = false);
+        void publish(const type::Struct& instance, types::property_set_t includedProperties = types::property_set_t::All, bool remove = false);
         void remove(const type::Struct& instance);
         
         void clientCleanup();

@@ -35,40 +35,39 @@ namespace dots
 		return m_dispatcher.pool();
 	}
 
-    void ConnectionManager::publishNs(const string& nameSpace,
-                                      const type::StructDescriptor<>* td,
-                                      const type::Struct& instance,
-                                      type::PropertySet properties,
-                                      bool remove, bool processLocal)
+    void ConnectionManager::publish(const type::StructDescriptor<>*/* td*/, const type::Struct& instance, type::PropertySet properties, bool remove)
     {
-        DotsTransportHeader header;
-        m_transmitter.prepareHeader(header, td, properties, remove);
-        header.dotsHeader->serverSentTime(pnxs::SystemNow());
-        header.dotsHeader->sender(io::Connection::ServerIdDeprecated);
-        if (!nameSpace.empty())
-        header.nameSpace(nameSpace);
+        publish(instance, properties, remove);
+    }
+
+    void ConnectionManager::publish(const type::Struct& instance, types::property_set_t includedProperties, bool remove)
+    {
+        const type::StructDescriptor<>& descriptor = instance._descriptor();
+
+        DotsTransportHeader header{
+            DotsTransportHeader::destinationGroup_i{ descriptor.name() },
+            DotsTransportHeader::dotsHeader_i{
+                DotsHeader::typeName_i{ descriptor.name() },
+                DotsHeader::sentTime_i{ pnxs::SystemNow() },
+                DotsHeader::serverSentTime_i{ pnxs::SystemNow() },
+                DotsHeader::attributes_i{ includedProperties ==  types::property_set_t::All ? instance._validProperties() : includedProperties },
+				DotsHeader::sender_i{ io::Connection::ServerIdDeprecated },
+                DotsHeader::removeObj_i{ remove }
+            }
+        };
+
+        if (descriptor.internal() && !instance._is<DotsClient>() && !instance._is<DotsDescriptorRequest>())
+        {
+            header.nameSpace("SYS");
+        }
 
         // TODO: avoid local copy
         Transmission transmission{ type::AnyStruct{ instance } };
 
-        // Send to peer or group
-        if (processLocal)
-        {
-            m_dispatcher.dispatch(header.dotsHeader, transmission.instance(), true);
-        }
+        m_dispatcher.dispatch(header.dotsHeader, transmission.instance(), true);
 
         Group* grp = getGroup({ header.destinationGroup });
         if (grp) grp->deliver(header, std::move(transmission));
-    }
-
-    void ConnectionManager::publish(const type::StructDescriptor<>* td, const type::Struct& instance, type::PropertySet properties, bool remove)
-    {
-        publishNs("SYS", td, instance, properties, remove, true);
-    }
-
-    void ConnectionManager::publish(const type::Struct& instance, types::property_set_t what, bool remove)
-    {
-        publishNs({}, &instance._descriptor(), instance, what, remove, true);
     }
 
     void ConnectionManager::remove(const type::Struct& instance)
