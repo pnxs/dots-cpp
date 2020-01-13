@@ -19,7 +19,7 @@ namespace dots::io
 	    m_name("<not_set>"),
 		m_preloadPublishTypes(std::move(preloadPublishTypes)),
 		m_preloadSubscribeTypes(std::move(preloadSubscribeTypes)),
-        m_expectedSystemType{ &DotsMsgError::_Descriptor(), nullptr }
+        m_expectedSystemType{ &DotsMsgError::_Descriptor(), types::property_set_t::None, nullptr }
 	{
 		/* do nothing */
 	}
@@ -68,7 +68,7 @@ namespace dots::io
                 DotsMsgHello::authChallenge_i{ 0 }
             });
 
-            expectSystemType<DotsMsgConnect>(&Connection::handleConnect);
+            expectSystemType<DotsMsgConnect>(DotsMsgConnect::clientName_p + DotsMsgConnect::preloadCache_p, &Connection::handleConnect);
 		}
         else
         {
@@ -77,7 +77,7 @@ namespace dots::io
                 DotsMsgConnect::preloadCache_i{ true }
             });
 
-            expectSystemType<DotsMsgHello>(&Connection::handleHello);
+            expectSystemType<DotsMsgHello>(DotsMsgHello::serverName_p + DotsMsgHello::authChallenge_p, &Connection::handleHello);
         }
 	}
 
@@ -151,15 +151,20 @@ namespace dots::io
 	{
         try 
         {
-            const auto& [expectedType, handler] = m_expectedSystemType;
             const type::Struct& instance = transmission.instance();
-            const type::StructDescriptor<>* actualType = &instance._descriptor();
 
             if (instance._isAny<DotsMsgHello, DotsMsgConnect, DotsMsgConnectResponse, DotsMsgError>())
             {
-                if (actualType != expectedType)
+                const auto& [expectedType, expectedProperties, handler] = m_expectedSystemType;
+
+                if (const type::StructDescriptor<>* actualType = &instance._descriptor(); actualType != expectedType)
                 {
                     throw std::logic_error{ "expected system type " + expectedType->name() + " but received instance of " + actualType->name() };
+                }
+
+                if (const types::property_set_t& actualProperties = instance._validProperties(); actualProperties != expectedProperties)
+                {
+                    throw std::logic_error{ "expected system instance to have properties " + expectedProperties.toString() + " but received " + actualProperties.toString() };
                 }
 
                 if (auto* dotsMsgError = instance._as<DotsMsgError>())
@@ -201,7 +206,7 @@ namespace dots::io
                 }
                 else
                 {
-                    throw std::logic_error{ "received instance of non-system type " + actualType->name() + " while not in early_subscribe or connected state " + to_string(m_connectionState) };
+                    throw std::logic_error{ "received instance of non-system type " + instance._descriptor().name() + " while not in early_subscribe or connected state " + to_string(m_connectionState) };
                 }
             }
 
@@ -226,7 +231,7 @@ namespace dots::io
             setConnectionState(DotsConnectionState::closed);
         }
 
-        expectSystemType<DotsMsgError>(nullptr);
+        expectSystemType<DotsMsgError>(types::property_set_t::None, nullptr);
 
         if (m_server)
         {
@@ -250,30 +255,18 @@ namespace dots::io
 
 	void Connection::handleHello(const DotsMsgHello& hello)
 	{
-		if (hello.authChallenge.isValid() && hello.serverName.isValid())
-		{
-			LOG_DEBUG_S("received hello from '" << *hello.serverName << "' authChallenge=" << hello.authChallenge);
-			m_name = hello.serverName;
-		}
-		else
-		{
-			LOG_WARN_S("Invalid hello from server valatt:" << hello._validProperties().toString());
-		}
+		m_name = hello.serverName;
+		LOG_DEBUG_S("received hello from '" << *hello.serverName << "' authChallenge=" << hello.authChallenge);
 
-        expectSystemType<DotsMsgConnectResponse>(&Connection::handleAuthorizationRequest);
+        expectSystemType<DotsMsgConnectResponse>(DotsMsgConnectResponse::clientId_p + DotsMsgConnectResponse::accepted_p + DotsMsgConnectResponse::preload_p, &Connection::handleAuthorizationRequest);
 	}
 	
 	void Connection::handleAuthorizationRequest(const DotsMsgConnectResponse& connectResponse)
 	{
-		const std::string& serverName = connectResponse.serverName.isValid() ? *connectResponse.serverName : "<unknown>";
-		LOG_DEBUG_S("connectResponse: serverName=" << serverName << " accepted=" << *connectResponse.accepted);
+        m_id = connectResponse.clientId;
+		LOG_DEBUG_S("connectResponse: serverName=" << m_name << " accepted=" << *connectResponse.accepted);
 		
-		if (connectResponse.clientId.isValid())
-		{
-			m_id = connectResponse.clientId;
-		}
-		
-		if (connectResponse.preload == true && (!connectResponse.preloadFinished.isValid() || connectResponse.preloadFinished == false))
+		if (connectResponse.preload == true)
 		{
 			setConnectionState(DotsConnectionState::early_subscribe);
 			
@@ -296,7 +289,7 @@ namespace dots::io
 			m_preloadPublishTypes.clear();
 			m_preloadSubscribeTypes.clear();
 
-            expectSystemType<DotsMsgConnectResponse>(&Connection::handlePreloadFinished);
+            expectSystemType<DotsMsgConnectResponse>(DotsMsgConnectResponse::preloadFinished_p, &Connection::handlePreloadFinished);
 		}
 		else
 		{
@@ -304,16 +297,9 @@ namespace dots::io
 		}
 	}
 	
-	void Connection::handlePreloadFinished(const DotsMsgConnectResponse& connectResponse)
+	void Connection::handlePreloadFinished(const DotsMsgConnectResponse&/* connectResponse*/)
 	{
-		if (connectResponse.preloadFinished == true)
-        {
-            setConnectionState(DotsConnectionState::connected);
-        }
-        else
-        {
-            LOG_ERROR_S("invalid DotsMsgConnectResponse");
-        }
+		setConnectionState(DotsConnectionState::connected);
 	}
 
     void Connection::handleConnect(const DotsMsgConnect& connect)
@@ -328,21 +314,16 @@ namespace dots::io
             DotsClient::connectionState_i{ m_connectionState }
         }._publish();
 
-        DotsMsgConnectResponse connectResponse{
+        transmit(DotsMsgConnectResponse{
+            DotsMsgConnectResponse::clientId_i{ m_id },
+            DotsMsgConnectResponse::preload_i{ connect.preloadCache == true },
             DotsMsgConnectResponse::accepted_i{ true },
-            DotsMsgConnectResponse::clientId_i{ m_id }
-        };
-
-        if (connect.preloadCache == true)
-        {
-            connectResponse.preload(true);
-        }
-        transmit(connectResponse);
+        });
 
         if (connect.preloadCache == true)
         {
             setConnectionState(DotsConnectionState::early_subscribe);
-            expectSystemType<DotsMsgConnect>(&Connection::handlePreloadClientFinished);
+            expectSystemType<DotsMsgConnect>(DotsMsgConnect::preloadClientFinished_p, &Connection::handlePreloadClientFinished);
         }
         else
         {
@@ -353,10 +334,9 @@ namespace dots::io
     void Connection::handlePreloadClientFinished(const DotsMsgConnect& connect)
     {
         // Check authentication and authorization;
-        if (!connect.preloadClientFinished.isValid() || connect.preloadClientFinished == false)
+        if (connect.preloadClientFinished == false)
         {
-            LOG_WARN_S("invalid DotsMsgConnect in state early_connect");
-            return;
+            throw std::logic_error{ "expected preload client finished to be true" };
         }
 
         setConnectionState(DotsConnectionState::connected);
@@ -422,8 +402,8 @@ namespace dots::io
 	}
 
     template <typename T>
-    void Connection::expectSystemType(void(Connection::* handler)(const T&))
+    void Connection::expectSystemType(const types::property_set_t& expectedAttributes, void(Connection::* handler)(const T&))
     {
-        m_expectedSystemType = { &T::_Descriptor(), [this, handler](const type::Struct& instance){ (this->*handler)(instance._to<T>()); } };
+        m_expectedSystemType = { &T::_Descriptor(), expectedAttributes, [this, handler](const type::Struct& instance){ (this->*handler)(instance._to<T>()); } };
     }
 }

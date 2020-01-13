@@ -2,6 +2,7 @@
 #include <string>
 #include <map>
 #include <set>
+#include <tuple>
 #include <dots/io/services/Channel.h>
 #include <DotsConnectionState.dots.h>
 #include <DotsTransportHeader.dots.h>
@@ -48,7 +49,7 @@ namespace dots::io
 
 	private:
 
-		using system_type_t = std::pair<const type::StructDescriptor<>*, std::function<void(const type::Struct&)>>;
+		using system_type_t = std::tuple<const type::StructDescriptor<>*, types::property_set_t, std::function<void(const type::Struct&)>>;
 
 		static constexpr id_t UninitializedId = 0;
         static constexpr id_t ServerId = 1;
@@ -70,7 +71,7 @@ namespace dots::io
 		void exportType(const type::Descriptor<>& descriptor);
 
 		template <typename T>
-		void expectSystemType(void(Connection::* handler)(const T&));
+		void expectSystemType(const types::property_set_t& expectedAttributes, void(Connection::* handler)(const T&));
 
         inline static id_t M_nextClientId = FirstClientId;
 
