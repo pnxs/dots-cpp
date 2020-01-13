@@ -13,9 +13,6 @@ namespace dots
         m_listener(std::move(listener))
     {
         m_dispatcher.pool().get<DotsClient>();
-        m_dispatcher.subscribe<DotsMember>(FUN(*this, handleMemberMessage)).discard();
-        m_dispatcher.subscribe<DotsDescriptorRequest>(FUN(*this, handleDescriptorRequest)).discard();
-        m_dispatcher.subscribe<DotsClearCache>(FUN(*this, handleClearCache)).discard();
         m_onNewStruct = transceiver().registry().onNewStruct.connect(FUN(*this, onNewType));
 
         asyncAccept();
@@ -154,8 +151,24 @@ namespace dots
         m_listener->asyncAccept(std::move(acceptHandler), std::move(errorHandler));
     }
 
-    bool ConnectionManager::handleReceive(io::Connection& /*connection*/, const DotsTransportHeader& transportHeader, Transmission&& transmission, bool isFromMyself)
+    bool ConnectionManager::handleReceive(io::Connection& connection, const DotsTransportHeader& transportHeader, Transmission&& transmission, bool isFromMyself)
     {
+        if (const type::Struct& instance = transmission.instance(); instance._descriptor().internal())
+        {
+            if (auto* member = instance._as<DotsMember>())
+            {
+                handleMemberMessage(connection, *member);
+            }
+            else if (auto* descriptorRequest = instance._as<DotsDescriptorRequest>())
+            {
+                handleDescriptorRequest(connection, *descriptorRequest);
+            }
+            else if (auto* clearCache = instance._as<DotsClearCache>())
+            {
+                handleClearCache(connection, *clearCache);
+            }
+        }
+
         m_dispatcher.dispatch(transportHeader.dotsHeader, transmission.instance(), isFromMyself);
 
         Group* grp = getGroup({ transportHeader.destinationGroup });
@@ -199,13 +212,10 @@ namespace dots
         return {};
     }
 
-    void ConnectionManager::handleMemberMessage(const DotsMember::Cbd& cbd)
+    void ConnectionManager::handleMemberMessage(io::Connection& connection, const DotsMember& member)
     {
-        io::Connection* connection = m_connections.find(cbd.header().sender)->second.get();
-
-        const DotsMember& member = cbd();
         DotsMember memberMod = member;
-        memberMod.client(connection->id());
+        memberMod.client(connection.id());
         if (!member.event.isValid())
         {
             LOG_WARN_S("member message without event");
@@ -214,7 +224,7 @@ namespace dots
 
         if (member.event == DotsMemberEvent::kill)
         {
-            handleClose(*connection, nullptr);
+            handleClose(connection, nullptr);
         }
         else if (member.event == DotsMemberEvent::leave)
         {
@@ -225,7 +235,7 @@ namespace dots
                 return;
             }
 
-            group->handleLeave(connection);
+            group->handleLeave(&connection);
         }
         else if (member.event == DotsMemberEvent::join)
         {
@@ -236,7 +246,7 @@ namespace dots
                 m_allGroups.insert({ member.groupName, group });
             }
 
-            group->handleJoin(connection);
+            group->handleJoin(&connection);
 
             auto& typeName = member.groupName;
 
@@ -245,32 +255,22 @@ namespace dots
 
             if (container->descriptor().cached())
             {
-                sendContainerContent(*connection, *container);
+                sendContainerContent(connection, *container);
             }
             else
             {
-                sendCacheEnd(*connection, typeName);
+                sendCacheEnd(connection, typeName);
             }
         }
     }
 
-    void ConnectionManager::handleDescriptorRequest(const DotsDescriptorRequest::Cbd& cbd)
+    void ConnectionManager::handleDescriptorRequest(io::Connection& connection, const DotsDescriptorRequest& descriptorRequest)
     {
-        if (cbd.isOwnUpdate()) return;
-
-        auto& wl = cbd().whitelist.IsPartOf(cbd.updatedProperties()) ? *cbd().whitelist : dots::type::Vector<string>();
+        auto& wl = descriptorRequest.whitelist.isValid() ? *descriptorRequest.whitelist : dots::type::Vector<string>();
 
         dots::TD_Traversal traversal;
 
-        auto connection = findConnection(cbd.header().sender);
-
-        if (!connection)
-        {
-            LOG_WARN_S("no connection found");
-            return;
-        }
-
-        LOG_INFO_S("received DescriptorRequest from " << connection->name() << "(" << connection->id() << ")");
+        LOG_INFO_S("received DescriptorRequest from " << connection.name() << "(" << connection.id() << ")");
 
         for (const auto& cpItem : m_dispatcher.pool())
         {
@@ -283,9 +283,9 @@ namespace dots
                 continue;
             }
 
-            if (cbd().blacklist.isValid())
+            if (descriptorRequest.blacklist.isValid())
             {
-                auto& bl = *cbd().blacklist;
+                auto& bl = *descriptorRequest.blacklist;
                 if (std::find(bl.begin(), bl.end(), td.name()) != wl.end())
                 {
                     // if blacklist is set and the type was found on the list, skip it.
@@ -295,7 +295,7 @@ namespace dots
 
             if (td.internal()) continue; // skip internal types
 
-            LOG_DEBUG_S("sending descriptor for type '" << td.name() << "' to " << cbd.header().sender);
+            LOG_DEBUG_S("sending descriptor for type '" << td.name() << "' to " << connection.id());
             traversal.traverseDescriptorData(&td, [&](auto td, auto body)
             {
                 DotsTransportHeader thead;
@@ -304,19 +304,19 @@ namespace dots
                 thead.dotsHeader->sender(io::Connection::ServerIdDeprecated);
 
                 // Send to peer or group
-                connection->transmit(thead, *reinterpret_cast<const type::Struct*>(body));
+                connection.transmit(thead, *reinterpret_cast<const type::Struct*>(body));
             });
         }
 
         DotsCacheInfo dotsCacheInfo{
             DotsCacheInfo::endDescriptorRequest_i{ true }
         };
-        connection->transmit(dotsCacheInfo);
+        connection.transmit(dotsCacheInfo);
     }
 
-    void ConnectionManager::handleClearCache(const DotsClearCache::Cbd& cbd)
+    void ConnectionManager::handleClearCache(io::Connection&/* connection*/, const DotsClearCache& clearCache)
     {
-        auto& whitelist = cbd().typeNames.isValid() ? *cbd().typeNames : dots::type::Vector<string>();
+        auto& whitelist = clearCache.typeNames.isValid() ? *clearCache.typeNames : dots::type::Vector<string>();
 
         for (auto& cpItem : m_dispatcher.pool())
         {

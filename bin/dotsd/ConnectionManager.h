@@ -45,9 +45,9 @@ namespace dots
 
         io::connection_ptr_t findConnection(const io::Connection::id_t& id);
 
-        void handleMemberMessage(const DotsMember::Cbd& cbd);
-        void handleDescriptorRequest(const DotsDescriptorRequest::Cbd& cbd);
-        void handleClearCache(const DotsClearCache::Cbd& cbd);
+        void handleMemberMessage(io::Connection& connection, const DotsMember& member);
+        void handleDescriptorRequest(io::Connection& connection, const DotsDescriptorRequest& descriptorRequest);
+        void handleClearCache(io::Connection& connection, const DotsClearCache& clearCache);
 
         Group* getGroup(const GroupKey& groupKey)
         {
