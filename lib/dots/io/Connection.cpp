@@ -176,7 +176,7 @@ namespace dots::io
                 {
                     const auto& [expectedType, expectedProperties, handler] = m_expectedSystemType;
                     instance._assertIs(expectedType);
-                    instance._assertHasProperties<false>(expectedProperties);
+                    instance._assertHasProperties(expectedProperties); // note: subsets are allowed for backwards compatibility with old implementation
 
                     handler(instance);
                 }
