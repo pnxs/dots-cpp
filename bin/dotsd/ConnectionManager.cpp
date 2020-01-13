@@ -154,7 +154,7 @@ void ConnectionManager::handleMemberMessage(const DotsMember::Cbd& cbd)
     }
 }
 
-io::channel_connection_ptr_t ConnectionManager::findConnection(const io::Connection::id_t &id)
+io::connection_ptr_t ConnectionManager::findConnection(const io::Connection::id_t &id)
 {
     auto it = m_connections.find(id);
     if (it != m_connections.end())
@@ -207,7 +207,7 @@ void ConnectionManager::asyncAccept()
     m_running = true;
 }
 
-void ConnectionManager::removeConnection(io::channel_connection_ptr_t c)
+void ConnectionManager::removeConnection(io::connection_ptr_t c)
 {
     auto it = m_connections.find(c->id());
     if (it != m_connections.end())

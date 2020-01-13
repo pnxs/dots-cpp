@@ -43,7 +43,7 @@ public:
      * @param name of the connection-object.
      * @return shared-ptr to Connection object. Null if none was found.
      */
-    io::channel_connection_ptr_t findConnection(const io::Connection::id_t &id);
+    io::connection_ptr_t findConnection(const io::Connection::id_t &id);
 
     // Space things:
     /*!
@@ -94,7 +94,7 @@ private:
 
     void asyncAccept();
 
-    void removeConnection(io::channel_connection_ptr_t c);
+    void removeConnection(io::connection_ptr_t c);
 
     void handleDescriptorRequest(const DotsDescriptorRequest::Cbd& cbd);
     void handleClearCache(const DotsClearCache::Cbd& cbd);
@@ -105,10 +105,10 @@ private:
     void sendContainerContent(io::Connection& connection, const Container<>& container);
     void sendCacheEnd(io::Connection& connection, const std::string& typeName);
 
-    std::map<io::Connection::id_t, io::channel_connection_ptr_t> m_connections;
+    std::map<io::Connection::id_t, io::connection_ptr_t> m_connections;
     std::vector<const Container<>*> m_cleanupContainer; ///< all containers with cleanup-flag.
 
-    std::set<io::channel_connection_ptr_t> m_cleanupConnections; ///< old connection-object.
+    std::set<io::connection_ptr_t> m_cleanupConnections; ///< old connection-object.
 
     bool m_running;
     string m_name;

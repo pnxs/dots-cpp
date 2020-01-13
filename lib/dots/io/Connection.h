@@ -92,5 +92,5 @@ namespace dots::io
 		std::set<std::string> m_sharedTypes;
 	};
 
-    using channel_connection_ptr_t = std::shared_ptr<Connection>;
+    using connection_ptr_t = std::shared_ptr<Connection>;
 }
