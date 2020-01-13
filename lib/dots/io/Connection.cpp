@@ -175,16 +175,8 @@ namespace dots::io
                 else
                 {
                     const auto& [expectedType, expectedProperties, handler] = m_expectedSystemType;
-
-                    if (const type::StructDescriptor<>* actualType = &instance._descriptor(); actualType != expectedType)
-                    {
-                        throw std::logic_error{ "expected system type " + expectedType->name() + " but received instance of " + actualType->name() };
-                    }
-
-                    if (const types::property_set_t& actualProperties = instance._validProperties(); actualProperties != expectedProperties)
-                    {
-                        throw std::logic_error{ "expected system instance to have properties " + expectedProperties.toString() + " but received " + actualProperties.toString() };
-                    }
+                    instance._assertIs(expectedType);
+                    instance._assertHasProperties<false>(expectedProperties);
 
                     handler(instance);
                 }
