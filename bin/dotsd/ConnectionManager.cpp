@@ -214,12 +214,7 @@ namespace dots
 
     void ConnectionManager::handleMemberMessage(io::Connection& connection, const DotsMember& member)
     {
-        DotsMember memberMod = member;
-        memberMod.client(connection.id());
-        if (!member.event.isValid())
-        {
-            LOG_WARN_S("member message without event");
-        }
+        member._assertHasProperties(DotsMember::groupName_p + DotsMember::event_p);
         LOG_DEBUG_S(*member.event << " " << member.groupName);
 
         if (member.event == DotsMemberEvent::kill)
@@ -248,18 +243,17 @@ namespace dots
 
             group->handleJoin(&connection);
 
-            auto& typeName = member.groupName;
-
-            const Container<>* container = m_dispatcher.pool().find(*typeName);
-            if (container == nullptr) return;
-
-            if (container->descriptor().cached())
+            if (const Container<>* container = m_dispatcher.pool().find(*member.groupName); container != nullptr)
             {
-                sendContainerContent(connection, *container);
-            }
-            else
-            {
-                sendCacheEnd(connection, typeName);
+                if (container->descriptor().cached())
+                {
+                    sendContainerContent(connection, *container);
+                }
+
+                connection.transmit(DotsCacheInfo{
+                    DotsCacheInfo::typeName_i{ member.groupName },
+                    DotsCacheInfo::endTransmission_i{ true }
+                });
             }
         }
     }
@@ -374,17 +368,6 @@ namespace dots
 
             connection.transmit(thead, instance);
         }
-
-        sendCacheEnd(connection, td.name());
-    }
-
-    void ConnectionManager::sendCacheEnd(io::Connection& connection, const std::string& typeName)
-    {
-        DotsCacheInfo dotsCacheInfo{
-            DotsCacheInfo::typeName_i{ typeName },
-            DotsCacheInfo::endTransmission_i{ true }
-        };
-        connection.transmit(dotsCacheInfo);
     }
 
     void ConnectionManager::cleanupObjects(io::Connection* connection)

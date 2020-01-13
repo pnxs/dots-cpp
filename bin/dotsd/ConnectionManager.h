@@ -56,7 +56,6 @@ namespace dots
         }
 
         void sendContainerContent(io::Connection& connection, const Container<>& container);
-        void sendCacheEnd(io::Connection& connection, const std::string& typeName);
 
         void cleanupObjects(io::Connection* connection);
 
