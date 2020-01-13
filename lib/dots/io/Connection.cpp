@@ -200,11 +200,11 @@ namespace dots::io
                             dotsHeader.sentTime = dotsHeader.serverSentTime;
                         }
 
-                        m_receiveHandler(transportHeader_, std::move(transmission), transportHeader_.dotsHeader->sender == ServerId);
+                        m_receiveHandler(*this, transportHeader_, std::move(transmission), transportHeader_.dotsHeader->sender == ServerId);
                     }
                     else
                     {
-                        m_receiveHandler(transportHeader, std::move(transmission), transportHeader.dotsHeader->sender == m_id);
+                        m_receiveHandler(*this, transportHeader, std::move(transmission), transportHeader.dotsHeader->sender == m_id);
                     }
                 }
                 else
@@ -251,7 +251,7 @@ namespace dots::io
             close_handler_t closeHandler;
             closeHandler.swap(m_closeHandler);
             m_closeHandler = nullptr;
-            closeHandler(m_id, e);
+            closeHandler(*this, e);
         }
 	}
 

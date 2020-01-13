@@ -13,8 +13,8 @@ namespace dots
 		
 		m_connection.emplace(std::move(connection));
 		m_connection->asyncReceive(m_registry, clientName,
-			[this](const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself){ return handleReceive(header, std::move(transmission), isFromMyself); },
-			[this](io::Connection::id_t id, const std::exception* e){ handleClose(id, e); }
+			[this](io::Connection& connection, const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself){ return handleReceive(connection, header, std::move(transmission), isFromMyself); },
+			[this](io::Connection& connection, const std::exception* e){ handleClose(connection, e); }
 		);
 		
 		return *m_connection;
@@ -22,7 +22,7 @@ namespace dots
 
 	void Transceiver::closeConnection()
 	{
-		handleClose(m_connection->id(), nullptr);
+		handleClose(*m_connection, nullptr);
 	}
 
 	const io::Registry& Transceiver::registry() const
@@ -106,7 +106,7 @@ namespace dots
 		publish(instance, what, remove);
 	}
 
-	bool Transceiver::handleReceive(const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself)
+	bool Transceiver::handleReceive(io::Connection& connection, const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself)
 	{
 		try 
         {
@@ -115,12 +115,12 @@ namespace dots
         }
         catch (const std::exception& e) 
         {
-            handleClose(m_connection->id(), &e);
+            handleClose(connection, &e);
             return false;
         }
 	}
 	
-	void Transceiver::handleClose(io::Connection::id_t /*id*/, const std::exception* e)
+	void Transceiver::handleClose(io::Connection& connection, const std::exception* e)
 	{
 		if (e != nullptr)
 		{
@@ -129,6 +129,6 @@ namespace dots
 		}
 
 		m_connection != std::nullopt;
-		LOG_INFO_S("connection closed -> id: " << m_connection->id() << ", name: " << m_connection->name());
+		LOG_INFO_S("connection closed -> id: " << connection.id() << ", name: " << connection.name());
 	}
 }

@@ -23,8 +23,8 @@ namespace dots::io
 		using id_t = uint32_t;
         static constexpr id_t ServerIdDeprecated = 1;
 
-		using receive_handler_t = std::function<bool(const DotsTransportHeader&, Transmission&&, bool)>;
-		using close_handler_t = std::function<void(id_t, const std::exception*)>;
+		using receive_handler_t = std::function<bool(Connection&, const DotsTransportHeader&, Transmission&&, bool)>;
+		using close_handler_t = std::function<void(Connection&, const std::exception*)>;
 		using descriptor_map_t = std::map<std::string_view, type::StructDescriptor<>*>;
 		
 		Connection(channel_ptr_t channel, bool server, descriptor_map_t preloadPublishTypes = {}, descriptor_map_t preloadSubscribeTypes = {});

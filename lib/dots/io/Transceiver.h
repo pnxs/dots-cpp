@@ -70,8 +70,8 @@ namespace dots
 
 	private:
 
-		bool handleReceive(const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself);
-		void handleClose(io::Connection::id_t id, const std::exception* e);
+		bool handleReceive(io::Connection& connection, const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself);
+		void handleClose(io::Connection& connection, const std::exception* e);
 
 		io::Registry m_registry;
 		Dispatcher m_dispatcher;

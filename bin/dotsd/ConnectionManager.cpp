@@ -57,7 +57,10 @@ namespace dots
         // Send to peer or group
         if (processLocal)
         {
-            handleReceive(header, std::move(transmission), true);
+            m_dispatcher.dispatch(header.dotsHeader, transmission.instance(), true);
+
+            Group* grp = getGroup({ header.destinationGroup });
+            if (grp) grp->deliver(header, transmission);
         }
         else
         {
@@ -136,8 +139,8 @@ namespace dots
             auto connection = std::make_shared<io::Connection>(std::move(channel), true);
             m_connections.insert({ connection->id(), connection });
             connection->asyncReceive(transceiver().registry(), m_name,
-                                     [this](const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself) { return handleReceive(header, std::move(transmission), isFromMyself); },
-                                     [this](io::Connection::id_t id, const std::exception* e) { handleClose(id, e); }
+                [this](io::Connection& connection, const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself) { return handleReceive(connection, header, std::move(transmission), isFromMyself); },
+                [this](io::Connection& connection, const std::exception* e) { handleClose(connection, e); }
             );
 
             return true;
@@ -151,7 +154,7 @@ namespace dots
         m_listener->asyncAccept(std::move(acceptHandler), std::move(errorHandler));
     }
 
-    bool ConnectionManager::handleReceive(const DotsTransportHeader& transportHeader, Transmission&& transmission, bool isFromMyself)
+    bool ConnectionManager::handleReceive(io::Connection& /*connection*/, const DotsTransportHeader& transportHeader, Transmission&& transmission, bool isFromMyself)
     {
         m_dispatcher.dispatch(transportHeader.dotsHeader, transmission.instance(), isFromMyself);
 
@@ -161,35 +164,29 @@ namespace dots
         return true;
     }
 
-    void ConnectionManager::handleClose(io::Connection::id_t id, const std::exception* e)
+    void ConnectionManager::handleClose(io::Connection& connection, const std::exception* e)
     {
         if (e != nullptr)
         {
             LOG_ERROR_S("connection error: " << e->what());
         }
 
-        io::connection_ptr_t connection = findConnection(id);
-
-        if (connection == nullptr)
-        {
-            LOG_WARN_S("cannot close unknown connection -> id: " << id);
-            return;
-        }
-
         for (auto& i : m_allGroups)
         {
             auto& group = i.second;
-            group->handleKill(connection.get());
+            group->handleKill(&connection);
+        }
+        
+        if (auto it = m_connections.find(connection.id()); it != m_connections.end())
+        {
+            m_cleanupConnections.insert(it->second);
+            m_connections.erase(it);
+            return;
         }
 
-        // move connection to m_cleanupConnection for later deletion.
-        m_cleanupConnections.insert(connection);
-        removeConnection(connection);
+        cleanupObjects(&connection);
 
-        // look if instances have to be cleaned up
-        cleanupObjects(connection.get());
-
-        LOG_INFO_S("connection closed -> id: " << connection->id() << ", name: " << connection->name());
+        LOG_INFO_S("connection closed -> id: " << connection.id() << ", name: " << connection.name());
     }
 
     io::connection_ptr_t ConnectionManager::findConnection(const io::Connection::id_t& id)
@@ -200,16 +197,6 @@ namespace dots
             return it->second;
         }
         return {};
-    }
-
-    void ConnectionManager::removeConnection(io::connection_ptr_t c)
-    {
-        auto it = m_connections.find(c->id());
-        if (it != m_connections.end())
-        {
-            m_connections.erase(it);
-            return;
-        }
     }
 
     void ConnectionManager::handleMemberMessage(const DotsMember::Cbd& cbd)
@@ -227,7 +214,7 @@ namespace dots
 
         if (member.event == DotsMemberEvent::kill)
         {
-            handleClose(connection->id(), nullptr);
+            handleClose(*connection, nullptr);
         }
         else if (member.event == DotsMemberEvent::leave)
         {

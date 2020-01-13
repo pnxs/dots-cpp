@@ -40,11 +40,10 @@ namespace dots
 
         void asyncAccept();
 
-        bool handleReceive(const DotsTransportHeader& transportHeader, Transmission&& transmission, bool isFromMyself);
-        void handleClose(io::Connection::id_t id, const std::exception* e);
+        bool handleReceive(io::Connection& connection, const DotsTransportHeader& transportHeader, Transmission&& transmission, bool isFromMyself);
+        void handleClose(io::Connection& connection, const std::exception* e);
 
         io::connection_ptr_t findConnection(const io::Connection::id_t& id);
-        void removeConnection(io::connection_ptr_t c);
 
         void handleMemberMessage(const DotsMember::Cbd& cbd);
         void handleDescriptorRequest(const DotsDescriptorRequest::Cbd& cbd);
