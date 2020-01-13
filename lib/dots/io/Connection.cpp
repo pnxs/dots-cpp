@@ -6,14 +6,13 @@
 #include <DotsCacheInfo.dots.h>
 #include <DotsClient.dots.h>
 #include <DotsDescriptorRequest.dots.h>
-#include <DotsMsgError.dots.h>
 
 namespace dots::io
 {
 	Connection::Connection(channel_ptr_t channel, bool server, descriptor_map_t preloadPublishTypes/* = {}*/, descriptor_map_t preloadSubscribeTypes/* = {}*/) :
         m_expectedSystemType{ &DotsMsgError::_Descriptor(), types::property_set_t::None, nullptr },
-        m_connectionState(DotsConnectionState::closed),
-		m_id(m_server ? M_nextClientId++ : 0),
+        m_connectionState(DotsConnectionState::suspended),
+		m_id(server ? M_nextClientId++ : 0),
 	    m_name("<not_set>"),
 		m_channel(std::move(channel)),
 		m_server(server),
@@ -24,7 +23,15 @@ namespace dots::io
 		/* do nothing */
 	}
 
-	DotsConnectionState Connection::state() const
+    Connection::~Connection()
+    {
+        if (m_connectionState == DotsConnectionState::connected)
+        {
+            transmit(DotsMsgError{ DotsMsgError::errorCode_i{ 0 } });
+        }
+    }
+
+    DotsConnectionState Connection::state() const
 	{
 		return m_connectionState;
 	}
@@ -44,16 +51,16 @@ namespace dots::io
 		return m_connectionState == DotsConnectionState::connected;
 	}
 
-	void Connection::asyncReceive(Registry& registry, const std::string& name, receive_handler_t&& receiveHandler, error_handler_t&& errorHandler)
+	void Connection::asyncReceive(Registry& registry, const std::string& name, receive_handler_t&& receiveHandler, close_handler_t&& closeHandler)
 	{
-		if (m_connectionState != DotsConnectionState::closed)
+		if (m_connectionState != DotsConnectionState::suspended)
         {
-            throw std::logic_error{ "only one async receive can be active at the same time" };
+            throw std::logic_error{ "only one async receive can be started on a connection" };
         }
 
 		m_registry = &registry;
 		m_receiveHandler = std::move(receiveHandler);
-		m_errorHandler = std::move(errorHandler);
+		m_closeHandler = std::move(closeHandler);
 		
 		setConnectionState(DotsConnectionState::connecting);
 		m_channel->asyncReceive(registry,
@@ -102,7 +109,7 @@ namespace dots::io
             header.nameSpace("SYS");
         }
 
-		m_channel->transmit(header, instance);
+		transmit(header, instance);
 	}
 
     void Connection::transmit(const DotsTransportHeader& header, const type::Struct& instance)
@@ -149,34 +156,38 @@ namespace dots::io
 
 	bool Connection::handleReceive(const DotsTransportHeader& transportHeader, Transmission&& transmission)
 	{
+        if (m_connectionState == DotsConnectionState::closed)
+        {
+            return false;
+        }
+
         try 
         {
             const type::Struct& instance = transmission.instance();
 
             if (instance._isAny<DotsMsgHello, DotsMsgConnect, DotsMsgConnectResponse, DotsMsgError>())
             {
-                const auto& [expectedType, expectedProperties, handler] = m_expectedSystemType;
-
-                if (const type::StructDescriptor<>* actualType = &instance._descriptor(); actualType != expectedType)
-                {
-                    throw std::logic_error{ "expected system type " + expectedType->name() + " but received instance of " + actualType->name() };
-                }
-
-                if (const types::property_set_t& actualProperties = instance._validProperties(); actualProperties != expectedProperties)
-                {
-                    throw std::logic_error{ "expected system instance to have properties " + expectedProperties.toString() + " but received " + actualProperties.toString() };
-                }
-
                 if (auto* dotsMsgError = instance._as<DotsMsgError>())
                 {
-                    std::string what = "received DOTS error: (";
-                    what += dotsMsgError->errorCode.isValid() ? std::to_string(dotsMsgError->errorCode) : std::string{ "<unknown error code>" } + ") ";
-                    what += dotsMsgError->errorText.isValid() ? *dotsMsgError->errorText : std::string{ "<unknown error>" };
-
-                    throw std::runtime_error{ what };
+                    handlePeerError(*dotsMsgError);
+                    return false;
                 }
+                else
+                {
+                    const auto& [expectedType, expectedProperties, handler] = m_expectedSystemType;
 
-                handler(instance);
+                    if (const type::StructDescriptor<>* actualType = &instance._descriptor(); actualType != expectedType)
+                    {
+                        throw std::logic_error{ "expected system type " + expectedType->name() + " but received instance of " + actualType->name() };
+                    }
+
+                    if (const types::property_set_t& actualProperties = instance._validProperties(); actualProperties != expectedProperties)
+                    {
+                        throw std::logic_error{ "expected system instance to have properties " + expectedProperties.toString() + " but received " + actualProperties.toString() };
+                    }
+
+                    handler(instance);
+                }
             }
             else
             {
@@ -214,6 +225,11 @@ namespace dots::io
         }
         catch (const std::exception& e) 
         {
+            transmit(DotsMsgError{
+                DotsMsgError::errorCode_i{ 1 },
+                DotsMsgError::errorText_i{ e.what() }
+            });
+            
             handleError(e);
             return false;
         }
@@ -221,29 +237,29 @@ namespace dots::io
 
 	void Connection::handleError(const std::exception& e)
 	{
-        LOG_ERROR_S("channel error: " << e.what());
-
-        if (m_connectionState != DotsConnectionState::closed)
+        if (m_connectionState == DotsConnectionState::closed)
         {
-            transmit(DotsMsgError{
-                DotsMsgError::errorCode_i{ 1 },
-                DotsMsgError::errorText_i{ e.what() }
-            });
+            throw std::runtime_error{ "unable to handle error in closed state: " + std::string{ e.what() } };
+        }
 
-            setConnectionState(DotsConnectionState::closed);
+        handleClose(&e);
+	}
 
-            expectSystemType<DotsMsgError>(types::property_set_t::None, nullptr);
+    void Connection::handleClose(const std::exception* e)
+	{
+	    m_receiveHandler = nullptr;
+        m_registry = nullptr;
+		m_preloadSubscribeTypes.clear();
+        m_preloadPublishTypes.clear();
+        setConnectionState(DotsConnectionState::closed);
+        expectSystemType<DotsMsgError>(types::property_set_t::None, nullptr);
 
-            m_registry = nullptr;
-		    m_receiveHandler = nullptr;
-
-            if (m_errorHandler != nullptr)
-            {
-                error_handler_t errorHandler;
-                errorHandler.swap(m_errorHandler);
-                m_errorHandler = nullptr;
-                errorHandler(m_id, e);
-            }
+        if (m_closeHandler != nullptr)
+        {
+            close_handler_t closeHandler;
+            closeHandler.swap(m_closeHandler);
+            m_closeHandler = nullptr;
+            closeHandler(m_id, e);
         }
 	}
 
@@ -288,12 +304,14 @@ namespace dots::io
 		else
 		{
 			setConnectionState(DotsConnectionState::connected);
+            expectSystemType<DotsMsgError>(DotsMsgError::errorCode_p, &Connection::handlePeerError);
 		}
 	}
 	
 	void Connection::handlePreloadFinished(const DotsMsgConnectResponse&/* connectResponse*/)
 	{
 		setConnectionState(DotsConnectionState::connected);
+        expectSystemType<DotsMsgError>(DotsMsgError::errorCode_p, &Connection::handlePeerError);
 	}
 
     void Connection::handleConnect(const DotsMsgConnect& connect)
@@ -322,6 +340,7 @@ namespace dots::io
         else
         {
             setConnectionState(DotsConnectionState::connected);
+            expectSystemType<DotsMsgError>(DotsMsgError::errorCode_p, &Connection::handlePeerError);
         }
     }
 
@@ -339,9 +358,26 @@ namespace dots::io
         transmit(DotsMsgConnectResponse{
             DotsMsgConnectResponse::preloadFinished_i{ true }
         });
+
+        expectSystemType<DotsMsgError>(DotsMsgError::errorCode_p, &Connection::handlePeerError);
     }
-	
-	void Connection::importType(const type::Struct& instance)
+
+    void Connection::handlePeerError(const DotsMsgError& error)
+    {
+        if (error.errorCode == 0)
+        {
+            handleClose(nullptr);
+        }
+        else
+        {
+            std::string what = "received DOTS error: (";
+            what += error.errorCode.isValid() ? std::to_string(error.errorCode) : std::string{ "<unknown error code>" } + ") ";
+            what += error.errorText.isValid() ? *error.errorText : std::string{ "<unknown error>" };
+            handleError(std::runtime_error{ what });
+        }
+    }
+
+    void Connection::importType(const type::Struct& instance)
     {
         if (auto* structDescriptorData = instance._as<StructDescriptorData>())
         {

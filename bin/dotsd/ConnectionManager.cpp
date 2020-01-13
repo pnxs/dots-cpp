@@ -164,21 +164,31 @@ io::connection_ptr_t ConnectionManager::findConnection(const io::Connection::id_
     return {};
 }
 
-void ConnectionManager::handleError(io::Connection::id_t id, const std::exception&/* e*/)
+void ConnectionManager::handleClose(io::Connection::id_t id, const std::exception* e)
 {
-    io::Connection* connection = m_connections.find(id)->second.get();
-    m_groupManager.handleKill(connection);
+    if (e != nullptr)
+	{
+		LOG_ERROR_S("connection error: " << e->what());
+	}
 
-    auto connPtr = findConnection(connection->id());
-    if (connPtr)
+	const io::connection_ptr_t& connection = findConnection(id);
+
+    if (connection == nullptr)
     {
-        // Move connection to m_cleanupConnection for later deletion.
-        m_cleanupConnections.insert(connPtr);
-        removeConnection(connPtr);
-
-        // Look if objects has to be cleaned up
-        cleanupObjects(connection);
+        LOG_WARN_S("cannot close unknown connection -> id: " << id);
+        return;
     }
+
+    m_groupManager.handleKill(connection.get());
+
+    // move connection to m_cleanupConnection for later deletion.
+    m_cleanupConnections.insert(connection);
+    removeConnection(connection);
+
+    // look if instances have to be cleaned up
+    cleanupObjects(connection.get());
+
+	LOG_INFO_S("connection closed -> id: " << connection->id() << ", name: " << connection->name());
 }
 
 /*!
@@ -192,7 +202,7 @@ void ConnectionManager::asyncAccept()
 		m_connections.insert({ connection->id(), connection });
         connection->asyncReceive(transceiver().registry(), m_name,
             [this](const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself){ return handleReceive(header, std::move(transmission), isFromMyself); },
-            [this](io::Connection::id_t id, const std::exception& e){ handleError(id, e); }
+            [this](io::Connection::id_t id, const std::exception* e){ handleClose(id, e); }
         );
 
 		return true;
