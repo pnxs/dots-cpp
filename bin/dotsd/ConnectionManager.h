@@ -60,12 +60,10 @@ namespace dots
 
         void sendContainerContent(io::Connection& connection, const Container<>& container);
 
-        void cleanupObjects(io::Connection* connection);
-
         static std::string flags2String(const dots::type::StructDescriptor<>* td);
 
         std::map<io::Connection::id_t, io::connection_ptr_t> m_connections;
-        std::vector<const Container<>*> m_cleanupContainer;
+        std::vector<const Container<>*> m_cleanupContainers;
 
         std::set<io::connection_ptr_t> m_cleanupConnections;
 

@@ -27,7 +27,7 @@ namespace dots
             m_distributedTypeId->createTypeId(t.second.get());
         }
 
-        add_timer(1, FUN(*this, clientCleanup));
+        add_timer(1, [&](){ clientCleanup(); }, true);
     }
 
     const ContainerPool& ConnectionManager::pool() const
@@ -111,8 +111,6 @@ namespace dots
         {
             remove(DotsClient{ DotsClient::id_i{ id } });
         }
-
-        add_timer(1, FUN(*this, clientCleanup));
     }
 
     void ConnectionManager::onNewType(const dots::type::StructDescriptor<>* td)
@@ -129,12 +127,10 @@ namespace dots
 
         if (td->cleanup())
         {
-            m_cleanupContainer.push_back(&container);
+            m_cleanupContainers.emplace_back(&container);
         }
 
-        m_dispatcher.subscribe(*td, [](const Event<>&)
-        {
-        }).discard();
+        m_dispatcher.subscribe(*td, [](const Event<>&){}).discard();
     }
 
     void ConnectionManager::asyncAccept()
@@ -205,7 +201,23 @@ namespace dots
             return;
         }
 
-        cleanupObjects(&connection);
+        for (const Container<>* container : m_cleanupContainers)
+        {
+            std::vector<const type::Struct*> cleanupInstances;
+
+            for (const auto& [instance, cloneInfo] : *container)
+            {
+                if (connection.id() == cloneInfo.lastUpdateFrom)
+                {
+                    cleanupInstances.emplace_back(&*instance);
+                }
+            }
+
+            for (const type::Struct* instance : cleanupInstances)
+            {
+                remove(*instance);
+            }
+        }
 
         LOG_INFO_S("connection closed -> id: " << connection.id() << ", name: " << connection.name());
     }
@@ -268,77 +280,58 @@ namespace dots
 
     void ConnectionManager::handleDescriptorRequest(io::Connection& connection, const DotsDescriptorRequest& descriptorRequest)
     {
-        auto& wl = descriptorRequest.whitelist.isValid() ? *descriptorRequest.whitelist : dots::type::Vector<string>();
+        const types::vector_t<types::string_t>& whiteList = descriptorRequest.whitelist.isValid() ? *descriptorRequest.whitelist : types::vector_t<types::string_t>{};
+        const types::vector_t<types::string_t>& blacklist = descriptorRequest.blacklist.isValid() ? *descriptorRequest.blacklist : types::vector_t<types::string_t>{};
 
-        dots::TD_Traversal traversal;
+        TD_Traversal traversal;
 
         LOG_INFO_S("received DescriptorRequest from " << connection.name() << "(" << connection.id() << ")");
 
-        for (const auto& cpItem : m_dispatcher.pool())
+        for (const auto& [descriptor, container] : m_dispatcher.pool())
         {
-            const auto& container = cpItem.second;
-            const auto& td = container.descriptor();
-
-            if (!wl.empty() && std::find(wl.begin(), wl.end(), td.name()) == wl.end())
+            if (descriptor->internal())
             {
-                // when whitelist is set, skip all types, that are not on the list.
                 continue;
             }
 
-            if (descriptorRequest.blacklist.isValid())
+            if (!whiteList.empty() && std::find(whiteList.begin(), whiteList.end(), descriptor->name()) == whiteList.end())
             {
-                auto& bl = *descriptorRequest.blacklist;
-                if (std::find(bl.begin(), bl.end(), td.name()) != wl.end())
-                {
-                    // if blacklist is set and the type was found on the list, skip it.
-                    continue;
-                }
+                continue;
             }
 
-            if (td.internal()) continue; // skip internal types
-
-            LOG_DEBUG_S("sending descriptor for type '" << td.name() << "' to " << connection.id());
-            traversal.traverseDescriptorData(&td, [&](auto td, auto body)
+            if (!blacklist.empty() && std::find(blacklist.begin(), blacklist.end(), descriptor->name()) != blacklist.end())
             {
-                DotsTransportHeader thead;
-                m_transmitter.prepareHeader(thead, td, td->validProperties(body), false);
-                thead.dotsHeader->sentTime = pnxs::SystemNow();
-                thead.dotsHeader->sender(io::Connection::ServerIdDeprecated);
+                continue;
+            }
 
-                // Send to peer or group
-                connection.transmit(thead, *reinterpret_cast<const type::Struct*>(body));
+            LOG_DEBUG_S("sending descriptor for type '" << descriptor->name() << "' to " << connection.id());
+
+            traversal.traverseDescriptorData(descriptor, [&](auto/* td*/, auto body)
+            {
+                connection.transmit(*reinterpret_cast<const type::Struct*>(body));
             });
         }
 
-        DotsCacheInfo dotsCacheInfo{
-            DotsCacheInfo::endDescriptorRequest_i{ true }
-        };
-        connection.transmit(dotsCacheInfo);
+        connection.transmit(DotsCacheInfo{ DotsCacheInfo::endDescriptorRequest_i{ true } });
     }
 
     void ConnectionManager::handleClearCache(io::Connection&/* connection*/, const DotsClearCache& clearCache)
     {
-        auto& whitelist = clearCache.typeNames.isValid() ? *clearCache.typeNames : dots::type::Vector<string>();
+        clearCache._assertHasProperties(DotsClearCache::typeNames_p);
+        const types::vector_t<types::string_t>& typeNames = clearCache.typeNames;
 
-        for (auto& cpItem : m_dispatcher.pool())
+        for (auto& [descriptor, container] : m_dispatcher.pool())
         {
-            auto& container = cpItem.second;
-
-            if (std::find(whitelist.begin(), whitelist.end(), container.descriptor().name()) == whitelist.end())
+            if (std::find(typeNames.begin(), typeNames.end(), container.descriptor().name()) != typeNames.end())
             {
-                continue; // not found
+                LOG_INFO_S("clear container '" << container.descriptor().name() << "' (" << container.size() << " elements)");
+
+                for (const auto& [instance, cloneInformation] : container)
+                {
+                    (void)cloneInformation;
+                    remove(instance);
+                }
             }
-
-            // clear container content
-            LOG_INFO_S("clear container '" << container.descriptor().name() << "' (" << container.size() << " elements)");
-
-            // publish remove for every element of the container
-            for (auto& element : container)
-            {
-                publishNs({}, &container.descriptor(), element.first, container.descriptor().keys(), true, false);
-            }
-
-            container.clear();
         }
     }
 
@@ -375,28 +368,6 @@ namespace dots
             dotsHeader.fromCache = --remainingCacheObjects;
 
             connection.transmit(thead, instance);
-        }
-    }
-
-    void ConnectionManager::cleanupObjects(io::Connection* connection)
-    {
-        for (const auto& container : m_cleanupContainer)
-        {
-            vector<const type::Struct*> remove;
-
-            // Search for objects which where sent by this killed Connection.
-            for (const auto& [instance, cloneInfo] : *container)
-            {
-                if (connection->id() == cloneInfo.lastUpdateFrom)
-                {
-                    remove.push_back(&*instance);
-                }
-            }
-
-            for (auto item : remove)
-            {
-                publishNs({}, &container->descriptor(), *reinterpret_cast<const type::Struct*>(item), container->descriptor().keys(), true);
-            }
         }
     }
 
