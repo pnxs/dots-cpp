@@ -217,7 +217,7 @@ namespace dots::type
         template <typename T>
         static decltype(auto) ToRef(T&& t)
         {
-            if constexpr (std::is_pointer_v<T>)
+            if constexpr (std::is_pointer_v<std::decay_t<T>>)
             {
                 return *t;
             }
