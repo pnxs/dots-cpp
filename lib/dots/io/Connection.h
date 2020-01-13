@@ -75,20 +75,21 @@ namespace dots::io
 
         inline static id_t M_nextClientId = FirstClientId;
 
-		bool m_server;
+		system_type_t m_expectedSystemType;
 		DotsConnectionState m_connectionState;
         id_t m_id;
-		
-		channel_ptr_t m_channel;
-		io::Registry* m_registry;
         std::string m_name;
+
+		channel_ptr_t m_channel;
+		bool m_server;
 		descriptor_map_t m_preloadPublishTypes;
 		descriptor_map_t m_preloadSubscribeTypes;
+
+		Registry* m_registry;
 		receive_handler_t m_receiveHandler;
 		error_handler_t m_errorHandler;
 		
 		std::set<std::string> m_sharedTypes;
-		system_type_t m_expectedSystemType;
 	};
 
     using channel_connection_ptr_t = std::shared_ptr<Connection>;

@@ -11,15 +11,15 @@
 namespace dots::io
 {
 	Connection::Connection(channel_ptr_t channel, bool server, descriptor_map_t preloadPublishTypes/* = {}*/, descriptor_map_t preloadSubscribeTypes/* = {}*/) :
-		m_server(server),
+        m_expectedSystemType{ &DotsMsgError::_Descriptor(), types::property_set_t::None, nullptr },
         m_connectionState(DotsConnectionState::closed),
 		m_id(m_server ? M_nextClientId++ : 0),
-		m_channel(std::move(channel)),
-		m_registry(nullptr),
 	    m_name("<not_set>"),
+		m_channel(std::move(channel)),
+		m_server(server),
 		m_preloadPublishTypes(std::move(preloadPublishTypes)),
 		m_preloadSubscribeTypes(std::move(preloadSubscribeTypes)),
-        m_expectedSystemType{ &DotsMsgError::_Descriptor(), types::property_set_t::None, nullptr }
+		m_registry(nullptr)
 	{
 		/* do nothing */
 	}
