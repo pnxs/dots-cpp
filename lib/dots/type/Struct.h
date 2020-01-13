@@ -2,6 +2,7 @@
 #include <string_view>
 #include <array>
 #include <functional>
+#include <type_traits>
 #include <dots/type/PropertyContainer.h>
 #include <dots/type/StructDescriptor.h>
 
@@ -89,22 +90,39 @@ namespace dots::type
                 }
                 else
                 {
-                    throw std::logic_error{ _desc->name() + "instance does not have expected exact properties: " + to_property_list(*_desc, expectedProperties) + ", but instead has " + to_property_list(*_desc, actualProperties) };
+                    throw std::logic_error{ _desc->name() + " instance does not have expected exact properties: " + to_property_list(*_desc, expectedProperties) + ", but instead has " + to_property_list(*_desc, actualProperties) };
                 }
             }
+        }
+
+        template <typename TDescriptor>
+        bool _is(TDescriptor&& descriptor) const
+        {
+            static_assert(!std::is_rvalue_reference_v<TDescriptor>);
+            static_assert(std::is_base_of_v<StructDescriptor<>, std::remove_pointer_t<std::decay_t<TDescriptor>>>);
+
+            return &ToRef(std::forward<TDescriptor>(descriptor)) == _desc;
+        }
+
+        template <typename... Descriptors>
+        bool _isAny(Descriptors&&... descriptors) const
+        {
+            static_assert(sizeof...(Descriptors) > 0);
+            return (_is(std::forward<Descriptors>(descriptors)) || ...);
         }
 
         template <typename T>
         bool _is() const
         {
             static_assert(std::is_base_of_v<Struct, T>, "T has to be a sub-class of Struct");
-            return &T::_Descriptor() == _desc;
+            return _is(T::_Descriptor());
         }
 
     	template <typename... Ts>
         bool _isAny() const
         {
-            return (_is<Ts>() || ...);
+            static_assert(std::conjunction_v<std::is_base_of<Struct, Ts>...>);
+            return _isAny(Ts::_Descriptor()...);
         }
 
         template <typename T>
@@ -160,6 +178,19 @@ namespace dots::type
     	{
     		return _desc->propertyDescriptors();
     	}
+
+        template <typename T>
+        static decltype(auto) ToRef(T&& t)
+        {
+            if constexpr (std::is_pointer_v<T>)
+            {
+                return *t;
+            }
+            else
+            {
+                return t;
+            }
+        }
 
         const StructDescriptor<>* _desc;
     };
