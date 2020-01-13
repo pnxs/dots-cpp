@@ -3,112 +3,112 @@
 #include <dots/io/Connection.h>
 #include "ConnectionManager.h"
 
-namespace dots {
-
-Group::Group(const string &name)
-:m_name(name)
+namespace dots
 {
-}
-
-Group::~Group()
-{
-}
-
-/**
- * Add peer to membersList and push Connection into connection-list.
- * Send join-message to all registered connection, that want MemberMessages
- * @param groupMember
- * @param connection
- */
-void Group::handleJoin(io::Connection *connection)
-{
-    const auto& groupMember = connection->id();
-    auto member = getMember(groupMember);
-
-    if (member)
+    Group::Group(const string& name):
+        m_name(name)
     {
-        LOG_WARN_S(connection->name() << " is already member of group " << name());
-        return;
     }
 
-    m_membersList.insert(groupMember);
-
-    if (connection)
+    Group::~Group()
     {
-        m_connections.push_back(connection);
-    }
-}
-
-void Group::handleLeave(io::Connection *connection)
-{
-    const auto& groupMember = connection->id();
-    auto member = getMember(groupMember);
-
-    if (not member)
-    {
-        LOG_WARN_P("member does not exist");
-        return;
     }
 
-    if (not connection)
+    /**
+     * Add peer to membersList and push Connection into connection-list.
+     * Send join-message to all registered connection, that want MemberMessages
+     * @param groupMember
+     * @param connection
+     */
+    void Group::handleJoin(io::Connection* connection)
     {
-        LOG_WARN_S("member has no local connections in group");
-    } else {
-        removeConnection(connection);
-    }
+        const auto& groupMember = connection->id();
+        auto member = getMember(groupMember);
 
-    m_membersList.erase(*member);
-}
-
-void Group::handleKill(io::Connection *connection)
-{
-    const auto& groupMember = connection->id();
-    auto member = getMember(groupMember);
-    if (member == nullptr) return;
-
-    removeConnection(connection);
-
-    m_membersList.erase(*member);
-}
-
-void Group::removeConnection(io::Connection *connection)
-{
-    if (not connection)
-    {
-        LOG_WARN_P("invalid connection");
-        return;
-    }
-
-    for (auto& i : m_connections)
-    {
-        if (i == connection)
+        if (member)
         {
-            i = m_connections.back();
-            m_connections.pop_back();
+            LOG_WARN_S(connection->name() << " is already member of group " << name());
             return;
         }
-    }
-}
 
-void Group::deliver(const DotsTransportHeader& transportHeader, const Transmission& transmission)
-{
-    LOG_DEBUG_S("deliver message group:" << this << "(" << name() << ")");
-    // Dispatch message to all connections, registered to the group
-    for(const auto connection : m_connections)
-    {
-        if(connection != NULL)
+        m_membersList.insert(groupMember);
+
+        if (connection)
         {
-            string ns;
+            m_connections.push_back(connection);
+        }
+    }
 
-            if (transportHeader.nameSpace.isValid()) ns = transportHeader.nameSpace;
-            LOG_DATA_S("send to connection " << connection->id() << " ns=" << ns << " grp=" << transportHeader.destinationGroup);
-            if (connection->state() == DotsConnectionState::connected
-                or connection->state() == DotsConnectionState::suspended)
+    void Group::handleLeave(io::Connection* connection)
+    {
+        const auto& groupMember = connection->id();
+        auto member = getMember(groupMember);
+
+        if (!member)
+        {
+            LOG_WARN_P("member does not exist");
+            return;
+        }
+
+        if (!connection)
+        {
+            LOG_WARN_S("member has no local connections in group");
+        }
+        else
+        {
+            removeConnection(connection);
+        }
+
+        m_membersList.erase(*member);
+    }
+
+    void Group::handleKill(io::Connection* connection)
+    {
+        const auto& groupMember = connection->id();
+        auto member = getMember(groupMember);
+        if (member == nullptr) return;
+
+        removeConnection(connection);
+
+        m_membersList.erase(*member);
+    }
+
+    void Group::removeConnection(io::Connection* connection)
+    {
+        if (!connection)
+        {
+            LOG_WARN_P("invalid connection");
+            return;
+        }
+
+        for (auto& i : m_connections)
+        {
+            if (i == connection)
             {
-                connection->transmit(transportHeader, transmission);
+                i = m_connections.back();
+                m_connections.pop_back();
+                return;
             }
         }
     }
-}
 
+    void Group::deliver(const DotsTransportHeader& transportHeader, const Transmission& transmission)
+    {
+        LOG_DEBUG_S("deliver message group:" << this << "(" << name() << ")");
+        // Dispatch message to all connections, registered to the group
+        for (const auto connection : m_connections)
+        {
+            if (connection != NULL)
+            {
+                string ns;
+
+                if (transportHeader.nameSpace.isValid()) ns = transportHeader.nameSpace;
+                LOG_DATA_S("send to connection " << connection->id() << " ns=" << ns << " grp=" << transportHeader.destinationGroup);
+                if (connection->state() == DotsConnectionState::connected || connection->state() == DotsConnectionState::suspended)
+                {
+                    connection->transmit(transportHeader, transmission);
+                }
+            }
+        }
+    }
 }

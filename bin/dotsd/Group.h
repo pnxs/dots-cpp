@@ -12,49 +12,48 @@ namespace dots::io
     struct Connection;
 }
 
-namespace dots {
-
-typedef ClientId GroupMember;
-
-/**
- * A representation of a messaging-group in DOTS.
- * A peer can subscribe to a group and gets all updates to this
- * group.
- */
-class Group
+namespace dots
 {
-    typedef std::vector<io::Connection*> ConnectionList;
-    const string m_name;
-    std::set<GroupMember> m_membersList; // all groups members
+    typedef ClientId GroupMember;
 
     /**
-     * Search for member in membersList.
-     * @param key member-key
-     * @return member-point or NULL
+     * A representation of a messaging-group in DOTS.
+     * A peer can subscribe to a group and gets all updates to this
+     * group.
      */
-    const GroupMember *getMember(const GroupMember &key)
+    class Group
     {
-        auto it = m_membersList.find(key);
-        return it != m_membersList.end() ? &*it : NULL;
-    }
+        typedef std::vector<io::Connection*> ConnectionList;
+        const string m_name;
+        std::set<GroupMember> m_membersList; // all groups members
 
-    void removeConnection(io::Connection *connection);
+        /**
+         * Search for member in membersList.
+         * @param key member-key
+         * @return member-point or NULL
+         */
+        const GroupMember* getMember(const GroupMember& key)
+        {
+            auto it = m_membersList.find(key);
+            return it != m_membersList.end() ? &*it : NULL;
+        }
 
-    ConnectionList m_connections; // local group members
-public:
+        void removeConnection(io::Connection* connection);
 
-    Group(const string &name);
-    ~Group();
+        ConnectionList m_connections; // local group members
+    public:
 
-    const string &name() const { return m_name; }
+        Group(const string& name);
+        ~Group();
 
-    void handleJoin(io::Connection *connection);
-    void handleLeave(io::Connection *connection);
-    void handleKill(io::Connection *connection);
+        const string& name() const { return m_name; }
 
-    void deliver(const DotsTransportHeader& transportHeader, const Transmission& transmission);
-};
+        void handleJoin(io::Connection* connection);
+        void handleLeave(io::Connection* connection);
+        void handleKill(io::Connection* connection);
 
-typedef string GroupKey;
+        void deliver(const DotsTransportHeader& transportHeader, const Transmission& transmission);
+    };
 
+    typedef string GroupKey;
 }
