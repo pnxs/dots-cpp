@@ -22,21 +22,11 @@ namespace dots
         const string m_name;
         std::set<GroupMember> m_membersList;
 
-        const GroupMember* getMember(const GroupMember& key)
-        {
-            auto it = m_membersList.find(key);
-            return it != m_membersList.end() ? &*it : NULL;
-        }
-
-        void removeConnection(io::Connection* connection);
-
         ConnectionList m_connections;
     public:
 
         Group(const string& name);
-        ~Group();
-
-        const string& name() const { return m_name; }
+        ~Group() = default;
 
         void handleJoin(io::Connection* connection);
         void handleLeave(io::Connection* connection);

@@ -255,7 +255,7 @@ namespace dots
             if (group == nullptr)
             {
                 group = new Group(member.groupName);
-                m_allGroups.insert({ group->name(), group });
+                m_allGroups.insert({ member.groupName, group });
             }
 
             group->handleJoin(connection);

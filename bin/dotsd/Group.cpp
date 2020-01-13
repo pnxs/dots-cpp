@@ -10,18 +10,16 @@ namespace dots
     {
     }
 
-    Group::~Group()
-    {
-    }
-
     void Group::handleJoin(io::Connection* connection)
     {
         const auto& groupMember = connection->id();
-        auto member = getMember(groupMember);
+
+        auto it = m_membersList.find(groupMember);
+        auto member = it != m_membersList.end() ? &*it : NULL;
 
         if (member)
         {
-            LOG_WARN_S(connection->name() << " is already member of group " << name());
+            LOG_WARN_S(connection->name() << " is already member of group " << m_name);
             return;
         }
 
@@ -36,7 +34,8 @@ namespace dots
     void Group::handleLeave(io::Connection* connection)
     {
         const auto& groupMember = connection->id();
-        auto member = getMember(groupMember);
+        auto it = m_membersList.find(groupMember);
+        auto member = it != m_membersList.end() ? &*it : NULL;
 
         if (!member)
         {
@@ -50,7 +49,21 @@ namespace dots
         }
         else
         {
-            removeConnection(connection);
+            if (!connection)
+            {
+                LOG_WARN_P("invalid connection");
+                return;
+            }
+
+            for (auto& i : m_connections)
+            {
+                if (i == connection)
+                {
+                    i = m_connections.back();
+                    m_connections.pop_back();
+                    return;
+                }
+            }
         }
 
         m_membersList.erase(*member);
@@ -58,37 +71,12 @@ namespace dots
 
     void Group::handleKill(io::Connection* connection)
     {
-        const auto& groupMember = connection->id();
-        auto member = getMember(groupMember);
-        if (member == nullptr) return;
-
-        removeConnection(connection);
-
-        m_membersList.erase(*member);
-    }
-
-    void Group::removeConnection(io::Connection* connection)
-    {
-        if (!connection)
-        {
-            LOG_WARN_P("invalid connection");
-            return;
-        }
-
-        for (auto& i : m_connections)
-        {
-            if (i == connection)
-            {
-                i = m_connections.back();
-                m_connections.pop_back();
-                return;
-            }
-        }
+        handleLeave(connection);
     }
 
     void Group::deliver(const DotsTransportHeader& transportHeader, const Transmission& transmission)
     {
-        LOG_DEBUG_S("deliver message group:" << this << "(" << name() << ")");
+        LOG_DEBUG_S("deliver message group:" << this << "(" << m_name << ")");
         
         for (const auto connection : m_connections)
         {
