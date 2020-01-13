@@ -63,7 +63,7 @@ namespace dots
 
         for (io::Connection* destinationConnection : m_groups[header.destinationGroup])
         {
-            LOG_DEBUG_S("deliver message group:" << this << "(" << m_name << ")");
+            LOG_DEBUG_S("deliver message group:" << this << "(" << header.destinationGroup << ")");
 
             if (destinationConnection->state() != DotsConnectionState::closed)
             {
@@ -191,7 +191,7 @@ namespace dots
 
         for (io::Connection* destinationConnection : m_groups[transportHeader.destinationGroup])
         {
-            LOG_DEBUG_S("deliver message group:" << this << "(" << m_name << ")");
+            LOG_DEBUG_S("deliver message group:" << this << "(" << transportHeader.destinationGroup << ")");
 
             if (destinationConnection->state() != DotsConnectionState::closed)
             {
