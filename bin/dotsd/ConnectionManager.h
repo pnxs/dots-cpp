@@ -58,10 +58,6 @@ namespace dots
             return it != m_allGroups.end() ? it->second : NULL;
         }
 
-        void handleJoin(const GroupKey& groupKey, io::Connection* connection);
-        void handleLeave(const GroupKey& groupKey, io::Connection* connection);
-        void handleKill(io::Connection* connection);
-
         void sendContainerContent(io::Connection& connection, const Container<>& container);
         void sendCacheEnd(io::Connection& connection, const std::string& typeName);
 

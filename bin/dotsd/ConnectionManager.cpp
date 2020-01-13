@@ -177,7 +177,7 @@ namespace dots
             LOG_ERROR_S("connection error: " << e->what());
         }
 
-        const io::connection_ptr_t& connection = findConnection(id);
+        io::connection_ptr_t connection = findConnection(id);
 
         if (connection == nullptr)
         {
@@ -185,7 +185,11 @@ namespace dots
             return;
         }
 
-        handleKill(connection.get());
+        for (auto& i : m_allGroups)
+        {
+            auto& group = i.second;
+            group->handleKill(connection.get());
+        }
 
         // move connection to m_cleanupConnection for later deletion.
         m_cleanupConnections.insert(connection);
@@ -232,21 +236,29 @@ namespace dots
 
         if (member.event == DotsMemberEvent::kill)
         {
-            handleKill(connection);
-
-            if (connection)
-            {
-                cleanupObjects(connection);
-                m_connections.erase(connection->id());
-            }
+            handleClose(connection->id(), nullptr);
         }
         else if (member.event == DotsMemberEvent::leave)
         {
-           handleLeave(member.groupName, connection);
+            auto group = getGroup(member.groupName);
+            if (group == nullptr)
+            {
+                LOG_ERROR_S("group does not exist");
+                return;
+            }
+
+            group->handleLeave(connection);
         }
         else if (member.event == DotsMemberEvent::join)
         {
-            handleJoin(member.groupName, connection);
+            auto group = getGroup(member.groupName);
+            if (group == nullptr)
+            {
+                group = new Group(member.groupName);
+                m_allGroups.insert({ group->name(), group });
+            }
+
+            group->handleJoin(connection);
 
             auto& typeName = member.groupName;
 
@@ -347,39 +359,6 @@ namespace dots
             }
 
             container.clear();
-        }
-    }
-
-    void ConnectionManager::handleJoin(const string& groupKey, io::Connection* connection)
-    {
-        auto group = getGroup(groupKey);
-        if (group == nullptr)
-        {
-            group = new Group(groupKey);
-            m_allGroups.insert({ group->name(), group });
-        }
-
-        group->handleJoin(connection);
-    }
-
-    void ConnectionManager::handleLeave(const string& groupKey, io::Connection* connection)
-    {
-        auto group = getGroup(groupKey);
-        if (group == nullptr)
-        {
-            LOG_ERROR_S("group does not exist");
-            return;
-        }
-
-        group->handleLeave(connection);
-    }
-
-    void ConnectionManager::handleKill(io::Connection* connection)
-    {
-        for (auto& i : m_allGroups)
-        {
-            auto& group = i.second;
-            group->handleKill(connection);
         }
     }
 
