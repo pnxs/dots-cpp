@@ -27,7 +27,7 @@ namespace dots
             m_distributedTypeId->createTypeId(t.second.get());
         }
 
-        add_timer(1, FUN(*this, cleanup));
+        add_timer(1, FUN(*this, clientCleanup));
     }
 
     const ContainerPool& ConnectionManager::pool() const
@@ -74,37 +74,44 @@ namespace dots
         publishNs("SYS", td, instance, properties, remove, true);
     }
 
-    void ConnectionManager::cleanup()
+    void ConnectionManager::clientCleanup()
     {
         m_cleanupConnections.clear();
 
-        const auto& container = m_dispatcher.container<DotsClient>();
-        std::vector<ClientId> clientsToRemove;
+        std::set<io::Connection::id_t> obsoleteClients;
 
-        for (auto& element : container)
+        for (auto& element : m_dispatcher.container<DotsClient>())
         {
-            const auto& client = static_cast<const DotsClient&>(element.first);
+            const auto& client = element.first.to<DotsClient>();
+
             if (client.connectionState == DotsConnectionState::closed)
             {
-                // Search for a ClientId reference in all containers
-                if (isClientIdInContainers(client.id))
+                for (const auto& [descriptor, container] : m_dispatcher.pool())
                 {
-                    continue;
+                    (void)descriptor;
+
+                    for (const auto& [instance, cloneInformation] : container)
+                    {
+                        (void)instance;
+
+                        if (cloneInformation.createdFrom == client.id || cloneInformation.lastUpdateFrom == client.id)
+                        {
+                            break;
+                        }
+                    }
                 }
-                else
-                {
-                    clientsToRemove.push_back(client.id);
-                }
+
+                obsoleteClients.emplace(client.id);
             }
         }
 
-        for (auto& id : clientsToRemove)
+        for (io::Connection::id_t id : obsoleteClients)
         {
             DotsClient client(DotsClient::id_i{ id });
             client._remove();
         }
 
-        add_timer(1, FUN(*this, cleanup));
+        add_timer(1, FUN(*this, clientCleanup));
     }
 
     void ConnectionManager::onNewType(const dots::type::StructDescriptor<>* td)
@@ -390,42 +397,6 @@ namespace dots
                 publishNs({}, &container->descriptor(), *reinterpret_cast<const type::Struct*>(item), container->descriptor().keys(), true);
             }
         }
-    }
-
-    bool ConnectionManager::isClientIdInContainers(ClientId id)
-    {
-        for (auto& poolIter : m_dispatcher.pool())
-        {
-            auto& container = poolIter.second;
-            for (auto& element : container)
-            {
-                if (element.second.createdFrom == id) return true;
-                if (element.second.lastUpdateFrom == id) return true;
-            }
-        }
-        return false;
-    }
-
-    string ConnectionManager::clientId2Name(ClientId id) const
-    {
-        const auto& container = m_dispatcher.container<DotsClient>();
-
-        const DotsClient* client = container.find(DotsClient{
-            DotsClient::id_i{ id }
-        });
-
-        if (client != nullptr)
-        {
-            if (client->name.isValid())
-                return client->name;
-        }
-
-        if (id == 0)
-        {
-            return m_name;
-        }
-
-        return std::to_string(id);
     }
 
     /*!

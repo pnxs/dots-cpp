@@ -33,7 +33,7 @@ namespace dots
         void publishNs(const string& nameSpace, const type::StructDescriptor<>* td, const type::Struct& instance, type::PropertySet properties, bool remove, bool processLocal = true);
         void publish(const type::StructDescriptor<>* td, const type::Struct& instance, type::PropertySet properties, bool remove) override;
         
-        void cleanup();
+        void clientCleanup();
         void onNewType(const type::StructDescriptor<>*);
 
     private:
@@ -58,9 +58,6 @@ namespace dots
         void sendContainerContent(io::Connection& connection, const Container<>& container);
 
         void cleanupObjects(io::Connection* connection);
-
-        bool isClientIdInContainers(ClientId id);
-        string clientId2Name(ClientId id) const;
 
         static std::string flags2String(const dots::type::StructDescriptor<>* td);
 
