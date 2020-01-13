@@ -35,11 +35,6 @@ namespace dots
 		return m_dispatcher.pool();
 	}
 
-    void ConnectionManager::publish(const type::StructDescriptor<>*/* td*/, const type::Struct& instance, type::PropertySet properties, bool remove)
-    {
-        publish(instance, properties, remove);
-    }
-
     void ConnectionManager::publish(const type::Struct& instance, types::property_set_t includedProperties, bool remove)
     {
         const type::StructDescriptor<>& descriptor = instance._descriptor();
@@ -80,6 +75,11 @@ namespace dots
     void ConnectionManager::remove(const type::Struct& instance)
     {
         publish(instance, instance._keyProperties(), true);
+    }
+
+    void ConnectionManager::publish(const type::StructDescriptor<>*/* td*/, const type::Struct& instance, type::PropertySet properties, bool remove)
+    {
+        publish(instance, properties, remove);
     }
 
     void ConnectionManager::clientCleanup()

@@ -29,13 +29,16 @@ namespace dots
 
         const ContainerPool& pool() const;
 
-        void publish(const type::StructDescriptor<>* td, const type::Struct& instance, type::PropertySet properties, bool remove) override;
+        
 
         void publish(const type::Struct& instance, types::property_set_t includedProperties = types::property_set_t::All, bool remove = false);
         void remove(const type::Struct& instance);
         
         void clientCleanup();
         void onNewType(const type::StructDescriptor<>*);
+
+        [[deprecated("only available for backwards compatibility")]]
+        void publish(const type::StructDescriptor<>* td, const type::Struct& instance, type::PropertySet properties, bool remove) override;
 
     private:
 
