@@ -29,6 +29,8 @@ namespace dots
         {
             m_distributedTypeId->createTypeId(t.second.get());
         }
+
+        add_timer(1, FUN(*this, cleanup));
     }
 
     const ContainerPool& ConnectionManager::pool() const
@@ -101,6 +103,8 @@ namespace dots
             DotsClient client(DotsClient::id_i{ id });
             client._remove();
         }
+
+        add_timer(1, FUN(*this, cleanup));
     }
 
     void ConnectionManager::onNewType(const dots::type::StructDescriptor<>* td)

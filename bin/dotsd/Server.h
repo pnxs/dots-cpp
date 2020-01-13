@@ -15,7 +15,6 @@ namespace dots
         explicit Server(std::unique_ptr<Listener>&& listener, const string& name);
 
     private:
-        void handleCleanupTimer();
         void updateServerStatus();
 
         DotsStatistics receiveStatistics() const;

@@ -36,14 +36,7 @@ namespace dots
 
         m_connectionManager.init();
 
-        add_timer(1, FUN(*this, handleCleanupTimer));
         add_timer(1, FUN(*this, updateServerStatus));
-    }
-
-    void Server::handleCleanupTimer()
-    {
-        m_connectionManager.cleanup();
-        add_timer(1, FUN(*this, handleCleanupTimer));
     }
 
     void Server::updateServerStatus()
