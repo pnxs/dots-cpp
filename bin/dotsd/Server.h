@@ -24,11 +24,6 @@ namespace dots
          */
         explicit Server(std::unique_ptr<Listener>&& listener, const string& name);
 
-        /*!
-         * Stops the DOTS server
-         */
-        void stop();
-
     private:
         void handleCleanupTimer();
         void updateServerStatus();

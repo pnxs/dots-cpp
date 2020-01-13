@@ -9,7 +9,6 @@
 namespace dots
 {
     ConnectionManager::ConnectionManager(std::unique_ptr<Listener>&& listener, const std::string& name) :
-        m_running(false),
         m_name(name),
         m_listener(std::move(listener))
     {
@@ -31,19 +30,6 @@ namespace dots
         {
             m_distributedTypeId->createTypeId(t.second.get());
         }
-    }
-
-    void ConnectionManager::stop_all()
-    {
-        m_listener.reset();
-
-        m_connections.clear();
-        m_running = false;
-    }
-
-    bool ConnectionManager::running() const
-    {
-        return m_running;
     }
 
     /*!
@@ -219,7 +205,6 @@ namespace dots
         };
 
         m_listener->asyncAccept(std::move(acceptHandler), std::move(errorHandler));
-        m_running = true;
     }
 
     void ConnectionManager::removeConnection(io::connection_ptr_t c)
@@ -432,11 +417,6 @@ namespace dots
         return DotsStatistics{};
     }
 
-    DotsStatistics ConnectionManager::sendStatistics() const
-    {
-        return DotsStatistics();
-    }
-
     DotsCacheStatus ConnectionManager::cacheStatus() const
     {
         DotsCacheStatus cs;
@@ -474,15 +454,6 @@ namespace dots
         }
 
         return std::to_string(id);
-    }
-
-    const DistributedTypeId& ConnectionManager::distributedTypeId() const
-    {
-        if (m_distributedTypeId)
-        {
-            return *m_distributedTypeId.get();
-        }
-        throw std::runtime_error("distributedTypeId not initialized");
     }
 
     void ConnectionManager::sendContainerContent(io::Connection& connection, const Container<>& container)

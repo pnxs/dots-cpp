@@ -31,13 +31,6 @@ namespace dots
         void init();
 
         /*!
-         * Stops all connections.
-         */
-        void stop_all();
-
-        bool running() const;
-
-        /*!
          * Find a Connection-object by it's name.
          * @param name of the connection-object.
          * @return shared-ptr to Connection object. Null if none was found.
@@ -81,12 +74,9 @@ namespace dots
         void handleClose(io::Connection::id_t id, const std::exception* e);
 
         DotsStatistics receiveStatistics() const;
-        DotsStatistics sendStatistics() const;
         DotsCacheStatus cacheStatus() const;
 
         void onNewType(const type::StructDescriptor<>*);
-
-        const DistributedTypeId& distributedTypeId() const;
 
     private:
 
@@ -108,7 +98,6 @@ namespace dots
 
         std::set<io::connection_ptr_t> m_cleanupConnections; ///< old connection-object.
 
-        bool m_running;
         string m_name;
         std::unique_ptr<Listener> m_listener;
         GroupManager m_groupManager;

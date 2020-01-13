@@ -41,11 +41,6 @@ namespace dots
         add_timer(1, FUN(*this, updateServerStatus));
     }
 
-    void Server::stop()
-    {
-        m_connectionManager.stop_all();
-    }
-
     /*!
      * Calls cleanup-method to cleanup old resources
      * @param error
@@ -53,11 +48,7 @@ namespace dots
     void Server::handleCleanupTimer()
     {
         m_connectionManager.cleanup();
-
-        if (m_connectionManager.running())
-        {
-            add_timer(1, FUN(*this, handleCleanupTimer));
-        }
+        add_timer(1, FUN(*this, handleCleanupTimer));
     }
 
     void Server::updateServerStatus()
@@ -84,9 +75,6 @@ namespace dots
             LOG_ERROR_S("exception in updateServerStatus: " << e.what());
         }
 
-        if (m_connectionManager.running())
-        {
-            add_timer(1, FUN(*this, updateServerStatus));
-        }
+        add_timer(1, FUN(*this, updateServerStatus));
     }
 }
