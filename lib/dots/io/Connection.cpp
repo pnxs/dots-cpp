@@ -221,6 +221,8 @@ namespace dots::io
 
 	void Connection::handleError(const std::exception& e)
 	{
+        LOG_ERROR_S("channel error: " << e.what());
+
         if (m_connectionState != DotsConnectionState::closed)
         {
             transmit(DotsMsgError{
@@ -229,28 +231,20 @@ namespace dots::io
             });
 
             setConnectionState(DotsConnectionState::closed);
-        }
 
-        expectSystemType<DotsMsgError>(types::property_set_t::None, nullptr);
-
-        if (m_server)
-        {
-            LOG_ERROR_S("channel error in async receive: " << e.what());
-            error_handler_t errorHandler;
-            errorHandler.swap(m_errorHandler);
+            expectSystemType<DotsMsgError>(types::property_set_t::None, nullptr);
 
             m_registry = nullptr;
 		    m_receiveHandler = nullptr;
 
-            errorHandler(m_id, e);
-
-            return;
+            if (m_errorHandler != nullptr)
+            {
+                error_handler_t errorHandler;
+                errorHandler.swap(m_errorHandler);
+                m_errorHandler = nullptr;
+                errorHandler(m_id, e);
+            }
         }
-
-		LOG_ERROR_S("channel error in async receive: " << e.what());
-		m_registry = nullptr;
-		m_receiveHandler = nullptr;
-		m_errorHandler = nullptr;
 	}
 
 	void Connection::handleHello(const DotsMsgHello& hello)
