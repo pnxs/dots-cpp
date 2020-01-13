@@ -55,23 +55,25 @@ namespace dots
         if (processLocal)
         {
             m_dispatcher.dispatch(header.dotsHeader, transmission.instance(), true);
+        }
 
-            Group* grp = getGroup({ header.destinationGroup });
-            if (grp) grp->deliver(header, transmission);
-        }
-        else
-        {
-            if (header.destinationGroup.isValid())
-            {
-                Group* grp = getGroup({ header.destinationGroup });
-                if (grp) grp->deliver(header, std::move(transmission));
-            }
-        }
+        Group* grp = getGroup({ header.destinationGroup });
+        if (grp) grp->deliver(header, std::move(transmission));
     }
 
     void ConnectionManager::publish(const type::StructDescriptor<>* td, const type::Struct& instance, type::PropertySet properties, bool remove)
     {
         publishNs("SYS", td, instance, properties, remove, true);
+    }
+
+    void ConnectionManager::publish(const type::Struct& instance, types::property_set_t what, bool remove)
+    {
+        publishNs({}, &instance._descriptor(), instance, what, remove, true);
+    }
+
+    void ConnectionManager::remove(const type::Struct& instance)
+    {
+        publish(instance, instance._keyProperties(), true);
     }
 
     void ConnectionManager::clientCleanup()
@@ -107,8 +109,7 @@ namespace dots
 
         for (io::Connection::id_t id : obsoleteClients)
         {
-            DotsClient client(DotsClient::id_i{ id });
-            client._remove();
+            remove(DotsClient{ DotsClient::id_i{ id } });
         }
 
         add_timer(1, FUN(*this, clientCleanup));
