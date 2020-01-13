@@ -125,6 +125,41 @@ namespace dots::type
             return _isAny(Ts::_Descriptor()...);
         }
 
+        template <typename TDescriptor>
+        void _assertIs(TDescriptor&& descriptor) const
+        {
+            if (!_is(std::forward<TDescriptor>(descriptor)))
+            {
+                throw std::logic_error{ _desc->name() + " instance does not have expected type: " + ToRef(std::forward<TDescriptor>(descriptor)).name() };
+            }
+        }
+
+        template <typename... Descriptors>
+        void _assertIsAny(Descriptors&&... descriptors) const
+        {
+            if (!_isAny(std::forward<Descriptors>(descriptors)...))
+            {
+                std::string expectedTypes = ((ToRef(std::forward<Descriptors>(descriptors)).name() + ", ") + ...);
+                expectedTypes.resize(expectedTypes.size() - 2);
+
+                throw std::logic_error{ _desc->name() + " instance does not have any of expected types: " + expectedTypes };
+            }
+        }
+
+        template <typename T>
+        void _assertIs() const
+        {
+            static_assert(std::is_base_of_v<Struct, T>, "T has to be a sub-class of Struct");
+            return _assertIs(T::_Descriptor());
+        }
+
+        template <typename... Ts>
+        void _assertIsAny() const
+        {
+            static_assert(std::conjunction_v<std::is_base_of<Struct, Ts>...>);
+            return _assertIsAny(Ts::_Descriptor()...);
+        }
+
         template <typename T>
         const T* _as() const
         {
