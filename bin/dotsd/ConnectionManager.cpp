@@ -66,8 +66,15 @@ namespace dots
 
         m_dispatcher.dispatch(header.dotsHeader, transmission.instance(), true);
 
-        Group* grp = getGroup({ header.destinationGroup });
-        if (grp) grp->deliver(header, std::move(transmission));
+        for (io::Connection* destinationConnection : m_groups[header.destinationGroup])
+        {
+            LOG_DEBUG_S("deliver message group:" << this << "(" << m_name << ")");
+
+            if (destinationConnection->state() != DotsConnectionState::closed)
+            {
+                destinationConnection->transmit(header, transmission);
+            }
+        }
     }
 
     void ConnectionManager::remove(const type::Struct& instance)
@@ -77,6 +84,14 @@ namespace dots
 
     void ConnectionManager::clientCleanup()
     {
+        for (auto& [connectionPtr, connection] : m_closedConnections)
+        {
+            for (auto& [groupName, group] : m_groups)
+            {
+                group.erase(connectionPtr);
+            }
+        }
+
         m_closedConnections.clear();
 
         std::set<io::Connection::id_t> obsoleteClients;
@@ -174,8 +189,15 @@ namespace dots
 
         m_dispatcher.dispatch(transportHeader.dotsHeader, transmission.instance(), isFromMyself);
 
-        Group* grp = getGroup({ transportHeader.destinationGroup });
-        if (grp) grp->deliver(transportHeader, transmission);
+        for (io::Connection* destinationConnection : m_groups[transportHeader.destinationGroup])
+        {
+            LOG_DEBUG_S("deliver message group:" << this << "(" << m_name << ")");
+
+            if (destinationConnection->state() != DotsConnectionState::closed)
+            {
+                destinationConnection->transmit(transportHeader, transmission);
+            }
+        }
 
         return true;
     }
@@ -185,12 +207,6 @@ namespace dots
         if (e != nullptr)
         {
             LOG_ERROR_S("connection error: " << e->what());
-        }
-
-        for (auto& i : m_allGroups)
-        {
-            auto& group = i.second;
-            group->handleKill(&connection);
         }
         
         m_closedConnections.insert(m_openConnections.extract(&connection));
@@ -220,6 +236,7 @@ namespace dots
     {
         member._assertHasProperties(DotsMember::groupName_p + DotsMember::event_p);
         LOG_DEBUG_S(*member.event << " " << member.groupName);
+        const std::string& groupName = member.groupName;
 
         if (member.event == DotsMemberEvent::kill)
         {
@@ -227,27 +244,21 @@ namespace dots
         }
         else if (member.event == DotsMemberEvent::leave)
         {
-            auto group = getGroup(member.groupName);
-            if (group == nullptr)
+            if (size_t removed = m_groups[groupName].erase(&connection); removed == 0)
             {
-                LOG_ERROR_S("group does not exist");
-                return;
+                LOG_WARN_S("invalid group leave: connection " << connection.name() << " is not a member of group " << groupName);
             }
-
-            group->handleLeave(&connection);
         }
         else if (member.event == DotsMemberEvent::join)
         {
-            auto group = getGroup(member.groupName);
-            if (group == nullptr)
+            const std::string& groupName = member.groupName;
+
+            if (auto [it, emplaced] = m_groups[groupName].emplace(&connection); !emplaced)
             {
-                group = new Group(member.groupName);
-                m_allGroups.insert({ member.groupName, group });
+                LOG_WARN_S("invalid group join: connection " << connection.name() << " is already member of group " << groupName);
             }
 
-            group->handleJoin(&connection);
-
-            if (const Container<>* container = m_dispatcher.pool().find(*member.groupName); container != nullptr)
+            if (const Container<>* container = m_dispatcher.pool().find(groupName); container != nullptr)
             {
                 if (container->descriptor().cached())
                 {

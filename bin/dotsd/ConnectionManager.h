@@ -1,6 +1,7 @@
 #pragma once
 
 #include <unordered_map>
+#include <unordered_set>
 #include <dots/io/Connection.h>
 #include <dots/io/Transmitter.h>
 #include <dots/io/Dispatcher.h>
@@ -9,12 +10,11 @@
 #include <dots/io/services/Listener.h>
 #include <dots/functional/signal.h>
 
-#include "Group.h"
-
 #include "DotsClearCache.dots.h"
 #include "DotsDescriptorRequest.dots.h"
 #include "DotsStatistics.dots.h"
 #include "DotsCacheStatus.dots.h"
+#include "DotsMember.dots.h"
 
 namespace dots
 {
@@ -39,6 +39,10 @@ namespace dots
 
     private:
 
+        using connection_map_t = std::unordered_map<io::Connection*, io::connection_ptr_t>;
+        using group_t = std::unordered_set<io::Connection*>;
+        using group_map_t = std::unordered_map<std::string, group_t>;
+
         void asyncAccept();
 
         bool handleReceive(io::Connection& connection, const DotsTransportHeader& transportHeader, Transmission&& transmission, bool isFromMyself);
@@ -48,22 +52,16 @@ namespace dots
         void handleDescriptorRequest(io::Connection& connection, const DotsDescriptorRequest& descriptorRequest);
         void handleClearCache(io::Connection& connection, const DotsClearCache& clearCache);
 
-        Group* getGroup(const GroupKey& groupKey)
-        {
-            auto it = m_allGroups.find(groupKey);
-            return it != m_allGroups.end() ? it->second : NULL;
-        }
-
         void sendContainerContent(io::Connection& connection, const Container<>& container);
 
         static std::string flags2String(const dots::type::StructDescriptor<>* td);
 
-        std::unordered_map<io::Connection*, io::connection_ptr_t> m_openConnections;
-        std::unordered_map<io::Connection*, io::connection_ptr_t> m_closedConnections;
+        connection_map_t m_openConnections;
+        connection_map_t m_closedConnections;
+        group_map_t m_groups;
         std::vector<const Container<>*> m_cleanupContainers;
         string m_name;
         std::unique_ptr<Listener> m_listener;
-        std::unordered_map<GroupKey, Group*> m_allGroups;
         Dispatcher m_dispatcher;
         Transmitter m_transmitter;
         std::unique_ptr<DistributedTypeId> m_distributedTypeId;

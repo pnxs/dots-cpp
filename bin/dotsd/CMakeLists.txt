@@ -12,7 +12,6 @@ add_executable(${TARGET_NAME} main.cpp)
 target_sources(${TARGET_NAME}
 	PRIVATE
 		ConnectionManager.cpp
-		Group.cpp
         Server.cpp
 )	
 target_include_directories(${TARGET_NAME}
