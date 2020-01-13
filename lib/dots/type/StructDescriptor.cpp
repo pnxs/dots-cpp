@@ -194,7 +194,22 @@ namespace dots::type
 		return m_propertyDescriptors;
 	}
 
-	const PropertySet& StructDescriptor<Typeless, void>::properties() const
+    partial_property_descriptor_container_t StructDescriptor<Typeless, void>::propertyDescriptors(const PropertySet& properties) const
+    {
+		partial_property_descriptor_container_t partialPropertyDescriptors;
+
+		for (const PropertyDescriptor& propertyDescriptor : m_propertyDescriptors)
+		{
+		    if (propertyDescriptor.set() <= properties)
+		    {
+		        partialPropertyDescriptors.emplace_back(propertyDescriptor);
+		    }
+		}
+
+		return partialPropertyDescriptors;
+    }
+
+    const PropertySet& StructDescriptor<Typeless, void>::properties() const
 	{
 		return m_properties;
 	}

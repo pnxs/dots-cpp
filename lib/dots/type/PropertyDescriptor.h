@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <functional>
 #include <dots/type/Descriptor.h>
 #include <dots/type/PropertyMetadata.h>
 
@@ -43,4 +44,5 @@ namespace dots::type
 	};
 
 	using property_descriptor_container_t = std::vector<PropertyDescriptor>;
+	using partial_property_descriptor_container_t = std::vector<std::reference_wrapper<const PropertyDescriptor>>;
 }

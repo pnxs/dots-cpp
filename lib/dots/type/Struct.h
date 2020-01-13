@@ -41,11 +41,58 @@ namespace dots::type
     	bool _greaterEqual(const Struct& rhs, const PropertySet& includedProperties = PropertySet::All) const;
 
 		PropertySet _diffProperties(const Struct& other, const PropertySet& includedProperties = PropertySet::All) const;
-    	
-		bool _hasProperties(const PropertySet properties) const;
 
 		void _publish(const PropertySet& includedProperties = PropertySet::All, bool remove = false) const;
 		void _remove() const;
+
+        template <bool AllowSubset = true>
+        bool _hasProperties(const PropertySet& properties) const
+        {
+            if constexpr (AllowSubset)
+            {
+                return properties <= _validProperties();
+            }
+            else
+            {
+                return properties == _validProperties();
+            }
+        }
+
+        template <bool AllowSubset = true>
+        void _assertHasProperties(const PropertySet& expectedProperties) const
+        {
+            const PropertySet& actualProperties = _validProperties();
+
+            if (!_hasProperties<AllowSubset>(expectedProperties))
+            {
+                auto to_property_list = [](const StructDescriptor<>& descriptor, const PropertySet& properties)
+                {
+                    std::string propertyList;
+
+                    for (const PropertyDescriptor& propertyDescriptor : descriptor.propertyDescriptors(properties))
+                    {
+                        propertyList += propertyDescriptor.name();
+                        propertyList += ", ";
+                    }
+
+                    if (!propertyList.empty())
+                    {
+                        propertyList.resize(propertyList.size() - 2);
+                    }
+
+                    return propertyList;
+                };
+
+                if constexpr (AllowSubset)
+                {
+                    throw std::logic_error{ _desc->name() + " instance is missing expected properties: " + to_property_list(*_desc, expectedProperties - actualProperties) };
+                }
+                else
+                {
+                    throw std::logic_error{ _desc->name() + "instance does not have expected exact properties: " + to_property_list(*_desc, expectedProperties) + ", but instead has " + to_property_list(*_desc, actualProperties) };
+                }
+            }
+        }
 
         template <typename T>
         bool _is() const

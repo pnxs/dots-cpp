@@ -100,12 +100,7 @@ namespace dots::type
         return _desc->diffProperties(*this, other, includedProperties);
     }
 
-    bool Struct::_hasProperties(const PropertySet properties) const
-    {
-        return properties <= _validProperties();
-    }
-
-	void Struct::_publish(const PropertySet& includedProperties/* = PropertySet::All*/, bool remove/* = false*/) const
+    void Struct::_publish(const PropertySet& includedProperties/* = PropertySet::All*/, bool remove/* = false*/) const
     {
     	publish(*this, includedProperties ^ _validProperties(), remove);
     }

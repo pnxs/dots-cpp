@@ -86,6 +86,7 @@ namespace dots::type
 		bool substructOnly() const;
 
 		const property_descriptor_container_t& propertyDescriptors() const;
+		partial_property_descriptor_container_t propertyDescriptors(const PropertySet& properties) const;
 		
 		const PropertySet& properties() const;
 		const PropertySet& keyProperties() const;
