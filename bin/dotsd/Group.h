@@ -16,22 +16,12 @@ namespace dots
 {
     typedef ClientId GroupMember;
 
-    /**
-     * A representation of a messaging-group in DOTS.
-     * A peer can subscribe to a group and gets all updates to this
-     * group.
-     */
     class Group
     {
         typedef std::vector<io::Connection*> ConnectionList;
         const string m_name;
-        std::set<GroupMember> m_membersList; // all groups members
+        std::set<GroupMember> m_membersList;
 
-        /**
-         * Search for member in membersList.
-         * @param key member-key
-         * @return member-point or NULL
-         */
         const GroupMember* getMember(const GroupMember& key)
         {
             auto it = m_membersList.find(key);
@@ -40,7 +30,7 @@ namespace dots
 
         void removeConnection(io::Connection* connection);
 
-        ConnectionList m_connections; // local group members
+        ConnectionList m_connections;
     public:
 
         Group(const string& name);

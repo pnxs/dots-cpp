@@ -36,15 +36,10 @@ namespace dots
 
         m_connectionManager.init();
 
-        // Start cleanup-timer
         add_timer(1, FUN(*this, handleCleanupTimer));
         add_timer(1, FUN(*this, updateServerStatus));
     }
 
-    /*!
-     * Calls cleanup-method to cleanup old resources
-     * @param error
-     */
     void Server::handleCleanupTimer()
     {
         m_connectionManager.cleanup();

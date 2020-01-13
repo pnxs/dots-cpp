@@ -25,7 +25,6 @@ namespace dots
     {
         m_distributedTypeId = std::make_unique<DistributedTypeId>(true);
 
-        // Register all types, that are registered before this instance was created
         for (auto& t : transceiver().registry().getTypes())
         {
             m_distributedTypeId->createTypeId(t.second.get());
@@ -61,15 +60,11 @@ namespace dots
         return ret;
     }
 
-    /*!
-     * Called for newly registered DOTS types.
-     * @param td typedescriptor of the new type.
-     */
     void ConnectionManager::onNewType(const dots::type::StructDescriptor<>* td)
     {
         LOG_DEBUG_S("onNewType name=" << td->name() << " flags:" << flags2String(td));
         LOG_INFO_S("register type " << td->name() << " published by " << m_name);
-        // Only continue, if type is a cached type
+        
         if (!td->cached())
         {
             return;
@@ -77,7 +72,6 @@ namespace dots
 
         const Container<>& container = m_dispatcher.container(*td);
 
-        // Cached types can be marked as "cleanup"
         if (td->cleanup())
         {
             m_cleanupContainer.push_back(&container);
@@ -182,9 +176,6 @@ namespace dots
         LOG_INFO_S("connection closed -> id: " << connection->id() << ", name: " << connection->name());
     }
 
-    /*!
-     * Starts an asynchronous Accept.
-     */
     void ConnectionManager::asyncAccept()
     {
         Listener::accept_handler_t acceptHandler = [this](channel_ptr_t channel)
@@ -262,10 +253,6 @@ namespace dots
         }
     }
 
-    /**
-     * Sends all registered descriptors directly to the requester
-     * @param cbd
-     */
     void ConnectionManager::handleDescriptorRequest(const DotsDescriptorRequest::Cbd& cbd)
     {
         if (cbd.isOwnUpdate()) return;
@@ -352,11 +339,6 @@ namespace dots
         }
     }
 
-    /**
-     * Removes all objects, marked as "cleanup", when the client, that created that
-     * object is disconnected.
-     * @param connection - Connection of the client, that is disconnected
-     */
     void ConnectionManager::cleanupObjects(io::Connection* connection)
     {
         for (const auto& container : m_cleanupContainer)
@@ -488,7 +470,6 @@ namespace dots
             dotsHeader.sender = cloneInfo.lastUpdateFrom;
             dotsHeader.fromCache = --remainingCacheObjects;
 
-            // Send to peer or group
             connection.transmit(thead, instance);
         }
 

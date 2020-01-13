@@ -14,12 +14,6 @@ namespace dots
     {
     }
 
-    /**
-     * Add peer to membersList and push Connection into connection-list.
-     * Send join-message to all registered connection, that want MemberMessages
-     * @param groupMember
-     * @param connection
-     */
     void Group::handleJoin(io::Connection* connection)
     {
         const auto& groupMember = connection->id();
@@ -95,7 +89,7 @@ namespace dots
     void Group::deliver(const DotsTransportHeader& transportHeader, const Transmission& transmission)
     {
         LOG_DEBUG_S("deliver message group:" << this << "(" << name() << ")");
-        // Dispatch message to all connections, registered to the group
+        
         for (const auto connection : m_connections)
         {
             if (connection != NULL)
