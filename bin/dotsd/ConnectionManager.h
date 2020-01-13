@@ -3,12 +3,14 @@
 #include <dots/io/Connection.h>
 #include <dots/io/Transmitter.h>
 #include <set>
+#include <unordered_map>
 #include <dots/io/Dispatcher.h>
 #include "dots/io/Publisher.h"
 #include "dots/io/DistributedTypeId.h"
-#include "GroupManager.h"
 #include <dots/io/services/Listener.h>
 #include <dots/functional/signal.h>
+
+#include "Group.h"
 
 #include "DotsClearCache.dots.h"
 #include "DotsDescriptorRequest.dots.h"
@@ -93,6 +95,37 @@ namespace dots
         void sendContainerContent(io::Connection& connection, const Container<>& container);
         void sendCacheEnd(io::Connection& connection, const std::string& typeName);
 
+        /*!
+         * Find Group from group-key
+         * @param groupKey key of group to search for.
+         * @return Group-Pointer. Null of group-key was not found.
+         */
+        Group* getGroup(const GroupKey& groupKey)
+        {
+            auto it = m_allGroups.find(groupKey);
+            return it != m_allGroups.end() ? it->second : NULL;
+        }
+
+        /*!
+         * Add Connection to group. Create group if it does not exist jet.
+         * @param groupKey
+         * @param connection
+         */
+        void handleJoin(const GroupKey& groupKey, io::Connection* connection);
+
+        /*!
+         * Remove a Connection from a group.
+         * @param groupKey
+         * @param connection
+         */
+        void handleLeave(const GroupKey& groupKey, io::Connection* connection);
+
+        /*!
+         * Removes a killed Connection from all groups.
+         * @param connection
+         */
+        void handleKill(io::Connection* connection);
+
         std::map<io::Connection::id_t, io::connection_ptr_t> m_connections;
         std::vector<const Container<>*> m_cleanupContainer; ///< all containers with cleanup-flag.
 
@@ -100,7 +133,7 @@ namespace dots
 
         string m_name;
         std::unique_ptr<Listener> m_listener;
-        GroupManager m_groupManager;
+        std::unordered_map<GroupKey, Group*> m_allGroups;
         dots::Dispatcher m_dispatcher;
         dots::Transmitter m_transmitter;
         std::unique_ptr<DistributedTypeId> m_distributedTypeId;
