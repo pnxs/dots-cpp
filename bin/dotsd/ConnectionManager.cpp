@@ -8,8 +8,8 @@
 
 namespace dots
 {
-    ConnectionManager::ConnectionManager(std::string callSign) :
-        m_callSign(std::move(callSign))
+    ConnectionManager::ConnectionManager(std::string selfName) :
+        m_selfName(std::move(selfName))
     {
         m_dispatcher.pool().get<DotsClient>();
         m_onNewStruct = transceiver().registry().onNewStruct.connect(FUN(*this, onNewType));
@@ -38,7 +38,7 @@ namespace dots
         Listener::accept_handler_t acceptHandler = [this](channel_ptr_t channel)
         {
             auto connection = std::make_shared<io::Connection>(std::move(channel), true);
-            connection->asyncReceive(transceiver().registry(), m_callSign,
+            connection->asyncReceive(transceiver().registry(), m_selfName,
                 [this](io::Connection& connection, const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself) { return handleReceive(connection, header, std::move(transmission), isFromMyself); },
                 [this](io::Connection& connection, const std::exception* e) { handleClose(connection, e); }
             );
@@ -220,7 +220,7 @@ namespace dots
 
             for (const auto& [instance, cloneInfo] : *container)
             {
-                if (connection.id() == cloneInfo.lastUpdateFrom)
+                if (connection.peerId() == cloneInfo.lastUpdateFrom)
                 {
                     cleanupInstances.emplace_back(&*instance);
                 }
@@ -232,7 +232,7 @@ namespace dots
             }
         }
 
-        LOG_INFO_S("connection closed -> id: " << connection.id() << ", name: " << connection.name());
+        LOG_INFO_S("connection closed -> peerId: " << connection.peerId() << ", name: " << connection.peerName());
     }
 
     void ConnectionManager::handleMemberMessage(io::Connection& connection, const DotsMember& member)
@@ -249,7 +249,7 @@ namespace dots
         {
             if (size_t removed = m_groups[groupName].erase(&connection); removed == 0)
             {
-                LOG_WARN_S("invalid group leave: connection " << connection.name() << " is not a member of group " << groupName);
+                LOG_WARN_S("invalid group leave: connection " << connection.peerName() << " is not a member of group " << groupName);
             }
         }
         else if (member.event == DotsMemberEvent::join)
@@ -258,7 +258,7 @@ namespace dots
 
             if (auto [it, emplaced] = m_groups[groupName].emplace(&connection); !emplaced)
             {
-                LOG_WARN_S("invalid group join: connection " << connection.name() << " is already member of group " << groupName);
+                LOG_WARN_S("invalid group join: connection " << connection.peerName() << " is already member of group " << groupName);
             }
 
             if (const Container<>* container = m_dispatcher.pool().find(groupName); container != nullptr)
@@ -283,7 +283,7 @@ namespace dots
 
         TD_Traversal traversal;
 
-        LOG_INFO_S("received DescriptorRequest from " << connection.name() << "(" << connection.id() << ")");
+        LOG_INFO_S("received DescriptorRequest from " << connection.peerName() << "(" << connection.peerId() << ")");
 
         for (const auto& [descriptor, container] : m_dispatcher.pool())
         {
@@ -302,7 +302,7 @@ namespace dots
                 continue;
             }
 
-            LOG_DEBUG_S("sending descriptor for type '" << descriptor->name() << "' to " << connection.id());
+            LOG_DEBUG_S("sending descriptor for type '" << descriptor->name() << "' to " << connection.peerId());
 
             traversal.traverseDescriptorData(descriptor, [&](auto/* td*/, auto body)
             {

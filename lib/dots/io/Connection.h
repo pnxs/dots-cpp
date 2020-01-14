@@ -36,8 +36,9 @@ namespace dots::io
 		Connection& operator = (Connection&& rhs) = default;
 
 		DotsConnectionState state() const;
-        id_t id() const;
-		const std::string& name() const;
+		id_t selfId() const;
+        id_t peerId() const;
+		const std::string& peerName() const;
 		bool connected() const;
 
 		void asyncReceive(Registry& registry, const std::string_view& name, receive_handler_t&& receiveHandler, close_handler_t&& closeHandler);
@@ -81,11 +82,11 @@ namespace dots::io
 
 		system_type_t m_expectedSystemType;
 		DotsConnectionState m_connectionState;
-        id_t m_id;
-        std::string m_name;
+		id_t m_selfId;
+        id_t m_peerId;
+        std::string m_peerName;
 
 		channel_ptr_t m_channel;
-		bool m_server;
 		descriptor_map_t m_preloadPublishTypes;
 		descriptor_map_t m_preloadSubscribeTypes;
 

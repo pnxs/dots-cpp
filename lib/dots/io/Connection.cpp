@@ -12,10 +12,10 @@ namespace dots::io
 	Connection::Connection(channel_ptr_t channel, bool server, descriptor_map_t preloadPublishTypes/* = {}*/, descriptor_map_t preloadSubscribeTypes/* = {}*/) :
         m_expectedSystemType{ &DotsMsgError::_Descriptor(), types::property_set_t::None, nullptr },
         m_connectionState(DotsConnectionState::suspended),
-		m_id(server ? M_nextClientId++ : 0),
-	    m_name("<not_set>"),
+        m_selfId(server ? ServerId : UninitializedId),
+		m_peerId(server ? M_nextClientId++ : ServerId),
+	    m_peerName("<not_set>"),
 		m_channel(std::move(channel)),
-		m_server(server),
 		m_preloadPublishTypes(std::move(preloadPublishTypes)),
 		m_preloadSubscribeTypes(std::move(preloadSubscribeTypes)),
 		m_registry(nullptr)
@@ -35,15 +35,20 @@ namespace dots::io
 	{
 		return m_connectionState;
 	}
-	
-	id_t Connection::id() const
+
+    id_t Connection::selfId() const
+    {
+        return m_selfId;
+    }
+
+    id_t Connection::peerId() const
 	{
-		return m_id;
+		return m_peerId;
 	}
 
-    const std::string& Connection::name() const
+    const std::string& Connection::peerName() const
     {
-		return m_name;
+		return m_peerName;
     }
 
     bool Connection::connected() const
@@ -68,7 +73,7 @@ namespace dots::io
 			[this](const std::exception& e){ handleError(e); }
 		);
 
-		if (m_server)
+		if (m_selfId == ServerId)
 		{
 		    transmit(DotsMsgHello{
                 DotsMsgHello::serverName_i{ name },
@@ -99,7 +104,7 @@ namespace dots::io
                 DotsHeader::typeName_i{ descriptor.name() },
                 DotsHeader::sentTime_i{ pnxs::SystemNow() },
                 DotsHeader::attributes_i{ includedProperties ==  types::property_set_t::All ? instance._validProperties() : includedProperties },
-				DotsHeader::sender_i{ m_server ? ServerId : m_id },
+				DotsHeader::sender_i{ m_selfId },
                 DotsHeader::removeObj_i{ remove }
             }
         };
@@ -187,11 +192,11 @@ namespace dots::io
                 {
                     importType(transmission.instance());
 
-                    if (m_server)
+                    if (m_selfId == ServerId)
                     {
                         DotsTransportHeader transportHeader_ = transportHeader;
                         DotsHeader& dotsHeader = *transportHeader_.dotsHeader;
-                        dotsHeader.sender = m_id;
+                        dotsHeader.sender = m_peerId;
 
                         dotsHeader.serverSentTime = pnxs::SystemNow();
 
@@ -200,11 +205,11 @@ namespace dots::io
                             dotsHeader.sentTime = dotsHeader.serverSentTime;
                         }
 
-                        m_receiveHandler(*this, transportHeader_, std::move(transmission), transportHeader_.dotsHeader->sender == ServerId);
+                        m_receiveHandler(*this, transportHeader_, std::move(transmission), transportHeader_.dotsHeader->sender == m_selfId);
                     }
                     else
                     {
-                        m_receiveHandler(*this, transportHeader, std::move(transmission), transportHeader.dotsHeader->sender == m_id);
+                        m_receiveHandler(*this, transportHeader, std::move(transmission), transportHeader.dotsHeader->sender == m_selfId);
                     }
                 }
                 else
@@ -257,7 +262,7 @@ namespace dots::io
 
 	void Connection::handleHello(const DotsMsgHello& hello)
 	{
-		m_name = hello.serverName;
+		m_peerName = hello.serverName;
 		LOG_DEBUG_S("received hello from '" << *hello.serverName << "' authChallenge=" << hello.authChallenge);
 
         expectSystemType<DotsMsgConnectResponse>(DotsMsgConnectResponse::clientId_p + DotsMsgConnectResponse::accepted_p + DotsMsgConnectResponse::preload_p, &Connection::handleAuthorizationRequest);
@@ -265,8 +270,8 @@ namespace dots::io
 	
 	void Connection::handleAuthorizationRequest(const DotsMsgConnectResponse& connectResponse)
 	{
-        m_id = connectResponse.clientId;
-		LOG_DEBUG_S("connectResponse: serverName=" << m_name << " accepted=" << *connectResponse.accepted);
+        m_peerId = connectResponse.clientId;
+		LOG_DEBUG_S("connectResponse: serverName=" << m_peerName << " accepted=" << *connectResponse.accepted);
 		
 		if (connectResponse.preload == true)
 		{
@@ -308,18 +313,18 @@ namespace dots::io
 
     void Connection::handleConnect(const DotsMsgConnect& connect)
     {
-        m_name = connect.clientName;
+        m_peerName = connect.clientName;
 
         LOG_INFO_S("authorized");
         // Send DotsClient when Client is added to network.
         DotsClient{
-            DotsClient::id_i{ m_id },
-            DotsClient::name_i{ m_name },
+            DotsClient::id_i{ m_peerId },
+            DotsClient::name_i{ m_peerName },
             DotsClient::connectionState_i{ m_connectionState }
         }._publish();
 
         transmit(DotsMsgConnectResponse{
-            DotsMsgConnectResponse::clientId_i{ m_id },
+            DotsMsgConnectResponse::clientId_i{ m_peerId },
             DotsMsgConnectResponse::preload_i{ connect.preloadCache == true },
             DotsMsgConnectResponse::accepted_i{ true },
         });
@@ -418,9 +423,9 @@ namespace dots::io
 		LOG_DEBUG_S("change connection state to " << to_string(state));
 		m_connectionState = state;
 
-        if (m_server)
+        if (m_selfId == ServerId)
         {
-            DotsClient{ DotsClient::id_i{ m_id }, DotsClient::connectionState_i{ state } }._publish();
+            DotsClient{ DotsClient::id_i{ m_peerId }, DotsClient::connectionState_i{ state } }._publish();
         }
 	}
 

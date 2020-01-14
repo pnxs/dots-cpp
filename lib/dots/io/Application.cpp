@@ -26,7 +26,7 @@ namespace dots
 		}
 		LOG_DEBUG_S("run one done");
 
-		transceiver().publish(DotsClient{ DotsClient::id_i{ connection.id() }, DotsClient::running_i{ true } });
+		transceiver().publish(DotsClient{ DotsClient::id_i{ connection.selfId() }, DotsClient::running_i{ true } });
 	}
 
 	Application::~Application()

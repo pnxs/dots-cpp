@@ -21,7 +21,7 @@ namespace dots
     class ConnectionManager : public Publisher
     {
     public:
-        ConnectionManager(std::string callSign);
+        ConnectionManager(std::string selfName);
         ConnectionManager(const ConnectionManager&) = delete;
         ConnectionManager& operator=(const ConnectionManager&) = delete;
 
@@ -57,7 +57,7 @@ namespace dots
 
         static std::string flags2String(const dots::type::StructDescriptor<>* td);
 
-        std::string m_callSign;
+        std::string m_selfName;
         connection_map_t m_openConnections;
         connection_map_t m_closedConnections;
         group_map_t m_groups;

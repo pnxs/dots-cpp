@@ -4,7 +4,7 @@
 
 namespace dots
 {
-	const io::Connection& Transceiver::open(const std::string_view& callSign, channel_ptr_t channel, bool server, io::Connection::descriptor_map_t preloadPublishTypes/* = {}*/, io::Connection::descriptor_map_t preloadSubscribeTypes/* = {}*/)
+	const io::Connection& Transceiver::open(const std::string_view& selfName, channel_ptr_t channel, bool server, io::Connection::descriptor_map_t preloadPublishTypes/* = {}*/, io::Connection::descriptor_map_t preloadSubscribeTypes/* = {}*/)
 	{
 		if (m_connection != std::nullopt)
         {
@@ -12,7 +12,7 @@ namespace dots
         }
 		
 		m_connection.emplace(std::move(channel), server, std::move(preloadPublishTypes), std::move(preloadSubscribeTypes));
-		m_connection->asyncReceive(m_registry, callSign,
+		m_connection->asyncReceive(m_registry, selfName,
 			[this](io::Connection& connection, const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself){ return handleReceive(connection, header, std::move(transmission), isFromMyself); },
 			[this](io::Connection& connection, const std::exception* e){ handleClose(connection, e); }
 		);
@@ -124,6 +124,6 @@ namespace dots
 		}
 
 		m_connection = std::nullopt;
-		LOG_INFO_S("connection closed -> id: " << connection.id() << ", name: " << connection.name());
+		LOG_INFO_S("connection closed -> peerId: " << connection.peerId() << ", name: " << connection.peerName());
 	}
 }
