@@ -1,5 +1,5 @@
 #pragma once
-#include <string>
+#include <string_view>
 #include <map>
 #include <set>
 #include <tuple>
@@ -25,9 +25,8 @@ namespace dots::io
 
 		using receive_handler_t = std::function<bool(Connection&, const DotsTransportHeader&, Transmission&&, bool)>;
 		using transition_handler_t = std::function<void(Connection&, const std::exception*)>;
-		using descriptor_map_t = std::map<std::string_view, type::StructDescriptor<>*>;
 		
-		Connection(channel_ptr_t channel, bool server, descriptor_map_t preloadPublishTypes = {}, descriptor_map_t preloadSubscribeTypes = {});
+		Connection(channel_ptr_t channel, bool server);
 		Connection(const Connection& other) = delete;
 		Connection(Connection&& other) = default;
 		~Connection();
@@ -45,9 +44,7 @@ namespace dots::io
 		void transmit(const type::Struct& instance, types::property_set_t includedProperties = types::property_set_t::All, bool remove = false);
 		void transmit(const DotsTransportHeader& header, const type::Struct& instance);
         void transmit(const DotsTransportHeader& header, const Transmission& transmission);
-
-		void joinGroup(const std::string_view& name);
-		void leaveGroup(const std::string_view& name);
+		void transmit(const type::StructDescriptor<>& descriptor);
 
 	private:
 
@@ -87,8 +84,6 @@ namespace dots::io
         std::string m_peerName;
 
 		channel_ptr_t m_channel;
-		descriptor_map_t m_preloadPublishTypes;
-		descriptor_map_t m_preloadSubscribeTypes;
 
 		Registry* m_registry;
 		receive_handler_t m_receiveHandler;

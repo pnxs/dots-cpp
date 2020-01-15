@@ -2,22 +2,19 @@
 #include <dots/io/Registry.h>
 #include <dots/io/DescriptorConverter.h>
 #include <DotsMsgConnect.dots.h>
-#include <DotsMember.dots.h>
 #include <DotsCacheInfo.dots.h>
 #include <DotsClient.dots.h>
 #include <DotsDescriptorRequest.dots.h>
 
 namespace dots::io
 {
-	Connection::Connection(channel_ptr_t channel, bool server, descriptor_map_t preloadPublishTypes/* = {}*/, descriptor_map_t preloadSubscribeTypes/* = {}*/) :
+	Connection::Connection(channel_ptr_t channel, bool server) :
         m_expectedSystemType{ &DotsMsgError::_Descriptor(), types::property_set_t::None, nullptr },
         m_connectionState(DotsConnectionState::suspended),
         m_selfId(server ? ServerId : UninitializedId),
 		m_peerId(server ? M_nextClientId++ : ServerId),
 	    m_peerName("<not_set>"),
 		m_channel(std::move(channel)),
-		m_preloadPublishTypes(std::move(preloadPublishTypes)),
-		m_preloadSubscribeTypes(std::move(preloadSubscribeTypes)),
 		m_registry(nullptr)
 	{
 		/* do nothing */
@@ -146,25 +143,12 @@ namespace dots::io
         }
     }
 
-	void Connection::joinGroup(const std::string_view& name)
-	{
-		LOG_DEBUG_S("send DotsMember (join " << name << ")");
-		transmit(DotsMember{
-            DotsMember::groupName_i{ name },
-            DotsMember::event_i{ DotsMemberEvent::join }
-        });
-	}
+    void Connection::transmit(const type::StructDescriptor<>& descriptor)
+    {
+        exportType(descriptor);
+    }
 
-	void Connection::leaveGroup(const std::string_view& name)
-	{
-		LOG_INFO_S("send DotsMember (leave " << name << ")");
-		transmit(DotsMember{
-            DotsMember::groupName_i{ name },
-            DotsMember::event_i{ DotsMemberEvent::leave }
-        });
-	}
-
-	bool Connection::handleReceive(const DotsTransportHeader& transportHeader, Transmission&& transmission)
+    bool Connection::handleReceive(const DotsTransportHeader& transportHeader, Transmission&& transmission)
 	{
         if (m_connectionState == DotsConnectionState::closed)
         {
@@ -251,8 +235,6 @@ namespace dots::io
 	{
 	    m_receiveHandler = nullptr;
         m_registry = nullptr;
-		m_preloadSubscribeTypes.clear();
-        m_preloadPublishTypes.clear();
         expectSystemType<DotsMsgError>(types::property_set_t::None, nullptr);
         setConnectionState(DotsConnectionState::closed, e);
 	}
@@ -273,26 +255,7 @@ namespace dots::io
 		if (connectResponse.preload == true)
 		{
 			setConnectionState(DotsConnectionState::early_subscribe);
-			
-			for (const auto& [name, descriptor] : m_preloadPublishTypes)
-			{
-				(void)name;
-				exportType(*descriptor);
-			}
-
-			for (const auto& [name, descriptor] : m_preloadSubscribeTypes)
-			{
-				exportType(*descriptor);			
-				joinGroup(name);
-			}
-
-			transmit(DotsMsgConnect{
-				DotsMsgConnect::preloadClientFinished_i{ true }
-			});
-
-			m_preloadPublishTypes.clear();
-			m_preloadSubscribeTypes.clear();
-
+            transmit(DotsMsgConnect{ DotsMsgConnect::preloadClientFinished_i{ true } });
             expectSystemType<DotsMsgConnectResponse>(DotsMsgConnectResponse::preloadFinished_p, &Connection::handlePreloadFinished);
 		}
 		else

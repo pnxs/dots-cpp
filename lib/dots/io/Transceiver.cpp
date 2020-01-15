@@ -1,17 +1,21 @@
 #include <dots/io/Transceiver.h>
 #include <dots/common/logging.h>
 #include <dots/io/serialization/AsciiSerialization.h>
+#include <DotsMember.dots.h>
 
 namespace dots
 {
-	const io::Connection& Transceiver::open(const std::string_view& selfName, channel_ptr_t channel, bool server, io::Connection::descriptor_map_t preloadPublishTypes/* = {}*/, io::Connection::descriptor_map_t preloadSubscribeTypes/* = {}*/)
+	const io::Connection& Transceiver::open(const std::string_view& selfName, channel_ptr_t channel, bool server, descriptor_map_t preloadPublishTypes/* = {}*/, descriptor_map_t preloadSubscribeTypes/* = {}*/)
 	{
 		if (m_connection != std::nullopt)
         {
             throw std::logic_error{ "already connected" };
         }
+
+		m_preloadPublishTypes = std::move(preloadPublishTypes);
+		m_preloadSubscribeTypes = std::move(preloadSubscribeTypes);
 		
-		m_connection.emplace(std::move(channel), server, std::move(preloadPublishTypes), std::move(preloadSubscribeTypes));
+		m_connection.emplace(std::move(channel), server);
 		m_connection->asyncReceive(m_registry, selfName,
 			[this](io::Connection& connection, const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself){ return handleReceive(connection, header, std::move(transmission), isFromMyself); },
 			[this](io::Connection& connection, const std::exception* e){ handleTransition(connection, e); }
@@ -47,7 +51,7 @@ namespace dots
 			throw std::logic_error{ "attempt to subscribe to substruct-only type: " + descriptor.name() };
 		}
 
-		m_connection->joinGroup(descriptor.name());
+		joinGroup(descriptor.name());
 		return m_dispatcher.subscribe(descriptor, std::move(handler));
 	}
 
@@ -58,7 +62,7 @@ namespace dots
 			throw std::logic_error{ "attempt to subscribe to substruct-only type: " + descriptor.name() };
 		}
 
-		m_connection->joinGroup(descriptor.name());
+		joinGroup(descriptor.name());
 		return m_dispatcher.subscribe(descriptor, std::move(handler));
 	}
 
@@ -101,6 +105,24 @@ namespace dots
 		publish(instance, what, remove);
 	}
 
+	void Transceiver::joinGroup(const std::string_view& name)
+	{
+		LOG_DEBUG_S("send DotsMember (join " << name << ")");
+		m_connection->transmit(DotsMember{
+            DotsMember::groupName_i{ name },
+            DotsMember::event_i{ DotsMemberEvent::join }
+        });
+	}
+
+	void Transceiver::leaveGroup(const std::string_view& name)
+	{
+		LOG_DEBUG_S("send DotsMember (leave " << name << ")");
+		m_connection->transmit(DotsMember{
+            DotsMember::groupName_i{ name },
+            DotsMember::event_i{ DotsMemberEvent::leave }
+        });
+	}
+
 	bool Transceiver::handleReceive(io::Connection& connection, const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself)
 	{
 		try 
@@ -117,7 +139,24 @@ namespace dots
 	
 	void Transceiver::handleTransition(io::Connection& connection, const std::exception* e)
 	{
-		if (connection.state() == DotsConnectionState::closed)
+		if (connection.state() == DotsConnectionState::early_subscribe)
+		{
+		    for (const auto& [name, descriptor] : m_preloadPublishTypes)
+			{
+				(void)name;
+				connection.transmit(*descriptor);
+			}
+
+			for (const auto& [name, descriptor] : m_preloadSubscribeTypes)
+			{
+				connection.transmit(*descriptor);			
+				joinGroup(name);
+			}
+
+			m_preloadPublishTypes.clear();
+			m_preloadSubscribeTypes.clear();
+		}
+		else if (connection.state() == DotsConnectionState::closed)
 		{
 		    if (e != nullptr)
 		    {

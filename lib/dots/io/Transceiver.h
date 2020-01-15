@@ -11,6 +11,8 @@ namespace dots
 {
 	struct Transceiver : Publisher
 	{
+		using descriptor_map_t = std::map<std::string_view, type::StructDescriptor<>*>;
+
 		template <typename T = type::Struct>
 		using receive_handler_t = Dispatcher::receive_handler_t<T>;
 		template <typename T = type::Struct>
@@ -24,7 +26,7 @@ namespace dots
 		Transceiver& operator = (const Transceiver& rhs) = delete;
 		Transceiver& operator = (Transceiver&& rhs) = default;
 
-		const io::Connection& open(const std::string_view& selfName, channel_ptr_t channel, bool server, io::Connection::descriptor_map_t preloadPublishTypes = {}, io::Connection::descriptor_map_t preloadSubscribeTypes = {});
+		const io::Connection& open(const std::string_view& selfName, channel_ptr_t channel, bool server, descriptor_map_t preloadPublishTypes = {}, descriptor_map_t preloadSubscribeTypes = {});
 
 		const io::Registry& registry() const;
 		io::Registry& registry();
@@ -51,7 +53,7 @@ namespace dots
 		Subscription subscribe(receive_handler_t<T>&& handler)
 		{
 			static_assert(!T::_SubstructOnly, "it is not allowed to subscribe to a struct that is marked with 'substruct_only'!");
-			m_connection->joinGroup(T::_Descriptor().name());
+			joinGroup(T::_Descriptor().name());
 			return m_dispatcher.subscribe<T>(std::move(handler));
 		}
 
@@ -59,7 +61,7 @@ namespace dots
 		Subscription subscribe(event_handler_t<T>&& handler)
 		{
 			static_assert(!T::_SubstructOnly, "it is not allowed to subscribe to a struct that is marked with 'substruct_only'!");
-			m_connection->joinGroup(T::_Descriptor().name());
+			joinGroup(T::_Descriptor().name());
 
 			return m_dispatcher.subscribe<T>(std::move(handler));
 		}
@@ -69,11 +71,16 @@ namespace dots
 
 	private:
 
+        void joinGroup(const std::string_view& name);
+		void leaveGroup(const std::string_view& name);
+
 		bool handleReceive(io::Connection& connection, const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself);
 		void handleTransition(io::Connection& connection, const std::exception* e);
 
 		io::Registry m_registry;
 		Dispatcher m_dispatcher;
 		std::optional<io::Connection> m_connection;
+		descriptor_map_t m_preloadPublishTypes;
+		descriptor_map_t m_preloadSubscribeTypes;
 	};
 }
