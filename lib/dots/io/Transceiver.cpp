@@ -14,7 +14,7 @@ namespace dots
 		m_connection.emplace(std::move(channel), server, std::move(preloadPublishTypes), std::move(preloadSubscribeTypes));
 		m_connection->asyncReceive(m_registry, selfName,
 			[this](io::Connection& connection, const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself){ return handleReceive(connection, header, std::move(transmission), isFromMyself); },
-			[this](io::Connection& connection, const std::exception* e){ handleClose(connection, e); }
+			[this](io::Connection& connection, const std::exception* e){ handleTransition(connection, e); }
 		);
 		
 		return *m_connection;
@@ -110,20 +110,23 @@ namespace dots
         }
         catch (const std::exception& e) 
         {
-            handleClose(connection, &e);
+            handleTransition(connection, &e);
             return false;
         }
 	}
 	
-	void Transceiver::handleClose(io::Connection& connection, const std::exception* e)
+	void Transceiver::handleTransition(io::Connection& connection, const std::exception* e)
 	{
-		if (e != nullptr)
+		if (connection.state() == DotsConnectionState::closed)
 		{
-		    LOG_ERROR_S("connection error: " << e->what());
-		    
-		}
+		    if (e != nullptr)
+		    {
+		        LOG_ERROR_S("connection error: " << e->what());
+		        
+		    }
 
-		m_connection = std::nullopt;
-		LOG_INFO_S("connection closed -> peerId: " << connection.peerId() << ", name: " << connection.peerName());
+		    m_connection = std::nullopt;
+		    LOG_INFO_S("connection closed -> peerId: " << connection.peerId() << ", name: " << connection.peerName());
+		}
 	}
 }

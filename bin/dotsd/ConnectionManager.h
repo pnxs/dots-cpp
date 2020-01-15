@@ -47,7 +47,7 @@ namespace dots
         using group_map_t = std::unordered_map<std::string, group_t>;
 
         bool handleReceive(io::Connection& connection, const DotsTransportHeader& transportHeader, Transmission&& transmission, bool isFromMyself);
-        void handleClose(io::Connection& connection, const std::exception* e);
+        void handleTransition(io::Connection& connection, const std::exception* e);
 
         void handleMemberMessage(io::Connection& connection, const DotsMember& member);
         void handleDescriptorRequest(io::Connection& connection, const DotsDescriptorRequest& descriptorRequest);

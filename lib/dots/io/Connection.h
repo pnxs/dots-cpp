@@ -24,7 +24,7 @@ namespace dots::io
         static constexpr id_t ServerIdDeprecated = 1;
 
 		using receive_handler_t = std::function<bool(Connection&, const DotsTransportHeader&, Transmission&&, bool)>;
-		using close_handler_t = std::function<void(Connection&, const std::exception*)>;
+		using transition_handler_t = std::function<void(Connection&, const std::exception*)>;
 		using descriptor_map_t = std::map<std::string_view, type::StructDescriptor<>*>;
 		
 		Connection(channel_ptr_t channel, bool server, descriptor_map_t preloadPublishTypes = {}, descriptor_map_t preloadSubscribeTypes = {});
@@ -41,7 +41,7 @@ namespace dots::io
 		const std::string& peerName() const;
 		bool connected() const;
 
-		void asyncReceive(Registry& registry, const std::string_view& name, receive_handler_t&& receiveHandler, close_handler_t&& closeHandler);
+		void asyncReceive(Registry& registry, const std::string_view& name, receive_handler_t&& receiveHandler, transition_handler_t&& transitionHandler);
 		void transmit(const type::Struct& instance, types::property_set_t includedProperties = types::property_set_t::All, bool remove = false);
 		void transmit(const DotsTransportHeader& header, const type::Struct& instance);
         void transmit(const DotsTransportHeader& header, const Transmission& transmission);
@@ -70,7 +70,7 @@ namespace dots::io
 
 		void handlePeerError(const DotsMsgError& error);
 
-		void setConnectionState(DotsConnectionState state);
+		void setConnectionState(DotsConnectionState state, const std::exception* e = nullptr);
 
 		void importType(const type::Struct& instance);
 		void exportType(const type::Descriptor<>& descriptor);
@@ -92,7 +92,7 @@ namespace dots::io
 
 		Registry* m_registry;
 		receive_handler_t m_receiveHandler;
-		close_handler_t m_closeHandler;
+		transition_handler_t m_transitionHandler;
 		
 		std::set<std::string> m_sharedTypes;
 	};

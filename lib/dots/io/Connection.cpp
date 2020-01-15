@@ -56,16 +56,21 @@ namespace dots::io
 		return m_connectionState == DotsConnectionState::connected;
 	}
 
-	void Connection::asyncReceive(Registry& registry, const std::string_view& name, receive_handler_t&& receiveHandler, close_handler_t&& closeHandler)
+	void Connection::asyncReceive(Registry& registry, const std::string_view& name, receive_handler_t&& receiveHandler, transition_handler_t&& transitionHandler)
 	{
 		if (m_connectionState != DotsConnectionState::suspended)
         {
             throw std::logic_error{ "only one async receive can be started on a connection" };
         }
 
+        if (receiveHandler == nullptr || transitionHandler == nullptr)
+        {
+            throw std::logic_error{ "both a receive and a transition must be set" };
+        }
+
 		m_registry = &registry;
 		m_receiveHandler = std::move(receiveHandler);
-		m_closeHandler = std::move(closeHandler);
+		m_transitionHandler = std::move(transitionHandler);
 		
 		setConnectionState(DotsConnectionState::connecting);
 		m_channel->asyncReceive(registry,
@@ -248,16 +253,8 @@ namespace dots::io
         m_registry = nullptr;
 		m_preloadSubscribeTypes.clear();
         m_preloadPublishTypes.clear();
-        setConnectionState(DotsConnectionState::closed);
         expectSystemType<DotsMsgError>(types::property_set_t::None, nullptr);
-
-        if (m_closeHandler != nullptr)
-        {
-            close_handler_t closeHandler;
-            closeHandler.swap(m_closeHandler);
-            m_closeHandler = nullptr;
-            closeHandler(*this, e);
-        }
+        setConnectionState(DotsConnectionState::closed, e);
 	}
 
 	void Connection::handleHello(const DotsMsgHello& hello)
@@ -418,10 +415,11 @@ namespace dots::io
     	}
     }
 
-	void Connection::setConnectionState(DotsConnectionState state)
+	void Connection::setConnectionState(DotsConnectionState state, const std::exception* e/* = nullptr*/)
 	{
 		LOG_DEBUG_S("change connection state to " << to_string(state));
 		m_connectionState = state;
+        m_transitionHandler(*this, e);
 
         if (m_selfId == ServerId)
         {

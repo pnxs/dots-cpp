@@ -40,7 +40,7 @@ namespace dots
             auto connection = std::make_shared<io::Connection>(std::move(channel), true);
             connection->asyncReceive(transceiver().registry(), m_selfName,
                 [this](io::Connection& connection, const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself) { return handleReceive(connection, header, std::move(transmission), isFromMyself); },
-                [this](io::Connection& connection, const std::exception* e) { handleClose(connection, e); }
+                [this](io::Connection& connection, const std::exception* e) { handleTransition(connection, e); }
             );
             m_openConnections.emplace(connection.get(), std::move(connection));
 
@@ -205,34 +205,37 @@ namespace dots
         return true;
     }
 
-    void ConnectionManager::handleClose(io::Connection& connection, const std::exception* e)
+    void ConnectionManager::handleTransition(io::Connection& connection, const std::exception* e)
     {
         if (e != nullptr)
         {
             LOG_ERROR_S("connection error: " << e->what());
         }
-        
-        m_closedConnections.insert(m_openConnections.extract(&connection));
 
-        for (const Container<>* container : m_cleanupContainers)
+        if (connection.state() == DotsConnectionState::closed)
         {
-            std::vector<const type::Struct*> cleanupInstances;
+            m_closedConnections.insert(m_openConnections.extract(&connection));
 
-            for (const auto& [instance, cloneInfo] : *container)
+            for (const Container<>* container : m_cleanupContainers)
             {
-                if (connection.peerId() == cloneInfo.lastUpdateFrom)
+                std::vector<const type::Struct*> cleanupInstances;
+
+                for (const auto& [instance, cloneInfo] : *container)
                 {
-                    cleanupInstances.emplace_back(&*instance);
+                    if (connection.peerId() == cloneInfo.lastUpdateFrom)
+                    {
+                        cleanupInstances.emplace_back(&*instance);
+                    }
+                }
+
+                for (const type::Struct* instance : cleanupInstances)
+                {
+                    remove(*instance);
                 }
             }
 
-            for (const type::Struct* instance : cleanupInstances)
-            {
-                remove(*instance);
-            }
+            LOG_INFO_S("connection closed -> peerId: " << connection.peerId() << ", name: " << connection.peerName());
         }
-
-        LOG_INFO_S("connection closed -> peerId: " << connection.peerId() << ", name: " << connection.peerName());
     }
 
     void ConnectionManager::handleMemberMessage(io::Connection& connection, const DotsMember& member)
@@ -243,7 +246,7 @@ namespace dots
 
         if (member.event == DotsMemberEvent::kill)
         {
-            handleClose(connection, nullptr);
+            LOG_WARN_S("kill event not supported");
         }
         else if (member.event == DotsMemberEvent::leave)
         {
