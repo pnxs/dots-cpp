@@ -420,11 +420,6 @@ namespace dots::io
 		LOG_DEBUG_S("change connection state to " << to_string(state));
 		m_connectionState = state;
         m_transitionHandler(*this, e);
-
-        if (m_selfId == ServerId)
-        {
-            DotsClient{ DotsClient::id_i{ m_peerId }, DotsClient::connectionState_i{ state } }._publish();
-        }
 	}
 
     template <typename T>
