@@ -276,12 +276,6 @@ namespace dots::io
         m_peerName = connect.clientName;
 
         LOG_INFO_S("authorized");
-        // Send DotsClient when Client is added to network.
-        DotsClient{
-            DotsClient::id_i{ m_peerId },
-            DotsClient::name_i{ m_peerName },
-            DotsClient::connectionState_i{ m_connectionState }
-        }._publish();
 
         transmit(DotsMsgConnectResponse{
             DotsMsgConnectResponse::clientId_i{ m_peerId },

@@ -237,7 +237,11 @@ namespace dots
             LOG_INFO_S("connection closed -> peerId: " << connection.peerId() << ", name: " << connection.peerName());
         }
 
-        publish(DotsClient{ DotsClient::id_i{ connection.peerId() }, DotsClient::connectionState_i{ connection.state() } });
+        publish(DotsClient{
+            DotsClient::id_i{ connection.peerId() },
+            DotsClient::name_i{ connection.peerName() },
+            DotsClient::connectionState_i{ connection.state() }
+        });
     }
 
     void ConnectionManager::handleMemberMessage(io::Connection& connection, const DotsMember& member)
