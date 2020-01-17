@@ -132,15 +132,7 @@ namespace dots
 	void Dispatcher::dispatchEvent(const DotsHeader& header, const type::AnyStruct& instance, bool isFromMyself)
 	{
 		const type::StructDescriptor<>& descriptor = instance->_descriptor();
-
-		auto itHandlers = m_eventHandlerPool.find(&descriptor);
-
-		if (itHandlers == m_eventHandlerPool.end())
-		{
-			return;
-		}
-
-		const event_handlers_t& handlers = itHandlers->second;
+		const event_handlers_t& handlers = m_eventHandlerPool[&descriptor];
 
 		auto dispatchEventToHandlers = [&](const Event<>& e)
 		{
