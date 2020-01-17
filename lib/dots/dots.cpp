@@ -31,9 +31,9 @@ namespace dots
 		return publisher;
 	}
 
-	Transceiver& transceiver()
+	Transceiver& transceiver(const std::string_view& name/* = "dots-transceiver"*/)
 	{
-		static Transceiver transceiver;
+		static Transceiver transceiver{ name.data() };
 
 		if (Publisher*& p = publisher(); p == nullptr)
 		{

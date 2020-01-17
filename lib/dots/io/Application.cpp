@@ -16,8 +16,9 @@ namespace dots
 		// Start Transceiver
 		// Connect to dotsd
 
+		Transceiver& globalTransceiver = dots::transceiver(name);
 		auto channel = global_service<ChannelService>().makeChannel<TcpChannel>(m_serverAddress, m_serverPort);
-		const io::Connection& connection = transceiver().open(name, std::move(channel), false, getPreloadPublishTypes(), getPreloadSubscribeTypes());
+		const io::Connection& connection = globalTransceiver.open(std::move(channel), false, getPreloadPublishTypes(), getPreloadSubscribeTypes());
 
 		LOG_DEBUG_S("run until state connected...");
 		while (!connection.connected())
@@ -26,7 +27,7 @@ namespace dots
 		}
 		LOG_DEBUG_S("run one done");
 
-		transceiver().publish(DotsClient{ DotsClient::id_i{ connection.selfId() }, DotsClient::running_i{ true } });
+		globalTransceiver.publish(DotsClient{ DotsClient::id_i{ connection.selfId() }, DotsClient::running_i{ true } });
 	}
 
 	Application::~Application()

@@ -1,5 +1,6 @@
 #pragma once
 #include <functional>
+#include <string_view>
 #include <dots/common/Chrono.h>
 #include <dots/io/services/Timer.h>
 #include <dots/io/Transceiver.h>
@@ -14,7 +15,7 @@ namespace dots
 	void remove_fd_handler(int fileDescriptor);
 
 	Publisher*& publisher();
-	Transceiver& transceiver();
+	Transceiver& transceiver(const std::string_view& name = "dots-transceiver");
 
 	void publish(const type::Struct& instance, types::property_set_t includedProperties, bool remove);
 	void remove(const type::Struct& instance);

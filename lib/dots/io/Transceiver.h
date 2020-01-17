@@ -18,7 +18,7 @@ namespace dots
 		template <typename T = type::Struct>
 		using event_handler_t = Dispatcher::event_handler_t<T>;
 
-		Transceiver() = default;
+		Transceiver(std::string selfName);
 		Transceiver(const Transceiver& other) = delete;
 		Transceiver(Transceiver&& other) = default;
 		virtual ~Transceiver() = default;
@@ -26,7 +26,7 @@ namespace dots
 		Transceiver& operator = (const Transceiver& rhs) = delete;
 		Transceiver& operator = (Transceiver&& rhs) = default;
 
-		const io::Connection& open(const std::string_view& selfName, channel_ptr_t channel, bool server, descriptor_map_t preloadPublishTypes = {}, descriptor_map_t preloadSubscribeTypes = {});
+		const io::Connection& open(channel_ptr_t channel, bool server, descriptor_map_t preloadPublishTypes = {}, descriptor_map_t preloadSubscribeTypes = {});
 
 		const io::Registry& registry() const;
 		io::Registry& registry();
@@ -79,6 +79,7 @@ namespace dots
 
 		io::Registry m_registry;
 		Dispatcher m_dispatcher;
+		std::string m_name;
 		std::optional<io::Connection> m_connection;
 		descriptor_map_t m_preloadPublishTypes;
 		descriptor_map_t m_preloadSubscribeTypes;

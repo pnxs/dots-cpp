@@ -5,7 +5,13 @@
 
 namespace dots
 {
-	const io::Connection& Transceiver::open(const std::string_view& selfName, channel_ptr_t channel, bool server, descriptor_map_t preloadPublishTypes/* = {}*/, descriptor_map_t preloadSubscribeTypes/* = {}*/)
+    Transceiver::Transceiver(std::string selfName) :
+	    m_name{ std::move(selfName) }
+    {
+		/* do nothing */
+    }
+
+	const io::Connection& Transceiver::open(channel_ptr_t channel, bool server, descriptor_map_t preloadPublishTypes/* = {}*/, descriptor_map_t preloadSubscribeTypes/* = {}*/)
 	{
 		if (m_connection != std::nullopt)
         {
@@ -16,7 +22,7 @@ namespace dots
 		m_preloadSubscribeTypes = std::move(preloadSubscribeTypes);
 		
 		m_connection.emplace(std::move(channel), server);
-		m_connection->asyncReceive(m_registry, selfName,
+		m_connection->asyncReceive(m_registry, m_name,
 			[this](io::Connection& connection, const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself){ return handleReceive(connection, header, std::move(transmission), isFromMyself); },
 			[this](io::Connection& connection, const std::exception* e){ handleTransition(connection, e); }
 		);
