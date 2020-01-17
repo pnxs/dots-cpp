@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 #include <unordered_set>
+#include <dots/io/Registry.h>
 #include <dots/io/Connection.h>
 #include <dots/io/Transmitter.h>
 #include <dots/io/Dispatcher.h>
@@ -54,6 +55,7 @@ namespace dots
 
         inline static uint32_t M_nextTypeId = 0;
 
+        io::Registry m_registry;
         std::string m_selfName;
         connection_map_t m_openConnections;
         connection_map_t m_closedConnections;

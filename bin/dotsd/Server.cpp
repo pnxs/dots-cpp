@@ -14,16 +14,7 @@ namespace dots
         m_connectionManager(name),
         m_daemonStatus{ DotsDaemonStatus::serverName_i{ m_name }, DotsDaemonStatus::startTime_i{ pnxs::SystemNow() } }
     {
-        transceiver();
-        publisher() = &m_connectionManager;
-
-        for (const auto& e : dots::PublishedType::allChained())
-        {
-            LOG_DEBUG_S("Published type: " << e->td->name());
-            m_connectionManager.onNewType(e->td);
-        }
-
-        add_timer(1, [&](){ updateServerStatus(); });
+        add_timer(1, [&](){ updateServerStatus(); }, true);
         m_connectionManager.listen(std::move(listener));
     }
 
@@ -42,7 +33,7 @@ namespace dots
                 ds.resourceUsage = static_cast<DotsResourceUsage&&>(dots::ResourceUsage());
                 ds.cache = cacheStatus();
 
-                ds._publish();
+                m_connectionManager.publish(ds);
                 m_daemonStatus = ds;
             }
         }
@@ -50,8 +41,6 @@ namespace dots
         {
             LOG_ERROR_S("exception in updateServerStatus: " << e.what());
         }
-
-        add_timer(1, FUN(*this, updateServerStatus));
     }
 
     DotsStatistics Server::receiveStatistics() const

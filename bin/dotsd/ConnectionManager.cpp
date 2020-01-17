@@ -1,6 +1,5 @@
 #include "ConnectionManager.h"
 #include "dots/io/TD_Traversal.h"
-#include "dots/io/Registry.h"
 #include <dots/dots.h>
 #include <DotsTypes.dots.h>
 #include <DotsCacheInfo.dots.h>
@@ -9,10 +8,10 @@
 namespace dots
 {
     ConnectionManager::ConnectionManager(std::string selfName) :
+        m_registry(),
         m_selfName(std::move(selfName))
     {
-        m_dispatcher.pool().get<DotsClient>();
-        m_onNewStruct = transceiver().registry().onNewStruct.connect(FUN(*this, onNewType));
+        m_onNewStruct = m_registry.onNewStruct.connect(FUN(*this, onNewType));
 
         for (const auto& [name, descriptor] : type::StaticDescriptorMap::Descriptors())
         {
@@ -36,7 +35,7 @@ namespace dots
         Listener::accept_handler_t acceptHandler = [this](channel_ptr_t channel)
         {
             auto connection = std::make_shared<io::Connection>(std::move(channel), true);
-            connection->asyncReceive(transceiver().registry(), m_selfName,
+            connection->asyncReceive(m_registry, m_selfName,
                 [this](io::Connection& connection, const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself) { return handleReceive(connection, header, std::move(transmission), isFromMyself); },
                 [this](io::Connection& connection, const std::exception* e) { handleTransition(connection, e); }
             );
