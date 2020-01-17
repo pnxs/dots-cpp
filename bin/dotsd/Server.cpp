@@ -4,7 +4,8 @@
 #include <dots/io/Transceiver.h>
 #include "DotsClient.dots.h"
 #include <StructDescriptorData.dots.h>
-#include "EnumDescriptorData.dots.h"
+#include "DotsStatistics.dots.h"
+#include "DotsCacheStatus.dots.h"
 
 namespace dots
 {
@@ -23,7 +24,6 @@ namespace dots
         }
 
         add_timer(1, [&](){ updateServerStatus(); });
-        m_connectionManager.init();
         m_connectionManager.listen(std::move(listener));
     }
 

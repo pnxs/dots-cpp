@@ -6,14 +6,11 @@
 #include <dots/io/Transmitter.h>
 #include <dots/io/Dispatcher.h>
 #include "dots/io/Publisher.h"
-#include "dots/io/DistributedTypeId.h"
 #include <dots/io/services/Listener.h>
 #include <dots/functional/signal.h>
 
 #include "DotsClearCache.dots.h"
 #include "DotsDescriptorRequest.dots.h"
-#include "DotsStatistics.dots.h"
-#include "DotsCacheStatus.dots.h"
 #include "DotsMember.dots.h"
 
 namespace dots
@@ -25,8 +22,6 @@ namespace dots
         ConnectionManager(const ConnectionManager&) = delete;
         ConnectionManager& operator=(const ConnectionManager&) = delete;
 
-        void init();
-
         void listen(listener_ptr_t&& listener);
 
         const ContainerPool& pool() const;
@@ -35,7 +30,7 @@ namespace dots
         void remove(const type::Struct& instance);
         
         void clientCleanup();
-        void onNewType(const type::StructDescriptor<>*);
+        void onNewType(const type::StructDescriptor<>* descriptor);
 
         [[deprecated("only available for backwards compatibility")]]
         void publish(const type::StructDescriptor<>* td, const type::Struct& instance, type::PropertySet properties, bool remove) override;
@@ -57,6 +52,8 @@ namespace dots
 
         static std::string flags2String(const dots::type::StructDescriptor<>* td);
 
+        inline static uint32_t M_nextTypeId = 0;
+
         std::string m_selfName;
         connection_map_t m_openConnections;
         connection_map_t m_closedConnections;
@@ -65,7 +62,6 @@ namespace dots
         listener_ptr_t m_listener;
         Dispatcher m_dispatcher;
         Transmitter m_transmitter;
-        std::unique_ptr<DistributedTypeId> m_distributedTypeId;
         pnxs::SignalConnection m_onNewStruct;
     };
 }

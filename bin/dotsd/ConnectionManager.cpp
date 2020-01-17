@@ -2,9 +2,9 @@
 #include "dots/io/TD_Traversal.h"
 #include "dots/io/Registry.h"
 #include <dots/dots.h>
-
-#include "DotsCacheInfo.dots.h"
-#include "DotsClient.dots.h"
+#include <DotsTypes.dots.h>
+#include <DotsCacheInfo.dots.h>
+#include <DotsClient.dots.h>
 
 namespace dots
 {
@@ -13,15 +13,13 @@ namespace dots
     {
         m_dispatcher.pool().get<DotsClient>();
         m_onNewStruct = transceiver().registry().onNewStruct.connect(FUN(*this, onNewType));
-    }
 
-    void ConnectionManager::init()
-    {
-        m_distributedTypeId = std::make_unique<DistributedTypeId>(true);
-
-        for (auto& t : transceiver().registry().getTypes())
+        for (const auto& [name, descriptor] : type::StaticDescriptorMap::Descriptors())
         {
-            m_distributedTypeId->createTypeId(t.second.get());
+            if (descriptor->type() == type::Type::Struct)
+            {
+                onNewType(static_cast<const type::StructDescriptor<>*>(descriptor.get()));
+            }
         }
 
         add_timer(1, [&](){ clientCleanup(); }, true);
@@ -88,7 +86,7 @@ namespace dots
 
         for (io::Connection* destinationConnection : m_groups[header.destinationGroup])
         {
-            LOG_DEBUG_S("deliver message group:" << this << "(" << header.destinationGroup << ")");
+            LOG_DEBUG_S("deliver message group:" << this << "(" << *header.destinationGroup << ")");
 
             if (destinationConnection->state() != DotsConnectionState::closed)
             {
@@ -152,24 +150,26 @@ namespace dots
         }
     }
 
-    void ConnectionManager::onNewType(const dots::type::StructDescriptor<>* td)
+    void ConnectionManager::onNewType(const dots::type::StructDescriptor<>* descriptor)
     {
-        LOG_DEBUG_S("onNewType name=" << td->name() << " flags:" << flags2String(td));
-        //LOG_INFO_S("register type " << td->name() << " published by " << m_name);
+        LOG_DEBUG_S("onNewType name=" << descriptor->name() << " flags:" << flags2String(descriptor));
+
+	    publish(DotsTypes{
+            DotsTypes::id_i{ M_nextTypeId++ },
+            DotsTypes::name_i{ descriptor->name() }
+	    });
         
-        if (!td->cached())
+        if (descriptor->cached())
         {
-            return;
+            const Container<>& container = m_dispatcher.container(*descriptor);
+
+            if (descriptor->cleanup())
+            {
+                m_cleanupContainers.emplace_back(&container);
+            }
+
+            m_dispatcher.subscribe(*descriptor, [](const Event<>&){}).discard();
         }
-
-        const Container<>& container = m_dispatcher.container(*td);
-
-        if (td->cleanup())
-        {
-            m_cleanupContainers.emplace_back(&container);
-        }
-
-        m_dispatcher.subscribe(*td, [](const Event<>&){}).discard();
     }
 
     bool ConnectionManager::handleReceive(io::Connection& connection, const DotsTransportHeader& transportHeader, Transmission&& transmission, bool isFromMyself)
@@ -371,7 +371,7 @@ namespace dots
             auto& dotsHeader = *thead.dotsHeader;
             dotsHeader.sentTime = cloneInfo.modified.isValid() ? *cloneInfo.modified : *cloneInfo.created;
             dotsHeader.serverSentTime = pnxs::SystemNow();
-            dotsHeader.sender = cloneInfo.lastUpdateFrom;
+            dotsHeader.sender = cloneInfo.lastUpdateFrom.isValid() ? *cloneInfo.lastUpdateFrom : *cloneInfo.createdFrom;
             dotsHeader.fromCache = --remainingCacheObjects;
 
             connection.transmit(thead, instance);
