@@ -29,9 +29,6 @@ namespace dots
 
         void publish(const type::Struct& instance, types::property_set_t includedProperties = types::property_set_t::All, bool remove = false);
         void remove(const type::Struct& instance);
-        
-        void clientCleanup();
-        void onNewType(const type::StructDescriptor<>* descriptor);
 
         [[deprecated("only available for backwards compatibility")]]
         void publish(const type::StructDescriptor<>* td, const type::Struct& instance, type::PropertySet properties, bool remove) override;
@@ -49,6 +46,9 @@ namespace dots
         void handleDescriptorRequest(io::Connection& connection, const DotsDescriptorRequest& descriptorRequest);
         void handleClearCache(io::Connection& connection, const DotsClearCache& clearCache);
 
+        void handleNewType(const type::StructDescriptor<>& descriptor);
+
+        void cleanUpClients();
         void sendContainerContent(io::Connection& connection, const Container<>& container);
 
         static std::string flags2String(const dots::type::StructDescriptor<>* td);
