@@ -10,7 +10,8 @@ namespace dots
 {
     Server::Server(listener_ptr_t&& listener, const string& name) :
         m_name(name),
-        m_connectionManager(name)
+        m_connectionManager(name),
+        m_daemonStatus{ DotsDaemonStatus::serverName_i{ m_name }, DotsDaemonStatus::startTime_i{ pnxs::SystemNow() } }
     {
         transceiver();
         publisher() = &m_connectionManager;
@@ -21,23 +22,9 @@ namespace dots
             m_connectionManager.onNewType(e->td);
         }
 
-        {
-            StructDescriptorData::_Descriptor();
-            EnumDescriptorData::_Descriptor();
-            DotsTransportHeader::_Descriptor();
-            DotsMsgConnect::_Descriptor();
-            DotsMsgConnectResponse::_Descriptor();
-            DotsMsgHello::_Descriptor();
-            DotsCloneInformation::_Descriptor();
-        }
-
-        m_daemonStatus.serverName = m_name;
-        m_daemonStatus.startTime = pnxs::SystemNow();
-
+        add_timer(1, [&](){ updateServerStatus(); });
         m_connectionManager.init();
         m_connectionManager.listen(std::move(listener));
-
-        add_timer(1, FUN(*this, updateServerStatus));
     }
 
     void Server::updateServerStatus()
