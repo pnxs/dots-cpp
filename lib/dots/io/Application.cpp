@@ -91,9 +91,9 @@ namespace dots
 		m_serverPort = vm["dots-port"].as<string>();
 	}
 
-	io::Connection::descriptor_map_t Application::getPreloadPublishTypes() const
+	Transceiver::descriptor_map_t Application::getPreloadPublishTypes() const
 	{
-		io::Connection::descriptor_map_t sds;
+		Transceiver::descriptor_map_t sds;
 
 		for (const auto& e : dots::PublishedType::allChained())
 		{
@@ -112,9 +112,9 @@ namespace dots
 		return sds;
 	}
 
-	io::Connection::descriptor_map_t Application::getPreloadSubscribeTypes() const
+	Transceiver::descriptor_map_t Application::getPreloadSubscribeTypes() const
 	{
-		io::Connection::descriptor_map_t sds;
+		Transceiver::descriptor_map_t sds;
 
 		for (const auto& e : dots::SubscribedType::allChained())
 		{
