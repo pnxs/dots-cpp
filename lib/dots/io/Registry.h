@@ -12,6 +12,9 @@ namespace dots::io
 {
     struct Registry
     {
+        using type_map_t = std::map<std::string_view, std::shared_ptr<type::Descriptor<>>>;
+        using const_iterator_t = type_map_t::const_iterator;
+
         Registry();
         Registry(const Registry& other) = default;
         Registry(Registry&& other) noexcept = default;
@@ -19,6 +22,14 @@ namespace dots::io
 
         Registry& operator = (const Registry& rhs) = default;
         Registry& operator = (Registry&& rhs) noexcept = default;
+
+        const type_map_t& types() const;
+
+        const_iterator_t begin() const;
+        const_iterator_t end() const;
+
+        const_iterator_t cbegin() const;
+        const_iterator_t cend() const;
 
     	std::shared_ptr<type::Descriptor<>> findType(const std::string_view& name, bool assertNotNull = false) const;
     	std::shared_ptr<type::EnumDescriptor<>> findEnumType(const std::string_view& name, bool assertNotNull = false) const;
@@ -56,6 +67,6 @@ namespace dots::io
 
     private:
 
-    	std::map<std::string_view, std::shared_ptr<type::Descriptor<>>> m_types;
+    	type_map_t m_types;
 	};
 }
