@@ -1,5 +1,4 @@
 #include "ConnectionManager.h"
-#include "dots/io/TD_Traversal.h"
 #include <dots/dots.h>
 #include <DotsTypes.dots.h>
 #include <DotsCacheInfo.dots.h>
@@ -226,8 +225,6 @@ namespace dots
         const types::vector_t<types::string_t>& whiteList = descriptorRequest.whitelist.isValid() ? *descriptorRequest.whitelist : types::vector_t<types::string_t>{};
         const types::vector_t<types::string_t>& blacklist = descriptorRequest.blacklist.isValid() ? *descriptorRequest.blacklist : types::vector_t<types::string_t>{};
 
-        TD_Traversal traversal;
-
         LOG_INFO_S("received DescriptorRequest from " << connection.peerName() << "(" << connection.peerId() << ")");
 
         for (const auto& [descriptor, container] : m_dispatcher.pool())
@@ -249,10 +246,7 @@ namespace dots
 
             LOG_DEBUG_S("sending descriptor for type '" << descriptor->name() << "' to " << connection.peerId());
 
-            traversal.traverseDescriptorData(descriptor, [&](auto/* td*/, auto body)
-            {
-                connection.transmit(*reinterpret_cast<const type::Struct*>(body));
-            });
+            connection.transmit(*descriptor);
         }
 
         connection.transmit(DotsCacheInfo{ DotsCacheInfo::endDescriptorRequest_i{ true } });
@@ -301,8 +295,6 @@ namespace dots
             {
                 m_cleanupContainers.emplace_back(&container);
             }
-
-            m_dispatcher.subscribe(descriptor, [](const Event<>&){}).discard();
         }
     }
 
