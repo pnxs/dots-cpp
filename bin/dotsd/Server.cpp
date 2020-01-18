@@ -9,13 +9,16 @@
 
 namespace dots
 {
-    Server::Server(listener_ptr_t&& listener, const string& name) :
-        m_name(name),
-        m_connectionManager(name),
-        m_daemonStatus{ DotsDaemonStatus::serverName_i{ m_name }, DotsDaemonStatus::startTime_i{ pnxs::SystemNow() } }
+    Server::Server(std::string name, listeners_t listeners) :
+        m_connectionManager(std::move(name)),
+        m_daemonStatus{ DotsDaemonStatus::serverName_i{ m_connectionManager.selfName() }, DotsDaemonStatus::startTime_i{ pnxs::SystemNow() } }
     {
         add_timer(1, [&](){ updateServerStatus(); }, true);
-        m_connectionManager.listen(std::move(listener));
+
+        for (listener_ptr_t& listener : listeners)
+        {
+            m_connectionManager.listen(std::move(listener));
+        }
     }
 
     void Server::updateServerStatus()

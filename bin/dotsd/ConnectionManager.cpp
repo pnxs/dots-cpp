@@ -24,30 +24,38 @@ namespace dots
 
     void ConnectionManager::listen(listener_ptr_t&& listener)
     {
-        if (m_listener != nullptr)
+        Listener* listenerPtr = listener.get();
+        auto [it, emplaced] = m_listeners.try_emplace(listenerPtr, std::move(listener));
+
+        if (!emplaced)
         {
             throw std::logic_error{ "already listening" };
         }
 
-        m_listener = std::move(listener);
-        Listener::accept_handler_t acceptHandler = [this](channel_ptr_t channel)
+        Listener::accept_handler_t acceptHandler = [this](Listener&/* listener*/, channel_ptr_t channel)
         {
             auto connection = std::make_shared<io::Connection>(std::move(channel), true);
             connection->asyncReceive(m_registry, m_selfName,
                 [this](io::Connection& connection, const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself) { return handleReceive(connection, header, std::move(transmission), isFromMyself); },
                 [this](io::Connection& connection, const std::exception* e) { handleTransition(connection, e); }
             );
-            m_openConnections.emplace(connection.get(), std::move(connection));
+            m_openConnections.emplace(connection.get(), connection);
 
             return true;
         };
 
-        Listener::error_handler_t errorHandler = [](const std::exception& e)
+        Listener::error_handler_t errorHandler = [this](Listener& listener, const std::exception& e)
         {
             LOG_ERROR_S("error while listening for incoming channels -> " << e.what());
+            m_listeners.erase(&listener);
         };
 
-        m_listener->asyncAccept(std::move(acceptHandler), std::move(errorHandler));
+        listenerPtr->asyncAccept(std::move(acceptHandler), std::move(errorHandler));
+    }
+
+    const std::string& ConnectionManager::selfName() const
+    {
+        return m_selfName;
     }
 
     const ContainerPool& ConnectionManager::pool() const

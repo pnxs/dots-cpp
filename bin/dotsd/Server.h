@@ -1,26 +1,30 @@
 #pragma once
-
+#include <vector>
 #include "dots/cpp_config.h"
 #include "ConnectionManager.h"
 #include "DotsDaemonStatus.dots.h"
 
 namespace dots
 {
-    class Server
+    struct Server
     {
-    public:
-        Server(const Server&) = delete;
-        Server& operator=(const Server&) = delete;
+        using listeners_t = std::vector<listener_ptr_t>;
 
-        explicit Server(listener_ptr_t&& listener, const string& name);
+        Server(std::string name, listeners_t listeners);
+		Server(const Server& other) = delete;
+		Server(Server&& other) = delete;
+		~Server() = default;
+
+		Server& operator = (const Server& rhs) = delete;
+		Server& operator = (Server&& rhs) = delete;
 
     private:
+
         void updateServerStatus();
 
         DotsStatistics receiveStatistics() const;
         DotsCacheStatus cacheStatus() const;
 
-        std::string m_name;
         ConnectionManager m_connectionManager;
         DotsDaemonStatus m_daemonStatus;
     };

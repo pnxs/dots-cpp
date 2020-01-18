@@ -7,8 +7,8 @@ namespace dots
 {
 	struct Listener
 	{
-		using accept_handler_t = std::function<bool(channel_ptr_t)>;
-		using error_handler_t = std::function<void(const std::exception&)>;
+		using accept_handler_t = std::function<bool(Listener&, channel_ptr_t)>;
+		using error_handler_t = std::function<void(Listener&, const std::exception&)>;
 
 		Listener() = default;
 		Listener(const Listener& other) = delete;

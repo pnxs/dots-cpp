@@ -44,8 +44,9 @@ int main(int argc, char* argv[])
     string host = vm["dots-address"].as<string>();
     string port = vm["dots-port"].as<string>();
 
-	dots::listener_ptr_t listener = dots::global_service<dots::ChannelService>().makeListener<dots::TcpListener>(host, port);
-    std::optional<dots::Server> server{ std::in_place, std::move(listener), serverName };
+    dots::Server::listeners_t listeners;
+    listeners.emplace_back(dots::global_service<dots::ChannelService>().makeListener<dots::TcpListener>(host, port));
+    std::optional<dots::Server> server{ std::in_place, std::move(serverName), std::move(listeners) };
     LOG_NOTICE_S("Listen to " << host << ":" << port);
 
     signals.async_wait([&](auto /*ec*/, int /*signo*/) {

@@ -23,6 +23,7 @@ namespace dots
 
         void listen(listener_ptr_t&& listener);
 
+        const std::string& selfName() const;
         const ContainerPool& pool() const;
 
         void publish(const type::Struct& instance, types::property_set_t includedProperties = types::property_set_t::All, bool remove = false);
@@ -33,6 +34,7 @@ namespace dots
 
     private:
 
+        using listener_map_t = std::unordered_map<Listener*, listener_ptr_t>;
         using connection_map_t = std::unordered_map<io::Connection*, io::connection_ptr_t>;
         using group_t = std::unordered_set<io::Connection*>;
         using group_map_t = std::unordered_map<std::string, group_t>;
@@ -55,11 +57,11 @@ namespace dots
 
         io::Registry m_registry;
         std::string m_selfName;
+        listener_map_t m_listeners;
         connection_map_t m_openConnections;
         connection_map_t m_closedConnections;
         group_map_t m_groups;
         std::vector<const Container<>*> m_cleanupContainers;
-        listener_ptr_t m_listener;
         Dispatcher m_dispatcher;
     };
 }
