@@ -4,7 +4,6 @@
 #include <unordered_set>
 #include <dots/io/Registry.h>
 #include <dots/io/Connection.h>
-#include <dots/io/Transmitter.h>
 #include <dots/io/Dispatcher.h>
 #include "dots/io/Publisher.h"
 #include <dots/io/services/Listener.h>
@@ -48,7 +47,7 @@ namespace dots
         void handleNewStructType(const type::StructDescriptor<>& descriptor);
 
         void cleanUpClients();
-        void sendContainerContent(io::Connection& connection, const Container<>& container);
+        void transmitContainer(io::Connection& connection, const Container<>& container);
 
         static std::string flags2String(const dots::type::StructDescriptor<>* td);
 
@@ -62,6 +61,5 @@ namespace dots
         std::vector<const Container<>*> m_cleanupContainers;
         listener_ptr_t m_listener;
         Dispatcher m_dispatcher;
-        Transmitter m_transmitter;
     };
 }

@@ -204,7 +204,7 @@ namespace dots
             {
                 if (container->descriptor().cached())
                 {
-                    sendContainerContent(connection, *container);
+                    transmitContainer(connection, *container);
                 }
 
                 connection.transmit(DotsCacheInfo{
@@ -339,12 +339,26 @@ namespace dots
         }
     }
 
-    void ConnectionManager::sendContainerContent(io::Connection& connection, const Container<>& container)
+    void ConnectionManager::transmitContainer(io::Connection& connection, const Container<>& container)
     {
         const auto& td = container.descriptor();
 
         LOG_DEBUG_S("send cache for " << td.name() << " size=" << container.size());
-        uint32_t remainingCacheObjects = container.size();
+
+        if (container.empty())
+        {
+            return;
+        }
+
+        DotsTransportHeader header{
+            DotsTransportHeader::destinationGroup_i{ container.descriptor().name() },
+            DotsTransportHeader::dotsHeader_i{
+                DotsHeader::typeName_i{ container.descriptor().name() },
+                DotsHeader::fromCache_i{ container.size() },
+                DotsHeader::removeObj_i{ false }
+            }
+        };
+
         for (const auto& [instance, cloneInfo] : container)
         {
             const char* lop = "";
@@ -362,16 +376,14 @@ namespace dots
                 << ", created=" << cloneInfo.created->toString() << ", creator=" << cloneInfo.createdFrom
                 << ", modified=" << cloneInfo.modified->toString() << ", localUpdateTime=" << cloneInfo.localUpdateTime->toString());
 
-            DotsTransportHeader thead;
-            m_transmitter.prepareHeader(thead, &td, instance->_validProperties(), false);
-
-            auto& dotsHeader = *thead.dotsHeader;
-            dotsHeader.sentTime = cloneInfo.modified.isValid() ? *cloneInfo.modified : *cloneInfo.created;
+            DotsHeader& dotsHeader = header.dotsHeader;
+            dotsHeader.sentTime = *cloneInfo.modified;
             dotsHeader.serverSentTime = pnxs::SystemNow();
-            dotsHeader.sender = cloneInfo.lastUpdateFrom.isValid() ? *cloneInfo.lastUpdateFrom : *cloneInfo.createdFrom;
-            dotsHeader.fromCache = --remainingCacheObjects;
+            dotsHeader.attributes = instance->_validProperties();
+            dotsHeader.sender = *cloneInfo.lastUpdateFrom;
+			--*dotsHeader.fromCache;
 
-            connection.transmit(thead, instance);
+            connection.transmit(header, instance);
         }
     }
 
