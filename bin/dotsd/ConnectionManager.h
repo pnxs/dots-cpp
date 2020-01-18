@@ -39,6 +39,9 @@ namespace dots
         using group_t = std::unordered_set<io::Connection*>;
         using group_map_t = std::unordered_map<std::string, group_t>;
 
+        bool handleListenAccept(Listener& listener, channel_ptr_t channel);
+        void handleListenError(Listener& listener, const std::exception& e);
+
         bool handleReceive(io::Connection& connection, const DotsTransportHeader& transportHeader, Transmission&& transmission, bool isFromMyself);
         void handleTransition(io::Connection& connection, const std::exception* e);
 
