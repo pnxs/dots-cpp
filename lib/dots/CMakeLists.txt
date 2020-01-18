@@ -72,6 +72,8 @@ target_sources(${TARGET_NAME}
 		io/services/Timer.cpp
 		io/services/TimerService.cpp
 		io/services/Transmission.cpp
+		io/services/UdsChannel.cpp
+		io/services/UdsListener.cpp
 		io/services/VirtualChannel.cpp
 		io/services/WebSocketChannel.cpp
 		io/services/WebSocketListener.cpp
