@@ -262,11 +262,17 @@ namespace dots
             if (std::find(typeNames.begin(), typeNames.end(), container.descriptor().name()) != typeNames.end())
             {
                 LOG_INFO_S("clear container '" << container.descriptor().name() << "' (" << container.size() << " elements)");
+                std::vector<const type::Struct*> removeInstances;
 
                 for (const auto& [instance, cloneInformation] : container)
                 {
                     (void)cloneInformation;
-                    remove(instance);
+                    removeInstances.emplace_back(&instance.get());
+                }
+
+                for (const type::Struct* instance : removeInstances)
+                {
+                    remove(*instance);
                 }
             }
         }
