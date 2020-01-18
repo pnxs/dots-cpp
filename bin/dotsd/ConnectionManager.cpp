@@ -1,24 +1,16 @@
 #include "ConnectionManager.h"
 #include <dots/dots.h>
-#include <DotsTypes.dots.h>
 #include <DotsCacheInfo.dots.h>
 #include <DotsClient.dots.h>
 
 namespace dots
 {
-    ConnectionManager::ConnectionManager(std::string selfName) :
-        m_registry([&](const type::StructDescriptor<>& descriptor){ handleNewStructType(descriptor); }),
-        m_selfName(std::move(selfName))
+    ConnectionManager::ConnectionManager(std::string selfName, new_struct_type_handler_t newStructTypeHandler, transition_handler_t transitionHandler) :
+        m_registry{ std::move(newStructTypeHandler) },
+        m_selfName{ std::move(selfName) },
+        m_transitionHandler{ std::move(transitionHandler) }
     {
-        for (const auto& [name, descriptor] : type::StaticDescriptorMap::Descriptors())
-        {
-            if (descriptor->type() == type::Type::Struct)
-            {
-                handleNewStructType(static_cast<const type::StructDescriptor<>&>(*descriptor));
-            }
-        }
-
-        add_timer(1, [&](){ cleanUpClients(); }, true);
+        add_timer(1, [&](){ cleanUpConnections(); }, true);
     }
 
     void ConnectionManager::listen(listener_ptr_t&& listener)
@@ -150,33 +142,34 @@ namespace dots
         if (connection.state() == DotsConnectionState::closed)
         {
             m_closedConnections.insert(m_openConnections.extract(&connection));
+            std::vector<const type::Struct*> cleanupInstances;
 
-            for (const Container<>* container : m_cleanupContainers)
+            for (const auto& [descriptor, container] : m_dispatcher.pool())
             {
-                std::vector<const type::Struct*> cleanupInstances;
-
-                for (const auto& [instance, cloneInfo] : *container)
+                if (descriptor->cleanup())
                 {
-                    if (connection.peerId() == cloneInfo.lastUpdateFrom)
+                    for (const auto& [instance, cloneInfo] : container)
                     {
-                        cleanupInstances.emplace_back(&*instance);
+                        if (connection.peerId() == cloneInfo.lastUpdateFrom)
+                        {
+                            cleanupInstances.emplace_back(&*instance);
+                        }
                     }
                 }
+            }
 
-                for (const type::Struct* instance : cleanupInstances)
-                {
-                    remove(*instance);
-                }
+            for (const type::Struct* instance : cleanupInstances)
+            {
+                remove(*instance);
             }
 
             LOG_INFO_S("connection closed -> peerId: " << connection.peerId() << ", name: " << connection.peerName());
         }
 
-        publish(DotsClient{
-            DotsClient::id_i{ connection.peerId() },
-            DotsClient::name_i{ connection.peerName() },
-            DotsClient::connectionState_i{ connection.state() }
-        });
+        if (m_transitionHandler)
+        {
+            m_transitionHandler(connection);
+        }
     }
 
     void ConnectionManager::handleMemberMessage(io::Connection& connection, const DotsMember& member)
@@ -198,8 +191,6 @@ namespace dots
         }
         else if (member.event == DotsMemberEvent::join)
         {
-            const std::string& groupName = member.groupName;
-
             if (auto [it, emplaced] = m_groups[groupName].emplace(&connection); !emplaced)
             {
                 LOG_WARN_S("invalid group join: connection " << connection.peerName() << " is already member of group " << groupName);
@@ -278,27 +269,7 @@ namespace dots
         }
     }
 
-    void ConnectionManager::handleNewStructType(const dots::type::StructDescriptor<>& descriptor)
-    {
-        LOG_DEBUG_S("onNewType name=" << descriptor.name() << " flags:" << flags2String(&descriptor));
-
-	    publish(DotsTypes{
-            DotsTypes::id_i{ M_nextTypeId++ },
-            DotsTypes::name_i{ descriptor.name() }
-	    });
-        
-        if (descriptor.cached())
-        {
-            const Container<>& container = m_dispatcher.container(descriptor);
-
-            if (descriptor.cleanup())
-            {
-                m_cleanupContainers.emplace_back(&container);
-            }
-        }
-    }
-
-    void ConnectionManager::cleanUpClients()
+    void ConnectionManager::cleanUpConnections()
     {
         for (auto& [connectionPtr, connection] : m_closedConnections)
         {
@@ -309,38 +280,6 @@ namespace dots
         }
 
         m_closedConnections.clear();
-
-        std::set<io::Connection::id_t> obsoleteClients;
-
-        for (auto& element : m_dispatcher.container<DotsClient>())
-        {
-            const auto& client = element.first.to<DotsClient>();
-
-            if (client.connectionState == DotsConnectionState::closed)
-            {
-                for (const auto& [descriptor, container] : m_dispatcher.pool())
-                {
-                    (void)descriptor;
-
-                    for (const auto& [instance, cloneInformation] : container)
-                    {
-                        (void)instance;
-
-                        if (cloneInformation.createdFrom == client.id || cloneInformation.lastUpdateFrom == client.id)
-                        {
-                            break;
-                        }
-                    }
-                }
-
-                obsoleteClients.emplace(client.id);
-            }
-        }
-
-        for (io::Connection::id_t id : obsoleteClients)
-        {
-            remove(DotsClient{ DotsClient::id_i{ id } });
-        }
     }
 
     void ConnectionManager::transmitContainer(io::Connection& connection, const Container<>& container)
@@ -390,33 +329,4 @@ namespace dots
             connection.transmit(header, instance);
         }
     }
-
-    /*!
-     * Returns a short string-representation of the DotsStructFlags.
-     * The String consists of 5 chars (5 flags). Every flag has a static place in
-     * this string:
-     * @code
-     * "....." No flags are set.
-     * Flags:
-     * "CIPcL"
-     *  ||||\- local (L)
-     *  |||\-- cleanup (c)
-     *  ||\--- persistent (P)
-     *  |\---- internal (I)
-     *  \----- cached (C)
-     * @endcode
-     *
-     * @param td the structdescriptor from which the flags should be processed.
-     * @return short string containing the flags.
-     */
-    std::string ConnectionManager::flags2String(const dots::type::StructDescriptor<>* td)
-    {
-        std::string ret = ".....";
-        if (td->cached()) ret[0] = 'C';
-        if (td->internal()) ret[1] = 'I';
-        if (td->persistent()) ret[2] = 'P';
-        if (td->cleanup()) ret[3] = 'c';
-        if (td->local()) ret[4] = 'L';
-        return ret;
-    } 
 }

@@ -1,25 +1,30 @@
 #pragma once
-
 #include <unordered_map>
 #include <unordered_set>
+#include <functional>
 #include <dots/io/Registry.h>
 #include <dots/io/Connection.h>
 #include <dots/io/Dispatcher.h>
 #include "dots/io/Publisher.h"
 #include <dots/io/services/Listener.h>
-
-#include "DotsClearCache.dots.h"
-#include "DotsDescriptorRequest.dots.h"
-#include "DotsMember.dots.h"
+#include <DotsClearCache.dots.h>
+#include <DotsDescriptorRequest.dots.h>
+#include <DotsMember.dots.h>
 
 namespace dots
 {
-    class ConnectionManager : public Publisher
+    struct ConnectionManager : Publisher
     {
-    public:
-        ConnectionManager(std::string selfName);
-        ConnectionManager(const ConnectionManager&) = delete;
-        ConnectionManager& operator=(const ConnectionManager&) = delete;
+        using new_struct_type_handler_t = io::Registry::new_struct_type_handler_t;
+        using transition_handler_t = std::function<void(const io::Connection&)>;
+
+        ConnectionManager(std::string selfName, new_struct_type_handler_t newStructTypeHandler, transition_handler_t transitionHandler);
+		ConnectionManager(const ConnectionManager& other) = delete;
+		ConnectionManager(ConnectionManager&& other) = default;
+		virtual ~ConnectionManager() = default;
+
+		ConnectionManager& operator = (const ConnectionManager& rhs) = delete;
+		ConnectionManager& operator = (ConnectionManager&& rhs) = default;
 
         void listen(listener_ptr_t&& listener);
 
@@ -49,22 +54,16 @@ namespace dots
         void handleDescriptorRequest(io::Connection& connection, const DotsDescriptorRequest& descriptorRequest);
         void handleClearCache(io::Connection& connection, const DotsClearCache& clearCache);
 
-        void handleNewStructType(const type::StructDescriptor<>& descriptor);
-
-        void cleanUpClients();
+        void cleanUpConnections();
         void transmitContainer(io::Connection& connection, const Container<>& container);
 
-        static std::string flags2String(const dots::type::StructDescriptor<>* td);
-
-        inline static uint32_t M_nextTypeId = 0;
-
+        Dispatcher m_dispatcher;
         io::Registry m_registry;
         std::string m_selfName;
+        transition_handler_t m_transitionHandler;
         listener_map_t m_listeners;
         connection_map_t m_openConnections;
         connection_map_t m_closedConnections;
         group_map_t m_groups;
-        std::vector<const Container<>*> m_cleanupContainers;
-        Dispatcher m_dispatcher;
     };
 }

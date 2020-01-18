@@ -20,10 +20,18 @@ namespace dots
 
     private:
 
+        inline static uint32_t M_nextTypeId = 0;
+
+        void handleTransition(const io::Connection& connection);
+        void handleNewStructType(const type::StructDescriptor<>& descriptor);
+        void cleanUpClients();
+
         void updateServerStatus();
 
         DotsStatistics receiveStatistics() const;
         DotsCacheStatus cacheStatus() const;
+
+        static std::string flags2String(const dots::type::StructDescriptor<>* td);
 
         ConnectionManager m_connectionManager;
         DotsDaemonStatus m_daemonStatus;
