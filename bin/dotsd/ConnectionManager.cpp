@@ -8,16 +8,14 @@
 namespace dots
 {
     ConnectionManager::ConnectionManager(std::string selfName) :
-        m_registry(),
+        m_registry([&](const type::StructDescriptor<>& descriptor){ handleNewStructType(descriptor); }),
         m_selfName(std::move(selfName))
     {
-        m_onNewStruct = m_registry.onNewStruct.connect([&](const type::StructDescriptor<>* descriptor){ handleNewType(*descriptor); });
-
         for (const auto& [name, descriptor] : type::StaticDescriptorMap::Descriptors())
         {
             if (descriptor->type() == type::Type::Struct)
             {
-                handleNewType(static_cast<const type::StructDescriptor<>&>(*descriptor));
+                handleNewStructType(static_cast<const type::StructDescriptor<>&>(*descriptor));
             }
         }
 
@@ -274,7 +272,7 @@ namespace dots
         }
     }
 
-    void ConnectionManager::handleNewType(const dots::type::StructDescriptor<>& descriptor)
+    void ConnectionManager::handleNewStructType(const dots::type::StructDescriptor<>& descriptor)
     {
         LOG_DEBUG_S("onNewType name=" << descriptor.name() << " flags:" << flags2String(&descriptor));
 

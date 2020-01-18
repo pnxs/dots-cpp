@@ -8,7 +8,6 @@
 #include <dots/io/Dispatcher.h>
 #include "dots/io/Publisher.h"
 #include <dots/io/services/Listener.h>
-#include <dots/functional/signal.h>
 
 #include "DotsClearCache.dots.h"
 #include "DotsDescriptorRequest.dots.h"
@@ -46,7 +45,7 @@ namespace dots
         void handleDescriptorRequest(io::Connection& connection, const DotsDescriptorRequest& descriptorRequest);
         void handleClearCache(io::Connection& connection, const DotsClearCache& clearCache);
 
-        void handleNewType(const type::StructDescriptor<>& descriptor);
+        void handleNewStructType(const type::StructDescriptor<>& descriptor);
 
         void cleanUpClients();
         void sendContainerContent(io::Connection& connection, const Container<>& container);
@@ -64,6 +63,5 @@ namespace dots
         listener_ptr_t m_listener;
         Dispatcher m_dispatcher;
         Transmitter m_transmitter;
-        pnxs::SignalConnection m_onNewStruct;
     };
 }

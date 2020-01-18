@@ -1,12 +1,12 @@
 #pragma once
 #include <map>
 #include <memory>
+#include <functional>
 #include <type_traits>
 #include <dots/type/Descriptor.h>
 #include <dots/type/FundamentalTypes.h>
 #include <dots/type/EnumDescriptor.h>
 #include <dots/type/StructDescriptor.h>
-#include <dots/functional/signal.h>
 
 namespace dots::io
 {
@@ -14,8 +14,9 @@ namespace dots::io
     {
         using type_map_t = std::map<std::string_view, std::shared_ptr<type::Descriptor<>>>;
         using const_iterator_t = type_map_t::const_iterator;
+        using new_struct_type_handler_t = std::function<void(const type::StructDescriptor<>&)>;
 
-        Registry();
+        Registry(new_struct_type_handler_t newStructTypeHandler = nullptr);
         Registry(const Registry& other) = default;
         Registry(Registry&& other) noexcept = default;
         ~Registry() = default;
@@ -53,9 +54,6 @@ namespace dots::io
     	void deregisterType(const type::Descriptor<>& descriptor, bool assertRegisteredType = true);
     	void deregisterType(const std::string_view& name, bool assertRegisteredType = true);
 
-        [[deprecated("only available for backwards compatibility")]]
-        pnxs::Signal<void (const type::StructDescriptor<>*)> onNewStruct;
-
     	[[deprecated("only available for backwards compatibility")]]
     	const type::Descriptor<>* findDescriptor(const std::string& name) const;
 
@@ -67,6 +65,7 @@ namespace dots::io
 
     private:
 
+        new_struct_type_handler_t m_newStructTypeHandler = nullptr;
     	type_map_t m_types;
 	};
 }
