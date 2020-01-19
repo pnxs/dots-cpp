@@ -54,7 +54,6 @@ namespace dots
         void handleDescriptorRequest(io::Connection& connection, const DotsDescriptorRequest& descriptorRequest);
         void handleClearCache(io::Connection& connection, const DotsClearCache& clearCache);
 
-        void cleanUpConnections();
         void transmitContainer(io::Connection& connection, const Container<>& container);
 
         Dispatcher m_dispatcher;
@@ -63,7 +62,6 @@ namespace dots
         transition_handler_t m_transitionHandler;
         listener_map_t m_listeners;
         connection_map_t m_openConnections;
-        connection_map_t m_closedConnections;
         group_map_t m_groups;
     };
 }

@@ -10,7 +10,7 @@ namespace dots
         m_selfName{ std::move(selfName) },
         m_transitionHandler{ std::move(transitionHandler) }
     {
-        add_timer(1, [&](){ cleanUpConnections(); }, true);
+        /* do nothing */
     }
 
     void ConnectionManager::listen(listener_ptr_t&& listener)
@@ -141,7 +141,15 @@ namespace dots
 
         if (connection.state() == DotsConnectionState::closed)
         {
-            m_closedConnections.insert(m_openConnections.extract(&connection));
+            add_timer(1, [&]()
+            {
+                for (auto& [groupName, group] : m_groups)
+                {
+                    group.erase(&connection);
+                }
+                m_openConnections.erase(&connection);
+            });
+
             std::vector<const type::Struct*> cleanupInstances;
 
             for (const auto& [descriptor, container] : m_dispatcher.pool())
@@ -267,19 +275,6 @@ namespace dots
                 }
             }
         }
-    }
-
-    void ConnectionManager::cleanUpConnections()
-    {
-        for (auto& [connectionPtr, connection] : m_closedConnections)
-        {
-            for (auto& [groupName, group] : m_groups)
-            {
-                group.erase(connectionPtr);
-            }
-        }
-
-        m_closedConnections.clear();
     }
 
     void ConnectionManager::transmitContainer(io::Connection& connection, const Container<>& container)
