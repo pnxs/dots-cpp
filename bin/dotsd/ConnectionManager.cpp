@@ -199,22 +199,24 @@ namespace dots
         }
         else if (member.event == DotsMemberEvent::join)
         {
-            if (auto [it, emplaced] = m_groups[groupName].emplace(&connection); !emplaced)
+            if (auto [it, emplaced] = m_groups[groupName].emplace(&connection); emplaced)
+            {
+                if (const Container<>* container = m_dispatcher.pool().find(groupName); container != nullptr)
+                {
+                    if (container->descriptor().cached())
+                    {
+                        transmitContainer(connection, *container);
+                    }
+
+                    connection.transmit(DotsCacheInfo{
+                        DotsCacheInfo::typeName_i{ member.groupName },
+                        DotsCacheInfo::endTransmission_i{ true }
+                    });
+                }
+            }
+            else
             {
                 LOG_WARN_S("invalid group join: connection " << connection.peerName() << " is already member of group " << groupName);
-            }
-
-            if (const Container<>* container = m_dispatcher.pool().find(groupName); container != nullptr)
-            {
-                if (container->descriptor().cached())
-                {
-                    transmitContainer(connection, *container);
-                }
-
-                connection.transmit(DotsCacheInfo{
-                    DotsCacheInfo::typeName_i{ member.groupName },
-                    DotsCacheInfo::endTransmission_i{ true }
-                });
             }
         }
     }
