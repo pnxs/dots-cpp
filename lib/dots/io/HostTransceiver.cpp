@@ -1,11 +1,11 @@
-#include "ConnectionManager.h"
+#include "HostTransceiver.h"
 #include <dots/dots.h>
 #include <DotsCacheInfo.dots.h>
 #include <DotsClient.dots.h>
 
 namespace dots
 {
-    ConnectionManager::ConnectionManager(std::string selfName, new_struct_type_handler_t newStructTypeHandler, transition_handler_t transitionHandler) :
+    HostTransceiver::HostTransceiver(std::string selfName, new_struct_type_handler_t newStructTypeHandler, transition_handler_t transitionHandler) :
         m_registry{ std::move(newStructTypeHandler) },
         m_selfName{ std::move(selfName) },
         m_transitionHandler{ std::move(transitionHandler) }
@@ -13,7 +13,7 @@ namespace dots
         /* do nothing */
     }
 
-    void ConnectionManager::listen(listener_ptr_t&& listener)
+    void HostTransceiver::listen(listener_ptr_t&& listener)
     {
         Listener* listenerPtr = listener.get();
         m_listeners.emplace(listenerPtr, std::move(listener));
@@ -24,17 +24,17 @@ namespace dots
         );
     }
 
-    const std::string& ConnectionManager::selfName() const
+    const std::string& HostTransceiver::selfName() const
     {
         return m_selfName;
     }
 
-    const ContainerPool& ConnectionManager::pool() const
+    const ContainerPool& HostTransceiver::pool() const
 	{
 		return m_dispatcher.pool();
 	}
 
-    void ConnectionManager::publish(const type::Struct& instance, types::property_set_t includedProperties, bool remove)
+    void HostTransceiver::publish(const type::Struct& instance, types::property_set_t includedProperties, bool remove)
     {
         const type::StructDescriptor<>& descriptor = instance._descriptor();
 
@@ -45,7 +45,7 @@ namespace dots
                 DotsHeader::sentTime_i{ pnxs::SystemNow() },
                 DotsHeader::serverSentTime_i{ pnxs::SystemNow() },
                 DotsHeader::attributes_i{ includedProperties ==  types::property_set_t::All ? instance._validProperties() : includedProperties },
-				DotsHeader::sender_i{ io::Connection::ServerIdDeprecated },
+				DotsHeader::sender_i{ io::Connection::HostId },
                 DotsHeader::removeObj_i{ remove }
             }
         };
@@ -71,17 +71,17 @@ namespace dots
         }
     }
 
-    void ConnectionManager::remove(const type::Struct& instance)
+    void HostTransceiver::remove(const type::Struct& instance)
     {
         publish(instance, instance._keyProperties(), true);
     }
 
-    void ConnectionManager::publish(const type::StructDescriptor<>*/* td*/, const type::Struct& instance, type::PropertySet properties, bool remove)
+    void HostTransceiver::publish(const type::StructDescriptor<>*/* td*/, const type::Struct& instance, type::PropertySet properties, bool remove)
     {
         publish(instance, properties, remove);
     }
 
-    bool ConnectionManager::handleListenAccept(Listener&/* listener*/, channel_ptr_t channel)
+    bool HostTransceiver::handleListenAccept(Listener&/* listener*/, channel_ptr_t channel)
     {
         auto connection = std::make_shared<io::Connection>(std::move(channel), true);
         connection->asyncReceive(m_registry, m_selfName,
@@ -93,13 +93,13 @@ namespace dots
         return true;
     }
 
-    void ConnectionManager::handleListenError(Listener& listener, const std::exception& e)
+    void HostTransceiver::handleListenError(Listener& listener, const std::exception& e)
     {
         LOG_ERROR_S("error while listening for incoming channels -> " << e.what());
         m_listeners.erase(&listener);
     }
 
-    bool ConnectionManager::handleReceive(io::Connection& connection, const DotsTransportHeader& transportHeader, Transmission&& transmission, bool isFromMyself)
+    bool HostTransceiver::handleReceive(io::Connection& connection, const DotsTransportHeader& transportHeader, Transmission&& transmission, bool isFromMyself)
     {
         if (const type::Struct& instance = transmission.instance(); instance._descriptor().internal())
         {
@@ -132,7 +132,7 @@ namespace dots
         return true;
     }
 
-    void ConnectionManager::handleTransition(io::Connection& connection, const std::exception* e)
+    void HostTransceiver::handleTransition(io::Connection& connection, const std::exception* e)
     {
         if (e != nullptr)
         {
@@ -180,7 +180,7 @@ namespace dots
         }
     }
 
-    void ConnectionManager::handleMemberMessage(io::Connection& connection, const DotsMember& member)
+    void HostTransceiver::handleMemberMessage(io::Connection& connection, const DotsMember& member)
     {
         member._assertHasProperties(DotsMember::groupName_p + DotsMember::event_p);
         LOG_DEBUG_S(*member.event << " " << member.groupName);
@@ -221,7 +221,7 @@ namespace dots
         }
     }
 
-    void ConnectionManager::handleDescriptorRequest(io::Connection& connection, const DotsDescriptorRequest& descriptorRequest)
+    void HostTransceiver::handleDescriptorRequest(io::Connection& connection, const DotsDescriptorRequest& descriptorRequest)
     {
         const types::vector_t<types::string_t>& whiteList = descriptorRequest.whitelist.isValid() ? *descriptorRequest.whitelist : types::vector_t<types::string_t>{};
         const types::vector_t<types::string_t>& blacklist = descriptorRequest.blacklist.isValid() ? *descriptorRequest.blacklist : types::vector_t<types::string_t>{};
@@ -253,7 +253,7 @@ namespace dots
         connection.transmit(DotsCacheInfo{ DotsCacheInfo::endDescriptorRequest_i{ true } });
     }
 
-    void ConnectionManager::handleClearCache(io::Connection&/* connection*/, const DotsClearCache& clearCache)
+    void HostTransceiver::handleClearCache(io::Connection&/* connection*/, const DotsClearCache& clearCache)
     {
         clearCache._assertHasProperties(DotsClearCache::typeNames_p);
         const types::vector_t<types::string_t>& typeNames = clearCache.typeNames;
@@ -279,7 +279,7 @@ namespace dots
         }
     }
 
-    void ConnectionManager::transmitContainer(io::Connection& connection, const Container<>& container)
+    void HostTransceiver::transmitContainer(io::Connection& connection, const Container<>& container)
     {
         const auto& td = container.descriptor();
 

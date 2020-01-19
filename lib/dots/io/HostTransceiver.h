@@ -13,18 +13,18 @@
 
 namespace dots
 {
-    struct ConnectionManager : Publisher
+    struct HostTransceiver : Publisher
     {
         using new_struct_type_handler_t = io::Registry::new_struct_type_handler_t;
         using transition_handler_t = std::function<void(const io::Connection&)>;
 
-        ConnectionManager(std::string selfName, new_struct_type_handler_t newStructTypeHandler, transition_handler_t transitionHandler);
-		ConnectionManager(const ConnectionManager& other) = delete;
-		ConnectionManager(ConnectionManager&& other) = default;
-		virtual ~ConnectionManager() = default;
+        HostTransceiver(std::string selfName, new_struct_type_handler_t newStructTypeHandler, transition_handler_t transitionHandler);
+		HostTransceiver(const HostTransceiver& other) = delete;
+		HostTransceiver(HostTransceiver&& other) = default;
+		virtual ~HostTransceiver() = default;
 
-		ConnectionManager& operator = (const ConnectionManager& rhs) = delete;
-		ConnectionManager& operator = (ConnectionManager&& rhs) = default;
+		HostTransceiver& operator = (const HostTransceiver& rhs) = delete;
+		HostTransceiver& operator = (HostTransceiver&& rhs) = default;
 
         void listen(listener_ptr_t&& listener);
 

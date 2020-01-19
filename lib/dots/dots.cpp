@@ -31,9 +31,9 @@ namespace dots
 		return publisher;
 	}
 
-	Transceiver& transceiver(const std::string_view& name/* = "dots-transceiver"*/)
+	GuestTransceiver& transceiver(const std::string_view& name/* = "dots-transceiver"*/)
 	{
-		static Transceiver transceiver{ name.data() };
+		static GuestTransceiver transceiver{ name.data() };
 
 		if (Publisher*& p = publisher(); p == nullptr)
 		{
@@ -53,12 +53,12 @@ namespace dots
 		publish(instance, instance._keyProperties(), true);
 	}
 
-	Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::receive_handler_t<>&& handler)
+	Subscription subscribe(const type::StructDescriptor<>& descriptor, GuestTransceiver::receive_handler_t<>&& handler)
 	{
 		return transceiver().subscribe(descriptor, std::move(handler));
 	}
 
-	Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::event_handler_t<>&& handler)
+	Subscription subscribe(const type::StructDescriptor<>& descriptor, GuestTransceiver::event_handler_t<>&& handler)
 	{
 		return transceiver().subscribe(descriptor, std::move(handler));
 	}

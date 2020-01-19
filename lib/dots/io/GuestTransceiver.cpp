@@ -1,17 +1,17 @@
-#include <dots/io/Transceiver.h>
+#include <dots/io/GuestTransceiver.h>
 #include <dots/common/logging.h>
 #include <dots/io/serialization/AsciiSerialization.h>
 #include <DotsMember.dots.h>
 
 namespace dots
 {
-    Transceiver::Transceiver(std::string selfName) :
+    GuestTransceiver::GuestTransceiver(std::string selfName) :
 	    m_name{ std::move(selfName) }
     {
 		/* do nothing */
     }
 
-	const io::Connection& Transceiver::open(channel_ptr_t channel, bool server, descriptor_map_t preloadPublishTypes/* = {}*/, descriptor_map_t preloadSubscribeTypes/* = {}*/)
+	const io::Connection& GuestTransceiver::open(channel_ptr_t channel, bool server, descriptor_map_t preloadPublishTypes/* = {}*/, descriptor_map_t preloadSubscribeTypes/* = {}*/)
 	{
 		if (m_connection != std::nullopt)
         {
@@ -30,27 +30,27 @@ namespace dots
 		return *m_connection;
 	}
 
-	const io::Registry& Transceiver::registry() const
+	const io::Registry& GuestTransceiver::registry() const
 	{
 		return m_registry;
 	}
 
-	io::Registry& Transceiver::registry()
+	io::Registry& GuestTransceiver::registry()
 	{
 		return m_registry;
 	}
 
-	const ContainerPool& Transceiver::pool() const
+	const ContainerPool& GuestTransceiver::pool() const
 	{
 		return m_dispatcher.pool();
 	}
 
-	const Container<>& Transceiver::container(const type::StructDescriptor<>& descriptor)
+	const Container<>& GuestTransceiver::container(const type::StructDescriptor<>& descriptor)
 	{
 		return m_dispatcher.container(descriptor);
 	}
 
-	Subscription Transceiver::subscribe(const type::StructDescriptor<>& descriptor, receive_handler_t<>&& handler)
+	Subscription GuestTransceiver::subscribe(const type::StructDescriptor<>& descriptor, receive_handler_t<>&& handler)
 	{
 		if (descriptor.substructOnly())
 		{
@@ -61,7 +61,7 @@ namespace dots
 		return m_dispatcher.subscribe(descriptor, std::move(handler));
 	}
 
-	Subscription Transceiver::subscribe(const type::StructDescriptor<>& descriptor, event_handler_t<>&& handler)
+	Subscription GuestTransceiver::subscribe(const type::StructDescriptor<>& descriptor, event_handler_t<>&& handler)
 	{
 		if (descriptor.substructOnly())
 		{
@@ -72,17 +72,17 @@ namespace dots
 		return m_dispatcher.subscribe(descriptor, std::move(handler));
 	}
 
-	Subscription Transceiver::subscribe(const std::string_view& name, receive_handler_t<>&& handler)
+	Subscription GuestTransceiver::subscribe(const std::string_view& name, receive_handler_t<>&& handler)
 	{
 		return subscribe(m_registry.getStructType(name), std::move(handler));
 	}
 
-	Subscription Transceiver::subscribe(const std::string_view& name, event_handler_t<>&& handler)
+	Subscription GuestTransceiver::subscribe(const std::string_view& name, event_handler_t<>&& handler)
 	{
 		return subscribe(m_registry.getStructType(name), std::move(handler));
 	}
 
-	void Transceiver::publish(const type::Struct& instance, types::property_set_t includedProperties/*t = types::property_set_t::All*/, bool remove/* = false*/)
+	void GuestTransceiver::publish(const type::Struct& instance, types::property_set_t includedProperties/*t = types::property_set_t::All*/, bool remove/* = false*/)
 	{
 		const type::StructDescriptor<>& descriptor = instance._descriptor();
 		
@@ -101,17 +101,17 @@ namespace dots
 		
 	}
 
-	void Transceiver::remove(const type::Struct& instance)
+	void GuestTransceiver::remove(const type::Struct& instance)
 	{
 		publish(instance, instance._keyProperties(), true);
 	}
 
-	void Transceiver::publish(const type::StructDescriptor<>*/* td*/, const type::Struct& instance, types::property_set_t what, bool remove)
+	void GuestTransceiver::publish(const type::StructDescriptor<>*/* td*/, const type::Struct& instance, types::property_set_t what, bool remove)
 	{
 		publish(instance, what, remove);
 	}
 
-	void Transceiver::joinGroup(const std::string_view& name)
+	void GuestTransceiver::joinGroup(const std::string_view& name)
 	{
 		LOG_DEBUG_S("send DotsMember (join " << name << ")");
 		m_connection->transmit(DotsMember{
@@ -120,7 +120,7 @@ namespace dots
         });
 	}
 
-	void Transceiver::leaveGroup(const std::string_view& name)
+	void GuestTransceiver::leaveGroup(const std::string_view& name)
 	{
 		LOG_DEBUG_S("send DotsMember (leave " << name << ")");
 		m_connection->transmit(DotsMember{
@@ -129,7 +129,7 @@ namespace dots
         });
 	}
 
-	bool Transceiver::handleReceive(io::Connection& connection, const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself)
+	bool GuestTransceiver::handleReceive(io::Connection& connection, const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself)
 	{
 		try 
         {
@@ -143,7 +143,7 @@ namespace dots
         }
 	}
 	
-	void Transceiver::handleTransition(io::Connection& connection, const std::exception* e)
+	void GuestTransceiver::handleTransition(io::Connection& connection, const std::exception* e)
 	{
 		if (connection.state() == DotsConnectionState::early_subscribe)
 		{

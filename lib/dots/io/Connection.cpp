@@ -8,11 +8,11 @@
 
 namespace dots::io
 {
-	Connection::Connection(channel_ptr_t channel, bool server) :
+	Connection::Connection(channel_ptr_t channel, bool host) :
         m_expectedSystemType{ &DotsMsgError::_Descriptor(), types::property_set_t::None, nullptr },
         m_connectionState(DotsConnectionState::suspended),
-        m_selfId(server ? ServerId : UninitializedId),
-		m_peerId(server ? M_nextClientId++ : ServerId),
+        m_selfId(host ? HostId : UninitializedId),
+		m_peerId(host ? M_nextGuestId++ : HostId),
 	    m_peerName("<not_set>"),
 		m_channel(std::move(channel)),
 		m_registry(nullptr)
@@ -75,7 +75,7 @@ namespace dots::io
 			[this](const std::exception& e){ handleError(e); }
 		);
 
-		if (m_selfId == ServerId)
+		if (m_selfId == HostId)
 		{
 		    transmit(DotsMsgHello{
                 DotsMsgHello::serverName_i{ name },
@@ -181,7 +181,7 @@ namespace dots::io
                 {
                     importType(transmission.instance());
 
-                    if (m_selfId == ServerId)
+                    if (m_selfId == HostId)
                     {
                         DotsTransportHeader transportHeader_ = transportHeader;
                         DotsHeader& dotsHeader = *transportHeader_.dotsHeader;

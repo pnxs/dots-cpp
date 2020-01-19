@@ -9,7 +9,7 @@
 
 namespace dots
 {
-	struct Transceiver : Publisher
+	struct GuestTransceiver : Publisher
 	{
 		using descriptor_map_t = std::map<std::string_view, type::StructDescriptor<>*>;
 
@@ -18,13 +18,13 @@ namespace dots
 		template <typename T = type::Struct>
 		using event_handler_t = Dispatcher::event_handler_t<T>;
 
-		Transceiver(std::string selfName);
-		Transceiver(const Transceiver& other) = delete;
-		Transceiver(Transceiver&& other) = default;
-		virtual ~Transceiver() = default;
+		GuestTransceiver(std::string selfName);
+		GuestTransceiver(const GuestTransceiver& other) = delete;
+		GuestTransceiver(GuestTransceiver&& other) = default;
+		virtual ~GuestTransceiver() = default;
 
-		Transceiver& operator = (const Transceiver& rhs) = delete;
-		Transceiver& operator = (Transceiver&& rhs) = default;
+		GuestTransceiver& operator = (const GuestTransceiver& rhs) = delete;
+		GuestTransceiver& operator = (GuestTransceiver&& rhs) = default;
 
 		const io::Connection& open(channel_ptr_t channel, bool server, descriptor_map_t preloadPublishTypes = {}, descriptor_map_t preloadSubscribeTypes = {});
 

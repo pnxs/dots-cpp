@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include "dots/cpp_config.h"
-#include <dots/io/ConnectionManager.h>
+#include <dots/io/HostTransceiver.h>
 #include "DotsDaemonStatus.dots.h"
 
 namespace dots
@@ -33,7 +33,7 @@ namespace dots
 
         static std::string flags2String(const dots::type::StructDescriptor<>* td);
 
-        ConnectionManager m_connectionManager;
+        HostTransceiver m_hostTransceiver;
         DotsDaemonStatus m_daemonStatus;
     };
 }

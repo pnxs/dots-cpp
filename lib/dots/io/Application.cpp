@@ -16,9 +16,9 @@ namespace dots
 		// Start Transceiver
 		// Connect to dotsd
 
-		Transceiver& globalTransceiver = dots::transceiver(name);
+		GuestTransceiver& globalGuestTransceiver = dots::transceiver(name);
 		auto channel = global_service<ChannelService>().makeChannel<TcpChannel>(m_serverAddress, m_serverPort);
-		const io::Connection& connection = globalTransceiver.open(std::move(channel), false, getPreloadPublishTypes(), getPreloadSubscribeTypes());
+		const io::Connection& connection = globalGuestTransceiver.open(std::move(channel), false, getPreloadPublishTypes(), getPreloadSubscribeTypes());
 
 		LOG_DEBUG_S("run until state connected...");
 		while (!connection.connected())
@@ -27,7 +27,7 @@ namespace dots
 		}
 		LOG_DEBUG_S("run one done");
 
-		globalTransceiver.publish(DotsClient{ DotsClient::id_i{ connection.selfId() }, DotsClient::running_i{ true } });
+		globalGuestTransceiver.publish(DotsClient{ DotsClient::id_i{ connection.peerId() }, DotsClient::running_i{ true } });
 	}
 
 	Application::~Application()
@@ -92,9 +92,9 @@ namespace dots
 		m_serverPort = vm["dots-port"].as<string>();
 	}
 
-	Transceiver::descriptor_map_t Application::getPreloadPublishTypes() const
+	GuestTransceiver::descriptor_map_t Application::getPreloadPublishTypes() const
 	{
-		Transceiver::descriptor_map_t sds;
+		GuestTransceiver::descriptor_map_t sds;
 
 		for (const auto& e : dots::PublishedType::allChained())
 		{
@@ -113,9 +113,9 @@ namespace dots
 		return sds;
 	}
 
-	Transceiver::descriptor_map_t Application::getPreloadSubscribeTypes() const
+	GuestTransceiver::descriptor_map_t Application::getPreloadSubscribeTypes() const
 	{
-		Transceiver::descriptor_map_t sds;
+		GuestTransceiver::descriptor_map_t sds;
 
 		for (const auto& e : dots::SubscribedType::allChained())
 		{

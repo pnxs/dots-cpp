@@ -3,7 +3,7 @@
 #include <string_view>
 #include <dots/common/Chrono.h>
 #include <dots/io/services/Timer.h>
-#include <dots/io/Transceiver.h>
+#include <dots/io/GuestTransceiver.h>
 #include <dots/io/Publisher.h>
 
 namespace dots
@@ -15,7 +15,7 @@ namespace dots
 	void remove_fd_handler(int fileDescriptor);
 
 	Publisher*& publisher();
-	Transceiver& transceiver(const std::string_view& name = "dots-transceiver");
+	GuestTransceiver& transceiver(const std::string_view& name = "dots-transceiver");
 
 	void publish(const type::Struct& instance, types::property_set_t includedProperties, bool remove);
 	void remove(const type::Struct& instance);
@@ -26,8 +26,8 @@ namespace dots
 	template<typename  T>
 	void remove(const T& instance);
 
-	Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::receive_handler_t<>&& handler);
-	Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::event_handler_t<>&& handler);
+	Subscription subscribe(const type::StructDescriptor<>& descriptor, GuestTransceiver::receive_handler_t<>&& handler);
+	Subscription subscribe(const type::StructDescriptor<>& descriptor, GuestTransceiver::event_handler_t<>&& handler);
 
 	template<typename T>
 	Subscription subscribe(Dispatcher::receive_handler_t<T>&& handler);

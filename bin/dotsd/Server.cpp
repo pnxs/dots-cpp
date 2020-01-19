@@ -1,7 +1,6 @@
 #include "Server.h"
 #include <dots/dots.h>
 #include <dots/io/ResourceUsage.h>
-#include <dots/io/Transceiver.h>
 #include "DotsClient.dots.h"
 #include <StructDescriptorData.dots.h>
 #include <DotsTypes.dots.h>
@@ -11,19 +10,19 @@
 namespace dots
 {
     Server::Server(std::string name, listeners_t listeners) :
-        m_connectionManager{
+        m_hostTransceiver{
             std::move(name), 
             [&](const type::StructDescriptor<>& descriptor){ handleNewStructType(descriptor); },
             [&](const io::Connection& connection){ handleTransition(connection); }
         },
-        m_daemonStatus{ DotsDaemonStatus::serverName_i{ m_connectionManager.selfName() }, DotsDaemonStatus::startTime_i{ pnxs::SystemNow() } }
+        m_daemonStatus{ DotsDaemonStatus::serverName_i{ m_hostTransceiver.selfName() }, DotsDaemonStatus::startTime_i{ pnxs::SystemNow() } }
     {
         add_timer(1, [&](){ updateServerStatus(); }, true);
         add_timer(10, [&](){ cleanUpClients(); }, true);
 
         for (listener_ptr_t& listener : listeners)
         {
-            m_connectionManager.listen(std::move(listener));
+            m_hostTransceiver.listen(std::move(listener));
         }
 
         for (const auto& [name, descriptor] : type::StaticDescriptorMap::Descriptors())
@@ -37,7 +36,7 @@ namespace dots
 
     void Server::handleTransition(const io::Connection& connection)
     {
-        m_connectionManager.publish(DotsClient{
+        m_hostTransceiver.publish(DotsClient{
             DotsClient::id_i{ connection.peerId() },
             DotsClient::name_i{ connection.peerName() },
             DotsClient::connectionState_i{ connection.state() }
@@ -48,7 +47,7 @@ namespace dots
     {
         LOG_DEBUG_S("onNewType name=" << descriptor.name() << " flags:" << flags2String(&descriptor));
 
-        m_connectionManager.publish(DotsTypes{
+        m_hostTransceiver.publish(DotsTypes{
             DotsTypes::id_i{ M_nextTypeId++ },
             DotsTypes::name_i{ descriptor.name() }
 	    });
@@ -58,13 +57,13 @@ namespace dots
     {
         std::set<io::Connection::id_t> expiredClients;
 
-        for (auto& element : m_connectionManager.pool().get<DotsClient>())
+        for (auto& element : m_hostTransceiver.pool().get<DotsClient>())
         {
             const auto& client = element.first.to<DotsClient>();
 
             if (client.connectionState == DotsConnectionState::closed)
             {
-                for (const auto& [descriptor, container] : m_connectionManager.pool())
+                for (const auto& [descriptor, container] : m_hostTransceiver.pool())
                 {
                     (void)descriptor;
 
@@ -85,7 +84,7 @@ namespace dots
 
         for (io::Connection::id_t id : expiredClients)
         {
-            m_connectionManager.remove(DotsClient{ DotsClient::id_i{ id } });
+            m_hostTransceiver.remove(DotsClient{ DotsClient::id_i{ id } });
         }
     }
 
@@ -104,7 +103,7 @@ namespace dots
                 ds.resourceUsage = static_cast<DotsResourceUsage&&>(dots::ResourceUsage());
                 ds.cache = cacheStatus();
 
-                m_connectionManager.publish(ds);
+                m_hostTransceiver.publish(ds);
                 m_daemonStatus = ds;
             }
         }
@@ -125,7 +124,7 @@ namespace dots
     {
         DotsCacheStatus cs;
 
-        auto& pool = m_connectionManager.pool();
+        auto& pool = m_hostTransceiver.pool();
 
         cs.nrTypes(pool.size());
         cs.size(pool.totalMemoryUsage());

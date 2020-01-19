@@ -21,12 +21,14 @@ namespace dots::io
 	struct Connection
 	{
 		using id_t = uint32_t;
-        static constexpr id_t ServerIdDeprecated = 1;
+        static constexpr id_t UninitializedId = 0;
+        static constexpr id_t HostId = 1;
+        static constexpr id_t FirstGuestId = 2;
 
 		using receive_handler_t = std::function<bool(Connection&, const DotsTransportHeader&, Transmission&&, bool)>;
 		using transition_handler_t = std::function<void(Connection&, const std::exception*)>;
 		
-		Connection(channel_ptr_t channel, bool server);
+		Connection(channel_ptr_t channel, bool host);
 		Connection(const Connection& other) = delete;
 		Connection(Connection&& other) = default;
 		~Connection();
@@ -50,10 +52,6 @@ namespace dots::io
 
 		using system_type_t = std::tuple<const type::StructDescriptor<>*, types::property_set_t, std::function<void(const type::Struct&)>>;
 
-		static constexpr id_t UninitializedId = 0;
-        static constexpr id_t ServerId = 1;
-        static constexpr id_t FirstClientId = 2;
-
 		bool handleReceive(const DotsTransportHeader& transportHeader, Transmission&& transmission);
 		void handleError(const std::exception& e);
 		void handleClose(const std::exception* e);
@@ -75,7 +73,7 @@ namespace dots::io
 		template <typename T>
 		void expectSystemType(const types::property_set_t& expectedAttributes, void(Connection::* handler)(const T&));
 
-        inline static id_t M_nextClientId = FirstClientId;
+        inline static id_t M_nextGuestId = FirstGuestId;
 
 		system_type_t m_expectedSystemType;
 		DotsConnectionState m_connectionState;
