@@ -7,18 +7,25 @@ namespace dots::io::posix
 		m_acceptor{ ioContext },
 		m_socket{ ioContext }
 	{
-		m_acceptor.open(m_endpoint.protocol());
-		m_acceptor.set_option(asio::local::stream_protocol::acceptor::reuse_address(true));
-		m_acceptor.bind(m_endpoint);
-		
-		if (backlog == std::nullopt)
-		{
-			m_acceptor.listen();
-		}
-		else
-		{
-			m_acceptor.listen(*backlog);
-		}
+        try
+        {
+            m_acceptor.open(m_endpoint.protocol());
+		    m_acceptor.set_option(asio::local::stream_protocol::acceptor::reuse_address(true));
+		    m_acceptor.bind(m_endpoint);
+		    
+		    if (backlog == std::nullopt)
+		    {
+			    m_acceptor.listen();
+		    }
+		    else
+		    {
+			    m_acceptor.listen(*backlog);
+		    }
+        }
+        catch (const std::exception& e)
+        {
+			throw std::runtime_error{ "failed creating UDS listener at path '" + m_endpoint.path() + "' -> " + e.what() };
+        }
 	}
 
     UdsListener::~UdsListener()
@@ -37,7 +44,7 @@ namespace dots::io::posix
 
 			if (error)
 			{
-				processError(std::runtime_error{ "failed listening on UDS endpoint at " + m_endpoint.path() + " -> " + error.message() });
+				processError(std::runtime_error{ "failed listening on UDS endpoint at path '" + m_endpoint.path() + "' -> " + error.message() });
 				return;
 			}
 
