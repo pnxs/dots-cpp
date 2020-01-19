@@ -98,7 +98,6 @@ namespace dots::io
 	void Connection::transmit(const type::Struct& instance, types::property_set_t includedProperties, bool remove)
 	{
 		const type::StructDescriptor<>& descriptor = instance._descriptor();
-		exportType(descriptor);
 
         DotsTransportHeader header{
             DotsTransportHeader::destinationGroup_i{ descriptor.name() },
@@ -123,6 +122,7 @@ namespace dots::io
     {
         try
         {
+            exportType(instance._descriptor());
             m_channel->transmit(header, instance);
         }
         catch (const std::exception& e)
@@ -135,6 +135,7 @@ namespace dots::io
     {
         try
         {
+            exportType(transmission.instance()->_descriptor());
             m_channel->transmit(header, transmission);
         }
         catch (const std::exception& e)
