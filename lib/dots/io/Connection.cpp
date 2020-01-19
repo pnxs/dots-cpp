@@ -120,28 +120,14 @@ namespace dots::io
 
     void Connection::transmit(const DotsTransportHeader& header, const type::Struct& instance)
     {
-        try
-        {
-            exportType(instance._descriptor());
-            m_channel->transmit(header, instance);
-        }
-        catch (const std::exception& e)
-        {
-            handleError(e);
-        }
+        exportType(instance._descriptor());
+        m_channel->transmit(header, instance);
     }
 
     void Connection::transmit(const DotsTransportHeader& header, const Transmission& transmission)
     {
-        try
-        {
-            exportType(transmission.instance()->_descriptor());
-            m_channel->transmit(header, transmission);
-        }
-        catch (const std::exception& e)
-        {
-           handleError(e);
-        }
+        exportType(transmission.instance()->_descriptor());
+        m_channel->transmit(header, transmission);
     }
 
     void Connection::transmit(const type::StructDescriptor<>& descriptor)
@@ -226,10 +212,12 @@ namespace dots::io
 	{
         if (m_connectionState == DotsConnectionState::closed)
         {
-            throw std::runtime_error{ "unable to handle error in closed state: " + std::string{ e.what() } };
+            LOG_ERROR_S("unable to handle error in closed state: " + std::string{ e.what() });
         }
-
-        handleClose(&e);
+        else
+        {
+            handleClose(&e);
+        }
 	}
 
     void Connection::handleClose(const std::exception* e)

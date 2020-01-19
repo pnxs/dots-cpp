@@ -22,12 +22,26 @@ namespace dots
 
     void Channel::transmit(const DotsTransportHeader& header, const type::Struct& instance)
     {
-        transmitImpl(header, instance);
+        try
+        {
+            transmitImpl(header, instance);
+        }
+        catch (const std::exception& e)
+        {
+            processError(e);
+        }
     }
 
     void Channel::transmit(const DotsTransportHeader& header, const Transmission& transmission)
     {
-        transmitImpl(header, transmission);
+        try
+        {
+            transmitImpl(header, transmission);
+        }
+        catch (const std::exception& e)
+        {
+            processError(e);
+        }
     }
 
     const io::Registry& Channel::registry() const
