@@ -11,7 +11,6 @@ add_executable(${TARGET_NAME} main.cpp)
 # properties
 target_sources(${TARGET_NAME}
 	PRIVATE
-		ConnectionManager.cpp
         Server.cpp
 )	
 target_include_directories(${TARGET_NAME}

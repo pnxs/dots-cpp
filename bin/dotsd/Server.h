@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include "dots/cpp_config.h"
-#include "ConnectionManager.h"
+#include <dots/io/ConnectionManager.h>
 #include "DotsDaemonStatus.dots.h"
 
 namespace dots
