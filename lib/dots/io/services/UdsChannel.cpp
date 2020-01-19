@@ -1,4 +1,5 @@
 #include "UdsChannel.h"
+#include <csignal>
 #include <dots/io/Io.h>
 #include <dots/io/Registry.h>
 #include <dots/io/serialization/CborNativeSerialization.h>
@@ -21,6 +22,8 @@ namespace dots::io::posix
 
 		m_instanceBuffer.resize(8192);
 		m_headerBuffer.resize(1024);
+
+		IgnorePipeSignals();
 	}
 
 	UdsChannel::UdsChannel(asio::local::stream_protocol::socket&& socket) :
@@ -30,6 +33,8 @@ namespace dots::io::posix
 	{
 		m_instanceBuffer.resize(8192);
 		m_headerBuffer.resize(1024);
+
+		IgnorePipeSignals();
 	}
 
 	void UdsChannel::asyncReceiveImpl()
@@ -142,4 +147,11 @@ namespace dots::io::posix
 			throw std::system_error{ ec };
 		}
 	}
+
+    void UdsChannel::IgnorePipeSignals()
+    {
+		// ignores all pipe signals to prevent non-catchable application termination on broken pipes
+		static auto IgnorePipesSignals = [](){ return std::signal(SIGPIPE, SIG_IGN); }();
+		(void)IgnorePipesSignals;
+    }
 }

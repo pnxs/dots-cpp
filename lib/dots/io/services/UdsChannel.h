@@ -29,6 +29,8 @@ namespace dots::io::posix
 
 		void verifyErrorCode(const asio::error_code& error);
 
+		static void IgnorePipeSignals();
+
 		receive_handler_t m_cb;
 		error_handler_t m_ecb;
 
