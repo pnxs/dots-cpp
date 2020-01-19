@@ -172,40 +172,43 @@ namespace dots
     void HostTransceiver::handleMemberMessage(io::Connection& connection, const DotsMember& member)
     {
         member._assertHasProperties(DotsMember::groupName_p + DotsMember::event_p);
-        LOG_DEBUG_S(*member.event << " " << member.groupName);
         const std::string& groupName = member.groupName;
 
         if (member.event == DotsMemberEvent::kill)
         {
-            LOG_WARN_S("kill event not supported");
+            LOG_WARN_S("guest '" << connection.peerName() << "' requested unsupported kill event");
         }
         else if (member.event == DotsMemberEvent::leave)
         {
             if (size_t removed = m_groups[groupName].erase(&connection); removed == 0)
             {
-                LOG_WARN_S("invalid group leave: connection " << connection.peerName() << " is not a member of group " << groupName);
+                LOG_WARN_S("guest '" << connection.peerName() << "' is not a member of group '" << groupName << "'");
             }
         }
         else if (member.event == DotsMemberEvent::join)
         {
             if (auto [it, emplaced] = m_groups[groupName].emplace(&connection); emplaced)
             {
-                if (const Container<>* container = pool().find(groupName); container != nullptr)
-                {
-                    if (container->descriptor().cached())
-                    {
-                        transmitContainer(connection, *container);
-                    }
-
-                    connection.transmit(DotsCacheInfo{
-                        DotsCacheInfo::typeName_i{ member.groupName },
-                        DotsCacheInfo::endTransmission_i{ true }
-                    });
-                }
+                LOG_INFO_S("guest '" << connection.peerName() << "' is now a member of group '" << groupName << "'");
             }
             else
             {
-                LOG_WARN_S("invalid group join: connection " << connection.peerName() << " is already member of group " << groupName);
+                LOG_WARN_S("guest '" << connection.peerName() << "' is already member of group '" << groupName << "'");
+            }
+
+            // note: transmitting the container content even when the guest has already joined the group is currently
+            // necessary to retain backwards compatibility
+            if (const Container<>* container = pool().find(groupName); container != nullptr)
+            {
+                if (container->descriptor().cached())
+                {
+                    transmitContainer(connection, *container);
+                }
+
+                connection.transmit(DotsCacheInfo{
+                    DotsCacheInfo::typeName_i{ member.groupName },
+                    DotsCacheInfo::endTransmission_i{ true }
+                });
             }
         }
     }
