@@ -6,8 +6,7 @@
 namespace dots
 {
     HostTransceiver::HostTransceiver(std::string selfName, new_struct_type_handler_t newStructTypeHandler, transition_handler_t transitionHandler) :
-        m_registry{ std::move(newStructTypeHandler) },
-        m_selfName{ std::move(selfName) },
+        Transceiver(std::move(selfName), std::move(newStructTypeHandler)),
         m_transitionHandler{ std::move(transitionHandler) }
     {
         /* do nothing */
@@ -23,16 +22,6 @@ namespace dots
             [this](Listener& listener, const std::exception& e){ handleListenError(listener, e); }
         );
     }
-
-    const std::string& HostTransceiver::selfName() const
-    {
-        return m_selfName;
-    }
-
-    const ContainerPool& HostTransceiver::pool() const
-	{
-		return m_dispatcher.pool();
-	}
 
     void HostTransceiver::publish(const type::Struct& instance, types::property_set_t includedProperties, bool remove)
     {
@@ -58,7 +47,7 @@ namespace dots
         // TODO: avoid local copy
         Transmission transmission{ type::AnyStruct{ instance } };
 
-        m_dispatcher.dispatch(header.dotsHeader, transmission.instance(), true);
+        dispatcher().dispatch(header.dotsHeader, transmission.instance(), true);
 
         for (io::Connection* destinationConnection : m_groups[header.destinationGroup])
         {
@@ -71,24 +60,24 @@ namespace dots
         }
     }
 
-    void HostTransceiver::remove(const type::Struct& instance)
+    void HostTransceiver::joinGroup(const std::string_view&/* name*/)
     {
-        publish(instance, instance._keyProperties(), true);
+        /* do nothing */
     }
 
-    void HostTransceiver::publish(const type::StructDescriptor<>*/* td*/, const type::Struct& instance, type::PropertySet properties, bool remove)
+	void HostTransceiver::leaveGroup(const std::string_view&/* name*/)
     {
-        publish(instance, properties, remove);
+        /* do nothing */
     }
 
     bool HostTransceiver::handleListenAccept(Listener&/* listener*/, channel_ptr_t channel)
     {
         auto connection = std::make_shared<io::Connection>(std::move(channel), true);
-        connection->asyncReceive(m_registry, m_selfName,
+        connection->asyncReceive(registry(), selfName(),
             [this](io::Connection& connection, const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself) { return handleReceive(connection, header, std::move(transmission), isFromMyself); },
             [this](io::Connection& connection, const std::exception* e) { handleTransition(connection, e); }
         );
-        m_openConnections.emplace(connection.get(), connection);
+        m_guestConnections.emplace(connection.get(), connection);
 
         return true;
     }
@@ -117,7 +106,7 @@ namespace dots
             }
         }
 
-        m_dispatcher.dispatch(transportHeader.dotsHeader, transmission.instance(), isFromMyself);
+        dispatcher().dispatch(transportHeader.dotsHeader, transmission.instance(), isFromMyself);
 
         for (io::Connection* destinationConnection : m_groups[transportHeader.destinationGroup])
         {
@@ -147,12 +136,12 @@ namespace dots
                 {
                     group.erase(&connection);
                 }
-                m_openConnections.erase(&connection);
+                m_guestConnections.erase(&connection);
             });
 
             std::vector<const type::Struct*> cleanupInstances;
 
-            for (const auto& [descriptor, container] : m_dispatcher.pool())
+            for (const auto& [descriptor, container] : pool())
             {
                 if (descriptor->cleanup())
                 {
@@ -201,7 +190,7 @@ namespace dots
         {
             if (auto [it, emplaced] = m_groups[groupName].emplace(&connection); emplaced)
             {
-                if (const Container<>* container = m_dispatcher.pool().find(groupName); container != nullptr)
+                if (const Container<>* container = pool().find(groupName); container != nullptr)
                 {
                     if (container->descriptor().cached())
                     {
@@ -228,7 +217,7 @@ namespace dots
 
         LOG_INFO_S("received DescriptorRequest from " << connection.peerName() << "(" << connection.peerId() << ")");
 
-        for (const auto& [descriptor, container] : m_dispatcher.pool())
+        for (const auto& [descriptor, container] : pool())
         {
             if (descriptor->internal())
             {
@@ -258,7 +247,7 @@ namespace dots
         clearCache._assertHasProperties(DotsClearCache::typeNames_p);
         const types::vector_t<types::string_t>& typeNames = clearCache.typeNames;
 
-        for (auto& [descriptor, container] : m_dispatcher.pool())
+        for (auto& [descriptor, container] : pool())
         {
             if (std::find(typeNames.begin(), typeNames.end(), container.descriptor().name()) != typeNames.end())
             {

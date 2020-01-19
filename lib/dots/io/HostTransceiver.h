@@ -2,10 +2,8 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <functional>
-#include <dots/io/Registry.h>
 #include <dots/io/Connection.h>
-#include <dots/io/Dispatcher.h>
-#include "dots/io/Publisher.h"
+#include <dots/io/Transceiver.h>
 #include <dots/io/services/Listener.h>
 #include <DotsClearCache.dots.h>
 #include <DotsDescriptorRequest.dots.h>
@@ -13,9 +11,8 @@
 
 namespace dots
 {
-    struct HostTransceiver : Publisher
+    struct HostTransceiver : Transceiver
     {
-        using new_struct_type_handler_t = io::Registry::new_struct_type_handler_t;
         using transition_handler_t = std::function<void(const io::Connection&)>;
 
         HostTransceiver(std::string selfName, new_struct_type_handler_t newStructTypeHandler, transition_handler_t transitionHandler);
@@ -27,15 +24,7 @@ namespace dots
 		HostTransceiver& operator = (HostTransceiver&& rhs) = default;
 
         void listen(listener_ptr_t&& listener);
-
-        const std::string& selfName() const;
-        const ContainerPool& pool() const;
-
-        void publish(const type::Struct& instance, types::property_set_t includedProperties = types::property_set_t::All, bool remove = false);
-        void remove(const type::Struct& instance);
-
-        [[deprecated("only available for backwards compatibility")]]
-        void publish(const type::StructDescriptor<>* td, const type::Struct& instance, type::PropertySet properties, bool remove) override;
+        void publish(const type::Struct& instance, types::property_set_t includedProperties = types::property_set_t::All, bool remove = false) override;
 
     private:
 
@@ -43,6 +32,9 @@ namespace dots
         using connection_map_t = std::unordered_map<io::Connection*, io::connection_ptr_t>;
         using group_t = std::unordered_set<io::Connection*>;
         using group_map_t = std::unordered_map<std::string, group_t>;
+
+        void joinGroup(const std::string_view& name) override;
+		void leaveGroup(const std::string_view& name) override;
 
         bool handleListenAccept(Listener& listener, channel_ptr_t channel);
         void handleListenError(Listener& listener, const std::exception& e);
@@ -56,12 +48,9 @@ namespace dots
 
         void transmitContainer(io::Connection& connection, const Container<>& container);
 
-        Dispatcher m_dispatcher;
-        io::Registry m_registry;
-        std::string m_selfName;
         transition_handler_t m_transitionHandler;
         listener_map_t m_listeners;
-        connection_map_t m_openConnections;
+        connection_map_t m_guestConnections;
         group_map_t m_groups;
     };
 }

@@ -44,6 +44,7 @@ target_sources(${TARGET_NAME}
 		functional/signal.cpp
 
 		io/Transmitter.cpp
+		io/Transceiver.cpp
 		io/GuestTransceiver.cpp
 		io/HostTransceiver.cpp
 		io/Connection.cpp
