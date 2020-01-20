@@ -57,8 +57,8 @@ TEST(TestContainer, insert_CreateInstanceWhenEmpty)
 	ASSERT_GE(*cloneInfo.localUpdateTime, *header.sentTime);
 	ASSERT_LE(*cloneInfo.localUpdateTime, pnxs::SystemNow());
 
-	ASSERT_FALSE(cloneInfo.lastUpdateFrom.isValid());
-	ASSERT_FALSE(cloneInfo.modified.isValid());
+	ASSERT_EQ(cloneInfo.lastUpdateFrom, cloneInfo.createdFrom);
+	ASSERT_EQ(cloneInfo.modified, cloneInfo.created);
 }
 
 TEST(TestContainer, insert_UpdateSameInstanceWhenNotEmpty)
@@ -137,8 +137,8 @@ TEST(TestContainer, insert_CreateDifferentInstanceWhenNotEmpty)
 	ASSERT_GE(*cloneInfo.localUpdateTime, *header2.sentTime);
 	ASSERT_LE(*cloneInfo.localUpdateTime, pnxs::SystemNow());
 
-	ASSERT_FALSE(cloneInfo.lastUpdateFrom.isValid());
-	ASSERT_FALSE(cloneInfo.modified.isValid());
+	ASSERT_EQ(cloneInfo.lastUpdateFrom, cloneInfo.createdFrom);
+	ASSERT_EQ(cloneInfo.modified, cloneInfo.created);
 }
 
 TEST(TestContainer, remove_ThrowWhenEmpty)

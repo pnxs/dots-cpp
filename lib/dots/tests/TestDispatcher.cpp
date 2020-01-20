@@ -57,8 +57,8 @@ TEST(TestDispatcher, dispatch_CreateEventWhenSubscribedToCachedType)
 			ASSERT_EQ(e.cloneInfo().createdFrom, *header.sender);
 			ASSERT_EQ(e.cloneInfo().created, *header.sentTime);
 
-			ASSERT_FALSE(e.cloneInfo().lastUpdateFrom.isValid());
-			ASSERT_FALSE(e.cloneInfo().modified.isValid());
+			ASSERT_EQ(e.cloneInfo().lastUpdateFrom, e.cloneInfo().createdFrom);
+			ASSERT_EQ(e.cloneInfo().modified, e.cloneInfo().created);
 
 			ASSERT_GE(*e.cloneInfo().localUpdateTime, *header.sentTime);
 			ASSERT_LE(*e.cloneInfo().localUpdateTime, pnxs::SystemNow());
@@ -204,8 +204,8 @@ TEST(TestDispatcher, dispatch_CreateEventWhenDynamicallySubscribedToCachedType)
 			ASSERT_EQ(e.cloneInfo().createdFrom, *header.sender);
 			ASSERT_EQ(e.cloneInfo().created, *header.sentTime);
 
-			ASSERT_FALSE(e.cloneInfo().lastUpdateFrom.isValid());
-			ASSERT_FALSE(e.cloneInfo().modified.isValid());
+			ASSERT_EQ(e.cloneInfo().lastUpdateFrom, e.cloneInfo().createdFrom);
+			ASSERT_EQ(e.cloneInfo().modified, e.cloneInfo().created);
 
 			ASSERT_GE(*e.cloneInfo().localUpdateTime, *header.sentTime);
 			ASSERT_LE(*e.cloneInfo().localUpdateTime, pnxs::SystemNow());
@@ -358,8 +358,8 @@ TEST(TestDispatcher, dispatch_CreateEventFromCacheWhenSubscribingToCachedType)
 			ASSERT_EQ(e.cloneInfo().createdFrom, *header.sender);
 			ASSERT_EQ(e.cloneInfo().created, *header.sentTime);
 
-			ASSERT_FALSE(e.cloneInfo().lastUpdateFrom.isValid());
-			ASSERT_FALSE(e.cloneInfo().modified.isValid());
+			ASSERT_EQ(e.cloneInfo().lastUpdateFrom, e.cloneInfo().createdFrom);
+			ASSERT_EQ(e.cloneInfo().modified, e.cloneInfo().created);
 
 			ASSERT_GE(*e.cloneInfo().localUpdateTime, *header.sentTime);
 			ASSERT_LE(*e.cloneInfo().localUpdateTime, pnxs::SystemNow());
