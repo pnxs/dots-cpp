@@ -10,11 +10,7 @@
 namespace dots
 {
     Server::Server(std::string name, listeners_t listeners) :
-        m_hostTransceiver{
-            std::move(name), 
-            [&](const type::StructDescriptor<>& descriptor){ handleNewStructType(descriptor); },
-            [&](const io::Connection& connection){ handleTransition(connection); }
-        },
+        m_hostTransceiver{ std::move(name), [&](const io::Connection& connection){ handleTransition(connection); } },
         m_daemonStatus{ DotsDaemonStatus::serverName_i{ m_hostTransceiver.selfName() }, DotsDaemonStatus::startTime_i{ pnxs::SystemNow() } }
     {
         add_timer(1, [&](){ updateServerStatus(); }, true);
@@ -25,13 +21,7 @@ namespace dots
             m_hostTransceiver.listen(std::move(listener));
         }
 
-        for (const auto& [name, descriptor] : type::StaticDescriptorMap::Descriptors())
-        {
-            if (descriptor->type() == type::Type::Struct)
-            {
-                handleNewStructType(static_cast<const type::StructDescriptor<>&>(*descriptor));
-            }
-        }
+        m_hostTransceiver.subscribe<type::Type::Struct>([&](const type::StructDescriptor<>& descriptor){ handleNewStructType(descriptor); });
     }
 
     void Server::handleTransition(const io::Connection& connection)

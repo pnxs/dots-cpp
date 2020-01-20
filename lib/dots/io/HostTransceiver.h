@@ -15,7 +15,7 @@ namespace dots
     {
         using transition_handler_t = std::function<void(const io::Connection&)>;
 
-        HostTransceiver(std::string selfName, new_struct_type_handler_t newStructTypeHandler, transition_handler_t transitionHandler);
+        HostTransceiver(std::string selfName, transition_handler_t transitionHandler);
 		HostTransceiver(const HostTransceiver& other) = delete;
 		HostTransceiver(HostTransceiver&& other) = default;
 		virtual ~HostTransceiver() = default;

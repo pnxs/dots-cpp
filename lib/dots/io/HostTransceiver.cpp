@@ -5,8 +5,8 @@
 
 namespace dots
 {
-    HostTransceiver::HostTransceiver(std::string selfName, new_struct_type_handler_t newStructTypeHandler, transition_handler_t transitionHandler) :
-        Transceiver(std::move(selfName), std::move(newStructTypeHandler)),
+    HostTransceiver::HostTransceiver(std::string selfName, transition_handler_t transitionHandler) :
+        Transceiver(std::move(selfName)),
         m_transitionHandler{ std::move(transitionHandler) }
     {
         /* do nothing */

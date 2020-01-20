@@ -5,8 +5,8 @@
 
 namespace dots
 {
-    Transceiver::Transceiver(std::string selfName, new_struct_type_handler_t newStructTypeHandler) :
-	    m_registry{ std::move(newStructTypeHandler) },
+    Transceiver::Transceiver(std::string selfName) :
+	    m_registry{ [&](const type::Descriptor<>& descriptor){ handleNewType(descriptor); } },
         m_selfName{ std::move(selfName) }
     {
 		/* do nothing */
@@ -74,7 +74,24 @@ namespace dots
 		return subscribe(m_registry.getStructType(name), std::move(handler));
 	}
 
-	void Transceiver::remove(const type::Struct& instance)
+	void Transceiver::subscribe(new_type_handler_t&& handler)
+    {
+		const new_type_handler_t& handler_ = m_newTypeHandlers.emplace_back(std::move(handler));
+
+		for (const auto& [name, descriptor] : type::StaticDescriptorMap::Descriptors())
+        {
+			(void)name;
+			handler_(*descriptor);
+        }
+
+		for (const auto& [name, descriptor] : m_registry)
+		{
+		    (void)name;
+            handler_(*descriptor);
+		}
+    }
+
+    void Transceiver::remove(const type::Struct& instance)
 	{
 		publish(instance, instance._keyProperties(), true);
 	}
@@ -83,4 +100,12 @@ namespace dots
 	{
 		publish(instance, what, remove);
 	}
+
+	void Transceiver::handleNewType(const type::Descriptor<>& descriptor)
+    {
+		for (const new_type_handler_t& handler : m_newTypeHandlers)
+		{
+		    handler(descriptor);
+		}
+    }
 }

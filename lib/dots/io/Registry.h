@@ -14,9 +14,9 @@ namespace dots::io
     {
         using type_map_t = std::map<std::string_view, std::shared_ptr<type::Descriptor<>>>;
         using const_iterator_t = type_map_t::const_iterator;
-        using new_struct_type_handler_t = std::function<void(const type::StructDescriptor<>&)>;
+        using new_type_handler_t = std::function<void(const type::Descriptor<>&)>;
 
-        Registry(new_struct_type_handler_t newStructTypeHandler = nullptr);
+        Registry(new_type_handler_t newTypeHandler = nullptr);
         Registry(const Registry& other) = default;
         Registry(Registry&& other) noexcept = default;
         ~Registry() = default;
@@ -65,7 +65,7 @@ namespace dots::io
 
     private:
 
-        new_struct_type_handler_t m_newStructTypeHandler = nullptr;
+        new_type_handler_t m_newTypeHandler;
     	type_map_t m_types;
 	};
 }

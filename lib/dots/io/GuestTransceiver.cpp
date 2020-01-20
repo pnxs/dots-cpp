@@ -6,7 +6,7 @@
 namespace dots
 {
     GuestTransceiver::GuestTransceiver(std::string selfName) :
-	    Transceiver(std::move(selfName), nullptr)
+	    Transceiver(std::move(selfName))
     {
 		/* do nothing */
     }

@@ -3,8 +3,8 @@
 
 namespace dots::io
 {
-	Registry::Registry(new_struct_type_handler_t newStructTypeHandler/* = nullptr*/) :
-	    m_newStructTypeHandler(std::move(newStructTypeHandler))
+	Registry::Registry(new_type_handler_t newTypeHandler/* = nullptr*/) :
+	    m_newTypeHandler(std::move(newTypeHandler))
 	{
 		// ensure fundamental types are instantiated and added to static descriptor map 
 		type::Descriptor<types::bool_t>::InstancePtr();
@@ -172,11 +172,11 @@ namespace dots::io
 			{
 				registerType(propertyDescriptor.valueDescriptorPtr(), false);
 			}
+		}
 
-			if (m_newStructTypeHandler != nullptr)
-			{
-			    m_newStructTypeHandler(*structDescriptor);
-			}
+		if (m_newTypeHandler != nullptr)
+		{
+			m_newTypeHandler(*it->second);
 		}
 
 		return it->second;			
