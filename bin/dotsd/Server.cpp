@@ -1,6 +1,6 @@
 #include "Server.h"
+#include <sys/resource.h>
 #include <dots/dots.h>
-#include <dots/io/ResourceUsage.h>
 #include "DotsClient.dots.h"
 #include <StructDescriptorData.dots.h>
 #include <DotsTypes.dots.h>
@@ -90,7 +90,22 @@ namespace dots
             {
                 LOG_DEBUG_S("updateServerStatus");
 
-                ds.resourceUsage = static_cast<DotsResourceUsage&&>(dots::ResourceUsage());
+                struct rusage usage;
+                ::getrusage(RUSAGE_SELF, &usage);
+
+                ds.resourceUsage = DotsResourceUsage{
+                    DotsResourceUsage::userCpuTime_i{ usage.ru_utime },
+                    DotsResourceUsage::systemCpuTime_i{ usage.ru_stime },
+                    DotsResourceUsage::maxRss_i{ usage.ru_maxrss },
+                    DotsResourceUsage::minorFaults_i{ usage.ru_minflt },
+                    DotsResourceUsage::majorFaults_i{ usage.ru_majflt },
+                    DotsResourceUsage::nrSwaps_i{ usage.ru_nswap },
+                    DotsResourceUsage::inBlock_i{ usage.ru_inblock },
+                    DotsResourceUsage::outBlock_i{ usage.ru_oublock },
+                    DotsResourceUsage::nrSignals_i{ usage.ru_nsignals },
+                    DotsResourceUsage::nrVoluntaryContextSwitches_i{ usage.ru_nvcsw },
+                    DotsResourceUsage::nrInvoluntaryContextSwitches_i{ usage.ru_nivcsw }
+                };
                 ds.cache = cacheStatus();
 
                 m_hostTransceiver.publish(ds);

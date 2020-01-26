@@ -58,7 +58,6 @@ target_sources(${TARGET_NAME}
 		io/TD_Traversal.cpp
 		io/Application.cpp
 		io/DynamicTypeReceiver.cpp
-		io/ResourceUsage.cpp
 		io/DistributedTypeId.cpp
 		io/Filter.cpp
 		
