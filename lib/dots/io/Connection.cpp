@@ -340,7 +340,12 @@ namespace dots::io
     {
         if (bool isNewSharedType = m_sharedTypes.emplace(descriptor.name()).second; isNewSharedType)
     	{
-    		if (descriptor.type() == type::Type::Enum)
+            if (descriptor.type() == type::Type::Vector)
+		    {
+			    auto& vectorDescriptor = static_cast<const type::VectorDescriptor&>(descriptor);
+    			exportType(vectorDescriptor.valueDescriptor());
+		    }
+    		else if (descriptor.type() == type::Type::Enum)
 		    {
 			    auto& enumDescriptor = static_cast<const type::EnumDescriptor<>&>(descriptor);
     			exportType(enumDescriptor.underlyingDescriptor());
@@ -354,7 +359,7 @@ namespace dots::io
     				{
     					exportType(propertyDescriptor.valueDescriptor());
     				}
-
+                    LOG_WARN_S("exporting type: " << structDescriptor.name());
     				transmit(DescriptorConverter{ *m_registry }(structDescriptor));
 	        	}
 	        }
