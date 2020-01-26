@@ -43,7 +43,6 @@ target_sources(${TARGET_NAME}
 
 		functional/signal.cpp
 
-		io/Transmitter.cpp
 		io/Transceiver.cpp
 		io/GuestTransceiver.cpp
 		io/HostTransceiver.cpp
@@ -58,7 +57,6 @@ target_sources(${TARGET_NAME}
 		io/TD_Traversal.cpp
 		io/Application.cpp
 		io/DynamicTypeReceiver.cpp
-		io/Filter.cpp
 		
 		io/serialization/JsonSerialization.cpp
 		io/serialization/AsciiSerialization.cpp
