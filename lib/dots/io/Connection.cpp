@@ -359,7 +359,7 @@ namespace dots::io
     				{
     					exportType(propertyDescriptor.valueDescriptor());
     				}
-                    LOG_WARN_S("exporting type: " << structDescriptor.name());
+                    
     				transmit(DescriptorConverter{ *m_registry }(structDescriptor));
 	        	}
 	        }
