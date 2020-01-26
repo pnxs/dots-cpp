@@ -172,6 +172,8 @@ namespace dots::io
 			{
 				registerType(propertyDescriptor.valueDescriptorPtr(), false);
 			}
+
+			onNewStruct(structDescriptor.get());
 		}
 
 		if (m_newTypeHandler != nullptr)
