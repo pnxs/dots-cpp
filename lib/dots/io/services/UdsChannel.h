@@ -11,7 +11,7 @@ namespace dots::io::posix
 		UdsChannel(asio::local::stream_protocol::socket&& socket);
 		UdsChannel(const UdsChannel& other) = delete;
 		UdsChannel(UdsChannel&& other) = delete;
-		virtual ~UdsChannel() = default;
+		virtual ~UdsChannel() noexcept = default;
 
 		UdsChannel& operator = (const UdsChannel& rhs) = delete;
 		UdsChannel& operator = (UdsChannel&& rhs) = delete;

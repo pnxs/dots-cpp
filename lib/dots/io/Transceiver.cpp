@@ -101,11 +101,18 @@ namespace dots
 		publish(instance, what, remove);
 	}
 
-	void Transceiver::handleNewType(const type::Descriptor<>& descriptor)
+	void Transceiver::handleNewType(const type::Descriptor<>& descriptor) noexcept
     {
 		for (const new_type_handler_t& handler : m_newTypeHandlers)
 		{
-		    handler(descriptor);
+            try
+            {
+				handler(descriptor);
+            }
+            catch (const std::exception& e)
+            {
+				LOG_ERROR_S("error in new type handler -> " << e.what());
+            }
 		}
     }
 }

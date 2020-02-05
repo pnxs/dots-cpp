@@ -26,12 +26,12 @@ namespace dots::io
         static constexpr id_t FirstGuestId = 2;
 
 		using receive_handler_t = std::function<bool(Connection&, const DotsTransportHeader&, Transmission&&, bool)>;
-		using transition_handler_t = std::function<void(Connection&, const std::exception*)>;
+		using transition_handler_t = std::function<void(Connection&, const std::exception_ptr&)>;
 		
 		Connection(channel_ptr_t channel, bool host);
 		Connection(const Connection& other) = delete;
 		Connection(Connection&& other) = default;
-		~Connection();
+		~Connection() noexcept;
 
 		Connection& operator = (const Connection& rhs) = delete;
 		Connection& operator = (Connection&& rhs) = default;
@@ -48,13 +48,14 @@ namespace dots::io
         void transmit(const DotsTransportHeader& header, const Transmission& transmission);
 		void transmit(const type::StructDescriptor<>& descriptor);
 
+		void handleError(const std::exception_ptr& e);
+
 	private:
 
 		using system_type_t = std::tuple<const type::StructDescriptor<>*, types::property_set_t, std::function<void(const type::Struct&)>>;
 
 		bool handleReceive(const DotsTransportHeader& transportHeader, Transmission&& transmission);
-		void handleError(const std::exception& e);
-		void handleClose(const std::exception* e);
+		void handleClose(const std::exception_ptr& e);
 
         void handleHello(const DotsMsgHello& hello);
         void handleAuthorizationRequest(const DotsMsgConnectResponse& connectResponse);
@@ -65,7 +66,7 @@ namespace dots::io
 
 		void handlePeerError(const DotsMsgError& error);
 
-		void setConnectionState(DotsConnectionState state, const std::exception* e = nullptr);
+		void setConnectionState(DotsConnectionState state, const std::exception_ptr& e = nullptr);
 
 		void importType(const type::Struct& instance);
 		void exportType(const type::Descriptor<>& descriptor);

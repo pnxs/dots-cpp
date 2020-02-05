@@ -44,7 +44,7 @@ namespace dots::io::posix
 
 			if (error)
 			{
-				processError(std::runtime_error{ "failed listening on UDS endpoint at path '" + m_endpoint.path() + "' -> " + error.message() });
+				processError(std::make_exception_ptr(std::runtime_error{ "failed listening on UDS endpoint at path '" + m_endpoint.path() + "' -> " + error.message() }));
 				return;
 			}
 

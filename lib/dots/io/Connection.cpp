@@ -20,11 +20,18 @@ namespace dots::io
 		/* do nothing */
 	}
 
-    Connection::~Connection()
+    Connection::~Connection() noexcept
     {
         if (m_connectionState == DotsConnectionState::connected)
         {
-            transmit(DotsMsgError{ DotsMsgError::errorCode_i{ 0 } });
+            try
+            {
+                transmit(DotsMsgError{ DotsMsgError::errorCode_i{ 0 } });
+            }
+            catch (const std::exception& e)
+            {
+                /* do nothing */
+            }
         }
     }
 
@@ -62,7 +69,7 @@ namespace dots::io
 
         if (receiveHandler == nullptr || transitionHandler == nullptr)
         {
-            throw std::logic_error{ "both a receive and a transition must be set" };
+            throw std::logic_error{ "both a receive and a transition handler must be set" };
         }
 
 		m_registry = &registry;
@@ -72,7 +79,7 @@ namespace dots::io
 		setConnectionState(DotsConnectionState::connecting);
 		m_channel->asyncReceive(registry,
 			[this](const DotsTransportHeader& transportHeader, Transmission&& transmission){ return handleReceive(transportHeader, std::move(transmission)); },
-			[this](const std::exception& e){ handleError(e); }
+			[this](const std::exception_ptr& e){ handleError(e); }
 		);
 
 		if (m_selfId == HostId)
@@ -135,6 +142,34 @@ namespace dots::io
         exportType(descriptor);
     }
 
+    void Connection::handleError(const std::exception_ptr& e)
+	{
+        if (m_connectionState == DotsConnectionState::connected)
+        {
+            try
+            {
+                std::rethrow_exception(e);
+            }
+            catch (const std::exception& e)
+            {
+                try
+                {
+                    transmit(DotsMsgError{
+                        DotsMsgError::errorCode_i{ 1 },
+                        DotsMsgError::errorText_i{ e.what() }
+                    });
+                }
+                catch (...)
+                {
+                    /* do nothing */
+                }
+                
+            }
+        }
+
+        handleClose(e);
+	}
+
     bool Connection::handleReceive(const DotsTransportHeader& transportHeader, Transmission&& transmission)
 	{
         if (m_connectionState == DotsConnectionState::closed)
@@ -142,85 +177,60 @@ namespace dots::io
             return false;
         }
 
-        try 
-        {
-            const type::Struct& instance = transmission.instance();
+        const type::Struct& instance = transmission.instance();
 
-            if (instance._isAny<DotsMsgHello, DotsMsgConnect, DotsMsgConnectResponse, DotsMsgError>())
+        if (instance._isAny<DotsMsgHello, DotsMsgConnect, DotsMsgConnectResponse, DotsMsgError>())
+        {
+            if (auto* dotsMsgError = instance._as<DotsMsgError>())
             {
-                if (auto* dotsMsgError = instance._as<DotsMsgError>())
+                handlePeerError(*dotsMsgError);
+                return false;
+            }
+            else
+            {
+                const auto& [expectedType, expectedProperties, handler] = m_expectedSystemType;
+                instance._assertIs(expectedType);
+                instance._assertHasProperties(expectedProperties); // note: subsets are allowed for backwards compatibility with old implementation
+
+                handler(instance);
+            }
+        }
+        else
+        {
+            if (m_connectionState == DotsConnectionState::connected || m_connectionState == DotsConnectionState::early_subscribe)
+            {
+                importType(transmission.instance());
+
+                if (m_selfId == HostId)
                 {
-                    handlePeerError(*dotsMsgError);
-                    return false;
+                    DotsTransportHeader transportHeader_ = transportHeader;
+                    DotsHeader& dotsHeader = *transportHeader_.dotsHeader;
+                    dotsHeader.sender = m_peerId;
+
+                    dotsHeader.serverSentTime = pnxs::SystemNow();
+
+                    if (!dotsHeader.sentTime.isValid())
+                    {
+                        dotsHeader.sentTime = dotsHeader.serverSentTime;
+                    }
+
+                    m_receiveHandler(*this, transportHeader_, std::move(transmission), transportHeader_.dotsHeader->sender == m_selfId);
                 }
                 else
                 {
-                    const auto& [expectedType, expectedProperties, handler] = m_expectedSystemType;
-                    instance._assertIs(expectedType);
-                    instance._assertHasProperties(expectedProperties); // note: subsets are allowed for backwards compatibility with old implementation
-
-                    handler(instance);
+                    m_receiveHandler(*this, transportHeader, std::move(transmission), transportHeader.dotsHeader->sender == m_selfId);
                 }
             }
             else
             {
-                if (m_connectionState == DotsConnectionState::connected || m_connectionState == DotsConnectionState::early_subscribe)
-                {
-                    importType(transmission.instance());
-
-                    if (m_selfId == HostId)
-                    {
-                        DotsTransportHeader transportHeader_ = transportHeader;
-                        DotsHeader& dotsHeader = *transportHeader_.dotsHeader;
-                        dotsHeader.sender = m_peerId;
-
-                        dotsHeader.serverSentTime = pnxs::SystemNow();
-
-                        if (!dotsHeader.sentTime.isValid())
-                        {
-                            dotsHeader.sentTime = dotsHeader.serverSentTime;
-                        }
-
-                        m_receiveHandler(*this, transportHeader_, std::move(transmission), transportHeader_.dotsHeader->sender == m_selfId);
-                    }
-                    else
-                    {
-                        m_receiveHandler(*this, transportHeader, std::move(transmission), transportHeader.dotsHeader->sender == m_selfId);
-                    }
-                }
-                else
-                {
-                    throw std::logic_error{ "received instance of non-system type " + instance._descriptor().name() + " while not in early_subscribe or connected state " + to_string(m_connectionState) };
-                }
+                throw std::logic_error{ "received instance of non-system type " + instance._descriptor().name() + " while not in early_subscribe or connected state " + to_string(m_connectionState) };
             }
+        }
 
-            return true;
-        }
-        catch (const std::exception& e) 
-        {
-            transmit(DotsMsgError{
-                DotsMsgError::errorCode_i{ 1 },
-                DotsMsgError::errorText_i{ e.what() }
-            });
-            
-            handleError(e);
-            return false;
-        }
+        return true;
 	}
 
-	void Connection::handleError(const std::exception& e)
-	{
-        if (m_connectionState == DotsConnectionState::closed)
-        {
-            LOG_ERROR_S("unable to handle error in closed state: " + std::string{ e.what() });
-        }
-        else
-        {
-            handleClose(&e);
-        }
-	}
-
-    void Connection::handleClose(const std::exception* e)
+    void Connection::handleClose(const std::exception_ptr& e)
 	{
 	    m_receiveHandler = nullptr;
         m_registry = nullptr;
@@ -314,7 +324,7 @@ namespace dots::io
             what += error.errorCode.isValid() ? std::to_string(error.errorCode) : std::string{ "<unknown error code>" };
             what += ") ";
             what += error.errorText.isValid() ? *error.errorText : std::string{ "<unknown error>" };
-            handleError(std::runtime_error{ what });
+            handleError(std::make_exception_ptr(std::runtime_error{ what }));
         }
     }
 
@@ -366,11 +376,19 @@ namespace dots::io
     	}
     }
 
-	void Connection::setConnectionState(DotsConnectionState state, const std::exception* e/* = nullptr*/)
+	void Connection::setConnectionState(DotsConnectionState state, const std::exception_ptr& e/* = nullptr*/)
 	{
 		LOG_DEBUG_S("change connection state to " << to_string(state));
 		m_connectionState = state;
-        m_transitionHandler(*this, e);
+
+        try
+        {
+            m_transitionHandler(*this, e);
+        }
+        catch (const std::exception& e)
+        {
+            throw std::logic_error{ std::string{ "exception in connection transition handler -> " } + e.what() };
+        }
 	}
 
     template <typename T>

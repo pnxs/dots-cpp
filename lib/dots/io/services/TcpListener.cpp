@@ -43,7 +43,7 @@ namespace dots
 
 			if (error)
 			{
-				processError(std::runtime_error{ "failed listening on TCP endpoint at address '" + m_address + ":" + m_port + "' -> " + error.message() });
+				processError(std::make_exception_ptr(std::runtime_error{ "failed listening on TCP endpoint at address '" + m_address + ":" + m_port + "' -> " + error.message() }));
 				return;
 			}
 

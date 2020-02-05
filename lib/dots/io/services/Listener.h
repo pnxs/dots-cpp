@@ -8,7 +8,7 @@ namespace dots
 	struct Listener
 	{
 		using accept_handler_t = std::function<bool(Listener&, channel_ptr_t)>;
-		using error_handler_t = std::function<void(Listener&, const std::exception&)>;
+		using error_handler_t = std::function<void(Listener&, const std::exception_ptr&)>;
 
 		Listener() = default;
 		Listener(const Listener& other) = delete;
@@ -24,7 +24,7 @@ namespace dots
 
 		virtual void asyncAcceptImpl() = 0;
 		void processAccept(channel_ptr_t channel);
-		void processError(const std::exception& e);
+		void processError(const std::exception_ptr& e);
 		void processError(const std::string& what);
 		void verifyErrorCode(const std::error_code& errorCode);
 

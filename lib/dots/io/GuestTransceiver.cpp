@@ -24,7 +24,7 @@ namespace dots
 		m_hostConnection.emplace(std::move(channel), server);
 		m_hostConnection->asyncReceive(registry(), selfName(),
 			[this](io::Connection& connection, const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself){ return handleReceive(connection, header, std::move(transmission), isFromMyself); },
-			[this](io::Connection& connection, const std::exception* e){ handleTransition(connection, e); }
+			[this](io::Connection& connection, const std::exception_ptr& e){ handleTransition(connection, e); }
 		);
 		
 		return *m_hostConnection;
@@ -45,14 +45,21 @@ namespace dots
 	    }
 		
 		LOG_DATA_S("data:" << to_ascii(&descriptor, &instance, includedProperties));
-		m_hostConnection->transmit(instance, includedProperties, remove);
-		
+
+        try
+        {
+            m_hostConnection->transmit(instance, includedProperties, remove);
+        }
+        catch (...)
+        {
+			m_hostConnection->handleError(std::current_exception());
+        }
 	}
 
 	void GuestTransceiver::joinGroup(const std::string_view& name)
 	{
 		LOG_DEBUG_S("send DotsMember (join " << name << ")");
-		m_hostConnection->transmit(DotsMember{
+		publish(DotsMember{
             DotsMember::groupName_i{ name },
             DotsMember::event_i{ DotsMemberEvent::join }
         });
@@ -61,55 +68,64 @@ namespace dots
 	void GuestTransceiver::leaveGroup(const std::string_view& name)
 	{
 		LOG_DEBUG_S("send DotsMember (leave " << name << ")");
-		m_hostConnection->transmit(DotsMember{
+		publish(DotsMember{
             DotsMember::groupName_i{ name },
             DotsMember::event_i{ DotsMemberEvent::leave }
         });
 	}
 
-	bool GuestTransceiver::handleReceive(io::Connection& connection, const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself)
+	bool GuestTransceiver::handleReceive(io::Connection&/* connection*/, const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself)
 	{
-		try 
-        {
-            dispatcher().dispatch(header.dotsHeader, transmission.instance(), isFromMyself);
-            return true;
-        }
-        catch (const std::exception& e) 
-        {
-            handleTransition(connection, &e);
-            return false;
-        }
+		dispatcher().dispatch(header.dotsHeader, transmission.instance(), isFromMyself);
+        return true;
 	}
 	
-	void GuestTransceiver::handleTransition(io::Connection& connection, const std::exception* e)
+	void GuestTransceiver::handleTransition(io::Connection& connection, const std::exception_ptr& e) noexcept
 	{
-		if (connection.state() == DotsConnectionState::early_subscribe)
-		{
-		    for (const auto& [name, descriptor] : m_preloadPublishTypes)
-			{
-				(void)name;
-				connection.transmit(*descriptor);
-			}
-
-			for (const auto& [name, descriptor] : m_preloadSubscribeTypes)
-			{
-				connection.transmit(*descriptor);			
-				joinGroup(name);
-			}
-
-			m_preloadPublishTypes.clear();
-			m_preloadSubscribeTypes.clear();
-		}
-		else if (connection.state() == DotsConnectionState::closed)
-		{
-		    if (e != nullptr)
+        try
+        {
+			if (connection.state() == DotsConnectionState::early_subscribe)
 		    {
-		        LOG_ERROR_S("connection error: " << e->what());
-		        
-		    }
+		        for (const auto& [name, descriptor] : m_preloadPublishTypes)
+			    {
+				    (void)name;
+				    connection.transmit(*descriptor);
+			    }
 
-		    m_hostConnection = std::nullopt;
-		    LOG_INFO_S("connection closed -> peerId: " << connection.peerId() << ", name: " << connection.peerName());
-		}
+			    for (const auto& [name, descriptor] : m_preloadSubscribeTypes)
+			    {
+				    connection.transmit(*descriptor);			
+				    connection.transmit(DotsMember{
+                        DotsMember::groupName_i{ name },
+                        DotsMember::event_i{ DotsMemberEvent::join }
+                    });
+			    }
+
+			    m_preloadPublishTypes.clear();
+			    m_preloadSubscribeTypes.clear();
+		    }
+		    else if (connection.state() == DotsConnectionState::closed)
+			{
+		        if (e != nullptr)
+		        {
+					try
+                    {
+                        std::rethrow_exception(e);
+                    }
+                    catch (const std::exception& e)
+                    {
+						LOG_ERROR_S("connection error: " << e.what());
+                    }
+		        }
+
+		        LOG_INFO_S("connection closed -> peerId: " << connection.peerId() << ", name: " << connection.peerName());
+		        m_hostConnection = std::nullopt;
+		    }
+        }
+        catch (const std::exception& e)
+        {
+			LOG_ERROR_S("error while handling connection transition -> peerId: " << connection.peerId() << ", name: " << connection.peerName() << " -> " << e.what());
+			m_hostConnection = std::nullopt;
+        }
 	}
 }

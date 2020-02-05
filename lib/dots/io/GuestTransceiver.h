@@ -25,7 +25,7 @@ namespace dots
 		void leaveGroup(const std::string_view& name) override;
 
 		bool handleReceive(io::Connection& connection, const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself);
-		void handleTransition(io::Connection& connection, const std::exception* e);
+		void handleTransition(io::Connection& connection, const std::exception_ptr& e) noexcept;
 
 		std::optional<io::Connection> m_hostConnection;
 		descriptor_map_t m_preloadPublishTypes;

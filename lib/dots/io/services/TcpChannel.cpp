@@ -66,10 +66,15 @@ namespace dots
 
 	void TcpChannel::asynReadHeaderLength()
 	{
-		asio::async_read(m_socket, asio::buffer(&m_headerSize, sizeof(m_headerSize)), [&](auto ec, auto /*bytes*/)
+		asio::async_read(m_socket, asio::buffer(&m_headerSize, sizeof(m_headerSize)), [&, this_{ weak_from_this() }](auto ec, auto /*bytes*/)
 		{
 			try
 			{
+				if (this_.expired())
+				{
+				    return;
+				}
+
 				verifyErrorCode(ec);
 
 				if (m_headerSize > m_headerBuffer.size())
@@ -79,19 +84,24 @@ namespace dots
 
 				asyncReadHeader();
 			}
-			catch (const std::exception& e)
+			catch (...)
 			{
-				processError(e);
+				processError(std::current_exception());
 			}
 		});
 	}
 
 	void TcpChannel::asyncReadHeader()
 	{
-		asio::async_read(m_socket, asio::buffer(m_headerBuffer.data(), m_headerSize), [&](auto ec, auto /*bytes*/)
+		asio::async_read(m_socket, asio::buffer(m_headerBuffer.data(), m_headerSize), [&, this_{ weak_from_this() }](auto ec, auto /*bytes*/)
 		{
 			try
 			{
+				if (this_.expired())
+				{
+				    return;
+				}
+
 				verifyErrorCode(ec);
 
 				m_header = DotsTransportHeader{};
@@ -106,19 +116,24 @@ namespace dots
 				asyncReadInstance();
 				
 			}
-			catch (const std::exception& e)
+			catch (...)
 			{
-				processError(e);
+				processError(std::current_exception());
 			}
 		});
 	}
 
 	void TcpChannel::asyncReadInstance()
 	{
-		asio::async_read(m_socket, asio::buffer(m_instanceBuffer), [&](auto ec, auto /*bytes*/)
+		asio::async_read(m_socket, asio::buffer(m_instanceBuffer), [&, this_{ weak_from_this() }](auto ec, auto /*bytes*/)
 		{
 			try
 			{
+				if (this_.expired())
+				{
+				    return;
+				}
+
 				verifyErrorCode(ec);
 
 				const type::StructDescriptor<>* descriptor = registry().findStructType(*m_header.dotsHeader->typeName).get();
@@ -132,9 +147,9 @@ namespace dots
 				from_cbor(m_instanceBuffer.data(), m_instanceBuffer.size(), instance.get());
 				processReceive(m_header, Transmission{ std::move(instance) });
 			}
-			catch (const std::exception& e)
+			catch (...)
 			{
-				processError(e);
+				processError(std::current_exception());
 			}
 		});
 	}

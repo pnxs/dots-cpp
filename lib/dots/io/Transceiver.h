@@ -119,7 +119,7 @@ namespace dots
         virtual void joinGroup(const std::string_view& name) = 0;
 		virtual void leaveGroup(const std::string_view& name) = 0;
 
-		void handleNewType(const type::Descriptor<>& descriptor);
+		void handleNewType(const type::Descriptor<>& descriptor) noexcept;
 
 		io::Registry m_registry;
 		Dispatcher m_dispatcher;

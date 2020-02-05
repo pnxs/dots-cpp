@@ -83,9 +83,9 @@ namespace dots
 				from_json(std::as_const(itInstance->value).GetObject(), instance.get());
 				processReceive(header, Transmission{ std::move(instance) });
 			}
-			catch (const std::exception& e)
+			catch (...)
 			{
-				processError(e);
+				processError(std::current_exception());
 			}		
 		});
 	}

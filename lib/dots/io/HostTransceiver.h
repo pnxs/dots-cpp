@@ -36,11 +36,13 @@ namespace dots
         void joinGroup(const std::string_view& name) override;
 		void leaveGroup(const std::string_view& name) override;
 
-        bool handleListenAccept(Listener& listener, channel_ptr_t channel);
-        void handleListenError(Listener& listener, const std::exception& e);
+        void transmit(io::Connection* origin, const std::string& group, const DotsTransportHeader& header, Transmission&& transmission);
 
-        bool handleReceive(io::Connection& connection, const DotsTransportHeader& transportHeader, Transmission&& transmission, bool isFromMyself);
-        void handleTransition(io::Connection& connection, const std::exception* e);
+        bool handleListenAccept(Listener& listener, channel_ptr_t channel);
+        void handleListenError(Listener& listener, const std::exception_ptr& e);
+
+        bool handleReceive(io::Connection& connection, const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself);
+        void handleTransition(io::Connection& connection, const std::exception_ptr& e) noexcept;
 
         void handleMemberMessage(io::Connection& connection, const DotsMember& member);
         void handleDescriptorRequest(io::Connection& connection, const DotsDescriptorRequest& descriptorRequest);
