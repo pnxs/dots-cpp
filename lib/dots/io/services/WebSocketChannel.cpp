@@ -1,7 +1,7 @@
 #include "WebSocketChannel.h"
 #include <dots/io/Io.h>
+#include <dots/io/Registry.h>
 #include <dots/io/serialization/JsonSerializationRapidJson.h>
-#include <dots/dots.h>
 
 namespace dots
 {
@@ -72,7 +72,7 @@ namespace dots
 				DotsTransportHeader header;
 				from_json(std::as_const(itHeader->value).GetObject(), header);
 
-				const type::StructDescriptor<>* descriptor = transceiver().registry().findStructType(*header.dotsHeader->typeName).get();
+				const type::StructDescriptor<>* descriptor = registry().findStructType(*header.dotsHeader->typeName).get();
 
 				if (descriptor == nullptr)
 				{
@@ -83,9 +83,9 @@ namespace dots
 				from_json(std::as_const(itInstance->value).GetObject(), instance.get());
 				processReceive(header, Transmission{ std::move(instance) });
 			}
-			catch (const std::exception& e)
+			catch (...)
 			{
-				processError(e);
+				processError(std::current_exception());
 			}		
 		});
 	}

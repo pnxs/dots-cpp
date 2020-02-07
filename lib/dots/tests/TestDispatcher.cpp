@@ -57,15 +57,15 @@ TEST(TestDispatcher, dispatch_CreateEventWhenSubscribedToCachedType)
 			ASSERT_EQ(e.cloneInfo().createdFrom, *header.sender);
 			ASSERT_EQ(e.cloneInfo().created, *header.sentTime);
 
-			ASSERT_FALSE(e.cloneInfo().lastUpdateFrom.isValid());
-			ASSERT_FALSE(e.cloneInfo().modified.isValid());
+			ASSERT_EQ(e.cloneInfo().lastUpdateFrom, e.cloneInfo().createdFrom);
+			ASSERT_EQ(e.cloneInfo().modified, e.cloneInfo().created);
 
 			ASSERT_GE(*e.cloneInfo().localUpdateTime, *header.sentTime);
 			ASSERT_LE(*e.cloneInfo().localUpdateTime, pnxs::SystemNow());
 		}
 	});
 
-	sut.dispatch(header, dts);
+	sut.dispatch(header, dts, false);
 
 	ASSERT_EQ(i, 1);
 }
@@ -116,8 +116,8 @@ TEST(TestDispatcher, dispatch_UpdateEventWhenSubscribedToCachedType)
 		}
 	});
 
-	sut.dispatch(header1, dts1);
-	sut.dispatch(header2, dts2);
+	sut.dispatch(header1, dts1, false);
+	sut.dispatch(header2, dts2, false);
 
 	ASSERT_EQ(i, 2);
 }
@@ -172,9 +172,9 @@ TEST(TestDispatcher, dispatch_RemoveEventWhenSubscribedToCachedType)
 		}
 	});
 
-	sut.dispatch(header1, dts1);
-	sut.dispatch(header2, dts2);
-	sut.dispatch(header3, dts3);
+	sut.dispatch(header1, dts1, false);
+	sut.dispatch(header2, dts2, false);
+	sut.dispatch(header3, dts3, false);
 
 	ASSERT_EQ(i, 3);
 }
@@ -204,15 +204,15 @@ TEST(TestDispatcher, dispatch_CreateEventWhenDynamicallySubscribedToCachedType)
 			ASSERT_EQ(e.cloneInfo().createdFrom, *header.sender);
 			ASSERT_EQ(e.cloneInfo().created, *header.sentTime);
 
-			ASSERT_FALSE(e.cloneInfo().lastUpdateFrom.isValid());
-			ASSERT_FALSE(e.cloneInfo().modified.isValid());
+			ASSERT_EQ(e.cloneInfo().lastUpdateFrom, e.cloneInfo().createdFrom);
+			ASSERT_EQ(e.cloneInfo().modified, e.cloneInfo().created);
 
 			ASSERT_GE(*e.cloneInfo().localUpdateTime, *header.sentTime);
 			ASSERT_LE(*e.cloneInfo().localUpdateTime, pnxs::SystemNow());
 		}
 	});
 
-	sut.dispatch(header, dts);
+	sut.dispatch(header, dts, false);
 
 	ASSERT_EQ(i, 1);
 }
@@ -263,8 +263,8 @@ TEST(TestDispatcher, dispatch_UpdateEventWhenDynamicallSubscribedToCachedType)
 		}
 	});
 
-	sut.dispatch(header1, dts1);
-	sut.dispatch(header2, dts2);
+	sut.dispatch(header1, dts1, false);
+	sut.dispatch(header2, dts2, false);
 
 	ASSERT_EQ(i, 2);
 }
@@ -319,9 +319,9 @@ TEST(TestDispatcher, dispatch_RemoveEventWhenDynamicallSubscribedToCachedType)
 		}
 	});
 
-	sut.dispatch(header1, dts1);
-	sut.dispatch(header2, dts2);
-	sut.dispatch(header3, dts3);
+	sut.dispatch(header1, dts1, false);
+	sut.dispatch(header2, dts2, false);
+	sut.dispatch(header3, dts3, false);
 
 	ASSERT_EQ(i, 3);
 }
@@ -339,7 +339,7 @@ TEST(TestDispatcher, dispatch_CreateEventFromCacheWhenSubscribingToCachedType)
 		/* do nothing */
 	});	
 
-	sut.dispatch(header, dts);
+	sut.dispatch(header, dts, false);
 
 	dots::Subscription subscription2 = sut.subscribe<DotsTestStruct>([&](const dots::Event<DotsTestStruct>& e)
 	{
@@ -358,8 +358,8 @@ TEST(TestDispatcher, dispatch_CreateEventFromCacheWhenSubscribingToCachedType)
 			ASSERT_EQ(e.cloneInfo().createdFrom, *header.sender);
 			ASSERT_EQ(e.cloneInfo().created, *header.sentTime);
 
-			ASSERT_FALSE(e.cloneInfo().lastUpdateFrom.isValid());
-			ASSERT_FALSE(e.cloneInfo().modified.isValid());
+			ASSERT_EQ(e.cloneInfo().lastUpdateFrom, e.cloneInfo().createdFrom);
+			ASSERT_EQ(e.cloneInfo().modified, e.cloneInfo().created);
 
 			ASSERT_GE(*e.cloneInfo().localUpdateTime, *header.sentTime);
 			ASSERT_LE(*e.cloneInfo().localUpdateTime, pnxs::SystemNow());
@@ -409,8 +409,8 @@ TEST(TestDispatcher, dispatch_CreateEventWhenSubscribedToUncachedType)
 		}
 	});
 
-	sut.dispatch(header1, dts1);
-	sut.dispatch(header2, dts2);
+	sut.dispatch(header1, dts1, false);
+	sut.dispatch(header2, dts2, false);
 
 	ASSERT_EQ(i, 2);
 }
@@ -428,7 +428,7 @@ TEST(TestDispatcher, dispatch_ThrowWhenRemovingUncachedType)
 		/* do nothing */
 	});
 
-	ASSERT_THROW(sut.dispatch(header, duts), std::logic_error);
+	ASSERT_THROW(sut.dispatch(header, duts, false), std::logic_error);
 }
 
 TEST(TestDispatcher, dispatch_NoEventWhenNotSubscribedToType)
@@ -448,7 +448,7 @@ TEST(TestDispatcher, dispatch_NoEventWhenNotSubscribedToType)
 		/* do nothing */
 	});
 
-	sut.dispatch(header, duts);
+	sut.dispatch(header, duts, false);
 
 	ASSERT_EQ(i, 0);
 }
@@ -467,9 +467,9 @@ TEST(TestDispatcher, dispatch_NoEventAfterExplicitUnubscribeFromType)
 		++i;
 	});
 
-	sut.dispatch(header1, dts);
+	sut.dispatch(header1, dts, false);
 	subscription.unsubscribe();
-	sut.dispatch(header2, dts);
+	sut.dispatch(header2, dts, false);
 
 	ASSERT_EQ(i, 1);
 }
@@ -489,10 +489,10 @@ TEST(TestDispatcher, dispatch_NoEventAfterImplicitUnubscribeFromType)
 			++i;
 		});
 
-		sut.dispatch(header1, dts);
+		sut.dispatch(header1, dts, false);
 	}
 
-	sut.dispatch(header2, dts);
+	sut.dispatch(header2, dts, false);
 
 	ASSERT_EQ(i, 1);
 }
@@ -511,7 +511,7 @@ TEST(TestDispatcher, moveCtor_CreateEventAfterMoveContructWhenSubscribedToCached
 	});
 
 	dots::Dispatcher sut{ std::move(dispatcher) };
-	sut.dispatch(header, dts);
+	sut.dispatch(header, dts, false);
 
 	ASSERT_EQ(i, 1);
 }

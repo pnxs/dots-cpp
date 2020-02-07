@@ -16,22 +16,19 @@ namespace dots
 		// Start Transceiver
 		// Connect to dotsd
 
-		auto channel = global_service<ChannelService>().open<TcpChannel>(m_serverAddress, m_serverPort);
-		
-		if (not transceiver().start(name, channel))
-		{
-			throw std::runtime_error("unable to start transceiver");
-		}
+		GuestTransceiver& globalGuestTransceiver = dots::transceiver(name);
+		auto channel = global_service<ChannelService>().makeChannel<TcpChannel>(m_serverAddress, m_serverPort);
+		const io::Connection& connection = globalGuestTransceiver.open(std::move(channel), false, getPreloadPublishTypes(), getPreloadSubscribeTypes());
 
 		LOG_DEBUG_S("run until state connected...");
-		while (not transceiver().connected())
+		while (!connection.connected())
 		{
 			global_io_context().run_one();
 		}
 		LOG_DEBUG_S("run one done");
 
-		DotsClient{ DotsClient::id_i{ transceiver().connection().clientId() }, DotsClient::running_i{ true } }._publish();
-		}
+		globalGuestTransceiver.publish(DotsClient{ DotsClient::id_i{ connection.peerId() }, DotsClient::running_i{ true } });
+	}
 
 	Application::~Application()
 	{
@@ -93,5 +90,47 @@ namespace dots
 
 		m_serverAddress = vm["dots-address"].as<string>();
 		m_serverPort = vm["dots-port"].as<string>();
+	}
+
+	GuestTransceiver::descriptor_map_t Application::getPreloadPublishTypes() const
+	{
+		GuestTransceiver::descriptor_map_t sds;
+
+		for (const auto& e : dots::PublishedType::allChained())
+		{
+			auto td = transceiver().registry().findStructType(e->td->name());
+			if (!td) {
+				throw std::runtime_error("struct decriptor not found for " + e->td->name());
+			}
+			if (td) {
+				sds.emplace(td->name(), td.get());
+			}
+			else
+			{
+				LOG_ERROR_S("td is NULL: " << e->td->name())
+			}
+		}
+		return sds;
+	}
+
+	GuestTransceiver::descriptor_map_t Application::getPreloadSubscribeTypes() const
+	{
+		GuestTransceiver::descriptor_map_t sds;
+
+		for (const auto& e : dots::SubscribedType::allChained())
+		{
+			auto td = transceiver().registry().findStructType(e->td->name());
+			if (!td) {
+				throw std::runtime_error("struct decriptor1 not found for " + e->td->name());
+			}
+			if (td) {
+				sds.emplace(td->name(), td.get());
+			}
+			else
+			{
+				LOG_ERROR_S("td is NULL: " << e->td->name());
+			}
+		}
+		return sds;
 	}
 }

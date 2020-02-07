@@ -76,7 +76,7 @@ namespace dots
 			{
 				header.attributes = instance->_validProperties();
 				--* header.fromCache;
-				handler_(Event<>{ header, instance, instance, cloneInfo });
+				handler_(Event<>{ header, instance, instance, cloneInfo, false });
 			}
 		}
 
@@ -103,13 +103,13 @@ namespace dots
 		handlers.erase(itHandler);
 	}
 
-	void Dispatcher::dispatch(const DotsHeader& header, const type::AnyStruct& instance)
+	void Dispatcher::dispatch(const DotsHeader& header, const type::AnyStruct& instance, bool isFromMyself)
 	{
-		dispatchReceive(header, instance);
-		dispatchEvent(header, instance);
+		dispatchReceive(header, instance, isFromMyself);
+		dispatchEvent(header, instance, isFromMyself);
 	}
 
-	void Dispatcher::dispatchReceive(const DotsHeader& header, const type::AnyStruct& instance)
+	void Dispatcher::dispatchReceive(const DotsHeader& header, const type::AnyStruct& instance, bool isFromMyself)
 	{
 		const type::StructDescriptor<>& descriptor = instance->_descriptor();
 
@@ -125,22 +125,14 @@ namespace dots
 		for (const auto& [id, handler] : handlers)
 		{
 			(void)id;
-			handler(header, instance);
+			handler(header, instance, isFromMyself);
 		}
 	}
 
-	void Dispatcher::dispatchEvent(const DotsHeader& header, const type::AnyStruct& instance)
+	void Dispatcher::dispatchEvent(const DotsHeader& header, const type::AnyStruct& instance, bool isFromMyself)
 	{
 		const type::StructDescriptor<>& descriptor = instance->_descriptor();
-
-		auto itHandlers = m_eventHandlerPool.find(&descriptor);
-
-		if (itHandlers == m_eventHandlerPool.end())
-		{
-			return;
-		}
-
-		const event_handlers_t& handlers = itHandlers->second;
+		const event_handlers_t& handlers = m_eventHandlerPool[&descriptor];
 
 		auto dispatchEventToHandlers = [&](const Event<>& e)
 		{
@@ -158,12 +150,12 @@ namespace dots
 			if (header.removeObj == true)
 			{
 				Container<>::node_t removed = container.remove(header, instance);
-				dispatchEventToHandlers(Event<>{ header, instance, removed.key(), removed.mapped() });
+				dispatchEventToHandlers(Event<>{ header, instance, removed.key(), removed.mapped(), isFromMyself });
 			}
 			else
 			{
 				const auto& [updated, cloneInfo] = container.insert(header, instance);
-				dispatchEventToHandlers(Event<>{ header, instance, updated, cloneInfo });
+				dispatchEventToHandlers(Event<>{ header, instance, updated, cloneInfo, isFromMyself });
 			}
 		}
 		else
@@ -179,7 +171,8 @@ namespace dots
 					DotsCloneInformation::createdFrom_i{ header.sender },
 					DotsCloneInformation::created_i{ header.sentTime },
 					DotsCloneInformation::localUpdateTime_i{ pnxs::SystemNow{} }
-				}
+				},
+				isFromMyself
 			});
 		}
 	}

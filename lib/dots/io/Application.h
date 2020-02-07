@@ -2,7 +2,7 @@
 #include <chrono>
 #include <dots/dots.h>
 #include <dots/cpp_config.h>
-#include <dots/io/Transceiver.h>
+#include <dots/io/GuestTransceiver.h>
 
 namespace dots
 {
@@ -20,6 +20,9 @@ namespace dots
 	private:
 
 		void parseProgramOptions(int argc, char* argv[]);
+
+		GuestTransceiver::descriptor_map_t getPreloadPublishTypes() const;
+		GuestTransceiver::descriptor_map_t getPreloadSubscribeTypes() const;
 		
 		inline static Application* m_instance = nullptr;		
 		int m_exitCode;

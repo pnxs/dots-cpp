@@ -10,13 +10,14 @@ class DynamicTypeReceiver
 {
 public:
     DynamicTypeReceiver(const std::vector<string>& whiteList  = {});
-    ~DynamicTypeReceiver() = default;
+    ~DynamicTypeReceiver();
 
     pnxs::Signal<void (const type::StructDescriptor<>*)> onNewStruct;
 
 private:
     void emitStruct(const type::StructDescriptor<>*);
 
+    pnxs::SignalConnection m_structObserverConnection;
 };
 
 }

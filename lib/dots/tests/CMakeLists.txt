@@ -14,7 +14,6 @@ target_sources(${TARGET_NAME}
         TestAsciiSerialization.cpp
         TestCborSerialization.cpp
 		TestDispatcher.cpp
-        TestDistributedTypeId.cpp
         TestFileStore.cpp
         TestJsonSerialization.cpp
 		TestEnumDescriptor.cpp

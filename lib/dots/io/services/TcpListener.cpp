@@ -8,21 +8,28 @@ namespace dots
 		m_acceptor{ ioContext },
 		m_socket{ ioContext }
 	{
-		asio::ip::tcp::resolver resolver{ ioContext };
-		asio::ip::tcp::endpoint endpoint = *resolver.resolve({ m_address, m_port });
+		try
+        {
+            asio::ip::tcp::resolver resolver{ ioContext };
+		    asio::ip::tcp::endpoint endpoint = *resolver.resolve({ m_address, m_port });
 
-		m_acceptor.open(endpoint.protocol());
-		m_acceptor.set_option(asio::ip::tcp::acceptor::reuse_address(true));
-		m_acceptor.bind(endpoint);
+		    m_acceptor.open(endpoint.protocol());
+		    m_acceptor.set_option(asio::ip::tcp::acceptor::reuse_address(true));
+		    m_acceptor.bind(endpoint);
 
-		if (backlog == std::nullopt)
-		{
-			m_acceptor.listen();
-		}
-		else
-		{
-			m_acceptor.listen(*backlog);
-		}
+		    if (backlog == std::nullopt)
+		    {
+			    m_acceptor.listen();
+		    }
+		    else
+		    {
+			    m_acceptor.listen(*backlog);
+		    }
+        }
+        catch (const std::exception& e)
+        {
+			throw std::runtime_error{ "failed creating TCP listener at address '" + m_address + ":" + m_port + "' -> " + e.what() };
+        }
 	}
 
 	void TcpListener::asyncAcceptImpl()
@@ -36,7 +43,7 @@ namespace dots
 
 			if (error)
 			{
-				processError(std::runtime_error{ "failed listening on TCP endpoint at " + m_address + ":" + m_port + " -> " + error.message() });
+				processError(std::make_exception_ptr(std::runtime_error{ "failed listening on TCP endpoint at address '" + m_address + ":" + m_port + "' -> " + error.message() }));
 				return;
 			}
 

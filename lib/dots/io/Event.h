@@ -11,7 +11,7 @@ namespace dots
     template<>
     struct Event<type::Struct>
     {
-        Event(const DotsHeader& header, const type::Struct& transmitted, const type::Struct& updated, const DotsCloneInformation& cloneInfo);
+        Event(const DotsHeader& header, const type::Struct& transmitted, const type::Struct& updated, const DotsCloneInformation& cloneInfo, bool isFromMyself);
 		Event(const Event& other) = delete;
 		Event(Event&& other) = delete;
 		~Event() = default;
@@ -33,7 +33,7 @@ namespace dots
         bool isUpdate() const;
         bool isRemove() const;
 
-        bool isOwnUpdate() const;		
+        bool isFromMyself() const;		
 	    types::property_set_t newProperties() const { return header().attributes; }
 	    types::property_set_t updatedProperties() const { return newProperties() ^ updated()._validProperties(); }
 
@@ -56,12 +56,16 @@ namespace dots
             return const_cast<Event<T>&>(std::as_const(*this).as<T>());
         }
 
+        [[deprecated("only available for backwards compatibility")]]
+        bool isOwnUpdate() const;
+
     private:
 
         const DotsHeader& m_header;
         const type::Struct& m_transmitted;
         const type::Struct& m_updated;
         const DotsCloneInformation m_cloneInfo;
+        bool m_isFromMyself;
     };
 
     template<typename T>

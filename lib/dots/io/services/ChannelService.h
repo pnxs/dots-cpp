@@ -22,13 +22,13 @@ namespace dots
 		ChannelService& operator = (ChannelService&& rhs) noexcept(false) = delete;
 
 		template <typename TListener, typename... Args>
-		std::unique_ptr<Listener> listen(Args&&... args)
+		listener_ptr_t makeListener(Args&&... args)
 		{
 			return std::make_unique<TListener>(static_cast<asio::io_context&>(context()), std::forward<Args>(args)...);
 		}
 
 		template <typename TChannel, typename... Args>
-		channel_ptr_t open(Args&&... args)
+		channel_ptr_t makeChannel(Args&&... args)
 		{
 			auto channel = std::make_shared<TChannel>(static_cast<asio::io_context&>(context()), std::forward<Args>(args)...);
 			return channel;

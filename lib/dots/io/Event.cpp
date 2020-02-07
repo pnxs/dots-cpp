@@ -2,11 +2,12 @@
 
 namespace dots
 {
-    Event<type::Struct>::Event(const DotsHeader& header, const type::Struct& transmitted, const type::Struct& updated, const DotsCloneInformation& cloneInfo) :
+    Event<type::Struct>::Event(const DotsHeader& header, const type::Struct& transmitted, const type::Struct& updated, const DotsCloneInformation& cloneInfo, bool isFromMyself) :
         m_header(header),
         m_transmitted(transmitted),
         m_updated(updated),
-        m_cloneInfo(cloneInfo)
+        m_cloneInfo(cloneInfo),
+        m_isFromMyself(isFromMyself)
     {
         /* do nothing */
     }
@@ -64,8 +65,13 @@ namespace dots
         return mt() == DotsMt::remove;
     }
 
+    bool Event<type::Struct>::isFromMyself() const
+    {
+        return m_isFromMyself;
+    }
+
     bool Event<type::Struct>::isOwnUpdate() const
     {
-        return m_header.isFromMyself; 
+        return m_isFromMyself; 
     }
 }

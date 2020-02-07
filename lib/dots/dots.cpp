@@ -25,23 +25,40 @@ namespace dots
 		global_service<FdHandlerService>().removeInEventHandler(fileDescriptor);
 	}
 
-	Transceiver& transceiver()
+	Publisher*& publisher()
 	{
-		static Transceiver transceiver;
+		static Publisher* publisher = nullptr;
+		return publisher;
+	}
+
+	GuestTransceiver& transceiver(const std::string_view& name/* = "dots-transceiver"*/)
+	{
+		static GuestTransceiver transceiver{ name.data() };
+
+		if (Publisher*& p = publisher(); p == nullptr)
+		{
+			p = &transceiver;
+		}
+		
 		return transceiver;
 	}
 
-	void publish(const type::StructDescriptor<>* td, const type::Struct& instance, types::property_set_t what, bool remove)
+	void publish(const type::Struct& instance, types::property_set_t includedProperties, bool remove)
 	{
-	    onPublishObject->publish(td, instance, what, remove);
+		publisher()->publish(&instance._descriptor(), instance, includedProperties, remove);
 	}
 
-	Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::receive_handler_t<>&& handler)
+	void remove(const type::Struct& instance)
+	{
+		publish(instance, instance._keyProperties(), true);
+	}
+
+	Subscription subscribe(const type::StructDescriptor<>& descriptor, GuestTransceiver::receive_handler_t<>&& handler)
 	{
 		return transceiver().subscribe(descriptor, std::move(handler));
 	}
 
-	Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::event_handler_t<>&& handler)
+	Subscription subscribe(const type::StructDescriptor<>& descriptor, GuestTransceiver::event_handler_t<>&& handler)
 	{
 		return transceiver().subscribe(descriptor, std::move(handler));
 	}
@@ -54,5 +71,10 @@ namespace dots
 	const Container<>& container(const type::StructDescriptor<>& descriptor)
 	{
 		return transceiver().container(descriptor);
+	}
+
+	void publish(const type::StructDescriptor<>*/* td*/, const type::Struct& instance, types::property_set_t what, bool remove)
+	{
+	    publish(instance, what, remove);
 	}
 }

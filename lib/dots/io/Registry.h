@@ -1,23 +1,37 @@
 #pragma once
 #include <map>
 #include <memory>
+#include <functional>
 #include <type_traits>
 #include <dots/type/Descriptor.h>
 #include <dots/type/FundamentalTypes.h>
 #include <dots/type/EnumDescriptor.h>
 #include <dots/type/StructDescriptor.h>
+#include <dots/functional/signal.h>
 
 namespace dots::io
 {
     struct Registry
     {
-        Registry();
+        using type_map_t = std::map<std::string_view, std::shared_ptr<type::Descriptor<>>>;
+        using const_iterator_t = type_map_t::const_iterator;
+        using new_type_handler_t = std::function<void(const type::Descriptor<>&)>;
+
+        Registry(new_type_handler_t newTypeHandler = nullptr);
         Registry(const Registry& other) = default;
         Registry(Registry&& other) noexcept = default;
         ~Registry() = default;
 
         Registry& operator = (const Registry& rhs) = default;
         Registry& operator = (Registry&& rhs) noexcept = default;
+
+        const type_map_t& types() const;
+
+        const_iterator_t begin() const;
+        const_iterator_t end() const;
+
+        const_iterator_t cbegin() const;
+        const_iterator_t cend() const;
 
     	std::shared_ptr<type::Descriptor<>> findType(const std::string_view& name, bool assertNotNull = false) const;
     	std::shared_ptr<type::EnumDescriptor<>> findEnumType(const std::string_view& name, bool assertNotNull = false) const;
@@ -50,8 +64,12 @@ namespace dots::io
 		[[deprecated("only available for backwards compatibility")]]
 		const std::map<std::string_view, std::shared_ptr<type::Descriptor<>>>& getTypes();
 
+        [[deprecated("only available for backwards compatibility")]]
+        pnxs::Signal<void (const type::StructDescriptor<>*)> onNewStruct;
+
     private:
 
-    	std::map<std::string_view, std::shared_ptr<type::Descriptor<>>> m_types;
+        new_type_handler_t m_newTypeHandler;
+    	type_map_t m_types;
 	};
 }

@@ -1,10 +1,10 @@
 #include <dots/io/Registry.h>
 #include <dots/io/DescriptorConverter.h>
-#include <dots/dots.h>
 
 namespace dots::io
 {
-	Registry::Registry()
+	Registry::Registry(new_type_handler_t newTypeHandler/* = nullptr*/) :
+	    m_newTypeHandler(std::move(newTypeHandler))
 	{
 		// ensure fundamental types are instantiated and added to static descriptor map 
 		type::Descriptor<types::bool_t>::InstancePtr();
@@ -55,7 +55,32 @@ namespace dots::io
 		type::Descriptor<types::vector_t<types::string_t>>::InstancePtr();
 	}
 
-	std::shared_ptr<type::Descriptor<>> Registry::findType(const std::string_view& name, bool assertNotNull/* = false*/) const
+    const Registry::type_map_t& Registry::types() const
+    {
+		return m_types;
+    }
+
+    Registry::const_iterator_t Registry::begin() const
+    {
+		return m_types.begin();
+    }
+
+    Registry::const_iterator_t Registry::end() const
+    {
+		return m_types.end();
+    }
+
+    Registry::const_iterator_t Registry::cbegin() const
+    {
+		return m_types.cbegin();
+    }
+
+    Registry::const_iterator_t Registry::cend() const
+    {
+		return m_types.cend();
+    }
+
+    std::shared_ptr<type::Descriptor<>> Registry::findType(const std::string_view& name, bool assertNotNull/* = false*/) const
 	{
 		if (const std::shared_ptr<type::Descriptor<>>& descriptor = type::StaticDescriptorMap::Find(name); descriptor == nullptr)
 		{
@@ -147,6 +172,13 @@ namespace dots::io
 			{
 				registerType(propertyDescriptor.valueDescriptorPtr(), false);
 			}
+
+			onNewStruct(structDescriptor.get());
+		}
+
+		if (m_newTypeHandler != nullptr)
+		{
+			m_newTypeHandler(*it->second);
 		}
 
 		return it->second;			
@@ -191,6 +223,6 @@ namespace dots::io
 
 	const std::map<std::string_view, std::shared_ptr<type::Descriptor<>>>& Registry::getTypes()
     {
-	    return m_types;
+	    return types();
     }
 }

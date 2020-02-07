@@ -1,8 +1,10 @@
 #pragma once
 #include <functional>
+#include <string_view>
 #include <dots/common/Chrono.h>
 #include <dots/io/services/Timer.h>
-#include <dots/io/Transceiver.h>
+#include <dots/io/GuestTransceiver.h>
+#include <dots/io/Publisher.h>
 
 namespace dots
 {
@@ -12,24 +14,24 @@ namespace dots
 	void add_fd_handler(int fileDescriptor, const std::function<void()>& handler);
 	void remove_fd_handler(int fileDescriptor);
 
-	Transceiver& transceiver();
+	Publisher*& publisher();
+	GuestTransceiver& transceiver(const std::string_view& name = "dots-transceiver");
 
-	void publish(const type::StructDescriptor<>* td, const type::Struct& instance, types::property_set_t what, bool remove);
+	void publish(const type::Struct& instance, types::property_set_t includedProperties, bool remove);
+	void remove(const type::Struct& instance);
 
-	template<class T>
-	void publish(const T& instance, const types::property_set_t& what = types::property_set_t::All, bool remove = false);
-	template<class T>
-	void publish(const T& data);
+	template<typename T>
+	void publish(const T& instance, const types::property_set_t& includedProperties = types::property_set_t::All, bool remove = false);
 
-	template<class T>
-	void remove(const T& data);
+	template<typename  T>
+	void remove(const T& instance);
 
-	Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::receive_handler_t<>&& handler);
-	Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::event_handler_t<>&& handler);
+	Subscription subscribe(const type::StructDescriptor<>& descriptor, GuestTransceiver::receive_handler_t<>&& handler);
+	Subscription subscribe(const type::StructDescriptor<>& descriptor, GuestTransceiver::event_handler_t<>&& handler);
 
-	template<class T>
+	template<typename T>
 	Subscription subscribe(Dispatcher::receive_handler_t<T>&& handler);
-	template<class T>
+	template<typename T>
 	Subscription subscribe(Dispatcher::event_handler_t<T>&& handler);
 
 	const ContainerPool& pool();
@@ -38,30 +40,30 @@ namespace dots
 	template <typename T>
 	const Container<T>& container();
 
-	template<class T>
-	void publish(const T& instance, const types::property_set_t& what/* = types::property_set_t::All*/, bool remove/* = false*/)
+	template<typename T>
+	void publish(const T& instance, const types::property_set_t& includedProperties/* = types::property_set_t::All*/, bool remove/* = false*/)
 	{
 	    static_assert(!T::_IsSubstructOnly(), "it is not allowed to publish to a struct that is marked with 'substruct_only'!");
 	    registerTypeUsage<T, PublishedType>();
-	    onPublishObject->publish(T::_Descriptor(), &instance, what, remove);
+	    publish(T::_Descriptor(), &instance, includedProperties, remove);
 	}
 
-	template<class T>
+	template<typename T>
 	void remove(const T& instance)
 	{
 	    static_assert(!T::_IsSubstructOnly(), "it is not allowed to remove to a struct that is marked with 'substruct_only'!");
 	    registerTypeUsage<T, PublishedType>();
-	    onPublishObject->publish(T::_Descriptor(), &instance, instance.validProperties(), true);
+	    remove(instance);
 	}
 
-	template<class T>
+	template<typename T>
 	Subscription subscribe(Dispatcher::receive_handler_t<T>&& handler)
 	{
 		registerTypeUsage<T, SubscribedType>();
 	    return transceiver().subscribe<T>(std::move(handler));
 	}
 
-	template<class T>
+	template<typename T>
 	Subscription subscribe(Dispatcher::event_handler_t<T>&& handler)
 	{
 		registerTypeUsage<T, SubscribedType>();
@@ -74,4 +76,7 @@ namespace dots
 		registerTypeUsage<T, SubscribedType>();
 		return transceiver().container<T>();
 	}
+
+	[[deprecated("only available for backwards compatibility")]]
+	void publish(const type::StructDescriptor<>* td, const type::Struct& instance, types::property_set_t what, bool remove);
 }

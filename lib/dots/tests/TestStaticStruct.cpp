@@ -578,3 +578,20 @@ TEST_F(TestStaticStruct, diffProperties)
 	EXPECT_EQ(sutLhs._diffProperties(sutRhs), TestStruct::stringProperty_t::Set() + TestStruct::floatVectorProperty_t::Set());
 	EXPECT_EQ(sutLhs._diffProperties(sutRhs, (~TestStruct::floatVectorProperty_t::Set())), TestStruct::stringProperty_t::Set());
 }
+
+TEST_F(TestStaticStruct, assertProperties)
+{
+	TestStruct sut{
+		TestStruct::intProperty_i{ 1 },
+		TestStruct::stringProperty_i{ "foo" }
+	};
+	
+	EXPECT_NO_THROW(sut._assertHasProperties(TestStruct::intProperty_t::Set()));
+	EXPECT_THROW(sut._assertHasProperties<false>(TestStruct::intProperty_t::Set()), std::logic_error);
+
+	EXPECT_NO_THROW(sut._assertHasProperties(TestStruct::intProperty_t::Set() + TestStruct::stringProperty_t::Set()));
+	EXPECT_NO_THROW(sut._assertHasProperties<false>(TestStruct::intProperty_t::Set() + TestStruct::stringProperty_t::Set()));
+
+	EXPECT_THROW(sut._assertHasProperties(TestStruct::intProperty_t::Set() + TestStruct::floatVectorProperty_t::Set()), std::logic_error);
+	EXPECT_THROW(sut._assertHasProperties<false>(TestStruct::intProperty_t::Set() + TestStruct::floatVectorProperty_t::Set()), std::logic_error);
+}

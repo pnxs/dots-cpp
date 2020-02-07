@@ -43,9 +43,10 @@ target_sources(${TARGET_NAME}
 
 		functional/signal.cpp
 
-		io/Transmitter.cpp
 		io/Transceiver.cpp
-		io/ServerConnection.cpp
+		io/GuestTransceiver.cpp
+		io/HostTransceiver.cpp
+		io/Connection.cpp
 		io/Subscription.cpp
 
 		io/Io.cpp
@@ -56,9 +57,6 @@ target_sources(${TARGET_NAME}
 		io/TD_Traversal.cpp
 		io/Application.cpp
 		io/DynamicTypeReceiver.cpp
-		io/ResourceUsage.cpp
-		io/DistributedTypeId.cpp
-		io/Filter.cpp
 		
 		io/serialization/JsonSerialization.cpp
 		io/serialization/AsciiSerialization.cpp
@@ -72,6 +70,8 @@ target_sources(${TARGET_NAME}
 		io/services/Timer.cpp
 		io/services/TimerService.cpp
 		io/services/Transmission.cpp
+		io/services/UdsChannel.cpp
+		io/services/UdsListener.cpp
 		io/services/VirtualChannel.cpp
 		io/services/WebSocketChannel.cpp
 		io/services/WebSocketListener.cpp
@@ -104,7 +104,7 @@ target_sources(${TARGET_NAME}
 )
 target_include_directories(${TARGET_NAME}
 	PUBLIC
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
+		$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/lib>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
         $<INSTALL_INTERFACE:include>
 )

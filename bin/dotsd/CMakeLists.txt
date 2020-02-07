@@ -11,11 +11,6 @@ add_executable(${TARGET_NAME} main.cpp)
 # properties
 target_sources(${TARGET_NAME}
 	PRIVATE
-		AuthManager.cpp
-        Connection.cpp
-		ConnectionManager.cpp
-		Group.cpp
-        GroupManager.cpp
         Server.cpp
 )	
 target_include_directories(${TARGET_NAME}
@@ -38,8 +33,3 @@ target_link_libraries(${TARGET_NAME}
 
 # install
 install (TARGETS ${TARGET_NAME} DESTINATION sbin)
-
-# tests
-if (BUILD_UNIT_TESTS)
-	add_subdirectory(tests)
-endif()

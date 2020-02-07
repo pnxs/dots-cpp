@@ -2,6 +2,7 @@
 #include <string_view>
 #include <array>
 #include <functional>
+#include <type_traits>
 #include <dots/type/PropertyContainer.h>
 #include <dots/type/StructDescriptor.h>
 
@@ -41,17 +42,122 @@ namespace dots::type
     	bool _greaterEqual(const Struct& rhs, const PropertySet& includedProperties = PropertySet::All) const;
 
 		PropertySet _diffProperties(const Struct& other, const PropertySet& includedProperties = PropertySet::All) const;
-    	
-		bool _hasProperties(const PropertySet properties) const;
 
 		void _publish(const PropertySet& includedProperties = PropertySet::All, bool remove = false) const;
-		void _remove(const PropertySet& includedProperties = PropertySet::All) const;
+		void _remove() const;
+
+        template <bool AllowSubset = true>
+        bool _hasProperties(const PropertySet& properties) const
+        {
+            if constexpr (AllowSubset)
+            {
+                return properties <= _validProperties();
+            }
+            else
+            {
+                return properties == _validProperties();
+            }
+        }
+
+        template <bool AllowSubset = true>
+        void _assertHasProperties(const PropertySet& expectedProperties) const
+        {
+            const PropertySet& actualProperties = _validProperties();
+
+            if (!_hasProperties<AllowSubset>(expectedProperties))
+            {
+                auto to_property_list = [](const StructDescriptor<>& descriptor, const PropertySet& properties)
+                {
+                    std::string propertyList;
+
+                    for (const PropertyDescriptor& propertyDescriptor : descriptor.propertyDescriptors(properties))
+                    {
+                        propertyList += propertyDescriptor.name();
+                        propertyList += ", ";
+                    }
+
+                    if (!propertyList.empty())
+                    {
+                        propertyList.resize(propertyList.size() - 2);
+                    }
+
+                    return propertyList;
+                };
+
+                if constexpr (AllowSubset)
+                {
+                    throw std::logic_error{ _desc->name() + " instance is missing expected properties: " + to_property_list(*_desc, expectedProperties - actualProperties) };
+                }
+                else
+                {
+                    throw std::logic_error{ _desc->name() + " instance does not have expected exact properties: " + to_property_list(*_desc, expectedProperties) + ", but instead has " + to_property_list(*_desc, actualProperties) };
+                }
+            }
+        }
+
+        template <typename TDescriptor>
+        bool _is(TDescriptor&& descriptor) const
+        {
+            static_assert(!std::is_rvalue_reference_v<TDescriptor>);
+            static_assert(std::is_base_of_v<StructDescriptor<>, std::remove_pointer_t<std::decay_t<TDescriptor>>>);
+
+            return &ToRef(std::forward<TDescriptor>(descriptor)) == _desc;
+        }
+
+        template <typename... Descriptors>
+        bool _isAny(Descriptors&&... descriptors) const
+        {
+            static_assert(sizeof...(Descriptors) > 0);
+            return (_is(std::forward<Descriptors>(descriptors)) || ...);
+        }
 
         template <typename T>
         bool _is() const
         {
             static_assert(std::is_base_of_v<Struct, T>, "T has to be a sub-class of Struct");
-            return &T::_Descriptor() == _desc;
+            return _is(T::_Descriptor());
+        }
+
+    	template <typename... Ts>
+        bool _isAny() const
+        {
+            static_assert(std::conjunction_v<std::is_base_of<Struct, Ts>...>);
+            return _isAny(Ts::_Descriptor()...);
+        }
+
+        template <typename TDescriptor>
+        void _assertIs(TDescriptor&& descriptor) const
+        {
+            if (!_is(std::forward<TDescriptor>(descriptor)))
+            {
+                throw std::logic_error{ _desc->name() + " instance does not have expected type: " + ToRef(std::forward<TDescriptor>(descriptor)).name() };
+            }
+        }
+
+        template <typename... Descriptors>
+        void _assertIsAny(Descriptors&&... descriptors) const
+        {
+            if (!_isAny(std::forward<Descriptors>(descriptors)...))
+            {
+                std::string expectedTypes = ((ToRef(std::forward<Descriptors>(descriptors)).name() + ", ") + ...);
+                expectedTypes.resize(expectedTypes.size() - 2);
+
+                throw std::logic_error{ _desc->name() + " instance does not have any of expected types: " + expectedTypes };
+            }
+        }
+
+        template <typename T>
+        void _assertIs() const
+        {
+            static_assert(std::is_base_of_v<Struct, T>, "T has to be a sub-class of Struct");
+            return _assertIs(T::_Descriptor());
+        }
+
+        template <typename... Ts>
+        void _assertIsAny() const
+        {
+            static_assert(std::conjunction_v<std::is_base_of<Struct, Ts>...>);
+            return _assertIsAny(Ts::_Descriptor()...);
         }
 
         template <typename T>
@@ -107,6 +213,19 @@ namespace dots::type
     	{
     		return _desc->propertyDescriptors();
     	}
+
+        template <typename T>
+        static decltype(auto) ToRef(T&& t)
+        {
+            if constexpr (std::is_pointer_v<std::decay_t<T>>)
+            {
+                return *t;
+            }
+            else
+            {
+                return t;
+            }
+        }
 
         const StructDescriptor<>* _desc;
     };

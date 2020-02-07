@@ -1,72 +1,39 @@
 #pragma once
-
+#include <vector>
 #include "dots/cpp_config.h"
-#include "ConnectionManager.h"
-#include "AuthManager.h"
-#include "ServerInfo.h"
-#include <dots/io/services/Listener.h>
-
+#include <dots/io/HostTransceiver.h>
 #include "DotsDaemonStatus.dots.h"
 
 namespace dots
 {
-/*!
- * This class provides the server functionality of the DOTS system.
- */
-class Server: public ServerInfo
-{
-public:
-    Server(const Server&) = delete;
-    Server& operator=(const Server&) = delete;
+    struct Server
+    {
+        using listeners_t = std::vector<listener_ptr_t>;
 
-    /*!
-     * Create a DOTS server, listening on the given address and port
-     * @param io_context Boost-ASIO io-context object
-     * @param address Address to bind to
-     * @param port Port to bind to
-     * @param name Servername
-     */
-    explicit Server(std::unique_ptr<Listener>&& listener, const string& name);
+        Server(std::string name, listeners_t listeners);
+		Server(const Server& other) = delete;
+		Server(Server&& other) = delete;
+		~Server() = default;
 
-    /*!
-     * Returns the AuthManager as reference
-     * @return the Authentication Manager object
-     */
-    AuthManager& authManager() override { return m_authManager; }
+		Server& operator = (const Server& rhs) = delete;
+		Server& operator = (Server&& rhs) = delete;
 
-    /*!
-     * Returns the name of the DOTS server
-     * @return servername as string
-     */
-    const string& name() const override { return m_name; }
+    private:
 
-    /*!
-     * Stops the DOTS server
-     */
-    void stop();
-    
-    /*!
-     * Returns the servers connection ID
-     * @return connection id of the server
-     */
-    const ClientId& id() const override;
+        inline static uint32_t M_nextTypeId = 0;
 
-private:
-    void asyncAccept();
-	void handleCleanupTimer();
-    void updateServerStatus();
+        void handleTransition(const io::Connection& connection);
+        void handleNewStructType(const type::StructDescriptor<>& descriptor);
+        void cleanUpClients();
 
-	string m_name;
+        void updateServerStatus();
 
-    GroupManager m_groupManager;
-    ConnectionManager m_connectionManager;
-    AuthManager m_authManager;  
+        DotsStatistics receiveStatistics() const;
+        DotsCacheStatus cacheStatus() const;
 
-	std::unique_ptr<Listener> m_listener;
+        static std::string flags2String(const dots::type::StructDescriptor<>* td);
 
-    DotsDaemonStatus m_daemonStatus;
-    ClientId m_serverId = 1;
-};
-
+        HostTransceiver m_hostTransceiver;
+        DotsDaemonStatus m_daemonStatus;
+    };
 }
-

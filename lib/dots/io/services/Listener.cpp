@@ -17,7 +17,7 @@ namespace dots
 
     void Listener::processAccept(channel_ptr_t channel)
     {
-        if (m_acceptHandler(std::move(channel)))
+        if (m_acceptHandler(*this, std::move(channel)))
         {
             asyncAcceptImpl();
         }
@@ -29,17 +29,17 @@ namespace dots
         }
     }
 
-    void Listener::processError(const std::exception& e)
+    void Listener::processError(const std::exception_ptr& e)
     {
         if (m_errorHandler != nullptr)
         {
-            m_errorHandler(e);
+            m_errorHandler(*this, e);
         }        
     }
 
     void Listener::processError(const std::string& what)
     {
-        processError(std::runtime_error{ what });
+        processError(std::make_exception_ptr(std::runtime_error{ what }));
     }
 
     void Listener::verifyErrorCode(const std::error_code& errorCode)

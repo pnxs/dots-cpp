@@ -5,6 +5,7 @@
 #include "Server.h"
 #include <boost/program_options.hpp>
 #include <iostream>
+#include <optional>
 
 namespace po = boost::program_options;
 using std::string;
@@ -43,14 +44,15 @@ int main(int argc, char* argv[])
     string host = vm["dots-address"].as<string>();
     string port = vm["dots-port"].as<string>();
 
-	std::unique_ptr<dots::Listener> listener = dots::global_service<dots::ChannelService>().listen<dots::TcpListener>(host, port);
-    dots::Server server(std::move(listener), serverName);
+    dots::Server::listeners_t listeners;
+    listeners.emplace_back(dots::global_service<dots::ChannelService>().makeListener<dots::TcpListener>(host, port));
+    std::optional<dots::Server> server{ std::in_place, std::move(serverName), std::move(listeners) };
     LOG_NOTICE_S("Listen to " << host << ":" << port);
 
     signals.async_wait([&](auto /*ec*/, int /*signo*/) {
         LOG_NOTICE_S("stopping server");
         dots::global_io_context().stop();
-        server.stop();
+        server.reset();
     });
 
     if (vm.count("daemon"))

@@ -1,51 +1,48 @@
-#include "TcpChannel.h"
+#include "UdsChannel.h"
+#include <csignal>
 #include <dots/io/Io.h>
 #include <dots/io/Registry.h>
 #include <dots/io/serialization/CborNativeSerialization.h>
 
-namespace dots
+namespace dots::io::posix
 {
-	TcpChannel::TcpChannel(asio::io_context& ioContext, const std::string_view& host, const std::string_view& port) :
-		TcpChannel(asio::ip::tcp::socket{ ioContext })
+	UdsChannel::UdsChannel(asio::io_context& ioContext, const std::string_view& path) :
+		m_endpoint{ path.data() },
+	    m_socket{ ioContext },
+	    m_headerSize(0)
 	{
-		asio::ip::tcp::resolver resolver{ m_socket.get_executor().context() };
-		auto endpoints = resolver.resolve(asio::ip::tcp::socket::protocol_type::v4(), host, port, asio::ip::resolver_query_base::numeric_service);
-
-		for (const asio::ip::tcp::endpoint& endpoint: endpoints)
+		try
 		{
-			try
-			{
-				m_socket.connect(endpoint);
-
-				m_socket.set_option(asio::ip::tcp::no_delay(true));
-				m_socket.set_option(asio::ip::tcp::socket::keep_alive(true));
-				m_socket.set_option(asio::socket_base::linger(true, 10));
-
-				return;
-			}
-			catch (const std::exception&/* e*/)
-			{
-				/* do nothing */
-			}
+			m_socket.connect(m_endpoint);
+		}
+		catch (const std::exception& e)
+		{
+			throw std::runtime_error{ "could not open UDS connection '" + m_endpoint.path() + "': " + e.what() };
 		}
 
-		throw std::runtime_error{ "could not open TCP connection: " + std::string{ host } + ":" + std::string{ port } };
+		m_instanceBuffer.resize(8192);
+		m_headerBuffer.resize(1024);
+
+		IgnorePipeSignals();
 	}
 
-	TcpChannel::TcpChannel(asio::ip::tcp::socket&& socket) :		
+	UdsChannel::UdsChannel(asio::local::stream_protocol::socket&& socket) :
+	    m_endpoint{ socket.remote_endpoint() },
 		m_socket{ std::move(socket) },
 		m_headerSize(0)
 	{
 		m_instanceBuffer.resize(8192);
 		m_headerBuffer.resize(1024);
+
+		IgnorePipeSignals();
 	}
 
-	void TcpChannel::asyncReceiveImpl()
+	void UdsChannel::asyncReceiveImpl()
 	{
 		asynReadHeaderLength();
 	}
 
-	void TcpChannel::transmitImpl(const DotsTransportHeader& header, const type::Struct& instance)
+	void UdsChannel::transmitImpl(const DotsTransportHeader& header, const type::Struct& instance)
 	{
 		std::string serializedInstance = to_cbor(instance, header.dotsHeader->attributes);
 
@@ -64,7 +61,7 @@ namespace dots
 		m_socket.write_some(buffers);
 	}
 
-	void TcpChannel::asynReadHeaderLength()
+	void UdsChannel::asynReadHeaderLength()
 	{
 		asio::async_read(m_socket, asio::buffer(&m_headerSize, sizeof(m_headerSize)), [&, this_{ weak_from_this() }](auto ec, auto /*bytes*/)
 		{
@@ -91,7 +88,7 @@ namespace dots
 		});
 	}
 
-	void TcpChannel::asyncReadHeader()
+	void UdsChannel::asyncReadHeader()
 	{
 		asio::async_read(m_socket, asio::buffer(m_headerBuffer.data(), m_headerSize), [&, this_{ weak_from_this() }](auto ec, auto /*bytes*/)
 		{
@@ -123,7 +120,7 @@ namespace dots
 		});
 	}
 
-	void TcpChannel::asyncReadInstance()
+	void UdsChannel::asyncReadInstance()
 	{
 		asio::async_read(m_socket, asio::buffer(m_instanceBuffer), [&, this_{ weak_from_this() }](auto ec, auto /*bytes*/)
 		{
@@ -154,7 +151,7 @@ namespace dots
 		});
 	}
 
-	void TcpChannel::verifyErrorCode(const asio::error_code& ec)
+	void UdsChannel::verifyErrorCode(const asio::error_code& ec)
 	{
 		if (ec == asio::error::misc_errors::eof || ec == asio::error::basic_errors::bad_descriptor)
 		{
@@ -165,4 +162,11 @@ namespace dots
 			throw std::system_error{ ec };
 		}
 	}
+
+    void UdsChannel::IgnorePipeSignals()
+    {
+		// ignores all pipe signals to prevent non-catchable application termination on broken pipes
+		static auto IgnorePipesSignals = [](){ return std::signal(SIGPIPE, SIG_IGN); }();
+		(void)IgnorePipesSignals;
+    }
 }
