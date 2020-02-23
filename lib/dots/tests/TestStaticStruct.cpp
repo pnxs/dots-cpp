@@ -6,6 +6,65 @@
 
 namespace dots::types
 {
+    struct TestSubStruct : type::StaticStruct<TestSubStruct>
+    {
+        struct p1_t : type::StaticProperty<int32_t, p1_t>
+        {
+            static constexpr auto Metadata = type::PropertyMetadata<types::int32_t>{ "p1", 1, true};
+        };
+
+        struct p2_t : type::StaticProperty<int32_t, p2_t>
+        {
+            static constexpr auto Metadata = type::PropertyMetadata<types::int32_t>{ "p2", 2, false, p1_t::Metadata };
+        };
+
+        using p1_i = type::PropertyInitializer<p1_t>;
+        using p2_i = type::PropertyInitializer<p2_t>;
+
+        using _key_properties_t = std::tuple<p1_t*>;
+        using _properties_t     = std::tuple<p1_t*, p2_t*>;
+
+        TestSubStruct() = default;
+        TestSubStruct(const TestSubStruct& other) = default;
+        TestSubStruct(TestSubStruct&& other) = default;
+        ~TestSubStruct() = default;
+
+        TestSubStruct& operator = (const TestSubStruct& sutRhs) = default;
+        TestSubStruct& operator = (TestSubStruct&& sutRhs) = default;
+
+        template <typename... PropertyInitializers, std::enable_if_t<sizeof...(PropertyInitializers) >= 1 && std::conjunction_v<type::is_property_initializer_t<std::remove_pointer_t<std::decay_t<PropertyInitializers>>>...>, int> = 0>
+        explicit TestSubStruct(PropertyInitializers&&... propertyInitializers)
+        {
+            (_getProperty<typename std::remove_pointer_t<std::decay_t<PropertyInitializers>>::property_t>().template construct<false>(std::forward<decltype(propertyInitializers)>(propertyInitializers).value), ...);
+        }
+
+        template <typename P>
+        const P& _getProperty() const
+        {
+            if constexpr (std::is_same_v<P, p1_t>)
+            {
+                return p1;
+            }
+            else if constexpr (std::is_same_v<P, p2_t>)
+            {
+                return p2;
+            }
+            else
+            {
+                static_assert(std::is_same_v<P, void>, "P is not a property of struct type DotsTestStruct");
+            }
+        }
+
+        template <typename P>
+        P& _getProperty()
+        {
+            return const_cast<P&>(std::as_const(*this).template _getProperty<P>());
+        }
+
+        p1_t p1;
+        p2_t p2;
+    };
+
     struct TestStruct : type::StaticStruct<TestStruct>
     {
         struct intProperty_t : type::StaticProperty<int32_t, intProperty_t>
@@ -28,13 +87,19 @@ namespace dots::types
         	static constexpr auto Metadata = type::PropertyMetadata<types::vector_t<types::float32_t>>{ "floatVectorProperty", 4, false, boolProperty_t::Metadata };
         };
 
+        struct subStruct_t : type::StaticProperty<TestSubStruct, subStruct_t>
+        {
+            static constexpr auto Metadata = type::PropertyMetadata<TestSubStruct>{ "subStruct", 5, false, floatVectorProperty_t::Metadata };
+        };
+
     	using intProperty_i = type::PropertyInitializer<intProperty_t>;
     	using stringProperty_i = type::PropertyInitializer<stringProperty_t>;
     	using boolProperty_i = type::PropertyInitializer<boolProperty_t>;
     	using floatVectorProperty_i = type::PropertyInitializer<floatVectorProperty_t>;
+        using subStruct_i = type::PropertyInitializer<subStruct_t, TestSubStruct>;
     	
         using _key_properties_t = std::tuple<intProperty_t*>;
-        using _properties_t     = std::tuple<intProperty_t*, stringProperty_t*, boolProperty_t*, floatVectorProperty_t*>;
+        using _properties_t     = std::tuple<intProperty_t*, stringProperty_t*, boolProperty_t*, floatVectorProperty_t*, subStruct_t*>;
 
 		TestStruct() = default;
 		TestStruct(const TestStruct& other) = default;
@@ -69,6 +134,10 @@ namespace dots::types
 			{
 				return floatVectorProperty;
 			}
+            else if constexpr (std::is_same_v<P, subStruct_t>)
+            {
+                return subStruct;
+            }
 			else
 			{
 				static_assert(std::is_same_v<P, void>, "P is not a property of struct type DotsTestStruct");
@@ -85,11 +154,19 @@ namespace dots::types
         stringProperty_t stringProperty;
     	boolProperty_t boolProperty;
         floatVectorProperty_t floatVectorProperty;
+        subStruct_t subStruct;
     };
 }
 
 namespace dots::type
 {
+    template <>
+    struct Descriptor<types::TestSubStruct> : StructDescriptor<types::TestSubStruct>
+    {
+        Descriptor() :
+            StructDescriptor("TestSubStruct", Cached, types::TestSubStruct::_MakePropertyDescriptors()){}
+    };
+
 	template <>
 	struct Descriptor<types::TestStruct> : StructDescriptor<types::TestStruct>
 	{
@@ -387,6 +464,40 @@ TEST_F(TestStaticStruct, merge_PartialMerge)
 	EXPECT_EQ(sutThis.stringProperty, "foo");
 	EXPECT_FALSE(sutThis.boolProperty.isValid());
 	EXPECT_EQ(sutThis.floatVectorProperty, vector_t<float32_t>{ 2.7183f });
+}
+
+TEST_F(TestStaticStruct, merge_PartialMergeSubStruct)
+{
+    TestStruct sutThis{
+        TestStruct::intProperty_i{ 1 },
+        TestStruct::stringProperty_i{ "foo" },
+        TestStruct::floatVectorProperty_i{ vector_t<float32_t>{ 3.1415f } },
+        TestStruct::subStruct_i{
+            TestSubStruct::p2_i(true)
+        }
+    };
+
+    TestStruct sutOther{
+        TestStruct::intProperty_i{ 2 },
+        TestStruct::stringProperty_i{ "bar" },
+        TestStruct::floatVectorProperty_i{ vector_t<float32_t>{ 2.7183f } },
+        TestStruct::subStruct_i{
+            TestSubStruct::p1_i(true)
+        }
+    };
+
+    sutThis._merge(sutOther, ~TestStruct::stringProperty_t::Set());
+
+    EXPECT_EQ(sutThis.intProperty, 2);
+    EXPECT_EQ(sutThis.stringProperty, "foo");
+    EXPECT_FALSE(sutThis.boolProperty.isValid());
+    EXPECT_EQ(sutThis.floatVectorProperty, vector_t<float32_t>{ 2.7183f });
+
+    EXPECT_TRUE(sutThis.subStruct->p1.isValid());
+    EXPECT_TRUE(sutThis.subStruct->p2.isValid());
+
+    EXPECT_EQ(sutThis.subStruct->p1, true);
+    EXPECT_EQ(sutThis.subStruct->p2, true);
 }
 
 TEST_F(TestStaticStruct, swap_CompleteSwap)
