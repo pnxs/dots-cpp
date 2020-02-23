@@ -99,8 +99,21 @@ namespace dots::type
 	
 	DynamicStruct& DynamicStruct::_merge(const DynamicStruct& other, const PropertySet& includedProperties/* = PropertySet::All*/)
 	{
-		PropertySet mergePropertySet = other._validProperties() ^ includedProperties;
-        return _copy(other, mergePropertySet);
+		PropertySet mergeProperties = other._validProperties() ^ includedProperties;
+
+        for (auto& [propertyThis, propertyOther] : _propertyRange(other, mergeProperties))
+        {
+			if (propertyThis.descriptor().valueDescriptor().type() == Type::Struct)
+			{
+			    propertyThis.constructOrValue().to<Struct>()._merge(propertyOther->to<Struct>());
+			}
+			else
+			{
+				propertyThis = propertyOther; 
+			}     
+        }
+
+        return *this;
 	}
 	
 	void DynamicStruct::_swap(DynamicStruct& other, const PropertySet& includedProperties/* = PropertySet::All*/)
