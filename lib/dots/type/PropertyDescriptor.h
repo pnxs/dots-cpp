@@ -13,11 +13,11 @@ namespace dots::type
 		PropertyDescriptor(const std::shared_ptr<Descriptor<>>& descriptor, std::string name, size_t offset, uint32_t tag, bool isKey);
 		PropertyDescriptor(const std::shared_ptr<Descriptor<>>& descriptor, std::string name, uint32_t tag, bool isKey);
 		PropertyDescriptor(const std::shared_ptr<Descriptor<>>& descriptor, std::string name, const PropertyDescriptor& previous, uint32_t tag, bool isKey);		
-		PropertyDescriptor(const PropertyDescriptor& other) = default;
+		PropertyDescriptor(const PropertyDescriptor& other);
 		PropertyDescriptor(PropertyDescriptor&& other) = default;
 		~PropertyDescriptor() = default;
 
-		PropertyDescriptor& operator = (const PropertyDescriptor& rhs) = default;
+		PropertyDescriptor& operator = (const PropertyDescriptor& rhs);
 		PropertyDescriptor& operator = (PropertyDescriptor&& rhs) = default;
 
 		const std::shared_ptr<Descriptor<>>& valueDescriptorPtr() const;

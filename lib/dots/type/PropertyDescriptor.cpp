@@ -34,7 +34,24 @@ namespace dots::type
 		/* do nothing */
 	}
 
-	const std::shared_ptr<Descriptor<>>& PropertyDescriptor::valueDescriptorPtr() const
+    PropertyDescriptor::PropertyDescriptor(const PropertyDescriptor& other) :
+	    m_descriptor(other.m_descriptor),
+	    m_name(other.name()),
+	    m_metadata{ m_name, other.metadata().tag(), other.metadata().isKey(), other.metadata().size(), other.metadata().alignment(), other.metadata().offset() }
+    {
+		/* do nothing */
+    }
+
+    PropertyDescriptor& PropertyDescriptor::operator = (const PropertyDescriptor& rhs)
+    {
+		m_descriptor = rhs.m_descriptor;
+	    m_name = rhs.name();
+	    m_metadata =  PropertyMetadata<>{ m_name, rhs.metadata().tag(), rhs.metadata().isKey(), rhs.metadata().size(), rhs.metadata().alignment(), rhs.metadata().offset() };
+
+		return *this;
+    }
+
+    const std::shared_ptr<Descriptor<>>& PropertyDescriptor::valueDescriptorPtr() const
 	{
 		return m_descriptor;
 	}
