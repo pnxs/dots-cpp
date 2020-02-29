@@ -19,6 +19,7 @@ target_sources(${TARGET_NAME}
 		TestEnumDescriptor.cpp
 		TestStaticDescriptor.cpp
 		TestStaticStruct.cpp
+		TestDynamicStruct.cpp
 		TestPropertySet.cpp
 		TestProperty.cpp
 		TestProxyProperty.cpp
