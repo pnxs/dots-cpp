@@ -108,7 +108,7 @@ namespace dots::io
 		}
 
 		size_t currentOffset = last->offset() + last->valueDescriptor().size();
-		size = sizeof(void*) + currentOffset + (alignment - (currentOffset % alignment)) % alignment;
+		size = currentOffset + (alignment - (currentOffset % alignment)) % alignment;
 
 		std::shared_ptr<type::StructDescriptor<>> descriptor = m_registry.get().registerType(type::Descriptor<type::DynamicStruct>{ structData.name, flags, propertyDescriptors, size, alignment });
 
