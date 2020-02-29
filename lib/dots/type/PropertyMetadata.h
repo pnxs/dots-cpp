@@ -25,13 +25,13 @@ namespace dots::type
 		}
 
 		constexpr PropertyMetadata(const std::string_view& name, uint32_t tag, bool isKey, size_t size, size_t alignment) :
-			PropertyMetadata(std::move(name), tag, isKey, size, alignment, CalculateOffset(alignment, 0, sizeof(PropertyArea)))
+			PropertyMetadata(name, tag, isKey, size, alignment, CalculateOffset(alignment, 0, sizeof(PropertyArea)))
 		{
 			/* do nothing */
 		}
 
 		constexpr PropertyMetadata(const std::string_view& name, uint32_t tag, bool isKey, size_t size, size_t alignment, const PropertyMetadata<>& previous):
-			PropertyMetadata(std::move(name), tag, isKey, size, alignment, CalculateOffset(alignment, previous.offset(), previous.size()))
+			PropertyMetadata(name, tag, isKey, size, alignment, CalculateOffset(alignment, previous.offset(), previous.size()))
 		{
 			/* do nothing */
 		}
