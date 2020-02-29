@@ -2,6 +2,7 @@
 #include <string_view>
 #include <array>
 #include <functional>
+#include <algorithm>
 #include <dots/type/PropertyArea.h>
 #include <dots/type/ProxyPropertyPairIterator.h>
 
@@ -17,6 +18,26 @@ namespace dots::type
 
         PropertyContainer& operator = (const PropertyContainer& rhs) = default;
         PropertyContainer& operator = (PropertyContainer&& rhs) noexcept = default;
+
+		const_proxy_property_iterator operator [] (PropertySet::index_t tag) const
+		{
+			return _find(tag);
+		}
+
+		proxy_property_iterator operator [] (PropertySet::index_t tag)
+		{
+		    return _find(tag);
+		}
+
+		const_proxy_property_iterator operator [] (const std::string_view& name) const
+		{
+			return _find(name);
+		}
+
+		proxy_property_iterator operator [] (const std::string_view& name)
+		{
+		    return _find(name);
+		}
 
 		constexpr const PropertyArea& _propertyArea() const
 		{
@@ -177,6 +198,50 @@ namespace dots::type
 	    {
 	        return _propertyRangeReversed(rhs, _validProperties() ^ rhs._validProperties() ^ includedProperties);
 	    }
+
+		template <typename Callable>
+		const_proxy_property_iterator _find(Callable&& callable) const
+		{
+			return std::find_if(_begin(), _end(), std::forward<Callable>(callable));
+		}
+
+		template <typename Callable>
+		proxy_property_iterator _find(Callable&& callable)
+		{
+		    return std::find_if(_begin(), _end(), std::forward<Callable>(callable));
+		}
+
+		const_proxy_property_iterator _find(PropertySet::index_t tag) const
+		{
+			return _find([&](const ProxyProperty<>& property)
+			{
+				return property.descriptor().tag() == tag;
+			});
+		}
+
+		proxy_property_iterator _find(PropertySet::index_t tag)
+		{
+		    return _find([&](const ProxyProperty<>& property)
+			{
+			    return property.descriptor().tag() == tag;
+			});
+		}
+
+		const_proxy_property_iterator _find(const std::string_view& name) const
+		{
+			return _find([&](const ProxyProperty<>& property)
+			{
+			    return property.descriptor().name() == name;
+			});
+		}
+
+		proxy_property_iterator _find(const std::string_view& name)
+		{
+		    return _find([&](const ProxyProperty<>& property)
+			{
+			    return property.descriptor().name() == name;
+			});
+		}
     };
 
 	template <typename Derived>
