@@ -109,7 +109,7 @@ namespace dots::type
 			}
 			else
 			{
-				propertyThis = propertyOther; 
+				propertyThis.constructOrAssign(propertyOther); 
 			}     
         }
 
