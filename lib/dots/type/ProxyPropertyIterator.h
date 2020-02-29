@@ -18,6 +18,7 @@ namespace dots::type
 		using value_type           = std::conditional_t<IsConst, const base_value_type, base_value_type>;
 		using reference            = std::conditional_t<IsConst, const value_type&, value_type&>;
 		using pointer              = std::conditional_t<IsConst, const value_type*, value_type*>;
+		using difference_type      = std::ptrdiff_t;
 
 		ProxyPropertyIterator(area_t& area, const descriptor_container_t& descriptors, descriptor_iterator_t descriptorIt, const PropertySet& properties = PropertySet::All);
 		ProxyPropertyIterator(const ProxyPropertyIterator& other) = default;
