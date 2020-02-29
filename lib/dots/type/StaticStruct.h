@@ -408,7 +408,10 @@ namespace dots::type
     	template <typename... Properties>
     	static property_descriptor_container_t _MakePropertyDescriptors(std::tuple<Properties...>)
     	{
-    		return property_descriptor_container_t{ strip_t<Properties>::MakeDescriptor()... };
+			property_descriptor_container_t propertyDescriptors;
+			(propertyDescriptors.emplace_back(strip_t<Properties>::MakeDescriptor()), ...);
+
+			return propertyDescriptors;
     	}
 
     	template <typename Callable, typename... Properties>

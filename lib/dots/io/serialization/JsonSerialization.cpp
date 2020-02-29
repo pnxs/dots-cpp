@@ -287,7 +287,7 @@ void read_from_json_array_recursive(const type::VectorDescriptor& vd, type::Vect
 
 void from_json_recursive(const type::StructDescriptor<>& sd, type::Struct& instance, const rapidjson::Document::ConstObject& object)
 {
-    auto structProperties = sd.propertyDescriptors();
+    const auto& structProperties = sd.propertyDescriptors();
 
     auto members = object.MemberBegin();
     for(; members != object.MemberEnd(); ++members)
@@ -295,10 +295,10 @@ void from_json_recursive(const type::StructDescriptor<>& sd, type::Struct& insta
         auto& jsonPropertyValue = members->value;
         string name = members->name.GetString();
 
-        auto propertyIter = std::find_if(structProperties.begin(), structProperties.end(), [&name](auto prop) { return prop.name() == name; });
+        auto propertyIter = std::find_if(structProperties.begin(), structProperties.end(), [&name](const auto& prop) { return prop.name() == name; });
         if (propertyIter != structProperties.end())
         {
-            auto property = *propertyIter;
+            auto& property = *propertyIter;
             auto propertyValue = property.address(&instance);
 
             read_json(property.valueDescriptor(), *type::Typeless::From(propertyValue), jsonPropertyValue);

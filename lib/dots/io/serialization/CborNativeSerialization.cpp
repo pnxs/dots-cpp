@@ -193,10 +193,10 @@ void from_cbor_recursive(const type::StructDescriptor<>& td, type::Struct& insta
         uint32_t tag = decoder.read_uint();
 
         // find structProperty with Tag <tag>
-        auto propertyIter = std::find_if(structProperties.begin(), structProperties.end(), [&tag](auto prop) { return prop.tag() == tag; });
+        auto propertyIter = std::find_if(structProperties.begin(), structProperties.end(), [&tag](const auto& prop) { return prop.tag() == tag; });
         if (propertyIter != structProperties.end())
         {
-            auto property = *propertyIter;
+            auto& property = *propertyIter;
             auto propertyValue = property.address(&instance);
 
             //auto cbor_type = decoder.peekType();
