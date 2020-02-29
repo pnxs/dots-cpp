@@ -8,14 +8,14 @@ namespace dots::types
 {
     struct TestSubStruct : type::StaticStruct<TestSubStruct>
     {
-        struct p1_t : type::StaticProperty<int32_t, p1_t>
+        struct p1_t : type::StaticProperty<bool_t, p1_t>
         {
-            static constexpr auto Metadata = type::PropertyMetadata<types::int32_t>{ "p1", 1, true};
+            static constexpr auto Metadata = type::PropertyMetadata<types::bool_t>{ "p1", 1, true};
         };
 
-        struct p2_t : type::StaticProperty<int32_t, p2_t>
+        struct p2_t : type::StaticProperty<bool_t, p2_t>
         {
-            static constexpr auto Metadata = type::PropertyMetadata<types::int32_t>{ "p2", 2, false, p1_t::Metadata };
+            static constexpr auto Metadata = type::PropertyMetadata<types::bool_t>{ "p2", 2, false, p1_t::Metadata };
         };
 
         using p1_i = type::PropertyInitializer<p1_t>;
@@ -492,11 +492,7 @@ TEST_F(TestStaticStruct, merge_PartialMergeSubStruct)
     EXPECT_EQ(sutThis.stringProperty, "foo");
     EXPECT_FALSE(sutThis.boolProperty.isValid());
     EXPECT_EQ(sutThis.floatVectorProperty, vector_t<float32_t>{ 2.7183f });
-
-    EXPECT_TRUE(sutThis.subStruct->p1.isValid());
-    EXPECT_TRUE(sutThis.subStruct->p2.isValid());
-
-    EXPECT_EQ(sutThis.subStruct->p1, true);
+	EXPECT_EQ(sutThis.subStruct->p1, true);
     EXPECT_EQ(sutThis.subStruct->p2, true);
 }
 
