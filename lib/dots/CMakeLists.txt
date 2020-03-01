@@ -37,7 +37,6 @@ target_sources(${TARGET_NAME}
 
 		common/Chrono.cpp
 		common/logging.cpp
-		common/Stream.cpp
 		common/string_convert.cpp
 		common/seconds.cpp
 
