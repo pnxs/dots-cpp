@@ -8,10 +8,17 @@ namespace dots::type::libc
     {
         Tm() = default;
 
-        Tm(const std::tm& val) :
+        constexpr Tm(const std::tm& val) :
             m_tm(val)
         {
         }
+
+        constexpr Tm(const Tm& other) = default;
+        constexpr Tm(Tm&& other) noexcept = default;
+        ~Tm() = default;
+
+        constexpr Tm& operator = (const Tm& rhs) = default;
+        constexpr Tm& operator = (Tm&& rhs) noexcept = default;
 
         operator const std::tm* () const
         {
@@ -30,20 +37,20 @@ namespace dots::type::libc
         }
 
         int year() const { return m_tm.tm_year + 1900; }
-        int mon() const { return m_tm.tm_mon + 1; }
+        int month() const { return m_tm.tm_mon + 1; }
         int day() const { return m_tm.tm_mday; }
-        int wday() const { return m_tm.tm_wday; }
-
+        int weekDay() const { return m_tm.tm_wday + 1; }
         int hour() const { return m_tm.tm_hour; }
-        int min() const { return m_tm.tm_min; }
-        int sec() const { return m_tm.tm_sec; }
+        int minute() const { return m_tm.tm_min; }
+        int second() const { return m_tm.tm_sec; }
 
-        void setYear(int val) { m_tm.tm_year = val - 1900; }
-        void setMon(int val) { m_tm.tm_mon = val - 1; }
-        void setDay(int val) { m_tm.tm_mday = val; }
-        void setHour(int val) { m_tm.tm_hour = val; }
-        void setMin(int val) { m_tm.tm_min = val; }
-        void setSec(int val) { m_tm.tm_sec = val; }
+        void year(int val) { m_tm.tm_year = val - 1900; }
+        void month(int val) { m_tm.tm_mon = val - 1; }
+        void day(int val) { m_tm.tm_mday = val; }
+        void weekDay(int val) { m_tm.tm_wday = val - 1; }
+        void hour(int val) { m_tm.tm_hour = val; }
+        void minute(int val) { m_tm.tm_min = val; }
+        void second(int val) { m_tm.tm_sec = val; }
 
     private:
 

@@ -1,63 +1,62 @@
 #pragma once
+#include <string_view>
 #include <dots/common/CTime.h>
 #include <dots/common/Chrono.h>
 
 namespace dots::type::posix
 {
-    struct TimeZone
+    struct ScopedTimeZone
     {
-        TimeZone(const std::string& tz)
+        ScopedTimeZone(const std::string_view& timeZone)
         {
-            const char* tz_env = ::getenv("TZ");
+            std::string_view currentTimeZone = ::getenv("TZ");
 
-            if (tz_env != NULL)
+            if (!currentTimeZone.empty())
             {
-                m_old_tz = tz_env;
-                m_old_tz_valid = true;
+                m_previousTimeZone = currentTimeZone;
             }
 
-            setenv("TZ", tz.c_str(), 1);
-            tzset();
+            ::setenv("TZ", timeZone.data(), true);
+            ::tzset();
         }
 
-        ~TimeZone()
+        ~ScopedTimeZone()
         {
-            if (m_old_tz_valid)
+            if (m_previousTimeZone.empty())
             {
-                setenv("TZ", m_old_tz.c_str(), 1);
+                ::unsetenv("TZ");
             }
             else
             {
-                unsetenv("TZ");
+                ::setenv("TZ", m_previousTimeZone.data(), true);
             }
-            tzset();
+
+            ::tzset();
         }
 
     private:
 
-        std::string m_old_tz;
-        bool m_old_tz_valid = false;
-    };
-
-    struct TimeZoneUTC : TimeZone
-    {
-        TimeZoneUTC() : TimeZone("UTC")
-        {
-        }
+        std::string m_previousTimeZone;
     };
 
     struct PosixTm : libc::Tm
     {
-        PosixTm(time_t t, bool gm = false)
+        PosixTm(time_t time, bool utc = false)
         {
-            (gm ? gmtime_r : localtime_r)(&t, *this);
+            (utc ? ::gmtime_r : ::localtime_r)(&time, *this);
         }
+        constexpr PosixTm(const PosixTm& other) = default;
+        constexpr PosixTm(PosixTm&& other) noexcept = default;
+        ~PosixTm() = default;
 
-        time_t mktime(bool gm)
+        constexpr PosixTm& operator = (const PosixTm& rhs) = default;
+        constexpr PosixTm& operator = (PosixTm&& rhs) noexcept = default;
+
+        time_t mktime(bool utc)
         {
-            if (gm)
+            if (utc)
             {
-                TimeZoneUTC utc;
+                ScopedTimeZone scopedTimeZone{ "UTC" };
                 std::tm* tm = *this;
                 tm->tm_isdst = 0;
 
