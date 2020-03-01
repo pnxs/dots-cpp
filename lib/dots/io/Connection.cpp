@@ -1,6 +1,7 @@
 #include <dots/io/Connection.h>
 #include <dots/io/Registry.h>
 #include <dots/io/DescriptorConverter.h>
+#include <dots/common/logging.h>
 #include <DotsMsgConnect.dots.h>
 #include <DotsCacheInfo.dots.h>
 #include <DotsClient.dots.h>

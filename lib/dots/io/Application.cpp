@@ -4,11 +4,12 @@
 #include <dots/io/services/ChannelService.h>
 #include <dots/io/services/TcpChannel.h>
 #include <dots/io/Registry.h>
+#include <dots/common/logging.h>
 #include <DotsClient.dots.h>
 
 namespace dots
 {
-	Application::Application(const string& name, int& argc, char* argv[])
+	Application::Application(const std::string& name, int& argc, char* argv[])
 	{
 		m_instance = this;
 		parseProgramOptions(argc, argv);
@@ -69,8 +70,8 @@ namespace dots
 		// define and parse command line options
 		po::options_description desc("Allowed options");
 		desc.add_options()
-			("dots-address", po::value<string>()->default_value("127.0.0.1"), "address to bind to")
-			("dots-port", po::value<string>()->default_value("11234"), "port to bind to")
+			("dots-address", po::value<std::string>()->default_value("127.0.0.1"), "address to bind to")
+			("dots-port", po::value<std::string>()->default_value("11234"), "port to bind to")
 			;
 
 		po::variables_map vm;
@@ -88,8 +89,8 @@ namespace dots
 			m_serverPort = atoi("DOTS_SERVER_PORT");
 		}
 
-		m_serverAddress = vm["dots-address"].as<string>();
-		m_serverPort = vm["dots-port"].as<string>();
+		m_serverAddress = vm["dots-address"].as<std::string>();
+		m_serverPort = vm["dots-port"].as<std::string>();
 	}
 
 	GuestTransceiver::descriptor_map_t Application::getPreloadPublishTypes() const

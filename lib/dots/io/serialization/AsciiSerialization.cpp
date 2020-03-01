@@ -11,7 +11,7 @@ struct Printer {
     virtual void EndObject() = 0;
     virtual void StartArray() = 0;
     virtual void EndArray() = 0;
-    virtual void String(const string& s) = 0;
+    virtual void String(const std::string& s) = 0;
     virtual void Bool(bool b) = 0;
     virtual void Int(int i) = 0;
     virtual void Uint(unsigned int i) = 0;
@@ -60,7 +60,7 @@ struct PrettyPrinter: public Printer
         addLine("]");
     }
 
-    void String(const string& s) override {
+    void String(const std::string& s) override {
         writeValue(s);
     }
 
@@ -187,7 +187,7 @@ struct SingleLinePrinter: public Printer
             m_result += ", ";
     }
 
-    void String(const string& s) override {
+    void String(const std::string& s) override {
         if (m_cs && (m_writeMode.top() != write_mode::object_key)) m_result += m_cs->string();
         writeValue(s);
     }

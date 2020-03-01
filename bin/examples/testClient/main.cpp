@@ -1,5 +1,5 @@
-#include <dots/cpp_config.h>
 #include <dots/io/Application.h>
+#include <dots/common/logging.h>
 #include <dots/io/serialization/AsciiSerialization.h>
 
 #include "DotsTestStruct.dots.h"

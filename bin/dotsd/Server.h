@@ -1,6 +1,5 @@
 #pragma once
 #include <vector>
-#include "dots/cpp_config.h"
 #include <dots/io/HostTransceiver.h>
 #include "DotsDaemonStatus.dots.h"
 

@@ -1,5 +1,4 @@
 #pragma once
-#include "dots/cpp_config.h"
 #include <asio.hpp>
 
 namespace dots {
@@ -7,7 +6,7 @@ namespace dots {
 class FdHandler
 {
     asio::posix::stream_descriptor m_sd;
-    function<void()> m_handler;
+    std::function<void()> m_handler;
 
     /**
      * Calls registered handler-function and starts a new read.
@@ -19,7 +18,7 @@ class FdHandler
     }
 
 public:
-    FdHandler(asio::io_context& ioContext, int fd, function<void()> handler)
+    FdHandler(asio::io_context& ioContext, int fd, std::function<void()> handler)
             : m_sd(ioContext, fd), m_handler(handler)
     {
         start_read();

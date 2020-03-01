@@ -1,6 +1,5 @@
 #pragma once
 
-#include "dots/cpp_config.h"
 #include <dots/type/StructDescriptor.h>
 #include <dots/type/FundamentalTypes.h>
 #include "dots/dots_base.h"

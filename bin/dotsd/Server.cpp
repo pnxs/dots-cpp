@@ -1,6 +1,7 @@
 #include "Server.h"
 #include <sys/resource.h>
 #include <dots/dots.h>
+#include <dots/common/logging.h>
 #include "DotsClient.dots.h"
 #include <StructDescriptorData.dots.h>
 #include <DotsTypes.dots.h>

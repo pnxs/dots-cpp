@@ -6,6 +6,7 @@
 #include <rapidjson/prettywriter.h>
 #include <rapidjson/document.h>
 #include <dots/dots_base.h>
+#include <dots/common/logging.h>
 
 #include <iostream>
 #include <algorithm>

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "dots/cpp_config.h"
 #include <dots/common/seconds.h>
 #include <dots/common/Chrono.h>
 #include <asio.hpp>
