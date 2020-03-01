@@ -1,19 +1,8 @@
 #pragma once
+#include <string_view>
 
 namespace dots_util
 {
-
-constexpr const char * strend(const char * const str) {
-    return *str ? strend(str + 1) : str;
-}
-
-constexpr const char * fromlastslash(const char * const start, const char * const end) {
-    return (end >= start && *end != '/' && *end != '\\') ? fromlastslash(start, end - 1) : (end + 1);
-}
-
-constexpr const char * pathlast(const char * const path) {
-    return fromlastslash(path, strend(path));
-}
 
 /**
  * File line function.
@@ -23,15 +12,15 @@ class Flf
 {
 public:
     constexpr Flf() = default;
-    constexpr Flf(const char *f, int l, const char *fun): file(f), line(l), func(fun) {}
+    constexpr Flf(const std::string_view& filePath, int l, const std::string_view fun): file(filePath.substr(filePath.find_last_of('/') + 1)), line(l), func(fun) {}
 
     constexpr bool valid() const { return file != nullptr; }
 
-    const char *file = nullptr;
+    std::string_view file;
     const int line = 0;
-    const char *func = nullptr;
+    std::string_view func;
 };
 
 }
 
-#define FLF dots_util::Flf(dots_util::pathlast(__FILE__), __LINE__, __FUNCTION__)
+#define FLF dots_util::Flf(__FILE__, __LINE__, __FUNCTION__)
