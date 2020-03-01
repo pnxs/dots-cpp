@@ -87,7 +87,7 @@ namespace dots
 				DotsCloneInformation::created_i{ header.sentTime },
 				DotsCloneInformation::createdFrom_i{ header.sender },
 				DotsCloneInformation::modified_i{ header.sentTime },
-				DotsCloneInformation::localUpdateTime_i{ type::SystemNow{} }
+				DotsCloneInformation::localUpdateTime_i{ types::timepoint_t::Now() }
 			});
 
 			return *itInserted;
@@ -102,7 +102,7 @@ namespace dots
 			cloneInfo.lastOperation = DotsMt::update;
 			cloneInfo.lastUpdateFrom = header.sender;
 			cloneInfo.modified = header.sentTime;
-			cloneInfo.localUpdateTime = type::SystemNow{};
+			cloneInfo.localUpdateTime = types::timepoint_t::Now();
 
 			auto itUpdated = m_instances.insert(itUpper, std::move(node));
 
@@ -126,7 +126,7 @@ namespace dots
 		cloneInfo.lastOperation = DotsMt::remove;
 		cloneInfo.lastUpdateFrom = header.sender;
 		cloneInfo.modified = header.sentTime;
-		cloneInfo.localUpdateTime = type::SystemNow{};
+		cloneInfo.localUpdateTime = types::timepoint_t::Now();
 
 		return node;
 	}

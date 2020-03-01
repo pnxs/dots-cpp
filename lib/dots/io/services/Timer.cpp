@@ -9,7 +9,7 @@ namespace dots
 		m_cb(cb),
 		m_id(id),
 		m_interval(interval),
-		m_next(type::SteadyNow{}),
+		m_next(type::SteadyTimePoint::Now()),
 		m_periodic(periodic)
 	{
 		if (m_periodic)

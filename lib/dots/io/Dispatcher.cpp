@@ -170,7 +170,7 @@ namespace dots
 					DotsCloneInformation::lastOperation_i{ DotsMt::create },
 					DotsCloneInformation::createdFrom_i{ header.sender },
 					DotsCloneInformation::created_i{ header.sentTime },
-					DotsCloneInformation::localUpdateTime_i{ type::SystemNow{} }
+					DotsCloneInformation::localUpdateTime_i{ types::timepoint_t::Now() }
 				},
 				isFromMyself
 			});

@@ -11,7 +11,7 @@ namespace
 		{
 			return DotsHeader{
 				DotsHeader::typeName_i{ instance._descriptor().name() },
-				DotsHeader::sentTime_i{ dots::type::SystemNow() },
+				DotsHeader::sentTime_i{ dots::types::timepoint_t::Now() },
 				DotsHeader::attributes_i{ instance._validProperties() },
 				DotsHeader::sender_i{ sender },
 				DotsHeader::removeObj_i{ remove },
@@ -55,7 +55,7 @@ TEST(TestContainer, insert_CreateInstanceWhenEmpty)
 	ASSERT_EQ(cloneInfo.created, *header.sentTime);
 
 	ASSERT_GE(*cloneInfo.localUpdateTime, *header.sentTime);
-	ASSERT_LE(*cloneInfo.localUpdateTime, dots::type::SystemNow());
+	ASSERT_LE(*cloneInfo.localUpdateTime, dots::types::timepoint_t::Now());
 
 	ASSERT_EQ(cloneInfo.lastUpdateFrom, cloneInfo.createdFrom);
 	ASSERT_EQ(cloneInfo.modified, cloneInfo.created);
@@ -101,7 +101,7 @@ TEST(TestContainer, insert_UpdateSameInstanceWhenNotEmpty)
 	ASSERT_EQ(cloneInfo.modified, *header2.sentTime);
 
 	ASSERT_GE(*cloneInfo.localUpdateTime, *header2.sentTime);
-	ASSERT_LE(*cloneInfo.localUpdateTime, dots::type::SystemNow());
+	ASSERT_LE(*cloneInfo.localUpdateTime, dots::types::timepoint_t::Now());
 }
 
 TEST(TestContainer, insert_CreateDifferentInstanceWhenNotEmpty)
@@ -135,7 +135,7 @@ TEST(TestContainer, insert_CreateDifferentInstanceWhenNotEmpty)
 	ASSERT_EQ(cloneInfo.created, *header2.sentTime);
 
 	ASSERT_GE(*cloneInfo.localUpdateTime, *header2.sentTime);
-	ASSERT_LE(*cloneInfo.localUpdateTime, dots::type::SystemNow());
+	ASSERT_LE(*cloneInfo.localUpdateTime, dots::types::timepoint_t::Now());
 
 	ASSERT_EQ(cloneInfo.lastUpdateFrom, cloneInfo.createdFrom);
 	ASSERT_EQ(cloneInfo.modified, cloneInfo.created);
@@ -208,5 +208,5 @@ TEST(TestContainer, remove_RemoveWhenContained)
 	ASSERT_EQ(cloneInfo.modified, *header3.sentTime);
 
 	ASSERT_GE(*cloneInfo.localUpdateTime, *header3.sentTime);
-	ASSERT_LE(*cloneInfo.localUpdateTime, dots::type::SystemNow());
+	ASSERT_LE(*cloneInfo.localUpdateTime, dots::types::timepoint_t::Now());
 }

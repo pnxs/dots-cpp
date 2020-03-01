@@ -111,7 +111,7 @@ namespace dots::io
             DotsTransportHeader::destinationGroup_i{ descriptor.name() },
             DotsTransportHeader::dotsHeader_i{
                 DotsHeader::typeName_i{ descriptor.name() },
-                DotsHeader::sentTime_i{ type::SystemNow() },
+                DotsHeader::sentTime_i{ types::timepoint_t::Now() },
                 DotsHeader::attributes_i{ includedProperties ==  types::property_set_t::All ? instance._validProperties() : includedProperties },
 				DotsHeader::sender_i{ m_selfId },
                 DotsHeader::removeObj_i{ remove }
@@ -208,7 +208,7 @@ namespace dots::io
                     DotsHeader& dotsHeader = *transportHeader_.dotsHeader;
                     dotsHeader.sender = m_peerId;
 
-                    dotsHeader.serverSentTime = type::SystemNow();
+                    dotsHeader.serverSentTime = types::timepoint_t::Now();
 
                     if (!dotsHeader.sentTime.isValid())
                     {

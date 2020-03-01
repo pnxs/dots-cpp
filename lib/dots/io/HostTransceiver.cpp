@@ -33,8 +33,8 @@ namespace dots
             DotsTransportHeader::destinationGroup_i{ descriptor.name() },
             DotsTransportHeader::dotsHeader_i{
                 DotsHeader::typeName_i{ descriptor.name() },
-                DotsHeader::sentTime_i{ type::SystemNow() },
-                DotsHeader::serverSentTime_i{ type::SystemNow() },
+                DotsHeader::sentTime_i{ types::timepoint_t::Now() },
+                DotsHeader::serverSentTime_i{ types::timepoint_t::Now() },
                 DotsHeader::attributes_i{ includedProperties ==  types::property_set_t::All ? instance._validProperties() : includedProperties },
 				DotsHeader::sender_i{ io::Connection::HostId },
                 DotsHeader::removeObj_i{ remove }
@@ -365,7 +365,7 @@ namespace dots
 
             DotsHeader& dotsHeader = header.dotsHeader;
             dotsHeader.sentTime = *cloneInfo.modified;
-            dotsHeader.serverSentTime = type::SystemNow();
+            dotsHeader.serverSentTime = types::timepoint_t::Now();
             dotsHeader.attributes = instance->_validProperties();
             dotsHeader.sender = *cloneInfo.lastUpdateFrom;
 			--*dotsHeader.fromCache;
