@@ -8,7 +8,7 @@
 
 namespace dots
 {
-	Timer::id_t add_timer(const pnxs::chrono::Duration& timeout, const std::function<void()>& handler, bool periodic = false);
+	Timer::id_t add_timer(const type::Duration& timeout, const std::function<void()>& handler, bool periodic = false);
 	void remove_timer(Timer::id_t id);
 
 	void add_fd_handler(int fileDescriptor, const std::function<void()>& handler);

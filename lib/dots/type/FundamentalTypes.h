@@ -24,9 +24,9 @@ namespace dots::types
 
 	using property_set_t     = type::PropertySet;
 
-	using timepoint_t        = pnxs::chrono::TimePoint;
-	using steady_timepoint_t = pnxs::chrono::SteadyTimePoint;
-	using duration_t         = pnxs::chrono::Duration;
+	using timepoint_t        = type::TimePoint;
+	using steady_timepoint_t = type::SteadyTimePoint;
+	using duration_t         = type::Duration;
 
 	using uuid_t             = uuid;
 	using string_t           = std::string;

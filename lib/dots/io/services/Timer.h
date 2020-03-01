@@ -11,7 +11,7 @@ namespace dots
 		using id_t = uint32_t;
 		using callback_t = std::function<void()>;
 
-		Timer(asio::io_context& ioContext, id_t id, const pnxs::Duration& interval, const callback_t& cb, bool periodic = false);
+		Timer(asio::io_context& ioContext, id_t id, const type::Duration& interval, const callback_t& cb, bool periodic = false);
 		Timer(const Timer& other) = delete;
 		Timer(Timer&& other) = delete;
 		~Timer();
@@ -28,14 +28,14 @@ namespace dots
 
 		void callCb();
 		void onTimeout(const asio::error_code& error);
-		void startRelative(const pnxs::Duration& duration);
-		void startAbsolute(const pnxs::SteadyTimePoint& timepoint);
+		void startRelative(const type::Duration& duration);
+		void startAbsolute(const type::SteadyTimePoint& timepoint);
 
 		timer_t m_timer;
 		callback_t m_cb;
 		id_t m_id;
-		pnxs::Duration m_interval;
-		pnxs::SteadyTimePoint m_next;
+		type::Duration m_interval;
+		type::SteadyTimePoint m_next;
 		bool m_periodic;			
 	};
 }

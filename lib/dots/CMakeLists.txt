@@ -38,7 +38,6 @@ target_sources(${TARGET_NAME}
 		common/Chrono.cpp
 		common/logging.cpp
 		common/string_convert.cpp
-		common/seconds.cpp
 
 		functional/signal.cpp
 

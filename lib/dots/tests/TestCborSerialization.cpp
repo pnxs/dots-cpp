@@ -253,7 +253,7 @@ TEST(TestCborSerialization, serializeTransportHeader)
     dots_header.typeName("DotsMsgHello");
     dots_header.attributes(1);
     dots_header.removeObj(false);
-    dots_header.sentTime(pnxs::TimePoint(1));
+    dots_header.sentTime(dots::type::TimePoint(1));
 
     std::vector<uint8_t> expectData = {
             0xa4,                                // map(4)
@@ -339,7 +339,7 @@ TEST(TestCborSerialization, deserializeTransportHeader)
     EXPECT_EQ(dots_header.typeName, "DotsMsgHello");
     EXPECT_EQ(dots_header.attributes, dots::type::PropertySet(1));
     EXPECT_EQ(dots_header.removeObj, false);
-    EXPECT_EQ(dots_header.sentTime, pnxs::TimePoint(1));
+    EXPECT_EQ(dots_header.sentTime, dots::type::TimePoint(1));
 }
 
 TEST(TestCborSerialization, serializeTestStruct)
@@ -417,7 +417,7 @@ TEST(TestCborSerialization, deserializeCustomType)
 
         if (property.name() == "Created") {
             EXPECT_EQ(property.valueDescriptor().name(), "timepoint");
-            auto tp = reinterpret_cast<pnxs::TimePoint*>(property.address(customObj));
+            auto tp = reinterpret_cast<dots::type::TimePoint*>(property.address(customObj));
             EXPECT_EQ(tp->value().toSeconds(), 1492084921.7466583);
         }
     }
