@@ -2,6 +2,7 @@
 #include <sys/resource.h>
 #include <dots/dots.h>
 #include <dots/common/logging.h>
+#include <dots/common/PosixTime.h>
 #include "DotsClient.dots.h"
 #include <StructDescriptorData.dots.h>
 #include <DotsTypes.dots.h>
@@ -95,8 +96,8 @@ namespace dots
                 ::getrusage(RUSAGE_SELF, &usage);
 
                 ds.resourceUsage = DotsResourceUsage{
-                    DotsResourceUsage::userCpuTime_i{ usage.ru_utime },
-                    DotsResourceUsage::systemCpuTime_i{ usage.ru_stime },
+                    DotsResourceUsage::userCpuTime_i{ type::posix::Timeval{ usage.ru_utime } },
+                    DotsResourceUsage::systemCpuTime_i{ type::posix::Timeval{ usage.ru_stime } },
                     DotsResourceUsage::maxRss_i{ usage.ru_maxrss },
                     DotsResourceUsage::minorFaults_i{ usage.ru_minflt },
                     DotsResourceUsage::majorFaults_i{ usage.ru_majflt },

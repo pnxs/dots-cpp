@@ -1,5 +1,6 @@
 #pragma once
 #include <ctime>
+#include <dots/common/Chrono.h>
 
 namespace dots::type::libc
 {
@@ -49,31 +50,80 @@ namespace dots::type::libc
         std::tm m_tm;
     };
 
-    class Timespec : public timespec
+    struct Timespec
     {
-    public:
+        static constexpr double NanosecondsPerSecond = 1E9;
 
-        /// construct zero
-        Timespec() :
-            timespec{ 0, 0 }
+        constexpr Timespec() :
+            m_timespec{}
+        {}
+        constexpr Timespec(const Timespec& other) = default;
+        constexpr Timespec(Timespec&& other) noexcept = default;
+        ~Timespec() = default;
+
+        constexpr Timespec& operator = (const Timespec& rhs) = default;
+        constexpr Timespec& operator = (Timespec&& rhs) noexcept = default;
+
+        constexpr Timespec(const timespec& val) :
+            m_timespec{ val }
         {
         }
 
-        Timespec(const timespec& val) :
-            timespec(val)
+        Timespec(const Duration& duration) :
+            Timespec(timespec{ 
+                static_cast<std::time_t>(::nearbyint(duration.toSeconds())),
+                static_cast<long>(::nearbyint((duration.toSeconds() - ::nearbyint(duration.toSeconds())) * NanosecondsPerSecond))
+            })
         {
         }
 
-        /// construct from seconds since 1.1.1970
-        Timespec(double seconds)
+        Timespec(const TimePoint& timePoint) :
+            Timespec(timePoint.value())
         {
-            tv_sec = seconds;
-            tv_nsec = nearbyint((seconds - tv_sec) * (1000 * 1000 * 1000));
         }
 
-        double toSeconds() const
+        Timespec(const SteadyTimePoint& steadyTimePoint) :
+            Timespec(steadyTimePoint.value())
         {
-            return tv_sec + tv_nsec / static_cast<double>(1000 * 1000 * 1000);
         }
+
+        operator const timespec* () const
+        {
+            return &m_timespec;
+        }
+
+        operator timespec* ()
+        {
+            return &m_timespec;
+        }
+
+        operator Duration () const
+        {
+            return Duration{ m_timespec.tv_sec + m_timespec.tv_nsec / NanosecondsPerSecond };
+        }
+
+    private:
+
+        timespec m_timespec;
     };
+
+    inline Timespec operator + (const Timespec& lhs, const Timespec& rhs)
+    {
+        return Duration{ lhs } + Duration{ rhs };
+    }
+
+    inline Timespec operator - (const Timespec& lhs, const Timespec& rhs)
+    {
+        return Duration{ lhs } - Duration{ rhs };
+    }
+
+    inline bool operator < (const Timespec& lhs, const Timespec& rhs)
+    {
+        return Duration{ lhs } < Duration{ rhs };
+    }
+
+    inline bool operator > (const Timespec& lhs, const Timespec& rhs)
+    {
+        return Duration{ lhs } > Duration{ rhs };
+    }
 }

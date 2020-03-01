@@ -1,5 +1,6 @@
 #pragma once
 #include <dots/common/CTime.h>
+#include <dots/common/Chrono.h>
 
 namespace dots::type::posix
 {
@@ -79,30 +80,70 @@ namespace dots::type::posix
         }
     };
 
-    class Timeval : public timeval
+    struct Timeval
     {
-    public:
+        static constexpr double MicrosecondsPerSecond = 1E6;
 
-        Timeval() :
-            timeval{ 0, 0 }
+        constexpr Timeval() :
+            m_timeval{}
+        {}
+        constexpr Timeval(const Timeval& other) = default;
+        constexpr Timeval(Timeval&& other) noexcept = default;
+        ~Timeval() = default;
+
+        constexpr Timeval& operator = (const Timeval& rhs) = default;
+        constexpr Timeval& operator = (Timeval&& rhs) noexcept = default;
+
+        constexpr Timeval(const timeval& val) :
+            m_timeval{ val }
         {
         }
 
-        Timeval(const timeval& val) :
-            timeval(val)
+        Timeval(const Duration& duration) :
+            Timeval(timeval{ 
+                static_cast<time_t>(::nearbyint(duration.toSeconds())),
+                static_cast<suseconds_t>(::nearbyint((duration.toSeconds() - ::nearbyint(duration.toSeconds())) * MicrosecondsPerSecond))
+            })
         {
         }
 
-        Timeval(double seconds)
+        operator const timeval* () const
         {
-            tv_sec = seconds;
-            tv_usec = nearbyint((seconds - tv_sec) * 1000000);
+            return &m_timeval;
         }
 
-        /// convert Timeval to Seconds
-        double toSeconds() const
+        operator timeval* ()
         {
-            return tv_sec + tv_usec / static_cast<double>(1000000);
+            return &m_timeval;
         }
+
+        operator Duration () const
+        {
+            return Duration{ m_timeval.tv_sec + m_timeval.tv_usec / MicrosecondsPerSecond };
+        }
+
+    private:
+
+        timeval m_timeval;
     };
+
+    inline Timeval operator + (const Timeval& lhs, const Timeval& rhs)
+    {
+        return Duration{ lhs } + Duration{ rhs };
+    }
+
+    inline Timeval operator - (const Timeval& lhs, const Timeval& rhs)
+    {
+        return Duration{ lhs } - Duration{ rhs };
+    }
+
+    inline bool operator < (const Timeval& lhs, const Timeval& rhs)
+    {
+        return Duration{ lhs } < Duration{ rhs };
+    }
+
+    inline bool operator > (const Timeval& lhs, const Timeval& rhs)
+    {
+        return Duration{ lhs } > Duration{ rhs };
+    }
 }
