@@ -24,6 +24,7 @@ namespace dots::type
 		using const_reference   = const value_type&;
 		using pointer           = value_type*;
 		using const_pointer     = const value_type*;
+		using difference_type   = typename inner_lhs_iterator_t::difference_type;
 		
 		ProxyPropertyPairIterator(inner_lhs_iterator_t innerIteratorLhs, inner_rhs_iterator_t innerIteratorRhs);
 		ProxyPropertyPairIterator(const ProxyPropertyPairIterator& other) = default;

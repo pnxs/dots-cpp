@@ -43,12 +43,12 @@ namespace dots::io
 
 		if (structData.flags.isValid())
 		{
-			if (structData.flags->cached)        flags |= type::StructDescriptor<>::Cached;
-			if (structData.flags->internal)      flags |= type::StructDescriptor<>::Internal;
-			if (structData.flags->persistent)    flags |= type::StructDescriptor<>::Persistent;
-			if (structData.flags->cleanup)       flags |= type::StructDescriptor<>::Cleanup;
-			if (structData.flags->local)         flags |= type::StructDescriptor<>::Local;
-			if (structData.flags->substructOnly) flags |= type::StructDescriptor<>::SubstructOnly;
+			if (structData.flags->cached == true)        flags |= type::StructDescriptor<>::Cached;
+			if (structData.flags->internal == true)      flags |= type::StructDescriptor<>::Internal;
+			if (structData.flags->persistent == true)    flags |= type::StructDescriptor<>::Persistent;
+			if (structData.flags->cleanup == true)       flags |= type::StructDescriptor<>::Cleanup;
+			if (structData.flags->local == true)         flags |= type::StructDescriptor<>::Local;
+			if (structData.flags->substructOnly == true) flags |= type::StructDescriptor<>::SubstructOnly;
 		}		
 
 		const type::PropertyDescriptor* last = nullptr;
@@ -108,7 +108,7 @@ namespace dots::io
 		}
 
 		size_t currentOffset = last->offset() + last->valueDescriptor().size();
-		size = sizeof(void*) + currentOffset + (alignment - (currentOffset % alignment)) % alignment;
+		size = currentOffset + (alignment - (currentOffset % alignment)) % alignment;
 
 		std::shared_ptr<type::StructDescriptor<>> descriptor = m_registry.get().registerType(type::Descriptor<type::DynamicStruct>{ structData.name, flags, propertyDescriptors, size, alignment });
 

@@ -394,7 +394,7 @@ namespace dots::type
 
 		bool greater(const Derived& rhs) const
 		{
-			return rhs.less(*this);
+			return rhs.less(static_cast<const Derived&>(*this));
 		}
 
 		bool greaterEqual(const T& rhs) const

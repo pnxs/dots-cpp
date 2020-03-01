@@ -159,9 +159,19 @@ namespace dots::type
 			{
 				auto merge = [&](auto& propertyThis, auto& propertyOther)
 				{
-					if (strip_t<decltype(propertyOther)>::IsPartOf(includedProperties) && propertyOther.isValid())
+					using property_t = strip_t<decltype(propertyOther)>;
+					using value_t = typename property_t::value_t;
+
+					if (property_t::IsPartOf(includedProperties) && propertyOther.isValid())
 					{
-						propertyThis = propertyOther;
+						if constexpr (std::is_base_of_v<Struct, value_t>)
+						{
+							propertyThis.constructOrValue()._merge(propertyOther);
+						}
+						else
+						{
+						    propertyThis = propertyOther;
+						}
 					}
 				};
 
@@ -398,7 +408,10 @@ namespace dots::type
     	template <typename... Properties>
     	static property_descriptor_container_t _MakePropertyDescriptors(std::tuple<Properties...>)
     	{
-    		return property_descriptor_container_t{ strip_t<Properties>::MakeDescriptor()... };
+			property_descriptor_container_t propertyDescriptors;
+			(propertyDescriptors.emplace_back(strip_t<Properties>::MakeDescriptor()), ...);
+
+			return propertyDescriptors;
     	}
 
     	template <typename Callable, typename... Properties>
