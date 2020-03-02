@@ -128,12 +128,12 @@ namespace dots::type::posix
 
     inline Timeval operator + (const Timeval& lhs, const Timeval& rhs)
     {
-        return Duration{ lhs } + Duration{ rhs };
+        return Timeval{ Duration{ lhs } + Duration{ rhs } };
     }
 
     inline Timeval operator - (const Timeval& lhs, const Timeval& rhs)
     {
-        return Duration{ lhs } - Duration{ rhs };
+        return Timeval{ Duration{ lhs } - Duration{ rhs } };
     }
 
     inline bool operator < (const Timeval& lhs, const Timeval& rhs)

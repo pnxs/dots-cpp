@@ -116,12 +116,12 @@ namespace dots::type::libc
 
     inline Timespec operator + (const Timespec& lhs, const Timespec& rhs)
     {
-        return Duration{ lhs } + Duration{ rhs };
+        return Timespec{ Duration{ lhs } + Duration{ rhs } };
     }
 
     inline Timespec operator - (const Timespec& lhs, const Timespec& rhs)
     {
-        return Duration{ lhs } - Duration{ rhs };
+        return Timespec{ Duration{ lhs } - Duration{ rhs } };
     }
 
     inline bool operator < (const Timespec& lhs, const Timespec& rhs)
