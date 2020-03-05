@@ -65,11 +65,11 @@ static void write_atomic_types_to_json(const type::Descriptor<>& td, const type:
             break;
         case type::DotsType::property_set: writer.Uint(((const dots::types::property_set_t *) data)->toValue());
             break;
-        case type::DotsType::timepoint: writer.Double(((const type::TimePoint *) data)->value());
+        case type::DotsType::timepoint: writer.Double(((const type::TimePoint *) data)->value().count());
             break;
-        case type::DotsType::steady_timepoint:writer.Double(((const type::SteadyTimePoint *) data)->value());
+        case type::DotsType::steady_timepoint:writer.Double(((const type::SteadyTimePoint *) data)->value().count());
             break;
-        case type::DotsType::duration: writer.Double(*(const type::Duration *) data);
+        case type::DotsType::duration: writer.Double(((const type::Duration *) data)->count());
             break;
         case type::DotsType::uuid: writer.String(((const dots::uuid *) data)->toString());
             break;
@@ -214,8 +214,8 @@ static void read_atomic_types_from_json(const type::Descriptor<>& td, type::Type
         case type::DotsType::float64:         static_cast<const type::Descriptor<types::float64_t>&>(td).construct(data.to<types::float64_t>(), value.GetDouble()); break;
         case type::DotsType::string:          static_cast<const type::Descriptor<types::string_t>&>(td).construct(data.to<types::string_t>(), value.GetString()); break;
         case type::DotsType::property_set:    static_cast<const type::Descriptor<types::property_set_t>&>(td).construct(data.to<types::property_set_t>(), types::property_set_t(value.GetUint())); break;
-        case type::DotsType::timepoint:       static_cast<const type::Descriptor<types::timepoint_t>&>(td).construct(data.to<types::timepoint_t>(), value.GetDouble()); break;
-        case type::DotsType::steady_timepoint:static_cast<const type::Descriptor<types::steady_timepoint_t>&>(td).construct(data.to<types::steady_timepoint_t>(), value.GetDouble()); break;
+        case type::DotsType::timepoint:       static_cast<const type::Descriptor<types::timepoint_t>&>(td).construct(data.to<types::timepoint_t>(), types::duration_t{ value.GetDouble() }); break;
+        case type::DotsType::steady_timepoint:static_cast<const type::Descriptor<types::steady_timepoint_t>&>(td).construct(data.to<types::steady_timepoint_t>(), types::duration_t{ value.GetDouble() }); break;
         case type::DotsType::duration:        static_cast<const type::Descriptor<types::duration_t>&>(td).construct(data.to<types::duration_t>(), type::Duration(value.GetDouble())); break;
 		case type::DotsType::uuid:            static_cast<const type::Descriptor<types::uuid_t>&>(td).construct(data.to<types::uuid_t>()).fromString(value.GetString()); break;
         break;

@@ -9,14 +9,16 @@
 #include <DotsStatistics.dots.h>
 #include <DotsCacheStatus.dots.h>
 
+using namespace dots::types::literals;
+
 namespace dots
 {
     Server::Server(std::string name, listeners_t listeners) :
         m_hostTransceiver{ std::move(name), [&](const io::Connection& connection){ handleTransition(connection); } },
         m_daemonStatus{ DotsDaemonStatus::serverName_i{ m_hostTransceiver.selfName() }, DotsDaemonStatus::startTime_i{ types::timepoint_t::Now() } }
     {
-        add_timer(1, [&](){ updateServerStatus(); }, true);
-        add_timer(10, [&](){ cleanUpClients(); }, true);
+        add_timer(1s, [&](){ updateServerStatus(); }, true);
+        add_timer(10s, [&](){ cleanUpClients(); }, true);
 
         for (listener_ptr_t& listener : listeners)
         {

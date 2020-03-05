@@ -91,7 +91,7 @@ TEST(TestAsciiSerialization, serializeSingleLineWithEnums)
     DotsTestStruct ts;
     ts.indKeyfField(42);
     ts.enumField(DotsTestEnum::value3);
-    ts.tp(dots::type::TimePoint(0));
+    ts.tp(dots::type::TimePoint());
     ts.uuid(dots::uuid());
 
     dots::ToAsciiOptions options;

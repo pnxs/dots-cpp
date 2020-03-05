@@ -149,7 +149,7 @@ TEST(TestJsonSerialization, serializeDotsTestStruct)
     dt.floatField(3.141f);
     dt.indKeyfField(42);
     dt.stringField("Hallo Welt");
-    dt.tp(dots::TimePoint(1503571800.123456));
+    dt.tp(dots::TimePoint(Duration{ 1503571800.123456 }));
     dt.uuid(testUuid);
 
     auto& dss = dt.subStruct();
@@ -204,7 +204,7 @@ TEST(TestJsonSerialization, deserializeDotsTestStruct)
     EXPECT_FLOAT_EQ(dt.floatField, 3.141f);
     EXPECT_EQ(dt.indKeyfField, 42);
     EXPECT_EQ(dt.stringField, "Hallo Welt");
-    EXPECT_EQ(dt.tp, dots::TimePoint(1503571800.123456));
+    EXPECT_EQ(dt.tp, dots::TimePoint(Duration{ 1503571800.123456 }));
     EXPECT_EQ(dt.uuid, testUuid);
     EXPECT_EQ(dt.subStruct->flag1, true);
 

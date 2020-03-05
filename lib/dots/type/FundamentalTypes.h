@@ -39,6 +39,11 @@ namespace dots::types
 	{
 		static_assert(std::is_base_of_v<T, T>, "float128 type is currently not supported");
 	};
+
+	namespace literals
+    {
+        using namespace type::literals;
+    }
 }
 
 namespace dots::type
