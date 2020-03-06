@@ -100,8 +100,8 @@ namespace dots::type::posix
 
         Timeval(const Duration& duration) :
             Timeval(timeval{ 
-                static_cast<time_t>(::nearbyint(duration.toSeconds())),
-                static_cast<suseconds_t>(::nearbyint((duration.toSeconds() - ::nearbyint(duration.toSeconds())) * MicrosecondsPerSecond))
+                static_cast<time_t>(duration.toSeconds()),
+                static_cast<suseconds_t>(::nearbyint((duration.count() - duration.toSeconds()) * MicrosecondsPerSecond))
             })
         {
         }

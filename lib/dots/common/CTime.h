@@ -78,8 +78,8 @@ namespace dots::type::libc
 
         Timespec(const Duration& duration) :
             Timespec(timespec{ 
-                static_cast<std::time_t>(::nearbyint(duration.toSeconds())),
-                static_cast<long>(::nearbyint((duration.toSeconds() - ::nearbyint(duration.toSeconds())) * NanosecondsPerSecond))
+                static_cast<std::time_t>(duration.toSeconds()),
+                static_cast<long>(::nearbyint((duration.count() - duration.toSeconds()) * NanosecondsPerSecond))
             })
         {
         }
