@@ -39,8 +39,8 @@ write_atomic_types_to_cbor(const type::Descriptor<>& td, const type::Typeless& d
         case type::DotsType::float64:         encoder.write_double(data.to<types::float64_t>());break;
         case type::DotsType::string:          encoder.write_string(data.to<types::string_t>());break;
         case type::DotsType::property_set:    encoder.write_int(data.to<types::property_set_t>().toValue()); break;
-        case type::DotsType::timepoint:       encoder.write_double(data.to<types::timepoint_t>().value().count()); break;
-        case type::DotsType::steady_timepoint:encoder.write_double(data.to<types::steady_timepoint_t>().value().count()); break;
+        case type::DotsType::timepoint:       encoder.write_double(data.to<types::timepoint_t>().duration().count()); break;
+        case type::DotsType::steady_timepoint:encoder.write_double(data.to<types::steady_timepoint_t>().duration().count()); break;
         case type::DotsType::duration:        encoder.write_double(data.to<types::duration_t>().count()); break;
         case type::DotsType::uuid:            encoder.write_bytes(data.to<types::uuid_t>().data().data(), 16); break;
         case type::DotsType::Enum:

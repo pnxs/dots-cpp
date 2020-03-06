@@ -418,7 +418,7 @@ TEST(TestCborSerialization, deserializeCustomType)
         if (property.name() == "Created") {
             EXPECT_EQ(property.valueDescriptor().name(), "timepoint");
             auto tp = reinterpret_cast<dots::type::TimePoint*>(property.address(customObj));
-            EXPECT_EQ(tp->value().count(), 1492084921.7466583);
+            EXPECT_EQ(tp->duration().count(), 1492084921.7466583);
         }
     }
 

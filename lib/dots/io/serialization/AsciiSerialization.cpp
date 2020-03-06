@@ -307,8 +307,8 @@ static void write_atomic_types_to_ascii(const type::Descriptor<>& td, const void
         case type::DotsType::float64:         writer.Double(*(const double *) data);break;
         case type::DotsType::string:          writer.String(*(const std::string*) data);break;
         case type::DotsType::property_set:    writer.Int(((const dots::types::property_set_t*)data)->toValue()); break;
-        case type::DotsType::timepoint:       writer.Double(((const type::TimePoint*)data)->value().count()); break;
-        case type::DotsType::steady_timepoint:writer.Double(((const type::SteadyTimePoint*)data)->value().count()); break;
+        case type::DotsType::timepoint:       writer.Double(((const type::TimePoint*)data)->duration().count()); break;
+        case type::DotsType::steady_timepoint:writer.Double(((const type::SteadyTimePoint*)data)->duration().count()); break;
         case type::DotsType::duration:        writer.Double(((const type::Duration*)data)->count()); break;
         case type::DotsType::uuid:            writer.String(((const dots::uuid*)data)->toString()); break;
         case type::DotsType::Enum:

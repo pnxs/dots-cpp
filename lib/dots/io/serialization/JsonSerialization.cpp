@@ -65,9 +65,9 @@ static void write_atomic_types_to_json(const type::Descriptor<>& td, const type:
             break;
         case type::DotsType::property_set: writer.Uint(((const dots::types::property_set_t *) data)->toValue());
             break;
-        case type::DotsType::timepoint: writer.Double(((const type::TimePoint *) data)->value().count());
+        case type::DotsType::timepoint: writer.Double(((const type::TimePoint *) data)->duration().count());
             break;
-        case type::DotsType::steady_timepoint:writer.Double(((const type::SteadyTimePoint *) data)->value().count());
+        case type::DotsType::steady_timepoint:writer.Double(((const type::SteadyTimePoint *) data)->duration().count());
             break;
         case type::DotsType::duration: writer.Double(((const type::Duration *) data)->count());
             break;

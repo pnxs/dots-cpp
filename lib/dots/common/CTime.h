@@ -85,12 +85,12 @@ namespace dots::type::libc
         }
 
         Timespec(const TimePoint& timePoint) :
-            Timespec(timePoint.value())
+            Timespec(timePoint.duration())
         {
         }
 
         Timespec(const SteadyTimePoint& steadyTimePoint) :
-            Timespec(steadyTimePoint.value())
+            Timespec(steadyTimePoint.duration())
         {
         }
 
