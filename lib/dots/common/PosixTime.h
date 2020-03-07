@@ -1,6 +1,6 @@
 #pragma once
 #include <string_view>
-#include <dots/common/CTime.h>
+#include <dots/common/LibcTime.h>
 #include <dots/common/Chrono.h>
 
 namespace dots::type::posix
