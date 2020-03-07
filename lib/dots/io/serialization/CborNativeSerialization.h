@@ -2,7 +2,6 @@
 
 #include <dots/type/StructDescriptor.h>
 #include <dots/type/FundamentalTypes.h>
-#include "dots/dots_base.h"
 
 namespace dots {
 

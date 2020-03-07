@@ -5,7 +5,6 @@
 #define RAPIDJSON_HAS_STDSTRING 1
 #include <rapidjson/prettywriter.h>
 #include <rapidjson/document.h>
-#include <dots/dots_base.h>
 #include <dots/common/logging.h>
 
 #include <iostream>
@@ -294,7 +293,7 @@ void from_json_recursive(const type::StructDescriptor<>& sd, type::Struct& insta
     for(; members != object.MemberEnd(); ++members)
     {
         auto& jsonPropertyValue = members->value;
-        string name = members->name.GetString();
+        std::string name = members->name.GetString();
 
         auto propertyIter = std::find_if(structProperties.begin(), structProperties.end(), [&name](const auto& prop) { return prop.name() == name; });
         if (propertyIter != structProperties.end())
