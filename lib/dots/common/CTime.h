@@ -20,12 +20,12 @@ namespace dots::type::libc
         constexpr Tm& operator = (const Tm& rhs) = default;
         constexpr Tm& operator = (Tm&& rhs) noexcept = default;
 
-        operator const std::tm* () const
+        constexpr operator const std::tm* () const
         {
             return &m_tm;
         }
 
-        operator std::tm* ()
+        constexpr operator std::tm* ()
         {
             return &m_tm;
         }
@@ -36,21 +36,21 @@ namespace dots::type::libc
             return ::mktime(&m_tm);
         }
 
-        int year() const { return m_tm.tm_year + 1900; }
-        int month() const { return m_tm.tm_mon + 1; }
-        int day() const { return m_tm.tm_mday; }
-        int weekDay() const { return m_tm.tm_wday + 1; }
-        int hour() const { return m_tm.tm_hour; }
-        int minute() const { return m_tm.tm_min; }
-        int second() const { return m_tm.tm_sec; }
+        constexpr int year() const { return m_tm.tm_year + 1900; }
+        constexpr int month() const { return m_tm.tm_mon + 1; }
+        constexpr int day() const { return m_tm.tm_mday; }
+        constexpr int weekDay() const { return m_tm.tm_wday + 1; }
+        constexpr int hour() const { return m_tm.tm_hour; }
+        constexpr int minute() const { return m_tm.tm_min; }
+        constexpr int second() const { return m_tm.tm_sec; }
 
-        void year(int val) { m_tm.tm_year = val - 1900; }
-        void month(int val) { m_tm.tm_mon = val - 1; }
-        void day(int val) { m_tm.tm_mday = val; }
-        void weekDay(int val) { m_tm.tm_wday = val - 1; }
-        void hour(int val) { m_tm.tm_hour = val; }
-        void minute(int val) { m_tm.tm_min = val; }
-        void second(int val) { m_tm.tm_sec = val; }
+        constexpr void year(int val) { m_tm.tm_year = val - 1900; }
+        constexpr void month(int val) { m_tm.tm_mon = val - 1; }
+        constexpr void day(int val) { m_tm.tm_mday = val; }
+        constexpr void weekDay(int val) { m_tm.tm_wday = val - 1; }
+        constexpr void hour(int val) { m_tm.tm_hour = val; }
+        constexpr void minute(int val) { m_tm.tm_min = val; }
+        constexpr void second(int val) { m_tm.tm_sec = val; }
 
     private:
 
@@ -63,7 +63,8 @@ namespace dots::type::libc
 
         constexpr Timespec() :
             m_timespec{}
-        {}
+        {
+        }
         constexpr Timespec(const Timespec& other) = default;
         constexpr Timespec(Timespec&& other) noexcept = default;
         ~Timespec() = default;
@@ -76,7 +77,7 @@ namespace dots::type::libc
         {
         }
 
-        Timespec(const Duration& duration) :
+        constexpr Timespec(const Duration& duration) :
             Timespec(timespec{ 
                 static_cast<std::time_t>(duration.toSeconds()),
                 static_cast<long>(::nearbyint((duration.count() - duration.toSeconds()) * NanosecondsPerSecond))
@@ -84,27 +85,27 @@ namespace dots::type::libc
         {
         }
 
-        Timespec(const TimePoint& timePoint) :
+        constexpr Timespec(const TimePoint& timePoint) :
             Timespec(timePoint.duration())
         {
         }
 
-        Timespec(const SteadyTimePoint& steadyTimePoint) :
+        constexpr Timespec(const SteadyTimePoint& steadyTimePoint) :
             Timespec(steadyTimePoint.duration())
         {
         }
 
-        operator const timespec* () const
+        constexpr operator const timespec* () const
         {
             return &m_timespec;
         }
 
-        operator timespec* ()
+        constexpr operator timespec* ()
         {
             return &m_timespec;
         }
 
-        operator Duration () const
+        constexpr operator Duration () const
         {
             return Duration{ m_timespec.tv_sec + m_timespec.tv_nsec / NanosecondsPerSecond };
         }
@@ -114,22 +115,22 @@ namespace dots::type::libc
         timespec m_timespec;
     };
 
-    inline Timespec operator + (const Timespec& lhs, const Timespec& rhs)
+    constexpr Timespec operator + (const Timespec& lhs, const Timespec& rhs)
     {
         return Timespec{ Duration{ lhs } + Duration{ rhs } };
     }
 
-    inline Timespec operator - (const Timespec& lhs, const Timespec& rhs)
+    constexpr Timespec operator - (const Timespec& lhs, const Timespec& rhs)
     {
         return Timespec{ Duration{ lhs } - Duration{ rhs } };
     }
 
-    inline bool operator < (const Timespec& lhs, const Timespec& rhs)
+    constexpr bool operator < (const Timespec& lhs, const Timespec& rhs)
     {
         return Duration{ lhs } < Duration{ rhs };
     }
 
-    inline bool operator > (const Timespec& lhs, const Timespec& rhs)
+    constexpr bool operator > (const Timespec& lhs, const Timespec& rhs)
     {
         return Duration{ lhs } > Duration{ rhs };
     }

@@ -85,7 +85,8 @@ namespace dots::type::posix
 
         constexpr Timeval() :
             m_timeval{}
-        {}
+        {
+        }
         constexpr Timeval(const Timeval& other) = default;
         constexpr Timeval(Timeval&& other) noexcept = default;
         ~Timeval() = default;
@@ -98,7 +99,7 @@ namespace dots::type::posix
         {
         }
 
-        Timeval(const Duration& duration) :
+        constexpr Timeval(const Duration& duration) :
             Timeval(timeval{ 
                 static_cast<time_t>(duration.toSeconds()),
                 static_cast<suseconds_t>(::nearbyint((duration.count() - duration.toSeconds()) * MicrosecondsPerSecond))
@@ -106,17 +107,17 @@ namespace dots::type::posix
         {
         }
 
-        operator const timeval* () const
+        constexpr operator const timeval* () const
         {
             return &m_timeval;
         }
 
-        operator timeval* ()
+        constexpr operator timeval* ()
         {
             return &m_timeval;
         }
 
-        operator Duration () const
+        constexpr operator Duration () const
         {
             return Duration{ m_timeval.tv_sec + m_timeval.tv_usec / MicrosecondsPerSecond };
         }
@@ -126,22 +127,22 @@ namespace dots::type::posix
         timeval m_timeval;
     };
 
-    inline Timeval operator + (const Timeval& lhs, const Timeval& rhs)
+    constexpr Timeval operator + (const Timeval& lhs, const Timeval& rhs)
     {
         return Timeval{ Duration{ lhs } + Duration{ rhs } };
     }
 
-    inline Timeval operator - (const Timeval& lhs, const Timeval& rhs)
+    constexpr Timeval operator - (const Timeval& lhs, const Timeval& rhs)
     {
         return Timeval{ Duration{ lhs } - Duration{ rhs } };
     }
 
-    inline bool operator < (const Timeval& lhs, const Timeval& rhs)
+    constexpr bool operator < (const Timeval& lhs, const Timeval& rhs)
     {
         return Duration{ lhs } < Duration{ rhs };
     }
 
-    inline bool operator > (const Timeval& lhs, const Timeval& rhs)
+    constexpr bool operator > (const Timeval& lhs, const Timeval& rhs)
     {
         return Duration{ lhs } > Duration{ rhs };
     }
