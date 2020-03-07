@@ -20,6 +20,12 @@ namespace dots::type::posix
             ::tzset();
         }
 
+        ScopedTimeZone(const ScopedTimeZone& other) = delete;
+        ScopedTimeZone(ScopedTimeZone&& other) noexcept = default;
+
+        ScopedTimeZone& operator = (const ScopedTimeZone& rhs) = delete;
+        ScopedTimeZone& operator = (ScopedTimeZone&& rhs) noexcept = default;
+
         ~ScopedTimeZone()
         {
             if (m_previousTimeZone.empty())
