@@ -1,7 +1,7 @@
 #pragma once
 #include <string_view>
-#include <dots/common/LibcTime.h>
-#include <dots/common/Chrono.h>
+#include <dots/type/LibcTime.h>
+#include <dots/type/Chrono.h>
 
 namespace dots::type::posix
 {

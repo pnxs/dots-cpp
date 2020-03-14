@@ -1,6 +1,6 @@
 #pragma once
 #include <ctime>
-#include <dots/common/Chrono.h>
+#include <dots/type/Chrono.h>
 
 namespace dots::type::libc
 {

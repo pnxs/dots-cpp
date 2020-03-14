@@ -1,6 +1,6 @@
 #pragma once
 
-#include <dots/common/Chrono.h>
+#include <dots/type/Chrono.h>
 #include <asio.hpp>
 
 namespace dots

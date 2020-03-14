@@ -1,7 +1,7 @@
 #pragma once
 #include <functional>
 #include <string_view>
-#include <dots/common/Chrono.h>
+#include <dots/type/Chrono.h>
 #include <dots/io/services/Timer.h>
 #include <dots/io/GuestTransceiver.h>
 #include <dots/io/Publisher.h>

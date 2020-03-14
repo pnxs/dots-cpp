@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <date/date.h>
 #include <date/tz.h>
-#include <dots/common/Chrono.h>
+#include <dots/type/Chrono.h>
 
 using namespace dots::type;
 using namespace dots::type::literals;

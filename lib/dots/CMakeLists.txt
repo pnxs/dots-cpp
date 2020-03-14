@@ -35,7 +35,6 @@ target_sources(${TARGET_NAME}
 		dots.cpp
 		Uuid.cpp
 
-		common/Chrono.cpp
 		common/logging.cpp
 
 		functional/signal.cpp
@@ -86,7 +85,8 @@ target_sources(${TARGET_NAME}
 		io/recording/FileReader.cpp
 		io/Registry.cpp
 		io/DescriptorConverter.cpp
-		type/AnyStruct.cpp		
+		type/AnyStruct.cpp
+		type/Chrono.cpp
 		type/Descriptor.cpp
 		type/DynamicStruct.cpp
 		type/EnumDescriptor.cpp

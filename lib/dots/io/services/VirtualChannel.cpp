@@ -1,5 +1,5 @@
 #include "VirtualChannel.h"
-#include <dots/common/Chrono.h>
+#include <dots/type/Chrono.h>
 #include <DotsMsgError.dots.h>
 #include <DotsMsgHello.dots.h>
 #include <DotsMsgConnect.dots.h>
