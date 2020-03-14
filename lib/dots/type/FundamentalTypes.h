@@ -165,3 +165,33 @@ namespace dots::type
 		}
 	};
 }
+
+#ifndef DOTS_NOT_USE_FUNDAMENTAL_TYPES
+namespace dots
+{
+	using types::bool_t;
+
+    using types::int8_t;
+    using types::uint8_t;
+    using types::int16_t;
+    using types::uint16_t;
+    using types::int32_t;
+    using types::uint32_t;
+    using types::int64_t;
+    using types::uint64_t;
+
+    using types::float32_t;
+    using types::float64_t;
+
+    using types::property_set_t;
+
+    using types::timepoint_t;
+    using types::steady_timepoint_t;
+    using types::duration_t;
+
+    using types::uuid_t;
+    using types::string_t;
+
+    using types::vector_t;
+}
+#endif
