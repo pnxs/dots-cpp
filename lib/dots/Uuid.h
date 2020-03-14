@@ -3,28 +3,27 @@
 #include <cstdint>
 #include <array>
 
-namespace dots {
-
-class uuid
+namespace dots
 {
-    std::array<uint8_t, 16> m_data;
+    struct uuid
+    {
+        uuid(const uint8_t data[16]);
+        uuid(const std::string& strdata);
+        uuid();
 
-public:
-    uuid(const uint8_t data[16]);
-    uuid(const std::string& strdata);
-    uuid();
+        bool operator == (const uuid&) const;
+        bool operator < (const uuid& rhs) const;
+        bool operator != (const uuid&) const;
 
-    bool operator==(const uuid&) const;
-    bool operator<(const uuid& rhs) const;
-    bool operator!=(const uuid&) const;
+        const auto& data() const { return m_data; }
 
-    const auto& data() const { return m_data; }
+        std::string toString() const;
+        bool fromString(const std::string& str);
 
-    std::string toString() const;
-    bool fromString(const std::string& str);
+        static uuid generateRandom();
 
-    static uuid generateRandom();
-};
+    private:
 
+        std::array<uint8_t, 16> m_data;
+    };
 }
-
