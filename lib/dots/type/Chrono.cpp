@@ -162,7 +162,7 @@ namespace dots::type
                 else
                 {
                     date::zoned_time localTimePoint{ date::current_zone(), sysTimePoint };
-                    time_point_to_stream(oss, fmt, localTimePoint.get_local_time());
+                    time_point_to_stream(oss, fmt, localTimePoint);
                 }
 
                 return oss.str();
