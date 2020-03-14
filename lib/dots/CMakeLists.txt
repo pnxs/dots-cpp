@@ -33,7 +33,6 @@ GENERATE_DOTS_TYPES(MODEL_SOURCES MODEL_HEADERS
 target_sources(${TARGET_NAME}
 	PRIVATE
 		dots.cpp
-		Uuid.cpp
 
 		common/logging.cpp
 
@@ -95,6 +94,7 @@ target_sources(${TARGET_NAME}
 		type/ProxyPropertyPairIterator.cpp
 		type/Struct.cpp
 		type/StructDescriptor.cpp
+		type/Uuid.cpp
 		type/VectorDescriptor.cpp
 
 		${MODEL_SOURCES}

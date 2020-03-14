@@ -2,7 +2,7 @@
 #include <dots/type/StaticDescriptor.h>
 #include <dots/type/PropertySet.h>
 #include <dots/type/Chrono.h>
-#include <dots/Uuid.h>
+#include <dots/type/Uuid.h>
 #include <dots/type/Vector.h>
 #include <dots/type/VectorDescriptor.h>
 
