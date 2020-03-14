@@ -15,6 +15,12 @@ namespace dots::type
         std::memcpy(m_data.data(), data, m_data.size());
     }
 
+    Uuid::Uuid(const value_t& data) :
+        Uuid(data.data())
+    {
+        /* do nothing */
+    }
+
     Uuid::Uuid(const std::string& value)
     {
         if (value.size() == 16)
@@ -55,9 +61,17 @@ namespace dots::type
 
     bool Uuid::fromString(const std::string_view& value)
     {
-        auto uuid = boost::uuids::string_generator{}(value.data());
-        std::memcpy(m_data.data(), uuid.data, m_data.size());
+        *this = FromString(value);
         return true;
+    }
+
+    Uuid Uuid::FromString(const std::string_view& value)
+    {
+        auto uuid = boost::uuids::string_generator{}(value.data());
+        value_t data;
+        std::memcpy(data.data(), uuid.data, data.size());
+
+        return Uuid{ data };
     }
 
     Uuid Uuid::Random()
