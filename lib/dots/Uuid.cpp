@@ -5,34 +5,14 @@
 
 namespace dots::type
 {
-    Uuid Uuid::Random()
-    {
-        return Uuid{ boost::uuids::random_generator{}().data };
-    }
-
-    Uuid::Uuid(const uint8_t data[16])
-    {
-        std::memcpy(m_data.data(), data, m_data.size());
-    }
-
     Uuid::Uuid()
     {
         std::memset(m_data.data(), 0, m_data.size());
     }
 
-    bool Uuid::operator == (const Uuid& rhs) const
+    Uuid::Uuid(const uint8_t data[16])
     {
-        return m_data == rhs.m_data;
-    }
-
-    bool Uuid::operator < (const Uuid& rhs) const
-    {
-        return m_data < rhs.m_data;
-    }
-
-    bool Uuid::operator != (const Uuid& rhs) const
-    {
-        return !(rhs == *this);
+        std::memcpy(m_data.data(), data, m_data.size());
     }
 
     Uuid::Uuid(const std::string& value)
@@ -51,6 +31,21 @@ namespace dots::type
         return m_data;
     }
 
+    bool Uuid::operator == (const Uuid& rhs) const
+    {
+        return m_data == rhs.m_data;
+    }
+
+    bool Uuid::operator < (const Uuid& rhs) const
+    {
+        return m_data < rhs.m_data;
+    }
+
+    bool Uuid::operator != (const Uuid& rhs) const
+    {
+        return !(rhs == *this);
+    }
+
     std::string Uuid::toString() const
     {
         boost::uuids::uuid uuid;
@@ -63,5 +58,10 @@ namespace dots::type
         auto uuid = boost::uuids::string_generator{}(value.data());
         std::memcpy(m_data.data(), uuid.data, m_data.size());
         return true;
+    }
+
+    Uuid Uuid::Random()
+    {
+        return Uuid{ boost::uuids::random_generator{}().data };
     }
 }
