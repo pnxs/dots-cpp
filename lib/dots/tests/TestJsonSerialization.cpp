@@ -143,7 +143,7 @@ TEST(TestJsonSerialization, plainDeserialization)
 TEST(TestJsonSerialization, serializeDotsTestStruct)
 {
     DotsTestStruct dt;
-    dots::type::uuid testUuid("1234567890123456");
+    dots::type::Uuid testUuid("1234567890123456");
 
     dt.enumField(DotsTestEnum::value3);
     dt.floatField(3.141f);

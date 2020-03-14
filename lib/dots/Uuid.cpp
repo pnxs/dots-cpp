@@ -6,38 +6,38 @@
 
 namespace dots::type
 {
-    dots::type::uuid dots::type::uuid::generateRandom()
+    dots::type::Uuid dots::type::Uuid::generateRandom()
     {
         boost::uuids::uuid newUuid = boost::uuids::random_generator()();
-        return uuid(newUuid.data);
+        return Uuid(newUuid.data);
     }
 
-    uuid::uuid(const uint8_t data[16])
+    Uuid::Uuid(const uint8_t data[16])
     {
         memcpy(m_data.data(), data, m_data.size());
     }
 
-    uuid::uuid()
+    Uuid::Uuid()
     {
         memset(m_data.data(), 0, m_data.size());
     }
 
-    bool uuid::operator==(const uuid& rhs) const
+    bool Uuid::operator==(const Uuid& rhs) const
     {
         return m_data == rhs.m_data;
     }
 
-    bool uuid::operator<(const uuid& rhs) const
+    bool Uuid::operator<(const Uuid& rhs) const
     {
         return m_data < rhs.m_data;
     }
 
-    bool uuid::operator!=(const uuid& rhs) const
+    bool Uuid::operator!=(const Uuid& rhs) const
     {
         return !(rhs == *this);
     }
 
-    uuid::uuid(const std::string& strdata)
+    Uuid::Uuid(const std::string& strdata)
     {
         if (strdata.size() == 16)
         {
@@ -48,14 +48,14 @@ namespace dots::type
         throw std::runtime_error("invalid stringsize: " + std::to_string(strdata.size()));
     }
 
-    std::string uuid::toString() const
+    std::string Uuid::toString() const
     {
         boost::uuids::uuid boostUuid;
         memcpy(boostUuid.data, m_data.data(), sizeof(boostUuid.data));
         return boost::uuids::to_string(boostUuid);
     }
 
-    bool uuid::fromString(const std::string& str)
+    bool Uuid::fromString(const std::string& str)
     {
         auto boostUuid = boost::uuids::string_generator()(str);
         memcpy(m_data.data(), boostUuid.data, m_data.size());

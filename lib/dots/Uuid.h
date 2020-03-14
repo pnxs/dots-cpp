@@ -5,22 +5,22 @@
 
 namespace dots::type
 {
-    struct uuid
+    struct Uuid
     {
-        uuid(const uint8_t data[16]);
-        uuid(const std::string& strdata);
-        uuid();
+        Uuid(const uint8_t data[16]);
+        Uuid(const std::string& strdata);
+        Uuid();
 
-        bool operator == (const uuid&) const;
-        bool operator < (const uuid& rhs) const;
-        bool operator != (const uuid&) const;
+        bool operator == (const Uuid&) const;
+        bool operator < (const Uuid& rhs) const;
+        bool operator != (const Uuid&) const;
 
         const auto& data() const { return m_data; }
 
         std::string toString() const;
         bool fromString(const std::string& str);
 
-        static uuid generateRandom();
+        static Uuid generateRandom();
 
     private:
 
