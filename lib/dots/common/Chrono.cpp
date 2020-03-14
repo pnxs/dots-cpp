@@ -128,7 +128,7 @@ namespace dots::type
         return Duration{ duration };
     }
 
-    using sys_time_t = date::sys_time<std::chrono::microseconds>;
+    using sys_time_t = date::sys_time<std::chrono::milliseconds>;
     using sys_duration_t = sys_time_t::duration;
 
     template <typename Base>

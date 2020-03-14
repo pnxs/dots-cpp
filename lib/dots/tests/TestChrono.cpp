@@ -119,12 +119,12 @@ struct TestTimePoint : ::testing::Test
 {
 protected:
 
-    static constexpr double UnixTimestampValue = 1583960877.5;
+    static constexpr double UnixTimestampValue = 1583960877.500000;
     static constexpr char UnixTimestampString[] = "1583960877.500000";
-    static constexpr char UnixTimestampISO8601UTCOut[] = "2020-03-11T21:07:57.500000+00:00UTC";
-    static constexpr char UnixTimestampISO8601UTCIn[] = "2020-03-11T21:07:57.5+00:00UTC";
-    static constexpr char UnixTimestampISO8601CET[] = "2020-03-11T22:07:57.5+01:00CET";
-    static constexpr char UnixTimestampISO8601SRET[] = "2020-03-12T08:07:57.5+11:00SRET";
+    static constexpr char UnixTimestampISO8601UTCOut[] = "2020-03-11T21:07:57.500+00:00UTC";
+    static constexpr char UnixTimestampISO8601UTCIn[] = "2020-03-11T21:07:57.500+00:00UTC";
+    static constexpr char UnixTimestampISO8601CET[] = "2020-03-11T22:07:57.500+01:00CET";
+    static constexpr char UnixTimestampISO8601SRET[] = "2020-03-12T08:07:57.500+11:00SRET";
 
     TestTimePoint(){}
 };
@@ -147,7 +147,7 @@ struct TestSteadyTimePoint : ::testing::Test
 {
 protected:
 
-    static constexpr double SteadyTimestampValue = 324702.125;
+    static constexpr double SteadyTimestampValue = 324702.125000;
     static constexpr char SteadyTimestampString[] = "324702.125000";
     static constexpr char  SteadyTimestampISO8601[] = "P3DT18H11M42.125S";
 
