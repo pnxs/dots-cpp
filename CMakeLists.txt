@@ -6,6 +6,8 @@ add_definitions(-DENABLE_LOG_DEBUG -DENABLE_LOG_DATA -DBOOST_ERROR_CODE_HEADER_O
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
 set(DOTS_TEMPLATE_PATH ${CMAKE_SOURCE_DIR}/model/template)
 set(Boost_USE_STATIC_LIBS ON)
+set(BUILD_TZ_LIB ON)
+set(USE_SYSTEM_TZ_DB ON)
 
 option(WITH_QT5   "Build with Qt5 support" OFF)
 option(BUILD_UNIT_TESTS "Build the unit tests" ON)
@@ -16,6 +18,7 @@ find_package(Sqlite3)
 # external projects
 add_subdirectory(import/googletest EXCLUDE_FROM_ALL)
 add_subdirectory(import/cbor-cpp EXCLUDE_FROM_ALL)
+add_subdirectory(import/date EXCLUDE_FROM_ALL)
 
 # sub-projects
 add_subdirectory(lib/dots-cg-cpp)

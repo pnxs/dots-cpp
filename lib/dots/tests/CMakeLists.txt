@@ -13,6 +13,7 @@ target_sources(${TARGET_NAME}
 	PRIVATE
         TestAsciiSerialization.cpp
         TestCborSerialization.cpp
+		TestChrono.cpp
 		TestDispatcher.cpp
         TestFileStore.cpp
         TestJsonSerialization.cpp
@@ -45,4 +46,6 @@ target_link_libraries(${TARGET_NAME}
 		gmock
 		gtest
 		gtest_main
+		date::date
+		date::tz
 )

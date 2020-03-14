@@ -129,7 +129,9 @@ target_link_libraries(${TARGET_NAME}
 		pthread
 	PRIVATE
 		cborcpp
-		RapidJSON::RapidJSON		
+		RapidJSON::RapidJSON
+		date::date
+		date::tz
 )
 set_target_properties(${TARGET_NAME} PROPERTIES
     SOVERSION 0
