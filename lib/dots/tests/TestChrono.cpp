@@ -131,7 +131,6 @@ protected:
 TEST_F(TestTimePoint, toString)
 {
     EXPECT_EQ(TimePoint{ Duration{ UnixTimestampValue } }.toString({}), UnixTimestampString);
-    EXPECT_EQ(TimePoint{ Duration{ UnixTimestampValue } }.toString(TimePoint::ISO8601DateTime, false), UnixTimestampISO8601CET);
     EXPECT_EQ(TimePoint{ Duration{ UnixTimestampValue } }.toString(TimePoint::ISO8601DateTime, true), UnixTimestampISO8601UTC);
 }
 
