@@ -8,7 +8,7 @@ namespace dots::type
     {
         using value_t = std::array<uint8_t, 16>;
 
-        Uuid();
+        Uuid() = delete;
         Uuid(const uint8_t data[16]);
         Uuid(const value_t& data);
 
@@ -26,7 +26,6 @@ namespace dots::type
         bool operator != (const Uuid&) const;
 
         std::string toString() const;
-        bool fromString(const std::string_view& value);
 
         static Uuid FromString(const std::string_view& value);
         static Uuid FromData(const std::string_view& data);

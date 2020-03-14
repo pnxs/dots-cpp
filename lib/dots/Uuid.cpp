@@ -5,11 +5,6 @@
 
 namespace dots::type
 {
-    Uuid::Uuid()
-    {
-        std::memset(m_data.data(), 0, m_data.size());
-    }
-
     Uuid::Uuid(const uint8_t data[16])
     {
         std::memcpy(m_data.data(), data, m_data.size());
@@ -46,12 +41,6 @@ namespace dots::type
         boost::uuids::uuid uuid;
         std::memcpy(uuid.data, m_data.data(), sizeof(uuid.data));
         return boost::uuids::to_string(uuid);
-    }
-
-    bool Uuid::fromString(const std::string_view& value)
-    {
-        *this = FromString(value);
-        return true;
     }
 
     Uuid Uuid::FromString(const std::string_view& value)
