@@ -4,9 +4,9 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 
-namespace dots
+namespace dots::type
 {
-    dots::uuid dots::uuid::generateRandom()
+    dots::type::uuid dots::type::uuid::generateRandom()
     {
         boost::uuids::uuid newUuid = boost::uuids::random_generator()();
         return uuid(newUuid.data);

@@ -310,7 +310,7 @@ static void write_atomic_types_to_ascii(const type::Descriptor<>& td, const void
         case type::DotsType::timepoint:       writer.Double(((const type::TimePoint*)data)->duration().count()); break;
         case type::DotsType::steady_timepoint:writer.Double(((const type::SteadyTimePoint*)data)->duration().count()); break;
         case type::DotsType::duration:        writer.Double(((const type::Duration*)data)->count()); break;
-        case type::DotsType::uuid:            writer.String(((const dots::uuid*)data)->toString()); break;
+        case type::DotsType::uuid:            writer.String(((const dots::types::uuid_t*)data)->toString()); break;
         case type::DotsType::Enum:
         {
             writer.Enum(data, static_cast<const type::EnumDescriptor<>*>(&td));

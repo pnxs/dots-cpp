@@ -28,7 +28,7 @@ namespace dots::types
 	using steady_timepoint_t = type::SteadyTimePoint;
 	using duration_t         = type::Duration;
 
-	using uuid_t             = uuid;
+	using uuid_t             = type::uuid;
 	using string_t           = std::string;
 
 	template <typename T>

@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <array>
 
-namespace dots
+namespace dots::type
 {
     struct uuid
     {

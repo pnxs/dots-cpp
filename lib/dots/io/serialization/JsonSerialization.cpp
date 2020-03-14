@@ -70,7 +70,7 @@ static void write_atomic_types_to_json(const type::Descriptor<>& td, const type:
             break;
         case type::DotsType::duration: writer.Double(((const type::Duration *) data)->count());
             break;
-        case type::DotsType::uuid: writer.String(((const dots::uuid *) data)->toString());
+        case type::DotsType::uuid: writer.String(((const dots::types::uuid_t *) data)->toString());
             break;
         case type::DotsType::Enum:
         {
