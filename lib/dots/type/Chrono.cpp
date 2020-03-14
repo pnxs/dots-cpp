@@ -152,7 +152,7 @@ namespace dots::type
 
                 auto time_point_to_stream = [](auto& oss, std::string_view fmt, auto timePoint)
                 {
-                    date::to_stream(oss, fmt == ISO8601DateTime ? "%FT%T%Ez%Z" : fmt.data(), timePoint);
+                    date::to_stream(oss, fmt == ISO8601DateTime ? "%FT%T%Ez" : fmt.data(), timePoint);
                 };
 
                 if (utc)
@@ -200,7 +200,7 @@ namespace dots::type
                 std::istringstream iss{ value.data() };
                 iss.exceptions(std::istringstream::failbit | std::istringstream::badbit);
                 sys_time_t sysTimePoint;
-                iss >> date::parse(fmt == ISO8601DateTime ? "%FT%T%Ez%Z" : fmt.data(), sysTimePoint);
+                iss >> date::parse(fmt == ISO8601DateTime ? "%FT%T%Ez" : fmt.data(), sysTimePoint);
 
                 return TimePointImpl{ sysTimePoint.time_since_epoch() };
             }
