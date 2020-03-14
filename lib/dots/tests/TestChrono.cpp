@@ -122,7 +122,7 @@ protected:
     static constexpr double UnixTimestampValue = 1583960877.5;
     static constexpr char UnixTimestampString[] = "1583960877.500000";
     static constexpr char UnixTimestampISO8601UTCOut[] = "2020-03-11T21:07:57.500000+00:00UTC";
-    static constexpr char UnixTimestampISO8601UTC2In[] = "2020-03-11T21:07:57.5+00:00UTC";
+    static constexpr char UnixTimestampISO8601UTCIn[] = "2020-03-11T21:07:57.5+00:00UTC";
     static constexpr char UnixTimestampISO8601CET[] = "2020-03-11T22:07:57.5+01:00CET";
     static constexpr char UnixTimestampISO8601SRET[] = "2020-03-12T08:07:57.5+11:00SRET";
 
@@ -132,15 +132,15 @@ protected:
 TEST_F(TestTimePoint, toString)
 {
     EXPECT_EQ(TimePoint{ Duration{ UnixTimestampValue } }.toString({}), UnixTimestampString);
-    EXPECT_EQ(TimePoint{ Duration{ UnixTimestampValue } }.toString(TimePoint::ISO8601, true), UnixTimestampISO8601UTCOut);
+    EXPECT_EQ(TimePoint{ Duration{ UnixTimestampValue } }.toString(TimePoint::ISO8601DateTime, true), UnixTimestampISO8601UTCOut);
 }
 
 TEST_F(TestTimePoint, fromString)
 {
     EXPECT_EQ(TimePoint::FromString(UnixTimestampString, {}).duration().count(), UnixTimestampValue);
-    EXPECT_EQ(TimePoint::FromString(UnixTimestampISO8601UTC2In, TimePoint::ISO8601).duration().count(), UnixTimestampValue);
-    EXPECT_EQ(TimePoint::FromString(UnixTimestampISO8601CET, TimePoint::ISO8601).duration().count(), UnixTimestampValue);
-    EXPECT_EQ(TimePoint::FromString(UnixTimestampISO8601SRET, TimePoint::ISO8601).duration().count(), UnixTimestampValue);
+    EXPECT_EQ(TimePoint::FromString(UnixTimestampISO8601UTCIn).duration().count(), UnixTimestampValue);
+    EXPECT_EQ(TimePoint::FromString(UnixTimestampISO8601CET).duration().count(), UnixTimestampValue);
+    EXPECT_EQ(TimePoint::FromString(UnixTimestampISO8601SRET).duration().count(), UnixTimestampValue);
 }
 
 struct TestSteadyTimePoint : ::testing::Test
@@ -157,11 +157,11 @@ protected:
 TEST_F(TestSteadyTimePoint, toString)
 {
     EXPECT_EQ(SteadyTimePoint{ Duration{ SteadyTimestampValue } }.toString({}), SteadyTimestampString);
-    EXPECT_EQ(SteadyTimePoint{ Duration{ SteadyTimestampValue } }.toString(TimePoint::ISO8601), SteadyTimestampISO8601);
+    EXPECT_EQ(SteadyTimePoint{ Duration{ SteadyTimestampValue } }.toString(), SteadyTimestampISO8601);
 }
 
 TEST_F(TestSteadyTimePoint, fromString)
 {
     EXPECT_EQ(SteadyTimePoint::FromString(SteadyTimestampString, {}).duration().count(), SteadyTimestampValue);
-    EXPECT_EQ(SteadyTimePoint::FromString(SteadyTimestampISO8601, TimePoint::ISO8601).duration().count(), SteadyTimestampValue);
+    EXPECT_EQ(SteadyTimePoint::FromString(SteadyTimestampISO8601).duration().count(), SteadyTimestampValue);
 }

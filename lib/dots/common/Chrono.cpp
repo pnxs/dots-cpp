@@ -132,7 +132,7 @@ namespace dots::type
     using sys_duration_t = sys_time_t::duration;
 
     template <typename Base>
-    std::string TimePointImpl<Base>::toString(const std::string_view& fmt/* = ISO8601*/, bool utc/* = false*/) const
+    std::string TimePointImpl<Base>::toString(const std::string_view& fmt/* = DefaultFormat*/, bool utc/* = false*/) const
     {
         if (fmt.empty())
         {
@@ -140,44 +140,45 @@ namespace dots::type
         }
         else
         {
-            if (clock_t::is_steady && fmt == ISO8601)
+            if (fmt == ISO8601Duration)
             {
                 return duration().toString();
             }
             else
             {
+                std::ostringstream oss;
+                oss.exceptions(std::istringstream::failbit | std::istringstream::badbit);
                 sys_time_t sysTimePoint{ std::chrono::duration_cast<sys_duration_t>(duration()) };
-            
+
+                auto time_point_to_stream = [](auto& oss, std::string_view fmt, auto timePoint)
+                {
+                    date::to_stream(oss, fmt == ISO8601DateTime ? "%FT%T%Ez%Z" : fmt.data(), timePoint);
+                };
+
                 if (utc)
                 {
-                    std::ostringstream oss;
-                    oss.exceptions(std::istringstream::failbit | std::istringstream::badbit);
-                    date::to_stream(oss, fmt.data(), sysTimePoint);
-
-                    return oss.str();
+                    time_point_to_stream(oss, fmt, sysTimePoint);
                 }
                 else
                 {
-                    std::ostringstream oss;
-                    oss.exceptions(std::istringstream::failbit | std::istringstream::badbit);
                     date::zoned_time localTimePoint{ date::current_zone(), sysTimePoint };
-                    date::to_stream(oss, fmt.data(), localTimePoint);
-
-                    return oss.str();
+                    time_point_to_stream(oss, fmt, localTimePoint.get_local_time());
                 }
+
+                return oss.str();
             }
         }
     }
 
     template <typename Base>
-    bool TimePointImpl<Base>::fromString(const std::string_view& value, const std::string_view& fmt/* = ISO8601*/)
+    bool TimePointImpl<Base>::fromString(const std::string_view& value, const std::string_view& fmt/* = DefaultFormat*/)
     {
         *this = FromString(value, fmt);
         return true;
     }
 
     template <typename Base>
-    TimePointImpl<Base> TimePointImpl<Base>::FromString(const std::string_view& value, const std::string_view& fmt/* = ISO8601*/)
+    TimePointImpl<Base> TimePointImpl<Base>::FromString(const std::string_view& value, const std::string_view& fmt/* = DefaultFormat*/)
     {
         if (fmt.empty())
         {
@@ -190,7 +191,7 @@ namespace dots::type
         }
         else
         {
-            if (clock_t::is_steady && fmt == ISO8601)
+            if (fmt == ISO8601Duration)
             {
                 return TimePointImpl{ Duration::FromString(value) };
             }
@@ -199,7 +200,7 @@ namespace dots::type
                 std::istringstream iss{ value.data() };
                 iss.exceptions(std::istringstream::failbit | std::istringstream::badbit);
                 sys_time_t sysTimePoint;
-                iss >> date::parse(fmt.data(), sysTimePoint);
+                iss >> date::parse(fmt == ISO8601DateTime ? "%FT%T%Ez%Z" : fmt.data(), sysTimePoint);
 
                 return TimePointImpl{ sysTimePoint.time_since_epoch() };
             }

@@ -57,7 +57,9 @@ namespace dots::type
         using base_t = Base;
         using duration_t = Duration;
         using clock_t = typename base_t::clock;
-        static constexpr char ISO8601[] = "%FT%T%Ez%Z";
+        static constexpr std::string_view ISO8601Duration = "I8601DUR";
+        static constexpr std::string_view ISO8601DateTime = "I8601DT";
+        static constexpr std::string_view DefaultFormat = clock_t::is_steady ? ISO8601Duration : ISO8601DateTime;
 
         using base_t::base_t;
         constexpr TimePointImpl() = default;
@@ -78,10 +80,10 @@ namespace dots::type
         constexpr duration_t duration() const { return base_t::time_since_epoch(); }
         constexpr bool isZero() const { return duration().isZero(); }
 
-        std::string toString(const std::string_view& fmt = ISO8601, bool utc = false) const;
-        bool fromString(const std::string_view& value, const std::string_view& fmt = ISO8601);
+        std::string toString(const std::string_view& fmt = DefaultFormat, bool utc = false) const;
+        bool fromString(const std::string_view& value, const std::string_view& fmt = DefaultFormat);
 
-        static TimePointImpl FromString(const std::string_view& value, const std::string_view& fmt = ISO8601);
+        static TimePointImpl FromString(const std::string_view& value, const std::string_view& fmt = DefaultFormat);
 
         static TimePointImpl Now()
         {
