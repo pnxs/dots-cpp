@@ -161,8 +161,17 @@ namespace dots::type
                 }
                 else
                 {
-                    date::zoned_time localTimePoint{ date::current_zone(), sysTimePoint };
-                    time_point_to_stream(oss, fmt, localTimePoint);
+                    try
+                    {
+                        date::zoned_time localTimePoint{ date::current_zone(), sysTimePoint };
+                        time_point_to_stream(oss, fmt, localTimePoint);
+                    }
+                    catch (const std::runtime_error&/* e*/)
+                    {
+                        // if the system does not have any timezone information then getting the current zone might fail
+                        // and UTC is used as a fallback instead
+                        time_point_to_stream(oss, fmt, sysTimePoint);
+                    }
                 }
 
                 return oss.str();
