@@ -142,7 +142,7 @@ read_atomic_types_from_cbor(const type::Descriptor<>& td, type::Typeless& data, 
         case type::DotsType::timepoint:        static_cast<const type::Descriptor<types::timepoint_t>&>(td).construct(data.to<types::timepoint_t>(), types::duration_t{ decoder.read_double() }); break;
         case type::DotsType::steady_timepoint: static_cast<const type::Descriptor<types::steady_timepoint_t>&>(td).construct(data.to<types::steady_timepoint_t>(), types::duration_t{ decoder.read_double() }); break;
         case type::DotsType::duration:         static_cast<const type::Descriptor<types::duration_t>&>(td).construct(data.to<types::duration_t>(), decoder.read_double()); break;
-        case type::DotsType::uuid:             static_cast<const type::Descriptor<types::uuid_t>&>(td).construct(data.to<types::uuid_t>(), decoder.read_string()); break;
+        case type::DotsType::uuid:             static_cast<const type::Descriptor<types::uuid_t>&>(td).construct(data.to<types::uuid_t>(), types::uuid_t::FromData(decoder.read_string())); break;
         case type::DotsType::Enum:
         {
             const auto& enumDescriptor = static_cast<const type::EnumDescriptor<>&>(td);

@@ -11,7 +11,6 @@ namespace dots::type
         Uuid();
         Uuid(const uint8_t data[16]);
         Uuid(const value_t& data);
-        Uuid(const std::string& value);
 
         Uuid(const Uuid& other) = default;
 		Uuid(Uuid&& other) noexcept = default;
@@ -30,6 +29,7 @@ namespace dots::type
         bool fromString(const std::string_view& value);
 
         static Uuid FromString(const std::string_view& value);
+        static Uuid FromData(const std::string_view& data);
         static Uuid Random();
 
     private:

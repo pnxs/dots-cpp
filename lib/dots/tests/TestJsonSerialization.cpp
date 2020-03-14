@@ -143,7 +143,7 @@ TEST(TestJsonSerialization, plainDeserialization)
 TEST(TestJsonSerialization, serializeDotsTestStruct)
 {
     DotsTestStruct dt;
-    dots::type::Uuid testUuid("1234567890123456");
+    dots::types::uuid_t testUuid = dots::types::uuid_t::FromData("1234567890123456");
 
     dt.enumField(DotsTestEnum::value3);
     dt.floatField(3.141f);
@@ -173,7 +173,7 @@ TEST(TestJsonSerialization, serializeDotsTestStruct)
 
 TEST(TestJsonSerialization, deserializeDotsTestStruct)
 {
-    dots::types::uuid_t testUuid("1234567890123456");
+    dots::types::uuid_t testUuid = dots::types::uuid_t::FromData("1234567890123456");
 
     std::string inputData = "{\n"
             "    \"stringField\": \"Hallo Welt\",\n"

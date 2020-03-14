@@ -21,17 +21,6 @@ namespace dots::type
         /* do nothing */
     }
 
-    Uuid::Uuid(const std::string& value)
-    {
-        if (value.size() == 16)
-        {
-            std::memcpy(m_data.data(), value.data(), m_data.size());
-            return;
-        }
-
-        throw std::invalid_argument("invalid stringsize: " + std::to_string(value.size()));
-    }
-
     const Uuid::value_t& Uuid::data() const
     {
         return m_data;
@@ -72,6 +61,20 @@ namespace dots::type
         std::memcpy(data.data(), uuid.data, data.size());
 
         return Uuid{ data };
+    }
+
+    Uuid Uuid::FromData(const std::string_view& data)
+    {
+        value_t data_;
+
+        if (data.size() != std::tuple_size<value_t>::value)
+        {
+            throw std::invalid_argument("data does not have required size: " + std::to_string(data.size()));
+        }
+
+        std::memcpy(data_.data(), data.data(), data_.size());
+
+        return Uuid{ data_ };
     }
 
     Uuid Uuid::Random()
