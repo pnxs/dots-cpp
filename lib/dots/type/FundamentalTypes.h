@@ -1,8 +1,8 @@
 #pragma once
 #include <dots/type/StaticDescriptor.h>
 #include <dots/type/PropertySet.h>
-#include <dots/common/Chrono.h>
-#include <dots/Uuid.h>
+#include <dots/type/Chrono.h>
+#include <dots/type/Uuid.h>
 #include <dots/type/Vector.h>
 #include <dots/type/VectorDescriptor.h>
 
@@ -24,11 +24,11 @@ namespace dots::types
 
 	using property_set_t     = type::PropertySet;
 
-	using timepoint_t        = pnxs::chrono::TimePoint;
-	using steady_timepoint_t = pnxs::chrono::SteadyTimePoint;
-	using duration_t         = pnxs::chrono::Duration;
+	using timepoint_t        = type::TimePoint;
+	using steady_timepoint_t = type::SteadyTimePoint;
+	using duration_t         = type::Duration;
 
-	using uuid_t             = uuid;
+	using uuid_t             = type::Uuid;
 	using string_t           = std::string;
 
 	template <typename T>
@@ -39,6 +39,11 @@ namespace dots::types
 	{
 		static_assert(std::is_base_of_v<T, T>, "float128 type is currently not supported");
 	};
+
+	namespace literals
+    {
+        using namespace type::literals;
+    }
 }
 
 namespace dots::type
@@ -160,3 +165,33 @@ namespace dots::type
 		}
 	};
 }
+
+#ifndef DOTS_NOT_USE_FUNDAMENTAL_TYPES
+namespace dots
+{
+	using types::bool_t;
+
+    using types::int8_t;
+    using types::uint8_t;
+    using types::int16_t;
+    using types::uint16_t;
+    using types::int32_t;
+    using types::uint32_t;
+    using types::int64_t;
+    using types::uint64_t;
+
+    using types::float32_t;
+    using types::float64_t;
+
+    using types::property_set_t;
+
+    using types::timepoint_t;
+    using types::steady_timepoint_t;
+    using types::duration_t;
+
+    using types::uuid_t;
+    using types::string_t;
+
+    using types::vector_t;
+}
+#endif

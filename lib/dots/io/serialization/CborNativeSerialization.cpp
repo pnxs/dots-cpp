@@ -1,4 +1,5 @@
 #include "CborNativeSerialization.h"
+#include <dots/common/logging.h>
 #include "StructDescriptorData.dots.h"
 #undef major
 #pragma GCC diagnostic push
@@ -38,9 +39,9 @@ write_atomic_types_to_cbor(const type::Descriptor<>& td, const type::Typeless& d
         case type::DotsType::float64:         encoder.write_double(data.to<types::float64_t>());break;
         case type::DotsType::string:          encoder.write_string(data.to<types::string_t>());break;
         case type::DotsType::property_set:    encoder.write_int(data.to<types::property_set_t>().toValue()); break;
-        case type::DotsType::timepoint:       encoder.write_double(data.to<types::timepoint_t>().value()); break;
-        case type::DotsType::steady_timepoint:encoder.write_double(data.to<types::steady_timepoint_t>().value()); break;
-        case type::DotsType::duration:        encoder.write_double(data.to<types::duration_t>()); break;
+        case type::DotsType::timepoint:       encoder.write_double(data.to<types::timepoint_t>().duration().toFractionalSeconds()); break;
+        case type::DotsType::steady_timepoint:encoder.write_double(data.to<types::steady_timepoint_t>().duration().toFractionalSeconds()); break;
+        case type::DotsType::duration:        encoder.write_double(data.to<types::duration_t>().toFractionalSeconds()); break;
         case type::DotsType::uuid:            encoder.write_bytes(data.to<types::uuid_t>().data().data(), 16); break;
         case type::DotsType::Enum:
         {
@@ -138,10 +139,10 @@ read_atomic_types_from_cbor(const type::Descriptor<>& td, type::Typeless& data, 
         case type::DotsType::float64:          static_cast<const type::Descriptor<types::float64_t>&>(td).construct(data.to<types::float64_t>(), decoder.read_double()); break;
         case type::DotsType::string:           static_cast<const type::Descriptor<types::string_t>&>(td).construct(data.to<types::string_t>(), decoder.read_string()); break;
 		case type::DotsType::property_set:     static_cast<const type::Descriptor<types::property_set_t>&>(td).construct(data.to<types::property_set_t>(), decoder.read_uint()); break;
-        case type::DotsType::timepoint:        static_cast<const type::Descriptor<types::timepoint_t>&>(td).construct(data.to<types::timepoint_t>(), decoder.read_double()); break;
-        case type::DotsType::steady_timepoint: static_cast<const type::Descriptor<types::steady_timepoint_t>&>(td).construct(data.to<types::steady_timepoint_t>(), decoder.read_double()); break;
+        case type::DotsType::timepoint:        static_cast<const type::Descriptor<types::timepoint_t>&>(td).construct(data.to<types::timepoint_t>(), types::duration_t{ decoder.read_double() }); break;
+        case type::DotsType::steady_timepoint: static_cast<const type::Descriptor<types::steady_timepoint_t>&>(td).construct(data.to<types::steady_timepoint_t>(), types::duration_t{ decoder.read_double() }); break;
         case type::DotsType::duration:         static_cast<const type::Descriptor<types::duration_t>&>(td).construct(data.to<types::duration_t>(), decoder.read_double()); break;
-        case type::DotsType::uuid:             static_cast<const type::Descriptor<types::uuid_t>&>(td).construct(data.to<types::uuid_t>(), decoder.read_string()); break;
+        case type::DotsType::uuid:             static_cast<const type::Descriptor<types::uuid_t>&>(td).construct(data.to<types::uuid_t>(), types::uuid_t::FromData(decoder.read_string())); break;
         case type::DotsType::Enum:
         {
             const auto& enumDescriptor = static_cast<const type::EnumDescriptor<>&>(td);

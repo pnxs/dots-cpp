@@ -11,7 +11,7 @@ struct Printer {
     virtual void EndObject() = 0;
     virtual void StartArray() = 0;
     virtual void EndArray() = 0;
-    virtual void String(const string& s) = 0;
+    virtual void String(const std::string& s) = 0;
     virtual void Bool(bool b) = 0;
     virtual void Int(int i) = 0;
     virtual void Uint(unsigned int i) = 0;
@@ -60,7 +60,7 @@ struct PrettyPrinter: public Printer
         addLine("]");
     }
 
-    void String(const string& s) override {
+    void String(const std::string& s) override {
         writeValue(s);
     }
 
@@ -187,7 +187,7 @@ struct SingleLinePrinter: public Printer
             m_result += ", ";
     }
 
-    void String(const string& s) override {
+    void String(const std::string& s) override {
         if (m_cs && (m_writeMode.top() != write_mode::object_key)) m_result += m_cs->string();
         writeValue(s);
     }
@@ -307,10 +307,10 @@ static void write_atomic_types_to_ascii(const type::Descriptor<>& td, const void
         case type::DotsType::float64:         writer.Double(*(const double *) data);break;
         case type::DotsType::string:          writer.String(*(const std::string*) data);break;
         case type::DotsType::property_set:    writer.Int(((const dots::types::property_set_t*)data)->toValue()); break;
-        case type::DotsType::timepoint:       writer.Double(((const pnxs::TimePoint*)data)->value()); break;
-        case type::DotsType::steady_timepoint:writer.Double(((const pnxs::SteadyTimePoint*)data)->value()); break;
-        case type::DotsType::duration:        writer.Double(*(const pnxs::Duration*)data); break;
-        case type::DotsType::uuid:            writer.String(((const dots::uuid*)data)->toString()); break;
+        case type::DotsType::timepoint:       writer.Double(((const type::TimePoint*)data)->duration().toFractionalSeconds()); break;
+        case type::DotsType::steady_timepoint:writer.Double(((const type::SteadyTimePoint*)data)->duration().toFractionalSeconds()); break;
+        case type::DotsType::duration:        writer.Double(((const type::Duration*)data)->toFractionalSeconds()); break;
+        case type::DotsType::uuid:            writer.String(((const dots::types::uuid_t*)data)->toString()); break;
         case type::DotsType::Enum:
         {
             writer.Enum(data, static_cast<const type::EnumDescriptor<>*>(&td));

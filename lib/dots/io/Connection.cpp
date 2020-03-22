@@ -1,6 +1,7 @@
 #include <dots/io/Connection.h>
 #include <dots/io/Registry.h>
 #include <dots/io/DescriptorConverter.h>
+#include <dots/common/logging.h>
 #include <DotsMsgConnect.dots.h>
 #include <DotsCacheInfo.dots.h>
 #include <DotsClient.dots.h>
@@ -110,7 +111,7 @@ namespace dots::io
             DotsTransportHeader::destinationGroup_i{ descriptor.name() },
             DotsTransportHeader::dotsHeader_i{
                 DotsHeader::typeName_i{ descriptor.name() },
-                DotsHeader::sentTime_i{ pnxs::SystemNow() },
+                DotsHeader::sentTime_i{ types::timepoint_t::Now() },
                 DotsHeader::attributes_i{ includedProperties ==  types::property_set_t::All ? instance._validProperties() : includedProperties },
 				DotsHeader::sender_i{ m_selfId },
                 DotsHeader::removeObj_i{ remove }
@@ -207,7 +208,7 @@ namespace dots::io
                     DotsHeader& dotsHeader = *transportHeader_.dotsHeader;
                     dotsHeader.sender = m_peerId;
 
-                    dotsHeader.serverSentTime = pnxs::SystemNow();
+                    dotsHeader.serverSentTime = types::timepoint_t::Now();
 
                     if (!dotsHeader.sentTime.isValid())
                     {

@@ -5,6 +5,7 @@
 #include "DynamicTypeReceiver.h"
 #include "dots/io/Registry.h"
 #include <dots/dots.h>
+#include <dots/common/logging.h>
 #include "DotsDescriptorRequest.dots.h"
 
 namespace dots {

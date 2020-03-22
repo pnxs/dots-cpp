@@ -1,14 +1,13 @@
 #pragma once
 #include <chrono>
 #include <dots/dots.h>
-#include <dots/cpp_config.h>
 #include <dots/io/GuestTransceiver.h>
 
 namespace dots
 {
 	struct Application
 	{
-		Application(const string& name, int& argc, char* argv[]);
+		Application(const std::string& name, int& argc, char* argv[]);
 		virtual ~Application();
 
 		virtual int exec();

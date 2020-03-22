@@ -1,6 +1,5 @@
 #pragma once
-
-#include "dots/cpp_config.h"
+#include <list>
 
 namespace dots
 {
@@ -43,9 +42,9 @@ namespace dots
 template<class T>
 class Chained
 {
-    static list<T*>& getChain()
+    static std::list<T*>& getChain()
     {
-        static list<T*>* chain = new list<T*>;
+        static std::list<T*>* chain = new std::list<T*>;
         return *chain;
     }
 
@@ -55,7 +54,7 @@ public:
         getChain().push_back(static_cast<T*>(this));
     }
 
-    static const list<T*> &allChained()
+    static const std::list<T*> &allChained()
     {
         return getChain();
     }

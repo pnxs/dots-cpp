@@ -4,6 +4,7 @@
 #include <sstream>
 #include <iomanip>
 #include <map>
+#include <charconv>
 #include <dots/type/Descriptor.h>
 
 namespace dots::type
@@ -249,7 +250,18 @@ namespace dots::type
 			{
 				construct(storage, value);
 			}
-			else if constexpr (std::disjunction_v<std::is_integral<T>, std::is_floating_point<T>, is_istreamable<T>>)
+			else if constexpr (std::is_integral_v<T>)
+			{
+				T t;
+
+				if (std::from_chars_result result = std::from_chars(value.data(), value.data() + value.size(), t); result.ec != std::errc{})
+				{
+				    throw std::runtime_error{ "could not construct integer from string: " + std::string{ value } + " -> " + std::make_error_code(result.ec).message() };
+				}
+
+				construct(storage, t);
+			}
+			else if constexpr (std::disjunction_v<std::is_floating_point<T>, is_istreamable<T>>)
 			{
 				T t;
 				std::istringstream iss{ value.data() };
@@ -273,7 +285,16 @@ namespace dots::type
 			}
 			else if constexpr (std::is_integral_v<T>)
 			{
-				return std::to_string(value);
+				char buffer[128];
+
+				if (auto [last, ec] = std::to_chars(buffer, buffer + sizeof(buffer), value); ec == std::errc{})
+				{
+					return std::string{ buffer, last };
+				}
+				else
+				{
+				    throw std::runtime_error{ "could not convert value to string: -> " + std::make_error_code(ec).message() };
+				}
 			}
 			else if constexpr (std::is_floating_point_v<T>)
 			{

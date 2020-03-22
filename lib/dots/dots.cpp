@@ -5,7 +5,7 @@
 
 namespace dots
 {
-	Timer::id_t add_timer(const pnxs::chrono::Duration& timeout, const std::function<void()>& handler, bool periodic/* = false*/)
+	Timer::id_t add_timer(const type::Duration& timeout, const std::function<void()>& handler, bool periodic/* = false*/)
 	{
 		return global_service<TimerService>().addTimer(timeout, handler, periodic);
 	}

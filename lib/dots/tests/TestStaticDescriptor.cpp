@@ -64,6 +64,12 @@ namespace dots::type
 	{
 		Descriptor() : StaticDescriptor(Type::Struct, "Composite") {}
 	};
+
+    template <>
+    struct Descriptor<uint8_t> : StaticDescriptor<uint8_t>
+    {
+        Descriptor() : StaticDescriptor(Type::uint8, "uint8") {}
+    };
 }
 
 using namespace dots::type;
@@ -81,6 +87,7 @@ protected:
 	Descriptor<int> m_sutInt;
 	Descriptor<std::string> m_sutString;
 	Descriptor<Composite> m_sutComposite;
+    Descriptor<uint8_t> m_sutByte;
 };
 
 TEST_F(TestStaticDescriptor, size)
@@ -313,16 +320,19 @@ TEST_F(TestStaticDescriptor, fromString)
 	int i;
 	std::string s;
 	Composite c;
+	uint8_t b;
 
 	m_sutInt.fromString(i, "73");
 	m_sutString.fromString(s, "meow");
 	m_sutComposite.fromString(c, "7,moo");
+	m_sutByte.fromString(b, "1");
 
 	EXPECT_EQ(i, 73);
 	EXPECT_EQ(s, "meow");
 	EXPECT_EQ(c, Composite(7, "moo"));
+	EXPECT_EQ(b, 1);
 
-	EXPECT_THROW(m_sutInt.fromString(i, "foo"), std::ios_base::failure);
+	EXPECT_THROW(m_sutInt.fromString(i, "foo"), std::runtime_error);
 	m_sutString.fromString(s, "");
-	EXPECT_THROW(m_sutComposite.fromString(c, ",moo"), std::ios_base::failure);
+	EXPECT_THROW(m_sutComposite.fromString(c, ",moo"), std::runtime_error);
 }

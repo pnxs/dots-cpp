@@ -1,10 +1,12 @@
-#include <dots/cpp_config.h>
 #include <dots/io/Application.h>
+#include <dots/common/logging.h>
 #include <dots/io/serialization/AsciiSerialization.h>
 
 #include "DotsTestStruct.dots.h"
 #include "DotsTestVectorStruct.dots.h"
 #include <dots/functional/fun.h>
+
+using namespace dots::types::literals;
 
 class MyClientClass
 {
@@ -12,7 +14,7 @@ public:
     MyClientClass() :
 		m_subs{ dots::subscribe<DotsTestStruct>(FUN(*this, handleTestStruct)) }
     {
-        dots::add_timer(1, FUN(*this, handleTimer));
+        dots::add_timer(1s, FUN(*this, handleTimer));
     }
 
     ~MyClientClass()
@@ -55,7 +57,7 @@ private:
             dots::Application::instance()->exit();
         }
 
-		dots::add_timer(0.001, FUN(*this, handleTimer));
+		dots::add_timer(1ms, FUN(*this, handleTimer));
     }
 
     void handleTestStruct(const DotsTestStruct::Cbd& cbd)

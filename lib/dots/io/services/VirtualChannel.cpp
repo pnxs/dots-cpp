@@ -1,5 +1,5 @@
 #include "VirtualChannel.h"
-#include <dots/common/Chrono.h>
+#include <dots/type/Chrono.h>
 #include <DotsMsgError.dots.h>
 #include <DotsMsgHello.dots.h>
 #include <DotsMsgConnect.dots.h>
@@ -29,7 +29,7 @@ namespace dots
         asio::post(m_ioContext.get(), [this, _header = header, _instance = type::AnyStruct{ instance }]() mutable
         {
             _header.dotsHeader->sender.constructOrValue(ClientId);
-            _header.dotsHeader->serverSentTime(pnxs::SystemNow{});
+            _header.dotsHeader->serverSentTime(types::timepoint_t::Now());
             processReceive(_header, Transmission{ std::move(_instance) });
         });
     }
@@ -42,7 +42,7 @@ namespace dots
             DotsTransportHeader::destinationGroup_i{ descriptor.name() },
             DotsTransportHeader::dotsHeader_i{
                 DotsHeader::typeName_i{ descriptor.name() },
-                DotsHeader::sentTime_i{ pnxs::SystemNow() },
+                DotsHeader::sentTime_i{ types::timepoint_t::Now() },
                 DotsHeader::attributes_i{ instance._validProperties() },
                 DotsHeader::sender_i{ sender },
                 DotsHeader::removeObj_i{ remove },

@@ -5,7 +5,7 @@
 #define RAPIDJSON_HAS_STDSTRING 1
 #include <rapidjson/prettywriter.h>
 #include <rapidjson/document.h>
-#include <dots/dots_base.h>
+#include <dots/common/logging.h>
 
 #include <iostream>
 #include <algorithm>
@@ -64,13 +64,13 @@ static void write_atomic_types_to_json(const type::Descriptor<>& td, const type:
             break;
         case type::DotsType::property_set: writer.Uint(((const dots::types::property_set_t *) data)->toValue());
             break;
-        case type::DotsType::timepoint: writer.Double(((const pnxs::TimePoint *) data)->value());
+        case type::DotsType::timepoint: writer.Double(((const type::TimePoint *) data)->duration().toFractionalSeconds());
             break;
-        case type::DotsType::steady_timepoint:writer.Double(((const pnxs::SteadyTimePoint *) data)->value());
+        case type::DotsType::steady_timepoint:writer.Double(((const type::SteadyTimePoint *) data)->duration().toFractionalSeconds());
             break;
-        case type::DotsType::duration: writer.Double(*(const pnxs::Duration *) data);
+        case type::DotsType::duration: writer.Double(((const type::Duration *) data)->toFractionalSeconds());
             break;
-        case type::DotsType::uuid: writer.String(((const dots::uuid *) data)->toString());
+        case type::DotsType::uuid: writer.String(((const dots::types::uuid_t *) data)->toString());
             break;
         case type::DotsType::Enum:
         {
@@ -213,10 +213,10 @@ static void read_atomic_types_from_json(const type::Descriptor<>& td, type::Type
         case type::DotsType::float64:         static_cast<const type::Descriptor<types::float64_t>&>(td).construct(data.to<types::float64_t>(), value.GetDouble()); break;
         case type::DotsType::string:          static_cast<const type::Descriptor<types::string_t>&>(td).construct(data.to<types::string_t>(), value.GetString()); break;
         case type::DotsType::property_set:    static_cast<const type::Descriptor<types::property_set_t>&>(td).construct(data.to<types::property_set_t>(), types::property_set_t(value.GetUint())); break;
-        case type::DotsType::timepoint:       static_cast<const type::Descriptor<types::timepoint_t>&>(td).construct(data.to<types::timepoint_t>(), value.GetDouble()); break;
-        case type::DotsType::steady_timepoint:static_cast<const type::Descriptor<types::steady_timepoint_t>&>(td).construct(data.to<types::steady_timepoint_t>(), value.GetDouble()); break;
-        case type::DotsType::duration:        static_cast<const type::Descriptor<types::duration_t>&>(td).construct(data.to<types::duration_t>(), pnxs::Duration(value.GetDouble())); break;
-		case type::DotsType::uuid:            static_cast<const type::Descriptor<types::uuid_t>&>(td).construct(data.to<types::uuid_t>()).fromString(value.GetString()); break;
+        case type::DotsType::timepoint:       static_cast<const type::Descriptor<types::timepoint_t>&>(td).construct(data.to<types::timepoint_t>(), types::duration_t{ value.GetDouble() }); break;
+        case type::DotsType::steady_timepoint:static_cast<const type::Descriptor<types::steady_timepoint_t>&>(td).construct(data.to<types::steady_timepoint_t>(), types::duration_t{ value.GetDouble() }); break;
+        case type::DotsType::duration:        static_cast<const type::Descriptor<types::duration_t>&>(td).construct(data.to<types::duration_t>(), type::Duration(value.GetDouble())); break;
+        case type::DotsType::uuid:            static_cast<const type::Descriptor<types::uuid_t>&>(td).construct(data.to<types::uuid_t>(), types::uuid_t::FromString(value.GetString())); break;
         break;
         case type::DotsType::Enum:
         {
@@ -293,7 +293,7 @@ void from_json_recursive(const type::StructDescriptor<>& sd, type::Struct& insta
     for(; members != object.MemberEnd(); ++members)
     {
         auto& jsonPropertyValue = members->value;
-        string name = members->name.GetString();
+        std::string name = members->name.GetString();
 
         auto propertyIter = std::find_if(structProperties.begin(), structProperties.end(), [&name](const auto& prop) { return prop.name() == name; });
         if (propertyIter != structProperties.end())

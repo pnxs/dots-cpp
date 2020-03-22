@@ -33,13 +33,8 @@ GENERATE_DOTS_TYPES(MODEL_SOURCES MODEL_HEADERS
 target_sources(${TARGET_NAME}
 	PRIVATE
 		dots.cpp
-		Uuid.cpp
 
-		common/Chrono.cpp
 		common/logging.cpp
-		common/Stream.cpp
-		common/string_convert.cpp
-		common/seconds.cpp
 
 		functional/signal.cpp
 
@@ -89,7 +84,8 @@ target_sources(${TARGET_NAME}
 		io/recording/FileReader.cpp
 		io/Registry.cpp
 		io/DescriptorConverter.cpp
-		type/AnyStruct.cpp		
+		type/AnyStruct.cpp
+		type/Chrono.cpp
 		type/Descriptor.cpp
 		type/DynamicStruct.cpp
 		type/EnumDescriptor.cpp
@@ -98,6 +94,7 @@ target_sources(${TARGET_NAME}
 		type/ProxyPropertyPairIterator.cpp
 		type/Struct.cpp
 		type/StructDescriptor.cpp
+		type/Uuid.cpp
 		type/VectorDescriptor.cpp
 
 		${MODEL_SOURCES}
@@ -132,7 +129,9 @@ target_link_libraries(${TARGET_NAME}
 		pthread
 	PRIVATE
 		cborcpp
-		RapidJSON::RapidJSON		
+		RapidJSON::RapidJSON
+		date::date
+		date::tz
 )
 set_target_properties(${TARGET_NAME} PROPERTIES
     SOVERSION 0

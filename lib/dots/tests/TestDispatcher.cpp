@@ -12,7 +12,7 @@ namespace
 		{
 			return DotsHeader{
 				DotsHeader::typeName_i{ instance._descriptor().name() },
-				DotsHeader::sentTime_i{ pnxs::SystemNow() },
+				DotsHeader::sentTime_i{ dots::types::timepoint_t::Now() },
 				DotsHeader::attributes_i{ instance._validProperties() },
 				DotsHeader::sender_i{ sender },
 				DotsHeader::removeObj_i{ remove },
@@ -61,7 +61,7 @@ TEST(TestDispatcher, dispatch_CreateEventWhenSubscribedToCachedType)
 			ASSERT_EQ(e.cloneInfo().modified, e.cloneInfo().created);
 
 			ASSERT_GE(*e.cloneInfo().localUpdateTime, *header.sentTime);
-			ASSERT_LE(*e.cloneInfo().localUpdateTime, pnxs::SystemNow());
+			ASSERT_LE(*e.cloneInfo().localUpdateTime, dots::types::timepoint_t::Now());
 		}
 	});
 
@@ -112,7 +112,7 @@ TEST(TestDispatcher, dispatch_UpdateEventWhenSubscribedToCachedType)
 			ASSERT_EQ(e.cloneInfo().modified, *header2.sentTime);
 
 			ASSERT_GE(*e.cloneInfo().localUpdateTime, *header2.sentTime);
-			ASSERT_LE(*e.cloneInfo().localUpdateTime, pnxs::SystemNow());
+			ASSERT_LE(*e.cloneInfo().localUpdateTime, dots::types::timepoint_t::Now());
 		}
 	});
 
@@ -168,7 +168,7 @@ TEST(TestDispatcher, dispatch_RemoveEventWhenSubscribedToCachedType)
 			ASSERT_EQ(e.cloneInfo().modified, *header3.sentTime);
 
 			ASSERT_GE(*e.cloneInfo().localUpdateTime, *header3.sentTime);
-			ASSERT_LE(*e.cloneInfo().localUpdateTime, pnxs::SystemNow());
+			ASSERT_LE(*e.cloneInfo().localUpdateTime, dots::types::timepoint_t::Now());
 		}
 	});
 
@@ -208,7 +208,7 @@ TEST(TestDispatcher, dispatch_CreateEventWhenDynamicallySubscribedToCachedType)
 			ASSERT_EQ(e.cloneInfo().modified, e.cloneInfo().created);
 
 			ASSERT_GE(*e.cloneInfo().localUpdateTime, *header.sentTime);
-			ASSERT_LE(*e.cloneInfo().localUpdateTime, pnxs::SystemNow());
+			ASSERT_LE(*e.cloneInfo().localUpdateTime, dots::types::timepoint_t::Now());
 		}
 	});
 
@@ -259,7 +259,7 @@ TEST(TestDispatcher, dispatch_UpdateEventWhenDynamicallSubscribedToCachedType)
 			ASSERT_EQ(e.cloneInfo().modified, *header2.sentTime);
 
 			ASSERT_GE(*e.cloneInfo().localUpdateTime, *header2.sentTime);
-			ASSERT_LE(*e.cloneInfo().localUpdateTime, pnxs::SystemNow());
+			ASSERT_LE(*e.cloneInfo().localUpdateTime, dots::types::timepoint_t::Now());
 		}
 	});
 
@@ -315,7 +315,7 @@ TEST(TestDispatcher, dispatch_RemoveEventWhenDynamicallSubscribedToCachedType)
 			ASSERT_EQ(e.cloneInfo().modified, *header3.sentTime);
 
 			ASSERT_GE(*e.cloneInfo().localUpdateTime, *header3.sentTime);
-			ASSERT_LE(*e.cloneInfo().localUpdateTime, pnxs::SystemNow());
+			ASSERT_LE(*e.cloneInfo().localUpdateTime, dots::types::timepoint_t::Now());
 		}
 	});
 
@@ -362,7 +362,7 @@ TEST(TestDispatcher, dispatch_CreateEventFromCacheWhenSubscribingToCachedType)
 			ASSERT_EQ(e.cloneInfo().modified, e.cloneInfo().created);
 
 			ASSERT_GE(*e.cloneInfo().localUpdateTime, *header.sentTime);
-			ASSERT_LE(*e.cloneInfo().localUpdateTime, pnxs::SystemNow());
+			ASSERT_LE(*e.cloneInfo().localUpdateTime, dots::types::timepoint_t::Now());
 		}
 	});	
 
@@ -405,7 +405,7 @@ TEST(TestDispatcher, dispatch_CreateEventWhenSubscribedToUncachedType)
 			ASSERT_FALSE(e.cloneInfo().modified.isValid());
 
 			ASSERT_GE(*e.cloneInfo().localUpdateTime, *header2.sentTime);
-			ASSERT_LE(*e.cloneInfo().localUpdateTime, pnxs::SystemNow());
+			ASSERT_LE(*e.cloneInfo().localUpdateTime, dots::types::timepoint_t::Now());
 		}
 	});
 

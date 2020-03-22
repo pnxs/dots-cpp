@@ -3,10 +3,10 @@
 #include "DotsTestStruct.dots.h"
 #include "DotsTestVectorStruct.dots.h"
 #include "dots/io/Registry.h"
-#include <dots/dots_base.h>
 #include <gtest/gtest.h>
 
 using namespace dots::type;
+using namespace dots::types;
 
 TEST(TestJsonSerialization, plainSerialization)
 {
@@ -143,13 +143,13 @@ TEST(TestJsonSerialization, plainDeserialization)
 TEST(TestJsonSerialization, serializeDotsTestStruct)
 {
     DotsTestStruct dt;
-    dots::uuid testUuid("1234567890123456");
+    dots::types::uuid_t testUuid = dots::types::uuid_t::FromData("1234567890123456");
 
     dt.enumField(DotsTestEnum::value3);
     dt.floatField(3.141f);
     dt.indKeyfField(42);
     dt.stringField("Hallo Welt");
-    dt.tp(dots::TimePoint(1503571800.123456));
+    dt.tp(timepoint_t{ duration_t{ 1503571800.123456 } });
     dt.uuid(testUuid);
 
     auto& dss = dt.subStruct();
@@ -173,7 +173,7 @@ TEST(TestJsonSerialization, serializeDotsTestStruct)
 
 TEST(TestJsonSerialization, deserializeDotsTestStruct)
 {
-    dots::uuid testUuid("1234567890123456");
+    dots::types::uuid_t testUuid = dots::types::uuid_t::FromData("1234567890123456");
 
     std::string inputData = "{\n"
             "    \"stringField\": \"Hallo Welt\",\n"
@@ -204,7 +204,7 @@ TEST(TestJsonSerialization, deserializeDotsTestStruct)
     EXPECT_FLOAT_EQ(dt.floatField, 3.141f);
     EXPECT_EQ(dt.indKeyfField, 42);
     EXPECT_EQ(dt.stringField, "Hallo Welt");
-    EXPECT_EQ(dt.tp, dots::TimePoint(1503571800.123456));
+    EXPECT_EQ(dt.tp, timepoint_t{ duration_t{ 1503571800.123456 } });
     EXPECT_EQ(dt.uuid, testUuid);
     EXPECT_EQ(dt.subStruct->flag1, true);
 

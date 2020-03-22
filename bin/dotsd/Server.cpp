@@ -1,20 +1,24 @@
 #include "Server.h"
 #include <sys/resource.h>
 #include <dots/dots.h>
+#include <dots/common/logging.h>
+#include <dots/type/PosixTime.h>
 #include "DotsClient.dots.h"
 #include <StructDescriptorData.dots.h>
 #include <DotsTypes.dots.h>
 #include <DotsStatistics.dots.h>
 #include <DotsCacheStatus.dots.h>
 
+using namespace dots::types::literals;
+
 namespace dots
 {
     Server::Server(std::string name, listeners_t listeners) :
         m_hostTransceiver{ std::move(name), [&](const io::Connection& connection){ handleTransition(connection); } },
-        m_daemonStatus{ DotsDaemonStatus::serverName_i{ m_hostTransceiver.selfName() }, DotsDaemonStatus::startTime_i{ pnxs::SystemNow() } }
+        m_daemonStatus{ DotsDaemonStatus::serverName_i{ m_hostTransceiver.selfName() }, DotsDaemonStatus::startTime_i{ types::timepoint_t::Now() } }
     {
-        add_timer(1, [&](){ updateServerStatus(); }, true);
-        add_timer(10, [&](){ cleanUpClients(); }, true);
+        add_timer(1s, [&](){ updateServerStatus(); }, true);
+        add_timer(10s, [&](){ cleanUpClients(); }, true);
 
         for (listener_ptr_t& listener : listeners)
         {
@@ -94,8 +98,8 @@ namespace dots
                 ::getrusage(RUSAGE_SELF, &usage);
 
                 ds.resourceUsage = DotsResourceUsage{
-                    DotsResourceUsage::userCpuTime_i{ usage.ru_utime },
-                    DotsResourceUsage::systemCpuTime_i{ usage.ru_stime },
+                    DotsResourceUsage::userCpuTime_i{ type::posix::Timeval{ usage.ru_utime } },
+                    DotsResourceUsage::systemCpuTime_i{ type::posix::Timeval{ usage.ru_stime } },
                     DotsResourceUsage::maxRss_i{ usage.ru_maxrss },
                     DotsResourceUsage::minorFaults_i{ usage.ru_minflt },
                     DotsResourceUsage::majorFaults_i{ usage.ru_majflt },

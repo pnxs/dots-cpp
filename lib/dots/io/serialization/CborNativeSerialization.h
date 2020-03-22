@@ -1,11 +1,30 @@
 #pragma once
 
-#include "dots/cpp_config.h"
 #include <dots/type/StructDescriptor.h>
 #include <dots/type/FundamentalTypes.h>
-#include "dots/dots_base.h"
 
 namespace dots {
+
+struct [[deprecated("only available for backwards compatibility")]] DynamicInstance
+{
+    DynamicInstance(const type::StructDescriptor<>* _td, const void* _obj): td(_td), obj(_obj) {}
+
+    template<class T>
+    DynamicInstance(const T& objReference)
+    :td(&T::_Descriptor()), obj(&objReference) { }
+
+    const type::StructDescriptor<>* td;
+    const void* obj;
+};
+
+
+template<class T>
+struct [[deprecated("only available for backwards compatibility")]] DynamicInstanceHelper: public DynamicInstance
+{
+    DynamicInstanceHelper(const T& objReference)
+    :DynamicInstance(T::_td(), &objReference)
+    { }
+};
 
 namespace type {
     struct Struct;

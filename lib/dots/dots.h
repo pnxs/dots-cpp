@@ -1,14 +1,14 @@
 #pragma once
 #include <functional>
 #include <string_view>
-#include <dots/common/Chrono.h>
+#include <dots/type/Chrono.h>
 #include <dots/io/services/Timer.h>
 #include <dots/io/GuestTransceiver.h>
 #include <dots/io/Publisher.h>
 
 namespace dots
 {
-	Timer::id_t add_timer(const pnxs::chrono::Duration& timeout, const std::function<void()>& handler, bool periodic = false);
+	Timer::id_t add_timer(const type::Duration& timeout, const std::function<void()>& handler, bool periodic = false);
 	void remove_timer(Timer::id_t id);
 
 	void add_fd_handler(int fileDescriptor, const std::function<void()>& handler);
