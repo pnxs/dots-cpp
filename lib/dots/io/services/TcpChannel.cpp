@@ -8,7 +8,7 @@ namespace dots
 	TcpChannel::TcpChannel(boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port) :
 		TcpChannel(boost::asio::ip::tcp::socket{ ioContext })
 	{
-		boost::asio::ip::tcp::resolver resolver{ m_socket.get_executor().context() };
+		boost::asio::ip::tcp::resolver resolver{ m_socket.get_executor() };
 		auto endpoints = resolver.resolve(boost::asio::ip::tcp::socket::protocol_type::v4(), host, port, boost::asio::ip::resolver_query_base::numeric_service);
 
 		for (const boost::asio::ip::tcp::endpoint& endpoint: endpoints)
