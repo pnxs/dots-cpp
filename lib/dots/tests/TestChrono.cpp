@@ -136,10 +136,10 @@ TEST_F(TestTimePoint, toString)
 
 TEST_F(TestTimePoint, fromString)
 {
-    EXPECT_EQ(TimePoint::FromString(UnixTimestampString, {}).duration().count(), UnixTimestampValue);
-    EXPECT_EQ(TimePoint::FromString(UnixTimestampISO8601UTC).duration().count(), UnixTimestampValue);
-    EXPECT_EQ(TimePoint::FromString(UnixTimestampISO8601CET).duration().count(), UnixTimestampValue);
-    EXPECT_EQ(TimePoint::FromString(UnixTimestampISO8601SRET).duration().count(), UnixTimestampValue);
+    EXPECT_EQ(TimePoint::FromString(UnixTimestampString, {}).duration().toFractionalSeconds(), UnixTimestampValue);
+    EXPECT_EQ(TimePoint::FromString(UnixTimestampISO8601UTC).duration().toFractionalSeconds(), UnixTimestampValue);
+    EXPECT_EQ(TimePoint::FromString(UnixTimestampISO8601CET).duration().toFractionalSeconds(), UnixTimestampValue);
+    EXPECT_EQ(TimePoint::FromString(UnixTimestampISO8601SRET).duration().toFractionalSeconds(), UnixTimestampValue);
 }
 
 struct TestSteadyTimePoint : ::testing::Test
@@ -161,6 +161,6 @@ TEST_F(TestSteadyTimePoint, toString)
 
 TEST_F(TestSteadyTimePoint, fromString)
 {
-    EXPECT_EQ(SteadyTimePoint::FromString(SteadyTimestampString, {}).duration().count(), SteadyTimestampValue);
-    EXPECT_EQ(SteadyTimePoint::FromString(SteadyTimestampISO8601).duration().count(), SteadyTimestampValue);
+    EXPECT_EQ(SteadyTimePoint::FromString(SteadyTimestampString, {}).duration().toFractionalSeconds(), SteadyTimestampValue);
+    EXPECT_EQ(SteadyTimePoint::FromString(SteadyTimestampISO8601).duration().toFractionalSeconds(), SteadyTimestampValue);
 }

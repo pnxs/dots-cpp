@@ -40,6 +40,7 @@ namespace dots::type
         constexpr explicit operator rep() const { return count(); }
 
         constexpr bool isZero() const { return *this == base_t::zero(); }
+        constexpr double toFractionalSeconds() const { return std::chrono::duration_cast<std::chrono::duration<double>>(*this).count(); }
         constexpr int toSeconds() const { return std::chrono::round<std::chrono::seconds>(*this).count(); }
         constexpr int toMilliseconds() const { return std::chrono::round<std::chrono::milliseconds>(*this).count(); }
         constexpr int toMicroseconds() const { return std::chrono::round<std::chrono::microseconds>(*this).count(); }

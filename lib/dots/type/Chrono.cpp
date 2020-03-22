@@ -136,7 +136,7 @@ namespace dots::type
     {
         if (fmt.empty())
         {
-            return std::to_string(duration().count());
+            return std::to_string(duration().toFractionalSeconds());
         }
         else
         {

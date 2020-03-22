@@ -108,7 +108,7 @@ namespace dots::type::posix
         constexpr Timeval(const Duration& duration) :
             Timeval(timeval{ 
                 static_cast<time_t>(duration.toSeconds()),
-                static_cast<suseconds_t>(::nearbyint((duration.count() - duration.toSeconds()) * MicrosecondsPerSecond))
+                static_cast<suseconds_t>(::nearbyint((duration.toFractionalSeconds() - duration.toSeconds()) * MicrosecondsPerSecond))
             })
         {
         }
