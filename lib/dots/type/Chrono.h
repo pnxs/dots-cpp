@@ -76,8 +76,6 @@ namespace dots::type
         using base_t::operator+=;
         using base_t::operator-=;
 
-        explicit operator duration_t::rep() const { return duration().count(); }
-
         constexpr duration_t duration() const { return base_t::time_since_epoch(); }
         constexpr bool isZero() const { return duration().isZero(); }
 
