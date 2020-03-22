@@ -4,7 +4,7 @@
 
 namespace dots
 {
-	WebSocketListener::WebSocketListener(asio::io_context& ioContext, uint16_t port)
+	WebSocketListener::WebSocketListener(boost::asio::io_context& ioContext, uint16_t port)
 	{
 		m_wsServer.init_asio(&ioContext);
         m_wsServer.set_access_channels(websocketpp::log::alevel::none);

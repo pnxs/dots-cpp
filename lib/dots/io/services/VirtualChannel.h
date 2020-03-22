@@ -2,7 +2,7 @@
 #include <functional>
 #include <utility>
 #include <set>
-#include <asio.hpp>
+#include <boost/asio.hpp>
 #include <dots/io/services/Channel.h>
 #include <DotsConnectionState.dots.h>
 
@@ -10,8 +10,8 @@ namespace dots
 {
 	struct VirtualChannel : Channel
 	{
-		VirtualChannel(asio::io_context& ioContext, std::string serverName = "VirtualChannel", bool skipHandshake = false);
-		VirtualChannel(asio::ip::tcp::socket&& socket);
+		VirtualChannel(boost::asio::io_context& ioContext, std::string serverName = "VirtualChannel", bool skipHandshake = false);
+		VirtualChannel(boost::asio::ip::tcp::socket&& socket);
 		VirtualChannel(const VirtualChannel& other) = delete;
 		VirtualChannel(VirtualChannel&& other) = delete;
 		virtual ~VirtualChannel() = default;
@@ -38,7 +38,7 @@ namespace dots
         static constexpr uint32_t ServerId = 1;
         static constexpr uint32_t ClientId = 2;
 
-		std::reference_wrapper<asio::io_context> m_ioContext;
+		std::reference_wrapper<boost::asio::io_context> m_ioContext;
 		std::string m_serverName;
         DotsConnectionState m_connectionState;
 		std::set<std::string> m_subscribedTypes;

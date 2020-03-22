@@ -5,7 +5,7 @@
 
 namespace dots
 {
-	WebSocketChannel::WebSocketChannel(asio::io_context& ioContext, const std::string_view& host, const std::string_view& port)
+	WebSocketChannel::WebSocketChannel(boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port)
 	{
 		std::string uri = "ws://" + std::string{ host } + ":" + port.data();
 

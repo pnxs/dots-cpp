@@ -9,14 +9,14 @@
 
 namespace dots
 {
-	VirtualChannel::VirtualChannel(asio::io_context& ioContext, std::string serverName/* = "VirtualChannel"*/, bool skipHandshake/* = false*/) :
+	VirtualChannel::VirtualChannel(boost::asio::io_context& ioContext, std::string serverName/* = "VirtualChannel"*/, bool skipHandshake/* = false*/) :
 		m_ioContext{ std::ref(ioContext) },
         m_serverName{ std::move(serverName) }
 	{
         if (skipHandshake)
         {
             m_connectionState = DotsConnectionState::connected;
-            asio::post(m_ioContext.get(), [this](){ onConnected(); });
+            boost::asio::post(m_ioContext.get(), [this](){ onConnected(); });
         }
         else
         {
@@ -26,7 +26,7 @@ namespace dots
 
     void VirtualChannel::spoof(const DotsTransportHeader& header, const type::Struct& instance)
     {
-        asio::post(m_ioContext.get(), [this, _header = header, _instance = type::AnyStruct{ instance }]() mutable
+        boost::asio::post(m_ioContext.get(), [this, _header = header, _instance = type::AnyStruct{ instance }]() mutable
         {
             _header.dotsHeader->sender.constructOrValue(ClientId);
             _header.dotsHeader->serverSentTime(types::timepoint_t::Now());
@@ -94,7 +94,7 @@ namespace dots
                         {
                             m_connectionState = DotsConnectionState::connected;
                             spoof(ServerId, dotsMsgConnectResponse);
-                            asio::post(m_ioContext.get(), [this](){ onConnected(); });
+                            boost::asio::post(m_ioContext.get(), [this](){ onConnected(); });
                         }
                     }
                     break;
@@ -103,7 +103,7 @@ namespace dots
                     {
                         m_connectionState = DotsConnectionState::connected;
                         spoof(ServerId, DotsMsgConnectResponse{ DotsMsgConnectResponse::preloadFinished_i{ true } });
-                        asio::post(m_ioContext.get(), [this](){ onConnected(); });
+                        boost::asio::post(m_ioContext.get(), [this](){ onConnected(); });
                     }
                     [[fallthrough]];
                 case DotsConnectionState::connected:

@@ -4,7 +4,7 @@
 
 namespace dots
 {
-	Timer::Timer(asio::io_context& ioContext, id_t id, const type::Duration& interval, const callback_t& cb, bool periodic) :
+	Timer::Timer(boost::asio::io_context& ioContext, id_t id, const type::Duration& interval, const callback_t& cb, bool periodic) :
 		m_timer(ioContext),
 		m_cb(cb),
 		m_id(id),
@@ -39,9 +39,9 @@ namespace dots
 		m_timer.async_wait(FUN(*this, onTimeout));
 		}
 
-	void Timer::onTimeout(const asio::error_code& error)
+	void Timer::onTimeout(const boost::system::error_code& error)
 	{
-		if (error != asio::error::operation_aborted)
+		if (error != boost::asio::error::operation_aborted)
 		{
 			if (m_periodic)
 			{
@@ -51,7 +51,7 @@ namespace dots
 			else
 			{
 				m_cb();
-				asio::use_service<TimerService>(static_cast<asio::execution_context&>(m_timer.get_executor().context())).removeTimer(m_id);
+				boost::asio::use_service<TimerService>(static_cast<boost::asio::execution_context&>(m_timer.get_executor().context())).removeTimer(m_id);
 			}
 		}
 	}

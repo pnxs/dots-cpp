@@ -1,16 +1,16 @@
 #pragma once
-#include <asio.hpp>
+#include <boost/asio.hpp>
 #include <dots/io/services/Listener.h>
 #include <dots/io/services/Channel.h>
 
 namespace dots
 {
-	struct ChannelService : asio::execution_context::service
+	struct ChannelService : boost::asio::execution_context::service
 	{
 		using key_type = ChannelService;
 
-		explicit ChannelService(asio::execution_context& executionContext) :
-			asio::execution_context::service(executionContext)
+		explicit ChannelService(boost::asio::execution_context& executionContext) :
+			boost::asio::execution_context::service(executionContext)
 		{
 			/* do nothing */
 		}
@@ -24,13 +24,13 @@ namespace dots
 		template <typename TListener, typename... Args>
 		listener_ptr_t makeListener(Args&&... args)
 		{
-			return std::make_unique<TListener>(static_cast<asio::io_context&>(context()), std::forward<Args>(args)...);
+			return std::make_unique<TListener>(static_cast<boost::asio::io_context&>(context()), std::forward<Args>(args)...);
 		}
 
 		template <typename TChannel, typename... Args>
 		channel_ptr_t makeChannel(Args&&... args)
 		{
-			auto channel = std::make_shared<TChannel>(static_cast<asio::io_context&>(context()), std::forward<Args>(args)...);
+			auto channel = std::make_shared<TChannel>(static_cast<boost::asio::io_context&>(context()), std::forward<Args>(args)...);
 			return channel;
 		}
 

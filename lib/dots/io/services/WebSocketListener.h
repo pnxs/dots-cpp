@@ -1,6 +1,6 @@
 #pragma once
 #include <functional>
-#include <asio.hpp>
+#include <boost/asio.hpp>
 #include <websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/server.hpp>
 #include <dots/io/services/Listener.h>
@@ -9,7 +9,7 @@ namespace dots
 {
 	struct WebSocketListener : Listener
 	{
-		WebSocketListener(asio::io_context& ioContext, uint16_t port);
+		WebSocketListener(boost::asio::io_context& ioContext, uint16_t port);
 		WebSocketListener(const WebSocketListener& other) = delete;
 		WebSocketListener(WebSocketListener&& other) = delete;
 		~WebSocketListener() = default;

@@ -32,11 +32,11 @@ int main(int argc, char* argv[])
 
     auto serverName = vm["server-name"].as<string>();
 
-   asio::io_context& io_context = dots::global_io_context();
+   boost::asio::io_context& io_context = dots::global_io_context();
 
     LOG_NOTICE_S("dotsd server");
 
-    asio::signal_set signals(io_context);
+    boost::asio::signal_set signals(io_context);
 
     signals.add(SIGINT);
     signals.add(SIGTERM);

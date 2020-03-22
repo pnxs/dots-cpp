@@ -1,7 +1,7 @@
 #pragma once
 #include <optional>
 #include <string_view>
-#include <asio.hpp>
+#include <boost/asio.hpp>
 #include <websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/server.hpp>
 #include <websocketpp/client.hpp>
@@ -17,7 +17,7 @@ namespace dots
 		using ws_message_ptr_t = ws_server_t::message_ptr;
 		using ws_connection_hdl_t = websocketpp::connection_hdl;
 
-        WebSocketChannel(asio::io_context& ioContext, const std::string_view& host, const std::string_view& port);
+        WebSocketChannel(boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port);
 		WebSocketChannel(ws_connection_ptr_t connection);
 		WebSocketChannel(const WebSocketChannel& other) = delete;
 		WebSocketChannel(WebSocketChannel&& other) = delete;
