@@ -5,21 +5,21 @@
 
 namespace dots
 {
-	TcpChannel::TcpChannel(asio::io_context& ioContext, const std::string_view& host, const std::string_view& port) :
-		TcpChannel(asio::ip::tcp::socket{ ioContext })
+	TcpChannel::TcpChannel(boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port) :
+		TcpChannel(boost::asio::ip::tcp::socket{ ioContext })
 	{
-		asio::ip::tcp::resolver resolver{ m_socket.get_executor().context() };
-		auto endpoints = resolver.resolve(asio::ip::tcp::socket::protocol_type::v4(), host, port, asio::ip::resolver_query_base::numeric_service);
+		boost::asio::ip::tcp::resolver resolver{ m_socket.get_executor() };
+		auto endpoints = resolver.resolve(boost::asio::ip::tcp::socket::protocol_type::v4(), host, port, boost::asio::ip::resolver_query_base::numeric_service);
 
-		for (const asio::ip::tcp::endpoint& endpoint: endpoints)
+		for (const boost::asio::ip::tcp::endpoint& endpoint: endpoints)
 		{
 			try
 			{
 				m_socket.connect(endpoint);
 
-				m_socket.set_option(asio::ip::tcp::no_delay(true));
-				m_socket.set_option(asio::ip::tcp::socket::keep_alive(true));
-				m_socket.set_option(asio::socket_base::linger(true, 10));
+				m_socket.set_option(boost::asio::ip::tcp::no_delay(true));
+				m_socket.set_option(boost::asio::ip::tcp::socket::keep_alive(true));
+				m_socket.set_option(boost::asio::socket_base::linger(true, 10));
 
 				return;
 			}
@@ -32,7 +32,7 @@ namespace dots
 		throw std::runtime_error{ "could not open TCP connection: " + std::string{ host } + ":" + std::string{ port } };
 	}
 
-	TcpChannel::TcpChannel(asio::ip::tcp::socket&& socket) :		
+	TcpChannel::TcpChannel(boost::asio::ip::tcp::socket&& socket) :		
 		m_socket{ std::move(socket) },
 		m_headerSize(0)
 	{
@@ -55,10 +55,10 @@ namespace dots
 		auto serializedHeader = to_cbor(header_);
 		uint16_t headerSize = serializedHeader.size();
 
-		std::array<asio::const_buffer, 3> buffers{
-			asio::buffer(&headerSize, sizeof(headerSize)),
-			asio::buffer(serializedHeader.data(), serializedHeader.size()),
-			asio::buffer(serializedInstance.data(), serializedInstance.size())
+		std::array<boost::asio::const_buffer, 3> buffers{
+			boost::asio::buffer(&headerSize, sizeof(headerSize)),
+			boost::asio::buffer(serializedHeader.data(), serializedHeader.size()),
+			boost::asio::buffer(serializedInstance.data(), serializedInstance.size())
 		};
 
 		m_socket.write_some(buffers);
@@ -66,7 +66,7 @@ namespace dots
 
 	void TcpChannel::asynReadHeaderLength()
 	{
-		asio::async_read(m_socket, asio::buffer(&m_headerSize, sizeof(m_headerSize)), [&, this_{ weak_from_this() }](auto ec, auto /*bytes*/)
+		boost::asio::async_read(m_socket, boost::asio::buffer(&m_headerSize, sizeof(m_headerSize)), [&, this_{ weak_from_this() }](auto ec, auto /*bytes*/)
 		{
 			try
 			{
@@ -93,7 +93,7 @@ namespace dots
 
 	void TcpChannel::asyncReadHeader()
 	{
-		asio::async_read(m_socket, asio::buffer(m_headerBuffer.data(), m_headerSize), [&, this_{ weak_from_this() }](auto ec, auto /*bytes*/)
+		boost::asio::async_read(m_socket, boost::asio::buffer(m_headerBuffer.data(), m_headerSize), [&, this_{ weak_from_this() }](auto ec, auto /*bytes*/)
 		{
 			try
 			{
@@ -125,7 +125,7 @@ namespace dots
 
 	void TcpChannel::asyncReadInstance()
 	{
-		asio::async_read(m_socket, asio::buffer(m_instanceBuffer), [&, this_{ weak_from_this() }](auto ec, auto /*bytes*/)
+		boost::asio::async_read(m_socket, boost::asio::buffer(m_instanceBuffer), [&, this_{ weak_from_this() }](auto ec, auto /*bytes*/)
 		{
 			try
 			{
@@ -154,9 +154,9 @@ namespace dots
 		});
 	}
 
-	void TcpChannel::verifyErrorCode(const asio::error_code& ec)
+	void TcpChannel::verifyErrorCode(const boost::system::error_code& ec)
 	{
-		if (ec == asio::error::misc_errors::eof || ec == asio::error::basic_errors::bad_descriptor)
+		if (ec == boost::asio::error::misc_errors::eof || ec == boost::asio::error::basic_errors::bad_descriptor)
 		{
 			throw std::runtime_error{ "channel was closed unexpectedly: " + ec.message() };
 		}

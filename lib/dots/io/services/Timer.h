@@ -1,7 +1,7 @@
 #pragma once
 
 #include <dots/type/Chrono.h>
-#include <asio.hpp>
+#include <boost/asio.hpp>
 
 namespace dots
 {
@@ -10,7 +10,7 @@ namespace dots
 		using id_t = uint32_t;
 		using callback_t = std::function<void()>;
 
-		Timer(asio::io_context& ioContext, id_t id, const type::Duration& interval, const callback_t& cb, bool periodic = false);
+		Timer(boost::asio::io_context& ioContext, id_t id, const type::Duration& interval, const callback_t& cb, bool periodic = false);
 		Timer(const Timer& other) = delete;
 		Timer(Timer&& other) = delete;
 		~Timer();
@@ -22,11 +22,11 @@ namespace dots
 
 	private:		
 
-		using timer_t = asio::steady_timer;
+		using timer_t = boost::asio::steady_timer;
 		using duration_t = timer_t::clock_type::duration;
 
 		void callCb();
-		void onTimeout(const asio::error_code& error);
+		void onTimeout(const boost::system::error_code& error);
 		void startRelative(const type::Duration& duration);
 		void startAbsolute(const type::SteadyTimePoint& timepoint);
 

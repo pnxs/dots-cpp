@@ -2,7 +2,7 @@
 
 namespace dots
 {
-	TcpListener::TcpListener(asio::io_context& ioContext, std::string address, std::string port, std::optional<int> backlog/* = std::nullopt*/) :
+	TcpListener::TcpListener(boost::asio::io_context& ioContext, std::string address, std::string port, std::optional<int> backlog/* = std::nullopt*/) :
 		m_address{ std::move(address) },
 		m_port{ std::move(port) },
 		m_acceptor{ ioContext },
@@ -10,11 +10,11 @@ namespace dots
 	{
 		try
         {
-            asio::ip::tcp::resolver resolver{ ioContext };
-		    asio::ip::tcp::endpoint endpoint = *resolver.resolve({ m_address, m_port });
+            boost::asio::ip::tcp::resolver resolver{ ioContext };
+		    boost::asio::ip::tcp::endpoint endpoint = *resolver.resolve({ m_address, m_port });
 
 		    m_acceptor.open(endpoint.protocol());
-		    m_acceptor.set_option(asio::ip::tcp::acceptor::reuse_address(true));
+		    m_acceptor.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
 		    m_acceptor.bind(endpoint);
 
 		    if (backlog == std::nullopt)
@@ -34,7 +34,7 @@ namespace dots
 
 	void TcpListener::asyncAcceptImpl()
 	{
-		m_acceptor.async_accept(m_socket, [this](const asio::error_code& error)
+		m_acceptor.async_accept(m_socket, [this](const boost::system::error_code& error)
 		{
 			if (!m_acceptor.is_open())
 			{
@@ -50,19 +50,19 @@ namespace dots
 			try
 			{
 				m_socket.non_blocking(true);
-				m_socket.set_option(asio::ip::tcp::no_delay(true));
-				m_socket.set_option(asio::ip::tcp::socket::keep_alive(true));
+				m_socket.set_option(boost::asio::ip::tcp::no_delay(true));
+				m_socket.set_option(boost::asio::ip::tcp::socket::keep_alive(true));
 
 				constexpr int MinimumSendBufferSize = 1024 * 1024;
-				asio::socket_base::send_buffer_size sendBufferSize;
+				boost::asio::socket_base::send_buffer_size sendBufferSize;
 				m_socket.get_option(sendBufferSize);
 
 				if (sendBufferSize.value() < MinimumSendBufferSize)
 				{
-					m_socket.set_option(asio::socket_base::send_buffer_size(MinimumSendBufferSize));
+					m_socket.set_option(boost::asio::socket_base::send_buffer_size(MinimumSendBufferSize));
 				}
 
-				// note: this move is explicitly allowed according to the ASIO v1.12.2 documentation of the socket
+				// note: this move is explicitly allowed according to the Boost ASIO v1.69 documentation of the socket
 				processAccept(std::make_shared<TcpChannel>(std::move(m_socket)));
 			}
 			catch (const std::exception& e)
@@ -71,7 +71,7 @@ namespace dots
 				{
 					processError(std::string{ "failed to configure TCP socket -> " } + e.what());
 
-					m_socket.shutdown(asio::ip::tcp::socket::shutdown_both);
+					m_socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
 					m_socket.close();
 				}
 				catch (const std::exception& e)

@@ -9,8 +9,7 @@ option(BUILD_DOTS_SHARED "Build DOTS as a shared instead of a static library" OF
 
 # dependencies
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
-find_package(ASIO REQUIRED MODULE)
-find_package(Boost 1.59 REQUIRED COMPONENTS filesystem iostreams program_options)
+find_package(Boost 1.72 REQUIRED COMPONENTS filesystem iostreams program_options)
 find_package(Rapidjson REQUIRED MODULE)
 #find_package(cborcpp REQUIRED) (uncomment when dependency is no longer part of build tree)
 find_package(Websocketpp REQUIRED MODULE)
@@ -115,12 +114,10 @@ target_compile_options(${TARGET_NAME}
 )
 target_compile_definitions(${TARGET_NAME}
 	PUBLIC
-		$<BUILD_INTERFACE:ASIO_STANDALONE>
-		$<BUILD_INTERFACE:ASIO_DISABLE_EPOLL>
+		$<BUILD_INTERFACE:BOOST_ASIO_DISABLE_EPOLL>
 )
 target_link_libraries(${TARGET_NAME}
 	PUBLIC
-		$<BUILD_INTERFACE:ASIO::ASIO>
 		$<BUILD_INTERFACE:Websocketpp::websocketpp>
 		Boost::boost
 		Boost::program_options

@@ -6,7 +6,7 @@
 
 namespace dots::io::posix
 {
-	UdsChannel::UdsChannel(asio::io_context& ioContext, const std::string_view& path) :
+	UdsChannel::UdsChannel(boost::asio::io_context& ioContext, const std::string_view& path) :
 		m_endpoint{ path.data() },
 	    m_socket{ ioContext },
 	    m_headerSize(0)
@@ -26,7 +26,7 @@ namespace dots::io::posix
 		IgnorePipeSignals();
 	}
 
-	UdsChannel::UdsChannel(asio::local::stream_protocol::socket&& socket) :
+	UdsChannel::UdsChannel(boost::asio::local::stream_protocol::socket&& socket) :
 	    m_endpoint{ socket.remote_endpoint() },
 		m_socket{ std::move(socket) },
 		m_headerSize(0)
@@ -52,10 +52,10 @@ namespace dots::io::posix
 		auto serializedHeader = to_cbor(header_);
 		uint16_t headerSize = serializedHeader.size();
 
-		std::array<asio::const_buffer, 3> buffers{
-			asio::buffer(&headerSize, sizeof(headerSize)),
-			asio::buffer(serializedHeader.data(), serializedHeader.size()),
-			asio::buffer(serializedInstance.data(), serializedInstance.size())
+		std::array<boost::asio::const_buffer, 3> buffers{
+			boost::asio::buffer(&headerSize, sizeof(headerSize)),
+			boost::asio::buffer(serializedHeader.data(), serializedHeader.size()),
+			boost::asio::buffer(serializedInstance.data(), serializedInstance.size())
 		};
 
 		m_socket.write_some(buffers);
@@ -63,7 +63,7 @@ namespace dots::io::posix
 
 	void UdsChannel::asynReadHeaderLength()
 	{
-		asio::async_read(m_socket, asio::buffer(&m_headerSize, sizeof(m_headerSize)), [&, this_{ weak_from_this() }](auto ec, auto /*bytes*/)
+		boost::asio::async_read(m_socket, boost::asio::buffer(&m_headerSize, sizeof(m_headerSize)), [&, this_{ weak_from_this() }](auto ec, auto /*bytes*/)
 		{
 			try
 			{
@@ -90,7 +90,7 @@ namespace dots::io::posix
 
 	void UdsChannel::asyncReadHeader()
 	{
-		asio::async_read(m_socket, asio::buffer(m_headerBuffer.data(), m_headerSize), [&, this_{ weak_from_this() }](auto ec, auto /*bytes*/)
+		boost::asio::async_read(m_socket, boost::asio::buffer(m_headerBuffer.data(), m_headerSize), [&, this_{ weak_from_this() }](auto ec, auto /*bytes*/)
 		{
 			try
 			{
@@ -122,7 +122,7 @@ namespace dots::io::posix
 
 	void UdsChannel::asyncReadInstance()
 	{
-		asio::async_read(m_socket, asio::buffer(m_instanceBuffer), [&, this_{ weak_from_this() }](auto ec, auto /*bytes*/)
+		boost::asio::async_read(m_socket, boost::asio::buffer(m_instanceBuffer), [&, this_{ weak_from_this() }](auto ec, auto /*bytes*/)
 		{
 			try
 			{
@@ -151,9 +151,9 @@ namespace dots::io::posix
 		});
 	}
 
-	void UdsChannel::verifyErrorCode(const asio::error_code& ec)
+	void UdsChannel::verifyErrorCode(const boost::system::error_code& ec)
 	{
-		if (ec == asio::error::misc_errors::eof || ec == asio::error::basic_errors::bad_descriptor)
+		if (ec == boost::asio::error::misc_errors::eof || ec == boost::asio::error::basic_errors::bad_descriptor)
 		{
 			throw std::runtime_error{ "channel was closed unexpectedly: " + ec.message() };
 		}
