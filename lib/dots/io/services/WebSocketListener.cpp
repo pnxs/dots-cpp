@@ -4,39 +4,81 @@
 
 namespace dots
 {
-	WebSocketListener::WebSocketListener(boost::asio::io_context& ioContext, uint16_t port)
+	WebSocketListener::WebSocketListener(boost::asio::io_context& ioContext, std::string address, std::string port, std::optional<int> backlog/* = std::nullopt*/) :
+        m_address{ std::move(address) },
+		m_port{ std::move(port) },
+        m_acceptor{ ioContext },
+        m_socket{ ioContext }
 	{
-		m_wsServer.init_asio(&ioContext);
-        m_wsServer.set_access_channels(websocketpp::log::alevel::none);
-        m_wsServer.set_error_channels(websocketpp::log::elevel::none);
-        m_wsServer.set_reuse_addr(true);
-        m_wsServer.listen(port);
+        try
+        {
+            boost::beast::net::ip::tcp::resolver resolver{ ioContext };
+		    boost::beast::net::ip::tcp::endpoint endpoint = *resolver.resolve({ m_address, m_port });
+
+		    m_acceptor.open(endpoint.protocol());
+		    m_acceptor.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
+		    m_acceptor.bind(endpoint);
+
+		    if (backlog == std::nullopt)
+		    {
+			    m_acceptor.listen();
+		    }
+		    else
+		    {
+			    m_acceptor.listen(*backlog);
+		    }
+        }
+        catch (const std::exception& e)
+        {
+			throw std::runtime_error{ "failed creating WebSocket listener at address '" + m_address + ":" + m_port + "' -> " + e.what() };
+        }
 	}
 
 	void WebSocketListener::asyncAcceptImpl()
 	{
-		m_wsServer.set_validate_handler([this](websocketpp::connection_hdl hdl)
+        m_acceptor.async_accept(m_socket, [this](const boost::system::error_code& error)
 		{
-			ws_connection_ptr_t connection = m_wsServer.get_con_from_hdl(hdl);
-            const std::vector<std::string>& subProtocols = connection->get_requested_subprotocols();
-            auto it = std::find(subProtocols.begin(), subProtocols.end(), "dots");
+			try
+			{
+				if (!m_acceptor.is_open())
+			    {
+				    return;
+			    }
+			    
+			    if (error)
+			    {
+				    processError(std::make_exception_ptr(std::runtime_error{ "failed listening on WebSocket endpoint at address '" + m_address + ":" + m_port + "' -> " + error.message() }));
+				    return;
+			    }
 
-            if (it == subProtocols.end())
-            {
-                return false;
-            }
-            else
-            {
-                connection->select_subprotocol(*it);
-                connection->set_open_handler([this, connection](ws_connection_hdl_t /*hdl*/)
+				// note: this move is explicitly allowed according to the Boost ASIO v1.72 documentation of the socket
+				WebSocketChannel::ws_stream_t stream{ std::move(m_socket) };
+
+				stream.set_option(boost::beast::websocket::stream_base::timeout::suggested(boost::beast::role_type::server));
+                stream.set_option(boost::beast::websocket::stream_base::decorator([](boost::beast::websocket::response_type& res)
                 {
-                    processAccept(std::make_shared<WebSocketChannel>(connection));
-                });
+                    res.set(boost::beast::http::field::server, std::string(BOOST_BEAST_VERSION_STRING) + " DOTS WebSocket server");
+					res.set(boost::beast::http::field::sec_websocket_protocol, WebSocketChannel::Subprotocol);
+                }));
 
-                return true;
-            }
+				stream.accept();
+				
+				processAccept(std::make_shared<WebSocketChannel>(std::move(stream)));
+			}
+			catch (const std::exception& e)
+			{
+				try
+				{
+					processError(std::string{ "failed to configure WebSocket stream -> " } + e.what());
+
+					m_socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
+					m_socket.close();
+				}
+				catch (const std::exception& e)
+				{
+					processError(std::string{ "failed to shutdown and close WebSocket stream -> " } + e.what());
+				}
+			}
 		});
-
-        m_wsServer.start_accept();
 	}
 }
