@@ -12,7 +12,6 @@ list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
 find_package(Boost 1.72 REQUIRED COMPONENTS filesystem iostreams program_options)
 find_package(Rapidjson REQUIRED MODULE)
 #find_package(cborcpp REQUIRED) (uncomment when dependency is no longer part of build tree)
-find_package(Websocketpp REQUIRED MODULE)
 
 # target
 if (BUILD_DOTS_SHARED)
@@ -118,7 +117,6 @@ target_compile_definitions(${TARGET_NAME}
 )
 target_link_libraries(${TARGET_NAME}
 	PUBLIC
-		$<BUILD_INTERFACE:Websocketpp::websocketpp>
 		Boost::boost
 		Boost::program_options
 		Boost::iostreams

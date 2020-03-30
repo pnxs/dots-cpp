@@ -1,15 +1,14 @@
 #pragma once
 #include <functional>
 #include <boost/asio.hpp>
-#include <websocketpp/config/asio_no_tls.hpp>
-#include <websocketpp/server.hpp>
+#include <boost/beast.hpp>
 #include <dots/io/services/Listener.h>
 
 namespace dots
 {
 	struct WebSocketListener : Listener
 	{
-		WebSocketListener(boost::asio::io_context& ioContext, uint16_t port);
+		WebSocketListener(boost::asio::io_context& ioContext, std::string address, std::string port, std::optional<int> backlog = std::nullopt);
 		WebSocketListener(const WebSocketListener& other) = delete;
 		WebSocketListener(WebSocketListener&& other) = delete;
 		~WebSocketListener() = default;
@@ -23,10 +22,9 @@ namespace dots
 
 	private:
 
-        using ws_server_t = websocketpp::server<websocketpp::config::asio>;
-        using ws_connection_ptr_t = ws_server_t::connection_ptr;
-		using ws_connection_hdl_t = websocketpp::connection_hdl;
-
-		ws_server_t m_wsServer;
+		std::string m_address;
+		std::string m_port;
+		boost::asio::ip::tcp::acceptor m_acceptor;
+		boost::asio::ip::tcp::socket m_socket;
 	};
 }

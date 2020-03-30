@@ -5,54 +5,65 @@
 
 namespace dots
 {
-	WebSocketChannel::WebSocketChannel(boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port)
+	WebSocketChannel::WebSocketChannel(boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port) :
+	    m_stream{ ioContext }
 	{
-		std::string uri = "ws://" + std::string{ host } + ":" + port.data();
-
 		try
 		{
-			ws_client_t& client = m_client.emplace();
-			client.set_access_channels(websocketpp::log::alevel::none);
-        	client.set_error_channels(websocketpp::log::elevel::none);
-			client.init_asio(&ioContext);
+			boost::asio::ip::tcp::resolver resolver{ m_stream.get_executor() };
+		    auto endpoints = resolver.resolve(boost::asio::ip::tcp::socket::protocol_type::v4(), host, port, boost::asio::ip::resolver_query_base::numeric_service);
+			auto& socket = m_stream.next_layer();
+			socket.connect(endpoints.begin(), endpoints.end());
 
-			websocketpp::lib::error_code ec;
-			m_connection = client.get_connection(uri, ec);
-			verifyErrorCode(ec);
-			
-			m_connection->add_subprotocol("dots");
-			client.connect(m_connection);
+			m_stream.set_option(boost::beast::websocket::stream_base::timeout::suggested(boost::beast::role_type::client));
+            m_stream.set_option(boost::beast::websocket::stream_base::decorator([](boost::beast::websocket::request_type& req)
+            {
+                req.set(boost::beast::http::field::user_agent, std::string(BOOST_BEAST_VERSION_STRING) + " DOTS WebSocket client");
+				req.set(boost::beast::http::field::sec_websocket_protocol, Subprotocol);
+            }));
+
+			boost::beast::websocket::response_type res;
+			m_stream.handshake(res, host.data(), "/");
+
+			if (auto it = res.find(boost::beast::http::field::sec_websocket_protocol); it == res.end())
+			{
+				throw std::runtime_error{ "response is missing required subprotocol: " + std::string{ Subprotocol } };
+			}
+			else if (it->value() != Subprotocol)
+			{
+				throw std::runtime_error{ std::string{ "response has specified incompatible subprotocol: " } + std::string{ it->value().begin(), it->value().end() } + " != " + Subprotocol };
+			}
+
+			return;
 		}
 		catch (const std::exception& e)
 		{
-			throw std::runtime_error{ "could not open connection: " + uri + ": " + e.what() };
-		}		
+			throw std::runtime_error{ "could not open WebSocket connection to '" + std::string{ host } + ":" + std::string{ port } + "': " + e.what() };
+		}
 	}
 
-	WebSocketChannel::WebSocketChannel(ws_connection_ptr_t connection) :
-        m_connection(connection)
+	WebSocketChannel::WebSocketChannel(ws_stream_t&& stream) :
+        m_stream(std::move(stream))
 	{
 		/* do nothing */
 	}
 
 	void WebSocketChannel::asyncReceiveImpl()
 	{
-		m_connection->set_fail_handler([this](ws_connection_hdl_t /*hdl*/)
-		{ 
-			processError("channel encountered an error during async read");
-		});
-
-		m_connection->set_close_handler([this](ws_connection_hdl_t /*hdl*/)
-		{ 
-			processError("channel was closed unexpectedly");
-		});
-
-		m_connection->set_message_handler([this](ws_connection_hdl_t /*hdl*/, ws_message_ptr_t msg)
+		m_buffer.consume(m_buffer.size());
+		m_stream.async_read(m_buffer, [&, this_{ weak_from_this() }](std::error_code ec, size_t/* bytes*/)
 		{
 			try
 			{
+				if (this_.expired())
+			    {
+				    return;
+			    }
+			    
+			    verifyErrorCode(ec);
+
 				// TODO: optimize once JSON serializer has been reworked
-				const std::string& payload = msg->get_payload();
+				const std::string& payload = boost::beast::buffers_to_string(m_buffer.cdata());
 				rapidjson::Document document;
 				document.Parse(payload);
 
@@ -81,12 +92,13 @@ namespace dots
 				
 				type::AnyStruct instance{ *descriptor };
 				from_json(std::as_const(itInstance->value).GetObject(), instance.get());
+				
 				processReceive(header, Transmission{ std::move(instance) });
 			}
 			catch (...)
 			{
 				processError(std::current_exception());
-			}		
+			}
 		});
 	}
 
@@ -105,8 +117,7 @@ namespace dots
 			dots::to_json(instance, writer);
 		}
 		writer.EndObject();
-
-		websocketpp::lib::error_code ec = m_connection->send(buffer.GetString());
-		verifyErrorCode(ec);
+		
+		m_stream.write(boost::asio::buffer(std::string{ buffer.GetString() }));
 	}
 }

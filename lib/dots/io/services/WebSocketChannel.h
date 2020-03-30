@@ -2,23 +2,18 @@
 #include <optional>
 #include <string_view>
 #include <boost/asio.hpp>
-#include <websocketpp/config/asio_no_tls.hpp>
-#include <websocketpp/server.hpp>
-#include <websocketpp/client.hpp>
+#include <boost/beast.hpp>
 #include <dots/io/services/Channel.h>
 
 namespace dots
 {
 	struct WebSocketChannel : Channel
 	{
-        using ws_server_t = websocketpp::server<websocketpp::config::asio>;
-		using ws_client_t = websocketpp::client<websocketpp::config::asio>;
-        using ws_connection_ptr_t = ws_server_t::connection_ptr;
-		using ws_message_ptr_t = ws_server_t::message_ptr;
-		using ws_connection_hdl_t = websocketpp::connection_hdl;
+		using ws_stream_t = boost::beast::websocket::stream<boost::beast::tcp_stream>;
+		static constexpr char Subprotocol[] = "dots-json";
 
         WebSocketChannel(boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port);
-		WebSocketChannel(ws_connection_ptr_t connection);
+		WebSocketChannel(ws_stream_t&& stream);
 		WebSocketChannel(const WebSocketChannel& other) = delete;
 		WebSocketChannel(WebSocketChannel&& other) = delete;
 		virtual ~WebSocketChannel() = default;
@@ -33,7 +28,7 @@ namespace dots
 
 	private:
 
-		ws_connection_ptr_t m_connection;
-		std::optional<ws_client_t> m_client;
+		ws_stream_t m_stream;
+		boost::beast::flat_buffer m_buffer;
 	};
 }

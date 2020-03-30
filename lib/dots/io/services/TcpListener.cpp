@@ -62,7 +62,7 @@ namespace dots
 					m_socket.set_option(boost::asio::socket_base::send_buffer_size(MinimumSendBufferSize));
 				}
 
-				// note: this move is explicitly allowed according to the Boost ASIO v1.69 documentation of the socket
+				// note: this move is explicitly allowed according to the Boost ASIO v1.72 documentation of the socket
 				processAccept(std::make_shared<TcpChannel>(std::move(m_socket)));
 			}
 			catch (const std::exception& e)

@@ -61,7 +61,7 @@ namespace dots::io::posix
 					m_socket.set_option(boost::asio::socket_base::send_buffer_size(MinimumSendBufferSize));
 				}
 
-				// note: this move is explicitly allowed according to the ASIO v1.69 documentation of the socket
+				// note: this move is explicitly allowed according to the ASIO v1.72 documentation of the socket
 				processAccept(std::make_shared<UdsChannel>(std::move(m_socket)));
 			}
 			catch (const std::exception& e)
