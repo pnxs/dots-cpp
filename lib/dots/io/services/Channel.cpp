@@ -6,6 +6,14 @@
 
 namespace dots
 {
+    Channel::Channel(key_t key) :
+        shared_ptr_only(key),
+        m_asyncReceiveActive(false),
+        m_registry(nullptr)
+    {
+        /* do nothing */
+    }
+
     void Channel::asyncReceive(io::Registry& registry, receive_handler_t&& receiveHandler, error_handler_t&& errorHandler)
     {
         if (m_asyncReceiveActive)

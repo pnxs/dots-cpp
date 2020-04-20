@@ -6,7 +6,8 @@
 
 namespace dots::io::posix
 {
-	UdsChannel::UdsChannel(boost::asio::io_context& ioContext, const std::string_view& path) :
+	UdsChannel::UdsChannel(Channel::key_t key, boost::asio::io_context& ioContext, const std::string_view& path) :
+	    Channel(key),
 		m_endpoint{ path.data() },
 	    m_socket{ ioContext },
 	    m_headerSize(0)
@@ -26,7 +27,8 @@ namespace dots::io::posix
 		IgnorePipeSignals();
 	}
 
-	UdsChannel::UdsChannel(boost::asio::local::stream_protocol::socket&& socket) :
+	UdsChannel::UdsChannel(Channel::key_t key, boost::asio::local::stream_protocol::socket&& socket) :
+	    Channel(key),
 	    m_endpoint{ socket.remote_endpoint() },
 		m_socket{ std::move(socket) },
 		m_headerSize(0)

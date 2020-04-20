@@ -10,8 +10,7 @@ namespace dots
 {
 	struct VirtualChannel : Channel
 	{
-		VirtualChannel(boost::asio::io_context& ioContext, std::string serverName = "VirtualChannel", bool skipHandshake = false);
-		VirtualChannel(boost::asio::ip::tcp::socket&& socket);
+		VirtualChannel(Channel::key_t key, boost::asio::io_context& ioContext, std::string serverName = "VirtualChannel", bool skipHandshake = false);
 		VirtualChannel(const VirtualChannel& other) = delete;
 		VirtualChannel(VirtualChannel&& other) = delete;
 		virtual ~VirtualChannel() = default;

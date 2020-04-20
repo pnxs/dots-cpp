@@ -5,7 +5,8 @@
 
 namespace dots
 {
-	WebSocketChannel::WebSocketChannel(boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port) :
+	WebSocketChannel::WebSocketChannel(Channel::key_t key, boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port) :
+	    Channel(key),
 	    m_stream{ ioContext }
 	{
 		try
@@ -42,7 +43,8 @@ namespace dots
 		}
 	}
 
-	WebSocketChannel::WebSocketChannel(ws_stream_t&& stream) :
+	WebSocketChannel::WebSocketChannel(Channel::key_t key, ws_stream_t&& stream) :
+	    Channel(key),
         m_stream(std::move(stream))
 	{
 		/* do nothing */

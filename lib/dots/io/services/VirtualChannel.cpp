@@ -9,7 +9,8 @@
 
 namespace dots
 {
-	VirtualChannel::VirtualChannel(boost::asio::io_context& ioContext, std::string serverName/* = "VirtualChannel"*/, bool skipHandshake/* = false*/) :
+	VirtualChannel::VirtualChannel(Channel::key_t key, boost::asio::io_context& ioContext, std::string serverName/* = "VirtualChannel"*/, bool skipHandshake/* = false*/) :
+        Channel(key),
 		m_ioContext{ std::ref(ioContext) },
         m_serverName{ std::move(serverName) }
 	{

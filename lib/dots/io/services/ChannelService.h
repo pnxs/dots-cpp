@@ -30,7 +30,7 @@ namespace dots
 		template <typename TChannel, typename... Args>
 		channel_ptr_t makeChannel(Args&&... args)
 		{
-			auto channel = std::make_shared<TChannel>(static_cast<boost::asio::io_context&>(context()), std::forward<Args>(args)...);
+			auto channel = make_channel<TChannel>(static_cast<boost::asio::io_context&>(context()), std::forward<Args>(args)...);
 			return channel;
 		}
 

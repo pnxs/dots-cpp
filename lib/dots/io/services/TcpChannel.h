@@ -7,8 +7,8 @@ namespace dots
 {
 	struct TcpChannel : Channel
 	{
-		TcpChannel(boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port);
-		TcpChannel(boost::asio::ip::tcp::socket&& socket);
+		TcpChannel(Channel::key_t key, boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port);
+		TcpChannel(Channel::key_t key, boost::asio::ip::tcp::socket&& socket);
 		TcpChannel(const TcpChannel& other) = delete;
 		TcpChannel(TcpChannel&& other) = delete;
 		virtual ~TcpChannel() = default;

@@ -5,8 +5,8 @@
 
 namespace dots
 {
-	TcpChannel::TcpChannel(boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port) :
-		TcpChannel(boost::asio::ip::tcp::socket{ ioContext })
+	TcpChannel::TcpChannel(Channel::key_t key, boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port) :
+		TcpChannel(key, boost::asio::ip::tcp::socket{ ioContext })
 	{
 		boost::asio::ip::tcp::resolver resolver{ m_socket.get_executor() };
 		auto endpoints = resolver.resolve(boost::asio::ip::tcp::socket::protocol_type::v4(), host, port, boost::asio::ip::resolver_query_base::numeric_service);
@@ -32,7 +32,8 @@ namespace dots
 		throw std::runtime_error{ "could not open TCP connection: " + std::string{ host } + ":" + std::string{ port } };
 	}
 
-	TcpChannel::TcpChannel(boost::asio::ip::tcp::socket&& socket) :		
+	TcpChannel::TcpChannel(Channel::key_t key, boost::asio::ip::tcp::socket&& socket) :
+	    Channel(key),
 		m_socket{ std::move(socket) },
 		m_headerSize(0)
 	{
