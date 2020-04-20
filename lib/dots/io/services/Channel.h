@@ -28,8 +28,6 @@ namespace dots
 		void transmit(const DotsTransportHeader& header, const type::Struct& instance);
 		void transmit(const DotsTransportHeader& header, const Transmission& transmission);
 
-		virtual bool isVirtual() { return false; }
-
 	protected:
 
 		const io::Registry& registry() const;
