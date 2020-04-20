@@ -25,18 +25,6 @@ namespace dots::type
 		operator Struct&();
 		operator const Struct&() const;
 
-		template <typename T, std::enable_if_t<std::is_base_of_v<Struct, T>, int> = 0>
-		explicit operator const T&() const
-		{
-			return _instance->_to<T>();
-		}
-
-		template <typename T, std::enable_if_t<std::is_base_of_v<Struct, T>, int> = 0>
-		explicit operator T&()
-		{
-			return _instance->_to<T>();
-		}
-
 		template <typename T>
         bool is() const
         {
