@@ -54,9 +54,9 @@ namespace dots
 		template<typename T>
 		Subscription subscribe(receive_handler_t<T>&& handler)
 		{
-			return subscribe(T::_Descriptor(), [_handler(std::move(handler))](const DotsHeader& header, const type::Struct& instance)
+			return subscribe(T::_Descriptor(), [_handler(std::move(handler))](const DotsHeader& header, const type::Struct& instance, bool isFromMyself)
 			{
-				_handler(header, static_cast<const T&>(instance));
+				_handler(header, static_cast<const T&>(instance), isFromMyself);
 			});
 		}
 
