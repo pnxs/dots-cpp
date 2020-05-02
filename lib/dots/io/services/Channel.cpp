@@ -39,6 +39,17 @@ namespace dots
         asyncReceiveImpl();
     }
 
+    void Channel::transmit(const type::Struct& instance)
+    {
+        transmit(DotsTransportHeader{
+            DotsTransportHeader::destinationGroup_i{ instance._descriptor().name() },
+            DotsTransportHeader::dotsHeader_i{
+                DotsHeader::typeName_i{ instance._descriptor().name() },
+				DotsHeader::attributes_i{ instance._validProperties() }
+            }
+        }, instance);
+    }
+
     void Channel::transmit(const DotsHeader& dotsHeader, const type::Struct& instance)
     {
         transmit(DotsTransportHeader{ 
