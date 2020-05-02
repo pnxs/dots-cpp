@@ -110,6 +110,8 @@ namespace dots
 	std::shared_ptr<T> make_channel(Args&&... args)
 	{
 		static_assert(std::is_base_of_v<Channel, T>, "T must be derived from Channel");
+		static_assert(std::is_constructible_v<T, tools::shared_ptr_only::key_t, Args...>, "channel T is not constructible from Args");
+
 	    return tools::make_shared_ptr_only<T>(std::forward<Args>(args)...);
 	}
 }
