@@ -71,7 +71,9 @@ namespace dots
 		Channel& operator = (const Channel& rhs) = delete;
 		Channel& operator = (Channel&& rhs) = delete;
 
-		void asyncReceive(io::Registry& registry, receive_handler_t&& receiveHandler, error_handler_t&& errorHandler);
+		void init(io::Registry& registry);
+
+		void asyncReceive(receive_handler_t&& receiveHandler, error_handler_t&& errorHandler);
 		void transmit(const DotsTransportHeader& header, const type::Struct& instance);
 		void transmit(const DotsTransportHeader& header, const Transmission& transmission);
 
@@ -94,7 +96,9 @@ namespace dots
 		template <typename T, typename... Args>
         friend std::shared_ptr<T> make_channel(Args&&... args);
 
-		bool m_asyncReceiveActive;
+		void verifyInitialized() const;
+
+		bool m_initialized;
 		io::Registry* m_registry;
 		receive_handler_t m_receiveHandler;
 		error_handler_t m_errorHandler;

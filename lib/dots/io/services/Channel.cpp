@@ -8,26 +8,32 @@ namespace dots
 {
     Channel::Channel(key_t key) :
         shared_ptr_only(key),
-        m_asyncReceiveActive(false),
+        m_initialized(false),
         m_registry(nullptr)
     {
         /* do nothing */
     }
 
-    void Channel::asyncReceive(io::Registry& registry, receive_handler_t&& receiveHandler, error_handler_t&& errorHandler)
+    void Channel::init(io::Registry& registry)
     {
-        if (m_asyncReceiveActive)
+        if (m_initialized)
         {
-            throw std::logic_error{ "only one async receive can be active at the same time" };
+            throw std::logic_error{ "channel has already been initialized" };
         }
+
+        m_registry = &registry;
+        m_initialized = true;
+    }
+
+    void Channel::asyncReceive(receive_handler_t&& receiveHandler, error_handler_t&& errorHandler)
+    {
+        verifyInitialized();
 
         if (receiveHandler == nullptr || errorHandler == nullptr)
         {
             throw std::logic_error{ "both a receive and an error handler must be set" };
         }
-
-        m_asyncReceiveActive = true;
-    	m_registry = &registry;
+        
         m_receiveHandler = std::move(receiveHandler);
         m_errorHandler = std::move(errorHandler);
         asyncReceiveImpl();
@@ -35,21 +41,25 @@ namespace dots
 
     void Channel::transmit(const DotsTransportHeader& header, const type::Struct& instance)
     {
+        verifyInitialized();
         transmitImpl(header, instance);
     }
 
     void Channel::transmit(const DotsTransportHeader& header, const Transmission& transmission)
     {
+        verifyInitialized();
         transmitImpl(header, transmission);
     }
 
     const io::Registry& Channel::registry() const
     {
+        verifyInitialized();
 	    return *m_registry;
     }
 	
     io::Registry& Channel::registry()
     {
+        verifyInitialized();
 	    return *m_registry;
     }
 
@@ -68,8 +78,6 @@ namespace dots
             }
             else
             {
-                m_asyncReceiveActive = false;
-        	    m_registry = nullptr;
                 m_receiveHandler = nullptr;
                 m_errorHandler = nullptr;
             }
@@ -102,6 +110,14 @@ namespace dots
         if (errorCode)
         {
             throw std::system_error{ errorCode };
+        }
+    }
+
+    void Channel::verifyInitialized() const
+    {
+        if (!m_initialized)
+        {
+            throw std::logic_error{ "channel has not been initialized" };
         }
     }
 }

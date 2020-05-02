@@ -78,7 +78,8 @@ namespace dots::io
 		m_transitionHandler = std::move(transitionHandler);
 		
 		setConnectionState(DotsConnectionState::connecting);
-		m_channel->asyncReceive(registry,
+        m_channel->init(*m_registry);
+		m_channel->asyncReceive(
 			[this](const DotsTransportHeader& transportHeader, Transmission&& transmission){ return handleReceive(transportHeader, std::move(transmission)); },
 			[this](const std::exception_ptr& e){ handleError(e); }
 		);
