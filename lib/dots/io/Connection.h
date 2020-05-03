@@ -1,7 +1,6 @@
 #pragma once
 #include <string_view>
 #include <map>
-#include <set>
 #include <tuple>
 #include <dots/io/services/Channel.h>
 #include <DotsConnectionState.dots.h>
@@ -68,9 +67,6 @@ namespace dots::io
 
 		void setConnectionState(DotsConnectionState state, const std::exception_ptr& e = nullptr);
 
-		void importType(const type::Struct& instance);
-		void exportType(const type::Descriptor<>& descriptor);
-
 		template <typename T>
 		void expectSystemType(const types::property_set_t& expectedAttributes, void(Connection::* handler)(const T&));
 
@@ -87,8 +83,6 @@ namespace dots::io
 		Registry* m_registry;
 		receive_handler_t m_receiveHandler;
 		transition_handler_t m_transitionHandler;
-		
-		std::set<std::string> m_sharedTypes;
 	};
 
     using connection_ptr_t = std::shared_ptr<Connection>;

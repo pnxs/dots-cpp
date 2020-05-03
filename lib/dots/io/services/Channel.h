@@ -2,6 +2,7 @@
 #include <string>
 #include <system_error>
 #include <type_traits>
+#include <set>
 #include <dots/io/services/Transmission.h>
 #include <DotsTransportHeader.dots.h>
 
@@ -74,10 +75,11 @@ namespace dots
 		void init(io::Registry& registry);
 
 		void asyncReceive(receive_handler_t&& receiveHandler, error_handler_t&& errorHandler);
-		void transmit(const type::Struct& instance);
+		void transmit(const type::Struct& instance, bool minimalHeader = false);
 		void transmit(const DotsHeader& dotsHeader, const type::Struct& instance);
 		void transmit(const DotsTransportHeader& header, const type::Struct& instance);
 		void transmit(const DotsTransportHeader& header, const Transmission& transmission);
+		void transmit(const type::StructDescriptor<>& descriptor);
 
 	protected:
 
@@ -98,8 +100,12 @@ namespace dots
 		template <typename T, typename... Args>
         friend std::shared_ptr<T> make_channel(Args&&... args);
 
+		void importDependencies(const type::Struct& instance);
+		void exportDependencies(const type::Descriptor<>& descriptor);
+
 		void verifyInitialized() const;
 
+		std::set<std::string> m_sharedTypes;
 		bool m_initialized;
 		io::Registry* m_registry;
 		receive_handler_t m_receiveHandler;

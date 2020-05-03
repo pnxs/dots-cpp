@@ -1,6 +1,5 @@
 #include <dots/io/Connection.h>
 #include <dots/io/Registry.h>
-#include <dots/io/DescriptorConverter.h>
 #include <dots/common/logging.h>
 #include <DotsMsgConnect.dots.h>
 #include <DotsCacheInfo.dots.h>
@@ -129,19 +128,17 @@ namespace dots::io
 
     void Connection::transmit(const DotsTransportHeader& header, const type::Struct& instance)
     {
-        exportType(instance._descriptor());
         m_channel->transmit(header, instance);
     }
 
     void Connection::transmit(const DotsTransportHeader& header, const Transmission& transmission)
     {
-        exportType(transmission.instance()->_descriptor());
         m_channel->transmit(header, transmission);
     }
 
     void Connection::transmit(const type::StructDescriptor<>& descriptor)
     {
-        exportType(descriptor);
+        m_channel->transmit(descriptor);
     }
 
     void Connection::handleError(const std::exception_ptr& e)
@@ -201,8 +198,6 @@ namespace dots::io
         {
             if (m_connectionState == DotsConnectionState::connected || m_connectionState == DotsConnectionState::early_subscribe)
             {
-                importType(transmission.instance());
-
                 if (m_selfId == HostId)
                 {
                     DotsTransportHeader transportHeader_ = transportHeader;
@@ -328,54 +323,6 @@ namespace dots::io
             what += error.errorText.isValid() ? *error.errorText : std::string{ "<unknown error>" };
             handleError(std::make_exception_ptr(std::runtime_error{ what }));
         }
-    }
-
-    void Connection::importType(const type::Struct& instance)
-    {
-        if (auto* structDescriptorData = instance._as<StructDescriptorData>())
-        {
-        	if (bool isNewSharedType = m_sharedTypes.emplace(structDescriptorData->name).second; isNewSharedType)
-        	{
-        		DescriptorConverter{ *m_registry }(*structDescriptorData);
-        	}
-        }
-        else if (auto* enumDescriptorData = instance._as<EnumDescriptorData>())
-        {
-        	if (bool isNewSharedType = m_sharedTypes.emplace(enumDescriptorData->name).second; isNewSharedType)
-        	{
-        		DescriptorConverter{ *m_registry }(*enumDescriptorData);
-        	}
-        }
-    }
-
-    void Connection::exportType(const type::Descriptor<>& descriptor)
-    {
-        if (bool isNewSharedType = m_sharedTypes.emplace(descriptor.name()).second; isNewSharedType)
-    	{
-            if (descriptor.type() == type::Type::Vector)
-		    {
-			    auto& vectorDescriptor = static_cast<const type::VectorDescriptor&>(descriptor);
-    			exportType(vectorDescriptor.valueDescriptor());
-		    }
-    		else if (descriptor.type() == type::Type::Enum)
-		    {
-			    auto& enumDescriptor = static_cast<const type::EnumDescriptor<>&>(descriptor);
-    			exportType(enumDescriptor.underlyingDescriptor());
-	    		transmit(DescriptorConverter{ *m_registry }(enumDescriptor));
-		    }
-	        else if (descriptor.type() == type::Type::Struct)
-	        {
-	        	if (auto& structDescriptor = static_cast<const type::StructDescriptor<>&>(descriptor); !structDescriptor.internal())
-	        	{
-	        		for (const type::PropertyDescriptor& propertyDescriptor : structDescriptor.propertyDescriptors())
-    				{
-    					exportType(propertyDescriptor.valueDescriptor());
-    				}
-                    
-    				transmit(DescriptorConverter{ *m_registry }(structDescriptor));
-	        	}
-	        }
-    	}
     }
 
 	void Connection::setConnectionState(DotsConnectionState state, const std::exception_ptr& e/* = nullptr*/)

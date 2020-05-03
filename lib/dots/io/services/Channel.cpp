@@ -1,5 +1,6 @@
 #include <dots/io/services/Channel.h>
 #include <dots/io/Registry.h>
+#include <dots/io/DescriptorConverter.h>
 #include <DotsClient.dots.h>
 #include <DotsDescriptorRequest.dots.h>
 #include <DotsMsgError.dots.h>
@@ -39,15 +40,42 @@ namespace dots
         asyncReceiveImpl();
     }
 
-    void Channel::transmit(const type::Struct& instance)
+    void Channel::transmit(const type::Struct& instance, bool minimalHeader/* = false*/)
     {
-        transmit(DotsTransportHeader{
-            DotsTransportHeader::destinationGroup_i{ instance._descriptor().name() },
-            DotsTransportHeader::dotsHeader_i{
-                DotsHeader::typeName_i{ instance._descriptor().name() },
-				DotsHeader::attributes_i{ instance._validProperties() }
+        if (minimalHeader)
+        {
+            transmit(DotsTransportHeader{
+                DotsTransportHeader::destinationGroup_i{ instance._descriptor().name() },
+                DotsTransportHeader::dotsHeader_i{
+                    DotsHeader::typeName_i{ instance._descriptor().name() },
+				    DotsHeader::attributes_i{ instance._validProperties() }
+                }
+            }, instance);
+        }
+        else
+        {
+            const type::StructDescriptor<>& descriptor = instance._descriptor();
+
+            // note that a fixed host id for the sender can be used here because in case of a guest connection the id
+            // is handled on the host's side an will be overwritten anyway
+            DotsTransportHeader header{
+                DotsTransportHeader::destinationGroup_i{ descriptor.name() },
+                DotsTransportHeader::dotsHeader_i{
+                    DotsHeader::typeName_i{ descriptor.name() },
+                    DotsHeader::sentTime_i{ types::timepoint_t::Now() },
+                    DotsHeader::attributes_i{ instance._validProperties() },
+				    DotsHeader::sender_i{ 1 }
+                }
+            };
+
+            // conditionally set namespace for backwards compatibility to legacy implementation
+            if (descriptor.internal() && !instance._is<DotsClient>() && !instance._is<DotsDescriptorRequest>())
+            {
+                header.nameSpace("SYS");
             }
-        }, instance);
+
+            transmit(header, instance);
+        }
     }
 
     void Channel::transmit(const DotsHeader& dotsHeader, const type::Struct& instance)
@@ -61,13 +89,20 @@ namespace dots
     void Channel::transmit(const DotsTransportHeader& header, const type::Struct& instance)
     {
         verifyInitialized();
+        exportDependencies(instance._descriptor());
         transmitImpl(header, instance);
     }
 
     void Channel::transmit(const DotsTransportHeader& header, const Transmission& transmission)
     {
         verifyInitialized();
+        exportDependencies(transmission.instance()->_descriptor());
         transmitImpl(header, transmission);
+    }
+
+    void Channel::transmit(const type::StructDescriptor<>& descriptor)
+    {
+        exportDependencies(descriptor);
     }
 
     const io::Registry& Channel::registry() const
@@ -93,6 +128,7 @@ namespace dots
         {
             if (m_receiveHandler(header, std::move(transmission)))
             {
+                importDependencies(transmission.instance());
                 asyncReceiveImpl();
             }
             else
@@ -130,6 +166,54 @@ namespace dots
         {
             throw std::system_error{ errorCode };
         }
+    }
+
+    void Channel::importDependencies(const type::Struct& instance)
+    {
+        if (auto* structDescriptorData = instance._as<StructDescriptorData>())
+        {
+        	if (bool isNewSharedType = m_sharedTypes.emplace(structDescriptorData->name).second; isNewSharedType)
+        	{
+        		io::DescriptorConverter{ registry() }(*structDescriptorData);
+        	}
+        }
+        else if (auto* enumDescriptorData = instance._as<EnumDescriptorData>())
+        {
+        	if (bool isNewSharedType = m_sharedTypes.emplace(enumDescriptorData->name).second; isNewSharedType)
+        	{
+        		io::DescriptorConverter{ registry() }(*enumDescriptorData);
+        	}
+        }
+    }
+
+    void Channel::exportDependencies(const type::Descriptor<>& descriptor)
+    {
+        if (bool isNewSharedType = m_sharedTypes.emplace(descriptor.name()).second; isNewSharedType)
+    	{
+            if (descriptor.type() == type::Type::Vector)
+		    {
+			    auto& vectorDescriptor = static_cast<const type::VectorDescriptor&>(descriptor);
+    			exportDependencies(vectorDescriptor.valueDescriptor());
+		    }
+    		else if (descriptor.type() == type::Type::Enum)
+		    {
+			    auto& enumDescriptor = static_cast<const type::EnumDescriptor<>&>(descriptor);
+    			exportDependencies(enumDescriptor.underlyingDescriptor());
+	    		transmit(io::DescriptorConverter{ registry() }(enumDescriptor));
+		    }
+	        else if (descriptor.type() == type::Type::Struct)
+	        {
+	        	if (auto& structDescriptor = static_cast<const type::StructDescriptor<>&>(descriptor); !structDescriptor.internal())
+	        	{
+	        		for (const type::PropertyDescriptor& propertyDescriptor : structDescriptor.propertyDescriptors())
+    				{
+    					exportDependencies(propertyDescriptor.valueDescriptor());
+    				}
+                    
+    				transmit(io::DescriptorConverter{ registry() }(structDescriptor));
+	        	}
+	        }
+    	}
     }
 
     void Channel::verifyInitialized() const
