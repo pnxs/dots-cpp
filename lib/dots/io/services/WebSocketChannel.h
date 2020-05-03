@@ -24,7 +24,7 @@ namespace dots
 	protected:
 
 		void asyncReceiveImpl() override;
-		void transmitImpl(const DotsTransportHeader& header, const type::Struct& instance) override;
+		void transmitImpl(const DotsHeader& header, const type::Struct& instance) override;
 
 	private:
 

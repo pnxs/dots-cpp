@@ -29,22 +29,20 @@ namespace dots
     {
         const type::StructDescriptor<>& descriptor = instance._descriptor();
 
-        DotsTransportHeader header{
-            DotsTransportHeader::dotsHeader_i{
-                DotsHeader::typeName_i{ descriptor.name() },
-                DotsHeader::sentTime_i{ types::timepoint_t::Now() },
-                DotsHeader::serverSentTime_i{ types::timepoint_t::Now() },
-                DotsHeader::attributes_i{ includedProperties ==  types::property_set_t::All ? instance._validProperties() : includedProperties },
-				DotsHeader::sender_i{ io::Connection::HostId },
-                DotsHeader::removeObj_i{ remove }
-            }
+        DotsHeader header{
+            DotsHeader::typeName_i{ descriptor.name() },
+            DotsHeader::sentTime_i{ types::timepoint_t::Now() },
+            DotsHeader::serverSentTime_i{ types::timepoint_t::Now() },
+            DotsHeader::attributes_i{ includedProperties ==  types::property_set_t::All ? instance._validProperties() : includedProperties },
+			DotsHeader::sender_i{ io::Connection::HostId },
+            DotsHeader::removeObj_i{ remove }
         };
 
         // TODO: avoid local copy
         Transmission transmission{ type::AnyStruct{ instance } };
 
-        dispatcher().dispatch(header.dotsHeader, transmission.instance(), true);
-        transmit(nullptr, header.dotsHeader->typeName, header, std::move(transmission));
+        dispatcher().dispatch(header, transmission.instance(), true);
+        transmit(nullptr, header.typeName, header, std::move(transmission));
     }
 
     void HostTransceiver::joinGroup(const std::string_view&/* name*/)
@@ -57,7 +55,7 @@ namespace dots
         /* do nothing */
     }
 
-    void HostTransceiver::transmit(io::Connection* origin, const std::string& group, const DotsTransportHeader& header, Transmission&& transmission)
+    void HostTransceiver::transmit(io::Connection* origin, const std::string& group, const DotsHeader& header, Transmission&& transmission)
     {
         using dirty_connection_t = std::pair<io::Connection*, std::exception_ptr>;
         std::vector<dirty_connection_t> dirtyConnections;
@@ -106,7 +104,7 @@ namespace dots
     {
         auto connection = std::make_shared<io::Connection>(std::move(channel), true);
         connection->asyncReceive(registry(), selfName(),
-            [this](io::Connection& connection, const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself) { return handleReceive(connection, header, std::move(transmission), isFromMyself); },
+            [this](io::Connection& connection, const DotsHeader& header, Transmission&& transmission, bool isFromMyself) { return handleReceive(connection, header, std::move(transmission), isFromMyself); },
             [this](io::Connection& connection, const std::exception_ptr& e) { handleTransition(connection, e); }
         );
         m_guestConnections.emplace(connection.get(), connection);
@@ -128,7 +126,7 @@ namespace dots
         m_listeners.erase(&listener);
     }
 
-    bool HostTransceiver::handleReceive(io::Connection& connection, const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself)
+    bool HostTransceiver::handleReceive(io::Connection& connection, const DotsHeader& header, Transmission&& transmission, bool isFromMyself)
     {
         if (const type::Struct& instance = transmission.instance(); instance._descriptor().internal())
         {
@@ -146,8 +144,8 @@ namespace dots
             }
         }
 
-        dispatcher().dispatch(header.dotsHeader, transmission.instance(), isFromMyself);
-        transmit(&connection, header.dotsHeader->typeName, header, std::move(transmission));
+        dispatcher().dispatch(header, transmission.instance(), isFromMyself);
+        transmit(&connection, header.typeName, header, std::move(transmission));
 
         return true;
     }
@@ -331,12 +329,10 @@ namespace dots
             return;
         }
 
-        DotsTransportHeader header{
-            DotsTransportHeader::dotsHeader_i{
-                DotsHeader::typeName_i{ container.descriptor().name() },
-                DotsHeader::fromCache_i{ container.size() },
-                DotsHeader::removeObj_i{ false }
-            }
+        DotsHeader header{
+            DotsHeader::typeName_i{ container.descriptor().name() },
+            DotsHeader::fromCache_i{ container.size() },
+            DotsHeader::removeObj_i{ false }
         };
 
         for (const auto& [instance, cloneInfo] : container)
@@ -356,12 +352,11 @@ namespace dots
                 << ", created=" << cloneInfo.created->toString() << ", creator=" << cloneInfo.createdFrom
                 << ", modified=" << cloneInfo.modified->toString() << ", localUpdateTime=" << cloneInfo.localUpdateTime->toString());
 
-            DotsHeader& dotsHeader = header.dotsHeader;
-            dotsHeader.sentTime = *cloneInfo.modified;
-            dotsHeader.serverSentTime = types::timepoint_t::Now();
-            dotsHeader.attributes = instance->_validProperties();
-            dotsHeader.sender = *cloneInfo.lastUpdateFrom;
-			--*dotsHeader.fromCache;
+            header.sentTime = *cloneInfo.modified;
+            header.serverSentTime = types::timepoint_t::Now();
+            header.attributes = instance->_validProperties();
+            header.sender = *cloneInfo.lastUpdateFrom;
+			--*header.fromCache;
 
             connection.transmit(header, instance);
         }

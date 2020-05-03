@@ -42,11 +42,9 @@ namespace dots
     {
         if (minimalHeader)
         {
-            transmit(DotsTransportHeader{
-                DotsTransportHeader::dotsHeader_i{
-                    DotsHeader::typeName_i{ instance._descriptor().name() },
-				    DotsHeader::attributes_i{ instance._validProperties() }
-                }
+            transmit(DotsHeader{
+                DotsHeader::typeName_i{ instance._descriptor().name() },
+				DotsHeader::attributes_i{ instance._validProperties() }
             }, instance);
         }
         else
@@ -55,34 +53,25 @@ namespace dots
 
             // note that a fixed host id for the sender can be used here because in case of a guest connection the id
             // is handled on the host's side an will be overwritten anyway
-            DotsTransportHeader header{
-                DotsTransportHeader::dotsHeader_i{
-                    DotsHeader::typeName_i{ descriptor.name() },
-                    DotsHeader::sentTime_i{ types::timepoint_t::Now() },
-                    DotsHeader::attributes_i{ instance._validProperties() },
-				    DotsHeader::sender_i{ 1 }
-                }
+            DotsHeader header{
+                DotsHeader::typeName_i{ descriptor.name() },
+                DotsHeader::sentTime_i{ types::timepoint_t::Now() },
+                DotsHeader::attributes_i{ instance._validProperties() },
+				DotsHeader::sender_i{ 1 }
             };
 
             transmit(header, instance);
         }
     }
 
-    void Channel::transmit(const DotsHeader& dotsHeader, const type::Struct& instance)
-    {
-        transmit(DotsTransportHeader{
-            DotsTransportHeader::dotsHeader_i{ dotsHeader }
-        }, instance);
-    }
-
-    void Channel::transmit(const DotsTransportHeader& header, const type::Struct& instance)
+    void Channel::transmit(const DotsHeader& header, const type::Struct& instance)
     {
         verifyInitialized();
         exportDependencies(instance._descriptor());
         transmitImpl(header, instance);
     }
 
-    void Channel::transmit(const DotsTransportHeader& header, const Transmission& transmission)
+    void Channel::transmit(const DotsHeader& header, const Transmission& transmission)
     {
         verifyInitialized();
         exportDependencies(transmission.instance()->_descriptor());
@@ -106,12 +95,12 @@ namespace dots
 	    return *m_registry;
     }
 
-    void Channel::transmitImpl(const DotsTransportHeader& header, const Transmission& transmission)
+    void Channel::transmitImpl(const DotsHeader& header, const Transmission& transmission)
     {
         transmitImpl(header, transmission.instance());
     }
 
-    void Channel::processReceive(const DotsTransportHeader& header, Transmission&& transmission) noexcept
+    void Channel::processReceive(const DotsHeader& header, Transmission&& transmission) noexcept
     {
         try
         {

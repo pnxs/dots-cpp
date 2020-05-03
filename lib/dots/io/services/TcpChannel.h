@@ -2,6 +2,7 @@
 #include <string_view>
 #include <boost/asio.hpp>
 #include <dots/io/services/Channel.h>
+#include <DotsTransportHeader.dots.h>
 
 namespace dots
 {
@@ -19,7 +20,7 @@ namespace dots
 	protected:
 
 		void asyncReceiveImpl() override;
-		void transmitImpl(const DotsTransportHeader& header, const type::Struct& instance) override;
+		void transmitImpl(const DotsHeader& header, const type::Struct& instance) override;
 
 	private:
 
@@ -34,7 +35,7 @@ namespace dots
 
 		boost::asio::ip::tcp::socket m_socket;
 		uint16_t m_headerSize;
-		DotsTransportHeader m_header;
+		DotsTransportHeader m_transportHeader;
 		std::vector<uint8_t> m_headerBuffer;
 		std::vector<uint8_t> m_instanceBuffer;
 	};

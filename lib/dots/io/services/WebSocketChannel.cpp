@@ -82,14 +82,14 @@ namespace dots
 					throw std::runtime_error{ "received message with invalid format: " + payload };
 				}
 
-				DotsTransportHeader header;
+				DotsHeader header;
 				from_json(std::as_const(itHeader->value).GetObject(), header);
 
-				const type::StructDescriptor<>* descriptor = registry().findStructType(*header.dotsHeader->typeName).get();
+				const type::StructDescriptor<>* descriptor = registry().findStructType(*header.typeName).get();
 
 				if (descriptor == nullptr)
 				{
-					throw std::runtime_error{ "encountered unknown type: " + *header.dotsHeader->typeName };
+					throw std::runtime_error{ "encountered unknown type: " + *header.typeName };
 				}
 				
 				type::AnyStruct instance{ *descriptor };
@@ -104,7 +104,7 @@ namespace dots
 		});
 	}
 
-	void WebSocketChannel::transmitImpl(const DotsTransportHeader& header, const type::Struct& instance)
+	void WebSocketChannel::transmitImpl(const DotsHeader& header, const type::Struct& instance)
 	{
 		rapidjson::StringBuffer buffer;
     	rapidjson::PrettyWriter<rapidjson::StringBuffer> writer{ buffer };

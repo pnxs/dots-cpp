@@ -79,7 +79,7 @@ namespace dots::io
 		setConnectionState(DotsConnectionState::connecting);
         m_channel->init(*m_registry);
 		m_channel->asyncReceive(
-			[this](const DotsTransportHeader& transportHeader, Transmission&& transmission){ return handleReceive(transportHeader, std::move(transmission)); },
+			[this](const DotsHeader& header, Transmission&& transmission){ return handleReceive(header, std::move(transmission)); },
 			[this](const std::exception_ptr& e){ handleError(e); }
 		);
 
@@ -105,27 +105,21 @@ namespace dots::io
 
 	void Connection::transmit(const type::Struct& instance, types::property_set_t includedProperties, bool remove)
 	{
-		const type::StructDescriptor<>& descriptor = instance._descriptor();
-
-        DotsTransportHeader header{
-            DotsTransportHeader::dotsHeader_i{
-                DotsHeader::typeName_i{ descriptor.name() },
-                DotsHeader::sentTime_i{ types::timepoint_t::Now() },
-                DotsHeader::attributes_i{ includedProperties ==  types::property_set_t::All ? instance._validProperties() : includedProperties },
-				DotsHeader::sender_i{ m_selfId },
-                DotsHeader::removeObj_i{ remove }
-            }
-        };
-
-		transmit(header, instance);
+		transmit(DotsHeader{
+            DotsHeader::typeName_i{ instance._descriptor().name() },
+            DotsHeader::sentTime_i{ types::timepoint_t::Now() },
+            DotsHeader::attributes_i{ includedProperties ==  types::property_set_t::All ? instance._validProperties() : includedProperties },
+			DotsHeader::sender_i{ m_selfId },
+            DotsHeader::removeObj_i{ remove }
+        }, instance);
 	}
 
-    void Connection::transmit(const DotsTransportHeader& header, const type::Struct& instance)
+    void Connection::transmit(const DotsHeader& header, const type::Struct& instance)
     {
         m_channel->transmit(header, instance);
     }
 
-    void Connection::transmit(const DotsTransportHeader& header, const Transmission& transmission)
+    void Connection::transmit(const DotsHeader& header, const Transmission& transmission)
     {
         m_channel->transmit(header, transmission);
     }
@@ -163,7 +157,7 @@ namespace dots::io
         handleClose(e);
 	}
 
-    bool Connection::handleReceive(const DotsTransportHeader& transportHeader, Transmission&& transmission)
+    bool Connection::handleReceive(const DotsHeader& header, Transmission&& transmission)
 	{
         if (m_connectionState == DotsConnectionState::closed)
         {
@@ -194,22 +188,21 @@ namespace dots::io
             {
                 if (m_selfId == HostId)
                 {
-                    DotsTransportHeader transportHeader_ = transportHeader;
-                    DotsHeader& dotsHeader = *transportHeader_.dotsHeader;
-                    dotsHeader.sender = m_peerId;
+                    DotsHeader header_ = header;
+                    header_.sender = m_peerId;
 
-                    dotsHeader.serverSentTime = types::timepoint_t::Now();
+                    header_.serverSentTime = types::timepoint_t::Now();
 
-                    if (!dotsHeader.sentTime.isValid())
+                    if (!header_.sentTime.isValid())
                     {
-                        dotsHeader.sentTime = dotsHeader.serverSentTime;
+                        header_.sentTime = header_.serverSentTime;
                     }
 
-                    m_receiveHandler(*this, transportHeader_, std::move(transmission), transportHeader_.dotsHeader->sender == m_selfId);
+                    m_receiveHandler(*this, header_, std::move(transmission), header_.sender == m_selfId);
                 }
                 else
                 {
-                    m_receiveHandler(*this, transportHeader, std::move(transmission), transportHeader.dotsHeader->sender == m_selfId);
+                    m_receiveHandler(*this, header, std::move(transmission), header.sender == m_selfId);
                 }
             }
             else
