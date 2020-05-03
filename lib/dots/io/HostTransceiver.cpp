@@ -30,7 +30,6 @@ namespace dots
         const type::StructDescriptor<>& descriptor = instance._descriptor();
 
         DotsTransportHeader header{
-            DotsTransportHeader::destinationGroup_i{ descriptor.name() },
             DotsTransportHeader::dotsHeader_i{
                 DotsHeader::typeName_i{ descriptor.name() },
                 DotsHeader::sentTime_i{ types::timepoint_t::Now() },
@@ -41,16 +40,11 @@ namespace dots
             }
         };
 
-        if (descriptor.internal() && !instance._is<DotsClient>() && !instance._is<DotsDescriptorRequest>())
-        {
-            header.nameSpace("SYS");
-        }
-
         // TODO: avoid local copy
         Transmission transmission{ type::AnyStruct{ instance } };
 
         dispatcher().dispatch(header.dotsHeader, transmission.instance(), true);
-        transmit(nullptr, header.destinationGroup, header, std::move(transmission));
+        transmit(nullptr, header.dotsHeader->typeName, header, std::move(transmission));
     }
 
     void HostTransceiver::joinGroup(const std::string_view&/* name*/)
@@ -153,7 +147,7 @@ namespace dots
         }
 
         dispatcher().dispatch(header.dotsHeader, transmission.instance(), isFromMyself);
-        transmit(&connection, header.destinationGroup, header, std::move(transmission));
+        transmit(&connection, header.dotsHeader->typeName, header, std::move(transmission));
 
         return true;
     }
@@ -338,7 +332,6 @@ namespace dots
         }
 
         DotsTransportHeader header{
-            DotsTransportHeader::destinationGroup_i{ container.descriptor().name() },
             DotsTransportHeader::dotsHeader_i{
                 DotsHeader::typeName_i{ container.descriptor().name() },
                 DotsHeader::fromCache_i{ container.size() },

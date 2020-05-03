@@ -2,6 +2,8 @@
 #include <dots/io/Io.h>
 #include <dots/io/Registry.h>
 #include <dots/io/serialization/CborNativeSerialization.h>
+#include <DotsClient.dots.h>
+#include <DotsDescriptorRequest.dots.h>
 
 namespace dots
 {
@@ -52,6 +54,18 @@ namespace dots
 
 		DotsTransportHeader header_(header);
 		header_.payloadSize = serializedInstance.size();
+
+		// adjust header for backwards compatibility to legacy implementation
+		{
+			// always set destination group
+			header_.destinationGroup = header_.dotsHeader->typeName;
+
+			// conditionally set namespace
+            if (instance._descriptor().internal() && !instance._is<DotsClient>() && !instance._is<DotsDescriptorRequest>())
+            {
+                header_.nameSpace("SYS");
+            }
+		}
 
 		auto serializedHeader = to_cbor(header_);
 		uint16_t headerSize = serializedHeader.size();

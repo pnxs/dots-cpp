@@ -1,8 +1,6 @@
 #include <dots/io/services/Channel.h>
 #include <dots/io/Registry.h>
 #include <dots/io/DescriptorConverter.h>
-#include <DotsClient.dots.h>
-#include <DotsDescriptorRequest.dots.h>
 #include <DotsMsgError.dots.h>
 
 namespace dots
@@ -45,7 +43,6 @@ namespace dots
         if (minimalHeader)
         {
             transmit(DotsTransportHeader{
-                DotsTransportHeader::destinationGroup_i{ instance._descriptor().name() },
                 DotsTransportHeader::dotsHeader_i{
                     DotsHeader::typeName_i{ instance._descriptor().name() },
 				    DotsHeader::attributes_i{ instance._validProperties() }
@@ -59,7 +56,6 @@ namespace dots
             // note that a fixed host id for the sender can be used here because in case of a guest connection the id
             // is handled on the host's side an will be overwritten anyway
             DotsTransportHeader header{
-                DotsTransportHeader::destinationGroup_i{ descriptor.name() },
                 DotsTransportHeader::dotsHeader_i{
                     DotsHeader::typeName_i{ descriptor.name() },
                     DotsHeader::sentTime_i{ types::timepoint_t::Now() },
@@ -68,20 +64,13 @@ namespace dots
                 }
             };
 
-            // conditionally set namespace for backwards compatibility to legacy implementation
-            if (descriptor.internal() && !instance._is<DotsClient>() && !instance._is<DotsDescriptorRequest>())
-            {
-                header.nameSpace("SYS");
-            }
-
             transmit(header, instance);
         }
     }
 
     void Channel::transmit(const DotsHeader& dotsHeader, const type::Struct& instance)
     {
-        transmit(DotsTransportHeader{ 
-            DotsTransportHeader::destinationGroup_i{ dotsHeader.typeName },
+        transmit(DotsTransportHeader{
             DotsTransportHeader::dotsHeader_i{ dotsHeader }
         }, instance);
     }

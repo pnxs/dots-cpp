@@ -108,7 +108,6 @@ namespace dots::io
 		const type::StructDescriptor<>& descriptor = instance._descriptor();
 
         DotsTransportHeader header{
-            DotsTransportHeader::destinationGroup_i{ descriptor.name() },
             DotsTransportHeader::dotsHeader_i{
                 DotsHeader::typeName_i{ descriptor.name() },
                 DotsHeader::sentTime_i{ types::timepoint_t::Now() },
@@ -117,11 +116,6 @@ namespace dots::io
                 DotsHeader::removeObj_i{ remove }
             }
         };
-
-        if (descriptor.internal() && !instance._is<DotsClient>() && !instance._is<DotsDescriptorRequest>())
-        {
-            header.nameSpace("SYS");
-        }
 
 		transmit(header, instance);
 	}
