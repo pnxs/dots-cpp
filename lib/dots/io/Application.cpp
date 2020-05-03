@@ -28,7 +28,7 @@ namespace dots
 		}
 		LOG_DEBUG_S("run one done");
 
-		globalGuestTransceiver.publish(DotsClient{ DotsClient::id_i{ connection.peerId() }, DotsClient::running_i{ true } });
+		globalGuestTransceiver.publish(DotsClient{ DotsClient::id_i{ connection.selfId() }, DotsClient::running_i{ true } });
 	}
 
 	Application::~Application()

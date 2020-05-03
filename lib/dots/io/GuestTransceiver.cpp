@@ -118,13 +118,13 @@ namespace dots
                     }
 		        }
 
-		        LOG_INFO_S("connection closed -> peerId: " << connection.peerId() << ", name: " << connection.peerName());
+		        LOG_INFO_S("connection closed -> selfId: " << connection.selfId() << ", name: " << connection.peerName());
 		        m_hostConnection = std::nullopt;
 		    }
         }
         catch (const std::exception& e)
         {
-			LOG_ERROR_S("error while handling connection transition -> peerId: " << connection.peerId() << ", name: " << connection.peerName() << " -> " << e.what());
+			LOG_ERROR_S("error while handling connection transition -> selfId: " << connection.selfId() << ", name: " << connection.peerName() << " -> " << e.what());
 			m_hostConnection = std::nullopt;
         }
 	}

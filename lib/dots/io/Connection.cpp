@@ -245,7 +245,7 @@ namespace dots::io
 	
 	void Connection::handleAuthorizationRequest(const DotsMsgConnectResponse& connectResponse)
 	{
-        m_peerId = connectResponse.clientId;
+        m_selfId = connectResponse.clientId;
 		LOG_DEBUG_S("connectResponse: serverName=" << m_peerName << " accepted=" << *connectResponse.accepted);
 		
 		if (connectResponse.preload == true)
