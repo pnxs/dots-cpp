@@ -38,30 +38,12 @@ namespace dots
         asyncReceiveImpl();
     }
 
-    void Channel::transmit(const type::Struct& instance, bool minimalHeader/* = false*/)
+    void Channel::transmit(const type::Struct& instance)
     {
-        if (minimalHeader)
-        {
-            transmit(DotsHeader{
-                DotsHeader::typeName_i{ instance._descriptor().name() },
-				DotsHeader::attributes_i{ instance._validProperties() }
-            }, instance);
-        }
-        else
-        {
-            const type::StructDescriptor<>& descriptor = instance._descriptor();
-
-            // note that a fixed host id for the sender can be used here because in case of a guest connection the id
-            // is handled on the host's side an will be overwritten anyway
-            DotsHeader header{
-                DotsHeader::typeName_i{ descriptor.name() },
-                DotsHeader::sentTime_i{ types::timepoint_t::Now() },
-                DotsHeader::attributes_i{ instance._validProperties() },
-				DotsHeader::sender_i{ 1 }
-            };
-
-            transmit(header, instance);
-        }
+      transmit(DotsHeader{
+            DotsHeader::typeName_i{ instance._descriptor().name() },
+		    DotsHeader::attributes_i{ instance._validProperties() }
+        }, instance);
     }
 
     void Channel::transmit(const DotsHeader& header, const type::Struct& instance)

@@ -67,6 +67,19 @@ namespace dots
             {
                 transportHeader.nameSpace("SYS");
             }
+
+			// set mandatory sent time if not valid
+			if (!transportHeader.dotsHeader->sentTime.isValid())
+            {
+                transportHeader.dotsHeader->sentTime(types::timepoint_t::Now());
+            }
+
+			// set mandatory sender if not valid. note that a fixed server id for the sender can be used here because
+		    // in case of a client connection the id is handled on the server's side an will be overwritten anyway
+            if (!transportHeader.dotsHeader->sender.isValid())
+            {
+               transportHeader.dotsHeader->sender = 1;
+            }
 		}
 
 		auto serializedHeader = to_cbor(transportHeader);

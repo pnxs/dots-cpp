@@ -109,7 +109,6 @@ namespace dots::io
             DotsHeader::typeName_i{ instance._descriptor().name() },
             DotsHeader::sentTime_i{ types::timepoint_t::Now() },
             DotsHeader::attributes_i{ includedProperties ==  types::property_set_t::All ? instance._validProperties() : includedProperties },
-			DotsHeader::sender_i{ m_selfId },
             DotsHeader::removeObj_i{ remove }
         }, instance);
 	}
@@ -186,9 +185,10 @@ namespace dots::io
         {
             if (m_connectionState == DotsConnectionState::connected || m_connectionState == DotsConnectionState::early_subscribe)
             {
+                DotsHeader header_ = header;
+
                 if (m_selfId == HostId)
                 {
-                    DotsHeader header_ = header;
                     header_.sender = m_peerId;
 
                     header_.serverSentTime = types::timepoint_t::Now();
@@ -202,7 +202,20 @@ namespace dots::io
                 }
                 else
                 {
-                    m_receiveHandler(*this, header, std::move(transmission), header.sender == m_selfId);
+                    if (!header_.sentTime.isValid())
+                    {
+                        header_.sentTime(types::timepoint_t::Now());
+                    }
+
+                    if (header_.sender.isValid())
+                    {
+                        m_receiveHandler(*this, header_, std::move(transmission), header_.sender == m_selfId);
+                    }
+                    else
+                    {
+                        header_.sender(m_peerId);
+                        m_receiveHandler(*this, header_, std::move(transmission), false);
+                    }
                 }
             }
             else

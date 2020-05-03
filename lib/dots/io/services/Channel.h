@@ -75,7 +75,7 @@ namespace dots
 		void init(io::Registry& registry);
 
 		void asyncReceive(receive_handler_t&& receiveHandler, error_handler_t&& errorHandler);
-		void transmit(const type::Struct& instance, bool minimalHeader = false);
+		void transmit(const type::Struct& instance);
 		void transmit(const DotsHeader& header, const type::Struct& instance);
 		void transmit(const DotsHeader& header, const Transmission& transmission);
 		void transmit(const type::StructDescriptor<>& descriptor);

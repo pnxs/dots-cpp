@@ -42,6 +42,7 @@ namespace dots
         Transmission transmission{ type::AnyStruct{ instance } };
 
         dispatcher().dispatch(header, transmission.instance(), true);
+        header.sender.destroy();
         transmit(nullptr, header.typeName, header, std::move(transmission));
     }
 
