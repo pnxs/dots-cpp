@@ -127,23 +127,25 @@ namespace dots
 
     bool HostTransceiver::handleReceive(io::Connection& connection, Transmission transmission, bool isFromMyself)
     {
-        if (const type::Struct& instance = transmission.instance(); instance._descriptor().internal())
+        const auto& [header, instance] = transmission;
+
+        if (instance->_descriptor().internal())
         {
-            if (auto* member = instance._as<DotsMember>())
+            if (auto* member = instance.as<DotsMember>())
             {
                 handleMemberMessage(connection, *member);
             }
-            else if (auto* descriptorRequest = instance._as<DotsDescriptorRequest>())
+            else if (auto* descriptorRequest = instance.as<DotsDescriptorRequest>())
             {
                 handleDescriptorRequest(connection, *descriptorRequest);
             }
-            else if (auto* clearCache = instance._as<DotsClearCache>())
+            else if (auto* clearCache = instance.as<DotsClearCache>())
             {
                 handleClearCache(connection, *clearCache);
             }
         }
 
-        dispatcher().dispatch(transmission.header(), transmission.instance(), isFromMyself);
+        dispatcher().dispatch(header, instance, isFromMyself);
         transmit(&connection, std::move(transmission));
 
         return true;
