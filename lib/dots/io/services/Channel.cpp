@@ -53,11 +53,11 @@ namespace dots
         transmitImpl(header, instance);
     }
 
-    void Channel::transmit(const DotsHeader& header, const Transmission& transmission)
+    void Channel::transmit(const Transmission& transmission)
     {
         verifyInitialized();
         exportDependencies(transmission.instance()->_descriptor());
-        transmitImpl(header, transmission);
+        transmitImpl(transmission);
     }
 
     void Channel::transmit(const type::StructDescriptor<>& descriptor)
@@ -77,18 +77,19 @@ namespace dots
 	    return *m_registry;
     }
 
-    void Channel::transmitImpl(const DotsHeader& header, const Transmission& transmission)
+    void Channel::transmitImpl(const Transmission& transmission)
     {
-        transmitImpl(header, transmission.instance());
+        transmitImpl(transmission.header(), transmission.instance());
     }
 
-    void Channel::processReceive(const DotsHeader& header, Transmission&& transmission) noexcept
+    void Channel::processReceive(Transmission transmission) noexcept
     {
         try
         {
-            if (m_receiveHandler(header, std::move(transmission)))
+            importDependencies(transmission.instance());
+
+            if (m_receiveHandler(std::move(transmission)))
             {
-                importDependencies(transmission.instance());
                 asyncReceiveImpl();
             }
             else

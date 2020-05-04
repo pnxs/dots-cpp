@@ -24,7 +24,7 @@ namespace dots
         void joinGroup(const std::string_view& name) override;
 		void leaveGroup(const std::string_view& name) override;
 
-		bool handleReceive(io::Connection& connection, const DotsHeader& header, Transmission&& transmission, bool isFromMyself);
+		bool handleReceive(io::Connection& connection, Transmission transmission, bool isFromMyself);
 		void handleTransition(io::Connection& connection, const std::exception_ptr& e) noexcept;
 
 		std::optional<io::Connection> m_hostConnection;

@@ -175,7 +175,7 @@ namespace dots
 
 				type::AnyStruct instance{ *descriptor };
 				from_cbor(m_instanceBuffer.data(), m_instanceBuffer.size(), instance.get());
-				processReceive(m_transportHeader.dotsHeader, Transmission{ std::move(instance) });
+				processReceive(Transmission{ std::move(m_transportHeader.dotsHeader), std::move(instance) });
 			}
 			catch (...)
 			{

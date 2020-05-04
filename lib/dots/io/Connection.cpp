@@ -79,7 +79,7 @@ namespace dots::io
 		setConnectionState(DotsConnectionState::connecting);
         m_channel->init(*m_registry);
 		m_channel->asyncReceive(
-			[this](const DotsHeader& header, Transmission&& transmission){ return handleReceive(header, std::move(transmission)); },
+			[this](Transmission transmission){ return handleReceive(std::move(transmission)); },
 			[this](const std::exception_ptr& e){ handleError(e); }
 		);
 
@@ -118,9 +118,9 @@ namespace dots::io
         m_channel->transmit(header, instance);
     }
 
-    void Connection::transmit(const DotsHeader& header, const Transmission& transmission)
+    void Connection::transmit(const Transmission& transmission)
     {
-        m_channel->transmit(header, transmission);
+        m_channel->transmit(transmission);
     }
 
     void Connection::transmit(const type::StructDescriptor<>& descriptor)
@@ -156,7 +156,7 @@ namespace dots::io
         handleClose(e);
 	}
 
-    bool Connection::handleReceive(const DotsHeader& header, Transmission&& transmission)
+    bool Connection::handleReceive(Transmission transmission)
 	{
         if (m_connectionState == DotsConnectionState::closed)
         {
@@ -185,36 +185,36 @@ namespace dots::io
         {
             if (m_connectionState == DotsConnectionState::connected || m_connectionState == DotsConnectionState::early_subscribe)
             {
-                DotsHeader header_ = header;
+                DotsHeader& header = transmission.header();
 
                 if (m_selfId == HostId)
                 {
-                    header_.sender = m_peerId;
+                    header.sender = m_peerId;
 
-                    header_.serverSentTime = types::timepoint_t::Now();
+                    header.serverSentTime = types::timepoint_t::Now();
 
-                    if (!header_.sentTime.isValid())
+                    if (!header.sentTime.isValid())
                     {
-                        header_.sentTime = header_.serverSentTime;
+                        header.sentTime = header.serverSentTime;
                     }
 
-                    m_receiveHandler(*this, header_, std::move(transmission), header_.sender == m_selfId);
+                    m_receiveHandler(*this, std::move(transmission), header.sender == m_selfId);
                 }
                 else
                 {
-                    if (!header_.sentTime.isValid())
+                    if (!header.sentTime.isValid())
                     {
-                        header_.sentTime(types::timepoint_t::Now());
+                        header.sentTime(types::timepoint_t::Now());
                     }
 
-                    if (header_.sender.isValid())
+                    if (header.sender.isValid())
                     {
-                        m_receiveHandler(*this, header_, std::move(transmission), header_.sender == m_selfId);
+                        m_receiveHandler(*this, std::move(transmission), header.sender == m_selfId);
                     }
                     else
                     {
-                        header_.sender(m_peerId);
-                        m_receiveHandler(*this, header_, std::move(transmission), false);
+                        header.sender(m_peerId);
+                        m_receiveHandler(*this, std::move(transmission), false);
                     }
                 }
             }

@@ -1,6 +1,7 @@
 #pragma once
-#include <cstdint>
+#include <memory>
 #include <dots/type/AnyStruct.h>
+#include <DotsHeader.dots.h>
 
 namespace dots
 {
@@ -8,7 +9,7 @@ namespace dots
 	{
         using id_t = uint64_t;
 
-		explicit Transmission(type::AnyStruct&& instance);
+		Transmission(DotsHeader header, type::AnyStruct instance);
 		Transmission(const Transmission& other) = delete;
 		Transmission(Transmission&& other) = default;
 		~Transmission() = default;
@@ -17,13 +18,23 @@ namespace dots
 		Transmission& operator = (Transmission&& rhs) = default;
 
 		id_t id() const;
+
+		const DotsHeader& header() const;
+		DotsHeader& header();
+
 		const type::AnyStruct& instance() const;
 
     private:
 
         inline static id_t M_LastId = 0;
 
-        id_t m_id;
-		type::AnyStruct m_instance;
+        struct TransmissionData
+        {
+            id_t id;
+			DotsHeader header;
+		    type::AnyStruct instance;
+        };
+
+		std::unique_ptr<TransmissionData> m_data;
 	};
 }

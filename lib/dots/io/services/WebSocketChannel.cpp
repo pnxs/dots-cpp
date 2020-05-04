@@ -95,7 +95,7 @@ namespace dots
 				type::AnyStruct instance{ *descriptor };
 				from_json(std::as_const(itInstance->value).GetObject(), instance.get());
 				
-				processReceive(header, Transmission{ std::move(instance) });
+				processReceive(Transmission{ std::move(header), std::move(instance) });
 			}
 			catch (...)
 			{

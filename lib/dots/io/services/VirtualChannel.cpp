@@ -31,7 +31,7 @@ namespace dots
         {
             _header.sender.constructOrValue(ClientId);
             _header.serverSentTime(types::timepoint_t::Now());
-            processReceive(_header, Transmission{ std::move(_instance) });
+            processReceive(Transmission{ _header, std::move(_instance) });
         });
     }
     
