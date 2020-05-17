@@ -31,6 +31,7 @@ GENERATE_DOTS_TYPES(MODEL_SOURCES MODEL_HEADERS
 target_sources(${TARGET_NAME}
 	PRIVATE
 		dots.cpp
+		Application.cpp
 
 		common/logging.cpp
 
@@ -47,7 +48,6 @@ target_sources(${TARGET_NAME}
 		io/ContainerPool.cpp
 		io/Dispatcher.cpp
 		io/Event.cpp
-		io/Application.cpp
 		
 		io/serialization/JsonSerialization.cpp
 		io/serialization/AsciiSerialization.cpp

@@ -1,4 +1,4 @@
-#include <dots/io/Application.h>
+#include <dots/Application.h>
 #include <dots/common/logging.h>
 #include <dots/io/serialization/AsciiSerialization.h>
 
