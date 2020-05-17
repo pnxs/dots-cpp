@@ -4,7 +4,7 @@
 
 #include "DotsTestStruct.dots.h"
 #include "DotsTestVectorStruct.dots.h"
-#include <dots/functional/fun.h>
+#include <dots/common/fun.h>
 
 using namespace dots::types::literals;
 

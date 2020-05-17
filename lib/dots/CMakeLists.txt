@@ -35,7 +35,7 @@ target_sources(${TARGET_NAME}
 
 		common/logging.cpp
 
-		functional/signal.cpp
+		common/signal.cpp
 
 		io/Transceiver.cpp
 		io/GuestTransceiver.cpp
