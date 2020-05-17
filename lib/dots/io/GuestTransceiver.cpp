@@ -11,7 +11,7 @@ namespace dots
 		/* do nothing */
     }
 
-	const io::Connection& GuestTransceiver::open(channel_ptr_t channel, bool server, descriptor_map_t preloadPublishTypes/* = {}*/, descriptor_map_t preloadSubscribeTypes/* = {}*/)
+	const io::Connection& GuestTransceiver::open(channel_ptr_t channel, descriptor_map_t preloadPublishTypes/* = {}*/, descriptor_map_t preloadSubscribeTypes/* = {}*/)
 	{
 		if (m_hostConnection != std::nullopt)
         {
@@ -21,9 +21,9 @@ namespace dots
 		m_preloadPublishTypes = std::move(preloadPublishTypes);
 		m_preloadSubscribeTypes = std::move(preloadSubscribeTypes);
 		
-		m_hostConnection.emplace(std::move(channel), server);
+		m_hostConnection.emplace(std::move(channel), false);
 		m_hostConnection->asyncReceive(registry(), selfName(),
-			[this](io::Connection& connection, const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself){ return handleReceive(connection, header, std::move(transmission), isFromMyself); },
+			[this](io::Connection& connection, Transmission transmission, bool isFromMyself){ return handleReceive(connection, std::move(transmission), isFromMyself); },
 			[this](io::Connection& connection, const std::exception_ptr& e){ handleTransition(connection, e); }
 		);
 		
@@ -74,9 +74,9 @@ namespace dots
         });
 	}
 
-	bool GuestTransceiver::handleReceive(io::Connection&/* connection*/, const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself)
+	bool GuestTransceiver::handleReceive(io::Connection&/* connection*/, Transmission transmission, bool isFromMyself)
 	{
-		dispatcher().dispatch(header.dotsHeader, transmission.instance(), isFromMyself);
+		dispatcher().dispatch(transmission.header(), transmission.instance(), isFromMyself);
         return true;
 	}
 	
@@ -118,13 +118,13 @@ namespace dots
                     }
 		        }
 
-		        LOG_INFO_S("connection closed -> peerId: " << connection.peerId() << ", name: " << connection.peerName());
+		        LOG_INFO_S("connection closed -> selfId: " << connection.selfId() << ", name: " << connection.peerName());
 		        m_hostConnection = std::nullopt;
 		    }
         }
         catch (const std::exception& e)
         {
-			LOG_ERROR_S("error while handling connection transition -> peerId: " << connection.peerId() << ", name: " << connection.peerName() << " -> " << e.what());
+			LOG_ERROR_S("error while handling connection transition -> selfId: " << connection.selfId() << ", name: " << connection.peerName() << " -> " << e.what());
 			m_hostConnection = std::nullopt;
         }
 	}

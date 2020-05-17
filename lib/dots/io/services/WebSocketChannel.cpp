@@ -5,7 +5,8 @@
 
 namespace dots
 {
-	WebSocketChannel::WebSocketChannel(boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port) :
+	WebSocketChannel::WebSocketChannel(Channel::key_t key, boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port) :
+	    Channel(key),
 	    m_stream{ ioContext }
 	{
 		try
@@ -42,7 +43,8 @@ namespace dots
 		}
 	}
 
-	WebSocketChannel::WebSocketChannel(ws_stream_t&& stream) :
+	WebSocketChannel::WebSocketChannel(Channel::key_t key, ws_stream_t&& stream) :
+	    Channel(key),
         m_stream(std::move(stream))
 	{
 		/* do nothing */
@@ -80,20 +82,20 @@ namespace dots
 					throw std::runtime_error{ "received message with invalid format: " + payload };
 				}
 
-				DotsTransportHeader header;
+				DotsHeader header;
 				from_json(std::as_const(itHeader->value).GetObject(), header);
 
-				const type::StructDescriptor<>* descriptor = registry().findStructType(*header.dotsHeader->typeName).get();
+				const type::StructDescriptor<>* descriptor = registry().findStructType(*header.typeName).get();
 
 				if (descriptor == nullptr)
 				{
-					throw std::runtime_error{ "encountered unknown type: " + *header.dotsHeader->typeName };
+					throw std::runtime_error{ "encountered unknown type: " + *header.typeName };
 				}
 				
 				type::AnyStruct instance{ *descriptor };
 				from_json(std::as_const(itInstance->value).GetObject(), instance.get());
 				
-				processReceive(header, Transmission{ std::move(instance) });
+				processReceive(Transmission{ std::move(header), std::move(instance) });
 			}
 			catch (...)
 			{
@@ -102,7 +104,7 @@ namespace dots
 		});
 	}
 
-	void WebSocketChannel::transmitImpl(const DotsTransportHeader& header, const type::Struct& instance)
+	void WebSocketChannel::transmitImpl(const DotsHeader& header, const type::Struct& instance)
 	{
 		rapidjson::StringBuffer buffer;
     	rapidjson::PrettyWriter<rapidjson::StringBuffer> writer{ buffer };

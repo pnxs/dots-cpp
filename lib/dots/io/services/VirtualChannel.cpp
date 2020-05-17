@@ -9,7 +9,8 @@
 
 namespace dots
 {
-	VirtualChannel::VirtualChannel(boost::asio::io_context& ioContext, std::string serverName/* = "VirtualChannel"*/, bool skipHandshake/* = false*/) :
+	VirtualChannel::VirtualChannel(Channel::key_t key, boost::asio::io_context& ioContext, std::string serverName/* = "VirtualChannel"*/, bool skipHandshake/* = false*/) :
+        Channel(key),
 		m_ioContext{ std::ref(ioContext) },
         m_serverName{ std::move(serverName) }
 	{
@@ -24,13 +25,13 @@ namespace dots
         }
 	}
 
-    void VirtualChannel::spoof(const DotsTransportHeader& header, const type::Struct& instance)
+    void VirtualChannel::spoof(const DotsHeader& header, const type::Struct& instance)
     {
         boost::asio::post(m_ioContext.get(), [this, _header = header, _instance = type::AnyStruct{ instance }]() mutable
         {
-            _header.dotsHeader->sender.constructOrValue(ClientId);
-            _header.dotsHeader->serverSentTime(types::timepoint_t::Now());
-            processReceive(_header, Transmission{ std::move(_instance) });
+            _header.sender.constructOrValue(ClientId);
+            _header.serverSentTime(types::timepoint_t::Now());
+            processReceive(Transmission{ _header, std::move(_instance) });
         });
     }
     
@@ -38,23 +39,15 @@ namespace dots
     {
         const type::StructDescriptor<>& descriptor = instance._descriptor();
 
-        DotsTransportHeader transportHeader{
-            DotsTransportHeader::destinationGroup_i{ descriptor.name() },
-            DotsTransportHeader::dotsHeader_i{
-                DotsHeader::typeName_i{ descriptor.name() },
-                DotsHeader::sentTime_i{ types::timepoint_t::Now() },
-                DotsHeader::attributes_i{ instance._validProperties() },
-                DotsHeader::sender_i{ sender },
-                DotsHeader::removeObj_i{ remove },
-            }
+        DotsHeader header{
+            DotsHeader::typeName_i{ descriptor.name() },
+            DotsHeader::sentTime_i{ types::timepoint_t::Now() },
+            DotsHeader::attributes_i{ instance._validProperties() },
+            DotsHeader::sender_i{ sender },
+            DotsHeader::removeObj_i{ remove }
         };
 
-        if (descriptor.internal())
-        {
-            transportHeader.nameSpace("SYS");
-        }
-
-        spoof(transportHeader, instance);
+        spoof(header, instance);
     }
 
 	void VirtualChannel::asyncReceiveImpl()
@@ -69,9 +62,9 @@ namespace dots
         }        
 	}
 
-	void VirtualChannel::transmitImpl(const DotsTransportHeader& header, const type::Struct& instance)
+	void VirtualChannel::transmitImpl(const DotsHeader& header, const type::Struct& instance)
 	{
-        if (header.nameSpace == "SYS")
+        if (instance._descriptor().internal())
         {
             switch(m_connectionState)
             {
@@ -138,7 +131,7 @@ namespace dots
         {
             onTransmit(header, instance);
 
-            if (m_subscribedTypes.count(header.dotsHeader->typeName))
+            if (m_subscribedTypes.count(header.typeName))
             {
                 spoof(header, instance);
             }
@@ -160,7 +153,7 @@ namespace dots
         /* do nothing */
     }
 
-    void VirtualChannel::onTransmit(const DotsTransportHeader& /*name*/, const type::Struct& /*name*/)
+    void VirtualChannel::onTransmit(const DotsHeader& /*name*/, const type::Struct& /*name*/)
     {
         /* do nothing */
     }

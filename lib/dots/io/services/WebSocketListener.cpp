@@ -63,7 +63,7 @@ namespace dots
 
 				stream.accept();
 				
-				processAccept(std::make_shared<WebSocketChannel>(std::move(stream)));
+				processAccept(make_channel<WebSocketChannel>(std::move(stream)));
 			}
 			catch (const std::exception& e)
 			{

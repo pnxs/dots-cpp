@@ -2,13 +2,14 @@
 #include <string_view>
 #include <boost/asio.hpp>
 #include <dots/io/services/Channel.h>
+#include <DotsTransportHeader.dots.h>
 
 namespace dots::io::posix
 {
 	struct UdsChannel : Channel
 	{
-		UdsChannel(boost::asio::io_context& ioContext, const std::string_view& path);
-		UdsChannel(boost::asio::local::stream_protocol::socket&& socket);
+		UdsChannel(Channel::key_t key, boost::asio::io_context& ioContext, const std::string_view& path);
+		UdsChannel(Channel::key_t key, boost::asio::local::stream_protocol::socket&& socket);
 		UdsChannel(const UdsChannel& other) = delete;
 		UdsChannel(UdsChannel&& other) = delete;
 		virtual ~UdsChannel() noexcept = default;
@@ -19,7 +20,7 @@ namespace dots::io::posix
 	protected:
 
 		void asyncReceiveImpl() override;
-		void transmitImpl(const DotsTransportHeader& header, const type::Struct& instance) override;
+		void transmitImpl(const DotsHeader& header, const type::Struct& instance) override;
 
 	private:
 
@@ -37,7 +38,7 @@ namespace dots::io::posix
 		boost::asio::local::stream_protocol::endpoint m_endpoint;
 		boost::asio::local::stream_protocol::socket m_socket;
 		uint16_t m_headerSize;
-		DotsTransportHeader m_header;
+		DotsTransportHeader m_transportHeader;
 		std::vector<uint8_t> m_headerBuffer;
 		std::vector<uint8_t> m_instanceBuffer;
 	};

@@ -15,7 +15,7 @@ namespace dots
     {
         using transition_handler_t = std::function<void(const io::Connection&)>;
 
-        HostTransceiver(std::string selfName, transition_handler_t transitionHandler);
+        HostTransceiver(std::string selfName = "DotsHostTransceiver", transition_handler_t transitionHandler = nullptr);
 		HostTransceiver(const HostTransceiver& other) = delete;
 		HostTransceiver(HostTransceiver&& other) = default;
 		virtual ~HostTransceiver() = default;
@@ -36,12 +36,12 @@ namespace dots
         void joinGroup(const std::string_view& name) override;
 		void leaveGroup(const std::string_view& name) override;
 
-        void transmit(io::Connection* origin, const std::string& group, const DotsTransportHeader& header, Transmission&& transmission);
+        void transmit(io::Connection* origin, const Transmission& transmission);
 
         bool handleListenAccept(Listener& listener, channel_ptr_t channel);
         void handleListenError(Listener& listener, const std::exception_ptr& e);
 
-        bool handleReceive(io::Connection& connection, const DotsTransportHeader& header, Transmission&& transmission, bool isFromMyself);
+        bool handleReceive(io::Connection& connection, Transmission transmission, bool isFromMyself);
         void handleTransition(io::Connection& connection, const std::exception_ptr& e) noexcept;
 
         void handleMemberMessage(io::Connection& connection, const DotsMember& member);

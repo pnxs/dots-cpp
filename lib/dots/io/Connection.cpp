@@ -1,6 +1,5 @@
 #include <dots/io/Connection.h>
 #include <dots/io/Registry.h>
-#include <dots/io/DescriptorConverter.h>
 #include <dots/common/logging.h>
 #include <DotsMsgConnect.dots.h>
 #include <DotsCacheInfo.dots.h>
@@ -78,8 +77,9 @@ namespace dots::io
 		m_transitionHandler = std::move(transitionHandler);
 		
 		setConnectionState(DotsConnectionState::connecting);
-		m_channel->asyncReceive(registry,
-			[this](const DotsTransportHeader& transportHeader, Transmission&& transmission){ return handleReceive(transportHeader, std::move(transmission)); },
+        m_channel->init(*m_registry);
+		m_channel->asyncReceive(
+			[this](Transmission transmission){ return handleReceive(std::move(transmission)); },
 			[this](const std::exception_ptr& e){ handleError(e); }
 		);
 
@@ -105,42 +105,27 @@ namespace dots::io
 
 	void Connection::transmit(const type::Struct& instance, types::property_set_t includedProperties, bool remove)
 	{
-		const type::StructDescriptor<>& descriptor = instance._descriptor();
-
-        DotsTransportHeader header{
-            DotsTransportHeader::destinationGroup_i{ descriptor.name() },
-            DotsTransportHeader::dotsHeader_i{
-                DotsHeader::typeName_i{ descriptor.name() },
-                DotsHeader::sentTime_i{ types::timepoint_t::Now() },
-                DotsHeader::attributes_i{ includedProperties ==  types::property_set_t::All ? instance._validProperties() : includedProperties },
-				DotsHeader::sender_i{ m_selfId },
-                DotsHeader::removeObj_i{ remove }
-            }
-        };
-
-        if (descriptor.internal() && !instance._is<DotsClient>() && !instance._is<DotsDescriptorRequest>())
-        {
-            header.nameSpace("SYS");
-        }
-
-		transmit(header, instance);
+		transmit(DotsHeader{
+            DotsHeader::typeName_i{ instance._descriptor().name() },
+            DotsHeader::sentTime_i{ types::timepoint_t::Now() },
+            DotsHeader::attributes_i{ includedProperties ==  types::property_set_t::All ? instance._validProperties() : includedProperties },
+            DotsHeader::removeObj_i{ remove }
+        }, instance);
 	}
 
-    void Connection::transmit(const DotsTransportHeader& header, const type::Struct& instance)
+    void Connection::transmit(const DotsHeader& header, const type::Struct& instance)
     {
-        exportType(instance._descriptor());
         m_channel->transmit(header, instance);
     }
 
-    void Connection::transmit(const DotsTransportHeader& header, const Transmission& transmission)
+    void Connection::transmit(const Transmission& transmission)
     {
-        exportType(transmission.instance()->_descriptor());
-        m_channel->transmit(header, transmission);
+        m_channel->transmit(transmission);
     }
 
     void Connection::transmit(const type::StructDescriptor<>& descriptor)
     {
-        exportType(descriptor);
+        m_channel->transmit(descriptor);
     }
 
     void Connection::handleError(const std::exception_ptr& e)
@@ -171,7 +156,7 @@ namespace dots::io
         handleClose(e);
 	}
 
-    bool Connection::handleReceive(const DotsTransportHeader& transportHeader, Transmission&& transmission)
+    bool Connection::handleReceive(Transmission transmission)
 	{
         if (m_connectionState == DotsConnectionState::closed)
         {
@@ -200,26 +185,37 @@ namespace dots::io
         {
             if (m_connectionState == DotsConnectionState::connected || m_connectionState == DotsConnectionState::early_subscribe)
             {
-                importType(transmission.instance());
+                DotsHeader& header = transmission.header();
 
                 if (m_selfId == HostId)
                 {
-                    DotsTransportHeader transportHeader_ = transportHeader;
-                    DotsHeader& dotsHeader = *transportHeader_.dotsHeader;
-                    dotsHeader.sender = m_peerId;
+                    header.sender = m_peerId;
 
-                    dotsHeader.serverSentTime = types::timepoint_t::Now();
+                    header.serverSentTime = types::timepoint_t::Now();
 
-                    if (!dotsHeader.sentTime.isValid())
+                    if (!header.sentTime.isValid())
                     {
-                        dotsHeader.sentTime = dotsHeader.serverSentTime;
+                        header.sentTime = header.serverSentTime;
                     }
 
-                    m_receiveHandler(*this, transportHeader_, std::move(transmission), transportHeader_.dotsHeader->sender == m_selfId);
+                    m_receiveHandler(*this, std::move(transmission), header.sender == m_selfId);
                 }
                 else
                 {
-                    m_receiveHandler(*this, transportHeader, std::move(transmission), transportHeader.dotsHeader->sender == m_selfId);
+                    if (!header.sentTime.isValid())
+                    {
+                        header.sentTime(types::timepoint_t::Now());
+                    }
+
+                    if (header.sender.isValid())
+                    {
+                        m_receiveHandler(*this, std::move(transmission), header.sender == m_selfId);
+                    }
+                    else
+                    {
+                        header.sender(m_peerId);
+                        m_receiveHandler(*this, std::move(transmission), false);
+                    }
                 }
             }
             else
@@ -249,7 +245,7 @@ namespace dots::io
 	
 	void Connection::handleAuthorizationRequest(const DotsMsgConnectResponse& connectResponse)
 	{
-        m_peerId = connectResponse.clientId;
+        m_selfId = connectResponse.clientId;
 		LOG_DEBUG_S("connectResponse: serverName=" << m_peerName << " accepted=" << *connectResponse.accepted);
 		
 		if (connectResponse.preload == true)
@@ -327,54 +323,6 @@ namespace dots::io
             what += error.errorText.isValid() ? *error.errorText : std::string{ "<unknown error>" };
             handleError(std::make_exception_ptr(std::runtime_error{ what }));
         }
-    }
-
-    void Connection::importType(const type::Struct& instance)
-    {
-        if (auto* structDescriptorData = instance._as<StructDescriptorData>())
-        {
-        	if (bool isNewSharedType = m_sharedTypes.emplace(structDescriptorData->name).second; isNewSharedType)
-        	{
-        		DescriptorConverter{ *m_registry }(*structDescriptorData);
-        	}
-        }
-        else if (auto* enumDescriptorData = instance._as<EnumDescriptorData>())
-        {
-        	if (bool isNewSharedType = m_sharedTypes.emplace(enumDescriptorData->name).second; isNewSharedType)
-        	{
-        		DescriptorConverter{ *m_registry }(*enumDescriptorData);
-        	}
-        }
-    }
-
-    void Connection::exportType(const type::Descriptor<>& descriptor)
-    {
-        if (bool isNewSharedType = m_sharedTypes.emplace(descriptor.name()).second; isNewSharedType)
-    	{
-            if (descriptor.type() == type::Type::Vector)
-		    {
-			    auto& vectorDescriptor = static_cast<const type::VectorDescriptor&>(descriptor);
-    			exportType(vectorDescriptor.valueDescriptor());
-		    }
-    		else if (descriptor.type() == type::Type::Enum)
-		    {
-			    auto& enumDescriptor = static_cast<const type::EnumDescriptor<>&>(descriptor);
-    			exportType(enumDescriptor.underlyingDescriptor());
-	    		transmit(DescriptorConverter{ *m_registry }(enumDescriptor));
-		    }
-	        else if (descriptor.type() == type::Type::Struct)
-	        {
-	        	if (auto& structDescriptor = static_cast<const type::StructDescriptor<>&>(descriptor); !structDescriptor.internal())
-	        	{
-	        		for (const type::PropertyDescriptor& propertyDescriptor : structDescriptor.propertyDescriptors())
-    				{
-    					exportType(propertyDescriptor.valueDescriptor());
-    				}
-                    
-    				transmit(DescriptorConverter{ *m_registry }(structDescriptor));
-	        	}
-	        }
-    	}
     }
 
 	void Connection::setConnectionState(DotsConnectionState state, const std::exception_ptr& e/* = nullptr*/)

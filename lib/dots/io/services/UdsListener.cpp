@@ -62,7 +62,7 @@ namespace dots::io::posix
 				}
 
 				// note: this move is explicitly allowed according to the ASIO v1.72 documentation of the socket
-				processAccept(std::make_shared<UdsChannel>(std::move(m_socket)));
+				processAccept(make_channel<UdsChannel>(std::move(m_socket)));
 			}
 			catch (const std::exception& e)
 			{

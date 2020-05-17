@@ -6,7 +6,8 @@
 
 namespace dots::io::posix
 {
-	UdsChannel::UdsChannel(boost::asio::io_context& ioContext, const std::string_view& path) :
+	UdsChannel::UdsChannel(Channel::key_t key, boost::asio::io_context& ioContext, const std::string_view& path) :
+	    Channel(key),
 		m_endpoint{ path.data() },
 	    m_socket{ ioContext },
 	    m_headerSize(0)
@@ -26,7 +27,8 @@ namespace dots::io::posix
 		IgnorePipeSignals();
 	}
 
-	UdsChannel::UdsChannel(boost::asio::local::stream_protocol::socket&& socket) :
+	UdsChannel::UdsChannel(Channel::key_t key, boost::asio::local::stream_protocol::socket&& socket) :
+	    Channel(key),
 	    m_endpoint{ socket.remote_endpoint() },
 		m_socket{ std::move(socket) },
 		m_headerSize(0)
@@ -42,14 +44,16 @@ namespace dots::io::posix
 		asynReadHeaderLength();
 	}
 
-	void UdsChannel::transmitImpl(const DotsTransportHeader& header, const type::Struct& instance)
+	void UdsChannel::transmitImpl(const DotsHeader& header, const type::Struct& instance)
 	{
-		std::string serializedInstance = to_cbor(instance, header.dotsHeader->attributes);
+		std::string serializedInstance = to_cbor(instance, header.attributes);
 
-		DotsTransportHeader header_(header);
-		header_.payloadSize = serializedInstance.size();
+		DotsTransportHeader transportHeader{
+			DotsTransportHeader::dotsHeader_i{ header },
+			DotsTransportHeader::payloadSize_i{ serializedInstance.size() }
+		};
 
-		auto serializedHeader = to_cbor(header_);
+		auto serializedHeader = to_cbor(transportHeader);
 		uint16_t headerSize = serializedHeader.size();
 
 		std::array<boost::asio::const_buffer, 3> buffers{
@@ -101,15 +105,15 @@ namespace dots::io::posix
 
 				verifyErrorCode(ec);
 
-				m_header = DotsTransportHeader{};
-				from_cbor(&m_headerBuffer[0], m_headerSize, m_header);
+				m_transportHeader = DotsTransportHeader{};
+				from_cbor(&m_headerBuffer[0], m_headerSize, m_transportHeader);
 
-				if (!m_header.payloadSize.isValid())
+				if (!m_transportHeader.payloadSize.isValid())
 				{
 					throw std::runtime_error{ "received header without payloadSize" };
 				}
 
-				m_instanceBuffer.resize(m_header.payloadSize);
+				m_instanceBuffer.resize(m_transportHeader.payloadSize);
 				asyncReadInstance();
 				
 			}
@@ -133,16 +137,16 @@ namespace dots::io::posix
 
 				verifyErrorCode(ec);
 
-				const type::StructDescriptor<>* descriptor = registry().findStructType(*m_header.dotsHeader->typeName).get();
+				const type::StructDescriptor<>* descriptor = registry().findStructType(*m_transportHeader.dotsHeader->typeName).get();
 
 				if (descriptor == nullptr)
 				{
-					throw std::runtime_error{ "encountered unknown type: " + *m_header.dotsHeader->typeName };
+					throw std::runtime_error{ "encountered unknown type: " + *m_transportHeader.dotsHeader->typeName };
 				}
 
 				type::AnyStruct instance{ *descriptor };
 				from_cbor(m_instanceBuffer.data(), m_instanceBuffer.size(), instance.get());
-				processReceive(m_header, Transmission{ std::move(instance) });
+				processReceive(Transmission{ std::move(m_transportHeader.dotsHeader), std::move(instance) });
 			}
 			catch (...)
 			{

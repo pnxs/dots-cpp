@@ -10,8 +10,7 @@ namespace dots
 {
 	struct VirtualChannel : Channel
 	{
-		VirtualChannel(boost::asio::io_context& ioContext, std::string serverName = "VirtualChannel", bool skipHandshake = false);
-		VirtualChannel(boost::asio::ip::tcp::socket&& socket);
+		VirtualChannel(Channel::key_t key, boost::asio::io_context& ioContext, std::string serverName = "VirtualChannel", bool skipHandshake = false);
 		VirtualChannel(const VirtualChannel& other) = delete;
 		VirtualChannel(VirtualChannel&& other) = delete;
 		virtual ~VirtualChannel() = default;
@@ -19,18 +18,18 @@ namespace dots
 		VirtualChannel& operator = (const VirtualChannel& rhs) = delete;
 		VirtualChannel& operator = (VirtualChannel&& rhs) = delete;
 
-        void spoof(const DotsTransportHeader& header, const type::Struct& instance);
+        void spoof(const DotsHeader& header, const type::Struct& instance);
         void spoof(uint32_t sender, const type::Struct& instance, bool remove = false);
 
 	protected:
 
 		void asyncReceiveImpl() override;
-		void transmitImpl(const DotsTransportHeader& header, const type::Struct& instance) override;
+		void transmitImpl(const DotsHeader& header, const type::Struct& instance) override;
 
 		virtual void onConnected();
 		virtual void onSubscribe(const std::string& name);
 		virtual void onUnsubscribe(const std::string& name);
-		virtual void onTransmit(const DotsTransportHeader& header, const type::Struct& instance);
+		virtual void onTransmit(const DotsHeader& header, const type::Struct& instance);
 
 		const std::set<std::string>& subscribedTypes() const;
 

@@ -12,8 +12,8 @@ namespace dots
 		using ws_stream_t = boost::beast::websocket::stream<boost::beast::tcp_stream>;
 		static constexpr char Subprotocol[] = "dots-json";
 
-        WebSocketChannel(boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port);
-		WebSocketChannel(ws_stream_t&& stream);
+        WebSocketChannel(Channel::key_t key, boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port);
+		WebSocketChannel(Channel::key_t key, ws_stream_t&& stream);
 		WebSocketChannel(const WebSocketChannel& other) = delete;
 		WebSocketChannel(WebSocketChannel&& other) = delete;
 		virtual ~WebSocketChannel() = default;
@@ -24,7 +24,7 @@ namespace dots
 	protected:
 
 		void asyncReceiveImpl() override;
-		void transmitImpl(const DotsTransportHeader& header, const type::Struct& instance) override;
+		void transmitImpl(const DotsHeader& header, const type::Struct& instance) override;
 
 	private:
 

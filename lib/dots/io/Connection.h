@@ -1,11 +1,10 @@
 #pragma once
 #include <string_view>
 #include <map>
-#include <set>
 #include <tuple>
 #include <dots/io/services/Channel.h>
 #include <DotsConnectionState.dots.h>
-#include <DotsTransportHeader.dots.h>
+#include <DotsHeader.dots.h>
 #include <DotsMsgHello.dots.h>
 #include <DotsMsgConnectResponse.dots.h>
 #include <DotsMsgConnect.dots.h>
@@ -25,7 +24,7 @@ namespace dots::io
         static constexpr id_t HostId = 1;
         static constexpr id_t FirstGuestId = 2;
 
-		using receive_handler_t = std::function<bool(Connection&, const DotsTransportHeader&, Transmission&&, bool)>;
+		using receive_handler_t = std::function<bool(Connection&, Transmission, bool)>;
 		using transition_handler_t = std::function<void(Connection&, const std::exception_ptr&)>;
 		
 		Connection(channel_ptr_t channel, bool host);
@@ -44,8 +43,8 @@ namespace dots::io
 
 		void asyncReceive(Registry& registry, const std::string_view& name, receive_handler_t&& receiveHandler, transition_handler_t&& transitionHandler);
 		void transmit(const type::Struct& instance, types::property_set_t includedProperties = types::property_set_t::All, bool remove = false);
-		void transmit(const DotsTransportHeader& header, const type::Struct& instance);
-        void transmit(const DotsTransportHeader& header, const Transmission& transmission);
+		void transmit(const DotsHeader& header, const type::Struct& instance);
+        void transmit(const Transmission& transmission);
 		void transmit(const type::StructDescriptor<>& descriptor);
 
 		void handleError(const std::exception_ptr& e);
@@ -54,7 +53,7 @@ namespace dots::io
 
 		using system_type_t = std::tuple<const type::StructDescriptor<>*, types::property_set_t, std::function<void(const type::Struct&)>>;
 
-		bool handleReceive(const DotsTransportHeader& transportHeader, Transmission&& transmission);
+		bool handleReceive(Transmission transmission);
 		void handleClose(const std::exception_ptr& e);
 
         void handleHello(const DotsMsgHello& hello);
@@ -67,9 +66,6 @@ namespace dots::io
 		void handlePeerError(const DotsMsgError& error);
 
 		void setConnectionState(DotsConnectionState state, const std::exception_ptr& e = nullptr);
-
-		void importType(const type::Struct& instance);
-		void exportType(const type::Descriptor<>& descriptor);
 
 		template <typename T>
 		void expectSystemType(const types::property_set_t& expectedAttributes, void(Connection::* handler)(const T&));
@@ -87,8 +83,6 @@ namespace dots::io
 		Registry* m_registry;
 		receive_handler_t m_receiveHandler;
 		transition_handler_t m_transitionHandler;
-		
-		std::set<std::string> m_sharedTypes;
 	};
 
     using connection_ptr_t = std::shared_ptr<Connection>;

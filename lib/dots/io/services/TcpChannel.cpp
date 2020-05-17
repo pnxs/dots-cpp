@@ -2,11 +2,13 @@
 #include <dots/io/Io.h>
 #include <dots/io/Registry.h>
 #include <dots/io/serialization/CborNativeSerialization.h>
+#include <DotsClient.dots.h>
+#include <DotsDescriptorRequest.dots.h>
 
 namespace dots
 {
-	TcpChannel::TcpChannel(boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port) :
-		TcpChannel(boost::asio::ip::tcp::socket{ ioContext })
+	TcpChannel::TcpChannel(Channel::key_t key, boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port) :
+		TcpChannel(key, boost::asio::ip::tcp::socket{ ioContext })
 	{
 		boost::asio::ip::tcp::resolver resolver{ m_socket.get_executor() };
 		auto endpoints = resolver.resolve(boost::asio::ip::tcp::socket::protocol_type::v4(), host, port, boost::asio::ip::resolver_query_base::numeric_service);
@@ -32,7 +34,8 @@ namespace dots
 		throw std::runtime_error{ "could not open TCP connection: " + std::string{ host } + ":" + std::string{ port } };
 	}
 
-	TcpChannel::TcpChannel(boost::asio::ip::tcp::socket&& socket) :		
+	TcpChannel::TcpChannel(Channel::key_t key, boost::asio::ip::tcp::socket&& socket) :
+	    Channel(key),
 		m_socket{ std::move(socket) },
 		m_headerSize(0)
 	{
@@ -45,14 +48,41 @@ namespace dots
 		asynReadHeaderLength();
 	}
 
-	void TcpChannel::transmitImpl(const DotsTransportHeader& header, const type::Struct& instance)
+	void TcpChannel::transmitImpl(const DotsHeader& header, const type::Struct& instance)
 	{
-		std::string serializedInstance = to_cbor(instance, header.dotsHeader->attributes);
+		std::string serializedInstance = to_cbor(instance, header.attributes);
 
-		DotsTransportHeader header_(header);
-		header_.payloadSize = serializedInstance.size();
+		DotsTransportHeader transportHeader{
+			DotsTransportHeader::dotsHeader_i{ header },
+			DotsTransportHeader::payloadSize_i{ serializedInstance.size() }
+		};
 
-		auto serializedHeader = to_cbor(header_);
+		// adjust header for backwards compatibility to legacy implementation
+		{
+			// always set destination group
+			transportHeader.destinationGroup = transportHeader.dotsHeader->typeName;
+
+			// conditionally set namespace
+            if (instance._descriptor().internal() && !instance._is<DotsClient>() && !instance._is<DotsDescriptorRequest>())
+            {
+                transportHeader.nameSpace("SYS");
+            }
+
+			// set mandatory sent time if not valid
+			if (!transportHeader.dotsHeader->sentTime.isValid())
+            {
+                transportHeader.dotsHeader->sentTime(types::timepoint_t::Now());
+            }
+
+			// set mandatory sender if not valid. note that a fixed server id for the sender can be used here because
+		    // in case of a client connection the id is handled on the server's side an will be overwritten anyway
+            if (!transportHeader.dotsHeader->sender.isValid())
+            {
+               transportHeader.dotsHeader->sender = 1;
+            }
+		}
+
+		auto serializedHeader = to_cbor(transportHeader);
 		uint16_t headerSize = serializedHeader.size();
 
 		std::array<boost::asio::const_buffer, 3> buffers{
@@ -104,15 +134,15 @@ namespace dots
 
 				verifyErrorCode(ec);
 
-				m_header = DotsTransportHeader{};
-				from_cbor(&m_headerBuffer[0], m_headerSize, m_header);
+				m_transportHeader = DotsTransportHeader{};
+				from_cbor(&m_headerBuffer[0], m_headerSize, m_transportHeader);
 
-				if (!m_header.payloadSize.isValid())
+				if (!m_transportHeader.payloadSize.isValid())
 				{
 					throw std::runtime_error{ "received header without payloadSize" };
 				}
 
-				m_instanceBuffer.resize(m_header.payloadSize);
+				m_instanceBuffer.resize(m_transportHeader.payloadSize);
 				asyncReadInstance();
 				
 			}
@@ -136,16 +166,16 @@ namespace dots
 
 				verifyErrorCode(ec);
 
-				const type::StructDescriptor<>* descriptor = registry().findStructType(*m_header.dotsHeader->typeName).get();
+				const type::StructDescriptor<>* descriptor = registry().findStructType(*m_transportHeader.dotsHeader->typeName).get();
 
 				if (descriptor == nullptr)
 				{
-					throw std::runtime_error{ "encountered unknown type: " + *m_header.dotsHeader->typeName };
+					throw std::runtime_error{ "encountered unknown type: " + *m_transportHeader.dotsHeader->typeName };
 				}
 
 				type::AnyStruct instance{ *descriptor };
 				from_cbor(m_instanceBuffer.data(), m_instanceBuffer.size(), instance.get());
-				processReceive(m_header, Transmission{ std::move(instance) });
+				processReceive(Transmission{ std::move(m_transportHeader.dotsHeader), std::move(instance) });
 			}
 			catch (...)
 			{

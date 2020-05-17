@@ -85,22 +85,27 @@ namespace dots
 
 	void Dispatcher::unsubscribe(const Subscription& subscription)
 	{
-		auto itHandlers = m_eventHandlerPool.find(&subscription.descriptor());
+		auto try_remove_handler = [&subscription](auto& handlerPool)
+		{
+		    if (auto itHandlers = handlerPool.find(&subscription.descriptor()); itHandlers != handlerPool.end())
+		    {
+			    auto& handlers = itHandlers->second;
+		        auto itHandler = handlers.find(subscription.id());
 
-		if (itHandlers == m_eventHandlerPool.end())
+		        if (itHandler != handlers.end())
+		        {
+			        handlers.erase(itHandler);
+				    return true;
+		        }
+		    }
+
+			return false;
+		};
+
+		if (!(try_remove_handler(m_eventHandlerPool) || try_remove_handler(m_receiveHandlerPool)))
 		{
 			throw std::logic_error{ "cannot unsubscribe unknown subscription for type: " + subscription.descriptor().name() };
 		}
-
-		event_handlers_t& handlers = itHandlers->second;
-		auto itHandler = handlers.find(subscription.id());
-
-		if (itHandler == handlers.end())
-		{
-			throw std::logic_error{ "cannot unsubscribe unknown subscription for type: " + subscription.descriptor().name() };
-		}
-
-		handlers.erase(itHandler);
 	}
 
 	void Dispatcher::dispatch(const DotsHeader& header, const type::AnyStruct& instance, bool isFromMyself)
