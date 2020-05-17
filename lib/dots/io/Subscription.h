@@ -3,7 +3,7 @@
 #include <type_traits>
 #include <atomic>
 #include <memory>
-#include <dots/io/Chained.h>
+#include <dots/tools/Chained.h>
 #include <dots/type/StructDescriptor.h>
 
 namespace dots::io
