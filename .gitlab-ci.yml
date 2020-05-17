@@ -37,6 +37,7 @@ run_unittests:
         - ./build/lib/dots_legacy/tests/dots_legacy-unittests --gtest_output="xml:report_legacy.xml"
     artifacts:
         reports:
-            junit: report.xml
-            junit: report_legacy.xml
+            junit:
+                - report.xml
+                - report_legacy.xml
 
