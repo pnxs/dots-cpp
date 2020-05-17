@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 
-namespace dots::io::tools
+namespace dots::tools
 {
 	template <typename Derived>
 	struct key

@@ -8,13 +8,13 @@
 
 namespace dots::io
 {
-	struct PublishedType : public Chained<PublishedType>
+	struct PublishedType : public tools::Chained<PublishedType>
 	{
 		const type::StructDescriptor<>* td;
 		PublishedType(const type::StructDescriptor<>* td);
 	};
 
-	struct SubscribedType : public Chained<SubscribedType>
+	struct SubscribedType : public tools::Chained<SubscribedType>
 	{
 		const type::StructDescriptor<>* td;
 		SubscribedType(const type::StructDescriptor<>* td);

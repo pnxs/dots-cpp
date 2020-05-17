@@ -5,9 +5,9 @@
 #include <functional>
 #include <type_traits>
 
-#define FUN(O, M) pnxs::make_function(O, &std::remove_reference_t<decltype(O)>::M)
+#define FUN(O, M) dots::tools::make_function(O, &std::remove_reference_t<decltype(O)>::M)
 
-namespace pnxs
+namespace dots::tools
 {
 
 template< class O, class M, class R >
