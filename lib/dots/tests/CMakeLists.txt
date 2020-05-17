@@ -15,7 +15,6 @@ target_sources(${TARGET_NAME}
         TestCborSerialization.cpp
 		TestChrono.cpp
 		TestDispatcher.cpp
-        TestFileStore.cpp
         TestJsonSerialization.cpp
 		TestEnumDescriptor.cpp
 		TestStaticDescriptor.cpp
@@ -25,8 +24,6 @@ target_sources(${TARGET_NAME}
 		TestProperty.cpp
 		TestProxyProperty.cpp
 		TestProxyPropertyIterator.cpp
-        TestRecord.cpp
-        TestJsonStore.cpp
 )	
 target_include_directories(${TARGET_NAME}
 	PRIVATE

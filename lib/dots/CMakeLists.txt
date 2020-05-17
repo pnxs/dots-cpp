@@ -47,9 +47,7 @@ target_sources(${TARGET_NAME}
 		io/ContainerPool.cpp
 		io/Dispatcher.cpp
 		io/Event.cpp
-		io/TD_Traversal.cpp
 		io/Application.cpp
-		io/DynamicTypeReceiver.cpp
 		
 		io/serialization/JsonSerialization.cpp
 		io/serialization/AsciiSerialization.cpp
@@ -69,17 +67,6 @@ target_sources(${TARGET_NAME}
 		io/services/WebSocketChannel.cpp
 		io/services/WebSocketListener.cpp
 
-		io/recording/FileStore.cpp
-		io/recording/Load.cpp
-		io/recording/MmapedFile.cpp
-		io/recording/Playback.cpp
-		io/recording/Record.cpp
-		io/recording/Store.cpp
-		io/recording/ContinuousRecord.cpp
-		io/recording/JsonStore.cpp
-		io/recording/DynamicLoader.cpp
-		io/recording/Player.cpp
-		io/recording/FileReader.cpp
 		io/Registry.cpp
 		io/DescriptorConverter.cpp
 		type/AnyStruct.cpp
