@@ -1,6 +1,6 @@
 #include "WebSocketListener.h"
 #include <algorithm>
-#include <dots/io/services/WebSocketChannel.h>
+#include <dots/io/channels/WebSocketChannel.h>
 
 namespace dots::io
 {

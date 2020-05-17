@@ -2,7 +2,7 @@
 #include <boost/program_options.hpp>
 #include <dots/io/Io.h>
 #include <dots/io/services/ChannelService.h>
-#include <dots/io/services/TcpChannel.h>
+#include <dots/io/channels/TcpChannel.h>
 #include <dots/io/Registry.h>
 #include <dots/common/logging.h>
 #include <DotsClient.dots.h>

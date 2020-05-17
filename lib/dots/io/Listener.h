@@ -1,7 +1,7 @@
 #pragma once
 #include <functional>
 #include <memory>
-#include <dots/io/services/Channel.h>
+#include <dots/io/Channel.h>
 
 namespace dots::io
 {

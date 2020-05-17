@@ -48,24 +48,26 @@ target_sources(${TARGET_NAME}
 		io/ContainerPool.cpp
 		io/Dispatcher.cpp
 		io/Event.cpp
+
+		io/Channel.cpp
+		io/Listener.cpp
 		
 		io/serialization/JsonSerialization.cpp
 		io/serialization/AsciiSerialization.cpp
 		io/serialization/CborNativeSerialization.cpp
+		
+		io/channels/TcpListener.cpp
+		io/channels/TcpChannel.cpp
+		io/channels/UdsChannel.cpp
+		io/channels/UdsListener.cpp
+		io/channels/VirtualChannel.cpp
+		io/channels/WebSocketChannel.cpp
+		io/channels/WebSocketListener.cpp
 
-		io/services/Channel.cpp
 		io/services/FdHandlerService.cpp
-		io/services/Listener.cpp
-		io/services/TcpListener.cpp
-		io/services/TcpChannel.cpp
 		io/services/Timer.cpp
 		io/services/TimerService.cpp
 		io/services/Transmission.cpp
-		io/services/UdsChannel.cpp
-		io/services/UdsListener.cpp
-		io/services/VirtualChannel.cpp
-		io/services/WebSocketChannel.cpp
-		io/services/WebSocketListener.cpp
 
 		io/Registry.cpp
 		io/DescriptorConverter.cpp

@@ -1,7 +1,7 @@
 #pragma once
 #include <boost/asio.hpp>
-#include <dots/io/services/Listener.h>
-#include <dots/io/services/Channel.h>
+#include <dots/io/Listener.h>
+#include <dots/io/Channel.h>
 
 namespace dots::io
 {

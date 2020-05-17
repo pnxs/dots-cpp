@@ -1,4 +1,4 @@
-#include <dots/io/services/Channel.h>
+#include <dots/io/Channel.h>
 #include <dots/io/Registry.h>
 #include <dots/io/DescriptorConverter.h>
 #include <DotsMsgError.dots.h>

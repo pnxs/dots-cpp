@@ -1,7 +1,7 @@
 #pragma once
 #include <string_view>
 #include <boost/asio.hpp>
-#include <dots/io/services/Channel.h>
+#include <dots/io/Channel.h>
 #include <DotsTransportHeader.dots.h>
 
 namespace dots::io
