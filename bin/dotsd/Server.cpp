@@ -20,7 +20,7 @@ namespace dots
         add_timer(1s, [&](){ updateServerStatus(); }, true);
         add_timer(10s, [&](){ cleanUpClients(); }, true);
 
-        for (listener_ptr_t& listener : listeners)
+        for (io::listener_ptr_t& listener : listeners)
         {
             m_hostTransceiver.listen(std::move(listener));
         }

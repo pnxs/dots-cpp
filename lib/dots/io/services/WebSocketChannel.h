@@ -5,7 +5,7 @@
 #include <boost/beast.hpp>
 #include <dots/io/services/Channel.h>
 
-namespace dots
+namespace dots::io
 {
 	struct WebSocketChannel : Channel
 	{

@@ -4,7 +4,7 @@
 #include <dots/io/Transceiver.h>
 #include <dots/io/Connection.h>
 
-namespace dots
+namespace dots::io
 {
 	struct GuestTransceiver : Transceiver
 	{

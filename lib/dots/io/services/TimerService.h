@@ -4,7 +4,7 @@
 #include <boost/asio.hpp>
 #include <dots/io/services/Timer.h>
 
-namespace dots
+namespace dots::io
 {
 	struct TimerService : boost::asio::execution_context::service
 	{

@@ -2,7 +2,7 @@
 #include <string_view>
 #include <dots/type/Struct.h>
 
-namespace dots
+namespace dots::io
 {
 	template<typename T>
 	struct Event;
@@ -45,7 +45,7 @@ namespace dots::type
 	
     struct DynamicStruct : Struct
     {
-		using Cbd = Event<DynamicStruct>;
+		using Cbd = io::Event<DynamicStruct>;
 		template <typename T>
 		using property_i = DynamicPropertyInitializer<T>;
 

@@ -6,7 +6,7 @@
 #include <dots/io/services/Channel.h>
 #include <DotsConnectionState.dots.h>
 
-namespace dots
+namespace dots::io
 {
 	struct VirtualChannel : Channel
 	{

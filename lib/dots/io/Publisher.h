@@ -1,7 +1,7 @@
 #pragma once
 #include <dots/type/StructDescriptor.h>
 
-namespace dots
+namespace dots::io
 {
 
 class Publisher

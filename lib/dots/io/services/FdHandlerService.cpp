@@ -1,6 +1,6 @@
 #include "FdHandlerService.h"
 
-namespace dots
+namespace dots::io
 {
 	FdHandlerService::FdHandlerService(boost::asio::execution_context& executionContext) :
 		boost::asio::execution_context::service(executionContext)

@@ -2,7 +2,7 @@
 #include <dots/io/Dispatcher.h>
 #include <dots/common/logging.h>
 
-namespace dots
+namespace dots::io
 {
 	PublishedType::PublishedType(const type::StructDescriptor<>* td)
 	:td(td)

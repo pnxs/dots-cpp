@@ -5,7 +5,7 @@
 #include <DotsCacheInfo.dots.h>
 #include <DotsClient.dots.h>
 
-namespace dots
+namespace dots::io
 {
     HostTransceiver::HostTransceiver(std::string selfName/* = "DotsHostTransceiver"*/, transition_handler_t transitionHandler/* = nullpt*/) :
         Transceiver(std::move(selfName)),

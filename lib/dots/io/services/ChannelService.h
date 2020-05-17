@@ -3,7 +3,7 @@
 #include <dots/io/services/Listener.h>
 #include <dots/io/services/Channel.h>
 
-namespace dots
+namespace dots::io
 {
 	struct ChannelService : boost::asio::execution_context::service
 	{

@@ -4,7 +4,7 @@
 #include <boost/beast.hpp>
 #include <dots/io/services/Listener.h>
 
-namespace dots
+namespace dots::io
 {
 	struct WebSocketListener : Listener
 	{

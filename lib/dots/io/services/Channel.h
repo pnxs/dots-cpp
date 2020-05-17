@@ -11,7 +11,7 @@ namespace dots::io
 	struct Registry;
 }
 
-namespace dots
+namespace dots::io
 {
     namespace tools
     {

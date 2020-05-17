@@ -5,7 +5,7 @@
 #include <dots/io/services/Listener.h>
 #include <dots/io/services/TcpChannel.h>
 
-namespace dots
+namespace dots::io
 {
 	struct TcpListener : Listener
 	{

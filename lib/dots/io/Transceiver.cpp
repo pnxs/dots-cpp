@@ -3,7 +3,7 @@
 #include <dots/io/serialization/AsciiSerialization.h>
 #include <DotsMember.dots.h>
 
-namespace dots
+namespace dots::io
 {
     Transceiver::Transceiver(std::string selfName) :
 	    m_registry{ [&](const type::Descriptor<>& descriptor){ handleNewType(descriptor); } },

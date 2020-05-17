@@ -3,7 +3,7 @@
 #include <memory>
 #include <dots/io/services/Channel.h>
 
-namespace dots
+namespace dots::io
 {
 	struct Listener
 	{

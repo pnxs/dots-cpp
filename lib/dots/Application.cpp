@@ -18,13 +18,13 @@ namespace dots
 		// Connect to dotsd
 
 		GuestTransceiver& globalGuestTransceiver = dots::transceiver(name);
-		auto channel = global_service<ChannelService>().makeChannel<TcpChannel>(m_serverAddress, m_serverPort);
+		auto channel = io::global_service<io::ChannelService>().makeChannel<io::TcpChannel>(m_serverAddress, m_serverPort);
 		const io::Connection& connection = globalGuestTransceiver.open(std::move(channel), getPreloadPublishTypes(), getPreloadSubscribeTypes());
 
 		LOG_DEBUG_S("run until state connected...");
 		while (!connection.connected())
 		{
-			global_io_context().run_one();
+			io::global_io_context().run_one();
 		}
 		LOG_DEBUG_S("run one done");
 
@@ -33,13 +33,13 @@ namespace dots
 
 	Application::~Application()
 	{
-		global_io_context().stop();
+		io::global_io_context().stop();
 	}
 
 	int Application::exec()
 	{
 		m_exitCode = 0;
-		global_io_context().run();
+		io::global_io_context().run();
 
 		return m_exitCode;
 	}
@@ -47,7 +47,7 @@ namespace dots
 	int Application::execOne(const std::chrono::milliseconds& timeout)
 	{
 		m_exitCode = 0;
-		global_io_context().run_one_for(timeout);
+		io::global_io_context().run_one_for(timeout);
 
 		return m_exitCode;
 	}
@@ -55,7 +55,7 @@ namespace dots
 	void Application::exit(int exitCode)
 	{
 		m_exitCode = exitCode;
-		global_io_context().stop();
+		io::global_io_context().stop();
 	}
 
 	Application* Application::instance()
@@ -97,7 +97,7 @@ namespace dots
 	{
 		GuestTransceiver::descriptor_map_t sds;
 
-		for (const auto& e : dots::PublishedType::allChained())
+		for (const auto& e : dots::io::PublishedType::allChained())
 		{
 			auto td = transceiver().registry().findStructType(e->td->name());
 			if (!td) {
@@ -118,7 +118,7 @@ namespace dots
 	{
 		GuestTransceiver::descriptor_map_t sds;
 
-		for (const auto& e : dots::SubscribedType::allChained())
+		for (const auto& e : dots::io::SubscribedType::allChained())
 		{
 			auto td = transceiver().registry().findStructType(e->td->name());
 			if (!td) {

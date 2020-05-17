@@ -1,6 +1,6 @@
 #include "Listener.h"
 
-namespace dots
+namespace dots::io
 {
     void Listener::asyncAccept(accept_handler_t&& acceptHandler, error_handler_t&& errorHandler)
     {

@@ -2,7 +2,7 @@
 #include <dots/io/services/TimerService.h>
 #include <dots/io/services/FdHandlerService.h>
 
-namespace dots
+namespace dots::io
 {
 	boost::asio::io_context& global_io_context()
 	{

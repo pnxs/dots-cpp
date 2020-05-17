@@ -9,7 +9,7 @@
 #include <DotsDescriptorRequest.dots.h>
 #include <DotsMember.dots.h>
 
-namespace dots
+namespace dots::io
 {
     struct HostTransceiver : Transceiver
     {

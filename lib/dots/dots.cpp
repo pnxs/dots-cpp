@@ -7,22 +7,22 @@ namespace dots
 {
 	Timer::id_t add_timer(const type::Duration& timeout, const std::function<void()>& handler, bool periodic/* = false*/)
 	{
-		return global_service<TimerService>().addTimer(timeout, handler, periodic);
+		return io::global_service<io::TimerService>().addTimer(timeout, handler, periodic);
 	}
 
 	void remove_timer(Timer::id_t id)
 	{
-		global_service<TimerService>().removeTimer(id);
+		io::global_service<io::TimerService>().removeTimer(id);
 	}
 
 	void add_fd_handler(int fileDescriptor, const std::function<void()>& handler)
 	{
-		global_service<FdHandlerService>().addInEventHandler(fileDescriptor, handler);
+		io::global_service<io::FdHandlerService>().addInEventHandler(fileDescriptor, handler);
 	}
 
 	void remove_fd_handler(int fileDescriptor)
 	{
-		global_service<FdHandlerService>().removeInEventHandler(fileDescriptor);
+		io::global_service<io::FdHandlerService>().removeInEventHandler(fileDescriptor);
 	}
 
 	Publisher*& publisher()
@@ -53,12 +53,12 @@ namespace dots
 		publish(instance, instance._keyProperties(), true);
 	}
 
-	Subscription subscribe(const type::StructDescriptor<>& descriptor, GuestTransceiver::receive_handler_t<>&& handler)
+	Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::receive_handler_t<>&& handler)
 	{
 		return transceiver().subscribe(descriptor, std::move(handler));
 	}
 
-	Subscription subscribe(const type::StructDescriptor<>& descriptor, GuestTransceiver::event_handler_t<>&& handler)
+	Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::event_handler_t<>&& handler)
 	{
 		return transceiver().subscribe(descriptor, std::move(handler));
 	}

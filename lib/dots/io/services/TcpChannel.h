@@ -4,7 +4,7 @@
 #include <dots/io/services/Channel.h>
 #include <DotsTransportHeader.dots.h>
 
-namespace dots
+namespace dots::io
 {
 	struct TcpChannel : Channel
 	{

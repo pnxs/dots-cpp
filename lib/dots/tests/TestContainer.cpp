@@ -3,6 +3,11 @@
 #include <DotsHeader.dots.h>
 #include <DotsTestStruct.dots.h>
 
+namespace dots
+{
+    using io::Container;
+}
+
 namespace
 {
 	namespace test_helpers

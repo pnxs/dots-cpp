@@ -5,7 +5,7 @@
 #include <DotsClient.dots.h>
 #include <DotsDescriptorRequest.dots.h>
 
-namespace dots
+namespace dots::io
 {
 	TcpChannel::TcpChannel(Channel::key_t key, boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port) :
 		TcpChannel(key, boost::asio::ip::tcp::socket{ ioContext })

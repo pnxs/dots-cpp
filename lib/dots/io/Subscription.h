@@ -6,7 +6,7 @@
 #include <dots/io/Chained.h>
 #include <dots/type/StructDescriptor.h>
 
-namespace dots
+namespace dots::io
 {
 	struct PublishedType : public Chained<PublishedType>
 	{

@@ -7,7 +7,7 @@ namespace dots
 {
     struct Server
     {
-        using listeners_t = std::vector<listener_ptr_t>;
+        using listeners_t = std::vector<io::listener_ptr_t>;
 
         Server(std::string name, listeners_t listeners);
 		Server(const Server& other) = delete;
@@ -32,7 +32,7 @@ namespace dots
 
         static std::string flags2String(const dots::type::StructDescriptor<>* td);
 
-        HostTransceiver m_hostTransceiver;
+        io::HostTransceiver m_hostTransceiver;
         DotsDaemonStatus m_daemonStatus;
     };
 }

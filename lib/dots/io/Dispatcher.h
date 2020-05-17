@@ -9,7 +9,7 @@
 #include <dots/io/Subscription.h>
 #include <dots/io/ContainerPool.h>
 
-namespace dots
+namespace dots::io
 {
 	struct Dispatcher
 	{

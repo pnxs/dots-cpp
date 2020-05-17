@@ -3,7 +3,7 @@
 #include <dots/io/serialization/AsciiSerialization.h>
 #include <DotsMember.dots.h>
 
-namespace dots
+namespace dots::io
 {
     GuestTransceiver::GuestTransceiver(std::string selfName) :
 	    Transceiver(std::move(selfName))

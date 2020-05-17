@@ -4,7 +4,7 @@
 #include <boost/asio.hpp>
 #include <dots/io/services/FdHandler.h>
 
-namespace dots
+namespace dots::io
 {
 	struct FdHandlerService : boost::asio::execution_context::service
 	{

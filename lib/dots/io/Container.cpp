@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <numeric>
 
-namespace dots
+namespace dots::io
 {
 	Container<type::Struct>::Container(const type::StructDescriptor<>& descriptor) :
 		m_descriptor(&descriptor)

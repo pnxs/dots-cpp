@@ -4,6 +4,13 @@
 #include <DotsTestStruct.dots.h>
 #include <DotsUncachedTestStruct.dots.h>
 
+namespace dots
+{
+    using io::Dispatcher;
+	using io::Subscription;
+	using io::Event;
+}
+
 namespace
 {
 	namespace test_helpers
