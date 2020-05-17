@@ -65,9 +65,9 @@ target_sources(${TARGET_NAME}
 		io/channels/WebSocketListener.cpp
 
 		io/services/FdHandlerService.cpp
-		io/services/Timer.cpp
+		io/Timer.cpp
 		io/services/TimerService.cpp
-		io/services/Transmission.cpp
+		io/Transmission.cpp
 
 		io/Registry.cpp
 		io/DescriptorConverter.cpp
