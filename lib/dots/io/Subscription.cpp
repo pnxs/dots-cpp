@@ -1,6 +1,6 @@
 #include <dots/io/Subscription.h>
 #include <dots/io/Dispatcher.h>
-#include <dots/common/logging.h>
+#include <dots/tools/logging.h>
 
 namespace dots::io
 {

@@ -1,5 +1,5 @@
 #include <dots/io/Transceiver.h>
-#include <dots/common/logging.h>
+#include <dots/tools/logging.h>
 #include <dots/io/serialization/AsciiSerialization.h>
 #include <DotsMember.dots.h>
 

@@ -7,7 +7,7 @@
 #include <dots/type/FundamentalTypes.h>
 #include <dots/type/EnumDescriptor.h>
 #include <dots/type/StructDescriptor.h>
-#include <dots/common/signal.h>
+#include <dots/tools/signal.h>
 
 namespace dots::io
 {

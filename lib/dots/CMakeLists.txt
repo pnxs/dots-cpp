@@ -33,9 +33,9 @@ target_sources(${TARGET_NAME}
 		dots.cpp
 		Application.cpp
 
-		common/logging.cpp
+		tools/logging.cpp
 
-		common/signal.cpp
+		tools/signal.cpp
 
 		io/Transceiver.cpp
 		io/GuestTransceiver.cpp

@@ -1,7 +1,7 @@
 #include "HostTransceiver.h"
 #include <vector>
 #include <dots/dots.h>
-#include <dots/common/logging.h>
+#include <dots/tools/logging.h>
 #include <DotsCacheInfo.dots.h>
 #include <DotsClient.dots.h>
 

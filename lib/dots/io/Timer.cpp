@@ -1,5 +1,5 @@
 #include "Timer.h"
-#include <dots/common/fun.h>
+#include <dots/tools/fun.h>
 #include <dots/io/services/TimerService.h>
 
 namespace dots::io

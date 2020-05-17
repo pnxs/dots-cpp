@@ -1,7 +1,7 @@
 #include <dots/io/Io.h>
 #include <dots/io/services/ChannelService.h>
 #include <dots/io/channels/TcpListener.h>
-#include <dots/common/logging.h>
+#include <dots/tools/logging.h>
 #include "Server.h"
 #include <boost/program_options.hpp>
 #include <iostream>
