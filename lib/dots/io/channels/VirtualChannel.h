@@ -3,10 +3,10 @@
 #include <utility>
 #include <set>
 #include <boost/asio.hpp>
-#include <dots/io/services/Channel.h>
+#include <dots/io/Channel.h>
 #include <DotsConnectionState.dots.h>
 
-namespace dots
+namespace dots::io
 {
 	struct VirtualChannel : Channel
 	{

@@ -2,8 +2,8 @@
 #include <string_view>
 #include <optional>
 #include <boost/asio.hpp>
-#include <dots/io/services/Listener.h>
-#include <dots/io/services/UdsChannel.h>
+#include <dots/io/Listener.h>
+#include <dots/io/channels/UdsChannel.h>
 
 namespace dots::io::posix
 {

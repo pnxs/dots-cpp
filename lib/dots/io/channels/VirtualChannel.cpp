@@ -7,7 +7,7 @@
 #include <DotsMember.dots.h>
 #include <DotsClearCache.dots.h>
 
-namespace dots
+namespace dots::io
 {
 	VirtualChannel::VirtualChannel(Channel::key_t key, boost::asio::io_context& ioContext, std::string serverName/* = "VirtualChannel"*/, bool skipHandshake/* = false*/) :
         Channel(key),

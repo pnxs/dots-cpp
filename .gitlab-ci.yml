@@ -24,6 +24,7 @@ build_ubuntu:
             - ./build/bin/utils/dotscli/dotscli
             - ./build/lib/dots/libdots.so.0
             - ./build/lib/dots/tests/dots-unittests
+            - ./build/lib/dots_legacy/tests/dots_legacy-unittests
 
 run_unittests:
     stage: test
@@ -33,7 +34,10 @@ run_unittests:
         - pwd
         - find
         - ./build/lib/dots/tests/dots-unittests --gtest_output="xml:report.xml"
+        - ./build/lib/dots_legacy/tests/dots_legacy-unittests --gtest_output="xml:report_legacy.xml"
     artifacts:
         reports:
-            junit: report.xml
+            junit:
+                - report.xml
+                - report_legacy.xml
 

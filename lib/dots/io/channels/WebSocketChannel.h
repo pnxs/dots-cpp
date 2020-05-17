@@ -3,9 +3,9 @@
 #include <string_view>
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
-#include <dots/io/services/Channel.h>
+#include <dots/io/Channel.h>
 
-namespace dots
+namespace dots::io
 {
 	struct WebSocketChannel : Channel
 	{

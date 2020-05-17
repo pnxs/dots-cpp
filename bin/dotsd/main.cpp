@@ -1,7 +1,7 @@
 #include <dots/io/Io.h>
 #include <dots/io/services/ChannelService.h>
-#include <dots/io/services/TcpListener.h>
-#include <dots/common/logging.h>
+#include <dots/io/channels/TcpListener.h>
+#include <dots/tools/logging.h>
 #include "Server.h"
 #include <boost/program_options.hpp>
 #include <iostream>
@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
 
     auto serverName = vm["server-name"].as<string>();
 
-   boost::asio::io_context& io_context = dots::global_io_context();
+   boost::asio::io_context& io_context = dots::io::global_io_context();
 
     LOG_NOTICE_S("dotsd server");
 
@@ -45,13 +45,13 @@ int main(int argc, char* argv[])
     string port = vm["dots-port"].as<string>();
 
     dots::Server::listeners_t listeners;
-    listeners.emplace_back(dots::global_service<dots::ChannelService>().makeListener<dots::TcpListener>(host, port));
+    listeners.emplace_back(dots::io::global_service<dots::io::ChannelService>().makeListener<dots::io::TcpListener>(host, port));
     std::optional<dots::Server> server{ std::in_place, std::move(serverName), std::move(listeners) };
     LOG_NOTICE_S("Listen to " << host << ":" << port);
 
     signals.async_wait([&](auto /*ec*/, int /*signo*/) {
         LOG_NOTICE_S("stopping server");
-        dots::global_io_context().stop();
+        dots::io::global_io_context().stop();
         server.reset();
     });
 

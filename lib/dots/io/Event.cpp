@@ -1,6 +1,6 @@
 #include <dots/io/Event.h>
 
-namespace dots
+namespace dots::io
 {
     Event<type::Struct>::Event(const DotsHeader& header, const type::Struct& transmitted, const type::Struct& updated, const DotsCloneInformation& cloneInfo, bool isFromMyself) :
         m_header(header),

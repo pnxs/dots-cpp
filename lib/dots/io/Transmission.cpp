@@ -1,6 +1,6 @@
 #include "Transmission.h"
 
-namespace dots
+namespace dots::io
 {
 	Transmission::Transmission(DotsHeader header, type::AnyStruct instance) :
         m_data{ std::make_unique<TransmissionData>(TransmissionData{ ++M_LastId, std::move(header), std::move(instance) }) }

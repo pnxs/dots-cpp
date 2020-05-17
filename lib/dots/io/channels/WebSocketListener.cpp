@@ -1,8 +1,8 @@
 #include "WebSocketListener.h"
 #include <algorithm>
-#include <dots/io/services/WebSocketChannel.h>
+#include <dots/io/channels/WebSocketChannel.h>
 
-namespace dots
+namespace dots::io
 {
 	WebSocketListener::WebSocketListener(boost::asio::io_context& ioContext, std::string address, std::string port, std::optional<int> backlog/* = std::nullopt*/) :
         m_address{ std::move(address) },

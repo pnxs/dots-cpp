@@ -3,7 +3,7 @@
 #include <dots/type/Chrono.h>
 #include <boost/asio.hpp>
 
-namespace dots
+namespace dots::io
 {
 	struct Timer
 	{

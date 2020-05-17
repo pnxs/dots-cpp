@@ -1,7 +1,7 @@
 #pragma once
 #include <list>
 
-namespace dots
+namespace dots::tools
 {
 
 /**

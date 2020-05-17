@@ -3,7 +3,7 @@
 #include <utility>
 #include <numeric>
 
-namespace dots
+namespace dots::io
 {
     auto ContainerPool::begin() const -> const_iterator_t
     {

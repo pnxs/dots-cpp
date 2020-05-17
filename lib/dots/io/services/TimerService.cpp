@@ -1,6 +1,6 @@
 #include "TimerService.h"
 
-namespace dots
+namespace dots::io
 {
 	TimerService::TimerService(boost::asio::execution_context& executionContext) : 
 		boost::asio::execution_context::service(executionContext)

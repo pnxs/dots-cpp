@@ -3,7 +3,7 @@
 #include <dots/type/AnyStruct.h>
 #include <DotsHeader.dots.h>
 
-namespace dots
+namespace dots::io
 {
 	struct Transmission
 	{
@@ -67,7 +67,7 @@ namespace dots
 
 namespace std
 {
-	template <> struct tuple_size<dots::Transmission> : std::integral_constant<size_t, 2> {};
-	template <> struct tuple_element<0, dots::Transmission> { using type = DotsHeader; };
-	template <>	struct tuple_element<1, dots::Transmission> { using type = dots::type::AnyStruct; };
+	template <> struct tuple_size<dots::io::Transmission> : std::integral_constant<size_t, 2> {};
+	template <> struct tuple_element<0, dots::io::Transmission> { using type = DotsHeader; };
+	template <>	struct tuple_element<1, dots::io::Transmission> { using type = dots::type::AnyStruct; };
 }

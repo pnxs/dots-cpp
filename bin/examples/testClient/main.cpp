@@ -1,10 +1,10 @@
-#include <dots/io/Application.h>
-#include <dots/common/logging.h>
+#include <dots/Application.h>
+#include <dots/tools/logging.h>
 #include <dots/io/serialization/AsciiSerialization.h>
 
 #include "DotsTestStruct.dots.h"
 #include "DotsTestVectorStruct.dots.h"
-#include <dots/functional/fun.h>
+#include <dots/tools/fun.h>
 
 using namespace dots::types::literals;
 

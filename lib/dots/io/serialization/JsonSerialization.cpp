@@ -5,7 +5,7 @@
 #define RAPIDJSON_HAS_STDSTRING 1
 #include <rapidjson/prettywriter.h>
 #include <rapidjson/document.h>
-#include <dots/common/logging.h>
+#include <dots/tools/logging.h>
 
 #include <iostream>
 #include <algorithm>

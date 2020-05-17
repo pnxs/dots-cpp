@@ -1,8 +1,8 @@
 #include "Timer.h"
-#include <dots/functional/fun.h>
+#include <dots/tools/fun.h>
 #include <dots/io/services/TimerService.h>
 
-namespace dots
+namespace dots::io
 {
 	Timer::Timer(boost::asio::io_context& ioContext, id_t id, const type::Duration& interval, const callback_t& cb, bool periodic) :
 		m_timer(ioContext),

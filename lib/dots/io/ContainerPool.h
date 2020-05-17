@@ -4,7 +4,7 @@
 #include <string_view>
 #include <dots/io/Container.h>
 
-namespace dots
+namespace dots::io
 {
     struct ContainerPool
     {

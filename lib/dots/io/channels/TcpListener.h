@@ -2,10 +2,10 @@
 #include <functional>
 #include <optional>
 #include <boost/asio.hpp>
-#include <dots/io/services/Listener.h>
-#include <dots/io/services/TcpChannel.h>
+#include <dots/io/Listener.h>
+#include <dots/io/channels/TcpChannel.h>
 
-namespace dots
+namespace dots::io
 {
 	struct TcpListener : Listener
 	{

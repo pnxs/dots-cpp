@@ -2,12 +2,21 @@
 #include <functional>
 #include <string_view>
 #include <dots/type/Chrono.h>
-#include <dots/io/services/Timer.h>
+#include <dots/io/Timer.h>
 #include <dots/io/GuestTransceiver.h>
 #include <dots/io/Publisher.h>
 
 namespace dots
 {
+	using io::Timer;
+	using io::Publisher;
+	using io::Transceiver;
+	using io::GuestTransceiver;
+	using io::Subscription;
+	using io::Container;
+	using io::ContainerPool;
+	using io::Event;
+
 	Timer::id_t add_timer(const type::Duration& timeout, const std::function<void()>& handler, bool periodic = false);
 	void remove_timer(Timer::id_t id);
 
@@ -26,13 +35,13 @@ namespace dots
 	template<typename  T>
 	void remove(const T& instance);
 
-	Subscription subscribe(const type::StructDescriptor<>& descriptor, GuestTransceiver::receive_handler_t<>&& handler);
-	Subscription subscribe(const type::StructDescriptor<>& descriptor, GuestTransceiver::event_handler_t<>&& handler);
+	Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::receive_handler_t<>&& handler);
+	Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::event_handler_t<>&& handler);
 
 	template<typename T>
-	Subscription subscribe(Dispatcher::receive_handler_t<T>&& handler);
+	Subscription subscribe(io::Dispatcher::receive_handler_t<T>&& handler);
 	template<typename T>
-	Subscription subscribe(Dispatcher::event_handler_t<T>&& handler);
+	Subscription subscribe(Transceiver::event_handler_t<T>&& handler);
 
 	const ContainerPool& pool();
 
@@ -44,7 +53,7 @@ namespace dots
 	void publish(const T& instance, const types::property_set_t& includedProperties/* = types::property_set_t::All*/, bool remove/* = false*/)
 	{
 	    static_assert(!T::_IsSubstructOnly(), "it is not allowed to publish to a struct that is marked with 'substruct_only'!");
-	    registerTypeUsage<T, PublishedType>();
+	    io::registerTypeUsage<T, io::PublishedType>();
 	    publish(T::_Descriptor(), &instance, includedProperties, remove);
 	}
 
@@ -52,28 +61,28 @@ namespace dots
 	void remove(const T& instance)
 	{
 	    static_assert(!T::_IsSubstructOnly(), "it is not allowed to remove to a struct that is marked with 'substruct_only'!");
-	    registerTypeUsage<T, PublishedType>();
+	    io::registerTypeUsage<T, io::PublishedType>();
 	    remove(instance);
 	}
 
 	template<typename T>
-	Subscription subscribe(Dispatcher::receive_handler_t<T>&& handler)
+	Subscription subscribe(Transceiver::receive_handler_t<T>&& handler)
 	{
-		registerTypeUsage<T, SubscribedType>();
+		io::registerTypeUsage<T, io::SubscribedType>();
 	    return transceiver().subscribe<T>(std::move(handler));
 	}
 
 	template<typename T>
-	Subscription subscribe(Dispatcher::event_handler_t<T>&& handler)
+	Subscription subscribe(Transceiver::event_handler_t<T>&& handler)
 	{
-		registerTypeUsage<T, SubscribedType>();
+		io::registerTypeUsage<T, io::SubscribedType>();
 	    return transceiver().subscribe<T>(std::move(handler));
 	}
 
 	template <typename T>
 	const Container<T>& container()
 	{
-		registerTypeUsage<T, SubscribedType>();
+		io::registerTypeUsage<T, io::SubscribedType>();
 		return transceiver().container<T>();
 	}
 

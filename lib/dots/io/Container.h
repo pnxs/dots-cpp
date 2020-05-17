@@ -5,7 +5,7 @@
 #include <DotsHeader.dots.h>
 #include <DotsCloneInformation.dots.h>
 
-namespace dots
+namespace dots::io
 {
 	template <typename = type::Struct>
 	struct Container;

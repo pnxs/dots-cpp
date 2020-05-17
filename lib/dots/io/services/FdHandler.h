@@ -1,7 +1,7 @@
 #pragma once
 #include <boost/asio.hpp>
 
-namespace dots {
+namespace dots::io {
 
 class FdHandler
 {

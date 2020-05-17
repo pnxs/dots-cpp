@@ -1,7 +1,7 @@
 #pragma once
 #include <string_view>
 
-namespace dots_util
+namespace dots::tools
 {
     /**
      * File line function.
@@ -28,4 +28,4 @@ namespace dots_util
     };
 }
 
-#define FLF dots_util::Flf(__FILE__, __LINE__, __FUNCTION__)
+#define FLF dots::tools::Flf(__FILE__, __LINE__, __FUNCTION__)

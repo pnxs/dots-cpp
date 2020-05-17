@@ -1,9 +1,9 @@
-#include <dots/io/services/Channel.h>
+#include <dots/io/Channel.h>
 #include <dots/io/Registry.h>
 #include <dots/io/DescriptorConverter.h>
 #include <DotsMsgError.dots.h>
 
-namespace dots
+namespace dots::io
 {
     Channel::Channel(key_t key) :
         shared_ptr_only(key),

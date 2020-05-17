@@ -1,7 +1,7 @@
 #include "Server.h"
 #include <sys/resource.h>
 #include <dots/dots.h>
-#include <dots/common/logging.h>
+#include <dots/tools/logging.h>
 #include <dots/type/PosixTime.h>
 #include "DotsClient.dots.h"
 #include <StructDescriptorData.dots.h>
@@ -20,7 +20,7 @@ namespace dots
         add_timer(1s, [&](){ updateServerStatus(); }, true);
         add_timer(10s, [&](){ cleanUpClients(); }, true);
 
-        for (listener_ptr_t& listener : listeners)
+        for (io::listener_ptr_t& listener : listeners)
         {
             m_hostTransceiver.listen(std::move(listener));
         }

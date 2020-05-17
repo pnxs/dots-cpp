@@ -5,7 +5,7 @@
 #include <dots/type/PropertyInitializer.h>
 #include <dots/io/Subscription.h>
 
-namespace dots
+namespace dots::io
 {
 	template<typename T>
 	struct Event;
@@ -16,7 +16,7 @@ namespace dots::type
     template <typename Derived>
     struct StaticStruct : Struct
     {
-		using Cbd = dots::Event<Derived>;
+		using Cbd = dots::io::Event<Derived>;
 
     	StaticStruct() : Struct(_Descriptor())
     	{
@@ -306,7 +306,7 @@ namespace dots::type
 		{
     		static_assert(!Derived::_SubstructOnly, "a substruct-only type cannot be published");
     		
-			registerTypeUsage<Derived, PublishedType>();
+			io::registerTypeUsage<Derived, io::PublishedType>();
 			Struct::_publish(includedProperties, remove);
 		}
 
@@ -314,7 +314,7 @@ namespace dots::type
 		{
     		static_assert(!Derived::_SubstructOnly, "a substruct-only type cannot be removed");
     		
-			registerTypeUsage<Derived, PublishedType>();
+			io::registerTypeUsage<Derived, io::PublishedType>();
 			Struct::_remove();
 		}
 

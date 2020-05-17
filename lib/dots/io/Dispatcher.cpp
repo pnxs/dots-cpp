@@ -1,6 +1,6 @@
 #include <dots/io/Dispatcher.h>
 
-namespace dots
+namespace dots::io
 {
 	Dispatcher::Dispatcher() :
 		m_this(std::make_shared<Dispatcher*>(this))

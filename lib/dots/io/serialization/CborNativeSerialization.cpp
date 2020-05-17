@@ -1,5 +1,5 @@
 #include "CborNativeSerialization.h"
-#include <dots/common/logging.h>
+#include <dots/tools/logging.h>
 #include "StructDescriptorData.dots.h"
 #undef major
 #pragma GCC diagnostic push

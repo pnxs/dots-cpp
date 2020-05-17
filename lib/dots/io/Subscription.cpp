@@ -1,8 +1,8 @@
 #include <dots/io/Subscription.h>
 #include <dots/io/Dispatcher.h>
-#include <dots/common/logging.h>
+#include <dots/tools/logging.h>
 
-namespace dots
+namespace dots::io
 {
 	PublishedType::PublishedType(const type::StructDescriptor<>* td)
 	:td(td)

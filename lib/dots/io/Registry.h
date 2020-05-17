@@ -7,7 +7,7 @@
 #include <dots/type/FundamentalTypes.h>
 #include <dots/type/EnumDescriptor.h>
 #include <dots/type/StructDescriptor.h>
-#include <dots/functional/signal.h>
+#include <dots/tools/signal.h>
 
 namespace dots::io
 {
@@ -65,7 +65,7 @@ namespace dots::io
 		const std::map<std::string_view, std::shared_ptr<type::Descriptor<>>>& getTypes();
 
         [[deprecated("only available for backwards compatibility")]]
-        pnxs::Signal<void (const type::StructDescriptor<>*)> onNewStruct;
+        tools::Signal<void (const type::StructDescriptor<>*)> onNewStruct;
 
     private:
 

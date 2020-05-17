@@ -2,7 +2,7 @@
 #include <string_view>
 #include <map>
 #include <tuple>
-#include <dots/io/services/Channel.h>
+#include <dots/io/Channel.h>
 #include <DotsConnectionState.dots.h>
 #include <DotsHeader.dots.h>
 #include <DotsMsgHello.dots.h>

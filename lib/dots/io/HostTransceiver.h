@@ -4,12 +4,12 @@
 #include <functional>
 #include <dots/io/Connection.h>
 #include <dots/io/Transceiver.h>
-#include <dots/io/services/Listener.h>
+#include <dots/io/Listener.h>
 #include <DotsClearCache.dots.h>
 #include <DotsDescriptorRequest.dots.h>
 #include <DotsMember.dots.h>
 
-namespace dots
+namespace dots::io
 {
     struct HostTransceiver : Transceiver
     {

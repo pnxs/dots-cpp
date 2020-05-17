@@ -31,10 +31,11 @@ GENERATE_DOTS_TYPES(MODEL_SOURCES MODEL_HEADERS
 target_sources(${TARGET_NAME}
 	PRIVATE
 		dots.cpp
+		Application.cpp
 
-		common/logging.cpp
+		tools/logging.cpp
 
-		functional/signal.cpp
+		tools/signal.cpp
 
 		io/Transceiver.cpp
 		io/GuestTransceiver.cpp
@@ -47,39 +48,27 @@ target_sources(${TARGET_NAME}
 		io/ContainerPool.cpp
 		io/Dispatcher.cpp
 		io/Event.cpp
-		io/TD_Traversal.cpp
-		io/Application.cpp
-		io/DynamicTypeReceiver.cpp
+
+		io/Channel.cpp
+		io/Listener.cpp
 		
 		io/serialization/JsonSerialization.cpp
 		io/serialization/AsciiSerialization.cpp
 		io/serialization/CborNativeSerialization.cpp
+		
+		io/channels/TcpListener.cpp
+		io/channels/TcpChannel.cpp
+		io/channels/UdsChannel.cpp
+		io/channels/UdsListener.cpp
+		io/channels/VirtualChannel.cpp
+		io/channels/WebSocketChannel.cpp
+		io/channels/WebSocketListener.cpp
 
-		io/services/Channel.cpp
 		io/services/FdHandlerService.cpp
-		io/services/Listener.cpp
-		io/services/TcpListener.cpp
-		io/services/TcpChannel.cpp
-		io/services/Timer.cpp
+		io/Timer.cpp
 		io/services/TimerService.cpp
-		io/services/Transmission.cpp
-		io/services/UdsChannel.cpp
-		io/services/UdsListener.cpp
-		io/services/VirtualChannel.cpp
-		io/services/WebSocketChannel.cpp
-		io/services/WebSocketListener.cpp
+		io/Transmission.cpp
 
-		io/recording/FileStore.cpp
-		io/recording/Load.cpp
-		io/recording/MmapedFile.cpp
-		io/recording/Playback.cpp
-		io/recording/Record.cpp
-		io/recording/Store.cpp
-		io/recording/ContinuousRecord.cpp
-		io/recording/JsonStore.cpp
-		io/recording/DynamicLoader.cpp
-		io/recording/Player.cpp
-		io/recording/FileReader.cpp
 		io/Registry.cpp
 		io/DescriptorConverter.cpp
 		type/AnyStruct.cpp

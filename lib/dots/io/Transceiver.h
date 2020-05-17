@@ -8,7 +8,7 @@
 #include <dots/io/Publisher.h>
 #include <dots/io/Registry.h>
 
-namespace dots
+namespace dots::io
 {
 	struct Transceiver : Publisher
 	{
