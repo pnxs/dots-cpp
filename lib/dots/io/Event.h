@@ -73,8 +73,8 @@ namespace dots::io
     {
         static_assert(std::is_base_of_v<type::Struct, T>);
 
-        Event(const DotsHeader& header, const T& transmitted, const T& updated, const DotsCloneInformation& cloneInfo) :
-            Event<type::Struct>(header, transmitted, updated, cloneInfo)
+        Event(const DotsHeader& header, const T& transmitted, const T& updated, const DotsCloneInformation& cloneInfo, bool isFromMyself) :
+            Event<type::Struct>(header, transmitted, updated, cloneInfo, isFromMyself)
         {
             /* do nothing */
         }
