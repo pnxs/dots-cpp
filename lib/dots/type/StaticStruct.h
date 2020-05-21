@@ -348,7 +348,7 @@ namespace dots::type
 				}
 				else
 				{
-					return (strip_t<decltype(args)>::Set() | ...);
+					return (strip_t<decltype(args)>::Set() + ...);
 				}
 			}, typename Derived::_key_properties_t{});
 
