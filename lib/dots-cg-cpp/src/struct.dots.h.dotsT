@@ -18,13 +18,13 @@ namespace dots::types
 {% endfor %}
     ///
 {% for property in attributes %}
-    /// @param {{property.name}} {% if property.options is defined and 'deprecated' in property.options %}[DEPRECATED] {% endif %}{{property.comment}}
+    /// @param {% if property.key %}[key] {% endif %}{{property.name}} {% if property.options is defined and 'deprecated' in property.options %}[DEPRECATED] {% endif %}{{property.comment}}
 {% endfor %}
     ///
     /// @code
     /// Structure {
 {% for property in attributes %}
-    ///    {{property.tag}}: {{property.type}} {{property.name}} // {% if property.options is defined and 'deprecated' in property.options %}[DEPRECATED] {% endif %}{{property.comment}}
+    ///    {{property.tag}}: {% if property.key %}[key] {% endif %}{{property.type}} {{property.name}} // {% if property.options is defined and 'deprecated' in property.options %}[DEPRECATED] {% endif %}{{property.comment}}
 {% endfor %}
     /// }
     /// @endcode
