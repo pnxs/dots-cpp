@@ -202,6 +202,19 @@ namespace dots::type
 		}
 
 		template <typename... Args>
+		T valueOrDefault(Args&&... args) const
+		{
+			if (isValid())
+			{
+				return storage();
+			}
+			else
+			{
+				return T(std::forward<Args>(args)...);
+			}
+		}
+
+		template <typename... Args>
 		T& constructOrValue(Args&&... args)
 		{
 			if (isValid())

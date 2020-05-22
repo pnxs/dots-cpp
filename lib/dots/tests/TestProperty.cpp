@@ -110,6 +110,23 @@ TEST_F(TestProperty, destroy_InvalidAfterDestroy)
 	EXPECT_FALSE(m_sut.isValid());
 }
 
+TEST_F(TestProperty, valueOrDefault_ValueOnValid)
+{
+	m_sut.construct("foo");
+	std::string value = m_sut.valueOrDefault("bar");
+
+	EXPECT_TRUE(m_sut.isValid());
+	EXPECT_EQ(value, "foo");
+}
+
+TEST_F(TestProperty, valueOrDefault_DefaultOnValid)
+{
+	std::string value = m_sut.valueOrDefault("bar");
+
+	EXPECT_FALSE(m_sut.isValid());
+	EXPECT_EQ(value, "bar");
+}
+
 TEST_F(TestProperty, constructOrValue_ConstructOnInvalid)
 {
 	std::string& value = m_sut.constructOrValue("foo");
