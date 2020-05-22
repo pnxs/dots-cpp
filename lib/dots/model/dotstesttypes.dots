@@ -19,6 +19,8 @@ struct DotsTestStruct {
     5: timepoint tp;
     6: DotsTestSubStruct subStruct;
     7: uuid uuid;
+    8: uint64 uint64Field;
+    9: int64 int64Field;
 }
 
 // This struct is used in unit-tests of DOTS vectors.

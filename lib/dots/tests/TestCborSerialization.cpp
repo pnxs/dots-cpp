@@ -642,3 +642,172 @@ TEST(TestCborSerialization, deserializeUuid)
     ASSERT_TRUE(ts.uuid.isValid());
 	ASSERT_EQ(ts.uuid->data(), expectedUuid);
 }
+
+TEST(TestCborSerialization, serializeIntegers)
+{
+    DotsTestStruct testStruct;
+    testStruct.indKeyfField(123);
+
+    // Encoded as 1 Byte
+    testStruct.uint64Field = 42;
+    testStruct.int64Field = -42;
+
+    std::vector<uint8_t> expectData = {
+        0xa3,      // map(2)
+        0x02,      // unsigned(2)
+        0x18,0x7b, // unsigned(123)
+        0x08,      // unsigned(8)
+        0x18,0x2a, // unsigned(42)
+        0x09,      // unsigned(9)
+        0x38,0x29  // negative(41)
+    };
+
+    EXPECT_THAT(dots::to_cbor(testStruct), ElementsAreArray(expectData));
+
+    // Encoded as 2 Byte
+    testStruct.uint64Field = 311;
+    testStruct.int64Field = -311;
+
+    expectData = {
+        0xa3,      // map(2)
+        0x02,      // unsigned(2)
+        0x18,0x7b, // unsigned(123)
+        0x08,      // unsigned(8)
+        0x19,0x01,0x37, // unsigned(311)
+        0x09,      // unsigned(9)
+        0x39,0x01,0x36 // negative(310)
+    };
+
+    EXPECT_THAT(dots::to_cbor(testStruct), ElementsAreArray(expectData));
+
+    // Encoded as 4 Byte
+    testStruct.uint64Field = 90001;
+    testStruct.int64Field = -90001;
+
+    expectData = {
+        0xa3,      // map(2)
+        0x02,      // unsigned(2)
+        0x18,0x7b, // unsigned(123)
+        0x08,      // unsigned(8)
+        0x1a,0x00,0x01,0x5f,0x91, // unsigned(90001)
+        0x09,      // unsigned(9)
+        0x3a,0x00,0x01,0x5f,0x90, // negative(90000)
+    };
+
+    EXPECT_THAT(dots::to_cbor(testStruct), ElementsAreArray(expectData));
+
+    // Encoded as 4 Byte
+    testStruct.uint64Field = 4294967295;
+    testStruct.int64Field = -2147483648L;
+
+    expectData = {
+        0xa3,      // map(2)
+        0x02,      // unsigned(2)
+        0x18,0x7b, // unsigned(123)
+        0x08,      // unsigned(8)
+        0x1a,0xff,0xff,0xff,0xff, // unsigned(4294967295)
+        0x09,     // unsigned(9)
+        0x3a,0x7f,0xff,0xff,0xff, // negative(2147483647)
+    };
+
+    EXPECT_THAT(dots::to_cbor(testStruct), ElementsAreArray(expectData));
+
+    // Encoded as 8 Byte
+    testStruct.uint64Field = 18446744073709551615ULL;
+    testStruct.int64Field = -9223372036854775807LL;
+
+    expectData = {
+        0xa3,      // map(2)
+        0x02,      // unsigned(2)
+        0x18,0x7b, // unsigned(123)
+        0x08,      // unsigned(8)
+        0x1b,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff, // unsigned(18446744073709551615)
+        0x09,      // unsigned(9)
+        0x3b,0x7f,0xff,0xff,0xff,0xff,0xff,0xff,0xfe, // negative(9223372036854775806)
+    };
+
+    EXPECT_THAT(dots::to_cbor(testStruct), ElementsAreArray(expectData));
+}
+
+TEST(TestCborSerialization, deserializeIntegers)
+{
+    DotsTestStruct testStruct;
+
+    // Encoded as 1 Byte
+    std::vector<uint8_t> inputData = {
+        0xa3,      // map(2)
+        0x02,      // unsigned(2)
+        0x18,0x7b, // unsigned(123)
+        0x08,      // unsigned(8)
+        0x18,0x2a, // unsigned(42)
+        0x09,      // unsigned(9)
+        0x38,0x29  // negative(41)
+    };
+
+    dots::from_cbor(inputData.data(), inputData.size(), testStruct);
+    ASSERT_TRUE(testStruct.uint64Field.isValid() && testStruct.indKeyfField.isValid());
+    EXPECT_EQ(*testStruct.uint64Field, 42);
+    EXPECT_EQ(*testStruct.int64Field, -42);
+
+
+    // Encoded as 2 Byte
+    inputData = {
+        0xa3,      // map(2)
+        0x02,      // unsigned(2)
+        0x18,0x7b, // unsigned(123)
+        0x08,      // unsigned(8)
+        0x19,0x01,0x37, // unsigned(311)
+        0x09,      // unsigned(9)
+        0x39,0x01,0x36 // negative(310)
+    };
+
+    dots::from_cbor(inputData.data(), inputData.size(), testStruct);
+    EXPECT_EQ(*testStruct.uint64Field, 311);
+    EXPECT_EQ(*testStruct.int64Field, -311);
+
+
+    // Encoded as 4 Byte
+    inputData = {
+        0xa3,      // map(2)
+        0x02,      // unsigned(2)
+        0x18,0x7b, // unsigned(123)
+        0x08,      // unsigned(8)
+        0x1a,0x00,0x01,0x5f,0x91, // unsigned(90001)
+        0x09,      // unsigned(9)
+        0x3a,0x00,0x01,0x5f,0x90, // negative(90000)
+    };
+
+    dots::from_cbor(inputData.data(), inputData.size(), testStruct);
+    EXPECT_EQ(*testStruct.uint64Field, 90001);
+    EXPECT_EQ(*testStruct.int64Field, -90001);
+
+    // Encoded as 4 Byte
+    inputData = {
+        0xa3,      // map(2)
+        0x02,      // unsigned(2)
+        0x18,0x7b, // unsigned(123)
+        0x08,      // unsigned(8)
+        0x1a,0xff,0xff,0xff,0xff, // unsigned(4294967295)
+        0x09,     // unsigned(9)
+        0x3a,0x7f,0xff,0xff,0xff, // negative(2147483647)
+    };
+
+    dots::from_cbor(inputData.data(), inputData.size(), testStruct);
+    EXPECT_EQ(*testStruct.uint64Field, 4294967295);
+    EXPECT_EQ(*testStruct.int64Field, -2147483648L);
+
+    // Encoded as 8 Byte
+    inputData = {
+        0xa3,      // map(2)
+        0x02,      // unsigned(2)
+        0x18,0x7b, // unsigned(123)
+        0x08,      // unsigned(8)
+        0x1b,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff, // unsigned(18446744073709551615)
+        0x09,      // unsigned(9)
+        0x3b,0x7f,0xff,0xff,0xff,0xff,0xff,0xff,0xfe, // negative(9223372036854775806)
+    };
+
+    dots::from_cbor(inputData.data(), inputData.size(), testStruct);
+    EXPECT_EQ(*testStruct.uint64Field, 18446744073709551615ULL);
+    EXPECT_EQ(*testStruct.int64Field, -9223372036854775807LL);
+}
