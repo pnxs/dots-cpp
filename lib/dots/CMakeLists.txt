@@ -11,6 +11,7 @@ option(BUILD_DOTS_SHARED "Build DOTS as a shared instead of a static library" OF
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
 find_package(Boost 1.72 REQUIRED COMPONENTS filesystem iostreams program_options)
 find_package(Rapidjson REQUIRED MODULE)
+find_package(OpenSSL REQUIRED)
 #find_package(cborcpp REQUIRED) (uncomment when dependency is no longer part of build tree)
 
 # target
@@ -71,6 +72,10 @@ target_sources(${TARGET_NAME}
 
 		io/Registry.cpp
 		io/DescriptorConverter.cpp
+
+		io/auth/Nonce.cpp
+		io/auth/Digest.cpp
+
 		type/AnyStruct.cpp
 		type/Chrono.cpp
 		type/Descriptor.cpp
@@ -116,6 +121,7 @@ target_link_libraries(${TARGET_NAME}
 		RapidJSON::RapidJSON
 		date::date
 		date::tz
+		OpenSSL::Crypto
 )
 set_target_properties(${TARGET_NAME} PROPERTIES
     SOVERSION 0
