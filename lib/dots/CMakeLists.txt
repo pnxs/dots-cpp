@@ -76,6 +76,7 @@ target_sources(${TARGET_NAME}
 
 		io/auth/Nonce.cpp
 		io/auth/Digest.cpp
+		io/auth/AuthManager.cpp
 
 		type/AnyStruct.cpp
 		type/Chrono.cpp
