@@ -1,5 +1,6 @@
 #pragma once
 #include <chrono>
+#include <optional>
 #include <dots/dots.h>
 #include <dots/io/GuestTransceiver.h>
 
@@ -27,5 +28,6 @@ namespace dots
 		int m_exitCode;
 		std::string m_serverAddress;
 		std::string m_serverPort;
+		std::optional<std::string> m_authSecret;
 	};
 }
