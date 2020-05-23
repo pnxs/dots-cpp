@@ -1,5 +1,6 @@
 #include <dots/io/Connection.h>
 #include <dots/io/Registry.h>
+#include <dots/io/auth/Digest.h>
 #include <dots/tools/logging.h>
 #include <DotsMsgConnect.dots.h>
 #include <DotsCacheInfo.dots.h>
@@ -8,13 +9,14 @@
 
 namespace dots::io
 {
-	Connection::Connection(channel_ptr_t channel, bool host) :
+	Connection::Connection(channel_ptr_t channel, bool host, std::optional<std::string> authSecret/* = std::nullopt*/) :
         m_expectedSystemType{ &DotsMsgError::_Descriptor(), types::property_set_t::None, nullptr },
         m_connectionState(DotsConnectionState::suspended),
         m_selfId(host ? HostId : UninitializedId),
 		m_peerId(host ? M_nextGuestId++ : HostId),
 	    m_peerName("<not_set>"),
 		m_channel(std::move(channel)),
+        m_authSecret{ std::move(authSecret) },
 		m_registry(nullptr)
 	{
 		/* do nothing */
@@ -60,7 +62,7 @@ namespace dots::io
 		return m_connectionState == DotsConnectionState::connected;
 	}
 
-	void Connection::asyncReceive(Registry& registry, const std::string_view& name, receive_handler_t&& receiveHandler, transition_handler_t&& transitionHandler)
+	void Connection::asyncReceive(Registry& registry, AuthManager* authManager, const std::string_view& name, receive_handler_t&& receiveHandler, transition_handler_t&& transitionHandler)
 	{
 		if (m_connectionState != DotsConnectionState::suspended)
         {
@@ -73,6 +75,7 @@ namespace dots::io
         }
 
 		m_registry = &registry;
+        m_authManager = authManager;
 		m_receiveHandler = std::move(receiveHandler);
 		m_transitionHandler = std::move(transitionHandler);
 		
@@ -85,20 +88,29 @@ namespace dots::io
 
 		if (m_selfId == HostId)
 		{
-		    transmit(DotsMsgHello{
-                DotsMsgHello::serverName_i{ name },
-                DotsMsgHello::authChallenge_i{ 0 }
-            });
+            if (m_nonce = m_authManager == nullptr ? std::nullopt : m_authManager->requiresAuthentication(m_channel->medium(), {}); m_nonce == std::nullopt)
+            {
+                transmit(DotsMsgHello{
+                    DotsMsgHello::serverName_i{ name },
+                    DotsMsgHello::authChallenge_i{ 0 }
+                });
 
-            expectSystemType<DotsMsgConnect>(DotsMsgConnect::clientName_p + DotsMsgConnect::preloadCache_p, &Connection::handleConnect);
+                expectSystemType<DotsMsgConnect>(DotsMsgConnect::clientName_p + DotsMsgConnect::preloadCache_p, &Connection::handleConnect);
+            }
+            else
+            {
+                transmit(DotsMsgHello{
+                    DotsMsgHello::serverName_i{ name },
+                    DotsMsgHello::authChallenge_i{ m_nonce->value() },
+                    DotsMsgHello::authenticationRequired_i{ true }
+                });
+
+                expectSystemType<DotsMsgConnect>(DotsMsgConnect::clientName_p + DotsMsgConnect::preloadCache_p + DotsMsgConnect::authChallengeResponse_p + DotsMsgConnect::cnonce_p, &Connection::handleAuthConnect);
+            }
 		}
         else
         {
-            transmit(DotsMsgConnect{
-                DotsMsgConnect::clientName_i{ name },
-                DotsMsgConnect::preloadCache_i{ true }
-            });
-
+            m_selfName = name;
             expectSystemType<DotsMsgHello>(DotsMsgHello::serverName_p + DotsMsgHello::authChallenge_p, &Connection::handleHello);
         }
 	}
@@ -240,6 +252,24 @@ namespace dots::io
 		m_peerName = hello.serverName;
 		LOG_DEBUG_S("received hello from '" << *hello.serverName << "' authChallenge=" << hello.authChallenge);
 
+        DotsMsgConnect connect{
+            DotsMsgConnect::clientName_i{ m_selfName },
+            DotsMsgConnect::preloadCache_i{ true }
+        };
+
+        if (hello.authenticationRequired == true)
+        {
+            if (m_authSecret == std::nullopt)
+            {
+                throw std::runtime_error{ "host requested authentication but no secret was specified" };
+            }
+
+            connect.cnonce = Nonce{}.toString();
+            connect.authChallengeResponse = Digest{ *hello.authChallenge, *connect.cnonce, m_selfName, *m_authSecret }.toString();
+        }
+
+        transmit(connect);
+
         expectSystemType<DotsMsgConnectResponse>(DotsMsgConnectResponse::clientId_p + DotsMsgConnectResponse::accepted_p + DotsMsgConnectResponse::preload_p, &Connection::handleAuthorizationRequest);
 	}
 	
@@ -267,11 +297,27 @@ namespace dots::io
         expectSystemType<DotsMsgError>(DotsMsgError::errorCode_p, &Connection::handlePeerError);
 	}
 
+    void Connection::handleAuthConnect(const DotsMsgConnect& connect)
+    {
+        if (!m_authManager->verifyAuthentication(m_channel->medium(), *connect.clientName, *m_nonce, *connect.cnonce, Digest{ *connect.authChallengeResponse }))
+        {
+            transmit(DotsMsgConnectResponse{
+                DotsMsgConnectResponse::clientId_i{ m_peerId },
+                DotsMsgConnectResponse::preload_i{ connect.preloadCache == true },
+                DotsMsgConnectResponse::accepted_i{ false },
+            });
+
+            throw std::runtime_error{ "invalid authorization information" };
+        }
+
+        LOG_INFO_S("authorized");
+
+        handleConnect(connect);
+    }
+
     void Connection::handleConnect(const DotsMsgConnect& connect)
     {
         m_peerName = connect.clientName;
-
-        LOG_INFO_S("authorized");
 
         transmit(DotsMsgConnectResponse{
             DotsMsgConnectResponse::clientId_i{ m_peerId },

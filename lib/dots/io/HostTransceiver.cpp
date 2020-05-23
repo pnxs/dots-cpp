@@ -102,7 +102,7 @@ namespace dots::io
     bool HostTransceiver::handleListenAccept(Listener&/* listener*/, channel_ptr_t channel)
     {
         auto connection = std::make_shared<io::Connection>(std::move(channel), true);
-        connection->asyncReceive(registry(), selfName(),
+        connection->asyncReceive(registry(), m_authManager.get(), selfName(),
             [this](io::Connection& connection, Transmission transmission, bool isFromMyself) { return handleReceive(connection, std::move(transmission), isFromMyself); },
             [this](io::Connection& connection, const std::exception_ptr& e) { handleTransition(connection, e); }
         );

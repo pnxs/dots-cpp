@@ -2,7 +2,9 @@
 #include <string_view>
 #include <map>
 #include <tuple>
+#include <optional>
 #include <dots/io/Channel.h>
+#include <dots/io/auth/AuthManager.h>
 #include <DotsConnectionState.dots.h>
 #include <DotsHeader.dots.h>
 #include <DotsMsgHello.dots.h>
@@ -27,7 +29,7 @@ namespace dots::io
 		using receive_handler_t = std::function<bool(Connection&, Transmission, bool)>;
 		using transition_handler_t = std::function<void(Connection&, const std::exception_ptr&)>;
 		
-		Connection(channel_ptr_t channel, bool host);
+		Connection(channel_ptr_t channel, bool host, std::optional<std::string> authSecret = std::nullopt);
 		Connection(const Connection& other) = delete;
 		Connection(Connection&& other) = default;
 		~Connection() noexcept;
@@ -41,7 +43,7 @@ namespace dots::io
 		const std::string& peerName() const;
 		bool connected() const;
 
-		void asyncReceive(Registry& registry, const std::string_view& name, receive_handler_t&& receiveHandler, transition_handler_t&& transitionHandler);
+		void asyncReceive(Registry& registry, AuthManager* authManager, const std::string_view& name, receive_handler_t&& receiveHandler, transition_handler_t&& transitionHandler);
 		void transmit(const type::Struct& instance, types::property_set_t includedProperties = types::property_set_t::All, bool remove = false);
 		void transmit(const DotsHeader& header, const type::Struct& instance);
         void transmit(const Transmission& transmission);
@@ -60,6 +62,7 @@ namespace dots::io
         void handleAuthorizationRequest(const DotsMsgConnectResponse& connectResponse);
         void handlePreloadFinished(const DotsMsgConnectResponse& connectResponse);
 
+		void handleAuthConnect(const DotsMsgConnect& connect);
         void handleConnect(const DotsMsgConnect& connect);
         void handlePreloadClientFinished(const DotsMsgConnect& connect);
 
@@ -76,11 +79,15 @@ namespace dots::io
 		DotsConnectionState m_connectionState;
 		id_t m_selfId;
         id_t m_peerId;
+		std::string m_selfName;
         std::string m_peerName;
 
 		channel_ptr_t m_channel;
+		std::optional<std::string> m_authSecret;
+		std::optional<Nonce> m_nonce;
 
 		Registry* m_registry;
+		AuthManager* m_authManager;
 		receive_handler_t m_receiveHandler;
 		transition_handler_t m_transitionHandler;
 	};
