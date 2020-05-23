@@ -21,6 +21,8 @@ namespace dots::io
 		WebSocketChannel& operator = (const WebSocketChannel& rhs) = delete;
 		WebSocketChannel& operator = (WebSocketChannel&& rhs) = delete;
 
+		const Medium& medium() const override;
+
 	protected:
 
 		void asyncReceiveImpl() override;
@@ -28,7 +30,10 @@ namespace dots::io
 
 	private:
 
+		static constexpr char WebSocketCategory[] = "ws";
+
 		ws_stream_t m_stream;
+		std::optional<Medium> m_medium;
 		boost::beast::flat_buffer m_buffer;
 	};
 }

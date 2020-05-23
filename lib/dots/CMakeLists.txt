@@ -52,6 +52,7 @@ target_sources(${TARGET_NAME}
 
 		io/Channel.cpp
 		io/Listener.cpp
+		io/Medium.cpp
 		
 		io/serialization/JsonSerialization.cpp
 		io/serialization/AsciiSerialization.cpp

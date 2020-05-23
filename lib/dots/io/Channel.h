@@ -3,9 +3,10 @@
 #include <system_error>
 #include <type_traits>
 #include <set>
+#include <dots/io/Medium.h>
 #include <dots/io/Transmission.h>
-#include <DotsHeader.dots.h>
 #include <dots/tools/shared_ptr_only.h>
+#include <DotsHeader.dots.h>
 
 namespace dots::io
 {
@@ -36,6 +37,8 @@ namespace dots::io
 		void transmit(const Transmission& transmission);
 		void transmit(const type::StructDescriptor<>& descriptor);
 
+		virtual const Medium& medium() const;
+
 	protected:
 
 		const io::Registry& registry() const;
@@ -60,6 +63,7 @@ namespace dots::io
 
 		void verifyInitialized() const;
 
+		static inline Medium DefaultMedium{ "default", "default" };
 		std::set<std::string> m_sharedTypes;
 		bool m_initialized;
 		io::Registry* m_registry;
