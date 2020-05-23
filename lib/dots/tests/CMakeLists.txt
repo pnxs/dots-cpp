@@ -25,6 +25,7 @@ target_sources(${TARGET_NAME}
 		TestProperty.cpp
 		TestProxyProperty.cpp
 		TestProxyPropertyIterator.cpp
+		TestIpNetwork.cpp
 )	
 target_include_directories(${TARGET_NAME}
 	PRIVATE
