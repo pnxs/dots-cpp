@@ -28,6 +28,7 @@ target_compile_features(${TARGET_NAME}
 target_link_libraries(${TARGET_NAME}
 	PRIVATE 
 		DOTS::DOTS
+		DOTS_LEGACY::DOTS_LEGACY
 		pthread
 )
 
