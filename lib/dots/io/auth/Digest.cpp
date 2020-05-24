@@ -13,7 +13,7 @@ namespace dots::io
      Digest::Digest(std::string_view stringValue) :
         Digest([&]()
         {
-            value_t value;
+            value_t value = {};
             boost::algorithm::unhex(stringValue, value.begin());
 
             return value;
