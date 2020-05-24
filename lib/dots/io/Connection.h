@@ -62,7 +62,6 @@ namespace dots::io
         void handleAuthorizationRequest(const DotsMsgConnectResponse& connectResponse);
         void handlePreloadFinished(const DotsMsgConnectResponse& connectResponse);
 
-		void handleAuthConnect(const DotsMsgConnect& connect);
         void handleConnect(const DotsMsgConnect& connect);
         void handlePreloadClientFinished(const DotsMsgConnect& connect);
 

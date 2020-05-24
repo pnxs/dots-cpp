@@ -95,7 +95,7 @@ namespace dots::io
                     DotsMsgHello::authChallenge_i{ 0 }
                 });
 
-                expectSystemType<DotsMsgConnect>(DotsMsgConnect::clientName_p + DotsMsgConnect::preloadCache_p, &Connection::handleConnect);
+                
             }
             else
             {
@@ -104,9 +104,9 @@ namespace dots::io
                     DotsMsgHello::authChallenge_i{ m_nonce->value() },
                     DotsMsgHello::authenticationRequired_i{ true }
                 });
-
-                expectSystemType<DotsMsgConnect>(DotsMsgConnect::clientName_p + DotsMsgConnect::preloadCache_p + DotsMsgConnect::authChallengeResponse_p + DotsMsgConnect::cnonce_p, &Connection::handleAuthConnect);
             }
+
+            expectSystemType<DotsMsgConnect>(DotsMsgConnect::clientName_p + DotsMsgConnect::preloadCache_p, &Connection::handleConnect);
 		}
         else
         {
@@ -297,9 +297,9 @@ namespace dots::io
         expectSystemType<DotsMsgError>(DotsMsgError::errorCode_p, &Connection::handlePeerError);
 	}
 
-    void Connection::handleAuthConnect(const DotsMsgConnect& connect)
+    void Connection::handleConnect(const DotsMsgConnect& connect)
     {
-        if (!m_authManager->verifyAuthentication(m_channel->medium(), *connect.clientName, *m_nonce, *connect.cnonce, Digest{ *connect.authChallengeResponse }))
+        if (m_authManager != nullptr && !m_authManager->verifyAuthentication(m_channel->medium(), *connect.clientName, m_nonce.value_or(0), connect.cnonce.valueOrDefault(""), Digest{ connect.authChallengeResponse.valueOrDefault("") }))
         {
             transmit(DotsMsgConnectResponse{
                 DotsMsgConnectResponse::clientId_i{ m_peerId },
@@ -312,11 +312,6 @@ namespace dots::io
 
         LOG_INFO_S("authorized");
 
-        handleConnect(connect);
-    }
-
-    void Connection::handleConnect(const DotsMsgConnect& connect)
-    {
         m_peerName = connect.clientName;
 
         transmit(DotsMsgConnectResponse{
