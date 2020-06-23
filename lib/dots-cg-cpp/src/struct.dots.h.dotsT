@@ -100,7 +100,7 @@ namespace dots::types
 		}
 
 {% for property in attributes %}
-        {% if property.options is defined and 'deprecated' in property.options %}[[deprecated]] {% endif %}{{property.name}}_t {{property.name}}; // {% if property.options is defined and 'deprecated' in property.options %}[DEPRECATED] {% endif %}{{property.comment}} (key: {{property.key | lower }})
+        {% if property.options is defined and 'deprecated' in property.options %}[[deprecated]] {% endif %}{{property.name}}_t {{property.name}}; // {% if property.options is defined and 'deprecated' in property.options %}[DEPRECATED] {% endif %}{{property.tag}}: {% if property.key %}[key] {% endif %}{{property.type}} {{property.name}} // {% if property.options is defined and 'deprecated' in property.options %}[DEPRECATED] {% endif %}{{property.comment}}
 {% endfor %}
     };
 }
