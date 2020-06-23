@@ -1,12 +1,22 @@
 #include <dots/type/DynamicStruct.h>
+#include <memory>
 
 namespace dots::type
 {
 	DynamicStruct::DynamicStruct(const Descriptor<DynamicStruct>& descriptor) :
 		Struct(descriptor),
-		m_propertyArea{ reinterpret_cast<PropertyArea*>(::operator new(descriptor.allocateSize())) }
+		m_propertyArea(nullptr)
 	{
-		::new(static_cast<void*>(m_propertyArea.get())) PropertyArea{};
+		if (descriptor.inPlace())
+		{
+		    m_propertyArea = reinterpret_cast<PropertyArea*>(reinterpret_cast<std::byte*>(this) + sizeof(DynamicStruct));
+		}
+		else
+		{
+			m_propertyArea = std::unique_ptr<PropertyArea>{ reinterpret_cast<PropertyArea*>(::operator new(descriptor.allocateSize())) };
+		}
+
+		::new(static_cast<void*>(propertyAreaGet())) PropertyArea{};
 	}
 
 	DynamicStruct::DynamicStruct(const DynamicStruct& other) :
@@ -17,7 +27,7 @@ namespace dots::type
 	
 	DynamicStruct::~DynamicStruct()
 	{
-		if (m_propertyArea != nullptr)
+		if (propertyAreaGet() != nullptr)
 		{
 			_clear();
 		}
@@ -217,11 +227,28 @@ namespace dots::type
 	
 	const PropertyArea& DynamicStruct::_propertyArea() const
 	{
-		return *m_propertyArea;
+		return *propertyAreaGet();
 	}
 	
 	PropertyArea& DynamicStruct::_propertyArea()
 	{
-		return *m_propertyArea;
+		return *propertyAreaGet();
 	}
+
+    const PropertyArea* DynamicStruct::propertyAreaGet() const
+    {
+		if (std::holds_alternative<PropertyArea*>(m_propertyArea))
+		{
+		    return std::get<PropertyArea*>(m_propertyArea);
+		}
+		else
+		{
+		    return std::get<std::unique_ptr<PropertyArea>>(m_propertyArea).get();
+		}
+    }
+
+    PropertyArea* DynamicStruct::propertyAreaGet()
+    {
+		return const_cast<PropertyArea*>(std::as_const(*this).propertyAreaGet());
+    }
 }

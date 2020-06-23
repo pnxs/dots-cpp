@@ -84,7 +84,8 @@ namespace dots::io
 					if ( dynStructDescriptor == nullptr)
 					{
 						const auto& staticStructDescriptor = static_cast<const type::StructDescriptor<>&>(*valueTypeDescriptor);
-						dynStructDescriptor = std::make_shared<type::Descriptor<type::DynamicStruct>>(staticStructDescriptor.name(), staticStructDescriptor.flags(), staticStructDescriptor.propertyDescriptors(), staticStructDescriptor.size(), staticStructDescriptor.alignment());
+						dynStructDescriptor = std::make_shared<type::Descriptor<type::DynamicStruct>>(staticStructDescriptor.name(), staticStructDescriptor.flags(), staticStructDescriptor.propertyDescriptors(), staticStructDescriptor.size(), staticStructDescriptor.alignment(), false);
+						std::make_shared<type::Descriptor<type::DynamicStruct>>(staticStructDescriptor.name() + "_s", staticStructDescriptor.flags(), staticStructDescriptor.propertyDescriptors(), staticStructDescriptor.size(), staticStructDescriptor.alignment(), true);
 					}
 					
 					descriptor = m_registry.get().registerType(type::Descriptor<types::vector_t<type::DynamicStruct>>{ dynStructDescriptor });
@@ -93,6 +94,10 @@ namespace dots::io
 				{
 					throw std::logic_error{ "unsupported dynamic vector type: " + valueTypeName };
 				}
+			}
+			else if (descriptor->type() == type::Type::Struct)
+			{
+			    descriptor = std::dynamic_pointer_cast<type::Descriptor<type::DynamicStruct>>(m_registry.get().findType(*propertyData.type + "_s"));
 			}
 			
 			if (last == nullptr)
@@ -110,7 +115,8 @@ namespace dots::io
 		size_t currentOffset = last->offset() + last->valueDescriptor().size();
 		size = currentOffset + (alignment - (currentOffset % alignment)) % alignment;
 
-		std::shared_ptr<type::StructDescriptor<>> descriptor = m_registry.get().registerType(type::Descriptor<type::DynamicStruct>{ structData.name, flags, propertyDescriptors, size, alignment });
+		std::shared_ptr<type::StructDescriptor<>> descriptor = m_registry.get().registerType(type::Descriptor<type::DynamicStruct>{ structData.name, flags, propertyDescriptors, size, alignment, false });
+		m_registry.get().registerType(type::Descriptor<type::DynamicStruct>{ *structData.name + "_s", flags, propertyDescriptors, size, alignment, true });
 
 		return descriptor;
 	}

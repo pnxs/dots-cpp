@@ -130,6 +130,11 @@ namespace dots::type
 		{
 			/* do nothing */
 		}
+		StructDescriptor(std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptor, size_t size, size_t alignment) :
+			StaticDescriptor<T, StructDescriptor<Typeless>>(std::move(name), flags, propertyDescriptor, size, alignment)
+		{
+			/* do nothing */
+		}
 		StructDescriptor(const StructDescriptor& other) = default;
 		StructDescriptor(StructDescriptor&& other) = default;
 		~StructDescriptor() = default;

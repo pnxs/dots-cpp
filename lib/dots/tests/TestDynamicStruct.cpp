@@ -17,23 +17,52 @@ protected:
     TestDynamicStruct() :
         m_descriptorConverter{ m_registry }
     {
-        StructDescriptorData testDynamicSubStructData{
-            StructDescriptorData::name_i{ "TestDynamicSubStruct" },
+		StructDescriptorData testDynamicSubSubStructData{
+            StructDescriptorData::name_i{ "TestDynamicSubSubStruct" },
             StructDescriptorData::flags_i{
                 DotsStructFlags::cached_i{ true }
             },
             StructDescriptorData::properties_i{ vector_t<StructPropertyData>{
                 StructPropertyData{
-                    StructPropertyData::name_i{ "p1" },
+                    StructPropertyData::name_i{ "subSubIntProperty" },
                     StructPropertyData::tag_i{ 1 },
-                    StructPropertyData::isKey_i{ true },
-                    StructPropertyData::type_i{ "bool" }
+                    StructPropertyData::isKey_i{ false },
+                    StructPropertyData::type_i{ "int32" }
                 },
                 StructPropertyData{
-                    StructPropertyData::name_i{ "p2" },
+                    StructPropertyData::name_i{ "subSubDoubleProperty" },
+                    StructPropertyData::tag_i{ 2 },
+                    StructPropertyData::isKey_i{ true },
+                    StructPropertyData::type_i{ "float64" }
+                }
+            } }
+        };
+        m_testDynamicSubSubStructDescriptor = std::static_pointer_cast<Descriptor<DynamicStruct>>(m_descriptorConverter(testDynamicSubSubStructData));
+
+        StructDescriptorData testDynamicSubStructData{
+            StructDescriptorData::name_i{ "TestDynamicSubStruct" },
+            StructDescriptorData::flags_i{
+                DotsStructFlags::cached_i{ true },
+				DotsStructFlags::substructOnly_i{ true }
+            },
+            StructDescriptorData::properties_i{ vector_t<StructPropertyData>{
+                StructPropertyData{
+                    StructPropertyData::name_i{ "subIntProperty" },
+                    StructPropertyData::tag_i{ 1 },
+                    StructPropertyData::isKey_i{ true },
+                    StructPropertyData::type_i{ "int64" }
+                },
+				StructPropertyData{
+                    StructPropertyData::name_i{ "subSubStructProperty" },
                     StructPropertyData::tag_i{ 2 },
                     StructPropertyData::isKey_i{ false },
-                    StructPropertyData::type_i{ "bool" }
+                    StructPropertyData::type_i{ "TestDynamicSubSubStruct" }
+                },
+                StructPropertyData{
+                    StructPropertyData::name_i{ "subFloatProperty" },
+                    StructPropertyData::tag_i{ 3 },
+                    StructPropertyData::isKey_i{ false },
+                    StructPropertyData::type_i{ "float32" }
                 }
             } }
         };
@@ -82,6 +111,7 @@ protected:
 
     dots::io::Registry m_registry;
     dots::io::DescriptorConverter m_descriptorConverter;
+	std::shared_ptr<Descriptor<DynamicStruct>> m_testDynamicSubSubStructDescriptor;
     std::shared_ptr<Descriptor<DynamicStruct>> m_testDynamicSubStructDescriptor;
     std::shared_ptr<Descriptor<DynamicStruct>> m_testDynamicStructDescriptor;
 };
@@ -95,6 +125,42 @@ TEST_F(TestDynamicStruct, PropertyOffsetsMatchExpectedOffsets)
     EXPECT_EQ(sut["boolProperty"]->descriptor().offset(), sut["stringProperty"]->descriptor().offset() + sizeof(string_t));
     EXPECT_EQ(sut["floatVectorProperty"]->descriptor().offset(), sut["boolProperty"]->descriptor().offset() + 8);
     EXPECT_EQ(sut["subStructProperty"]->descriptor().offset(), sut["floatVectorProperty"]->descriptor().offset() + sizeof(vector_t<float32_t>));
+}
+
+TEST_F(TestDynamicStruct, PropertyAddressessMatchExpectedAddresses)
+{
+	DynamicStruct sut{ *m_testDynamicStructDescriptor };
+	const std::byte* sutAddress = reinterpret_cast<const std::byte*>(&sut._propertyArea());
+
+	auto intPropertyIt = sut["intProperty"];
+	auto stringPropertyIt = sut["stringProperty"];
+	auto boolPropertyIt = sut["boolProperty"];
+	auto floatVectorPropertyIt = sut["floatVectorProperty"];
+	auto subStructPropertyIt = sut["subStructProperty"];
+	
+	EXPECT_EQ(reinterpret_cast<const std::byte*>(&intPropertyIt->storage()), sutAddress + intPropertyIt->descriptor().offset());
+    EXPECT_EQ(reinterpret_cast<const std::byte*>(&stringPropertyIt->storage()), sutAddress + stringPropertyIt->descriptor().offset());
+    EXPECT_EQ(reinterpret_cast<const std::byte*>(&boolPropertyIt->storage()), sutAddress + boolPropertyIt->descriptor().offset());
+    EXPECT_EQ(reinterpret_cast<const std::byte*>(&floatVectorPropertyIt->storage()), sutAddress + floatVectorPropertyIt->descriptor().offset());
+    EXPECT_EQ(reinterpret_cast<const std::byte*>(&subStructPropertyIt->storage()), sutAddress + subStructPropertyIt->descriptor().offset());
+
+	DynamicStruct& sutSub = subStructPropertyIt->construct().to<DynamicStruct>();
+	size_t subOffset = subStructPropertyIt->descriptor().offset() + sizeof(DynamicStruct);
+	auto subIntPropertyIt = sutSub["subIntProperty"];
+	auto subSubStructPropertyIt = sutSub["subSubStructProperty"];
+	auto subFloatPropertyIt = sutSub["subFloatProperty"];	
+
+	EXPECT_EQ(reinterpret_cast<const std::byte*>(&subIntPropertyIt->storage()), sutAddress + subOffset + subIntPropertyIt->descriptor().offset());
+	EXPECT_EQ(reinterpret_cast<const std::byte*>(&subSubStructPropertyIt->storage()), sutAddress + subOffset + subSubStructPropertyIt->descriptor().offset());
+    EXPECT_EQ(reinterpret_cast<const std::byte*>(&subFloatPropertyIt->storage()), sutAddress + subOffset + subFloatPropertyIt->descriptor().offset());
+
+	DynamicStruct& sutSubSub = subSubStructPropertyIt->construct().to<DynamicStruct>();
+	size_t subSubOffset = subSubStructPropertyIt->descriptor().offset() + sizeof(DynamicStruct);
+	auto subSubIntPropertyIt = sutSubSub["subSubIntProperty"];
+	auto subSubDoublePropertyIt = sutSubSub["subSubDoubleProperty"];
+
+	EXPECT_EQ(reinterpret_cast<const std::byte*>(&subSubIntPropertyIt->storage()), sutAddress + subOffset + subSubOffset + subSubIntPropertyIt->descriptor().offset());
+    EXPECT_EQ(reinterpret_cast<const std::byte*>(&subSubDoublePropertyIt->storage()), sutAddress + subOffset + subSubOffset + subSubDoublePropertyIt->descriptor().offset());
 }
 
 TEST_F(TestDynamicStruct, PropertiesHaveExpectedTags)
@@ -383,7 +449,7 @@ TEST_F(TestDynamicStruct, merge_PartialMergeSubStruct)
         DynamicStruct::property_i<string_t>{ "stringProperty", "foo" },
         DynamicStruct::property_i<vector_t<float32_t>>{ "floatVectorProperty", vector_t<float32_t>{ 3.1415f } },
         DynamicStruct::property_i<DynamicStruct>{ "subStructProperty", DynamicStruct{ *m_testDynamicSubStructDescriptor,
-			    DynamicStruct::property_i<bool_t>{ "p2", true }
+			    DynamicStruct::property_i<float32_t>{ "subFloatProperty", 21.0f }
             }
         }
     };
@@ -393,7 +459,7 @@ TEST_F(TestDynamicStruct, merge_PartialMergeSubStruct)
         DynamicStruct::property_i<string_t>{ "stringProperty", "bar" },
         DynamicStruct::property_i<vector_t<float32_t>>{ "floatVectorProperty", vector_t<float32_t>{ 2.7183f } },
         DynamicStruct::property_i<DynamicStruct>{ "subStructProperty", DynamicStruct{ *m_testDynamicSubStructDescriptor,
-			    DynamicStruct::property_i<bool_t>{ "p1", true }
+			    DynamicStruct::property_i<int64_t>{ "subIntProperty", 42 }
             }
         }
     };
@@ -407,8 +473,8 @@ TEST_F(TestDynamicStruct, merge_PartialMergeSubStruct)
 
 	auto sutThisSubIt = sutThis["subStructProperty"];
 	const auto& sutThisSub = sutThisSubIt->value().to<DynamicStruct>();
-	EXPECT_EQ(*sutThisSub["p1"], Typeless::From(true));
-	EXPECT_EQ(*sutThisSub["p2"], Typeless::From(true));
+	EXPECT_EQ(*sutThisSub["subIntProperty"], Typeless::From(42));
+	EXPECT_EQ(*sutThisSub["subFloatProperty"], Typeless::From(21.0f));
 }
 
 TEST_F(TestDynamicStruct, swap_CompleteSwap)

@@ -1,5 +1,6 @@
 #pragma once
 #include <string_view>
+#include <variant>
 #include <dots/type/Struct.h>
 
 namespace dots::io
@@ -96,6 +97,8 @@ namespace dots::type
 		template <typename T>
 		using strip_t = std::remove_pointer_t<std::decay_t<T>>;
 
+		using pointer_t = std::variant<PropertyArea*, std::unique_ptr<PropertyArea>>;
+
 		using Struct::_assign;
 		using Struct::_copy;
 		using Struct::_merge;
@@ -112,16 +115,20 @@ namespace dots::type
 
     	using Struct::_diffProperties;
 
-    	std::unique_ptr<PropertyArea> m_propertyArea;
+		const PropertyArea* propertyAreaGet() const;
+		PropertyArea* propertyAreaGet();
+
+    	pointer_t m_propertyArea;
     };
 
 	template <>
 	struct Descriptor<DynamicStruct> : StructDescriptor<DynamicStruct>
 	{
-		Descriptor(std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptors, size_t size, size_t alignment) :
-			StructDescriptor<DynamicStruct>(std::move(name), flags, propertyDescriptors),
+		Descriptor(std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptors, size_t size, size_t alignment, bool inPlace) :
+			StructDescriptor<DynamicStruct>(std::move(name), flags, propertyDescriptors, sizeof(DynamicStruct) + (inPlace ? size : 0), alignof(DynamicStruct)),
 			m_allocateSize(size),
-			m_allocateAlignment(alignment)
+			m_allocateAlignment(alignment),
+		    m_inPlace(inPlace)
 		{
 			/* do nothing */
 		}
@@ -149,9 +156,15 @@ namespace dots::type
 			return m_allocateAlignment;
 		}
 
+		bool inPlace() const
+		{
+		    return m_inPlace;
+		}
+
 	private:
 
 		size_t m_allocateSize;
 		size_t m_allocateAlignment;
+		bool m_inPlace;
 	};
 }
