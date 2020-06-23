@@ -347,6 +347,7 @@ TEST(TestDispatcher, dispatch_CreateEventFromCacheWhenSubscribingToCachedType)
 	});	
 
 	sut.dispatch(header, dts, false);
+	sut.dispatch(header, dts, false);
 
 	dots::Subscription subscription2 = sut.subscribe<DotsTestStruct>([&](const dots::Event<DotsTestStruct>& e)
 	{
@@ -360,7 +361,7 @@ TEST(TestDispatcher, dispatch_CreateEventFromCacheWhenSubscribingToCachedType)
 			ASSERT_TRUE(e.transmitted()._equal(dts));
 			ASSERT_TRUE(e.updated()._equal(dts));
 
-			ASSERT_EQ(e.cloneInfo().lastOperation, DotsMt::create);
+			ASSERT_EQ(e.cloneInfo().lastOperation, DotsMt::update);
 
 			ASSERT_EQ(e.cloneInfo().createdFrom, *header.sender);
 			ASSERT_EQ(e.cloneInfo().created, *header.sentTime);

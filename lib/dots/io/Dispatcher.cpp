@@ -76,7 +76,7 @@ namespace dots::io
 			{
 				header.attributes = instance->_validProperties();
 				--* header.fromCache;
-				handler_(Event<>{ header, instance, instance, cloneInfo, false });
+				handler_(Event<>{ header, instance, instance, cloneInfo, false, DotsMt::create });
 			}
 		}
 
