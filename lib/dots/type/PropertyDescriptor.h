@@ -12,7 +12,7 @@ namespace dots::type
 		PropertyDescriptor(const std::shared_ptr<Descriptor<>>& descriptor, PropertyMetadata<> metadata);
 		PropertyDescriptor(const std::shared_ptr<Descriptor<>>& descriptor, std::string name, size_t offset, uint32_t tag, bool isKey);
 		PropertyDescriptor(const std::shared_ptr<Descriptor<>>& descriptor, std::string name, uint32_t tag, bool isKey);
-		PropertyDescriptor(const std::shared_ptr<Descriptor<>>& descriptor, std::string name, const PropertyDescriptor& previous, uint32_t tag, bool isKey);		
+		PropertyDescriptor(const std::shared_ptr<Descriptor<>>& descriptor, std::string name, const PropertyDescriptor& previous, uint32_t tag, bool isKey);
 		PropertyDescriptor(const PropertyDescriptor& other);
 		PropertyDescriptor(PropertyDescriptor&& other) = default;
 		~PropertyDescriptor() = default;
@@ -45,4 +45,5 @@ namespace dots::type
 
 	using property_descriptor_container_t = std::vector<PropertyDescriptor>;
 	using partial_property_descriptor_container_t = std::vector<std::reference_wrapper<const PropertyDescriptor>>;
+	using property_descriptor_path_t = std::vector<property_descriptor_container_t::const_iterator>;
 }

@@ -87,6 +87,8 @@ namespace dots::type
 
 		const property_descriptor_container_t& propertyDescriptors() const;
 		partial_property_descriptor_container_t propertyDescriptors(const PropertySet& properties) const;
+
+		property_descriptor_path_t propertyDescriptorPath(std::string_view propertyPath) const;
 		
 		const PropertySet& properties() const;
 		const PropertySet& keyProperties() const;
@@ -108,6 +110,8 @@ namespace dots::type
 
 	private:
 
+		void propertyDescriptorPath(property_descriptor_path_t& path, std::string_view propertyPath) const;
+
 		uint8_t m_flags;
 		property_descriptor_container_t m_propertyDescriptors;
 		PropertySet m_properties;
@@ -116,11 +120,11 @@ namespace dots::type
 		mutable const types::StructDescriptorData* m_descriptorData = nullptr;
 	};
 
-	template <typename T>
+    template <typename T>
 	struct StructDescriptor<T> : StaticDescriptor<T, StructDescriptor<Typeless>>
 	{
 		static_assert(std::is_base_of_v<Struct, T>);
-		
+
 		StructDescriptor(std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptor) :
 			StaticDescriptor<T, StructDescriptor<Typeless>>(std::move(name), flags, propertyDescriptor, sizeof(T), alignof(T))
 		{
