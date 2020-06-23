@@ -2,6 +2,7 @@
 #include <string_view>
 #include <array>
 #include <functional>
+#include <type_traits>
 #include <algorithm>
 #include <dots/type/PropertyArea.h>
 #include <dots/type/ProxyPropertyPairIterator.h>
@@ -199,13 +200,13 @@ namespace dots::type
 	        return _propertyRangeReversed(rhs, _validProperties() ^ rhs._validProperties() ^ includedProperties);
 	    }
 
-		template <typename Callable>
+		template <typename Callable, std::enable_if_t<std::is_invocable_v<Callable, const ProxyProperty<>&>, int> = 0>
 		const_proxy_property_iterator _find(Callable&& callable) const
 		{
 			return std::find_if(_begin(), _end(), std::forward<Callable>(callable));
 		}
 
-		template <typename Callable>
+		template <typename Callable, std::enable_if_t<std::is_invocable_v<Callable, const ProxyProperty<>&>, int> = 0>
 		proxy_property_iterator _find(Callable&& callable)
 		{
 		    return std::find_if(_begin(), _end(), std::forward<Callable>(callable));
