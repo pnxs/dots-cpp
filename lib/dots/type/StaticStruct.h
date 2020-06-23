@@ -128,6 +128,7 @@ namespace dots::type
 						propertyThis.destroy();
 					}
 				};
+				(void)assign;
 
 				(assign(propertyPairs.first, propertyPairs.second), ...);
 			});
@@ -146,6 +147,7 @@ namespace dots::type
 						propertyThis = propertyOther;
 					}
 				};
+				(void)copy;
 
 				(copy(propertyPairs.first, propertyPairs.second), ...);
 			});
@@ -174,6 +176,7 @@ namespace dots::type
 						}
 					}
 				};
+				(void)merge;
 
 				(merge(propertyPairs.first, propertyPairs.second), ...);
 			});
@@ -192,6 +195,7 @@ namespace dots::type
 						propertyThis.swap(propertyOther);
 					}
 				};
+				(void)swap;
 
 				(swap(propertyPairs.first, propertyPairs.second), ...);
 			});
@@ -208,6 +212,7 @@ namespace dots::type
 						property.destroy();
 					}
 				};
+				(void)destroy;
 
 				(destroy(properties), ...);
 			}, typename Derived::_properties_t{});
@@ -228,6 +233,7 @@ namespace dots::type
 						return true;
 					}
 				};
+				(void)equal;
 
 				return (equal(propertyPairs.first, propertyPairs.second) && ...);
 			});
@@ -247,6 +253,7 @@ namespace dots::type
 					{
 						return propertyThis == propertyOther;
 					};
+					(void)equal;
 
 					return (equal(propertyPairs.first, propertyPairs.second) && ...);
 				}
@@ -257,7 +264,14 @@ namespace dots::type
 		{
 			return _applyPropertyPairs(rhs, [&](const auto&... propertyPairs)
 			{
-				return _less(includedProperties, propertyPairs...);
+				if constexpr (sizeof...(propertyPairs) == 0)
+				{
+				    return false;
+				}
+				else
+				{
+				    return _less(includedProperties, propertyPairs...);
+				}
 			});
 		}
 
@@ -294,6 +308,7 @@ namespace dots::type
 							symmetricDiff += property_t::Set();
 						}
 					};
+					(void)check_inequality;
 
 					return (check_inequality(propertyPairs.first, propertyPairs.second), ...);
 				});
