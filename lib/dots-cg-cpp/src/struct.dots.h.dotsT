@@ -111,7 +111,7 @@ namespace dots::type
 	struct Descriptor<types::{{name}}> : StructDescriptor<types::{{name}}>
 	{
 		Descriptor() :
-			StructDescriptor(types::{{name}}::_Name, {% if options.cached %}Cached{% else %}Uncached{% endif %}{% if options.internal %} | Internal{% endif %}{% if options.persistent %} | Persistent{% endif %}{% if options.cleanup %} | Cleanup{% endif %}{% if options.substruct_only %} | SubstructOnly{% endif %}, types::{{name}}::_MakePropertyDescriptors()){}
+			StructDescriptor(types::{{name}}::_Name, {% if options.cached %}Cached{% else %}Uncached{% endif %}{% if options.internal %} | Internal{% endif %}{% if options.persistent %} | Persistent{% endif %}{% if options.cleanup %} | Cleanup{% endif %}{% if options.local %} | Local{% endif %}{% if options.substruct_only %} | SubstructOnly{% endif %}, types::{{name}}::_MakePropertyDescriptors()){}
 	};
 }
 
