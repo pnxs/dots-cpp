@@ -54,6 +54,8 @@ namespace dots::type
 		bool greater(const Typeless& lhs, const Typeless& rhs) const override;
 		bool greaterEqual(const Typeless& lhs, const Typeless& rhs) const override;
 
+		size_t numSubStructs() const;
+
 		bool usesDynamicMemory() const override;
 		size_t dynamicMemoryUsage(const Typeless& instance) const override;
 		size_t dynamicMemoryUsage(const Struct& instance) const;
@@ -88,6 +90,7 @@ namespace dots::type
 		const property_descriptor_container_t& propertyDescriptors() const;
 		partial_property_descriptor_container_t propertyDescriptors(const PropertySet& properties) const;
 
+		const property_descriptor_container_t& flatPropertyDescriptors() const;
 		property_descriptor_path_t propertyDescriptorPath(std::string_view propertyPath) const;
 		
 		const PropertySet& properties() const;
@@ -110,13 +113,16 @@ namespace dots::type
 
 	private:
 
+		void flatPropertyDescriptors(size_t previousOffset, size_t previousSize, property_descriptor_container_t& flatPropertyDescriptors) const;
 		void propertyDescriptorPath(property_descriptor_path_t& path, std::string_view propertyPath) const;
 
 		uint8_t m_flags;
 		property_descriptor_container_t m_propertyDescriptors;
 		PropertySet m_properties;
 		PropertySet m_keyProperties;
+		size_t m_numSubStructs;
 		PropertySet m_dynamicMemoryProperties;
+		mutable property_descriptor_container_t m_flatPropertyDescriptors;
 		mutable const types::StructDescriptorData* m_descriptorData = nullptr;
 	};
 

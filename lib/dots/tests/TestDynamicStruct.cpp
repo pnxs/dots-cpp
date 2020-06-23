@@ -163,6 +163,43 @@ TEST_F(TestDynamicStruct, PropertyAddressessMatchExpectedAddresses)
     EXPECT_EQ(reinterpret_cast<const std::byte*>(&subSubDoublePropertyIt->storage()), sutAddress + subOffset + subSubOffset + subSubDoublePropertyIt->descriptor().offset());
 }
 
+TEST_F(TestDynamicStruct, FlatPropertyDescriptorOffsetsMatchExpectedOffsets)
+{
+	DynamicStruct sut{ *m_testDynamicStructDescriptor };
+	const std::byte* sutAddress = reinterpret_cast<const std::byte*>(&sut._propertyArea());
+
+	const property_descriptor_container_t& flatPropertyDescriptors = sut._descriptor().flatPropertyDescriptors();
+	ASSERT_EQ(flatPropertyDescriptors.size(), 10);
+
+	auto intPropertyIt = sut["intProperty"];
+	auto stringPropertyIt = sut["stringProperty"];
+	auto boolPropertyIt = sut["boolProperty"];
+	auto floatVectorPropertyIt = sut["floatVectorProperty"];
+	auto subStructPropertyIt = sut["subStructProperty"];
+	
+	EXPECT_EQ(reinterpret_cast<const std::byte*>(&intPropertyIt->storage()), sutAddress + flatPropertyDescriptors[0].offset());
+    EXPECT_EQ(reinterpret_cast<const std::byte*>(&stringPropertyIt->storage()), sutAddress + flatPropertyDescriptors[1].offset());
+    EXPECT_EQ(reinterpret_cast<const std::byte*>(&boolPropertyIt->storage()), sutAddress + flatPropertyDescriptors[2].offset());
+    EXPECT_EQ(reinterpret_cast<const std::byte*>(&floatVectorPropertyIt->storage()), sutAddress + flatPropertyDescriptors[3].offset());
+    EXPECT_EQ(reinterpret_cast<const std::byte*>(&subStructPropertyIt->storage()), sutAddress + flatPropertyDescriptors[4].offset());
+
+	DynamicStruct& sutSub = subStructPropertyIt->construct().to<DynamicStruct>();
+	auto subIntPropertyIt = sutSub["subIntProperty"];
+	auto subSubStructPropertyIt = sutSub["subSubStructProperty"];
+	auto subFloatPropertyIt = sutSub["subFloatProperty"];	
+
+	EXPECT_EQ(reinterpret_cast<const std::byte*>(&subIntPropertyIt->storage()), sutAddress + flatPropertyDescriptors[5].offset());
+	EXPECT_EQ(reinterpret_cast<const std::byte*>(&subSubStructPropertyIt->storage()), sutAddress + flatPropertyDescriptors[6].offset());
+    EXPECT_EQ(reinterpret_cast<const std::byte*>(&subFloatPropertyIt->storage()), sutAddress + flatPropertyDescriptors[9].offset());
+
+	DynamicStruct& sutSubSub = subSubStructPropertyIt->construct().to<DynamicStruct>();
+	auto subSubIntPropertyIt = sutSubSub["subSubIntProperty"];
+	auto subSubDoublePropertyIt = sutSubSub["subSubDoubleProperty"];
+
+	EXPECT_EQ(reinterpret_cast<const std::byte*>(&subSubIntPropertyIt->storage()), sutAddress + flatPropertyDescriptors[7].offset());
+    EXPECT_EQ(reinterpret_cast<const std::byte*>(&subSubDoublePropertyIt->storage()), sutAddress + flatPropertyDescriptors[8].offset());
+}
+
 TEST_F(TestDynamicStruct, PropertiesHaveExpectedTags)
 {
     DynamicStruct sut{ *m_testDynamicStructDescriptor };

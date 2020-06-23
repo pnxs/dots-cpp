@@ -1,13 +1,14 @@
 #include <dots/type/StructDescriptor.h>
 #include <dots/type/Struct.h>
 #include <dots/io/DescriptorConverter.h>
-
+#include <dots/type/DynamicStruct.h>
 namespace dots::type
 {
 	StructDescriptor<Typeless, void>::StructDescriptor(std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptors, size_t size, size_t alignment) :
 		Descriptor<Typeless>(Type::Struct, std::move(name), size, alignment),
 		m_flags(flags),
-		m_propertyDescriptors(propertyDescriptors)
+		m_propertyDescriptors(propertyDescriptors),
+	    m_numSubStructs(0)
 	{
 		for (const PropertyDescriptor& propertyDescriptor : m_propertyDescriptors)
 		{
@@ -16,6 +17,11 @@ namespace dots::type
 			if (propertyDescriptor.isKey())
 			{
 				m_keyProperties += propertyDescriptor.set();
+			}
+
+			if (propertyDescriptor.valueDescriptor().type() == Type::Struct)
+			{
+			    ++m_numSubStructs;
 			}
 
 			if (propertyDescriptor.valueDescriptor().usesDynamicMemory())
@@ -125,6 +131,11 @@ namespace dots::type
 		return greaterEqual(lhs.to<Struct>(), rhs.to<Struct>(), PropertySet::All);
 	}
 
+	size_t StructDescriptor<Typeless, void>::numSubStructs() const
+    {
+		return m_numSubStructs;
+    }
+
 	bool StructDescriptor<Typeless, void>::usesDynamicMemory() const
 	{
 		return m_dynamicMemoryProperties.empty();
@@ -207,6 +218,57 @@ namespace dots::type
 		}
 
 		return partialPropertyDescriptors;
+    }
+
+    const property_descriptor_container_t& StructDescriptor<Typeless, void>::flatPropertyDescriptors() const
+    {
+		if (m_numSubStructs == 0)
+		{
+		    return m_propertyDescriptors;
+		}
+		else
+		{
+			if (m_flatPropertyDescriptors.empty())
+		    {
+				flatPropertyDescriptors(0, sizeof(PropertyArea), m_flatPropertyDescriptors);
+		    }
+
+			return m_flatPropertyDescriptors;
+		}
+    }
+
+	void StructDescriptor<Typeless, void>::flatPropertyDescriptors(size_t previousOffset, size_t previousSize, property_descriptor_container_t& flatPropertyDescriptors) const
+    {
+		auto aligned_offset = [](size_t previousOffset, size_t previousSize, size_t alignment)
+		{
+			size_t currentOffset = previousOffset + previousSize;
+			size_t alignedOffset = currentOffset + (alignment - currentOffset % alignment) % alignment;
+
+			return alignedOffset;
+		};
+
+		for (const PropertyDescriptor& propertyDescriptor : m_propertyDescriptors)
+		{
+			if (propertyDescriptor.valueDescriptor().type() == Type::Struct)
+			{
+				const PropertyDescriptor& flatPropertyDescriptor = flatPropertyDescriptors.emplace_back(propertyDescriptor.valueDescriptorPtr(), propertyDescriptor.name(), aligned_offset(previousOffset, previousSize, propertyDescriptor.valueDescriptor().alignment()), propertyDescriptor.tag(), propertyDescriptor.isKey());
+				previousOffset = flatPropertyDescriptor.offset();
+			    previousSize = sizeof(DynamicStruct);
+
+				previousOffset = aligned_offset(previousOffset, previousSize, alignof(PropertyArea));
+			    previousSize = sizeof(PropertyArea);
+
+				static_cast<const StructDescriptor&>(propertyDescriptor.valueDescriptor()).flatPropertyDescriptors(previousOffset, previousSize, flatPropertyDescriptors);
+				previousOffset = flatPropertyDescriptors.back().offset();
+				previousSize = flatPropertyDescriptors.back().metadata().size();
+			}
+			else
+			{
+			    const PropertyDescriptor& flatPropertyDescriptor = flatPropertyDescriptors.emplace_back(propertyDescriptor.valueDescriptorPtr(), propertyDescriptor.name(), aligned_offset(previousOffset, previousSize, propertyDescriptor.valueDescriptor().alignment()), propertyDescriptor.tag(), propertyDescriptor.isKey());
+			    previousOffset = flatPropertyDescriptor.metadata().offset();
+			    previousSize = flatPropertyDescriptor.metadata().size();
+			}
+		}
     }
 
     property_descriptor_path_t StructDescriptor<Typeless, void>::propertyDescriptorPath(std::string_view propertyPath) const
