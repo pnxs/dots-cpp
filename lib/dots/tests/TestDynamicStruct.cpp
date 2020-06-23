@@ -200,6 +200,24 @@ TEST_F(TestDynamicStruct, FlatPropertyDescriptorOffsetsMatchExpectedOffsets)
     EXPECT_EQ(reinterpret_cast<const std::byte*>(&subSubDoublePropertyIt->storage()), sutAddress + flatPropertyDescriptors[8].offset());
 }
 
+TEST_F(TestDynamicStruct, GetPropertyReturnsSubProperty)
+{
+	DynamicStruct sut{ *m_testDynamicStructDescriptor };
+
+	EXPECT_EQ(sut._get("intProperty")->descriptor().name(), "intProperty");
+	EXPECT_EQ(sut._get("stringProperty")->descriptor().name(), "stringProperty");
+	EXPECT_EQ(sut._get("boolProperty")->descriptor().name(), "boolProperty");
+	EXPECT_EQ(sut._get("floatVectorProperty")->descriptor().name(), "floatVectorProperty");
+	EXPECT_EQ(sut._get("subStructProperty")->descriptor().name(), "subStructProperty");
+
+	EXPECT_EQ(sut._get("subStructProperty.subIntProperty")->descriptor().name(), "subIntProperty");
+	EXPECT_EQ(sut._get("subStructProperty.subSubStructProperty")->descriptor().name(), "subSubStructProperty");
+	EXPECT_EQ(sut._get("subStructProperty.subFloatProperty")->descriptor().name(), "subFloatProperty");
+
+	EXPECT_EQ(sut._get("subStructProperty.subSubStructProperty.subSubIntProperty")->descriptor().name(), "subSubIntProperty");
+	EXPECT_EQ(sut._get("subStructProperty.subSubStructProperty.subSubDoubleProperty")->descriptor().name(), "subSubDoubleProperty");
+}
+
 TEST_F(TestDynamicStruct, PropertiesHaveExpectedTags)
 {
     DynamicStruct sut{ *m_testDynamicStructDescriptor };
