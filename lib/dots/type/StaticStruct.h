@@ -370,6 +370,23 @@ namespace dots::type
 			return KeyProperties;
 		}
 
+		static PropertySet _Properties()
+		{
+			static PropertySet Properties = std::apply([](auto&&... args)
+			{
+				if constexpr (sizeof...(args) == 0)
+				{
+					return PropertySet{};
+				}
+				else
+				{
+					return (strip_t<decltype(args)>::Set() + ...);
+				}
+			}, typename Derived::_properties_t{});
+
+			return Properties;
+		}
+
     	static property_descriptor_container_t _MakePropertyDescriptors()
     	{
     		return _MakePropertyDescriptors(typename Derived::_properties_t{});
