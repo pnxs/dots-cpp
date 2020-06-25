@@ -356,6 +356,10 @@ TEST_F(TestDynamicStruct, assignment_Move)
 	EXPECT_EQ(sutThis["intProperty"]->value().to<int32_t>(), 1);
 	EXPECT_EQ(sutThis["stringProperty"]->value().to<string_t>(), "foo");
 	EXPECT_EQ(sutThis["floatVectorProperty"]->value().to<vector_t<float32_t>>(), vector_t<float32_t>({ 3.1415f, 2.7183f }));
+
+	EXPECT_FALSE(sutOther["intProperty"]->isValid());
+	EXPECT_FALSE(sutOther["stringProperty"]->isValid());
+	EXPECT_FALSE(sutOther["floatVectorProperty"]->isValid());
 }
 
 TEST_F(TestDynamicStruct, assign_CompleteAssign)
@@ -399,6 +403,99 @@ TEST_F(TestDynamicStruct, assign_PartialAssign)
 	EXPECT_EQ(sutThis["stringProperty"]->value().to<string_t>(), "bar");
 	EXPECT_FALSE(sutThis["boolProperty"]->isValid());
 	EXPECT_FALSE(sutThis["floatVectorProperty"]->isValid());
+}
+
+TEST_F(TestDynamicStruct, assign_CompleteMoveAssign)
+{
+    DynamicStruct sutThis{ *m_testDynamicStructDescriptor,
+        DynamicStruct::property_i<int32_t>{ "intProperty", 1 },
+        DynamicStruct::property_i<string_t>{ "stringProperty", "foo" },
+        DynamicStruct::property_i<vector_t<float32_t>>{ "floatVectorProperty", vector_t<float32_t>{ 3.1415f } }
+    };
+
+    DynamicStruct sutOther{ *m_testDynamicStructDescriptor,
+        DynamicStruct::property_i<string_t>{ "stringProperty", "bar" },
+        DynamicStruct::property_i<vector_t<float32_t>>{ "floatVectorProperty", vector_t<float32_t>{ 2.7183f } },
+        DynamicStruct::property_i<DynamicStruct>{ "subStructProperty", DynamicStruct{ *m_testDynamicSubStructDescriptor,
+			    DynamicStruct::property_i<int64_t>{ "subIntProperty", 42 }
+            }
+        }
+    };
+
+    sutThis._assign(std::move(sutOther));
+
+    EXPECT_FALSE(sutThis["intProperty"]->isValid());
+    EXPECT_EQ(sutThis["stringProperty"]->value().to<string_t>(), "bar");
+    EXPECT_EQ(sutThis["floatVectorProperty"]->value().to<vector_t<float32_t>>(), vector_t<float32_t>{ 2.7183f });
+	EXPECT_TRUE(sutThis["subStructProperty"]->isValid());
+	EXPECT_EQ(sutThis._get("subStructProperty.subIntProperty")->value().to<int64_t>(), 42);
+
+	EXPECT_FALSE(sutOther["intProperty"]->isValid());
+	EXPECT_FALSE(sutOther["stringProperty"]->isValid());
+	EXPECT_FALSE(sutOther["floatVectorProperty"]->isValid());
+	EXPECT_FALSE(sutOther["subStructProperty"]->isValid());
+}
+
+TEST_F(TestDynamicStruct, assign_PartialMoveAssign)
+{
+    DynamicStruct sutThis{ *m_testDynamicStructDescriptor,
+        DynamicStruct::property_i<int32_t>{ "intProperty", 1 },
+        DynamicStruct::property_i<string_t>{ "stringProperty", "foo" },
+        DynamicStruct::property_i<vector_t<float32_t>>{ "floatVectorProperty", vector_t<float32_t>{ 3.1415f } }
+    };
+
+    DynamicStruct sutOther{ *m_testDynamicStructDescriptor,
+        DynamicStruct::property_i<string_t>{ "stringProperty", "bar" },
+        DynamicStruct::property_i<vector_t<float32_t>>{ "floatVectorProperty", vector_t<float32_t>{ 2.7183f } },
+        DynamicStruct::property_i<DynamicStruct>{ "subStructProperty", DynamicStruct{ *m_testDynamicSubStructDescriptor,
+			    DynamicStruct::property_i<int64_t>{ "subIntProperty", 42 }
+            }
+        }
+    };
+
+    sutThis._assign(std::move(sutOther), ~sutThis["floatVectorProperty"]->descriptor().set());
+
+    EXPECT_FALSE(sutThis["intProperty"]->isValid());
+    EXPECT_EQ(sutThis["stringProperty"]->value().to<string_t>(), "bar");
+    EXPECT_FALSE(sutThis["floatVectorProperty"]->isValid());
+	EXPECT_EQ(sutThis._get("subStructProperty.subIntProperty")->value().to<int64_t>(), 42);
+
+	EXPECT_FALSE(sutOther["intProperty"]->isValid());
+	EXPECT_FALSE(sutOther["stringProperty"]->isValid());
+	EXPECT_FALSE(sutOther["subStructProperty"]->isValid());
+}
+
+TEST_F(TestDynamicStruct, assign_DirectSubStructMove)
+{
+    DynamicStruct sutThis{ *m_testDynamicStructDescriptor,
+        DynamicStruct::property_i<int32_t>{ "intProperty", 1 },
+        DynamicStruct::property_i<string_t>{ "stringProperty", "foo" },
+        DynamicStruct::property_i<vector_t<float32_t>>{ "floatVectorProperty", vector_t<float32_t>{ 3.1415f } },
+		DynamicStruct::property_i<DynamicStruct>{ "subStructProperty", DynamicStruct{ *m_testDynamicSubStructDescriptor,
+			    DynamicStruct::property_i<float32_t>{ "subFloatProperty", 23.0f }
+            }
+        }
+    };
+
+	DynamicStruct sutSubOther{ *m_testDynamicSubStructDescriptor,
+		DynamicStruct::property_i<int64_t>{ "subIntProperty", 42 },
+		DynamicStruct::property_i<DynamicStruct>{ "subSubStructProperty", DynamicStruct{ *m_testDynamicSubSubStructDescriptor,
+		        DynamicStruct::property_i<float64_t>{ "subSubDoubleProperty", 21.0 }
+	        }
+		}
+    };
+
+    sutThis["subStructProperty"]->assign(Typeless::From(std::move(sutSubOther)));
+
+    EXPECT_EQ(sutThis["intProperty"]->value().to<int32_t>(), 1);
+    EXPECT_EQ(sutThis["stringProperty"]->value().to<string_t>(), "foo");
+    EXPECT_EQ(sutThis["floatVectorProperty"]->value().to<vector_t<float32_t>>(), vector_t<float32_t>{ 3.1415f });
+	EXPECT_EQ(sutThis._get("subStructProperty.subIntProperty")->value().to<int64_t>(), 42);
+	EXPECT_EQ(sutThis._get("subStructProperty.subSubStructProperty.subSubDoubleProperty")->value().to<float64_t>(), 21.0);
+	EXPECT_FALSE(sutThis._get("subStructProperty.subFloatProperty")->isValid());
+
+	EXPECT_FALSE(sutSubOther["subIntProperty"]->isValid());
+	EXPECT_FALSE(sutSubOther["subSubStructProperty"]->isValid());
 }
 
 TEST_F(TestDynamicStruct, copy_CompleteCopy)

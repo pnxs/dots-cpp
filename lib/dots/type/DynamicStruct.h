@@ -68,11 +68,11 @@ namespace dots::type
 		}
 
 		DynamicStruct(const DynamicStruct& other);
-		DynamicStruct(DynamicStruct&& other) = default;
+		DynamicStruct(DynamicStruct&& other);
 		~DynamicStruct();
 
 		DynamicStruct& operator = (const DynamicStruct& rhs);
-		DynamicStruct& operator = (DynamicStruct&& rhs) = default;
+		DynamicStruct& operator = (DynamicStruct&& rhs);
 
 		bool operator == (const DynamicStruct& rhs) const;
 		bool operator != (const DynamicStruct& rhs) const;
@@ -82,6 +82,7 @@ namespace dots::type
 		bool operator >= (const DynamicStruct& rhs) const;
 
 		DynamicStruct& _assign(const DynamicStruct& other, const PropertySet& includedProperties = PropertySet::All);
+		DynamicStruct& _assign(DynamicStruct&& other, const PropertySet& includedProperties = PropertySet::All);
 		DynamicStruct& _copy(const DynamicStruct& other, const PropertySet& includedProperties = PropertySet::All);
 		DynamicStruct& _merge(const DynamicStruct& other, const PropertySet& includedProperties = PropertySet::All);
 		void _swap(DynamicStruct& other, const PropertySet& includedProperties = PropertySet::All);

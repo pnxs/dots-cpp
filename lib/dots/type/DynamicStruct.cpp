@@ -23,6 +23,12 @@ namespace dots::type
 		*this = other;
 	}
 
+    DynamicStruct::DynamicStruct(DynamicStruct&& other) :
+	    DynamicStruct(static_cast<const Descriptor<DynamicStruct>&>(other._descriptor()))
+    {
+		*this = std::move(other);
+    }
+
     DynamicStruct::~DynamicStruct()
 	{
 		if (propertyAreaGet() != nullptr)
@@ -37,7 +43,13 @@ namespace dots::type
 		return *this;
 	}
 
-	bool DynamicStruct::operator == (const DynamicStruct& rhs) const
+    DynamicStruct& DynamicStruct::operator = (DynamicStruct&& rhs)
+    {
+		_assign(std::move(rhs));
+		return *this;
+    }
+
+    bool DynamicStruct::operator == (const DynamicStruct& rhs) const
 	{
 		return _equal(rhs);
 	}
@@ -85,8 +97,27 @@ namespace dots::type
 
         return *this;
 	}
-	
-	DynamicStruct& DynamicStruct::_copy(const DynamicStruct& other, const PropertySet& includedProperties/* = PropertySet::All*/)
+
+    DynamicStruct& DynamicStruct::_assign(DynamicStruct&& other, const PropertySet& includedProperties)
+    {
+		PropertySet assignProperties = other._validProperties() ^ includedProperties;
+
+        for (auto&[propertyThis, propertyOther] : _propertyRange(other))
+        {
+            if (propertyThis.isPartOf(assignProperties))
+            {
+                propertyThis.constructOrAssign(std::move(propertyOther));
+            }
+            else
+            {
+                propertyThis.destroy();
+            }
+        }
+
+        return *this;
+    }
+
+    DynamicStruct& DynamicStruct::_copy(const DynamicStruct& other, const PropertySet& includedProperties/* = PropertySet::All*/)
 	{
 		PropertySet copyProperties = (_validProperties() + other._validProperties()) ^ includedProperties;
 
