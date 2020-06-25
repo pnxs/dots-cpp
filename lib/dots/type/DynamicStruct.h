@@ -51,10 +51,18 @@ namespace dots::type
 		using property_i = DynamicPropertyInitializer<T>;
 
     	DynamicStruct(const Descriptor<DynamicStruct>& descriptor);
+		DynamicStruct(const Descriptor<DynamicStruct>& descriptor, PropertyArea* propertyArea);
 
 		template <typename... DynamicPropertyInitializers, std::enable_if_t<sizeof...(DynamicPropertyInitializers) >= 1 && std::conjunction_v<type::is_dynamic_property_initializer_t<std::remove_pointer_t<std::decay_t<DynamicPropertyInitializers>>>...>, int> = 0>
 		DynamicStruct(const Descriptor<DynamicStruct>& descriptor, DynamicPropertyInitializers&&... dynamicPropertyInitializers) :
             DynamicStruct(descriptor)
+		{
+		    (this->operator[](dynamicPropertyInitializers.name)->template construct<false>(Typeless::From(std::forward<decltype(dynamicPropertyInitializers)>(dynamicPropertyInitializers).value)), ...);
+		}
+
+		template <typename... DynamicPropertyInitializers, std::enable_if_t<sizeof...(DynamicPropertyInitializers) >= 1 && std::conjunction_v<type::is_dynamic_property_initializer_t<std::remove_pointer_t<std::decay_t<DynamicPropertyInitializers>>>...>, int> = 0>
+		DynamicStruct(const Descriptor<DynamicStruct>& descriptor, PropertyArea* propertyArea, DynamicPropertyInitializers&&... dynamicPropertyInitializers) :
+            DynamicStruct(descriptor, propertyArea)
 		{
 		    (this->operator[](dynamicPropertyInitializers.name)->template construct<false>(Typeless::From(std::forward<decltype(dynamicPropertyInitializers)>(dynamicPropertyInitializers).value)), ...);
 		}
@@ -124,11 +132,8 @@ namespace dots::type
 	template <>
 	struct Descriptor<DynamicStruct> : StructDescriptor<DynamicStruct>
 	{
-		Descriptor(std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptors, size_t size, size_t alignment, bool inPlace) :
-			StructDescriptor<DynamicStruct>(std::move(name), flags, propertyDescriptors, sizeof(DynamicStruct) + (inPlace ? size : 0), alignof(DynamicStruct)),
-			m_allocateSize(size),
-			m_allocateAlignment(alignment),
-		    m_inPlace(inPlace)
+		Descriptor(std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptors, size_t size) :
+			StructDescriptor<DynamicStruct>(std::move(name), flags, propertyDescriptors, size, alignof(DynamicStruct))
 		{
 			/* do nothing */
 		}
@@ -143,28 +148,7 @@ namespace dots::type
 
 		Typeless& construct(Typeless& value) const
 		{
-			return Typeless::From(construct(value.to<DynamicStruct>(), *this));
+			return Typeless::From(construct(value.to<DynamicStruct>(), *this, reinterpret_cast<PropertyArea*>(&value.to<std::byte>() + sizeof(DynamicStruct))));
 		}
-
-		size_t allocateSize() const
-		{
-			return m_allocateSize;
-		}
-
-		size_t allocateAlignment() const
-		{
-			return m_allocateAlignment;
-		}
-
-		bool inPlace() const
-		{
-		    return m_inPlace;
-		}
-
-	private:
-
-		size_t m_allocateSize;
-		size_t m_allocateAlignment;
-		bool m_inPlace;
 	};
 }

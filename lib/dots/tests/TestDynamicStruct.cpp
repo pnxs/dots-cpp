@@ -251,28 +251,18 @@ TEST_F(TestDynamicStruct, PropertiesHaveExpectedSet)
     EXPECT_EQ(sut["subStructProperty"]->descriptor().set(), PropertySet{ 0x1 << 5 });
 }
 
-TEST_F(TestDynamicStruct, _descriptor_SizeMatchesActualSize)
-{
-	EXPECT_EQ(DynamicStruct{ *m_testDynamicStructDescriptor }._descriptor().size(), sizeof(DynamicStruct));
-}
-
-TEST_F(TestDynamicStruct, _descriptor_AlignmentMatchesActualAlignment)
-{
-	EXPECT_EQ(DynamicStruct{ *m_testDynamicStructDescriptor }._descriptor().alignment(), alignof(DynamicStruct));
-}
-
-TEST_F(TestDynamicStruct, _descriptor_AllocateSizeMatchesActualSize)
+TEST_F(TestDynamicStruct, _descriptor_SizeMatchesAllocateSize)
 {
     DynamicStruct sut{ *m_testDynamicStructDescriptor };
     const PropertyDescriptor& lastPropertyDescriptor = sut["subStructProperty"]->descriptor();
 
     // note: this expectation only holds true if the last property has an 8-byte alignment
-	EXPECT_EQ(m_testDynamicStructDescriptor->allocateSize(), lastPropertyDescriptor.offset() + lastPropertyDescriptor.valueDescriptor().size());
+	EXPECT_EQ(m_testDynamicStructDescriptor->size(), sizeof(DynamicStruct) + lastPropertyDescriptor.offset() + lastPropertyDescriptor.valueDescriptor().size());
 }
 
-TEST_F(TestDynamicStruct, _descriptor_AllocateAlignmentMatchesActualAlignment)
+TEST_F(TestDynamicStruct, _descriptor_AlignmentMatchesActualAlignment)
 {
-	EXPECT_EQ(m_testDynamicStructDescriptor->allocateAlignment(), alignof(Struct));
+	EXPECT_EQ(m_testDynamicStructDescriptor->alignment(), alignof(DynamicStruct));
 }
 
 TEST_F(TestDynamicStruct, _descriptor_FlagsHaveExpectedValues)

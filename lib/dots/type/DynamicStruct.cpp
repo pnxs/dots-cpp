@@ -5,27 +5,25 @@ namespace dots::type
 {
 	DynamicStruct::DynamicStruct(const Descriptor<DynamicStruct>& descriptor) :
 		Struct(descriptor),
-		m_propertyArea(nullptr)
+		m_propertyArea{ std::unique_ptr<PropertyArea>{ reinterpret_cast<PropertyArea*>(::operator new(descriptor.size() - sizeof(DynamicStruct))) } }
 	{
-		if (descriptor.inPlace())
-		{
-		    m_propertyArea = reinterpret_cast<PropertyArea*>(reinterpret_cast<std::byte*>(this) + sizeof(DynamicStruct));
-		}
-		else
-		{
-			m_propertyArea = std::unique_ptr<PropertyArea>{ reinterpret_cast<PropertyArea*>(::operator new(descriptor.allocateSize())) };
-		}
-
 		::new(static_cast<void*>(propertyAreaGet())) PropertyArea{};
 	}
+
+	DynamicStruct::DynamicStruct(const Descriptor<DynamicStruct>& descriptor, PropertyArea* propertyArea) :
+	    Struct(descriptor),
+		m_propertyArea{ propertyArea }
+    {
+		::new(static_cast<void*>(propertyAreaGet())) PropertyArea{};
+    }
 
 	DynamicStruct::DynamicStruct(const DynamicStruct& other) :
 		DynamicStruct(static_cast<const Descriptor<DynamicStruct>&>(other._descriptor()))
 	{
 		*this = other;
 	}
-	
-	DynamicStruct::~DynamicStruct()
+
+    DynamicStruct::~DynamicStruct()
 	{
 		if (propertyAreaGet() != nullptr)
 		{
