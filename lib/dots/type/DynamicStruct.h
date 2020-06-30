@@ -133,6 +133,8 @@ namespace dots::type
 	template <>
 	struct Descriptor<DynamicStruct> : StructDescriptor<DynamicStruct>
 	{
+		using dynamic_descriptor_tag_t = void;
+
 		Descriptor(std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptors, size_t size) :
 			StructDescriptor<DynamicStruct>(std::move(name), flags, propertyDescriptors, sizeof(DynamicStruct), size, alignof(DynamicStruct))
 		{
@@ -147,9 +149,21 @@ namespace dots::type
 
 		using StaticDescriptor<DynamicStruct, StructDescriptor<>>::construct;
 
-		Typeless& construct(Typeless& value) const
+		Typeless& construct(Typeless& value) const override
 		{
 			return Typeless::From(construct(value.to<DynamicStruct>(), *this, reinterpret_cast<PropertyArea*>(&value.to<std::byte>() + sizeof(DynamicStruct))));
+		}
+
+		Typeless& construct(Typeless& value, const Typeless& other) const override
+		{
+			Typeless& instance = construct(value);
+			return assign(instance, other);
+		}
+
+		Typeless& construct(Typeless& value, Typeless&& other) const override
+		{
+			Typeless& instance = construct(value);
+			return assign(instance, std::move(other));
 		}
 	};
 }

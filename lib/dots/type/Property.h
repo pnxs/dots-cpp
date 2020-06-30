@@ -15,6 +15,7 @@ namespace dots::type
 		static_assert(std::conjunction_v<std::negation<std::is_pointer<T>>, std::negation<std::is_reference<T>>>);
 		using value_t = T;
 		static constexpr bool IsTypeless = std::is_same_v<T, Typeless>;
+		static constexpr bool IsTypelessOrDynamic = std::disjunction_v<std::is_same<T, Typeless>, is_dynamic_descriptor<Descriptor<T>>>;
 
 		template <typename U, std::enable_if_t<!std::disjunction_v<std::is_same<std::remove_reference_t<U>, Property>, std::is_same<std::remove_reference_t<U>, Derived>>, int> = 0>
 		Derived& operator = (U&& rhs)
@@ -151,7 +152,8 @@ namespace dots::type
 				}
 			}
 
-			if constexpr (!IsTypeless)
+			static_assert(!IsTypelessOrDynamic || sizeof...(Args) <= 1, "typeless construct only supports a single argument");
+			if constexpr (!IsTypelessOrDynamic)
 			{
 				Descriptor<T>::construct(storage(), std::forward<Args>(args)...);
 			}
@@ -173,7 +175,7 @@ namespace dots::type
 		{
 			if (isValid())
 			{
-				if constexpr (IsTypeless)
+				if constexpr (IsTypelessOrDynamic)
 				{
 					descriptor().valueDescriptor().destruct(storage());
 				}
@@ -254,8 +256,8 @@ namespace dots::type
 				}
 			}
 
-			static_assert(!IsTypeless || sizeof...(Args) <= 1, "typeless assignment only supports a single argument");
-			if constexpr (!IsTypeless)
+			static_assert(!IsTypelessOrDynamic || sizeof...(Args) <= 1, "typeless assignment only supports a single argument");
+			if constexpr (!IsTypelessOrDynamic)
 			{
 				Descriptor<T>::assign(storage(), std::forward<Args>(args)...);
 			}
@@ -292,7 +294,7 @@ namespace dots::type
 			{
 				if (other.isValid())
 				{
-					if constexpr (IsTypeless)
+					if constexpr (IsTypelessOrDynamic)
 					{
 						return descriptor().valueDescriptor().swap(storage(), other);
 					}
@@ -318,7 +320,7 @@ namespace dots::type
 		{
 			if (isValid())
 			{
-				if constexpr (IsTypeless)
+				if constexpr (IsTypelessOrDynamic)
 				{
 					return descriptor().valueDescriptor().equal(storage(), rhs);
 				}
@@ -349,7 +351,7 @@ namespace dots::type
 		{
 			if (isValid())
 			{
-				if constexpr (IsTypeless)
+				if constexpr (IsTypelessOrDynamic)
 				{
 					return descriptor().valueDescriptor().less(storage(), rhs);
 				}
@@ -390,7 +392,7 @@ namespace dots::type
 		{
 			if (isValid())
 			{
-				if constexpr (IsTypeless)
+				if constexpr (IsTypelessOrDynamic)
 				{
 					return descriptor().valueDescriptor().less(rhs, storage());
 				}
