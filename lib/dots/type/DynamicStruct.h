@@ -134,7 +134,7 @@ namespace dots::type
 	struct Descriptor<DynamicStruct> : StructDescriptor<DynamicStruct>
 	{
 		Descriptor(std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptors, size_t size) :
-			StructDescriptor<DynamicStruct>(std::move(name), flags, propertyDescriptors, size, alignof(DynamicStruct))
+			StructDescriptor<DynamicStruct>(std::move(name), flags, propertyDescriptors, sizeof(DynamicStruct), size, alignof(DynamicStruct))
 		{
 			/* do nothing */
 		}

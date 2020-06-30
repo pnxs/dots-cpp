@@ -26,7 +26,7 @@ namespace dots::type
 		static const uint8_t Local         = 0b0001'0000;
 		static const uint8_t SubstructOnly = 0b0010'0000;
 		
-		StructDescriptor(std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptors, size_t size, size_t alignment);
+		StructDescriptor(std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptors, size_t areaOffset, size_t size, size_t alignment);
 		StructDescriptor(const StructDescriptor& other) = default;
 		StructDescriptor(StructDescriptor&& other) = default;
 		~StructDescriptor() = default;
@@ -54,6 +54,7 @@ namespace dots::type
 		bool greater(const Typeless& lhs, const Typeless& rhs) const override;
 		bool greaterEqual(const Typeless& lhs, const Typeless& rhs) const override;
 
+		size_t areaOffset() const;
 		size_t numSubStructs() const;
 
 		bool usesDynamicMemory() const override;
@@ -113,11 +114,12 @@ namespace dots::type
 
 	private:
 
-		void flatPropertyDescriptors(size_t previousOffset, size_t previousSize, property_descriptor_container_t& flatPropertyDescriptors) const;
+		void flatPropertyDescriptors(PropertyOffset<> previousOffset, size_t previousSize, property_descriptor_container_t& flatPropertyDescriptors) const;
 		void propertyDescriptorPath(property_descriptor_path_t& path, std::string_view propertyPath) const;
 
 		uint8_t m_flags;
 		property_descriptor_container_t m_propertyDescriptors;
+		size_t m_areaOffset;
 		PropertySet m_properties;
 		PropertySet m_keyProperties;
 		size_t m_numSubStructs;
@@ -132,12 +134,12 @@ namespace dots::type
 		static_assert(std::is_base_of_v<Struct, T>);
 
 		StructDescriptor(std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptor) :
-			StaticDescriptor<T, StructDescriptor<Typeless>>(std::move(name), flags, propertyDescriptor, sizeof(T), alignof(T))
+			StaticDescriptor<T, StructDescriptor<Typeless>>(std::move(name), flags, propertyDescriptor, sizeof(const StructDescriptor<>*), sizeof(T), alignof(T))
 		{
 			/* do nothing */
 		}
-		StructDescriptor(std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptor, size_t size, size_t alignment) :
-			StaticDescriptor<T, StructDescriptor<Typeless>>(std::move(name), flags, propertyDescriptor, size, alignment)
+		StructDescriptor(std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptor, size_t areaOffset, size_t size, size_t alignment) :
+			StaticDescriptor<T, StructDescriptor<Typeless>>(std::move(name), flags, propertyDescriptor, areaOffset, size, alignment)
 		{
 			/* do nothing */
 		}

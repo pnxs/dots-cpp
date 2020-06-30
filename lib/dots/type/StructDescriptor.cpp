@@ -4,10 +4,11 @@
 #include <dots/type/DynamicStruct.h>
 namespace dots::type
 {
-	StructDescriptor<Typeless, void>::StructDescriptor(std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptors, size_t size, size_t alignment) :
+	StructDescriptor<Typeless, void>::StructDescriptor(std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptors, size_t areaOffset, size_t size, size_t alignment) :
 		Descriptor<Typeless>(Type::Struct, std::move(name), size, alignment),
 		m_flags(flags),
 		m_propertyDescriptors(propertyDescriptors),
+	    m_areaOffset(areaOffset),
 	    m_numSubStructs(0)
 	{
 		for (const PropertyDescriptor& propertyDescriptor : m_propertyDescriptors)
@@ -131,7 +132,12 @@ namespace dots::type
 		return greaterEqual(lhs.to<Struct>(), rhs.to<Struct>(), PropertySet::All);
 	}
 
-	size_t StructDescriptor<Typeless, void>::numSubStructs() const
+    size_t StructDescriptor<Typeless, void>::areaOffset() const
+    {
+		return m_areaOffset;
+    }
+
+    size_t StructDescriptor<Typeless, void>::numSubStructs() const
     {
 		return m_numSubStructs;
     }
@@ -246,7 +252,7 @@ namespace dots::type
 				const auto& subStructDescriptor = static_cast<const StructDescriptor&>(propertyDescriptor.valueDescriptor());
 				const PropertyDescriptor& flatPropertyDescriptor = flatPropertyDescriptors.emplace_back(propertyDescriptor.valueDescriptorPtr(), propertyDescriptor.name(), propertyDescriptor.tag(), propertyDescriptor.isKey(), PropertyOffset<>{ subStructDescriptor.alignment(), previousOffset, previousSize });
 				previousOffset = flatPropertyDescriptor.offset();
-			    previousSize = sizeof(DynamicStruct);
+			    previousSize = subStructDescriptor.areaOffset();
 
 				previousOffset = PropertyOffset<>{ alignof(PropertyArea), previousOffset, previousSize };
 			    previousSize = sizeof(PropertyArea);
