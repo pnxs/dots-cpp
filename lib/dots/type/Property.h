@@ -121,7 +121,7 @@ namespace dots::type
 
 		bool isValid() const
 		{
-			return metadata().set() <= validProperties();
+			return static_cast<const Derived&>(*this).derivedIsValid();
 		}
 
 		template <bool AssertInvalidity = true>
@@ -147,7 +147,7 @@ namespace dots::type
 			{
 				if (isValid())
 				{
-					throw std::runtime_error{ std::string{ "attempt to construct already valid property: " } + metadata().name().data() };
+					throw std::runtime_error{ "attempt to construct already valid property: " + descriptor().name() };
 				}
 			}
 
@@ -190,7 +190,7 @@ namespace dots::type
 		{
 			if (!isValid())
 			{
-				throw std::runtime_error{ std::string{ "attempt to access invalid property: " } + metadata().name().data() };
+				throw std::runtime_error{ "attempt to access invalid property: " + descriptor().name() };
 			}
 
 			return storage();
@@ -250,7 +250,7 @@ namespace dots::type
 			{
 				if (!isValid())
 				{
-					throw std::runtime_error{ std::string{ "attempt to assign invalid property: " } + metadata().name().data() };
+					throw std::runtime_error{ "attempt to assign invalid property: " + descriptor().name() };
 				}
 			}
 
@@ -420,11 +420,6 @@ namespace dots::type
 			return !less(rhs);
 		}
 
-		constexpr const PropertyMetadata<T>& metadata() const
-		{
-			return static_cast<const Derived&>(*this).derivedMetadata();
-		}
-
 		constexpr const PropertyDescriptor& descriptor() const
 		{
 			return static_cast<const Derived&>(*this).derivedDescriptor();
@@ -432,7 +427,7 @@ namespace dots::type
 
 		constexpr bool isPartOf(const PropertySet& propertySet) const
 		{
-			return metadata().set() <= propertySet;
+			return descriptor().set() <= propertySet;
 		}
 
 		constexpr T& storage()
@@ -454,27 +449,63 @@ namespace dots::type
 
 		constexpr Property& operator = (const Property& rhs) = default;
 		constexpr Property& operator = (Property&& rhs) = default;
+		
 
 	private:
 
+		size_t offset() const
+		{
+		    return static_cast<const Derived&>(*this).derivedOffset();
+		}
+
 		const PropertySet& validProperties() const
 		{
-			return PropertyArea::GetArea(storage(), metadata().offset()).validProperties();
+			return static_cast<const Derived&>(*this).derivedValidProperties();
 		}
 
 		PropertySet& validProperties()
 		{
 			return const_cast<PropertySet&>(std::as_const(*this).validProperties());
-		}		
+		}
 
 		void setValid()
 		{
-			validProperties() += metadata().set();
+			static_cast<Derived&>(*this).derivedSetValid();
 		}
 
 		void setInvalid()
 		{
-			validProperties() -= metadata().set();
+			static_cast<Derived&>(*this).derivedSetInvalid();
+		}
+
+		size_t derivedOffset() const
+		{
+			return descriptor().offset();
+		}
+
+		const PropertySet& derivedValidProperties() const
+		{
+			return PropertyArea::GetArea(storage(), offset()).validProperties();
+		}
+
+		PropertySet& derivedValidProperties()
+		{
+			return const_cast<PropertySet&>(std::as_const(*this).derivedValidProperties());
+		}
+
+		bool derivedIsValid() const
+		{
+			return descriptor().set() <= validProperties();
+		}
+
+		void derivedSetValid()
+		{
+			validProperties() += descriptor().set();
+		}
+
+		void derivedSetInvalid()
+		{
+			validProperties() -= descriptor().set();
 		}
 	};
 

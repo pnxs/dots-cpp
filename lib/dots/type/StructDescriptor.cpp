@@ -230,43 +230,36 @@ namespace dots::type
 		{
 			if (m_flatPropertyDescriptors.empty())
 		    {
-				flatPropertyDescriptors(0, sizeof(PropertyArea), m_flatPropertyDescriptors);
+				flatPropertyDescriptors(PropertyOffset<>{ std::in_place, 0 }, sizeof(PropertyArea), m_flatPropertyDescriptors);
 		    }
 
 			return m_flatPropertyDescriptors;
 		}
     }
 
-	void StructDescriptor<Typeless, void>::flatPropertyDescriptors(size_t previousOffset, size_t previousSize, property_descriptor_container_t& flatPropertyDescriptors) const
+	void StructDescriptor<Typeless, void>::flatPropertyDescriptors(PropertyOffset<> previousOffset, size_t previousSize, property_descriptor_container_t& flatPropertyDescriptors) const
     {
-		auto aligned_offset = [](size_t previousOffset, size_t previousSize, size_t alignment)
-		{
-			size_t currentOffset = previousOffset + previousSize;
-			size_t alignedOffset = currentOffset + (alignment - currentOffset % alignment) % alignment;
-
-			return alignedOffset;
-		};
-
 		for (const PropertyDescriptor& propertyDescriptor : m_propertyDescriptors)
 		{
 			if (propertyDescriptor.valueDescriptor().type() == Type::Struct)
 			{
-				const PropertyDescriptor& flatPropertyDescriptor = flatPropertyDescriptors.emplace_back(propertyDescriptor.valueDescriptorPtr(), propertyDescriptor.name(), aligned_offset(previousOffset, previousSize, propertyDescriptor.valueDescriptor().alignment()), propertyDescriptor.tag(), propertyDescriptor.isKey());
+				const auto& subStructDescriptor = static_cast<const StructDescriptor&>(propertyDescriptor.valueDescriptor());
+				const PropertyDescriptor& flatPropertyDescriptor = flatPropertyDescriptors.emplace_back(propertyDescriptor.valueDescriptorPtr(), propertyDescriptor.name(), propertyDescriptor.tag(), propertyDescriptor.isKey(), PropertyOffset<>{ subStructDescriptor.alignment(), previousOffset, previousSize });
 				previousOffset = flatPropertyDescriptor.offset();
 			    previousSize = sizeof(DynamicStruct);
 
-				previousOffset = aligned_offset(previousOffset, previousSize, alignof(PropertyArea));
+				previousOffset = PropertyOffset<>{ alignof(PropertyArea), previousOffset, previousSize };
 			    previousSize = sizeof(PropertyArea);
 
-				static_cast<const StructDescriptor&>(propertyDescriptor.valueDescriptor()).flatPropertyDescriptors(previousOffset, previousSize, flatPropertyDescriptors);
+				subStructDescriptor.flatPropertyDescriptors(previousOffset, previousSize, flatPropertyDescriptors);
 				previousOffset = flatPropertyDescriptors.back().offset();
-				previousSize = flatPropertyDescriptors.back().metadata().size();
+				previousSize = flatPropertyDescriptors.back().valueDescriptor().size();
 			}
 			else
 			{
-			    const PropertyDescriptor& flatPropertyDescriptor = flatPropertyDescriptors.emplace_back(propertyDescriptor.valueDescriptorPtr(), propertyDescriptor.name(), aligned_offset(previousOffset, previousSize, propertyDescriptor.valueDescriptor().alignment()), propertyDescriptor.tag(), propertyDescriptor.isKey());
-			    previousOffset = flatPropertyDescriptor.metadata().offset();
-			    previousSize = flatPropertyDescriptor.metadata().size();
+			    const PropertyDescriptor& flatPropertyDescriptor = flatPropertyDescriptors.emplace_back(propertyDescriptor.valueDescriptorPtr(), propertyDescriptor.name(), propertyDescriptor.tag(), propertyDescriptor.isKey(), PropertyOffset<>{ propertyDescriptor.valueDescriptor().alignment(), previousOffset, previousSize });
+			    previousOffset = flatPropertyDescriptor.offset();
+			    previousSize = flatPropertyDescriptor.valueDescriptor().size();
 			}
 		}
     }
@@ -277,9 +270,9 @@ namespace dots::type
 		propertyDescriptorPath(path, propertyPath);
 
 		return path;
-    }
+	}
 
-	void StructDescriptor<Typeless, void>::propertyDescriptorPath(property_descriptor_path_t& path, std::string_view propertyPath) const
+    void StructDescriptor<Typeless, void>::propertyDescriptorPath(property_descriptor_path_t& path, std::string_view propertyPath) const
     {
 		std::string_view::size_type delimiterPos = propertyPath.find_first_of('.');
 		std::string_view propertyName = propertyPath.substr(0, delimiterPos);

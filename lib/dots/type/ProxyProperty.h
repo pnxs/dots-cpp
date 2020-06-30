@@ -50,11 +50,6 @@ namespace dots::type
 			return const_cast<ProxyProperty&>(*this).derivedValue();
 		}
 
-		const PropertyMetadata<T>& derivedMetadata() const
-		{
-			return static_cast<const PropertyMetadata<T>&>(m_descriptor->metadata());
-		}
-
 		const PropertyDescriptor& derivedDescriptor() const
 		{
 			return *m_descriptor;

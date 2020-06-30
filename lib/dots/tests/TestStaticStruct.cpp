@@ -10,19 +10,28 @@ namespace dots::types
     {
         struct p1_t : type::StaticProperty<bool_t, p1_t>
         {
-            static constexpr auto Metadata = type::PropertyMetadata<types::bool_t>{ "p1", 1, true};
+			static constexpr auto Offset = type::PropertyOffset<bool_t>::Make();
+			inline static auto Descriptor = type::PropertyDescriptor{ type::Descriptor<bool_t>::InstancePtr(), "p1", 1, true, Offset };
         };
 
         struct p2_t : type::StaticProperty<bool_t, p2_t>
         {
-            static constexpr auto Metadata = type::PropertyMetadata<types::bool_t>{ "p2", 2, false, p1_t::Metadata };
+			static constexpr auto Offset = type::PropertyOffset<bool_t>::Make(p1_t::Offset);
+			inline static auto Descriptor = type::PropertyDescriptor{ type::Descriptor<bool_t>::InstancePtr(), "p2", 2, false, Offset };
+        };
+
+		struct p3_t : type::StaticProperty<float64_t, p3_t>
+        {
+			static constexpr auto Offset = type::PropertyOffset<float64_t>::Make(p2_t::Offset);
+			inline static auto Descriptor = type::PropertyDescriptor{ type::Descriptor<float64_t>::InstancePtr(), "p3", 3, false, Offset };
         };
 
         using p1_i = type::PropertyInitializer<p1_t>;
         using p2_i = type::PropertyInitializer<p2_t>;
+		using p3_i = type::PropertyInitializer<p3_t>;
 
         using _key_properties_t = std::tuple<p1_t*>;
-        using _properties_t     = std::tuple<p1_t*, p2_t*>;
+        using _properties_t     = std::tuple<p1_t*, p2_t*, p3_t*>;
 
         TestSubStruct() = default;
         TestSubStruct(const TestSubStruct& other) = default;
@@ -49,6 +58,10 @@ namespace dots::types
             {
                 return p2;
             }
+			else if constexpr (std::is_same_v<P, p3_t>)
+            {
+                return p3;
+            }
             else
             {
                 static_assert(std::is_same_v<P, void>, "P is not a property of struct type DotsTestStruct");
@@ -63,33 +76,52 @@ namespace dots::types
 
         p1_t p1;
         p2_t p2;
+		p3_t p3;
     };
+}
 
+namespace dots::type
+{
+    template <>
+    struct Descriptor<types::TestSubStruct> : StructDescriptor<types::TestSubStruct>
+    {
+        Descriptor() :
+            StructDescriptor("TestSubStruct", Cached, types::TestSubStruct::_MakePropertyDescriptors()){}
+    };
+}
+
+namespace dots::types
+{
     struct TestStruct : type::StaticStruct<TestStruct>
     {
         struct intProperty_t : type::StaticProperty<int32_t, intProperty_t>
         {
-        	static constexpr auto Metadata = type::PropertyMetadata<types::int32_t>{ "intProperty", 1, true };
+			static constexpr auto Offset = type::PropertyOffset<int32_t>::Make();
+			inline static auto Descriptor = type::PropertyDescriptor{ type::Descriptor<int32_t>::InstancePtr(), "intProperty", 1, true, Offset };
         };
     	
         struct stringProperty_t : type::StaticProperty<string_t, stringProperty_t>
         {
-        	static constexpr auto Metadata = type::PropertyMetadata<types::string_t>{ "stringProperty", 2, false, intProperty_t::Metadata };
+			static constexpr auto Offset = type::PropertyOffset<string_t>::Make(intProperty_t::Offset);
+			inline static auto Descriptor = type::PropertyDescriptor{ type::Descriptor<string_t>::InstancePtr(), "stringProperty", 2, false, Offset };
         };
 
     	struct boolProperty_t : type::StaticProperty<bool_t, boolProperty_t>
         {
-    		static constexpr auto Metadata = type::PropertyMetadata<types::bool_t>{ "boolProperty", 3, false, stringProperty_t::Metadata };
+			static constexpr auto Offset = type::PropertyOffset<bool_t>::Make(stringProperty_t::Offset);
+			inline static auto Descriptor = type::PropertyDescriptor{ type::Descriptor<bool_t>::InstancePtr(), "boolProperty", 3, false, Offset };
         };
     	
-        struct floatVectorProperty_t : type::StaticProperty<vector_t<types::float32_t>, floatVectorProperty_t>
+        struct floatVectorProperty_t : type::StaticProperty<vector_t<float32_t>, floatVectorProperty_t>
         {
-        	static constexpr auto Metadata = type::PropertyMetadata<types::vector_t<types::float32_t>>{ "floatVectorProperty", 4, false, boolProperty_t::Metadata };
+			static constexpr auto Offset = type::PropertyOffset<vector_t<float32_t>>::Make(boolProperty_t::Offset);
+			inline static auto Descriptor = type::PropertyDescriptor{ type::Descriptor<vector_t<float32_t>>::InstancePtr(), "floatVectorProperty", 4, false, Offset };
         };
 
         struct subStruct_t : type::StaticProperty<TestSubStruct, subStruct_t>
         {
-            static constexpr auto Metadata = type::PropertyMetadata<TestSubStruct>{ "subStruct", 5, false, floatVectorProperty_t::Metadata };
+			static constexpr auto Offset = type::PropertyOffset<TestSubStruct>::Make(floatVectorProperty_t::Offset);
+			inline static auto Descriptor = type::PropertyDescriptor{ type::Descriptor<TestSubStruct>::InstancePtr(), "subStruct", 5, false, Offset };
         };
 
     	using intProperty_i = type::PropertyInitializer<intProperty_t>;
@@ -160,13 +192,6 @@ namespace dots::types
 
 namespace dots::type
 {
-    template <>
-    struct Descriptor<types::TestSubStruct> : StructDescriptor<types::TestSubStruct>
-    {
-        Descriptor() :
-            StructDescriptor("TestSubStruct", Cached, types::TestSubStruct::_MakePropertyDescriptors()){}
-    };
-
 	template <>
 	struct Descriptor<types::TestStruct> : StructDescriptor<types::TestStruct>
 	{
@@ -187,10 +212,17 @@ TEST_F(TestStaticStruct, PropertyOffsetsMatchActualOffsets)
 	TestStruct sut;
 	
 	auto determine_offset = [&](const auto& property) { return reinterpret_cast<size_t>(&property) - reinterpret_cast<size_t>(&sut._propertyArea()); };
-	EXPECT_EQ(TestStruct::intProperty_t::Offset(), determine_offset(sut.intProperty));
-	EXPECT_EQ(TestStruct::stringProperty_t::Offset(), determine_offset(sut.stringProperty));
-	EXPECT_EQ(TestStruct::boolProperty_t::Offset(), determine_offset(sut.boolProperty));
-	EXPECT_EQ(TestStruct::floatVectorProperty_t::Offset(), determine_offset(sut.floatVectorProperty));
+	EXPECT_EQ(TestStruct::intProperty_t::Offset, determine_offset(sut.intProperty));
+	EXPECT_EQ(TestStruct::stringProperty_t::Offset, determine_offset(sut.stringProperty));
+	EXPECT_EQ(TestStruct::boolProperty_t::Offset, determine_offset(sut.boolProperty));
+	EXPECT_EQ(TestStruct::floatVectorProperty_t::Offset, determine_offset(sut.floatVectorProperty));
+	EXPECT_EQ(TestStruct::subStruct_t::Offset, determine_offset(sut.subStruct));
+
+	TestSubStruct sutSub;
+	auto determine_sub_offset = [&](const auto& property) { return reinterpret_cast<size_t>(&property) - reinterpret_cast<size_t>(&sutSub._propertyArea()); };
+	EXPECT_EQ(TestSubStruct::p1_t::Offset, determine_sub_offset(sutSub.p1));
+	EXPECT_EQ(TestSubStruct::p2_t::Offset, determine_sub_offset(sutSub.p2));
+	EXPECT_EQ(TestSubStruct::p3_t::Offset, determine_sub_offset(sutSub.p3));
 }
 
 TEST_F(TestStaticStruct, PropertiesHaveExpectedTags)
