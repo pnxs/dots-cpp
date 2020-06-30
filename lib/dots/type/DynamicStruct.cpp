@@ -157,17 +157,10 @@ namespace dots::type
 	
 	void DynamicStruct::_swap(DynamicStruct& other, const PropertySet& includedProperties/* = PropertySet::All*/)
 	{
-		if (includedProperties == PropertySet::All)
-		{
-			m_propertyArea.swap(other.m_propertyArea);
-		}
-		else
-		{
-			for (auto&[propertyThis, propertyOther] : _propertyRange(other, includedProperties))
-	        {
-	            propertyThis.swap(propertyOther);
-	        }
-		}
+		for (auto&[propertyThis, propertyOther] : _propertyRange(other, includedProperties))
+	    {
+	        propertyThis.swap(propertyOther);
+	    }
 	}
 	
 	void DynamicStruct::_clear(const PropertySet& includedProperties/* = PropertySet::All*/)
