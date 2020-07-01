@@ -109,26 +109,4 @@ namespace dots::type
     {
         remove(*this);
     }
-
-    proxy_property_iterator Struct::_get(std::string_view propertyPath, bool constructIfNotValid/* = true*/)
-    {
-        property_descriptor_path_t path = _desc->propertyDescriptorPath(propertyPath);
-
-        std::optional<proxy_property_iterator> it{ std::in_place, _propertyArea(), _propertyDescriptors(), path.front() };
-        
-        for (size_t i = 1; i < path.size(); ++i)
-        {
-            auto& property = **it;
-
-            if (!property.isValid() && !constructIfNotValid)
-            {
-                throw std::runtime_error{ "property in path is not valid: '" + property.descriptor().name() + "'" };
-            }
-
-            auto& instance = (*it)->constructOrValue().to<Struct>();
-            it.emplace(instance._propertyArea(), instance._propertyDescriptors(), path[i]);
-        }
-
-        return *it;
-    }
 }

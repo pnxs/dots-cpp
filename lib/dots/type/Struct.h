@@ -46,8 +46,6 @@ namespace dots::type
 		void _publish(const PropertySet& includedProperties = PropertySet::All, bool remove = false) const;
 		void _remove() const;
 
-        proxy_property_iterator _get(std::string_view propertyPath, bool constructIfNotValid = true);
-
         template <bool AllowSubset = true>
         bool _hasProperties(const PropertySet& properties) const
         {

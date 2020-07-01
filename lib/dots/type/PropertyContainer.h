@@ -289,6 +289,18 @@ namespace dots::type
 		    throw std::runtime_error{ "unknown composed property name '" + std::string{ propertyPath } + "'" };
 		    
 		}
+
+		template <typename T = Typeless>
+		ProxyProperty<T> _get(const property_path_t& propertyPath)
+        {
+			return ProxyProperty<T>{ _propertyArea(), propertyPath };
+        }
+
+		template <typename T = Typeless>
+		ProxyProperty<T> _get(std::string_view propertyPath)
+        {
+			return _get<T>(_path(propertyPath));
+        }
     };
 
 	template <typename Derived>
