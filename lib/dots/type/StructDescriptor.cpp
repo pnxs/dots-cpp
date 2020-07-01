@@ -312,6 +312,32 @@ namespace dots::type
 		}
     }
 
+	const std::vector<property_path_t>& StructDescriptor<Typeless, void>::propertyPaths() const
+    {
+		if (m_propertyPaths.empty())
+		{
+		    for (const PropertyDescriptor& propertyDescriptor : m_propertyDescriptors)
+		    {
+				m_propertyPaths.emplace_back().emplace_back(propertyDescriptor);
+
+				if (propertyDescriptor.valueDescriptor().type() == Type::Struct)
+				{
+					const auto& subStructDescriptor = static_cast<const StructDescriptor<>&>(propertyDescriptor.valueDescriptor());
+					const PropertyDescriptor& subAreaPropertyDescriptor  = m_subAreaPropertyDescriptors.emplace_back(Descriptor<PropertySet>::InstancePtr(), propertyDescriptor.name(), propertyDescriptor.tag(), false, propertyDescriptor.offset() + subStructDescriptor.areaOffset());
+
+					for (const property_path_t& subPropertyPaths : subStructDescriptor.propertyPaths())
+					{
+					    property_path_t& propertyPath = m_propertyPaths.emplace_back();
+						propertyPath.emplace_back(subAreaPropertyDescriptor);
+						propertyPath.insert(propertyPath.end(), subPropertyPaths.begin(), subPropertyPaths.end());
+					}
+				}
+		    }
+		}
+
+		return m_propertyPaths;
+    }
+
     const PropertySet& StructDescriptor<Typeless, void>::properties() const
 	{
 		return m_properties;

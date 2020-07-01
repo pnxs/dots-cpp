@@ -47,4 +47,5 @@ namespace dots::type
 	using property_descriptor_container_t = std::vector<PropertyDescriptor>;
 	using partial_property_descriptor_container_t = std::vector<std::reference_wrapper<const PropertyDescriptor>>;
 	using property_descriptor_path_t = std::vector<property_descriptor_container_t::const_iterator>;
+	using property_path_t = partial_property_descriptor_container_t;
 }

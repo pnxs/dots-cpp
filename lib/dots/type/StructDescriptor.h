@@ -1,4 +1,5 @@
 #pragma once
+#include <deque>
 #include <dots/type/Descriptor.h>
 #include <dots/type/StaticDescriptor.h>
 #include <dots/type/Property.h>
@@ -93,6 +94,7 @@ namespace dots::type
 
 		const property_descriptor_container_t& flatPropertyDescriptors() const;
 		property_descriptor_path_t propertyDescriptorPath(std::string_view propertyPath) const;
+		const std::vector<property_path_t>& propertyPaths() const;
 		
 		const PropertySet& properties() const;
 		const PropertySet& keyProperties() const;
@@ -125,6 +127,8 @@ namespace dots::type
 		size_t m_numSubStructs;
 		PropertySet m_dynamicMemoryProperties;
 		mutable property_descriptor_container_t m_flatPropertyDescriptors;
+		mutable std::deque<PropertyDescriptor> m_subAreaPropertyDescriptors;
+		mutable std::vector<property_path_t> m_propertyPaths;
 		mutable const types::StructDescriptorData* m_descriptorData = nullptr;
 	};
 
