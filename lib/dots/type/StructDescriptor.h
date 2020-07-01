@@ -93,7 +93,6 @@ namespace dots::type
 		partial_property_descriptor_container_t propertyDescriptors(const PropertySet& properties) const;
 
 		const property_descriptor_container_t& flatPropertyDescriptors() const;
-		property_descriptor_path_t propertyDescriptorPath(std::string_view propertyPath) const;
 		const std::vector<property_path_t>& propertyPaths() const;
 		
 		const PropertySet& properties() const;
@@ -117,7 +116,6 @@ namespace dots::type
 	private:
 
 		void flatPropertyDescriptors(PropertyOffset<> previousOffset, size_t previousSize, property_descriptor_container_t& flatPropertyDescriptors) const;
-		void propertyDescriptorPath(property_descriptor_path_t& path, std::string_view propertyPath) const;
 
 		uint8_t m_flags;
 		property_descriptor_container_t m_propertyDescriptors;

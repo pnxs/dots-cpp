@@ -270,48 +270,6 @@ namespace dots::type
 		}
     }
 
-    property_descriptor_path_t StructDescriptor<Typeless, void>::propertyDescriptorPath(std::string_view propertyPath) const
-    {
-		property_descriptor_path_t path;
-		propertyDescriptorPath(path, propertyPath);
-
-		return path;
-	}
-
-    void StructDescriptor<Typeless, void>::propertyDescriptorPath(property_descriptor_path_t& path, std::string_view propertyPath) const
-    {
-		std::string_view::size_type delimiterPos = propertyPath.find_first_of('.');
-		std::string_view propertyName = propertyPath.substr(0, delimiterPos);
-		auto it = std::find_if(m_propertyDescriptors.begin(), m_propertyDescriptors.end(), [&](const PropertyDescriptor& propertyDescriptor){ return propertyDescriptor.name() == propertyName; });
-
-		if (it == m_propertyDescriptors.end())
-		{
-			throw std::runtime_error{ "there is no property with name '" + std::string{ propertyName } + "'" };
-		}
-		
-		path.emplace_back(it);
-
-		if (delimiterPos != std::string_view::npos)
-		{
-			const PropertyDescriptor& propertyDescriptor = *it;
-
-			if (propertyDescriptor.valueDescriptor().type() != Type::Struct)
-			{
-				throw std::runtime_error{ "property is not a substruct '" + std::string{ propertyName } + "'" };
-			}
-
-			std::string_view::size_type subPropertyPathPos = delimiterPos + 1;
-
-			if (subPropertyPathPos > propertyPath.size())
-			{
-			    throw std::runtime_error{ "invalid composed property name '" + std::string{ propertyPath } + "'" };
-			}
-
-			std::string_view subPropertyPath = propertyPath.substr(subPropertyPathPos);
-			static_cast<const StructDescriptor<>&>(propertyDescriptor.valueDescriptor()).propertyDescriptorPath(path, subPropertyPath);
-		}
-    }
-
 	const std::vector<property_path_t>& StructDescriptor<Typeless, void>::propertyPaths() const
     {
 		if (m_propertyPaths.empty())
