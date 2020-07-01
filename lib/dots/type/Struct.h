@@ -216,6 +216,11 @@ namespace dots::type
     		return _desc->propertyDescriptors();
     	}
 
+        const std::vector<property_path_t>& derivedPropertyPaths() const
+    	{
+    		return _desc->propertyPaths();
+    	}
+
         template <typename T>
         static decltype(auto) ToRef(T&& t)
         {

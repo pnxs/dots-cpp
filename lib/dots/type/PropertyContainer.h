@@ -59,6 +59,11 @@ namespace dots::type
 		{
 			return static_cast<const Derived&>(*this).derivedPropertyDescriptors();
 		}
+
+		constexpr const std::vector<property_path_t>& _propertyPaths() const
+		{
+			return static_cast<const Derived&>(*this).derivedPropertyPaths();
+		}
 		
 	    proxy_property_iterator _begin(const PropertySet& includedProperties = PropertySet::All)
 	    {
@@ -242,6 +247,47 @@ namespace dots::type
 			{
 			    return property.descriptor().name() == name;
 			});
+		}
+
+		const property_path_t& _path(std::string_view propertyPath) const
+		{
+            std::vector<std::string_view> propertyNames;
+
+		    for (std::string_view propertyPath_ = propertyPath;;)
+		    {
+			    std::string_view::size_type delimiterPos = propertyPath_.find_first_of('.');
+		        propertyNames.emplace_back(propertyPath_.substr(0, delimiterPos));
+
+			    if (delimiterPos == std::string_view::npos)
+			    {
+			        break;
+			    }
+			    else
+			    {
+			        if (++delimiterPos > propertyPath_.size())
+		            {
+			            throw std::runtime_error{ "invalid composed property name '" + std::string{ propertyPath } + "'" };
+		            }
+
+				    propertyPath_ = propertyPath_.substr(delimiterPos);
+			    }
+		    }
+
+		    for (const property_path_t& path : _propertyPaths())
+		    {
+			    auto equal_names = [](const PropertyDescriptor& propertyDescriptor, std::string_view propertyName)
+			    {
+			        return propertyDescriptor.name() == propertyName;
+			    };
+
+		        if (std::equal(path.begin(), path.end(), propertyNames.begin(), propertyNames.end(), equal_names))
+		        {
+		            return path;
+		        }
+		    }
+
+		    throw std::runtime_error{ "unknown composed property name '" + std::string{ propertyPath } + "'" };
+		    
 		}
     };
 
