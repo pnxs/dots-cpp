@@ -1,4 +1,5 @@
 #include <dots/type/DynamicStruct.h>
+#include <dots/type/FundamentalTypes.h>
 #include <memory>
 
 namespace dots::type

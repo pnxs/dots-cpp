@@ -152,6 +152,8 @@ namespace dots::type
 				}
 			}
 
+			setValid();
+
 			static_assert(!IsTypelessOrDynamic || sizeof...(Args) <= 1, "typeless construct only supports a single argument");
 			if constexpr (!IsTypelessOrDynamic)
 			{
@@ -165,8 +167,6 @@ namespace dots::type
 			{
 				descriptor().valueDescriptor().construct(storage());
 			}
-			
-			setValid();
 
 			return storage();
 		}
@@ -256,6 +256,8 @@ namespace dots::type
 				}
 			}
 
+			setValid();
+
 			static_assert(!IsTypelessOrDynamic || sizeof...(Args) <= 1, "typeless assignment only supports a single argument");
 			if constexpr (!IsTypelessOrDynamic)
 			{
@@ -269,8 +271,6 @@ namespace dots::type
 			{
 				descriptor().valueDescriptor().assign(storage());
 			}
-			
-			setValid();
 
 			return storage();
 		}
