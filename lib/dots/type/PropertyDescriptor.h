@@ -27,6 +27,7 @@ namespace dots::type
 		PropertySet set() const;
 
 		PropertyOffset<> offset() const;
+		std::optional<PropertyOffset<>> subAreaOffset() const;
 
 		[[deprecated("only available for backwards compatibility and should be replaced by property iteration")]]
 		char* address(void* p) const;
@@ -42,6 +43,7 @@ namespace dots::type
 		bool m_isKey;
 		PropertySet m_set;
 		PropertyOffset<> m_offset;
+		std::optional<PropertyOffset<>> m_subAreaOffset;
 	};
 
 	using property_descriptor_container_t = std::vector<PropertyDescriptor>;

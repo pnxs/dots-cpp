@@ -12,7 +12,10 @@ namespace dots::type
 		m_set{ PropertySet::FromIndex(m_tag) },
 		m_offset{ offset == std::nullopt ? PropertyOffset<>{ descriptor->alignment() } : *offset }
 	{
-		/* do nothing */
+		if (m_descriptor->type() == Type::Struct)
+		{
+		    m_subAreaOffset.emplace(std::in_place, static_cast<const StructDescriptor<>&>(*m_descriptor).areaOffset());
+		}
 	}
 
     const std::shared_ptr<Descriptor<>>& PropertyDescriptor::valueDescriptorPtr() const
@@ -50,7 +53,12 @@ namespace dots::type
 		return m_offset;
 	}
 
-	char* PropertyDescriptor::address(void* p) const
+    std::optional<PropertyOffset<>> PropertyDescriptor::subAreaOffset() const
+    {
+		return m_subAreaOffset;
+    }
+
+    char* PropertyDescriptor::address(void* p) const
 	{
 		return reinterpret_cast<char*>(&reinterpret_cast<Struct*>(p)->_propertyArea()) + offset();
 	}

@@ -74,11 +74,11 @@ namespace dots::type
 
 				    for (size_t i = 0; i < path.size() - 1; ++i)
 				    {
-					    ProxyProperty<PropertySet> subArea{ *area, path[i].get() };
+					    ProxyProperty<> subProperty{ *area, path[i].get() };
 
-					    if (subArea.isValid())
+					    if (subProperty.isValid())
 					    {
-					        area = reinterpret_cast<PropertyArea*>(&subArea.value());
+							area = reinterpret_cast<PropertyArea*>(reinterpret_cast<std::byte*>(&subProperty.storage()) + *subProperty.descriptor().subAreaOffset());
 					    }
 					    else
 					    {
@@ -109,8 +109,8 @@ namespace dots::type
 
 				    for (size_t i = 0; i < path.size() - 1; ++i)
 				    {
-					    ProxyProperty<PropertySet> subArea{ *area, path[i].get() };
-						area = reinterpret_cast<PropertyArea*>(&subArea.constructOrValue());
+					    ProxyProperty<> subProperty{ *area, path[i].get() };
+						area = reinterpret_cast<PropertyArea*>(reinterpret_cast<std::byte*>(&subProperty.constructOrValue()) + *subProperty.descriptor().subAreaOffset());
 				    }
 
 			        return area->validProperties();
@@ -153,11 +153,16 @@ namespace dots::type
 			else
 			{
 				size_t offset = 0;
+				const auto& path = *std::get<const property_path_t*>(m_path);
 
-			    for (const PropertyDescriptor& descriptor: *std::get<const property_path_t*>(m_path))
+			    for (size_t i = 0; i < path.size() - 1; ++i)
 			    {
+					const PropertyDescriptor& descriptor = path[i];
 			        offset += descriptor.offset();
+					offset += *descriptor.subAreaOffset();
 			    }
+
+				offset += path[path.size() - 1].get().offset();
 
 			    return m_area->getProperty<T>(offset);
 			}

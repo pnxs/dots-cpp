@@ -280,13 +280,10 @@ namespace dots::type
 
 				if (propertyDescriptor.valueDescriptor().type() == Type::Struct)
 				{
-					const auto& subStructDescriptor = static_cast<const StructDescriptor<>&>(propertyDescriptor.valueDescriptor());
-					const PropertyDescriptor& subAreaPropertyDescriptor  = m_subAreaPropertyDescriptors.emplace_back(Descriptor<PropertySet>::InstancePtr(), propertyDescriptor.name(), propertyDescriptor.tag(), false, propertyDescriptor.offset() + subStructDescriptor.areaOffset());
-
-					for (const property_path_t& subPropertyPaths : subStructDescriptor.propertyPaths())
+					for (const property_path_t& subPropertyPaths : static_cast<const StructDescriptor<>&>(propertyDescriptor.valueDescriptor()).propertyPaths())
 					{
 					    property_path_t& propertyPath = m_propertyPaths.emplace_back();
-						propertyPath.emplace_back(subAreaPropertyDescriptor);
+						propertyPath.emplace_back(propertyDescriptor);
 						propertyPath.insert(propertyPath.end(), subPropertyPaths.begin(), subPropertyPaths.end());
 					}
 				}
