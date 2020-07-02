@@ -218,6 +218,58 @@ TEST_F(TestDynamicStruct, GetPropertyReturnsSubProperty)
 	EXPECT_EQ(sut._get("subStructProperty.subSubStructProperty.subSubDoubleProperty").descriptor().name(), "subSubDoubleProperty");
 }
 
+TEST_F(TestDynamicStruct, GetPropertyReturnsSubPropertyWithExpectedValues)
+{
+    DynamicStruct sut{ *m_testDynamicStructDescriptor,
+        DynamicStruct::property_i<int32_t>{ "intProperty", 1 },
+        DynamicStruct::property_i<string_t>{ "stringProperty", "foo" },
+        DynamicStruct::property_i<vector_t<float32_t>>{ "floatVectorProperty", vector_t<float32_t>{ 3.1415f } },
+		DynamicStruct::property_i<DynamicStruct>{ "subStructProperty",
+		    DynamicStruct{ *m_testDynamicSubStructDescriptor,
+		        DynamicStruct::property_i<int64_t>{ "subIntProperty", 42 },
+		        DynamicStruct::property_i<DynamicStruct>{ "subSubStructProperty",
+		            DynamicStruct{ *m_testDynamicSubSubStructDescriptor,
+		                DynamicStruct::property_i<float64_t>{ "subSubDoubleProperty", 21.0 }
+	                }
+		        }
+            }
+	    }
+    };
+
+    EXPECT_TRUE(sut._get("intProperty").isValid());
+	EXPECT_TRUE(sut._get("stringProperty").isValid());
+	EXPECT_TRUE(sut._get("floatVectorProperty").isValid());
+	EXPECT_TRUE(sut._get("subStructProperty").isValid());
+	EXPECT_TRUE(sut._get("subStructProperty.subIntProperty").isValid());
+	EXPECT_TRUE(sut._get("subStructProperty.subSubStructProperty").isValid());
+	EXPECT_TRUE(sut._get("subStructProperty.subSubStructProperty.subSubDoubleProperty").isValid());
+
+	EXPECT_EQ(sut._get<int32_t>("intProperty"), 1);
+	EXPECT_EQ(sut._get<string_t>("stringProperty"), "foo");
+	EXPECT_EQ(sut._get<vector_t<float32_t>>("floatVectorProperty"), vector_t<float32_t>{ 3.1415f });
+	EXPECT_EQ(sut._get<int64_t>("subStructProperty.subIntProperty"), int64_t{ 42 });
+	EXPECT_EQ(sut._get<float64_t>("subStructProperty.subSubStructProperty.subSubDoubleProperty"), 21.0);
+
+	EXPECT_FALSE(sut._get("boolProperty").isValid());
+	EXPECT_FALSE(sut._get("subStructProperty.subFloatProperty").isValid());
+	EXPECT_FALSE(sut._get("subStructProperty.subSubStructProperty.subSubIntProperty").isValid());
+}
+
+TEST_F(TestDynamicStruct, GetPropertyAllowsImplicitConstructionOfPath)
+{
+    DynamicStruct sut{ *m_testDynamicStructDescriptor };
+	EXPECT_FALSE(sut._get("subStructProperty.subSubStructProperty.subSubIntProperty").isValid());
+	EXPECT_FALSE(sut._get("subStructProperty.subSubStructProperty").isValid());
+	EXPECT_FALSE(sut._get("subStructProperty").isValid());
+
+	sut._get<int64_t>("subStructProperty.subSubStructProperty.subSubIntProperty").construct(42);
+
+	EXPECT_TRUE(sut._get("subStructProperty").isValid());
+	EXPECT_TRUE(sut._get("subStructProperty.subSubStructProperty").isValid());
+	EXPECT_TRUE(sut._get("subStructProperty.subSubStructProperty.subSubIntProperty").isValid());
+	EXPECT_EQ(sut._get<int32_t>("subStructProperty.subSubStructProperty.subSubIntProperty"), 42);
+}
+
 TEST_F(TestDynamicStruct, PropertiesHaveExpectedTags)
 {
     DynamicStruct sut{ *m_testDynamicStructDescriptor };
