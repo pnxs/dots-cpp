@@ -92,6 +92,7 @@ namespace dots::type
 		const property_descriptor_container_t& propertyDescriptors() const;
 		partial_property_descriptor_container_t propertyDescriptors(const PropertySet& properties) const;
 
+		[[deprecated("use property paths instead")]]
 		const property_descriptor_container_t& flatPropertyDescriptors() const;
 		const std::vector<property_path_t>& propertyPaths() const;
 		
