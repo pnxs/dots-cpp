@@ -67,7 +67,7 @@ namespace dots::io
                 {
                     return;
                 }
-                
+
                 verifyErrorCode(ec);
 
                 // TODO: optimize once JSON serializer has been reworked
@@ -97,10 +97,10 @@ namespace dots::io
                 {
                     throw std::runtime_error{ "encountered unknown type: " + *header.typeName };
                 }
-                
+
                 type::AnyStruct instance{ *descriptor };
                 from_json(std::as_const(itInstance->value).GetObject(), instance.get());
-                
+
                 processReceive(Transmission{ std::move(header), std::move(instance) });
             }
             catch (...)
@@ -125,7 +125,7 @@ namespace dots::io
             dots::to_json(instance, writer);
         }
         writer.EndObject();
-        
+
         m_stream.write(boost::asio::buffer(std::string{ buffer.GetString() }));
     }
 }

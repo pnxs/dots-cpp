@@ -32,7 +32,7 @@ namespace dots::io
         {
             throw std::logic_error{ "both a receive and an error handler must be set" };
         }
-        
+
         m_receiveHandler = std::move(receiveHandler);
         m_errorHandler = std::move(errorHandler);
         asyncReceiveImpl();
@@ -75,7 +75,7 @@ namespace dots::io
         verifyInitialized();
         return *m_registry;
     }
-    
+
     io::Registry& Channel::registry()
     {
         verifyInitialized();
@@ -108,7 +108,7 @@ namespace dots::io
             processError(std::current_exception());
         }
     }
-    
+
     void Channel::processError(const std::exception_ptr& e)
     {
         try
@@ -118,7 +118,7 @@ namespace dots::io
         catch (const std::exception& e)
         {
             throw std::logic_error{ std::string{ "exception in channel error handler -> " } + e.what() };
-        }       
+        }
     }
 
     void Channel::processError(const std::string& what)
@@ -175,7 +175,7 @@ namespace dots::io
                     {
                         exportDependencies(propertyDescriptor.valueDescriptor());
                     }
-                    
+
                     transmit(io::DescriptorConverter{ registry() }(structDescriptor));
                 }
             }

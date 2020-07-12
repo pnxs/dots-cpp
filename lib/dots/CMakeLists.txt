@@ -53,11 +53,11 @@ target_sources(${TARGET_NAME}
         io/Channel.cpp
         io/Listener.cpp
         io/Medium.cpp
-        
+
         io/serialization/JsonSerialization.cpp
         io/serialization/AsciiSerialization.cpp
         io/serialization/CborNativeSerialization.cpp
-        
+
         io/channels/TcpListener.cpp
         io/channels/TcpChannel.cpp
         io/channels/UdsChannel.cpp
@@ -105,7 +105,7 @@ target_compile_features(${TARGET_NAME}
 )
 target_compile_options(${TARGET_NAME}
     PRIVATE
-        $<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-O2 -flto -Wall -Wextra -Wpedantic -Werror -Wno-deprecated-declarations>>        
+        $<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-O2 -flto -Wall -Wextra -Wpedantic -Werror -Wno-deprecated-declarations>>
 )
 target_compile_definitions(${TARGET_NAME}
     PUBLIC

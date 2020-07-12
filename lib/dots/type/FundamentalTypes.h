@@ -47,7 +47,7 @@ namespace dots::types
 }
 
 namespace dots::type
-{    
+{
     template <>
     struct Descriptor<types::bool_t> : StaticDescriptor<types::bool_t>
     {
@@ -101,7 +101,7 @@ namespace dots::type
     {
         Descriptor() : StaticDescriptor(Type::uint64, "uint64") {}
     };
-    
+
     template <>
     struct Descriptor<types::float32_t> : StaticDescriptor<types::float32_t>
     {

@@ -41,7 +41,7 @@ std::istream& operator >> (std::istream& is, Composite& composite)
     char c;
     is >> c;
     is >> composite.s;
-    
+
     return is;
 }
 
@@ -52,7 +52,7 @@ namespace dots::type
     {
         Descriptor() : StaticDescriptor(Type::int32, "int32") {}
     };
-    
+
     template <>
     struct Descriptor<std::string> : StaticDescriptor<std::string>
     {
@@ -120,7 +120,7 @@ TEST_F(TestStaticDescriptor, construct_default)
     m_sutInt.construct(Typeless::From(i));
     m_sutString.construct(Typeless::From(s));
     m_sutComposite.construct(Typeless::From(c));
-    
+
     EXPECT_EQ(reinterpret_cast<int&>(i), int{});
     EXPECT_EQ(reinterpret_cast<std::string&>(s), std::string{});
     EXPECT_EQ(reinterpret_cast<Composite&>(c), Composite{});
@@ -139,7 +139,7 @@ TEST_F(TestStaticDescriptor, construct_copy)
     m_sutInt.construct(Typeless::From(i), Typeless::From(iOther));
     m_sutString.construct(Typeless::From(s), Typeless::From(sOther));
     m_sutComposite.construct(Typeless::From(c), Typeless::From(cOther));
-    
+
     EXPECT_EQ(reinterpret_cast<int&>(i), 42);
     EXPECT_EQ(reinterpret_cast<std::string&>(s), "foo");
     EXPECT_EQ(reinterpret_cast<Composite&>(c), Composite(21, "bar"));
@@ -158,7 +158,7 @@ TEST_F(TestStaticDescriptor, construct_move)
     m_sutInt.construct(Typeless::From(i), Typeless::From(iOther));
     m_sutString.construct(Typeless::From(s), Typeless::From(sOther));
     m_sutComposite.construct(Typeless::From(c), Typeless::From(cOther));
-    
+
     EXPECT_EQ(reinterpret_cast<int&>(i), 42);
     EXPECT_EQ(reinterpret_cast<std::string&>(s), "foo");
     EXPECT_EQ(reinterpret_cast<Composite&>(c), Composite(21, "bar"));
@@ -177,7 +177,7 @@ TEST_F(TestStaticDescriptor, assign_copy)
     m_sutInt.assign(Typeless::From(i), Typeless::From(iRhs));
     m_sutString.construct(Typeless::From(s), Typeless::From(sRhs));
     m_sutComposite.construct(Typeless::From(c), Typeless::From(cRhs));
-    
+
     EXPECT_EQ(i, 73);
     EXPECT_EQ(s, "baz");
     EXPECT_EQ(c, Composite(23, "qux"));
@@ -196,7 +196,7 @@ TEST_F(TestStaticDescriptor, assign_move)
     m_sutInt.assign(Typeless::From(i), Typeless::From(iRhs));
     m_sutString.construct(Typeless::From(s), Typeless::From(sRhs));
     m_sutComposite.construct(Typeless::From(c), Typeless::From(cRhs));
-    
+
     EXPECT_EQ(i, 73);
     EXPECT_EQ(s, "baz");
     EXPECT_EQ(c, Composite(23, "qux"));
@@ -215,7 +215,7 @@ TEST_F(TestStaticDescriptor, swap)
     m_sutInt.swap(Typeless::From(iLhs), Typeless::From(iRhs));
     m_sutString.swap(Typeless::From(sLhs), Typeless::From(sRhs));
     m_sutComposite.swap(Typeless::From(cLhs), Typeless::From(cRhs));
-    
+
     EXPECT_EQ(iLhs, 73);
     EXPECT_EQ(sLhs, "baz");
     EXPECT_EQ(cLhs, Composite(23, "qux"));
@@ -230,7 +230,7 @@ TEST_F(TestStaticDescriptor, equal)
     int i1 = 42;
     int i2 = 42;
     int i3 = 21;
-    
+
     std::string s1 = "foo";
     std::string s2 = "foo";
     std::string s3 = "bar";
@@ -238,11 +238,11 @@ TEST_F(TestStaticDescriptor, equal)
     Composite c1{ 21, "bar" };
     Composite c2{ 21, "bar" };
     Composite c3{ 23, "qux" };
-    
+
     EXPECT_TRUE(m_sutInt.equal(Typeless::From(i1), Typeless::From(i2)));
     EXPECT_TRUE(m_sutString.equal(Typeless::From(s1), Typeless::From(s2)));
     EXPECT_TRUE(m_sutComposite.equal(Typeless::From(c1), Typeless::From(c2)));
-    
+
     EXPECT_FALSE(m_sutInt.equal(Typeless::From(i1), Typeless::From(i3)));
     EXPECT_FALSE(m_sutString.equal(Typeless::From(s1), Typeless::From(s3)));
     EXPECT_FALSE(m_sutComposite.equal(Typeless::From(c1), Typeless::From(c3)));
@@ -253,7 +253,7 @@ TEST_F(TestStaticDescriptor, less)
     EXPECT_TRUE(m_sutInt.less(21, 42));
     EXPECT_TRUE(m_sutString.less("bar", "foo"));
     EXPECT_TRUE(m_sutComposite.less(Composite{ 21, "bar" }, Composite{ 21, "foo" }));
-    
+
     EXPECT_FALSE(m_sutInt.less(21, 21));
     EXPECT_FALSE(m_sutString.less("bar", "bar"));
     EXPECT_FALSE(m_sutComposite.less(Composite{ 21, "bar" }, Composite{ 21, "bar" }));
@@ -268,7 +268,7 @@ TEST_F(TestStaticDescriptor, lessEqual)
     EXPECT_TRUE(m_sutInt.lessEqual(21, 42));
     EXPECT_TRUE(m_sutString.lessEqual("bar", "foo"));
     EXPECT_TRUE(m_sutComposite.lessEqual(Composite{ 21, "bar" }, Composite{ 21, "foo" }));
-    
+
     EXPECT_TRUE(m_sutInt.lessEqual(21, 21));
     EXPECT_TRUE(m_sutString.lessEqual("bar", "bar"));
     EXPECT_TRUE(m_sutComposite.lessEqual(Composite{ 21, "bar" }, Composite{ 21, "bar" }));
@@ -283,7 +283,7 @@ TEST_F(TestStaticDescriptor, greater)
     EXPECT_FALSE(m_sutInt.greater(21, 42));
     EXPECT_FALSE(m_sutString.greater("bar", "foo"));
     EXPECT_FALSE(m_sutComposite.greater(Composite{ 21, "bar" }, Composite{ 21, "foo" }));
-    
+
     EXPECT_FALSE(m_sutInt.greater(21, 21));
     EXPECT_FALSE(m_sutString.greater("bar", "bar"));
     EXPECT_FALSE(m_sutComposite.greater(Composite{ 21, "bar" }, Composite{ 21, "bar" }));
@@ -298,7 +298,7 @@ TEST_F(TestStaticDescriptor, greaterEqual)
     EXPECT_FALSE(m_sutInt.greaterEqual(21, 42));
     EXPECT_FALSE(m_sutString.greaterEqual("bar", "foo"));
     EXPECT_FALSE(m_sutComposite.greaterEqual(Composite{ 21, "bar" }, Composite{ 21, "foo" }));
-    
+
     EXPECT_TRUE(m_sutInt.greaterEqual(21, 21));
     EXPECT_TRUE(m_sutString.greaterEqual("bar", "bar"));
     EXPECT_TRUE(m_sutComposite.greaterEqual(Composite{ 21, "bar" }, Composite{ 21, "bar" }));

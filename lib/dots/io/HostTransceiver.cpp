@@ -121,7 +121,7 @@ namespace dots::io
         {
             LOG_ERROR_S("error while listening for incoming channels -> " << e.what());
         }
-        
+
         m_listeners.erase(&listener);
     }
 

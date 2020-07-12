@@ -183,7 +183,7 @@ namespace dots::type
                 {
                     Descriptor<T>::destruct(storage());
                 }
-                
+
                 setInvalid();
             }
         }
@@ -344,7 +344,7 @@ namespace dots::type
             else
             {
                 return !isValid();
-            }            
+            }
         }
 
         bool less(const T& rhs) const
@@ -451,7 +451,7 @@ namespace dots::type
 
         constexpr Property& operator = (const Property& rhs) = default;
         constexpr Property& operator = (Property&& rhs) = default;
-        
+
 
     private:
 

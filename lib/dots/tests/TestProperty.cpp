@@ -36,11 +36,11 @@ protected:
 
     struct test_property_area_t : dots::type::PropertyArea
     {
-        test_property_area_t() : intProperty{ *this, "intProperty", 1 }, stringProperty{ *this, "stringProperty", 2 } {}        
+        test_property_area_t() : intProperty{ *this, "intProperty", 1 }, stringProperty{ *this, "stringProperty", 2 } {}
         test_property_t<int> intProperty;
         test_property_t<std::string> stringProperty;
     };
-    
+
     TestProperty() :
         m_sut(m_propertyArea.stringProperty),
         m_sutLhs(m_propertyAreaLhs.stringProperty),
@@ -49,8 +49,8 @@ protected:
     test_property_area_t m_propertyArea;
     test_property_area_t m_propertyAreaLhs;
     test_property_area_t m_propertyAreaRhs;
-    
-    test_property_t<std::string>& m_sut;    
+
+    test_property_t<std::string>& m_sut;
     test_property_t<std::string>& m_sutLhs;
     test_property_t<std::string>& m_sutRhs;
 };

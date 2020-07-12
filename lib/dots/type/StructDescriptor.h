@@ -26,7 +26,7 @@ namespace dots::type
         static const uint8_t Cleanup       = 0b0000'1000;
         static const uint8_t Local         = 0b0001'0000;
         static const uint8_t SubstructOnly = 0b0010'0000;
-        
+
         StructDescriptor(std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptors, size_t areaOffset, size_t size, size_t alignment);
         StructDescriptor(const StructDescriptor& other) = default;
         StructDescriptor(StructDescriptor&& other) = default;
@@ -41,14 +41,14 @@ namespace dots::type
         Struct& construct(Struct& instance, const Struct& other) const;
         Typeless& construct(Typeless& value, Typeless&& other) const override;
         Struct& construct(Struct& instance, Struct&& other) const;
-        
+
         void destruct(Typeless& value) const override;
         Struct& destruct(Struct& instance) const;
-        
+
         Typeless& assign(Typeless& lhs, const Typeless& rhs) const override;
         Typeless& assign(Typeless& lhs, Typeless&& rhs) const override;
         void swap(Typeless& value, Typeless& other) const override;
-        
+
         bool equal(const Typeless& lhs, const Typeless& rhs) const override;
         bool less(const Typeless& lhs, const Typeless& rhs) const override;
         bool lessEqual(const Typeless& lhs, const Typeless& rhs) const override;
@@ -70,7 +70,7 @@ namespace dots::type
 
         virtual bool equal(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const = 0;
         virtual bool same(const Struct& lhs, const Struct& rhs) const = 0;
-        
+
         virtual bool less(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const = 0;
         virtual bool lessEqual(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const = 0;
         virtual bool greater(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const = 0;
@@ -95,7 +95,7 @@ namespace dots::type
         [[deprecated("use property paths instead")]]
         const property_descriptor_container_t& flatPropertyDescriptors() const;
         const std::vector<property_path_t>& propertyPaths() const;
-        
+
         const PropertySet& properties() const;
         const PropertySet& keyProperties() const;
 

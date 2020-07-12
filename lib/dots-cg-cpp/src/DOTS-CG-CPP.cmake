@@ -2,7 +2,7 @@
 set(DOTS-CG-CPP_DIR "${CMAKE_CURRENT_LIST_DIR}" CACHE INTERNAL "Internal helper variable containing the DOTS-CG-CPP directory")
 set(DOTS-CG_CONFIG "config_cpp" CACHE INTERNAL "Internal helper variable containing the DOTS-CG config file name for C++")
 set(DOTS-CG_TEMPLATE_DIR ${DOTS-CG-CPP_DIR} CACHE INTERNAL "Internal helper variable containing the DOTS-CG template directory")
-set(DOTS-CG_TEMPLATE_LIST 
+set(DOTS-CG_TEMPLATE_LIST
     ${DOTS-CG-CPP_DIR}/struct.dots.h.dotsT;
     ${DOTS-CG-CPP_DIR}/enum.dots.h.dotsT;
     CACHE INTERNAL "Internal helper variable containing the C++ code generation templates"
@@ -23,7 +23,7 @@ function(GENERATE_DOTS_TYPES GENERATED_SOURCES GENERATED_HEADERS)
         # ensure that model path is absolute
         if(NOT IS_ABSOLUTE "${MODEL}")
             set(MODEL "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL}")
-        endif() 
+        endif()
 
         # gather generated source and header files
         get_filename_component(Basename ${MODEL} NAME)
@@ -33,12 +33,12 @@ function(GENERATE_DOTS_TYPES GENERATED_SOURCES GENERATED_HEADERS)
             if(TYPE MATCHES "\\.dots\\.h$" )
                 list(APPEND generated_headers ${CMAKE_CURRENT_BINARY_DIR}/${TYPE})
             endif()
-        endforeach()       
+        endforeach()
 
         # create generation target for all types in model
         add_custom_command(OUTPUT ${GENERATED_TYPES}
             COMMAND "sh" "-c" "${DOTS-CG} -C ${DOTS-CG_CONFIG} -T ${DOTS-CG_TEMPLATE_DIR} ${MODEL}"
-            DEPENDS ${DOTS-CG_TEMPLATE_LIST} ${MODEL}            
+            DEPENDS ${DOTS-CG_TEMPLATE_LIST} ${MODEL}
             COMMENT "Generate DOTS C++ classes from ${MODEL}"
         )
 

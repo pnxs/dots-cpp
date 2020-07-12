@@ -320,7 +320,7 @@ namespace dots::type
         void _publish(const PropertySet& includedProperties = PropertySet::All, bool remove = false) const
         {
             static_assert(!Derived::_SubstructOnly, "a substruct-only type cannot be published");
-            
+
             io::registerTypeUsage<Derived, io::PublishedType>();
             Struct::_publish(includedProperties, remove);
         }
@@ -328,7 +328,7 @@ namespace dots::type
         void _remove() const
         {
             static_assert(!Derived::_SubstructOnly, "a substruct-only type cannot be removed");
-            
+
             io::registerTypeUsage<Derived, io::PublishedType>();
             Struct::_remove();
         }
@@ -408,10 +408,10 @@ namespace dots::type
         using Struct::_merge;
         using Struct::_swap;
         using Struct::_clear;
-        
+
         using Struct::_equal;
         using Struct::_same;
-        
+
         using Struct::_less;
         using Struct::_lessEqual;
         using Struct::_greater;
@@ -483,9 +483,9 @@ namespace dots::type
             {
                 return false;
             }
-            
+
             // this is a property pair version of the less operation as it is defined for std::tuple: lhsHead < rhsHead || (!(rhsHead < lhsHead) && lhsTail < rhsTail)
-            
+
             auto less = [&](auto& propertyThis, auto& propertyOther)
             {
                 return propertyThis.IsPartOf(includedProperties) && propertyThis < propertyOther;

@@ -77,19 +77,19 @@ namespace dots::type
 
     bool Struct::_less(const Struct& rhs, const PropertySet& includedProperties/* = PropertySet:All*/) const
     {
-        return _desc->less(*this, rhs, includedProperties);      
+        return _desc->less(*this, rhs, includedProperties);
     }
 
     bool Struct::_lessEqual(const Struct& rhs, const PropertySet& includedProperties/* = PropertySet::All*/) const
     {
         return _desc->lessEqual(*this, rhs, includedProperties);
     }
-    
+
     bool Struct::_greater(const Struct& rhs, const PropertySet& includedProperties/* = PropertySet::All*/) const
     {
         return _desc->greater(*this, rhs, includedProperties);
     }
-    
+
     bool Struct::_greaterEqual(const Struct& rhs, const PropertySet& includedProperties/* = PropertySet::All*/) const
     {
         return _desc->greaterEqual(*this, rhs, includedProperties);

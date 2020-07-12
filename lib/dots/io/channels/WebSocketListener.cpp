@@ -44,7 +44,7 @@ namespace dots::io
                 {
                     return;
                 }
-                
+
                 if (error)
                 {
                     processError(std::make_exception_ptr(std::runtime_error{ "failed listening on WebSocket endpoint at address '" + m_address + ":" + m_port + "' -> " + error.message() }));
@@ -62,7 +62,7 @@ namespace dots::io
                 }));
 
                 stream.accept();
-                
+
                 processAccept(make_channel<WebSocketChannel>(std::move(stream)));
             }
             catch (const std::exception& e)

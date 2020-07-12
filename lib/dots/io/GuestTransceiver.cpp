@@ -20,30 +20,30 @@ namespace dots::io
 
         m_preloadPublishTypes = std::move(preloadPublishTypes);
         m_preloadSubscribeTypes = std::move(preloadSubscribeTypes);
-        
+
         m_hostConnection.emplace(std::move(channel), false, std::move(authSecret));
         m_hostConnection->asyncReceive(registry(), nullptr, selfName(),
             [this](io::Connection& connection, Transmission transmission, bool isFromMyself){ return handleReceive(connection, std::move(transmission), isFromMyself); },
             [this](io::Connection& connection, const std::exception_ptr& e){ handleTransition(connection, e); }
         );
-        
+
         return *m_hostConnection;
     }
 
     void GuestTransceiver::publish(const type::Struct& instance, types::property_set_t includedProperties/*t = types::property_set_t::All*/, bool remove/* = false*/)
     {
         const type::StructDescriptor<>& descriptor = instance._descriptor();
-        
+
         if (descriptor.substructOnly())
         {
             throw std::logic_error{ "attempt to publish substruct-only type: " + descriptor.name() };
-        }        
+        }
 
         if (!(descriptor.keyProperties() <= includedProperties))
         {
             throw std::runtime_error("tried to publish instance with invalid key (not all key-fields are set) what=" + includedProperties.toString() + " tdkeys=" + descriptor.keyProperties().toString());
         }
-        
+
         LOG_DATA_S("data:" << to_ascii(&descriptor, &instance, includedProperties));
 
         try
@@ -79,7 +79,7 @@ namespace dots::io
         dispatcher().dispatch(transmission.header(), transmission.instance(), isFromMyself);
         return true;
     }
-    
+
     void GuestTransceiver::handleTransition(io::Connection& connection, const std::exception_ptr& e) noexcept
     {
         try
@@ -94,7 +94,7 @@ namespace dots::io
 
                 for (const auto& [name, descriptor] : m_preloadSubscribeTypes)
                 {
-                    connection.transmit(*descriptor);            
+                    connection.transmit(*descriptor);
                     connection.transmit(DotsMember{
                         DotsMember::groupName_i{ name },
                         DotsMember::event_i{ DotsMemberEvent::join }

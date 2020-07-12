@@ -67,7 +67,7 @@ namespace dots::io
             {
                 _handler(e.as<T>());
             });
-        }        
+        }
 
     private:
 

@@ -35,7 +35,7 @@ namespace dots::type
 
         bool _equal(const Struct& rhs, const PropertySet& includedProperties = PropertySet::All) const;
         bool _same(const Struct& rhs) const;
-        
+
         bool _less(const Struct& rhs, const PropertySet& includedProperties = PropertySet::All) const;
         bool _lessEqual(const Struct& rhs, const PropertySet& includedProperties = PropertySet::All) const;
         bool _greater(const Struct& rhs, const PropertySet& includedProperties = PropertySet::All) const;

@@ -32,10 +32,10 @@ namespace dots::type
         {
             m_descriptorData = new types::EnumDescriptorData{ io::DescriptorConverter{}(*this) };
         }
-        
+
         return *m_descriptorData;
     }
-    
+
     const EnumDescriptor<>* EnumDescriptor<Typeless, void>::createFromEnumDescriptorData(const types::EnumDescriptorData& sd)
     {
         return io::DescriptorConverter{}(sd).get();

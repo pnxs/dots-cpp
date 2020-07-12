@@ -37,7 +37,7 @@ namespace dots::type
             _clear();
         }
     }
-    
+
     DynamicStruct& DynamicStruct::operator = (const DynamicStruct& rhs)
     {
         _assign(rhs);
@@ -131,12 +131,12 @@ namespace dots::type
             else
             {
                 propertyThis.destroy();
-            }            
+            }
         }
 
         return *this;
     }
-    
+
     DynamicStruct& DynamicStruct::_merge(const DynamicStruct& other, const PropertySet& includedProperties/* = PropertySet::All*/)
     {
         PropertySet mergeProperties = other._validProperties() ^ includedProperties;
@@ -149,13 +149,13 @@ namespace dots::type
             }
             else
             {
-                propertyThis.constructOrAssign(propertyOther); 
-            }     
+                propertyThis.constructOrAssign(propertyOther);
+            }
         }
 
         return *this;
     }
-    
+
     void DynamicStruct::_swap(DynamicStruct& other, const PropertySet& includedProperties/* = PropertySet::All*/)
     {
         for (auto&[propertyThis, propertyOther] : _propertyRange(other, includedProperties))
@@ -163,7 +163,7 @@ namespace dots::type
             propertyThis.swap(propertyOther);
         }
     }
-    
+
     void DynamicStruct::_clear(const PropertySet& includedProperties/* = PropertySet::All*/)
     {
         for (auto& property : _propertyRange(includedProperties))
@@ -171,7 +171,7 @@ namespace dots::type
             property.destroy();
         }
     }
-    
+
     bool DynamicStruct::_equal(const DynamicStruct& rhs, const PropertySet& includedProperties/* = PropertySet::All*/) const
     {
         for (const auto&[propertyThis, propertyOther] : _propertyRange(rhs, includedProperties))
@@ -247,12 +247,12 @@ namespace dots::type
 
         return symmetricDiff;
     }
-    
+
     const PropertyArea& DynamicStruct::_propertyArea() const
     {
         return *propertyAreaGet();
     }
-    
+
     PropertyArea& DynamicStruct::_propertyArea()
     {
         return *propertyAreaGet();

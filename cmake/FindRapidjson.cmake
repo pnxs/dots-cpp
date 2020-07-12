@@ -1,5 +1,5 @@
 #FindRapidJSON.cmake
-# 
+#
 # Finds the rapidjson library
 #
 # This will define the following variables

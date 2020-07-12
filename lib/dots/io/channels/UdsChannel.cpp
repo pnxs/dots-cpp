@@ -115,7 +115,7 @@ namespace dots::io::posix
 
                 m_instanceBuffer.resize(m_transportHeader.payloadSize);
                 asyncReadInstance();
-                
+
             }
             catch (...)
             {

@@ -40,7 +40,7 @@ namespace dots::io
         const type::Descriptor<>& getType(const std::string_view& name) const;
         const type::EnumDescriptor<>& getEnumType(const std::string_view& name) const;
         const type::StructDescriptor<>& getStructType(const std::string_view& name) const;
-        
+
         bool hasType(const std::string_view& name) const;
 
         std::shared_ptr<type::Descriptor<>> registerType(std::shared_ptr<type::Descriptor<>> descriptor, bool assertNewType = true);

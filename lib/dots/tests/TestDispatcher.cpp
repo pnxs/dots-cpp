@@ -80,7 +80,7 @@ TEST(TestDispatcher, dispatch_CreateEventWhenSubscribedToCachedType)
 TEST(TestDispatcher, dispatch_UpdateEventWhenSubscribedToCachedType)
 {
     dots::Dispatcher sut;
-    DotsTestStruct dts1{ 
+    DotsTestStruct dts1{
         DotsTestStruct::indKeyfField_i{ 1 },
         DotsTestStruct::stringField_i{ "foo" }
     };
@@ -344,7 +344,7 @@ TEST(TestDispatcher, dispatch_CreateEventFromCacheWhenSubscribingToCachedType)
     dots::Subscription subscription1 = sut.subscribe<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
     {
         /* do nothing */
-    });    
+    });
 
     sut.dispatch(header, dts, false);
     sut.dispatch(header, dts, false);
@@ -372,7 +372,7 @@ TEST(TestDispatcher, dispatch_CreateEventFromCacheWhenSubscribingToCachedType)
             ASSERT_GE(*e.cloneInfo().localUpdateTime, *header.sentTime);
             ASSERT_LE(*e.cloneInfo().localUpdateTime, dots::types::timepoint_t::Now());
         }
-    });    
+    });
 
     ASSERT_EQ(i, 1);
 }

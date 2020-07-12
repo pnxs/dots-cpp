@@ -60,7 +60,7 @@ namespace dots::type
                 {
                     dynMemUsage += valueDescriptor().dynamicMemoryUsage(value);
                 }
-            }            
+            }
 
             return dynMemUsage;
         }

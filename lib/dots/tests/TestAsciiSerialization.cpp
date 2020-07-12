@@ -77,7 +77,7 @@ TEST(TestAsciiSerialization, serializeSingleLine)
 
     documentation.description("aDescription");
     documentation.comment("aComment");
-    
+
     dots::ToAsciiOptions options;
     options.singleLine = true;
 

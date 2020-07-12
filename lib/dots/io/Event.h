@@ -34,7 +34,7 @@ namespace dots::io
         bool isUpdate() const;
         bool isRemove() const;
 
-        bool isFromMyself() const;        
+        bool isFromMyself() const;
         types::property_set_t newProperties() const { return header().attributes; }
         types::property_set_t updatedProperties() const { return newProperties() ^ updated()._validProperties(); }
 

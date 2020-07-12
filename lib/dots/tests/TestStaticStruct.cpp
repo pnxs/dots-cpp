@@ -99,7 +99,7 @@ namespace dots::types
             static constexpr auto Offset = type::PropertyOffset<int32_t>::Make();
             inline static auto Descriptor = type::PropertyDescriptor{ type::Descriptor<int32_t>::InstancePtr(), "intProperty", 1, true, Offset };
         };
-        
+
         struct stringProperty_t : type::StaticProperty<string_t, stringProperty_t>
         {
             static constexpr auto Offset = type::PropertyOffset<string_t>::Make(intProperty_t::Offset);
@@ -111,7 +111,7 @@ namespace dots::types
             static constexpr auto Offset = type::PropertyOffset<bool_t>::Make(stringProperty_t::Offset);
             inline static auto Descriptor = type::PropertyDescriptor{ type::Descriptor<bool_t>::InstancePtr(), "boolProperty", 3, false, Offset };
         };
-        
+
         struct floatVectorProperty_t : type::StaticProperty<vector_t<float32_t>, floatVectorProperty_t>
         {
             static constexpr auto Offset = type::PropertyOffset<vector_t<float32_t>>::Make(boolProperty_t::Offset);
@@ -129,7 +129,7 @@ namespace dots::types
         using boolProperty_i = type::PropertyInitializer<boolProperty_t>;
         using floatVectorProperty_i = type::PropertyInitializer<floatVectorProperty_t>;
         using subStruct_i = type::PropertyInitializer<subStruct_t, TestSubStruct>;
-        
+
         using _key_properties_t = std::tuple<intProperty_t*>;
         using _properties_t     = std::tuple<intProperty_t*, stringProperty_t*, boolProperty_t*, floatVectorProperty_t*, subStruct_t*>;
 
@@ -210,7 +210,7 @@ protected:
 TEST_F(TestStaticStruct, PropertyOffsetsMatchActualOffsets)
 {
     TestStruct sut;
-    
+
     auto determine_offset = [&](const auto& property) { return reinterpret_cast<size_t>(&property) - reinterpret_cast<size_t>(&sut._propertyArea()); };
     EXPECT_EQ(TestStruct::intProperty_t::Offset, determine_offset(sut.intProperty));
     EXPECT_EQ(TestStruct::stringProperty_t::Offset, determine_offset(sut.stringProperty));
@@ -252,7 +252,7 @@ TEST_F(TestStaticStruct, PropertiesHaveExpectedSet)
 TEST_F(TestStaticStruct, _Descriptor_PropertyOffsetsMatchActualOffsets)
 {
     TestStruct sut;
-    
+
     auto determine_offset = [&](const auto& property) { return reinterpret_cast<size_t>(&property) - reinterpret_cast<size_t>(&sut._propertyArea()); };
     EXPECT_EQ(TestStruct::_Descriptor().propertyDescriptors()[0].offset(), determine_offset(sut.intProperty));
     EXPECT_EQ(TestStruct::_Descriptor().propertyDescriptors()[1].offset(), determine_offset(sut.stringProperty));
@@ -292,7 +292,7 @@ TEST_F(TestStaticStruct, ctor_Initializer)
         TestStruct::stringProperty_i{ "foo" },
         TestStruct::floatVectorProperty_i{ vector_t<float32_t>{ 3.1415f, 2.7183f } }
     };
-    
+
     EXPECT_EQ(sut.intProperty, 1);
     EXPECT_EQ(sut.stringProperty, "foo");
     EXPECT_FALSE(sut.boolProperty.isValid());
@@ -327,7 +327,7 @@ TEST_F(TestStaticStruct, ctor_Move)
     EXPECT_EQ(sutThis.stringProperty, "foo");
     EXPECT_FALSE(sutOther.boolProperty.isValid());
     EXPECT_EQ(sutThis.floatVectorProperty, vector_t<float32_t>({ 3.1415f, 2.7183f }));
-    
+
     EXPECT_FALSE(sutOther.intProperty.isValid());
     EXPECT_FALSE(sutOther.stringProperty.isValid());
     EXPECT_FALSE(sutOther.boolProperty.isValid());
@@ -362,7 +362,7 @@ TEST_F(TestStaticStruct, assignment_Move)
     EXPECT_EQ(sutThis.stringProperty, "foo");
     EXPECT_FALSE(sutOther.boolProperty.isValid());
     EXPECT_EQ(sutThis.floatVectorProperty, vector_t<float32_t>({ 3.1415f, 2.7183f }));
-    
+
     EXPECT_FALSE(sutOther.intProperty.isValid());
     EXPECT_FALSE(sutOther.stringProperty.isValid());
     EXPECT_FALSE(sutOther.boolProperty.isValid());
@@ -630,7 +630,7 @@ TEST_F(TestStaticStruct, equal)
     EXPECT_TRUE(sutLhs._equal(sutLhs));
     EXPECT_TRUE(sutRhs._equal(sutRhs));
     EXPECT_FALSE(sutLhs._equal(sutRhs));
-    
+
     EXPECT_TRUE(sutLhs._equal(sutRhs, TestStruct::intProperty_t::Set()));
     EXPECT_TRUE(sutLhs._equal(sutRhs, TestStruct::floatVectorProperty_t::Set()));
     EXPECT_FALSE(sutLhs._equal(sutRhs, TestStruct::intProperty_t::Set() + TestStruct::stringProperty_t::Set()));
@@ -674,7 +674,7 @@ TEST_F(TestStaticStruct, less_lessEqual_greater_greaterEqual)
         TestStruct::stringProperty_i{ "foo" },
         TestStruct::floatVectorProperty_i{ vector_t<float32_t>{ 2.7183f } }
     };
-    
+
     EXPECT_TRUE(sutLhs._less(sutRhs));
     EXPECT_FALSE(sutRhs._less(sutLhs));
     EXPECT_TRUE(sutRhs._less(sutLhs, TestStruct::floatVectorProperty_t::Set()));
@@ -713,7 +713,7 @@ TEST_F(TestStaticStruct, diffProperties)
         TestStruct::stringProperty_i{ "foo" },
         TestStruct::floatVectorProperty_i{ vector_t<float32_t>{ 2.7183f } }
     };
-    
+
     EXPECT_EQ(sutLhs._diffProperties(sutRhs), TestStruct::stringProperty_t::Set() + TestStruct::floatVectorProperty_t::Set());
     EXPECT_EQ(sutLhs._diffProperties(sutRhs, (~TestStruct::floatVectorProperty_t::Set())), TestStruct::stringProperty_t::Set());
 }
@@ -724,7 +724,7 @@ TEST_F(TestStaticStruct, assertProperties)
         TestStruct::intProperty_i{ 1 },
         TestStruct::stringProperty_i{ "foo" }
     };
-    
+
     EXPECT_NO_THROW(sut._assertHasProperties(TestStruct::intProperty_t::Set()));
     EXPECT_THROW(sut._assertHasProperties<false>(TestStruct::intProperty_t::Set()), std::logic_error);
 

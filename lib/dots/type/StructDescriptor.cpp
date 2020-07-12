@@ -51,7 +51,7 @@ namespace dots::type
     Struct& StructDescriptor<Typeless, void>::construct(Struct& instance, const Struct& other) const
     {
         ::new(static_cast<void*>(::std::addressof(instance))) Struct{ other };
-        
+
         for (auto& property : instance._propertyRange())
         {
             property.construct(property);
@@ -68,7 +68,7 @@ namespace dots::type
     Struct& StructDescriptor<Typeless, void>::construct(Struct& instance, Struct&& other) const
     {
         ::new(static_cast<void*>(::std::addressof(instance))) Struct{ std::move(other) };
-        
+
         for (auto& property : instance._propertyRange())
         {
             property.construct(std::move(property));
@@ -76,7 +76,7 @@ namespace dots::type
 
         return instance;
     }
-    
+
     void StructDescriptor<Typeless, void>::destruct(Typeless& value) const
     {
         Typeless::From(destruct(value.to<Struct>()));
@@ -96,37 +96,37 @@ namespace dots::type
     {
         return Typeless::From(assign(lhs.to<Struct>(), rhs.to<Struct>(), PropertySet::All));
     }
-    
+
     Typeless& StructDescriptor<Typeless, void>::assign(Typeless& lhs, Typeless&& rhs) const
     {
         return Typeless::From(assign(lhs.to<Struct>(), rhs.to<Struct>(), PropertySet::All));
     }
-    
+
     void StructDescriptor<Typeless, void>::swap(Typeless& value, Typeless& other) const
     {
         return swap(value.to<Struct>(), other.to<Struct>(), PropertySet::All);
     }
-    
+
     bool StructDescriptor<Typeless, void>::equal(const Typeless& lhs, const Typeless& rhs) const
     {
         return equal(lhs.to<Struct>(), rhs.to<Struct>(), PropertySet::All);
     }
-    
+
     bool StructDescriptor<Typeless, void>::less(const Typeless& lhs, const Typeless& rhs) const
     {
         return less(lhs.to<Struct>(), rhs.to<Struct>(), PropertySet::All);
     }
-    
+
     bool StructDescriptor<Typeless, void>::lessEqual(const Typeless& lhs, const Typeless& rhs) const
     {
         return lessEqual(lhs.to<Struct>(), rhs.to<Struct>(), PropertySet::All);
     }
-    
+
     bool StructDescriptor<Typeless, void>::greater(const Typeless& lhs, const Typeless& rhs) const
     {
         return greater(lhs.to<Struct>(), rhs.to<Struct>(), PropertySet::All);
     }
-    
+
     bool StructDescriptor<Typeless, void>::greaterEqual(const Typeless& lhs, const Typeless& rhs) const
     {
         return greaterEqual(lhs.to<Struct>(), rhs.to<Struct>(), PropertySet::All);
@@ -324,7 +324,7 @@ namespace dots::type
         {
             m_descriptorData = new types::StructDescriptorData{ io::DescriptorConverter{}(*this) };
         }
-        
+
         return *m_descriptorData;
     }
 

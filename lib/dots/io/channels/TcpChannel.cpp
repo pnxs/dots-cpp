@@ -156,7 +156,7 @@ namespace dots::io
 
                 m_instanceBuffer.resize(m_transportHeader.payloadSize);
                 asyncReadInstance();
-                
+
             }
             catch (...)
             {

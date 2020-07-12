@@ -43,7 +43,7 @@ namespace dots::type
 
     template <>
     struct Descriptor<DynamicStruct>;
-    
+
     struct DynamicStruct : Struct
     {
         using Cbd = io::Event<DynamicStruct>;
@@ -90,7 +90,7 @@ namespace dots::type
 
         bool _equal(const DynamicStruct& rhs, const PropertySet& includedProperties = PropertySet::All) const;
         bool _same(const DynamicStruct& rhs) const;
-        
+
         bool _less(const DynamicStruct& rhs, const PropertySet& includedProperties = PropertySet::All) const;
         bool _lessEqual(const DynamicStruct& rhs, const PropertySet& includedProperties = PropertySet::All) const;
         bool _greater(const DynamicStruct& rhs, const PropertySet& includedProperties = PropertySet::All) const;
@@ -113,10 +113,10 @@ namespace dots::type
         using Struct::_merge;
         using Struct::_swap;
         using Struct::_clear;
-        
+
         using Struct::_equal;
         using Struct::_same;
-        
+
         using Struct::_less;
         using Struct::_lessEqual;
         using Struct::_greater;

@@ -97,9 +97,9 @@ namespace dots::type
         }
 
     private:
-        
+
         friend struct Property<T, Derived>;
-        
+
         T& derivedStorage()
         {
             return m_storage;

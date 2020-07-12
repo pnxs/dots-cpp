@@ -32,7 +32,7 @@ static void write_atomic_types_to_json(const type::Descriptor<>& td, const type:
     //std::cout << "var ptr: " << var.get_ptr() << " type=" << var.get_type().get_name() << "\n";
 
     const void* data = &typeless;
-    
+
     switch (td.dotsType())
     {
         case type::DotsType::int8: writer.Int(*(const int8_t *) data);
@@ -276,7 +276,7 @@ void read_from_json_array_recursive(const type::VectorDescriptor& vd, type::Vect
             return dynamicBuffer[0];
         }
     }();
-    
+
     for (auto item = value.Begin(); item != value.End(); ++item)
     {
         read_json(vd.valueDescriptor(), type::Typeless::From(valueData), *item);

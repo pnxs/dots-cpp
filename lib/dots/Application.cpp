@@ -80,12 +80,12 @@ namespace dots
         po::notify(vm);
 
         // parse environment options
-        if (::getenv("DOTS_SERVER_ADDRESS")) 
+        if (::getenv("DOTS_SERVER_ADDRESS"))
         {
             m_serverAddress = getenv("DOTS_SERVER_ADDRESS");
         }
 
-        if (::getenv("DOTS_SERVER_PORT")) 
+        if (::getenv("DOTS_SERVER_PORT"))
         {
             m_serverPort = atoi("DOTS_SERVER_PORT");
         }
@@ -101,7 +101,7 @@ namespace dots
         if (vm.count("auth-secret") > 0)
         {
             m_authSecret = vm["auth-secret"].as<std::string>();
-        }        
+        }
     }
 
     GuestTransceiver::descriptor_map_t Application::getPreloadPublishTypes() const

@@ -169,5 +169,5 @@ namespace dots
         if (td->cleanup()) ret[3] = 'c';
         if (td->local()) ret[4] = 'L';
         return ret;
-    } 
+    }
 }

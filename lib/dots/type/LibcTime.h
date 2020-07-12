@@ -78,7 +78,7 @@ namespace dots::type::libc
         }
 
         constexpr Timespec(const Duration& duration) :
-            Timespec(timespec{ 
+            Timespec(timespec{
                 static_cast<std::time_t>(duration.toSeconds()),
                 static_cast<long>(::nearbyint((duration.toFractionalSeconds() - duration.toSeconds()) * NanosecondsPerSecond))
             })

@@ -6,24 +6,24 @@ namespace dots::type
     struct PropertyArea
     {
         constexpr PropertyArea() = default;
-        
+
         constexpr PropertyArea(const PropertyArea& /*other*/)
         {
             /* do nothing */
         }
-        
+
         constexpr PropertyArea(PropertyArea&& /*other*/) noexcept
         {
             /* do nothing */
         }
-        
+
         ~PropertyArea() = default;
 
         constexpr PropertyArea& operator = (const PropertyArea& /*rhs*/)
         {
             return *this;
         }
-        
+
         constexpr PropertyArea& operator = (PropertyArea&& /*rhs*/) noexcept
         {
             return *this;

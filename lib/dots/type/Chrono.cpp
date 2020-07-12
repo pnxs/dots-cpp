@@ -84,7 +84,7 @@ namespace dots::type
             {
                 continue;
             }
-            
+
             auto parse_duration = [](auto duration, const std::string& part)
             {
                 using duration_t = decltype(duration);

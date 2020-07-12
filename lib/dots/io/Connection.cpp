@@ -78,7 +78,7 @@ namespace dots::io
         m_authManager = authManager;
         m_receiveHandler = std::move(receiveHandler);
         m_transitionHandler = std::move(transitionHandler);
-        
+
         setConnectionState(DotsConnectionState::connecting);
         m_channel->init(*m_registry);
         m_channel->asyncReceive(
@@ -95,7 +95,7 @@ namespace dots::io
                     DotsMsgHello::authChallenge_i{ 0 }
                 });
 
-                
+
             }
             else
             {
@@ -161,7 +161,7 @@ namespace dots::io
                 {
                     /* do nothing */
                 }
-                
+
             }
         }
 
@@ -272,12 +272,12 @@ namespace dots::io
 
         expectSystemType<DotsMsgConnectResponse>(DotsMsgConnectResponse::clientId_p + DotsMsgConnectResponse::accepted_p + DotsMsgConnectResponse::preload_p, &Connection::handleAuthorizationRequest);
     }
-    
+
     void Connection::handleAuthorizationRequest(const DotsMsgConnectResponse& connectResponse)
     {
         m_selfId = connectResponse.clientId;
         LOG_DEBUG_S("connectResponse: serverName=" << m_peerName << " accepted=" << *connectResponse.accepted);
-        
+
         if (connectResponse.preload == true)
         {
             setConnectionState(DotsConnectionState::early_subscribe);
@@ -290,7 +290,7 @@ namespace dots::io
             expectSystemType<DotsMsgError>(DotsMsgError::errorCode_p, &Connection::handlePeerError);
         }
     }
-    
+
     void Connection::handlePreloadFinished(const DotsMsgConnectResponse&/* connectResponse*/)
     {
         setConnectionState(DotsConnectionState::connected);

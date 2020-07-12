@@ -162,14 +162,14 @@ void read_cbor(const type::Descriptor<>& td, type::Typeless& data, cbor::decoder
     {
         const auto& structDescriptor = static_cast<const type::StructDescriptor<>&>(td);
         structDescriptor.construct(data);
-        
+
         from_cbor_recursive(structDescriptor, data.to<type::Struct>(), decoder);
     }
     else if (td.dotsType() == type::DotsType::Vector)
     {
         const auto& vectorDescriptor = static_cast<const type::VectorDescriptor&>(td);
         vectorDescriptor.construct(data);
-        
+
         read_from_array_recursive(vectorDescriptor, data.to<type::Vector<>>(), decoder);
     }
     else if (isDotsBaseType(td.dotsType()))
@@ -239,7 +239,7 @@ static void read_from_array_recursive(const type::VectorDescriptor& vd, type::Ve
             return dynamicBuffer[0];
         }
     }();
-    
+
     for (size_t i = 0, arraySize = decoder.read_array(); i < arraySize; ++i)
     {
         read_cbor(vd.valueDescriptor(), type::Typeless::From(valueData), decoder);

@@ -8,8 +8,8 @@ namespace dots::types
     enum class TestEnumSimple : int32_t
     {
         enumerator2 = 2,
-        enumerator3 = 3, 
-        enumerator5 = 5, 
+        enumerator3 = 3,
+        enumerator5 = 5,
         enumerator7 = 7,
         enumerator11 = 11,
         enumerator13 = 13
@@ -80,7 +80,7 @@ TEST_F(TestEnumDescriptor, enumerators_expectedElements)
         EXPECT_EQ(enumerator.name(), name);
         EXPECT_EQ(enumerator.value(), value);
     };
-    
+
     expect_eq_enumerator(m_sutSimple.enumerators()[0], 2, "enumerator2", TestEnumSimple::enumerator2);
     expect_eq_enumerator(m_sutSimple.enumerators()[1], 3, "enumerator3", TestEnumSimple::enumerator3);
     expect_eq_enumerator(m_sutSimple.enumerators()[2], 5, "enumerator5", TestEnumSimple::enumerator5);
@@ -105,7 +105,7 @@ TEST_F(TestEnumDescriptor, enumeratorsTypeless_expectedElements)
         EXPECT_EQ(enumerator.name(), name);
         EXPECT_TRUE(enumerator.underlyingDescriptor().equal(enumerator.valueTypeless(), Typeless::From(value)));
     };
-    
+
     expect_eq_enumerator_simple(m_sutSimple.enumeratorsTypeless()[0], 2, "enumerator2", TestEnumSimple::enumerator2);
     expect_eq_enumerator_simple(m_sutSimple.enumeratorsTypeless()[1], 3, "enumerator3", TestEnumSimple::enumerator3);
     expect_eq_enumerator_simple(m_sutSimple.enumeratorsTypeless()[2], 5, "enumerator5", TestEnumSimple::enumerator5);
@@ -168,7 +168,7 @@ TEST_F(TestEnumDescriptor, enumeratorFromValue)
 TEST_F(TestEnumDescriptor, global_op_ostream)
 {
     std::ostringstream oss;
-    oss << TestEnumSimple::enumerator2;    
+    oss << TestEnumSimple::enumerator2;
     EXPECT_EQ(oss.str(), "enumerator2");
 
     oss = std::ostringstream{};

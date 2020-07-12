@@ -47,7 +47,7 @@ TEST(TestContainer, insert_CreateInstanceWhenEmpty)
     DotsHeader header = test_helpers::make_header(dts, 42);
 
     const auto& [created, cloneInfo] = sut.insert(header, dts);
-    
+
     ASSERT_FALSE(sut.empty());
     ASSERT_EQ(sut.size(), 1);
     ASSERT_EQ(sut.find(dts), &*created);
@@ -177,7 +177,7 @@ TEST(TestContainer, remove_RemoveWhenContained)
         DotsTestStruct::stringField_i{ "foo" }
     };
     DotsTestStruct dts2{
-        DotsTestStruct::indKeyfField_i{ 2 } 
+        DotsTestStruct::indKeyfField_i{ 2 }
     };
     DotsTestStruct dts3{
         DotsTestStruct::indKeyfField_i{ 1 },

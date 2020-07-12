@@ -6,7 +6,7 @@ namespace dots::io
     Registry::Registry(new_type_handler_t newTypeHandler/* = nullptr*/) :
         m_newTypeHandler(std::move(newTypeHandler))
     {
-        // ensure fundamental types are instantiated and added to static descriptor map 
+        // ensure fundamental types are instantiated and added to static descriptor map
         type::Descriptor<types::bool_t>::InstancePtr();
 
         type::Descriptor<types::int8_t>::InstancePtr();
@@ -32,7 +32,7 @@ namespace dots::io
 
         // ensure fundamental vector types are instantiated and added to static descriptor map
         type::Descriptor<types::vector_t<types::bool_t>>::InstancePtr();
-        
+
         type::Descriptor<types::vector_t<types::int8_t>>::InstancePtr();
         type::Descriptor<types::vector_t<types::uint8_t>>::InstancePtr();
         type::Descriptor<types::vector_t<types::int16_t>>::InstancePtr();
@@ -98,7 +98,7 @@ namespace dots::io
             else
             {
                 return it->second;
-            }            
+            }
         }
         else
         {
@@ -122,17 +122,17 @@ namespace dots::io
     {
         return *findType(name, true);
     }
-    
+
     const type::EnumDescriptor<>& Registry::getEnumType(const std::string_view& name) const
     {
         return *findEnumType(name, true);
     }
-    
+
     const type:: StructDescriptor<>& Registry::getStructType(const std::string_view& name) const
     {
         return *findStructType(name, true);
     }
-    
+
     bool Registry::hasType(const std::string_view& name) const
     {
         return findType(name) != nullptr;
@@ -153,7 +153,7 @@ namespace dots::io
                 return it->second;
             }
         }
-        
+
         if (descriptor->type() == type::Type::Vector)
         {
             auto vectorDescriptor = std::static_pointer_cast<type::VectorDescriptor>(descriptor);
@@ -181,14 +181,14 @@ namespace dots::io
             m_newTypeHandler(*it->second);
         }
 
-        return it->second;            
+        return it->second;
     }
 
     void Registry::deregisterType(const std::shared_ptr<type::Descriptor<>>& descriptor, bool assertRegisteredType/* = true*/)
     {
         deregisterType(descriptor->name(), assertRegisteredType);
     }
-    
+
     void Registry::deregisterType(const type::Descriptor<>& descriptor, bool assertRegisteredType/* = true*/)
     {
         deregisterType(descriptor.name(), assertRegisteredType);
@@ -208,14 +208,14 @@ namespace dots::io
         else
         {
             m_types.erase(it);
-        } 
+        }
     }
 
     const type::Descriptor<>* Registry::findDescriptor(const std::string& name) const
     {
         return findType(name).get();
     }
-    
+
     const type::StructDescriptor<>* Registry::findStructDescriptor(const std::string& name) const
     {
         return findStructType(name).get();

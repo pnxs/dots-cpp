@@ -20,7 +20,7 @@ namespace dots::io
 
         id_t id() { return m_id; }
 
-    private:        
+    private:
 
         using timer_t = boost::asio::steady_timer;
         using duration_t = timer_t::clock_type::duration;
@@ -35,6 +35,6 @@ namespace dots::io
         id_t m_id;
         type::Duration m_interval;
         type::SteadyTimePoint m_next;
-        bool m_periodic;            
+        bool m_periodic;
     };
 }

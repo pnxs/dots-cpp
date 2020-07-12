@@ -20,7 +20,7 @@ install(FILES
     DESTINATION share/dots-cg-cpp
 )
 install(
-    FILES 
+    FILES
         ${DOTS-CG_DIR}/bin/dcg.py
     DESTINATION share/dots-cg-cpp
     PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE

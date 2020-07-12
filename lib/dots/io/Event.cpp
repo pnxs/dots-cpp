@@ -16,9 +16,9 @@ namespace dots::io
     /**
     * @return contained DOTS object
     */
-    const type::Struct& Event<type::Struct>::operator () () const 
+    const type::Struct& Event<type::Struct>::operator () () const
     {
-        return m_updated; 
+        return m_updated;
     }
 
     const DotsHeader& Event<type::Struct>::header() const
@@ -38,7 +38,7 @@ namespace dots::io
 
     const DotsCloneInformation& Event<type::Struct>::cloneInfo() const
     {
-        return m_cloneInfo; 
+        return m_cloneInfo;
     }
 
     const type::StructDescriptor<>& Event<type::Struct>::descriptor() const
@@ -53,16 +53,16 @@ namespace dots::io
 
     bool Event<type::Struct>::isCreate() const
     {
-        return mt() == DotsMt::create; 
+        return mt() == DotsMt::create;
     }
 
-    bool Event<type::Struct>::isUpdate() const 
+    bool Event<type::Struct>::isUpdate() const
     {
         return mt() == DotsMt::update;
     }
 
     bool Event<type::Struct>::isRemove() const
-    { 
+    {
         return mt() == DotsMt::remove;
     }
 
@@ -73,6 +73,6 @@ namespace dots::io
 
     bool Event<type::Struct>::isOwnUpdate() const
     {
-        return m_isFromMyself; 
+        return m_isFromMyself;
     }
 }

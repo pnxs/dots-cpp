@@ -54,7 +54,7 @@ namespace dots::type
         {
             return _propertyArea().validProperties();
         }
-        
+
         constexpr const property_descriptor_container_t& _propertyDescriptors() const
         {
             return static_cast<const Derived&>(*this).derivedPropertyDescriptors();
@@ -64,7 +64,7 @@ namespace dots::type
         {
             return static_cast<const Derived&>(*this).derivedPropertyPaths();
         }
-        
+
         proxy_property_iterator _begin(const PropertySet& includedProperties = PropertySet::All)
         {
             return proxy_property_iterator{ _propertyArea(), _propertyDescriptors(), _propertyDescriptors().begin(), includedProperties };
@@ -287,7 +287,7 @@ namespace dots::type
             }
 
             throw std::runtime_error{ "unknown composed property name '" + std::string{ propertyPath } + "'" };
-            
+
         }
 
         template <typename T = Typeless>

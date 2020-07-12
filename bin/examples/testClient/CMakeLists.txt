@@ -11,7 +11,7 @@ add_executable(${TARGET_NAME} main.cpp)
 # properties
 target_sources(${TARGET_NAME}
     PRIVATE
-)    
+)
 target_include_directories(${TARGET_NAME}
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
@@ -25,7 +25,7 @@ target_compile_features(${TARGET_NAME}
         cxx_std_17
 )
 target_link_libraries(${TARGET_NAME}
-    PRIVATE 
+    PRIVATE
         DOTS::DOTS
 )
 

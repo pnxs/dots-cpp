@@ -25,7 +25,7 @@ namespace dots::type
         if (_instance != nullptr)
         {
             _instance->_descriptor().destruct(Typeless::From(*_instance));
-        }        
+        }
     }
 
     AnyStruct& AnyStruct::operator = (const AnyStruct& rhs)

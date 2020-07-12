@@ -96,7 +96,7 @@ TEST_F(TestDuration, fromString)
         EXPECT_EQ(date::floor<date::days>(sut), date::days{ 4 });
         sut -= date::floor<date::days>(sut);
     }
-    
+
     {
         Duration sut;
         sut.fromString("P100YT0.00001S");

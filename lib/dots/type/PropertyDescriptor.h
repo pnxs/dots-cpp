@@ -20,7 +20,7 @@ namespace dots::type
 
         const std::shared_ptr<Descriptor<>>& valueDescriptorPtr() const;
         const Descriptor<>& valueDescriptor() const;
-        
+
         const std::string& name() const;
         uint32_t tag() const;
         bool isKey() const;

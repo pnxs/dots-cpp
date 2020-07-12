@@ -119,7 +119,7 @@ protected:
 TEST_F(TestDynamicStruct, PropertyOffsetsMatchExpectedOffsets)
 {
     DynamicStruct sut{ *m_testDynamicStructDescriptor };
-    
+
     EXPECT_EQ(sut._get("intProperty").descriptor().offset(), sizeof(PropertyArea));
     EXPECT_EQ(sut._get("stringProperty").descriptor().offset(), sut._get("intProperty").descriptor().offset() + 4);
     EXPECT_EQ(sut._get("boolProperty").descriptor().offset(), sut._get("stringProperty").descriptor().offset() + sizeof(string_t));
@@ -137,7 +137,7 @@ TEST_F(TestDynamicStruct, PropertyAddressessMatchExpectedAddresses)
     ProxyProperty<> boolProperty = sut._get("boolProperty");
     ProxyProperty<> floatVectorProperty = sut._get("floatVectorProperty");
     ProxyProperty<> subStructProperty = sut._get("subStructProperty");
-    
+
     EXPECT_EQ(reinterpret_cast<const std::byte*>(&intProperty.storage()), sutAddress + intProperty.descriptor().offset());
     EXPECT_EQ(reinterpret_cast<const std::byte*>(&stringProperty.storage()), sutAddress + stringProperty.descriptor().offset());
     EXPECT_EQ(reinterpret_cast<const std::byte*>(&boolProperty.storage()), sutAddress + boolProperty.descriptor().offset());
@@ -148,7 +148,7 @@ TEST_F(TestDynamicStruct, PropertyAddressessMatchExpectedAddresses)
     size_t subOffset = subStructProperty.descriptor().offset() + sizeof(DynamicStruct);
     ProxyProperty<> subIntProperty = sutSub._get("subIntProperty");
     ProxyProperty<> subSubStructProperty = sutSub._get("subSubStructProperty");
-    ProxyProperty<> subFloatProperty = sutSub._get("subFloatProperty");    
+    ProxyProperty<> subFloatProperty = sutSub._get("subFloatProperty");
 
     EXPECT_EQ(reinterpret_cast<const std::byte*>(&subIntProperty.storage()), sutAddress + subOffset + subIntProperty.descriptor().offset());
     EXPECT_EQ(reinterpret_cast<const std::byte*>(&subSubStructProperty.storage()), sutAddress + subOffset + subSubStructProperty.descriptor().offset());
@@ -176,7 +176,7 @@ TEST_F(TestDynamicStruct, FlatPropertyDescriptorOffsetsMatchExpectedOffsets)
     ProxyProperty<> boolProperty = sut._get("boolProperty");
     ProxyProperty<> floatVectorProperty = sut._get("floatVectorProperty");
     ProxyProperty<> subStructProperty = sut._get("subStructProperty");
-    
+
     EXPECT_EQ(reinterpret_cast<const std::byte*>(&intProperty.storage()), sutAddress + flatPropertyDescriptors[0].offset());
     EXPECT_EQ(reinterpret_cast<const std::byte*>(&stringProperty.storage()), sutAddress + flatPropertyDescriptors[1].offset());
     EXPECT_EQ(reinterpret_cast<const std::byte*>(&boolProperty.storage()), sutAddress + flatPropertyDescriptors[2].offset());
@@ -186,7 +186,7 @@ TEST_F(TestDynamicStruct, FlatPropertyDescriptorOffsetsMatchExpectedOffsets)
     DynamicStruct& sutSub = subStructProperty.construct().to<DynamicStruct>();
     ProxyProperty<> subIntProperty = sutSub._get("subIntProperty");
     ProxyProperty<> subSubStructProperty = sutSub._get("subSubStructProperty");
-    ProxyProperty<> subFloatProperty = sutSub._get("subFloatProperty");    
+    ProxyProperty<> subFloatProperty = sutSub._get("subFloatProperty");
 
     EXPECT_EQ(reinterpret_cast<const std::byte*>(&subIntProperty.storage()), sutAddress + flatPropertyDescriptors[5].offset());
     EXPECT_EQ(reinterpret_cast<const std::byte*>(&subSubStructProperty.storage()), sutAddress + flatPropertyDescriptors[6].offset());
@@ -273,7 +273,7 @@ TEST_F(TestDynamicStruct, GetPropertyAllowsImplicitConstructionOfPath)
 TEST_F(TestDynamicStruct, PropertiesHaveExpectedTags)
 {
     DynamicStruct sut{ *m_testDynamicStructDescriptor };
-    
+
     EXPECT_EQ(sut._get("intProperty").descriptor().tag(), 1);
     EXPECT_EQ(sut._get("stringProperty").descriptor().tag(), 2);
     EXPECT_EQ(sut._get("boolProperty").descriptor().tag(), 3);
@@ -284,7 +284,7 @@ TEST_F(TestDynamicStruct, PropertiesHaveExpectedTags)
 TEST_F(TestDynamicStruct, PropertiesHaveExpectedNames)
 {
     DynamicStruct sut{ *m_testDynamicStructDescriptor };
-    
+
     EXPECT_EQ(sut._get("intProperty").descriptor().name(), "intProperty");
     EXPECT_EQ(sut._get("stringProperty").descriptor().name(), "stringProperty");
     EXPECT_EQ(sut._get("boolProperty").descriptor().name(), "boolProperty");
@@ -295,7 +295,7 @@ TEST_F(TestDynamicStruct, PropertiesHaveExpectedNames)
 TEST_F(TestDynamicStruct, PropertiesHaveExpectedSet)
 {
     DynamicStruct sut{ *m_testDynamicStructDescriptor };
-    
+
     EXPECT_EQ(sut._get("intProperty").descriptor().set(), PropertySet{ 0x1 << 1 });
     EXPECT_EQ(sut._get("stringProperty").descriptor().set(), PropertySet{ 0x1 << 2 });
     EXPECT_EQ(sut._get("boolProperty").descriptor().set(), PropertySet{ 0x1 << 3 });
@@ -345,7 +345,7 @@ TEST_F(TestDynamicStruct, ctor_Initializer)
         DynamicStruct::property_i<string_t>{ "stringProperty", "foo" },
         DynamicStruct::property_i<vector_t<float32_t>>{ "floatVectorProperty", vector_t<float32_t>{ 3.1415f, 2.7183f } }
     };
-    
+
     EXPECT_EQ(sut._get<int32_t>("intProperty"), 1);
     EXPECT_EQ(sut._get<string_t>("stringProperty"), "foo");
     EXPECT_FALSE(sut._get("boolProperty").isValid());
@@ -773,7 +773,7 @@ TEST_F(TestDynamicStruct, equal)
     EXPECT_TRUE(sutLhs._equal(sutLhs));
     EXPECT_TRUE(sutRhs._equal(sutRhs));
     EXPECT_FALSE(sutLhs._equal(sutRhs));
-    
+
     EXPECT_TRUE(sutLhs._equal(sutRhs, sutLhs._get("intProperty").descriptor().set()));
     EXPECT_TRUE(sutLhs._equal(sutRhs, sutLhs._get("floatVectorProperty").descriptor().set()));
     EXPECT_FALSE(sutLhs._equal(sutRhs, sutLhs._get("intProperty").descriptor().set() + sutLhs._get("stringProperty").descriptor().set()));
@@ -817,7 +817,7 @@ TEST_F(TestDynamicStruct, less_lessEqual_greater_greaterEqual)
         DynamicStruct::property_i<string_t>{ "stringProperty", "foo" },
         DynamicStruct::property_i<vector_t<float32_t>>{ "floatVectorProperty", vector_t<float32_t>{ 2.7183f } }
     };
-    
+
     EXPECT_TRUE(sutLhs._less(sutRhs));
     EXPECT_FALSE(sutRhs._less(sutLhs));
     EXPECT_TRUE(sutRhs._less(sutLhs, sutLhs._get("floatVectorProperty").descriptor().set()));
@@ -856,7 +856,7 @@ TEST_F(TestDynamicStruct, diffProperties)
         DynamicStruct::property_i<string_t>{ "stringProperty", "foo" },
         DynamicStruct::property_i<vector_t<float32_t>>{ "floatVectorProperty", vector_t<float32_t>{ 2.7183f } }
     };
-    
+
     EXPECT_EQ(sutLhs._diffProperties(sutRhs), sutLhs._get("stringProperty").descriptor().set() + sutLhs._get("floatVectorProperty").descriptor().set());
     EXPECT_EQ(sutLhs._diffProperties(sutRhs, (~sutLhs._get("floatVectorProperty").descriptor().set())), sutLhs._get("stringProperty").descriptor().set());
 }
@@ -867,7 +867,7 @@ TEST_F(TestDynamicStruct, assertProperties)
         DynamicStruct::property_i<int32_t>{ "intProperty", 1 },
         DynamicStruct::property_i<string_t>{ "stringProperty", "foo" }
     };
-    
+
     EXPECT_NO_THROW(sut._assertHasProperties(sut._get("intProperty").descriptor().set()));
     EXPECT_THROW(sut._assertHasProperties<false>(sut._get("intProperty").descriptor().set()), std::logic_error);
 

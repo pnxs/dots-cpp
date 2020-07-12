@@ -16,12 +16,12 @@ namespace dots::type
         {
             auto descriptor_ = std::make_shared<D>(std::forward<D>(descriptor));
             auto [it, emplaced] = DescriptorsMutable().try_emplace(descriptor_->name(), descriptor_);
-            
+
             if (!emplaced)
             {
                 throw std::logic_error{ "there already is a static descriptor with name: " + descriptor_->name() };
             }
-            
+
             return descriptor_;
         }
 
@@ -35,7 +35,7 @@ namespace dots::type
         {
             return DescriptorsMutable();
         }
-        
+
     private:
 
         static std::map<std::string_view, std::shared_ptr<Descriptor<>>>& DescriptorsMutable()
@@ -44,7 +44,7 @@ namespace dots::type
             return Descriptors_;
         }
     };
-    
+
     template <typename T, typename Base = Descriptor<Typeless>>
     struct StaticDescriptor : Base
     {
@@ -53,13 +53,13 @@ namespace dots::type
         {
             /* do nothing */
         }
-        
+
         template <typename Base_ = Base, typename... Args, std::enable_if_t<!std::is_same_v<Base_, Descriptor<Typeless>>, int> = 0>
         constexpr StaticDescriptor(Args&&... args) : Base(std::forward<Args>(args)...)
         {
             /* do nothing */
         }
-        
+
         StaticDescriptor(const StaticDescriptor& other) = default;
         StaticDescriptor(StaticDescriptor&& other) = default;
         ~StaticDescriptor() = default;
@@ -178,7 +178,7 @@ namespace dots::type
         {
             value.~T();
         }
-        
+
         template <typename... Args>
         static constexpr T& assign(T& value, Args&&... args)
         {
@@ -220,7 +220,7 @@ namespace dots::type
         {
             return !less(lhs, rhs);
         }
-        
+
         static constexpr size_t dynamicMemoryUsage(const T&/* value*/)
         {
             return 0;
@@ -229,7 +229,7 @@ namespace dots::type
         void fromString(T& storage, const std::string_view& value) const
         {
             // TODO: use std::from_chars where applicable
-            
+
             if constexpr (std::is_same_v<T, bool>)
             {
                 if (value == "1" || value == "true")
@@ -244,7 +244,7 @@ namespace dots::type
                 {
                     throw std::runtime_error{ "cannot construct boolean from string: " + std::string{ value } };
                 }
-                
+
             }
             else if constexpr (std::is_constructible_v<T, std::string_view>)
             {
@@ -274,11 +274,11 @@ namespace dots::type
                 return Descriptor<>::fromString(Typeless::From(storage), value);
             }
         }
-        
+
         std::string toString(const T& value) const
         {
             // TODO: use std::to_chars where applicable
-            
+
             if constexpr (std::is_same_v<T, bool>)
             {
                 return value ? "true" : "false";

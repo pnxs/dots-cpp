@@ -39,7 +39,7 @@ namespace dots
         {
             p = &transceiver;
         }
-        
+
         return transceiver;
     }
 

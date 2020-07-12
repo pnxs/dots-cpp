@@ -34,7 +34,7 @@ namespace dots::io
             processReceive(Transmission{ _header, std::move(_instance) });
         });
     }
-    
+
     void VirtualChannel::spoof(uint32_t sender, const type::Struct& instance, bool remove/* = false*/)
     {
         const type::StructDescriptor<>& descriptor = instance._descriptor();
@@ -59,7 +59,7 @@ namespace dots::io
                 DotsMsgHello::serverName_i{ m_serverName },
                 DotsMsgHello::authChallenge_i{ 0 }
             });
-        }        
+        }
     }
 
     void VirtualChannel::transmitImpl(const DotsHeader& header, const type::Struct& instance)
@@ -115,7 +115,7 @@ namespace dots::io
                                 onUnsubscribe(dotsMember->groupName);
                             }
                         }
-                        
+
                     }
                     else if (instance._is<DotsClearCache>())
                     {
@@ -135,7 +135,7 @@ namespace dots::io
             {
                 spoof(header, instance);
             }
-        }        
+        }
     }
 
     void VirtualChannel::onConnected()

@@ -12,7 +12,7 @@ namespace dots::io::posix
             m_acceptor.open(m_endpoint.protocol());
             m_acceptor.set_option(boost::asio::local::stream_protocol::acceptor::reuse_address(true));
             m_acceptor.bind(m_endpoint);
-            
+
             if (backlog == std::nullopt)
             {
                 m_acceptor.listen();

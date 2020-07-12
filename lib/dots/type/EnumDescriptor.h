@@ -24,10 +24,10 @@ namespace dots::type
         template <typename T>
         using underlying_type_t = std::decay_t<decltype(underlying_type(std::declval<T>()))>;
     }
-    
+
     template <typename E = Typeless>
     struct EnumeratorDescriptor;
-    
+
     template <>
     struct EnumeratorDescriptor<Typeless>
     {
@@ -48,16 +48,16 @@ namespace dots::type
 
     private:
 
-        uint32_t m_tag;        
-        std::string m_name;    
+        uint32_t m_tag;
+        std::string m_name;
     };
-    
+
     template <typename E>
     struct EnumeratorDescriptor : EnumeratorDescriptor<Typeless>
     {
         using enum_t = E;
         using underlying_type_t = details::underlying_type_t<E>;
-        
+
         EnumeratorDescriptor(uint32_t tag, std::string name, enum_t value) :
             EnumeratorDescriptor<Typeless>(tag, std::move(name)),
             m_value(std::move(value))
@@ -73,26 +73,26 @@ namespace dots::type
 
         std::shared_ptr<Descriptor<>> underlyingDescriptorPtr() const override
         {
-            return Descriptor<underlying_type_t>::InstancePtr();            
+            return Descriptor<underlying_type_t>::InstancePtr();
         }
 
         const Descriptor<underlying_type_t>& underlyingDescriptor() const override
         {
-            return Descriptor<underlying_type_t>::Instance();            
+            return Descriptor<underlying_type_t>::Instance();
         }
 
         const Typeless& valueTypeless() const override
         {
             return Typeless::From(m_value);
         }
-        
+
         enum_t value() const
         {
             return m_value;
         }
 
     private:
-        
+
         enum_t m_value;
     };
 
@@ -103,7 +103,7 @@ namespace dots::type
     struct EnumDescriptor<Typeless> : Descriptor<Typeless>
     {
         using enumerator_ref_t = std::reference_wrapper<EnumeratorDescriptor<>>;
-        
+
         EnumDescriptor(std::string name, const Descriptor<Typeless>& underlyingDescriptor);
         EnumDescriptor(const EnumDescriptor& other) = default;
         EnumDescriptor(EnumDescriptor&& other) = default;
@@ -137,7 +137,7 @@ namespace dots::type
     {
         using enum_t = E;
         using underlying_type_t = details::underlying_type_t<E>;
-        
+
         EnumDescriptor(std::string name, std::vector<EnumeratorDescriptor<E>> enumeratorDescriptors) :
             StaticDescriptor<E, EnumDescriptor<Typeless>>(std::move(name), underlyingDescriptor()),
             m_enumerators{ std::move(enumeratorDescriptors) }
@@ -156,12 +156,12 @@ namespace dots::type
 
         std::shared_ptr<Descriptor<>> underlyingDescriptorPtr() const override
         {
-            return Descriptor<underlying_type_t>::InstancePtr();            
+            return Descriptor<underlying_type_t>::InstancePtr();
         }
 
         const Descriptor<underlying_type_t>& underlyingDescriptor() const override
         {
-            return Descriptor<underlying_type_t>::Instance();            
+            return Descriptor<underlying_type_t>::Instance();
         }
 
         const std::vector<EnumDescriptor<>::enumerator_ref_t>& enumeratorsTypeless() const override
@@ -188,7 +188,7 @@ namespace dots::type
 
             return *it;
         }
-        
+
         const EnumeratorDescriptor<E>& enumeratorFromName(const std::string_view& name) const override
         {
             auto it = std::find_if(m_enumerators.begin(), m_enumerators.end(), [&name](const EnumeratorDescriptor<E>& enumeratorDescriptor)
@@ -203,7 +203,7 @@ namespace dots::type
 
             return *it;
         }
-        
+
         const EnumeratorDescriptor<E>& enumeratorFromValue(const Typeless& value) const override
         {
             return enumeratorFromValue(value.to<E>());
@@ -223,7 +223,7 @@ namespace dots::type
 
             return *it;
         }
-        
+
     private:
 
         std::vector<EnumeratorDescriptor<E>> m_enumerators;

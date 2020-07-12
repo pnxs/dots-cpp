@@ -37,11 +37,11 @@ protected:
 
     struct TestPropertyArea : dots::type::PropertyArea
     {
-        TestPropertyArea() : intProperty{ *this, "intProperty", 1 }, stringProperty{ *this, "stringProperty", 2 } {}        
+        TestPropertyArea() : intProperty{ *this, "intProperty", 1 }, stringProperty{ *this, "stringProperty", 2 } {}
         TestProperty<int> intProperty;
         TestProperty<std::string> stringProperty;
     };
-    
+
     TestProxyProperty() :
         m_sut(m_propertyArea.stringProperty),
         m_sutLhs(m_propertyAreaLhs.stringProperty),
@@ -50,8 +50,8 @@ protected:
     TestPropertyArea m_propertyArea;
     TestPropertyArea m_propertyAreaLhs;
     TestPropertyArea m_propertyAreaRhs;
-    
-    ProxyProperty<std::string> m_sut;    
+
+    ProxyProperty<std::string> m_sut;
     ProxyProperty<std::string> m_sutLhs;
     ProxyProperty<std::string> m_sutRhs;
 };
@@ -121,7 +121,7 @@ TEST_F(TestProxyProperty, constructOrValue_ValueOnValid)
 {
     m_sut.construct("foo");
 
-    std::string& value = m_sut.constructOrValue("bar");    
+    std::string& value = m_sut.constructOrValue("bar");
 
     EXPECT_TRUE(m_sut.isValid());
     EXPECT_EQ(value, "foo");
@@ -180,7 +180,7 @@ TEST_F(TestProxyProperty, swap_OppositeValuesAfterSwapValid)
 {
     m_sutLhs.construct("foo");
     m_sutRhs.construct("bar");
-    
+
     m_sutLhs.swap(m_sutRhs);
 
     EXPECT_EQ(m_sutLhs.value(), "bar");
@@ -219,7 +219,7 @@ TEST_F(TestProxyProperty, equal_CompareEqualToValueWhenValid)
 {
     std::string rhs{ "foo" };
 
-    m_sut.construct("foo");    
+    m_sut.construct("foo");
 
     EXPECT_TRUE(m_sut.equal(rhs));
     EXPECT_TRUE(m_sut == rhs);

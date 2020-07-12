@@ -9,7 +9,7 @@ namespace dots::type
 
     template <>
     struct Vector<Typeless>
-    {        
+    {
         virtual ~Vector() = default;
 
         virtual Vector& operator = (const Vector& /*rhs*/)
@@ -17,7 +17,7 @@ namespace dots::type
             // note that this is only a necessary dummy implementation that always gets overriden by sub-class
             return *this;
         }
-        
+
         virtual Vector& operator = (Vector&& /*rhs*/) noexcept
         {
             // note that this is only a necessary dummy implementation that always gets overriden by sub-class
@@ -43,9 +43,9 @@ namespace dots::type
     struct Vector<T> : Vector<Typeless, void>, std::vector<std::conditional_t<std::is_same_v<T, bool>, uint8_t, T>>
     {
         using vector_t = std::vector<std::conditional_t<std::is_same_v<T, bool>, uint8_t, T>>;
-        
+
         Vector() = default;
-        
+
         Vector(const Vector& other) = default;
         Vector(Vector&& other) = default;
 
@@ -62,7 +62,7 @@ namespace dots::type
         {
             /* do nothing */
         }
-        
+
         // ReSharper disable CppHidingFunction
         ~Vector() = default; // note: hiding a non-virtual destructor is harmless for stateless sub-classes
         // ReSharper restore CppHidingFunction
@@ -76,7 +76,7 @@ namespace dots::type
         {
             return vector_t::operator=(rhs);
         }
-        
+
         Vector& operator = (vector_t&& rhs) noexcept
         {
             return vector_t::operator=(std::move(rhs));
@@ -88,7 +88,7 @@ namespace dots::type
             *this = static_cast<const Vector&>(rhs);
             return *this;
         }
-        
+
         Vector& operator = (Vector<Typeless>&& rhs) noexcept override
         {
             // TODO: ensure compatible type
@@ -105,17 +105,17 @@ namespace dots::type
         {
             return Typeless::From(vector_t::operator[](pos));
         }
-        
+
         Typeless& typelessAt(size_t pos) override
         {
             return Typeless::From(vector_t::operator[](pos));
-        }        
+        }
 
         Typeless* typelessData() override
         {
             return Typeless::From(vector_t::data());
         }
-        
+
         const Typeless* typelessData() const override
         {
             return Typeless::From(vector_t::data());
@@ -125,7 +125,7 @@ namespace dots::type
         {
             vector_t::push_back(value.to<T>());
         }
-        
+
         void typelessPushBack(Typeless&& value) override
         {
             vector_t::push_back(std::move(value).to<T>());

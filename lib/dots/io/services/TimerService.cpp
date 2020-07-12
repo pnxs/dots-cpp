@@ -2,7 +2,7 @@
 
 namespace dots::io
 {
-    TimerService::TimerService(boost::asio::execution_context& executionContext) : 
+    TimerService::TimerService(boost::asio::execution_context& executionContext) :
         boost::asio::execution_context::service(executionContext)
     {
         /* do nothing */
@@ -14,7 +14,7 @@ namespace dots::io
         m_timers.try_emplace(id, static_cast<boost::asio::io_context&>(context()), id, timeout, cb, periodic);
 
         return id;
-    }    
+    }
 
     void TimerService::removeTimer(unsigned id)
     {

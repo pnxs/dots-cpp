@@ -15,7 +15,7 @@ namespace dots::type
         {
             /* do nothing */
         }
-        
+
         constexpr PropertyOffset(size_t alignment) :
             PropertyOffset(alignment, 0, sizeof(PropertyArea))
         {
@@ -27,7 +27,7 @@ namespace dots::type
         {
             /* do nothing */
         }
-        
+
         PropertyOffset(const PropertyOffset& other) = default;
         PropertyOffset(PropertyOffset&& other) = default;
         ~PropertyOffset() = default;
@@ -71,7 +71,7 @@ namespace dots::type
         {
             return PropertyOffset<T>{ previous, sizeof(U) };
         }
-        
+
         PropertyOffset(const PropertyOffset& other) = default;
         PropertyOffset(PropertyOffset&& other) = default;
         ~PropertyOffset() = default;

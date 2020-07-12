@@ -28,7 +28,7 @@ namespace dots::io
 
         using receive_handler_t = std::function<bool(Connection&, Transmission, bool)>;
         using transition_handler_t = std::function<void(Connection&, const std::exception_ptr&)>;
-        
+
         Connection(channel_ptr_t channel, bool host, std::optional<std::string> authSecret = std::nullopt);
         Connection(const Connection& other) = delete;
         Connection(Connection&& other) = default;

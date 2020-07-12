@@ -37,7 +37,7 @@ namespace dots::type
 
         Type type() const;
         bool isFundamentalType() const;
-        
+
         const std::string& name() const;
         size_t size() const;
         size_t alignment() const;
@@ -190,7 +190,7 @@ namespace dots::type
             case Type::Struct:
                 return false;
         }
-        
+
         return false;
     }
 }
