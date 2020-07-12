@@ -128,6 +128,7 @@ namespace dots::type
 						propertyThis.destroy();
 					}
 				};
+				(void)assign;
 
 				(assign(propertyPairs.first, propertyPairs.second), ...);
 			});
@@ -146,6 +147,7 @@ namespace dots::type
 						propertyThis = propertyOther;
 					}
 				};
+				(void)copy;
 
 				(copy(propertyPairs.first, propertyPairs.second), ...);
 			});
@@ -174,6 +176,7 @@ namespace dots::type
 						}
 					}
 				};
+				(void)merge;
 
 				(merge(propertyPairs.first, propertyPairs.second), ...);
 			});
@@ -192,6 +195,7 @@ namespace dots::type
 						propertyThis.swap(propertyOther);
 					}
 				};
+				(void)swap;
 
 				(swap(propertyPairs.first, propertyPairs.second), ...);
 			});
@@ -208,6 +212,7 @@ namespace dots::type
 						property.destroy();
 					}
 				};
+				(void)destroy;
 
 				(destroy(properties), ...);
 			}, typename Derived::_properties_t{});
@@ -228,6 +233,7 @@ namespace dots::type
 						return true;
 					}
 				};
+				(void)equal;
 
 				return (equal(propertyPairs.first, propertyPairs.second) && ...);
 			});
@@ -247,6 +253,7 @@ namespace dots::type
 					{
 						return propertyThis == propertyOther;
 					};
+					(void)equal;
 
 					return (equal(propertyPairs.first, propertyPairs.second) && ...);
 				}
@@ -257,7 +264,14 @@ namespace dots::type
 		{
 			return _applyPropertyPairs(rhs, [&](const auto&... propertyPairs)
 			{
-				return _less(includedProperties, propertyPairs...);
+				if constexpr (sizeof...(propertyPairs) == 0)
+				{
+				    return false;
+				}
+				else
+				{
+				    return _less(includedProperties, propertyPairs...);
+				}
 			});
 		}
 
@@ -294,6 +308,7 @@ namespace dots::type
 							symmetricDiff += property_t::Set();
 						}
 					};
+					(void)check_inequality;
 
 					return (check_inequality(propertyPairs.first, propertyPairs.second), ...);
 				});
@@ -348,11 +363,28 @@ namespace dots::type
 				}
 				else
 				{
-					return (strip_t<decltype(args)>::Set() | ...);
+					return (strip_t<decltype(args)>::Set() + ...);
 				}
 			}, typename Derived::_key_properties_t{});
 
 			return KeyProperties;
+		}
+
+		static PropertySet _Properties()
+		{
+			static PropertySet Properties = std::apply([](auto&&... args)
+			{
+				if constexpr (sizeof...(args) == 0)
+				{
+					return PropertySet{};
+				}
+				else
+				{
+					return (strip_t<decltype(args)>::Set() + ...);
+				}
+			}, typename Derived::_properties_t{});
+
+			return Properties;
 		}
 
     	static property_descriptor_container_t _MakePropertyDescriptors()
@@ -409,7 +441,7 @@ namespace dots::type
     	static property_descriptor_container_t _MakePropertyDescriptors(std::tuple<Properties...>)
     	{
 			property_descriptor_container_t propertyDescriptors;
-			(propertyDescriptors.emplace_back(strip_t<Properties>::MakeDescriptor()), ...);
+			(propertyDescriptors.emplace_back(strip_t<Properties>::Descriptor), ...);
 
 			return propertyDescriptors;
     	}

@@ -37,7 +37,6 @@ namespace dots::io
 		
 		type::property_descriptor_container_t propertyDescriptors;
 		size_t alignment = alignof(type::Struct);
-		size_t size;
 
 		uint8_t flags = type::StructDescriptor<>::Uncached;
 
@@ -84,7 +83,7 @@ namespace dots::io
 					if ( dynStructDescriptor == nullptr)
 					{
 						const auto& staticStructDescriptor = static_cast<const type::StructDescriptor<>&>(*valueTypeDescriptor);
-						dynStructDescriptor = std::make_shared<type::Descriptor<type::DynamicStruct>>(staticStructDescriptor.name(), staticStructDescriptor.flags(), staticStructDescriptor.propertyDescriptors(), staticStructDescriptor.size(), staticStructDescriptor.alignment());
+						dynStructDescriptor = std::make_shared<type::Descriptor<type::DynamicStruct>>(staticStructDescriptor.name(), staticStructDescriptor.flags(), staticStructDescriptor.propertyDescriptors(), staticStructDescriptor.size());
 					}
 					
 					descriptor = m_registry.get().registerType(type::Descriptor<types::vector_t<type::DynamicStruct>>{ dynStructDescriptor });
@@ -101,16 +100,14 @@ namespace dots::io
 			}
 			else
 			{
-				last = &propertyDescriptors.emplace_back(descriptor, propertyData.name, *last, propertyData.tag, propertyData.isKey);
+				last = &propertyDescriptors.emplace_back(type::PropertyDescriptor{ descriptor, propertyData.name, propertyData.tag, propertyData.isKey, type::PropertyOffset<>{ descriptor->alignment(), last->offset(), last->valueDescriptor().size() } });
 			}
 
 			alignment = std::max(last->valueDescriptor().alignment(), alignment);
 		}
 
-		size_t currentOffset = last->offset() + last->valueDescriptor().size();
-		size = currentOffset + (alignment - (currentOffset % alignment)) % alignment;
-
-		std::shared_ptr<type::StructDescriptor<>> descriptor = m_registry.get().registerType(type::Descriptor<type::DynamicStruct>{ structData.name, flags, propertyDescriptors, size, alignment });
+		size_t size = type::PropertyOffset<>{ alignment, last->offset(), last->valueDescriptor().size() };
+		std::shared_ptr<type::StructDescriptor<>> descriptor = m_registry.get().registerType(type::Descriptor<type::DynamicStruct>{ structData.name, flags, propertyDescriptors, sizeof(type::DynamicStruct) + size });
 
 		return descriptor;
 	}

@@ -65,6 +65,11 @@ namespace dots::io
         exportDependencies(descriptor);
     }
 
+    const Medium& Channel::medium() const
+    {
+        return DefaultMedium;
+    }
+
     const io::Registry& Channel::registry() const
     {
         verifyInitialized();

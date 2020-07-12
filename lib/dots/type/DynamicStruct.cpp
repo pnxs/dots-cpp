@@ -1,23 +1,38 @@
 #include <dots/type/DynamicStruct.h>
+#include <dots/type/FundamentalTypes.h>
+#include <memory>
 
 namespace dots::type
 {
 	DynamicStruct::DynamicStruct(const Descriptor<DynamicStruct>& descriptor) :
 		Struct(descriptor),
-		m_propertyArea{ reinterpret_cast<PropertyArea*>(::operator new(descriptor.allocateSize())) }
+		m_propertyArea{ std::unique_ptr<PropertyArea>{ reinterpret_cast<PropertyArea*>(::operator new(descriptor.size() - sizeof(DynamicStruct))) } }
 	{
-		::new(static_cast<void*>(m_propertyArea.get())) PropertyArea{};
+		::new(static_cast<void*>(propertyAreaGet())) PropertyArea{};
 	}
+
+	DynamicStruct::DynamicStruct(const Descriptor<DynamicStruct>& descriptor, PropertyArea* propertyArea) :
+	    Struct(descriptor),
+		m_propertyArea{ propertyArea }
+    {
+		::new(static_cast<void*>(propertyAreaGet())) PropertyArea{};
+    }
 
 	DynamicStruct::DynamicStruct(const DynamicStruct& other) :
 		DynamicStruct(static_cast<const Descriptor<DynamicStruct>&>(other._descriptor()))
 	{
 		*this = other;
 	}
-	
-	DynamicStruct::~DynamicStruct()
+
+    DynamicStruct::DynamicStruct(DynamicStruct&& other) :
+	    DynamicStruct(static_cast<const Descriptor<DynamicStruct>&>(other._descriptor()))
+    {
+		*this = std::move(other);
+    }
+
+    DynamicStruct::~DynamicStruct()
 	{
-		if (m_propertyArea != nullptr)
+		if (propertyAreaGet() != nullptr)
 		{
 			_clear();
 		}
@@ -29,7 +44,13 @@ namespace dots::type
 		return *this;
 	}
 
-	bool DynamicStruct::operator == (const DynamicStruct& rhs) const
+    DynamicStruct& DynamicStruct::operator = (DynamicStruct&& rhs)
+    {
+		_assign(std::move(rhs));
+		return *this;
+    }
+
+    bool DynamicStruct::operator == (const DynamicStruct& rhs) const
 	{
 		return _equal(rhs);
 	}
@@ -77,8 +98,27 @@ namespace dots::type
 
         return *this;
 	}
-	
-	DynamicStruct& DynamicStruct::_copy(const DynamicStruct& other, const PropertySet& includedProperties/* = PropertySet::All*/)
+
+    DynamicStruct& DynamicStruct::_assign(DynamicStruct&& other, const PropertySet& includedProperties)
+    {
+		PropertySet assignProperties = other._validProperties() ^ includedProperties;
+
+        for (auto&[propertyThis, propertyOther] : _propertyRange(other))
+        {
+            if (propertyThis.isPartOf(assignProperties))
+            {
+                propertyThis.constructOrAssign(std::move(propertyOther));
+            }
+            else
+            {
+                propertyThis.destroy();
+            }
+        }
+
+        return *this;
+    }
+
+    DynamicStruct& DynamicStruct::_copy(const DynamicStruct& other, const PropertySet& includedProperties/* = PropertySet::All*/)
 	{
 		PropertySet copyProperties = (_validProperties() + other._validProperties()) ^ includedProperties;
 
@@ -118,17 +158,10 @@ namespace dots::type
 	
 	void DynamicStruct::_swap(DynamicStruct& other, const PropertySet& includedProperties/* = PropertySet::All*/)
 	{
-		if (includedProperties == PropertySet::All)
-		{
-			m_propertyArea.swap(other.m_propertyArea);
-		}
-		else
-		{
-			for (auto&[propertyThis, propertyOther] : _propertyRange(other, includedProperties))
-	        {
-	            propertyThis.swap(propertyOther);
-	        }
-		}
+		for (auto&[propertyThis, propertyOther] : _propertyRange(other, includedProperties))
+	    {
+	        propertyThis.swap(propertyOther);
+	    }
 	}
 	
 	void DynamicStruct::_clear(const PropertySet& includedProperties/* = PropertySet::All*/)
@@ -217,11 +250,28 @@ namespace dots::type
 	
 	const PropertyArea& DynamicStruct::_propertyArea() const
 	{
-		return *m_propertyArea;
+		return *propertyAreaGet();
 	}
 	
 	PropertyArea& DynamicStruct::_propertyArea()
 	{
-		return *m_propertyArea;
+		return *propertyAreaGet();
 	}
+
+    const PropertyArea* DynamicStruct::propertyAreaGet() const
+    {
+		if (std::holds_alternative<PropertyArea*>(m_propertyArea))
+		{
+		    return std::get<PropertyArea*>(m_propertyArea);
+		}
+		else
+		{
+		    return std::get<std::unique_ptr<PropertyArea>>(m_propertyArea).get();
+		}
+    }
+
+    PropertyArea* DynamicStruct::propertyAreaGet()
+    {
+		return const_cast<PropertyArea*>(std::as_const(*this).propertyAreaGet());
+    }
 }

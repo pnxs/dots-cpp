@@ -3,6 +3,7 @@
 #include <dots/dots.h>
 #include <dots/tools/logging.h>
 #include <dots/type/PosixTime.h>
+#include <dots_legacy/io/auth/LegacyAuthManager.h>
 #include "DotsClient.dots.h"
 #include <StructDescriptorData.dots.h>
 #include <DotsTypes.dots.h>
@@ -26,6 +27,7 @@ namespace dots
         }
 
         m_hostTransceiver.subscribe<type::Type::Struct>([&](const type::StructDescriptor<>& descriptor){ handleNewStructType(descriptor); });
+        m_hostTransceiver.setAuthManager<io::LegacyAuthManager>();
     }
 
     void Server::handleTransition(const io::Connection& connection)

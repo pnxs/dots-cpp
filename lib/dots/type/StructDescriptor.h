@@ -1,4 +1,5 @@
 #pragma once
+#include <deque>
 #include <dots/type/Descriptor.h>
 #include <dots/type/StaticDescriptor.h>
 #include <dots/type/Property.h>
@@ -26,7 +27,7 @@ namespace dots::type
 		static const uint8_t Local         = 0b0001'0000;
 		static const uint8_t SubstructOnly = 0b0010'0000;
 		
-		StructDescriptor(std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptors, size_t size, size_t alignment);
+		StructDescriptor(std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptors, size_t areaOffset, size_t size, size_t alignment);
 		StructDescriptor(const StructDescriptor& other) = default;
 		StructDescriptor(StructDescriptor&& other) = default;
 		~StructDescriptor() = default;
@@ -53,6 +54,9 @@ namespace dots::type
 		bool lessEqual(const Typeless& lhs, const Typeless& rhs) const override;
 		bool greater(const Typeless& lhs, const Typeless& rhs) const override;
 		bool greaterEqual(const Typeless& lhs, const Typeless& rhs) const override;
+
+		size_t areaOffset() const;
+		size_t numSubStructs() const;
 
 		bool usesDynamicMemory() const override;
 		size_t dynamicMemoryUsage(const Typeless& instance) const override;
@@ -87,6 +91,10 @@ namespace dots::type
 
 		const property_descriptor_container_t& propertyDescriptors() const;
 		partial_property_descriptor_container_t propertyDescriptors(const PropertySet& properties) const;
+
+		[[deprecated("use property paths instead")]]
+		const property_descriptor_container_t& flatPropertyDescriptors() const;
+		const std::vector<property_path_t>& propertyPaths() const;
 		
 		const PropertySet& properties() const;
 		const PropertySet& keyProperties() const;
@@ -108,21 +116,33 @@ namespace dots::type
 
 	private:
 
+		void flatPropertyDescriptors(PropertyOffset<> previousOffset, size_t previousSize, property_descriptor_container_t& flatPropertyDescriptors) const;
+
 		uint8_t m_flags;
 		property_descriptor_container_t m_propertyDescriptors;
+		size_t m_areaOffset;
 		PropertySet m_properties;
 		PropertySet m_keyProperties;
+		size_t m_numSubStructs;
 		PropertySet m_dynamicMemoryProperties;
+		mutable property_descriptor_container_t m_flatPropertyDescriptors;
+		mutable std::deque<PropertyDescriptor> m_subAreaPropertyDescriptors;
+		mutable std::vector<property_path_t> m_propertyPaths;
 		mutable const types::StructDescriptorData* m_descriptorData = nullptr;
 	};
 
-	template <typename T>
+    template <typename T>
 	struct StructDescriptor<T> : StaticDescriptor<T, StructDescriptor<Typeless>>
 	{
 		static_assert(std::is_base_of_v<Struct, T>);
-		
+
 		StructDescriptor(std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptor) :
-			StaticDescriptor<T, StructDescriptor<Typeless>>(std::move(name), flags, propertyDescriptor, sizeof(T), alignof(T))
+			StaticDescriptor<T, StructDescriptor<Typeless>>(std::move(name), flags, propertyDescriptor, sizeof(const StructDescriptor<>*), sizeof(T), alignof(T))
+		{
+			/* do nothing */
+		}
+		StructDescriptor(std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptor, size_t areaOffset, size_t size, size_t alignment) :
+			StaticDescriptor<T, StructDescriptor<Typeless>>(std::move(name), flags, propertyDescriptor, areaOffset, size, alignment)
 		{
 			/* do nothing */
 		}

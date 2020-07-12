@@ -16,7 +16,7 @@ namespace dots::io
 		GuestTransceiver& operator = (const GuestTransceiver& rhs) = delete;
 		GuestTransceiver& operator = (GuestTransceiver&& rhs) = default;
 
-		const io::Connection& open(channel_ptr_t channel, descriptor_map_t preloadPublishTypes = {}, descriptor_map_t preloadSubscribeTypes = {});
+		const io::Connection& open(channel_ptr_t channel, descriptor_map_t preloadPublishTypes = {}, descriptor_map_t preloadSubscribeTypes = {}, std::optional<std::string> authSecret = std::nullopt);
 		void publish(const type::Struct& instance, types::property_set_t what = types::property_set_t::All, bool remove = false) override;
 
 	private:

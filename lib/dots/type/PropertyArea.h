@@ -73,7 +73,7 @@ namespace dots::type
     	template <typename P>
 		static PropertyArea& GetArea(P& property, size_t offset)
 		{
-			return const_cast<PropertyArea&>(GetProperty(std::as_const(property), offset));
+			return const_cast<PropertyArea&>(GetArea<P>(std::as_const(property), offset));
 		}
 
 		template <typename P>

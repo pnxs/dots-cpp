@@ -119,7 +119,7 @@ namespace dots::io
 		{
 			forEachClone([&](const value_t& value)
 			{
-				f(static_cast<const T&>(value.first));
+				f(value.first.to<T>());
 			});
 		}
 

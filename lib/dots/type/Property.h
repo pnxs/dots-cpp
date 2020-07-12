@@ -15,6 +15,7 @@ namespace dots::type
 		static_assert(std::conjunction_v<std::negation<std::is_pointer<T>>, std::negation<std::is_reference<T>>>);
 		using value_t = T;
 		static constexpr bool IsTypeless = std::is_same_v<T, Typeless>;
+		static constexpr bool IsTypelessOrDynamic = std::disjunction_v<std::is_same<T, Typeless>, is_dynamic_descriptor<Descriptor<T>>>;
 
 		template <typename U, std::enable_if_t<!std::disjunction_v<std::is_same<std::remove_reference_t<U>, Property>, std::is_same<std::remove_reference_t<U>, Derived>>, int> = 0>
 		Derived& operator = (U&& rhs)
@@ -121,7 +122,7 @@ namespace dots::type
 
 		bool isValid() const
 		{
-			return metadata().set() <= validProperties();
+			return static_cast<const Derived&>(*this).derivedIsValid();
 		}
 
 		template <bool AssertInvalidity = true>
@@ -147,11 +148,14 @@ namespace dots::type
 			{
 				if (isValid())
 				{
-					throw std::runtime_error{ std::string{ "attempt to construct already valid property: " } + metadata().name().data() };
+					throw std::runtime_error{ "attempt to construct already valid property: " + descriptor().name() };
 				}
 			}
 
-			if constexpr (!IsTypeless)
+			setValid();
+
+			static_assert(!IsTypelessOrDynamic || sizeof...(Args) <= 1, "typeless construct only supports a single argument");
+			if constexpr (!IsTypelessOrDynamic)
 			{
 				Descriptor<T>::construct(storage(), std::forward<Args>(args)...);
 			}
@@ -163,8 +167,6 @@ namespace dots::type
 			{
 				descriptor().valueDescriptor().construct(storage());
 			}
-			
-			setValid();
 
 			return storage();
 		}
@@ -173,7 +175,7 @@ namespace dots::type
 		{
 			if (isValid())
 			{
-				if constexpr (IsTypeless)
+				if constexpr (IsTypelessOrDynamic)
 				{
 					descriptor().valueDescriptor().destruct(storage());
 				}
@@ -190,7 +192,7 @@ namespace dots::type
 		{
 			if (!isValid())
 			{
-				throw std::runtime_error{ std::string{ "attempt to access invalid property: " } + metadata().name().data() };
+				throw std::runtime_error{ "attempt to access invalid property: " + descriptor().name() };
 			}
 
 			return storage();
@@ -199,6 +201,19 @@ namespace dots::type
 		const T& value() const
 		{
 			return const_cast<Property&>(*this).value();
+		}
+
+		template <typename... Args>
+		T valueOrDefault(Args&&... args) const
+		{
+			if (isValid())
+			{
+				return storage();
+			}
+			else
+			{
+				return T(std::forward<Args>(args)...);
+			}
 		}
 
 		template <typename... Args>
@@ -237,12 +252,14 @@ namespace dots::type
 			{
 				if (!isValid())
 				{
-					throw std::runtime_error{ std::string{ "attempt to assign invalid property: " } + metadata().name().data() };
+					throw std::runtime_error{ "attempt to assign invalid property: " + descriptor().name() };
 				}
 			}
 
-			static_assert(!IsTypeless || sizeof...(Args) <= 1, "typeless assignment only supports a single argument");
-			if constexpr (!IsTypeless)
+			setValid();
+
+			static_assert(!IsTypelessOrDynamic || sizeof...(Args) <= 1, "typeless assignment only supports a single argument");
+			if constexpr (!IsTypelessOrDynamic)
 			{
 				Descriptor<T>::assign(storage(), std::forward<Args>(args)...);
 			}
@@ -254,8 +271,6 @@ namespace dots::type
 			{
 				descriptor().valueDescriptor().assign(storage());
 			}
-			
-			setValid();
 
 			return storage();
 		}
@@ -279,7 +294,7 @@ namespace dots::type
 			{
 				if (other.isValid())
 				{
-					if constexpr (IsTypeless)
+					if constexpr (IsTypelessOrDynamic)
 					{
 						return descriptor().valueDescriptor().swap(storage(), other);
 					}
@@ -305,7 +320,7 @@ namespace dots::type
 		{
 			if (isValid())
 			{
-				if constexpr (IsTypeless)
+				if constexpr (IsTypelessOrDynamic)
 				{
 					return descriptor().valueDescriptor().equal(storage(), rhs);
 				}
@@ -336,7 +351,7 @@ namespace dots::type
 		{
 			if (isValid())
 			{
-				if constexpr (IsTypeless)
+				if constexpr (IsTypelessOrDynamic)
 				{
 					return descriptor().valueDescriptor().less(storage(), rhs);
 				}
@@ -377,7 +392,7 @@ namespace dots::type
 		{
 			if (isValid())
 			{
-				if constexpr (IsTypeless)
+				if constexpr (IsTypelessOrDynamic)
 				{
 					return descriptor().valueDescriptor().less(rhs, storage());
 				}
@@ -407,11 +422,6 @@ namespace dots::type
 			return !less(rhs);
 		}
 
-		constexpr const PropertyMetadata<T>& metadata() const
-		{
-			return static_cast<const Derived&>(*this).derivedMetadata();
-		}
-
 		constexpr const PropertyDescriptor& descriptor() const
 		{
 			return static_cast<const Derived&>(*this).derivedDescriptor();
@@ -419,7 +429,7 @@ namespace dots::type
 
 		constexpr bool isPartOf(const PropertySet& propertySet) const
 		{
-			return metadata().set() <= propertySet;
+			return descriptor().set() <= propertySet;
 		}
 
 		constexpr T& storage()
@@ -441,27 +451,63 @@ namespace dots::type
 
 		constexpr Property& operator = (const Property& rhs) = default;
 		constexpr Property& operator = (Property&& rhs) = default;
+		
 
 	private:
 
+		size_t offset() const
+		{
+		    return static_cast<const Derived&>(*this).derivedOffset();
+		}
+
 		const PropertySet& validProperties() const
 		{
-			return PropertyArea::GetArea(storage(), metadata().offset()).validProperties();
+			return static_cast<const Derived&>(*this).derivedValidProperties();
 		}
 
 		PropertySet& validProperties()
 		{
 			return const_cast<PropertySet&>(std::as_const(*this).validProperties());
-		}		
+		}
 
 		void setValid()
 		{
-			validProperties() += metadata().set();
+			static_cast<Derived&>(*this).derivedSetValid();
 		}
 
 		void setInvalid()
 		{
-			validProperties() -= metadata().set();
+			static_cast<Derived&>(*this).derivedSetInvalid();
+		}
+
+		size_t derivedOffset() const
+		{
+			return descriptor().offset();
+		}
+
+		const PropertySet& derivedValidProperties() const
+		{
+			return PropertyArea::GetArea(storage(), offset()).validProperties();
+		}
+
+		PropertySet& derivedValidProperties()
+		{
+			return const_cast<PropertySet&>(std::as_const(*this).derivedValidProperties());
+		}
+
+		bool derivedIsValid() const
+		{
+			return descriptor().set() <= validProperties();
+		}
+
+		void derivedSetValid()
+		{
+			validProperties() += descriptor().set();
+		}
+
+		void derivedSetInvalid()
+		{
+			validProperties() -= descriptor().set();
 		}
 	};
 

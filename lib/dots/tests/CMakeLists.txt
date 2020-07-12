@@ -11,6 +11,7 @@ add_executable(${TARGET_NAME} TestContainer.cpp)
 # properties
 target_sources(${TARGET_NAME}
 	PRIVATE
+		TestDigest.cpp
         TestAsciiSerialization.cpp
         TestCborSerialization.cpp
 		TestChrono.cpp
@@ -24,6 +25,7 @@ target_sources(${TARGET_NAME}
 		TestProperty.cpp
 		TestProxyProperty.cpp
 		TestProxyPropertyIterator.cpp
+		TestIpNetwork.cpp
 )	
 target_include_directories(${TARGET_NAME}
 	PRIVATE

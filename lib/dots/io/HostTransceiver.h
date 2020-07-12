@@ -5,6 +5,7 @@
 #include <dots/io/Connection.h>
 #include <dots/io/Transceiver.h>
 #include <dots/io/Listener.h>
+#include <dots/io/auth/AuthManager.h>
 #include <DotsClearCache.dots.h>
 #include <DotsDescriptorRequest.dots.h>
 #include <DotsMember.dots.h>
@@ -25,6 +26,13 @@ namespace dots::io
 
         void listen(listener_ptr_t&& listener);
         void publish(const type::Struct& instance, types::property_set_t includedProperties = types::property_set_t::All, bool remove = false) override;
+
+        template <typename T, typename... Args>
+        void setAuthManager(Args&&... args)
+        {
+            static_assert(std::is_base_of_v<AuthManager, T>, "T must be derived from AuthManager");
+            m_authManager = std::make_unique<T>(*this, std::forward<Args>(args)...);
+        }
 
     private:
 
@@ -54,5 +62,6 @@ namespace dots::io
         listener_map_t m_listeners;
         connection_map_t m_guestConnections;
         group_map_t m_groups;
+        std::unique_ptr<AuthManager> m_authManager;
     };
 }

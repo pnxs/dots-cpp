@@ -19,7 +19,7 @@ namespace dots
 
 		GuestTransceiver& globalGuestTransceiver = dots::transceiver(name);
 		auto channel = io::global_service<io::ChannelService>().makeChannel<io::TcpChannel>(m_serverAddress, m_serverPort);
-		const io::Connection& connection = globalGuestTransceiver.open(std::move(channel), getPreloadPublishTypes(), getPreloadSubscribeTypes());
+		const io::Connection& connection = globalGuestTransceiver.open(std::move(channel), getPreloadPublishTypes(), getPreloadSubscribeTypes(), m_authSecret);
 
 		LOG_DEBUG_S("run until state connected...");
 		while (!connection.connected())
@@ -72,6 +72,7 @@ namespace dots
 		desc.add_options()
 			("dots-address", po::value<std::string>()->default_value("127.0.0.1"), "address to bind to")
 			("dots-port", po::value<std::string>()->default_value("11234"), "port to bind to")
+		    ("auth-secret", po::value<std::string>(), "secret used during authentication")
 			;
 
 		po::variables_map vm;
@@ -89,8 +90,18 @@ namespace dots
 			m_serverPort = atoi("DOTS_SERVER_PORT");
 		}
 
+		if (getenv("DOTS_AUTH_SECRET"))
+        {
+            m_authSecret = getenv("DOTS_AUTH_SECRET");
+        }
+
 		m_serverAddress = vm["dots-address"].as<std::string>();
 		m_serverPort = vm["dots-port"].as<std::string>();
+
+		if (vm.count("auth-secret") > 0)
+		{
+			m_authSecret = vm["auth-secret"].as<std::string>();
+		}		
 	}
 
 	GuestTransceiver::descriptor_map_t Application::getPreloadPublishTypes() const

@@ -15,7 +15,7 @@ protected:
 	struct test_property_t : Property<T, test_property_t<T>>
 	{
 		test_property_t(const dots::type::PropertyArea& area, std::string name, uint32_t tag) :
-			m_descriptor{ dots::type::PropertyDescriptor{ Descriptor<T>::InstancePtr(), std::move(name), static_cast<uint32_t>(reinterpret_cast<char*>(this) - reinterpret_cast<const char*>(&area)), tag, false } } {}
+			m_descriptor{ dots::type::PropertyDescriptor{ Descriptor<T>::InstancePtr(), std::move(name), tag, false, PropertyOffset<>{ std::in_place, static_cast<uint32_t>(reinterpret_cast<char*>(this) - reinterpret_cast<const char*>(&area)) } } } {}
 		test_property_t(const test_property_t& other) = delete;
 		test_property_t(test_property_t&& other) = delete;
 		~test_property_t() { Property<T, test_property_t<T>>::destroy(); }
@@ -26,10 +26,8 @@ protected:
 	private:
 
 		friend struct Property<T, test_property_t<T>>;
-
 		T& derivedStorage()	{ return m_value; }
 		const T& derivedStorage() const { return const_cast<test_property_t&>(*this).derivedStorage(); }
-		const PropertyMetadata<T>& derivedMetadata() const { return static_cast<const PropertyMetadata<T>&>(m_descriptor.metadata()); }
 		const PropertyDescriptor& derivedDescriptor() const { return m_descriptor; }
 
 		union {	T m_value; };
@@ -108,6 +106,23 @@ TEST_F(TestProperty, destroy_InvalidAfterDestroy)
 	m_sut.destroy();
 
 	EXPECT_FALSE(m_sut.isValid());
+}
+
+TEST_F(TestProperty, valueOrDefault_ValueOnValid)
+{
+	m_sut.construct("foo");
+	std::string value = m_sut.valueOrDefault("bar");
+
+	EXPECT_TRUE(m_sut.isValid());
+	EXPECT_EQ(value, "foo");
+}
+
+TEST_F(TestProperty, valueOrDefault_DefaultOnValid)
+{
+	std::string value = m_sut.valueOrDefault("bar");
+
+	EXPECT_FALSE(m_sut.isValid());
+	EXPECT_EQ(value, "bar");
 }
 
 TEST_F(TestProperty, constructOrValue_ConstructOnInvalid)

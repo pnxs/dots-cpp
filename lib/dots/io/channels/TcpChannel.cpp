@@ -23,6 +23,8 @@ namespace dots::io
 				m_socket.set_option(boost::asio::ip::tcp::socket::keep_alive(true));
 				m_socket.set_option(boost::asio::socket_base::linger(true, 10));
 
+				m_medium.emplace(TcpSocketCategory, m_socket.remote_endpoint().address().to_string());
+
 				return;
 			}
 			catch (const std::exception&/* e*/)
@@ -41,6 +43,16 @@ namespace dots::io
 	{
 		m_instanceBuffer.resize(8192);
 		m_headerBuffer.resize(1024);
+
+		if (m_socket.is_open())
+		{
+		    m_medium.emplace(TcpSocketCategory, m_socket.remote_endpoint().address().to_string());
+		}
+	}
+
+	const Medium& TcpChannel::medium() const
+	{
+		return *m_medium;
 	}
 
 	void TcpChannel::asyncReceiveImpl()

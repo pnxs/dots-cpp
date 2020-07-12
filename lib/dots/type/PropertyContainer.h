@@ -2,6 +2,7 @@
 #include <string_view>
 #include <array>
 #include <functional>
+#include <type_traits>
 #include <algorithm>
 #include <dots/type/PropertyArea.h>
 #include <dots/type/ProxyPropertyPairIterator.h>
@@ -57,6 +58,11 @@ namespace dots::type
     	constexpr const property_descriptor_container_t& _propertyDescriptors() const
 		{
 			return static_cast<const Derived&>(*this).derivedPropertyDescriptors();
+		}
+
+		constexpr const std::vector<property_path_t>& _propertyPaths() const
+		{
+			return static_cast<const Derived&>(*this).derivedPropertyPaths();
 		}
 		
 	    proxy_property_iterator _begin(const PropertySet& includedProperties = PropertySet::All)
@@ -199,13 +205,13 @@ namespace dots::type
 	        return _propertyRangeReversed(rhs, _validProperties() ^ rhs._validProperties() ^ includedProperties);
 	    }
 
-		template <typename Callable>
+		template <typename Callable, std::enable_if_t<std::is_invocable_v<Callable, const ProxyProperty<>&>, int> = 0>
 		const_proxy_property_iterator _find(Callable&& callable) const
 		{
 			return std::find_if(_begin(), _end(), std::forward<Callable>(callable));
 		}
 
-		template <typename Callable>
+		template <typename Callable, std::enable_if_t<std::is_invocable_v<Callable, const ProxyProperty<>&>, int> = 0>
 		proxy_property_iterator _find(Callable&& callable)
 		{
 		    return std::find_if(_begin(), _end(), std::forward<Callable>(callable));
@@ -242,6 +248,59 @@ namespace dots::type
 			    return property.descriptor().name() == name;
 			});
 		}
+
+		const property_path_t& _path(std::string_view propertyPath) const
+		{
+            std::vector<std::string_view> propertyNames;
+
+		    for (std::string_view propertyPath_ = propertyPath;;)
+		    {
+			    std::string_view::size_type delimiterPos = propertyPath_.find_first_of('.');
+		        propertyNames.emplace_back(propertyPath_.substr(0, delimiterPos));
+
+			    if (delimiterPos == std::string_view::npos)
+			    {
+			        break;
+			    }
+			    else
+			    {
+			        if (++delimiterPos > propertyPath_.size())
+		            {
+			            throw std::runtime_error{ "invalid composed property name '" + std::string{ propertyPath } + "'" };
+		            }
+
+				    propertyPath_ = propertyPath_.substr(delimiterPos);
+			    }
+		    }
+
+		    for (const property_path_t& path : _propertyPaths())
+		    {
+			    auto equal_names = [](const PropertyDescriptor& propertyDescriptor, std::string_view propertyName)
+			    {
+			        return propertyDescriptor.name() == propertyName;
+			    };
+
+		        if (std::equal(path.begin(), path.end(), propertyNames.begin(), propertyNames.end(), equal_names))
+		        {
+		            return path;
+		        }
+		    }
+
+		    throw std::runtime_error{ "unknown composed property name '" + std::string{ propertyPath } + "'" };
+		    
+		}
+
+		template <typename T = Typeless>
+		ProxyProperty<T> _get(const property_path_t& propertyPath)
+        {
+			return ProxyProperty<T>{ _propertyArea(), propertyPath };
+        }
+
+		template <typename T = Typeless>
+		ProxyProperty<T> _get(std::string_view propertyPath)
+        {
+			return _get<T>(_path(propertyPath));
+        }
     };
 
 	template <typename Derived>

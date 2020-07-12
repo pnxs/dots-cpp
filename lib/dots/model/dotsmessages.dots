@@ -33,6 +33,8 @@ struct DotsMsgConnect [internal,cached=false] {
     1: string clientName; // transmit the name of the client to the server.
     2: bool preloadCache; // set to true, when the client wants to preload it's cache.
     3: bool preloadClientFinished; // transmit and set to true, when the client has send all subscriptions for preloading.
+    4: string authChallengeResponse;
+    5: string cnonce;
 }
 
 struct DotsMsgConnectResponse [internal,cached=false] {
@@ -51,6 +53,7 @@ struct DotsMsgError [internal,cached=false] {
 struct DotsMsgHello [internal,cached=false] {
     1: string serverName;
     2: uint64 authChallenge;
+    3: bool authenticationRequired;
 }
 
 struct DotsTransportHeader [internal,cached=false] {

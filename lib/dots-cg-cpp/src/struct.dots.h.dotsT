@@ -18,13 +18,13 @@ namespace dots::types
 {% endfor %}
     ///
 {% for property in attributes %}
-    /// @param {{property.name}} {% if property.options is defined and 'deprecated' in property.options %}[DEPRECATED] {% endif %}{{property.comment}}
+    /// @param {% if property.key %}[key] {% endif %}{{property.name}} {% if property.options is defined and 'deprecated' in property.options %}[DEPRECATED] {% endif %}{{property.comment}}
 {% endfor %}
     ///
     /// @code
     /// Structure {
 {% for property in attributes %}
-    ///    {{property.tag}}: {{property.type}} {{property.name}} // {% if property.options is defined and 'deprecated' in property.options %}[DEPRECATED] {% endif %}{{property.comment}}
+    ///    {{property.tag}}: {% if property.key %}[key] {% endif %}{{property.type}} {{property.name}} // {% if property.options is defined and 'deprecated' in property.options %}[DEPRECATED] {% endif %}{{property.comment}}
 {% endfor %}
     /// }
     /// @endcode
@@ -43,7 +43,8 @@ namespace dots::types
         struct {{property.name}}_t : type::StaticProperty<types::{{property.cxx_type}}, {{property.name}}_t>
         {
 			using struct_t = {{name}};
-			static constexpr auto Metadata = type::PropertyMetadata<types::{{property.cxx_type}}>{ "{{property.name}}", {{property.tag}}, {% if property.key %}true{% else %}false{% endif %}{% if not loop.first %}, {{loop.previtem.name}}_t::Metadata{% endif %} };
+			static constexpr auto Offset = type::PropertyOffset<types::{{property.cxx_type}}>::Make({% if not loop.first %}{{loop.previtem.name}}_t::Offset{% endif %});
+			inline static auto Descriptor = type::PropertyDescriptor{ type::Descriptor<types::{{property.cxx_type}}>::InstancePtr(), "{{property.name}}", {{property.tag}}, {% if property.key %}true{% else %}false{% endif %}, Offset };
 		
 			{{property.name}}_t& operator = (const {{property.name}}_t& rhs) = default;
 			{{property.name}}_t& operator = ({{property.name}}_t&& rhs) = default;
@@ -100,7 +101,7 @@ namespace dots::types
 		}
 
 {% for property in attributes %}
-        {% if property.options is defined and 'deprecated' in property.options %}[[deprecated]] {% endif %}{{property.name}}_t {{property.name}}; // {% if property.options is defined and 'deprecated' in property.options %}[DEPRECATED] {% endif %}{{property.comment}} (key: {{property.key | lower }})
+        {% if property.options is defined and 'deprecated' in property.options %}[[deprecated]] {% endif %}{{property.name}}_t {{property.name}}; // {% if property.options is defined and 'deprecated' in property.options %}[DEPRECATED] {% endif %}{{property.tag}}: {% if property.key %}[key] {% endif %}{{property.type}} {{property.name}} // {% if property.options is defined and 'deprecated' in property.options %}[DEPRECATED] {% endif %}{{property.comment}}
 {% endfor %}
     };
 }
@@ -111,7 +112,7 @@ namespace dots::type
 	struct Descriptor<types::{{name}}> : StructDescriptor<types::{{name}}>
 	{
 		Descriptor() :
-			StructDescriptor(types::{{name}}::_Name, {% if options.cached %}Cached{% else %}Uncached{% endif %}{% if options.internal %} | Internal{% endif %}{% if options.persistent %} | Persistent{% endif %}{% if options.cleanup %} | Cleanup{% endif %}{% if options.substruct_only %} | SubstructOnly{% endif %}, types::{{name}}::_MakePropertyDescriptors()){}
+			StructDescriptor(types::{{name}}::_Name, {% if options.cached %}Cached{% else %}Uncached{% endif %}{% if options.internal %} | Internal{% endif %}{% if options.persistent %} | Persistent{% endif %}{% if options.cleanup %} | Cleanup{% endif %}{% if options.local %} | Local{% endif %}{% if options.substruct_only %} | SubstructOnly{% endif %}, types::{{name}}::_MakePropertyDescriptors()){}
 	};
 }
 
