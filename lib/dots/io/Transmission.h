@@ -5,50 +5,50 @@
 
 namespace dots::io
 {
-	struct Transmission
-	{
+    struct Transmission
+    {
         using id_t = uint64_t;
 
-		Transmission(DotsHeader header, type::AnyStruct instance);
-		Transmission(const Transmission& other) = delete;
-		Transmission(Transmission&& other) = default;
-		~Transmission() = default;
+        Transmission(DotsHeader header, type::AnyStruct instance);
+        Transmission(const Transmission& other) = delete;
+        Transmission(Transmission&& other) = default;
+        ~Transmission() = default;
 
-		Transmission& operator = (const Transmission& rhs) = delete;
-		Transmission& operator = (Transmission&& rhs) = default;
+        Transmission& operator = (const Transmission& rhs) = delete;
+        Transmission& operator = (Transmission&& rhs) = default;
 
-		id_t id() const;
+        id_t id() const;
 
-		const DotsHeader& header() const;
-		DotsHeader& header();
+        const DotsHeader& header() const;
+        DotsHeader& header();
 
-		const type::AnyStruct& instance() const;
+        const type::AnyStruct& instance() const;
 
-		template <size_t I>
-		auto& get() const
-		{
-		    if constexpr (I == 0)
-		    {
-		        return header();
-		    }
-			else if constexpr (I == 1)
-			{
-			    return instance();
-			}
-		}
+        template <size_t I>
+        auto& get() const
+        {
+            if constexpr (I == 0)
+            {
+                return header();
+            }
+            else if constexpr (I == 1)
+            {
+                return instance();
+            }
+        }
 
-		template <size_t I>
-		auto& get()
-		{
-		    if constexpr (I == 0)
-		    {
-		        return header();
-		    }
-			else if constexpr (I == 1)
-			{
-			    return instance();
-			}
-		}
+        template <size_t I>
+        auto& get()
+        {
+            if constexpr (I == 0)
+            {
+                return header();
+            }
+            else if constexpr (I == 1)
+            {
+                return instance();
+            }
+        }
 
     private:
 
@@ -57,17 +57,17 @@ namespace dots::io
         struct TransmissionData
         {
             id_t id;
-			DotsHeader header;
-		    type::AnyStruct instance;
+            DotsHeader header;
+            type::AnyStruct instance;
         };
 
-		std::unique_ptr<TransmissionData> m_data;
-	};
+        std::unique_ptr<TransmissionData> m_data;
+    };
 }
 
 namespace std
 {
-	template <> struct tuple_size<dots::io::Transmission> : std::integral_constant<size_t, 2> {};
-	template <> struct tuple_element<0, dots::io::Transmission> { using type = DotsHeader; };
-	template <>	struct tuple_element<1, dots::io::Transmission> { using type = dots::type::AnyStruct; };
+    template <> struct tuple_size<dots::io::Transmission> : std::integral_constant<size_t, 2> {};
+    template <> struct tuple_element<0, dots::io::Transmission> { using type = DotsHeader; };
+    template <> struct tuple_element<1, dots::io::Transmission> { using type = dots::type::AnyStruct; };
 }

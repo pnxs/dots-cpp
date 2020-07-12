@@ -93,9 +93,9 @@ namespace dots::type
                 rep_t count;
 
                 if (std::from_chars_result result = std::from_chars(part.data(), part.data() + part.size(), count); result.ec != std::errc{})
-				{
-				    throw std::runtime_error{ "could not parse duration from string part: " + part  + " -> " + std::make_error_code(result.ec).message() };
-				}
+                {
+                    throw std::runtime_error{ "could not parse duration from string part: " + part  + " -> " + std::make_error_code(result.ec).message() };
+                }
 
                 return duration_t{ count };
             };

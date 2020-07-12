@@ -43,7 +43,7 @@ namespace dots::io
 
     const type::StructDescriptor<>& Event<type::Struct>::descriptor() const
     {
-	    return m_updated._descriptor();
+        return m_updated._descriptor();
     }
 
     DotsMt Event<type::Struct>::mt() const

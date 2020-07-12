@@ -7,33 +7,33 @@
 
 namespace dots::io
 {
-	struct WebSocketChannel : Channel
-	{
-		using ws_stream_t = boost::beast::websocket::stream<boost::beast::tcp_stream>;
-		static constexpr char Subprotocol[] = "dots-json";
+    struct WebSocketChannel : Channel
+    {
+        using ws_stream_t = boost::beast::websocket::stream<boost::beast::tcp_stream>;
+        static constexpr char Subprotocol[] = "dots-json";
 
         WebSocketChannel(Channel::key_t key, boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port);
-		WebSocketChannel(Channel::key_t key, ws_stream_t&& stream);
-		WebSocketChannel(const WebSocketChannel& other) = delete;
-		WebSocketChannel(WebSocketChannel&& other) = delete;
-		virtual ~WebSocketChannel() = default;
+        WebSocketChannel(Channel::key_t key, ws_stream_t&& stream);
+        WebSocketChannel(const WebSocketChannel& other) = delete;
+        WebSocketChannel(WebSocketChannel&& other) = delete;
+        virtual ~WebSocketChannel() = default;
 
-		WebSocketChannel& operator = (const WebSocketChannel& rhs) = delete;
-		WebSocketChannel& operator = (WebSocketChannel&& rhs) = delete;
+        WebSocketChannel& operator = (const WebSocketChannel& rhs) = delete;
+        WebSocketChannel& operator = (WebSocketChannel&& rhs) = delete;
 
-		const Medium& medium() const override;
+        const Medium& medium() const override;
 
-	protected:
+    protected:
 
-		void asyncReceiveImpl() override;
-		void transmitImpl(const DotsHeader& header, const type::Struct& instance) override;
+        void asyncReceiveImpl() override;
+        void transmitImpl(const DotsHeader& header, const type::Struct& instance) override;
 
-	private:
+    private:
 
-		static constexpr char WebSocketCategory[] = "ws";
+        static constexpr char WebSocketCategory[] = "ws";
 
-		ws_stream_t m_stream;
-		std::optional<Medium> m_medium;
-		boost::beast::flat_buffer m_buffer;
-	};
+        ws_stream_t m_stream;
+        std::optional<Medium> m_medium;
+        boost::beast::flat_buffer m_buffer;
+    };
 }

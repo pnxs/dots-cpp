@@ -46,7 +46,7 @@ namespace dots
         m_hostTransceiver.publish(DotsTypes{
             DotsTypes::id_i{ M_nextTypeId++ },
             DotsTypes::name_i{ descriptor.name() }
-	    });
+        });
     }
 
     void Server::cleanUpClients()

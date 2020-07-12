@@ -9,11 +9,11 @@
 
 namespace dots::io
 {
-	VirtualChannel::VirtualChannel(Channel::key_t key, boost::asio::io_context& ioContext, std::string serverName/* = "VirtualChannel"*/, bool skipHandshake/* = false*/) :
+    VirtualChannel::VirtualChannel(Channel::key_t key, boost::asio::io_context& ioContext, std::string serverName/* = "VirtualChannel"*/, bool skipHandshake/* = false*/) :
         Channel(key),
-		m_ioContext{ std::ref(ioContext) },
+        m_ioContext{ std::ref(ioContext) },
         m_serverName{ std::move(serverName) }
-	{
+    {
         if (skipHandshake)
         {
             m_connectionState = DotsConnectionState::connected;
@@ -23,7 +23,7 @@ namespace dots::io
         {
             m_connectionState = DotsConnectionState::closed;
         }
-	}
+    }
 
     void VirtualChannel::spoof(const DotsHeader& header, const type::Struct& instance)
     {
@@ -50,8 +50,8 @@ namespace dots::io
         spoof(header, instance);
     }
 
-	void VirtualChannel::asyncReceiveImpl()
-	{
+    void VirtualChannel::asyncReceiveImpl()
+    {
         if (m_connectionState == DotsConnectionState::closed)
         {
             m_connectionState = DotsConnectionState::connecting;
@@ -60,10 +60,10 @@ namespace dots::io
                 DotsMsgHello::authChallenge_i{ 0 }
             });
         }        
-	}
+    }
 
-	void VirtualChannel::transmitImpl(const DotsHeader& header, const type::Struct& instance)
-	{
+    void VirtualChannel::transmitImpl(const DotsHeader& header, const type::Struct& instance)
+    {
         if (instance._descriptor().internal())
         {
             switch(m_connectionState)
@@ -135,8 +135,8 @@ namespace dots::io
             {
                 spoof(header, instance);
             }
-        }		
-	}
+        }        
+    }
 
     void VirtualChannel::onConnected()
     {

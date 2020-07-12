@@ -12,7 +12,7 @@ class MyClientClass
 {
 public:
     MyClientClass() :
-		m_subs{ dots::subscribe<DotsTestStruct>(FUN(*this, handleTestStruct)) }
+        m_subs{ dots::subscribe<DotsTestStruct>(FUN(*this, handleTestStruct)) }
     {
         dots::add_timer(1s, FUN(*this, handleTimer));
     }
@@ -57,7 +57,7 @@ private:
             dots::Application::instance()->exit();
         }
 
-		dots::add_timer(1ms, FUN(*this, handleTimer));
+        dots::add_timer(1ms, FUN(*this, handleTimer));
     }
 
     void handleTestStruct(const DotsTestStruct::Cbd& cbd)

@@ -13,12 +13,12 @@ namespace dots::io
     struct Event<type::Struct>
     {
         Event(const DotsHeader& header, const type::Struct& transmitted, const type::Struct& updated, const DotsCloneInformation& cloneInfo, bool isFromMyself, std::optional<DotsMt> mt = std::nullopt);
-		Event(const Event& other) = delete;
-		Event(Event&& other) = delete;
-		~Event() = default;
+        Event(const Event& other) = delete;
+        Event(Event&& other) = delete;
+        ~Event() = default;
 
-		Event& operator = (const Event& rhs) = delete;
-		Event& operator = (Event&& rhs) = delete;
+        Event& operator = (const Event& rhs) = delete;
+        Event& operator = (Event&& rhs) = delete;
 
         const type::Struct& operator () () const;
 
@@ -27,16 +27,16 @@ namespace dots::io
         const type::Struct& updated() const;
         const DotsCloneInformation& cloneInfo() const;
 
-		const type::StructDescriptor<>& descriptor() const;
+        const type::StructDescriptor<>& descriptor() const;
 
         DotsMt mt() const;
         bool isCreate() const;
         bool isUpdate() const;
         bool isRemove() const;
 
-        bool isFromMyself() const;		
-	    types::property_set_t newProperties() const { return header().attributes; }
-	    types::property_set_t updatedProperties() const { return newProperties() ^ updated()._validProperties(); }
+        bool isFromMyself() const;        
+        types::property_set_t newProperties() const { return header().attributes; }
+        types::property_set_t updatedProperties() const { return newProperties() ^ updated()._validProperties(); }
 
         template <typename T>
         const Event<T>& as() const
@@ -80,17 +80,17 @@ namespace dots::io
         {
             /* do nothing */
         }
-		Event(const Event& other) = delete;
-		Event(Event&& other) = delete;
-		~Event() = default;
+        Event(const Event& other) = delete;
+        Event(Event&& other) = delete;
+        ~Event() = default;
 
-		Event& operator = (const Event& rhs) = delete;
-		Event& operator = (Event&& rhs) = delete;
+        Event& operator = (const Event& rhs) = delete;
+        Event& operator = (Event&& rhs) = delete;
 
-		const T& operator () () const
-		{
-			return static_cast<const T&>(Event<type::Struct>::operator()());
-		}
+        const T& operator () () const
+        {
+            return static_cast<const T&>(Event<type::Struct>::operator()());
+        }
 
         const T& transmitted() const
         {
@@ -104,7 +104,7 @@ namespace dots::io
 
     private:
 
-		using Event<type::Struct>::operator();
+        using Event<type::Struct>::operator();
         using Event<type::Struct>::transmitted;
         using Event<type::Struct>::updated;
     };

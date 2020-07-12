@@ -13,11 +13,11 @@ namespace dots::type
         Uuid(const value_t& data);
 
         Uuid(const Uuid& other) = default;
-		Uuid(Uuid&& other) noexcept = default;
-		~Uuid() = default;
+        Uuid(Uuid&& other) noexcept = default;
+        ~Uuid() = default;
 
-		Uuid& operator = (const Uuid& rhs) = default;
-		Uuid& operator = (Uuid&& rhs) noexcept = default;
+        Uuid& operator = (const Uuid& rhs) = default;
+        Uuid& operator = (Uuid&& rhs) noexcept = default;
 
         const value_t& data() const;
 

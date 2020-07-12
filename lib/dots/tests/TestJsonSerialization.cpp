@@ -216,7 +216,7 @@ TEST(TestJsonSerialization, serializeDynamicallyRegistered)
     /*auto sd = NewDynamicTypeConverter{}(DotsTestStruct::_Descriptor());
     sd.name = "DotsTestStructX";
     auto sdx = NewDynamicTypeConverter{}(sd);*/
-	auto sdx = DotsTestStruct::_Descriptor();
+    auto sdx = DotsTestStruct::_Descriptor();
 
     // Assign testdata
     DotsTestStruct testData;

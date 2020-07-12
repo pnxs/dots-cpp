@@ -72,7 +72,7 @@ namespace dots::type
 
     bool Struct::_same(const Struct& rhs) const
     {
-	    return _desc->same(*this, rhs);
+        return _desc->same(*this, rhs);
     }
 
     bool Struct::_less(const Struct& rhs, const PropertySet& includedProperties/* = PropertySet:All*/) const
@@ -80,19 +80,19 @@ namespace dots::type
         return _desc->less(*this, rhs, includedProperties);      
     }
 
-	bool Struct::_lessEqual(const Struct& rhs, const PropertySet& includedProperties/* = PropertySet::All*/) const
+    bool Struct::_lessEqual(const Struct& rhs, const PropertySet& includedProperties/* = PropertySet::All*/) const
     {
-	    return _desc->lessEqual(*this, rhs, includedProperties);
+        return _desc->lessEqual(*this, rhs, includedProperties);
     }
-	
+    
     bool Struct::_greater(const Struct& rhs, const PropertySet& includedProperties/* = PropertySet::All*/) const
     {
-	    return _desc->greater(*this, rhs, includedProperties);
+        return _desc->greater(*this, rhs, includedProperties);
     }
-	
+    
     bool Struct::_greaterEqual(const Struct& rhs, const PropertySet& includedProperties/* = PropertySet::All*/) const
     {
-	    return _desc->greaterEqual(*this, rhs, includedProperties);
+        return _desc->greaterEqual(*this, rhs, includedProperties);
     }
 
     PropertySet Struct::_diffProperties(const Struct& other, const PropertySet& includedProperties/* = PropertySet::All*/) const
@@ -102,7 +102,7 @@ namespace dots::type
 
     void Struct::_publish(const PropertySet& includedProperties/* = PropertySet::All*/, bool remove/* = false*/) const
     {
-    	publish(*this, includedProperties ^ _validProperties(), remove);
+        publish(*this, includedProperties ^ _validProperties(), remove);
     }
 
     void Struct::_remove() const

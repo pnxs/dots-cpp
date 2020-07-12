@@ -10,12 +10,12 @@ namespace dots
         using listeners_t = std::vector<io::listener_ptr_t>;
 
         Server(std::string name, listeners_t listeners);
-		Server(const Server& other) = delete;
-		Server(Server&& other) = delete;
-		~Server() = default;
+        Server(const Server& other) = delete;
+        Server(Server&& other) = delete;
+        ~Server() = default;
 
-		Server& operator = (const Server& rhs) = delete;
-		Server& operator = (Server&& rhs) = delete;
+        Server& operator = (const Server& rhs) = delete;
+        Server& operator = (Server&& rhs) = delete;
 
     private:
 

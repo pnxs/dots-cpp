@@ -10,23 +10,23 @@ add_executable(${TARGET_NAME} main.cpp)
 
 # properties
 target_sources(${TARGET_NAME}
-	PRIVATE
-)	
+    PRIVATE
+)    
 target_include_directories(${TARGET_NAME}
-	PRIVATE
-		${CMAKE_CURRENT_SOURCE_DIR}/src
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 target_compile_options(${TARGET_NAME}
-	PRIVATE
-		$<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-O2 -flto -Wall -Wextra -Wpedantic -Werror -Wno-deprecated-declarations>>
+    PRIVATE
+        $<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-O2 -flto -Wall -Wextra -Wpedantic -Werror -Wno-deprecated-declarations>>
 )
 target_compile_features(${TARGET_NAME}
-	PRIVATE
-		cxx_std_17
+    PRIVATE
+        cxx_std_17
 )
 target_link_libraries(${TARGET_NAME}
-	PRIVATE 
-		DOTS::DOTS
+    PRIVATE 
+        DOTS::DOTS
 )
 
 # install

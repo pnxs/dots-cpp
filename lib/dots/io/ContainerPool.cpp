@@ -17,12 +17,12 @@ namespace dots::io
 
     ContainerPool::iterator_t ContainerPool::begin()
     {
-		return m_pool.begin();
+        return m_pool.begin();
     }
 
     ContainerPool::iterator_t ContainerPool::end()
     {
-		return m_pool.end();
+        return m_pool.end();
     }
 
     auto ContainerPool::cbegin() const -> const_iterator_t
@@ -37,50 +37,50 @@ namespace dots::io
 
     bool ContainerPool::empty() const
     {
-	    return m_pool.empty();
+        return m_pool.empty();
     }
 
     size_t ContainerPool::size() const
     {
-	    return m_pool.size();
+        return m_pool.size();
     }
 
     const Container<>* ContainerPool::find(const type::StructDescriptor<>& descriptor) const
     {
-		auto it = m_pool.find(&descriptor);
-		return it == m_pool.end() ? nullptr : &it->second;
+        auto it = m_pool.find(&descriptor);
+        return it == m_pool.end() ? nullptr : &it->second;
     }
 
     const Container<>& ContainerPool::get(const type::StructDescriptor<>& descriptor, bool insertIfNotExist/* = true*/) const
     {
-		if (insertIfNotExist)
+        if (insertIfNotExist)
         {
             auto [it, emplaced] = m_pool.try_emplace(&descriptor, descriptor);
-			auto& [descriptor, container] = *it;
+            auto& [descriptor, container] = *it;
 
-			if (emplaced)
-			{
-				m_nameCache.emplace(descriptor->name(), &container);
-			}
+            if (emplaced)
+            {
+                m_nameCache.emplace(descriptor->name(), &container);
+            }
 
-			return container;
+            return container;
         }
         else
         {
-			const Container<>* container = find(descriptor);
+            const Container<>* container = find(descriptor);
 
-			if (container == nullptr)
-			{
-				throw std::runtime_error{ "container pool does not contain an element for the given type: " + descriptor.name() };
-			}
+            if (container == nullptr)
+            {
+                throw std::runtime_error{ "container pool does not contain an element for the given type: " + descriptor.name() };
+            }
 
-			return *container;
+            return *container;
         }
     }
 
     Container<>* ContainerPool::find(const type::StructDescriptor<>& descriptor)
     {
-		return const_cast<Container<>*>(std::as_const(*this).find(descriptor));
+        return const_cast<Container<>*>(std::as_const(*this).find(descriptor));
     }
 
     Container<>& ContainerPool::get(const type::StructDescriptor<>& descriptor, bool insertIfNotExist/* = true*/)
@@ -88,32 +88,32 @@ namespace dots::io
         return const_cast<Container<>&>(std::as_const(*this).get(descriptor, insertIfNotExist));
     }
 
-	const Container<>* ContainerPool::find(const std::string_view& name) const
+    const Container<>* ContainerPool::find(const std::string_view& name) const
     {
-	    auto it = m_nameCache.find(name);
-		return it == m_nameCache.end() ? nullptr : it->second;
+        auto it = m_nameCache.find(name);
+        return it == m_nameCache.end() ? nullptr : it->second;
     }
 
     const Container<>& ContainerPool::get(const std::string_view& name) const
     {
-	    const Container<>* container = find(name);
+        const Container<>* container = find(name);
 
-		if (container == nullptr)
-		{
-			throw std::runtime_error{ "container pool does not contain an element for the given type: " + std::string{ name } };
-		}
+        if (container == nullptr)
+        {
+            throw std::runtime_error{ "container pool does not contain an element for the given type: " + std::string{ name } };
+        }
 
-		return *container;
+        return *container;
     }
 
-	Container<>* ContainerPool::find(const std::string_view& name)
+    Container<>* ContainerPool::find(const std::string_view& name)
     {
-	    return const_cast<Container<>*>(std::as_const(*this).find(name));
+        return const_cast<Container<>*>(std::as_const(*this).find(name));
     }
 
-	Container<>& ContainerPool::get(const std::string_view& name)
+    Container<>& ContainerPool::get(const std::string_view& name)
     {
-	    return const_cast<Container<>&>(std::as_const(*this).get(name));
+        return const_cast<Container<>&>(std::as_const(*this).get(name));
     }
 
     auto ContainerPool::remove(const type::StructDescriptor<>& descriptor) -> node_t
@@ -138,9 +138,9 @@ namespace dots::io
 
     size_t ContainerPool::totalMemoryUsage() const
     {
-	    return std::accumulate(m_pool.begin(), m_pool.end(), 0u, [](size_t size, const value_t& value)
-	    {
-		    return size + value.second.totalMemoryUsage();
-	    });
+        return std::accumulate(m_pool.begin(), m_pool.end(), 0u, [](size_t size, const value_t& value)
+        {
+            return size + value.second.totalMemoryUsage();
+        });
     }
 }

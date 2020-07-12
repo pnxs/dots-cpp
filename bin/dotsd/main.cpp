@@ -59,8 +59,8 @@ int main(int argc, char* argv[])
     {
         if (daemon(0, 0) == -1)
         {
-			LOG_CRIT_S("could not start daemon: " << errno);
-			return EXIT_FAILURE;
+            LOG_CRIT_S("could not start daemon: " << errno);
+            return EXIT_FAILURE;
         }
     }
 
