@@ -11,14 +11,16 @@ namespace dots::type
 
         ProxyProperty(PropertyArea& area, const property_path_t& path) :
             m_area(&area),
-            m_path{ &path }
+            m_path{ &path },
+            m_offset(determineOffset())
         {
             /* do nothing */
         }
 
         ProxyProperty(PropertyArea& area, const PropertyDescriptor& descriptor) :
             m_area(&area),
-            m_path{ &descriptor }
+            m_path{ &descriptor },
+            m_offset(determineOffset())
         {
             /* do nothing */
         }
@@ -118,6 +120,29 @@ namespace dots::type
             }
         }
 
+        size_t determineOffset()
+        {
+            if (std::holds_alternative<const PropertyDescriptor*>(m_path))
+            {
+                return std::get<const PropertyDescriptor*>(m_path)->offset();
+            }
+            else
+            {
+                size_t offset = 0;
+                const auto& path = *std::get<const property_path_t*>(m_path);
+
+                for (size_t i = 0; i < path.size() - 1; ++i)
+                {
+                    const PropertyDescriptor& descriptor = path[i];
+                    offset += descriptor.offset();
+                    offset += *descriptor.subAreaOffset();
+                }
+
+                offset += path[path.size() - 1].get().offset();
+                return offset;
+            }
+        }
+
         const PropertySet& derivedValidProperties() const
         {
             static_assert(!std::is_same_v<T, T>, "derivedValidProperties shall not be used");
@@ -146,26 +171,7 @@ namespace dots::type
 
         T& derivedStorage()
         {
-            if (std::holds_alternative<const PropertyDescriptor*>(m_path))
-            {
-                return m_area->getProperty<T>(std::get<const PropertyDescriptor*>(m_path)->offset());
-            }
-            else
-            {
-                size_t offset = 0;
-                const auto& path = *std::get<const property_path_t*>(m_path);
-
-                for (size_t i = 0; i < path.size() - 1; ++i)
-                {
-                    const PropertyDescriptor& descriptor = path[i];
-                    offset += descriptor.offset();
-                    offset += *descriptor.subAreaOffset();
-                }
-
-                offset += path[path.size() - 1].get().offset();
-
-                return m_area->getProperty<T>(offset);
-            }
+            return m_area->getProperty<T>(m_offset);
         }
 
         const T& derivedStorage() const
@@ -187,5 +193,6 @@ namespace dots::type
 
         PropertyArea* m_area;
         path_t m_path;
+        size_t m_offset;
     };
 }
