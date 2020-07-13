@@ -31,7 +31,7 @@ protected:
         const T& derivedValue() const {    return const_cast<TestProperty&>(*this).derivedValue();    }
         const PropertyDescriptor& derivedDescriptor() const { return m_descriptor; }
 
-        union {    T m_value; };
+        union { T m_value; };
         const PropertyDescriptor m_descriptor;
     };
 
@@ -324,4 +324,29 @@ TEST_F(TestProxyProperty, less_CompareNotLessToValidPropertyValid)
 
     EXPECT_FALSE(m_sutLhs.less(m_sutRhs));
     EXPECT_FALSE(m_sutLhs < m_sutRhs);
+}
+
+TEST_F(TestProxyProperty, is)
+{
+    ProxyProperty<> sut{ m_sut };
+    EXPECT_TRUE(sut.is<std::string>());
+    EXPECT_FALSE(sut.is<int>());
+}
+
+TEST_F(TestProxyProperty, as)
+{
+    m_sut.construct("foo");
+    ProxyProperty<> sut{ m_sut };
+
+    EXPECT_EQ(*sut.as<std::string>(), "foo");
+    EXPECT_EQ(sut.as<int>(), nullptr);
+}
+
+TEST_F(TestProxyProperty, to)
+{
+    m_sut.construct("foo");
+    ProxyProperty<> sut{ m_sut };
+
+    EXPECT_EQ(sut.to<std::string>(), "foo");
+    EXPECT_THROW((sut.to<int, true>()), std::logic_error);
 }

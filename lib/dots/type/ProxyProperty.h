@@ -52,6 +52,50 @@ namespace dots::type
         ProxyProperty& operator = (const ProxyProperty& rhs) = default;
         ProxyProperty& operator = (ProxyProperty&& rhs) = default;
 
+        template <typename U>
+        bool is() const
+        {
+            using descriptor_t = Descriptor<U>;
+            static_assert(!is_dynamic_descriptor_v<descriptor_t>);
+
+            return descriptor_t::InstancePtr() == derivedDescriptor().valueDescriptorPtr();
+        }
+
+        template <typename U>
+        const ProxyProperty<U>* as() const
+        {
+            return is<U>() ? reinterpret_cast<const ProxyProperty<U>*>(this) : nullptr;
+        }
+
+        template <typename U>
+        const ProxyProperty<U>* as()
+        {
+            return const_cast<ProxyProperty<U>*>(std::as_const(*this).template as<U>());
+        }
+
+        template <typename U, bool Safe = false>
+        const ProxyProperty<U>& to() const
+        {
+            using descriptor_t = Descriptor<U>;
+            static_assert(!is_dynamic_descriptor_v<descriptor_t>);
+
+            if constexpr (Safe)
+            {
+                if (!is<U>())
+                {
+                    throw std::logic_error{ std::string{ "type mismatch in safe ProxyProperty conversion: expected '" } + derivedDescriptor().valueDescriptor().name() + "' but got '" + descriptor_t::Instance().name() + "'" };
+                }
+            }
+
+            return reinterpret_cast<const ProxyProperty<U>&>(*this);
+        }
+
+        template <typename U, bool Safe = false>
+        ProxyProperty<U>& to()
+        {
+            return const_cast<ProxyProperty<U>&>(std::as_const(*this).template to<U, Safe>());
+        }
+
     private:
 
         friend struct Property<T, ProxyProperty<T>>;
