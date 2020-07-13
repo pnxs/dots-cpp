@@ -9,18 +9,20 @@ namespace dots::type
     {
         static constexpr bool EnableValueConstructors = !std::is_same_v<T, PropertyArea>;
 
+        ProxyProperty(const property_path_t& path) :
+            ProxyProperty(nullptr, path_t{ &path })
+        {
+            /* do nothing */
+        }
+
         ProxyProperty(PropertyArea& area, const property_path_t& path) :
-            m_area(&area),
-            m_path{ &path },
-            m_offset(determineOffset())
+            ProxyProperty(&area, path_t{ &path })
         {
             /* do nothing */
         }
 
         ProxyProperty(PropertyArea& area, const PropertyDescriptor& descriptor) :
-            m_area(&area),
-            m_path{ &descriptor },
-            m_offset(determineOffset())
+            ProxyProperty(&area, path_t{ &descriptor })
         {
             /* do nothing */
         }
@@ -118,6 +120,14 @@ namespace dots::type
         friend struct Property<T, ProxyProperty<T>>;
         using path_t = std::variant<const PropertyDescriptor*, const property_path_t*>;
         static constexpr PropertySet None{ PropertySet::None };
+
+        ProxyProperty(PropertyArea* area, path_t path) :
+            m_area(area),
+            m_path{ std::move(path) },
+            m_offset(determineOffset())
+        {
+            /* do nothing */
+        }
 
         const PropertySet& validPathProperties() const
         {
