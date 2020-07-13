@@ -34,7 +34,7 @@ namespace dots::io
         if (m_errorHandler != nullptr)
         {
             m_errorHandler(*this, e);
-        }        
+        }
     }
 
     void Listener::processError(const std::string& what)

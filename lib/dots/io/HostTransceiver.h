@@ -17,12 +17,12 @@ namespace dots::io
         using transition_handler_t = std::function<void(const io::Connection&)>;
 
         HostTransceiver(std::string selfName = "DotsHostTransceiver", transition_handler_t transitionHandler = nullptr);
-		HostTransceiver(const HostTransceiver& other) = delete;
-		HostTransceiver(HostTransceiver&& other) = default;
-		virtual ~HostTransceiver() = default;
+        HostTransceiver(const HostTransceiver& other) = delete;
+        HostTransceiver(HostTransceiver&& other) = default;
+        virtual ~HostTransceiver() = default;
 
-		HostTransceiver& operator = (const HostTransceiver& rhs) = delete;
-		HostTransceiver& operator = (HostTransceiver&& rhs) = default;
+        HostTransceiver& operator = (const HostTransceiver& rhs) = delete;
+        HostTransceiver& operator = (HostTransceiver&& rhs) = default;
 
         void listen(listener_ptr_t&& listener);
         void publish(const type::Struct& instance, types::property_set_t includedProperties = types::property_set_t::All, bool remove = false) override;
@@ -42,7 +42,7 @@ namespace dots::io
         using group_map_t = std::unordered_map<std::string, group_t>;
 
         void joinGroup(const std::string_view& name) override;
-		void leaveGroup(const std::string_view& name) override;
+        void leaveGroup(const std::string_view& name) override;
 
         void transmit(io::Connection* origin, const Transmission& transmission);
 

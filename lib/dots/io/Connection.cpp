@@ -9,18 +9,18 @@
 
 namespace dots::io
 {
-	Connection::Connection(channel_ptr_t channel, bool host, std::optional<std::string> authSecret/* = std::nullopt*/) :
+    Connection::Connection(channel_ptr_t channel, bool host, std::optional<std::string> authSecret/* = std::nullopt*/) :
         m_expectedSystemType{ &DotsMsgError::_Descriptor(), types::property_set_t::None, nullptr },
         m_connectionState(DotsConnectionState::suspended),
         m_selfId(host ? HostId : UninitializedId),
-		m_peerId(host ? M_nextGuestId++ : HostId),
-	    m_peerName("<not_set>"),
-		m_channel(std::move(channel)),
+        m_peerId(host ? M_nextGuestId++ : HostId),
+        m_peerName("<not_set>"),
+        m_channel(std::move(channel)),
         m_authSecret{ std::move(authSecret) },
-		m_registry(nullptr)
-	{
-		/* do nothing */
-	}
+        m_registry(nullptr)
+    {
+        /* do nothing */
+    }
 
     Connection::~Connection() noexcept
     {
@@ -38,9 +38,9 @@ namespace dots::io
     }
 
     DotsConnectionState Connection::state() const
-	{
-		return m_connectionState;
-	}
+    {
+        return m_connectionState;
+    }
 
     id_t Connection::selfId() const
     {
@@ -48,23 +48,23 @@ namespace dots::io
     }
 
     id_t Connection::peerId() const
-	{
-		return m_peerId;
-	}
+    {
+        return m_peerId;
+    }
 
     const std::string& Connection::peerName() const
     {
-		return m_peerName;
+        return m_peerName;
     }
 
     bool Connection::connected() const
-	{
-		return m_connectionState == DotsConnectionState::connected;
-	}
+    {
+        return m_connectionState == DotsConnectionState::connected;
+    }
 
-	void Connection::asyncReceive(Registry& registry, AuthManager* authManager, const std::string_view& name, receive_handler_t&& receiveHandler, transition_handler_t&& transitionHandler)
-	{
-		if (m_connectionState != DotsConnectionState::suspended)
+    void Connection::asyncReceive(Registry& registry, AuthManager* authManager, const std::string_view& name, receive_handler_t&& receiveHandler, transition_handler_t&& transitionHandler)
+    {
+        if (m_connectionState != DotsConnectionState::suspended)
         {
             throw std::logic_error{ "only one async receive can be started on a connection" };
         }
@@ -74,20 +74,20 @@ namespace dots::io
             throw std::logic_error{ "both a receive and a transition handler must be set" };
         }
 
-		m_registry = &registry;
+        m_registry = &registry;
         m_authManager = authManager;
-		m_receiveHandler = std::move(receiveHandler);
-		m_transitionHandler = std::move(transitionHandler);
-		
-		setConnectionState(DotsConnectionState::connecting);
-        m_channel->init(*m_registry);
-		m_channel->asyncReceive(
-			[this](Transmission transmission){ return handleReceive(std::move(transmission)); },
-			[this](const std::exception_ptr& e){ handleError(e); }
-		);
+        m_receiveHandler = std::move(receiveHandler);
+        m_transitionHandler = std::move(transitionHandler);
 
-		if (m_selfId == HostId)
-		{
+        setConnectionState(DotsConnectionState::connecting);
+        m_channel->init(*m_registry);
+        m_channel->asyncReceive(
+            [this](Transmission transmission){ return handleReceive(std::move(transmission)); },
+            [this](const std::exception_ptr& e){ handleError(e); }
+        );
+
+        if (m_selfId == HostId)
+        {
             if (m_nonce = m_authManager == nullptr ? std::nullopt : m_authManager->requiresAuthentication(m_channel->medium(), {}); m_nonce == std::nullopt)
             {
                 transmit(DotsMsgHello{
@@ -95,7 +95,7 @@ namespace dots::io
                     DotsMsgHello::authChallenge_i{ 0 }
                 });
 
-                
+
             }
             else
             {
@@ -107,23 +107,23 @@ namespace dots::io
             }
 
             expectSystemType<DotsMsgConnect>(DotsMsgConnect::clientName_p + DotsMsgConnect::preloadCache_p, &Connection::handleConnect);
-		}
+        }
         else
         {
             m_selfName = name;
             expectSystemType<DotsMsgHello>(DotsMsgHello::serverName_p + DotsMsgHello::authChallenge_p, &Connection::handleHello);
         }
-	}
+    }
 
-	void Connection::transmit(const type::Struct& instance, types::property_set_t includedProperties, bool remove)
-	{
-		transmit(DotsHeader{
+    void Connection::transmit(const type::Struct& instance, types::property_set_t includedProperties, bool remove)
+    {
+        transmit(DotsHeader{
             DotsHeader::typeName_i{ instance._descriptor().name() },
             DotsHeader::sentTime_i{ types::timepoint_t::Now() },
             DotsHeader::attributes_i{ includedProperties ==  types::property_set_t::All ? instance._validProperties() : includedProperties },
             DotsHeader::removeObj_i{ remove }
         }, instance);
-	}
+    }
 
     void Connection::transmit(const DotsHeader& header, const type::Struct& instance)
     {
@@ -141,7 +141,7 @@ namespace dots::io
     }
 
     void Connection::handleError(const std::exception_ptr& e)
-	{
+    {
         if (m_connectionState == DotsConnectionState::connected)
         {
             try
@@ -161,15 +161,15 @@ namespace dots::io
                 {
                     /* do nothing */
                 }
-                
+
             }
         }
 
         handleClose(e);
-	}
+    }
 
     bool Connection::handleReceive(Transmission transmission)
-	{
+    {
         if (m_connectionState == DotsConnectionState::closed)
         {
             return false;
@@ -237,20 +237,20 @@ namespace dots::io
         }
 
         return true;
-	}
+    }
 
     void Connection::handleClose(const std::exception_ptr& e)
-	{
-	    m_receiveHandler = nullptr;
+    {
+        m_receiveHandler = nullptr;
         m_registry = nullptr;
         expectSystemType<DotsMsgError>(types::property_set_t::None, nullptr);
         setConnectionState(DotsConnectionState::closed, e);
-	}
+    }
 
-	void Connection::handleHello(const DotsMsgHello& hello)
-	{
-		m_peerName = hello.serverName;
-		LOG_DEBUG_S("received hello from '" << *hello.serverName << "' authChallenge=" << hello.authChallenge);
+    void Connection::handleHello(const DotsMsgHello& hello)
+    {
+        m_peerName = hello.serverName;
+        LOG_DEBUG_S("received hello from '" << *hello.serverName << "' authChallenge=" << hello.authChallenge);
 
         DotsMsgConnect connect{
             DotsMsgConnect::clientName_i{ m_selfName },
@@ -271,31 +271,31 @@ namespace dots::io
         transmit(connect);
 
         expectSystemType<DotsMsgConnectResponse>(DotsMsgConnectResponse::clientId_p + DotsMsgConnectResponse::accepted_p + DotsMsgConnectResponse::preload_p, &Connection::handleAuthorizationRequest);
-	}
-	
-	void Connection::handleAuthorizationRequest(const DotsMsgConnectResponse& connectResponse)
-	{
+    }
+
+    void Connection::handleAuthorizationRequest(const DotsMsgConnectResponse& connectResponse)
+    {
         m_selfId = connectResponse.clientId;
-		LOG_DEBUG_S("connectResponse: serverName=" << m_peerName << " accepted=" << *connectResponse.accepted);
-		
-		if (connectResponse.preload == true)
-		{
-			setConnectionState(DotsConnectionState::early_subscribe);
+        LOG_DEBUG_S("connectResponse: serverName=" << m_peerName << " accepted=" << *connectResponse.accepted);
+
+        if (connectResponse.preload == true)
+        {
+            setConnectionState(DotsConnectionState::early_subscribe);
             transmit(DotsMsgConnect{ DotsMsgConnect::preloadClientFinished_i{ true } });
             expectSystemType<DotsMsgConnectResponse>(DotsMsgConnectResponse::preloadFinished_p, &Connection::handlePreloadFinished);
-		}
-		else
-		{
-			setConnectionState(DotsConnectionState::connected);
+        }
+        else
+        {
+            setConnectionState(DotsConnectionState::connected);
             expectSystemType<DotsMsgError>(DotsMsgError::errorCode_p, &Connection::handlePeerError);
-		}
-	}
-	
-	void Connection::handlePreloadFinished(const DotsMsgConnectResponse&/* connectResponse*/)
-	{
-		setConnectionState(DotsConnectionState::connected);
+        }
+    }
+
+    void Connection::handlePreloadFinished(const DotsMsgConnectResponse&/* connectResponse*/)
+    {
+        setConnectionState(DotsConnectionState::connected);
         expectSystemType<DotsMsgError>(DotsMsgError::errorCode_p, &Connection::handlePeerError);
-	}
+    }
 
     void Connection::handleConnect(const DotsMsgConnect& connect)
     {
@@ -366,10 +366,10 @@ namespace dots::io
         }
     }
 
-	void Connection::setConnectionState(DotsConnectionState state, const std::exception_ptr& e/* = nullptr*/)
-	{
-		LOG_DEBUG_S("change connection state to " << to_string(state));
-		m_connectionState = state;
+    void Connection::setConnectionState(DotsConnectionState state, const std::exception_ptr& e/* = nullptr*/)
+    {
+        LOG_DEBUG_S("change connection state to " << to_string(state));
+        m_connectionState = state;
 
         try
         {
@@ -379,7 +379,7 @@ namespace dots::io
         {
             throw std::logic_error{ std::string{ "exception in connection transition handler -> " } + e.what() };
         }
-	}
+    }
 
     template <typename T>
     void Connection::expectSystemType(const types::property_set_t& expectedAttributes, void(Connection::* handler)(const T&))

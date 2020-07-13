@@ -46,7 +46,7 @@ namespace dots
         m_hostTransceiver.publish(DotsTypes{
             DotsTypes::id_i{ M_nextTypeId++ },
             DotsTypes::name_i{ descriptor.name() }
-	    });
+        });
     }
 
     void Server::cleanUpClients()
@@ -169,5 +169,5 @@ namespace dots
         if (td->cleanup()) ret[3] = 'c';
         if (td->local()) ret[4] = 'L';
         return ret;
-    } 
+    }
 }

@@ -51,7 +51,7 @@ namespace dots::tools
             else
             {
                 throw std::runtime_error("could not create network from invalid input string: '" + network + "'");
-            }            
+            }
         }())
     {
         /* do nothing */

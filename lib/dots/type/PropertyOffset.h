@@ -4,93 +4,93 @@
 
 namespace dots::type
 {
-	template <typename T = Typeless, typename = void>
-	struct PropertyOffset;
+    template <typename T = Typeless, typename = void>
+    struct PropertyOffset;
 
-	template <>
-	struct PropertyOffset<>
-	{
-		constexpr PropertyOffset(std::in_place_t, size_t offset) :
-			m_offset(offset)
-		{
-			/* do nothing */
-		}
-		
-		constexpr PropertyOffset(size_t alignment) :
-			PropertyOffset(alignment, 0, sizeof(PropertyArea))
-		{
-			/* do nothing */
-		}
+    template <>
+    struct PropertyOffset<>
+    {
+        constexpr PropertyOffset(std::in_place_t, size_t offset) :
+            m_offset(offset)
+        {
+            /* do nothing */
+        }
 
-		constexpr PropertyOffset(size_t alignment, size_t previousOffset, size_t previousSize) :
-			m_offset(CalculateOffset(alignment, previousOffset, previousSize))
-		{
-			/* do nothing */
-		}
-		
-		PropertyOffset(const PropertyOffset& other) = default;
-		PropertyOffset(PropertyOffset&& other) = default;
-		~PropertyOffset() = default;
+        constexpr PropertyOffset(size_t alignment) :
+            PropertyOffset(alignment, 0, sizeof(PropertyArea))
+        {
+            /* do nothing */
+        }
 
-		PropertyOffset& operator = (const PropertyOffset& rhs) = default;
-		PropertyOffset& operator = (PropertyOffset&& rhs) = default;
+        constexpr PropertyOffset(size_t alignment, size_t previousOffset, size_t previousSize) :
+            m_offset(CalculateOffset(alignment, previousOffset, previousSize))
+        {
+            /* do nothing */
+        }
 
-		constexpr operator size_t() const
-		{
-		    return m_offset;
-		}
+        PropertyOffset(const PropertyOffset& other) = default;
+        PropertyOffset(PropertyOffset&& other) = default;
+        ~PropertyOffset() = default;
 
-		constexpr size_t offset() const
-		{
-			return m_offset;
-		}
+        PropertyOffset& operator = (const PropertyOffset& rhs) = default;
+        PropertyOffset& operator = (PropertyOffset&& rhs) = default;
 
-	private:
+        constexpr operator size_t() const
+        {
+            return m_offset;
+        }
 
-		static constexpr size_t CalculateOffset(size_t alignment, size_t previousOffset, size_t previousSize)
-		{
-			size_t currentOffset = previousOffset + previousSize;
-			size_t alignedOffset = currentOffset + (alignment - currentOffset % alignment) % alignment;
+        constexpr size_t offset() const
+        {
+            return m_offset;
+        }
 
-			return alignedOffset;
-		}
+    private:
 
-		size_t m_offset;
-	};
+        static constexpr size_t CalculateOffset(size_t alignment, size_t previousOffset, size_t previousSize)
+        {
+            size_t currentOffset = previousOffset + previousSize;
+            size_t alignedOffset = currentOffset + (alignment - currentOffset % alignment) % alignment;
 
-	template <typename T>
-	struct PropertyOffset<T> : PropertyOffset<>
-	{
-		static constexpr PropertyOffset<T> Make()
-		{
-			return PropertyOffset<T>{};
-		}
+            return alignedOffset;
+        }
 
-		template <typename U>
-		static constexpr PropertyOffset<T> Make(const PropertyOffset<U>& previous)
-		{
-			return PropertyOffset<T>{ previous, sizeof(U) };
-		}
-		
-		PropertyOffset(const PropertyOffset& other) = default;
-		PropertyOffset(PropertyOffset&& other) = default;
-		~PropertyOffset() = default;
+        size_t m_offset;
+    };
 
-		PropertyOffset& operator = (const PropertyOffset& rhs) = default;
-		PropertyOffset& operator = (PropertyOffset&& rhs) = default;
+    template <typename T>
+    struct PropertyOffset<T> : PropertyOffset<>
+    {
+        static constexpr PropertyOffset<T> Make()
+        {
+            return PropertyOffset<T>{};
+        }
 
-	private:
+        template <typename U>
+        static constexpr PropertyOffset<T> Make(const PropertyOffset<U>& previous)
+        {
+            return PropertyOffset<T>{ previous, sizeof(U) };
+        }
 
-		constexpr PropertyOffset() :
-			PropertyOffset<>(alignof(T))
-		{
-			/* do nothing */
-		}
+        PropertyOffset(const PropertyOffset& other) = default;
+        PropertyOffset(PropertyOffset&& other) = default;
+        ~PropertyOffset() = default;
 
-		constexpr PropertyOffset(size_t previousOffset, size_t previousSize) :
-			PropertyOffset<>(alignof(T), previousOffset, previousSize)
-		{
-			/* do nothing */
-		}
-	};
+        PropertyOffset& operator = (const PropertyOffset& rhs) = default;
+        PropertyOffset& operator = (PropertyOffset&& rhs) = default;
+
+    private:
+
+        constexpr PropertyOffset() :
+            PropertyOffset<>(alignof(T))
+        {
+            /* do nothing */
+        }
+
+        constexpr PropertyOffset(size_t previousOffset, size_t previousSize) :
+            PropertyOffset<>(alignof(T), previousOffset, previousSize)
+        {
+            /* do nothing */
+        }
+    };
 }

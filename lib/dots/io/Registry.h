@@ -33,36 +33,36 @@ namespace dots::io
         const_iterator_t cbegin() const;
         const_iterator_t cend() const;
 
-    	std::shared_ptr<type::Descriptor<>> findType(const std::string_view& name, bool assertNotNull = false) const;
-    	std::shared_ptr<type::EnumDescriptor<>> findEnumType(const std::string_view& name, bool assertNotNull = false) const;
-    	std::shared_ptr<type::StructDescriptor<>> findStructType(const std::string_view& name, bool assertNotNull = false) const;
+        std::shared_ptr<type::Descriptor<>> findType(const std::string_view& name, bool assertNotNull = false) const;
+        std::shared_ptr<type::EnumDescriptor<>> findEnumType(const std::string_view& name, bool assertNotNull = false) const;
+        std::shared_ptr<type::StructDescriptor<>> findStructType(const std::string_view& name, bool assertNotNull = false) const;
 
-    	const type::Descriptor<>& getType(const std::string_view& name) const;
-    	const type::EnumDescriptor<>& getEnumType(const std::string_view& name) const;
-    	const type::StructDescriptor<>& getStructType(const std::string_view& name) const;
-    	
-    	bool hasType(const std::string_view& name) const;
+        const type::Descriptor<>& getType(const std::string_view& name) const;
+        const type::EnumDescriptor<>& getEnumType(const std::string_view& name) const;
+        const type::StructDescriptor<>& getStructType(const std::string_view& name) const;
 
-    	std::shared_ptr<type::Descriptor<>> registerType(std::shared_ptr<type::Descriptor<>> descriptor, bool assertNewType = true);
+        bool hasType(const std::string_view& name) const;
 
-    	template <typename D, std::enable_if_t<std::is_base_of_v<type::Descriptor<>, D>, int> = 0>
-    	std::shared_ptr<D> registerType(D&& descriptor)
-    	{
-    		return std::static_pointer_cast<D>(registerType(std::make_shared<D>(std::forward<D>(descriptor))));
-    	}
+        std::shared_ptr<type::Descriptor<>> registerType(std::shared_ptr<type::Descriptor<>> descriptor, bool assertNewType = true);
 
-    	void deregisterType(const std::shared_ptr<type::Descriptor<>>& descriptor, bool assertRegisteredType = true);
-    	void deregisterType(const type::Descriptor<>& descriptor, bool assertRegisteredType = true);
-    	void deregisterType(const std::string_view& name, bool assertRegisteredType = true);
+        template <typename D, std::enable_if_t<std::is_base_of_v<type::Descriptor<>, D>, int> = 0>
+        std::shared_ptr<D> registerType(D&& descriptor)
+        {
+            return std::static_pointer_cast<D>(registerType(std::make_shared<D>(std::forward<D>(descriptor))));
+        }
 
-    	[[deprecated("only available for backwards compatibility")]]
-    	const type::Descriptor<>* findDescriptor(const std::string& name) const;
+        void deregisterType(const std::shared_ptr<type::Descriptor<>>& descriptor, bool assertRegisteredType = true);
+        void deregisterType(const type::Descriptor<>& descriptor, bool assertRegisteredType = true);
+        void deregisterType(const std::string_view& name, bool assertRegisteredType = true);
 
-    	[[deprecated("only available for backwards compatibility")]]
-	    const type::StructDescriptor<>* findStructDescriptor(const std::string& name) const;
+        [[deprecated("only available for backwards compatibility")]]
+        const type::Descriptor<>* findDescriptor(const std::string& name) const;
 
-		[[deprecated("only available for backwards compatibility")]]
-		const std::map<std::string_view, std::shared_ptr<type::Descriptor<>>>& getTypes();
+        [[deprecated("only available for backwards compatibility")]]
+        const type::StructDescriptor<>* findStructDescriptor(const std::string& name) const;
+
+        [[deprecated("only available for backwards compatibility")]]
+        const std::map<std::string_view, std::shared_ptr<type::Descriptor<>>>& getTypes();
 
         [[deprecated("only available for backwards compatibility")]]
         tools::Signal<void (const type::StructDescriptor<>*)> onNewStruct;
@@ -70,6 +70,6 @@ namespace dots::io
     private:
 
         new_type_handler_t m_newTypeHandler;
-    	type_map_t m_types;
-	};
+        type_map_t m_types;
+    };
 }

@@ -20,31 +20,31 @@ namespace dots::type
 
         const StructDescriptor<>& _descriptor() const;
 
-		bool _usesDynamicMemory() const;
-    	size_t _dynamicMemoryUsage() const;
-		size_t _staticMemoryUsage() const;
-		size_t _totalMemoryUsage() const;
+        bool _usesDynamicMemory() const;
+        size_t _dynamicMemoryUsage() const;
+        size_t _staticMemoryUsage() const;
+        size_t _totalMemoryUsage() const;
 
-		const PropertySet& _keyProperties() const;
+        const PropertySet& _keyProperties() const;
 
-		Struct& _assign(const Struct& other, const PropertySet& includedProperties = PropertySet::All);
-		Struct& _copy(const Struct& other, const PropertySet& includedProperties = PropertySet::All);
-		Struct& _merge(const Struct& other, const PropertySet& includedProperties = PropertySet::All);
-		void _swap(Struct& other, const PropertySet& includedProperties = PropertySet::All);
-		void _clear(const PropertySet& includedProperties = PropertySet::All);
+        Struct& _assign(const Struct& other, const PropertySet& includedProperties = PropertySet::All);
+        Struct& _copy(const Struct& other, const PropertySet& includedProperties = PropertySet::All);
+        Struct& _merge(const Struct& other, const PropertySet& includedProperties = PropertySet::All);
+        void _swap(Struct& other, const PropertySet& includedProperties = PropertySet::All);
+        void _clear(const PropertySet& includedProperties = PropertySet::All);
 
-		bool _equal(const Struct& rhs, const PropertySet& includedProperties = PropertySet::All) const;
-    	bool _same(const Struct& rhs) const;
-    	
-		bool _less(const Struct& rhs, const PropertySet& includedProperties = PropertySet::All) const;
-    	bool _lessEqual(const Struct& rhs, const PropertySet& includedProperties = PropertySet::All) const;
-    	bool _greater(const Struct& rhs, const PropertySet& includedProperties = PropertySet::All) const;
-    	bool _greaterEqual(const Struct& rhs, const PropertySet& includedProperties = PropertySet::All) const;
+        bool _equal(const Struct& rhs, const PropertySet& includedProperties = PropertySet::All) const;
+        bool _same(const Struct& rhs) const;
 
-		PropertySet _diffProperties(const Struct& other, const PropertySet& includedProperties = PropertySet::All) const;
+        bool _less(const Struct& rhs, const PropertySet& includedProperties = PropertySet::All) const;
+        bool _lessEqual(const Struct& rhs, const PropertySet& includedProperties = PropertySet::All) const;
+        bool _greater(const Struct& rhs, const PropertySet& includedProperties = PropertySet::All) const;
+        bool _greaterEqual(const Struct& rhs, const PropertySet& includedProperties = PropertySet::All) const;
 
-		void _publish(const PropertySet& includedProperties = PropertySet::All, bool remove = false) const;
-		void _remove() const;
+        PropertySet _diffProperties(const Struct& other, const PropertySet& includedProperties = PropertySet::All) const;
+
+        void _publish(const PropertySet& includedProperties = PropertySet::All, bool remove = false) const;
+        void _remove() const;
 
         template <bool AllowSubset = true>
         bool _hasProperties(const PropertySet& properties) const
@@ -118,7 +118,7 @@ namespace dots::type
             return _is(T::_Descriptor());
         }
 
-    	template <typename... Ts>
+        template <typename... Ts>
         bool _isAny() const
         {
             static_assert(std::conjunction_v<std::is_base_of<Struct, Ts>...>);
@@ -173,18 +173,18 @@ namespace dots::type
             return const_cast<T*>(std::as_const(*this)._as<T>());
         }
 
-		template <typename T, bool Safe = false>
+        template <typename T, bool Safe = false>
         const T& _to() const
         {
-			static_assert(std::is_base_of_v<Struct, T>, "T has to be a sub-class of Struct");
+            static_assert(std::is_base_of_v<Struct, T>, "T has to be a sub-class of Struct");
 
-			if constexpr (Safe)
-			{
-				if (!_is<T>())
-				{
-					throw std::logic_error{ std::string{ "type mismatch in safe Struct conversion: expected " } + _desc->name().data() + " but got " + T::_Descriptor().name() };
-				}
-			}
+            if constexpr (Safe)
+            {
+                if (!_is<T>())
+                {
+                    throw std::logic_error{ std::string{ "type mismatch in safe Struct conversion: expected " } + _desc->name().data() + " but got " + T::_Descriptor().name() };
+                }
+            }
 
             return static_cast<const T&>(*this);
         }
@@ -197,27 +197,27 @@ namespace dots::type
 
     private:
 
-    	friend struct PropertyContainer<Struct>;
+        friend struct PropertyContainer<Struct>;
 
-    	const PropertyArea& derivedPropertyArea() const
-		{
-			return _desc->propertyArea(*this);
-		}
+        const PropertyArea& derivedPropertyArea() const
+        {
+            return _desc->propertyArea(*this);
+        }
 
-    	PropertyArea& derivedPropertyArea()
-		{
-			return _desc->propertyArea(*this);
-		}
+        PropertyArea& derivedPropertyArea()
+        {
+            return _desc->propertyArea(*this);
+        }
 
-    	const property_descriptor_container_t& derivedPropertyDescriptors() const
-    	{
-    		return _desc->propertyDescriptors();
-    	}
+        const property_descriptor_container_t& derivedPropertyDescriptors() const
+        {
+            return _desc->propertyDescriptors();
+        }
 
         const std::vector<property_path_t>& derivedPropertyPaths() const
-    	{
-    		return _desc->propertyPaths();
-    	}
+        {
+            return _desc->propertyPaths();
+        }
 
         template <typename T>
         static decltype(auto) ToRef(T&& t)

@@ -16,27 +16,27 @@ install(FILES
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${EXPORT_NAME}
 )
 install(FILES
-		src/DOTS-CG-CPP.cmake
+        src/DOTS-CG-CPP.cmake
     DESTINATION share/dots-cg-cpp
 )
 install(
-	FILES 
+    FILES
         ${DOTS-CG_DIR}/bin/dcg.py
     DESTINATION share/dots-cg-cpp
     PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
 )
 install(
-	CODE
-		"execute_process(
-			COMMAND /usr/bin/python setup.py install --prefix ${CMAKE_INSTALL_PREFIX}/share/dots-cg-cpp
-			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/import/dcg
-		)"
+    CODE
+        "execute_process(
+            COMMAND /usr/bin/python setup.py install --prefix ${CMAKE_INSTALL_PREFIX}/share/dots-cg-cpp
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/import/dcg
+        )"
 )
 install(
-	FILES
+    FILES
         src/config_cpp.py
         src/enum.dots.cpp.dotsT
         src/enum.dots.h.dotsT
         src/struct.dots.h.dotsT
-	DESTINATION share/dots-cg-cpp
+    DESTINATION share/dots-cg-cpp
 )

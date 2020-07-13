@@ -10,41 +10,41 @@ add_executable(${TARGET_NAME} TestContainer.cpp)
 
 # properties
 target_sources(${TARGET_NAME}
-	PRIVATE
-		TestDigest.cpp
+    PRIVATE
+        TestDigest.cpp
         TestAsciiSerialization.cpp
         TestCborSerialization.cpp
-		TestChrono.cpp
-		TestDispatcher.cpp
+        TestChrono.cpp
+        TestDispatcher.cpp
         TestJsonSerialization.cpp
-		TestEnumDescriptor.cpp
-		TestStaticDescriptor.cpp
-		TestStaticStruct.cpp
-		TestDynamicStruct.cpp
-		TestPropertySet.cpp
-		TestProperty.cpp
-		TestProxyProperty.cpp
-		TestProxyPropertyIterator.cpp
-		TestIpNetwork.cpp
-)	
+        TestEnumDescriptor.cpp
+        TestStaticDescriptor.cpp
+        TestStaticStruct.cpp
+        TestDynamicStruct.cpp
+        TestPropertySet.cpp
+        TestProperty.cpp
+        TestProxyProperty.cpp
+        TestProxyPropertyIterator.cpp
+        TestIpNetwork.cpp
+)
 target_include_directories(${TARGET_NAME}
-	PRIVATE
-		${CMAKE_CURRENT_SOURCE_DIR}/src
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 target_compile_options(${TARGET_NAME}
-	PRIVATE
-		$<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-O2 -flto -Wall -Wextra -Wpedantic -Werror -Wno-deprecated-declarations>>
+    PRIVATE
+        $<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-O2 -flto -Wall -Wextra -Wpedantic -Werror -Wno-deprecated-declarations>>
 )
 target_compile_features(${TARGET_NAME}
-	PRIVATE
-		cxx_std_17
+    PRIVATE
+        cxx_std_17
 )
 target_link_libraries(${TARGET_NAME}
-	PRIVATE 
-		DOTS::DOTS
-		gmock
-		gtest
-		gtest_main
-		date::date
-		date::tz
+    PRIVATE
+        DOTS::DOTS
+        gmock
+        gtest
+        gtest_main
+        date::date
+        date::tz
 )

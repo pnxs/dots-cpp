@@ -34,7 +34,7 @@ namespace dots::io
             DotsHeader::sentTime_i{ types::timepoint_t::Now() },
             DotsHeader::serverSentTime_i{ types::timepoint_t::Now() },
             DotsHeader::attributes_i{ includedProperties ==  types::property_set_t::All ? instance._validProperties() : includedProperties },
-			DotsHeader::sender_i{ io::Connection::HostId },
+            DotsHeader::sender_i{ io::Connection::HostId },
             DotsHeader::removeObj_i{ remove }
         };
         type::AnyStruct{ instance };
@@ -49,7 +49,7 @@ namespace dots::io
         /* do nothing */
     }
 
-	void HostTransceiver::leaveGroup(const std::string_view&/* name*/)
+    void HostTransceiver::leaveGroup(const std::string_view&/* name*/)
     {
         /* do nothing */
     }
@@ -121,7 +121,7 @@ namespace dots::io
         {
             LOG_ERROR_S("error while listening for incoming channels -> " << e.what());
         }
-        
+
         m_listeners.erase(&listener);
     }
 
@@ -357,7 +357,7 @@ namespace dots::io
             header.serverSentTime = types::timepoint_t::Now();
             header.attributes = instance->_validProperties();
             header.sender = *cloneInfo.lastUpdateFrom;
-			--*header.fromCache;
+            --*header.fromCache;
 
             connection.transmit(header, instance);
         }

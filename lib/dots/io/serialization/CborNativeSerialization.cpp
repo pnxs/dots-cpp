@@ -126,7 +126,7 @@ read_atomic_types_from_cbor(const type::Descriptor<>& td, type::Typeless& data, 
     auto ct = decoder.peekType().major();
 
     switch (td.dotsType()) {
-		case type::DotsType::int8:             static_cast<const type::Descriptor<types::int8_t>&>(td).construct(data.to<types::int8_t>(), ct == cbor::majorType::unsignedInteger ? decoder.read_uint() : decoder.read_int()); break;
+        case type::DotsType::int8:             static_cast<const type::Descriptor<types::int8_t>&>(td).construct(data.to<types::int8_t>(), ct == cbor::majorType::unsignedInteger ? decoder.read_uint() : decoder.read_int()); break;
         case type::DotsType::int16:            static_cast<const type::Descriptor<types::int16_t>&>(td).construct(data.to<types::int16_t>(), ct == cbor::majorType::unsignedInteger ? decoder.read_uint() : decoder.read_int()); break;
         case type::DotsType::int32:            static_cast<const type::Descriptor<types::int32_t>&>(td).construct(data.to<types::int32_t>(), ct == cbor::majorType::unsignedInteger ? decoder.read_uint() : decoder.read_int()); break;
         case type::DotsType::int64:            static_cast<const type::Descriptor<types::int64_t>&>(td).construct(data.to<types::int64_t>(), ct == cbor::majorType::unsignedInteger ? decoder.read_ulong() : decoder.read_long()); break;
@@ -138,7 +138,7 @@ read_atomic_types_from_cbor(const type::Descriptor<>& td, type::Typeless& data, 
         case type::DotsType::float32:          static_cast<const type::Descriptor<types::float32_t>&>(td).construct(data.to<types::float32_t>(), decoder.read_float()); break;
         case type::DotsType::float64:          static_cast<const type::Descriptor<types::float64_t>&>(td).construct(data.to<types::float64_t>(), decoder.read_double()); break;
         case type::DotsType::string:           static_cast<const type::Descriptor<types::string_t>&>(td).construct(data.to<types::string_t>(), decoder.read_string()); break;
-		case type::DotsType::property_set:     static_cast<const type::Descriptor<types::property_set_t>&>(td).construct(data.to<types::property_set_t>(), decoder.read_uint()); break;
+        case type::DotsType::property_set:     static_cast<const type::Descriptor<types::property_set_t>&>(td).construct(data.to<types::property_set_t>(), decoder.read_uint()); break;
         case type::DotsType::timepoint:        static_cast<const type::Descriptor<types::timepoint_t>&>(td).construct(data.to<types::timepoint_t>(), types::duration_t{ decoder.read_double() }); break;
         case type::DotsType::steady_timepoint: static_cast<const type::Descriptor<types::steady_timepoint_t>&>(td).construct(data.to<types::steady_timepoint_t>(), types::duration_t{ decoder.read_double() }); break;
         case type::DotsType::duration:         static_cast<const type::Descriptor<types::duration_t>&>(td).construct(data.to<types::duration_t>(), decoder.read_double()); break;
@@ -160,16 +160,16 @@ void read_cbor(const type::Descriptor<>& td, type::Typeless& data, cbor::decoder
 {
     if (td.dotsType() == type::DotsType::Struct)
     {
-    	const auto& structDescriptor = static_cast<const type::StructDescriptor<>&>(td);
-    	structDescriptor.construct(data);
-    	
+        const auto& structDescriptor = static_cast<const type::StructDescriptor<>&>(td);
+        structDescriptor.construct(data);
+
         from_cbor_recursive(structDescriptor, data.to<type::Struct>(), decoder);
     }
     else if (td.dotsType() == type::DotsType::Vector)
     {
-    	const auto& vectorDescriptor = static_cast<const type::VectorDescriptor&>(td);
-    	vectorDescriptor.construct(data);
-    	
+        const auto& vectorDescriptor = static_cast<const type::VectorDescriptor&>(td);
+        vectorDescriptor.construct(data);
+
         read_from_array_recursive(vectorDescriptor, data.to<type::Vector<>>(), decoder);
     }
     else if (isDotsBaseType(td.dotsType()))
@@ -211,8 +211,8 @@ void from_cbor_recursive(const type::StructDescriptor<>& td, type::Struct& insta
             }
 
             //td.propertyArea(instance).validProperties() += property->set();
-        	type::PropertySet& validProperties = td.propertyArea(instance).validProperties();
-        	validProperties += property.set();
+            type::PropertySet& validProperties = td.propertyArea(instance).validProperties();
+            validProperties += property.set();
         }
         else
         {
@@ -226,25 +226,25 @@ void from_cbor_recursive(const type::StructDescriptor<>& td, type::Struct& insta
 static void read_from_array_recursive(const type::VectorDescriptor& vd, type::Vector<>& data, cbor::decoder& decoder)
 {
     std::byte staticBuffer[1024];
-	std::unique_ptr<std::byte[]> dynamicBuffer;
-	std::byte& valueData = [&]() -> std::byte&
-	{
-		if (vd.valueDescriptor().size() <= sizeof(staticBuffer))
+    std::unique_ptr<std::byte[]> dynamicBuffer;
+    std::byte& valueData = [&]() -> std::byte&
+    {
+        if (vd.valueDescriptor().size() <= sizeof(staticBuffer))
         {
-        	return staticBuffer[0];
+            return staticBuffer[0];
         }
         else
         {
-	        dynamicBuffer = std::make_unique<std::byte[]>(vd.valueDescriptor().size());
-        	return dynamicBuffer[0];
+            dynamicBuffer = std::make_unique<std::byte[]>(vd.valueDescriptor().size());
+            return dynamicBuffer[0];
         }
-	}();
-	
+    }();
+
     for (size_t i = 0, arraySize = decoder.read_array(); i < arraySize; ++i)
     {
-    	read_cbor(vd.valueDescriptor(), type::Typeless::From(valueData), decoder);
-    	data.typelessPushBack(std::move(type::Typeless::From(valueData)));
-    	vd.valueDescriptor().destruct(type::Typeless::From(valueData));
+        read_cbor(vd.valueDescriptor(), type::Typeless::From(valueData), decoder);
+        data.typelessPushBack(std::move(type::Typeless::From(valueData)));
+        vd.valueDescriptor().destruct(type::Typeless::From(valueData));
     }
 }
 
@@ -263,7 +263,7 @@ std::string to_cbor(const type::Struct& instance, types::property_set_t properti
 
 std::string to_cbor(DynamicInstance instance, types::property_set_t properties)
 {
-	return to_cbor(*reinterpret_cast<const type::Struct*>(instance.obj), properties);
+    return to_cbor(*reinterpret_cast<const type::Struct*>(instance.obj), properties);
 }
 
 int from_cbor(const uint8_t* cborData, std::size_t cborSize, type::Struct& instance)
@@ -282,7 +282,7 @@ int from_cbor(const uint8_t* cborData, std::size_t cborSize, type::Struct& insta
 
 int from_cbor(const uint8_t* cborData, std::size_t cborSize, const dots::type::StructDescriptor<>* /*td*/, void* data)
 {
-	return from_cbor(cborData, cborSize, *reinterpret_cast<type::Struct*>(data));
+    return from_cbor(cborData, cborSize, *reinterpret_cast<type::Struct*>(data));
 }
 
 int skip_cbor(const uint8_t* cborData, std::size_t cborSize)

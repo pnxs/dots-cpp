@@ -31,8 +31,8 @@ static void write_atomic_types_to_json(const type::Descriptor<>& td, const type:
     //std::cout << "write atomic is_arithmetic:" << t.is_arithmetic() << " is_enum:" << t.is_enumeration() << " t:" << t.get_name() << "\n";
     //std::cout << "var ptr: " << var.get_ptr() << " type=" << var.get_type().get_name() << "\n";
 
-	const void* data = &typeless;
-	
+    const void* data = &typeless;
+
     switch (td.dotsType())
     {
         case type::DotsType::int8: writer.Int(*(const int8_t *) data);
@@ -105,14 +105,14 @@ static inline void write_json(const type::Descriptor<>& td, const type::Typeless
 template<class WRITER>
 static void write_array_to_json(const type::VectorDescriptor& vd, const type::Vector<>& data, WRITER& writer)
 {
-	writer.StartArray();
+    writer.StartArray();
 
     for (unsigned int i = 0; i < data.typelessSize(); ++i)
     {
         write_json(vd.valueDescriptor(), data.typelessAt(i), writer);
     }
 
-	writer.EndArray();
+    writer.EndArray();
 }
 
 template<class WRITER>
@@ -173,7 +173,7 @@ std::string to_json(const type::Struct& instance, types::property_set_t properti
 
 std::string to_json(const dots::type::StructDescriptor<>* /*td*/, const void* data, types::property_set_t properties, const ToJsonOptions& opts)
 {
-	return to_json(*reinterpret_cast<const type::Struct*>(data), properties, opts);
+    return to_json(*reinterpret_cast<const type::Struct*>(data), properties, opts);
 }
 
 void to_json(const type::Struct& instance, Writer<StringBuffer>& writer, types::property_set_t properties, bool allFields)
@@ -188,12 +188,12 @@ void to_json(const type::Struct& instance, PrettyWriter<StringBuffer>& writer, t
 
 void to_json(const dots::type::StructDescriptor<> */*td*/, const void *data, rapidjson::Writer<rapidjson::StringBuffer>& writer, types::property_set_t properties, bool allFields)
 {
-	to_json(*reinterpret_cast<const type::Struct*>(data), writer, properties, allFields);
+    to_json(*reinterpret_cast<const type::Struct*>(data), writer, properties, allFields);
 }
 
 void to_json(const dots::type::StructDescriptor<> */*td*/, const void *data, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer, types::property_set_t properties, bool allFields)
 {
-	to_json(*reinterpret_cast<const type::Struct*>(data), writer, properties, allFields);
+    to_json(*reinterpret_cast<const type::Struct*>(data), writer, properties, allFields);
 }
 
 // ---------------- Deserialization ------------------------
@@ -221,7 +221,7 @@ static void read_atomic_types_from_json(const type::Descriptor<>& td, type::Type
         case type::DotsType::Enum:
         {
             const auto& enumDescriptor = static_cast<const type::EnumDescriptor<>&>(td);
-        	enumDescriptor.construct(data, enumDescriptor.enumeratorFromTag(value.GetInt()).valueTypeless());
+            enumDescriptor.construct(data, enumDescriptor.enumeratorFromTag(value.GetInt()).valueTypeless());
         }
             break;
         case type::DotsType::Vector:
@@ -235,15 +235,15 @@ static void read_json(const type::Descriptor<>& td, type::Typeless& data, const 
 {
     if (td.dotsType() == type::DotsType::Struct)
     {
-    	const auto& structDescriptor = static_cast<const type::StructDescriptor<>&>(td);
-    	structDescriptor.construct(data);
+        const auto& structDescriptor = static_cast<const type::StructDescriptor<>&>(td);
+        structDescriptor.construct(data);
 
-    	from_json_recursive(structDescriptor, data.to<type::Struct>(), value.GetObject());
+        from_json_recursive(structDescriptor, data.to<type::Struct>(), value.GetObject());
     }
     else if (td.dotsType() == type::DotsType::Vector)
     {
-    	const auto& vectorDescriptor = static_cast<const type::VectorDescriptor&>(td);
-    	vectorDescriptor.construct(data);
+        const auto& vectorDescriptor = static_cast<const type::VectorDescriptor&>(td);
+        vectorDescriptor.construct(data);
         read_from_json_array_recursive(vectorDescriptor, data.to<type::Vector<>>(), value);
     }
     else if (isDotsBaseType(td.dotsType()))
@@ -262,26 +262,26 @@ void read_from_json_array_recursive(const type::VectorDescriptor& vd, type::Vect
         throw std::runtime_error("JSON value is not an array");
     }
 
-	std::byte staticBuffer[1024];
-	std::unique_ptr<std::byte[]> dynamicBuffer;
-	std::byte& valueData = [&]() -> std::byte&
-	{
-		if (vd.valueDescriptor().size() <= sizeof(staticBuffer))
+    std::byte staticBuffer[1024];
+    std::unique_ptr<std::byte[]> dynamicBuffer;
+    std::byte& valueData = [&]() -> std::byte&
+    {
+        if (vd.valueDescriptor().size() <= sizeof(staticBuffer))
         {
-        	return staticBuffer[0];
+            return staticBuffer[0];
         }
         else
         {
-	        dynamicBuffer = std::make_unique<std::byte[]>(vd.valueDescriptor().size());
-        	return dynamicBuffer[0];
+            dynamicBuffer = std::make_unique<std::byte[]>(vd.valueDescriptor().size());
+            return dynamicBuffer[0];
         }
-	}();
-	
+    }();
+
     for (auto item = value.Begin(); item != value.End(); ++item)
     {
         read_json(vd.valueDescriptor(), type::Typeless::From(valueData), *item);
-    	data.typelessPushBack(std::move(type::Typeless::From(valueData)));
-    	vd.valueDescriptor().destruct(type::Typeless::From(valueData));
+        data.typelessPushBack(std::move(type::Typeless::From(valueData)));
+        vd.valueDescriptor().destruct(type::Typeless::From(valueData));
     }
 }
 
@@ -340,7 +340,7 @@ int from_json(const std::string &jsonString, type::Struct& instance)
 
 int from_json(const std::string& jsonString, const dots::type::StructDescriptor<>* /*td*/, void* data)
 {
-	return from_json(jsonString, *reinterpret_cast<type::Struct*>(data));
+    return from_json(jsonString, *reinterpret_cast<type::Struct*>(data));
 }
 
 void from_json(const rapidjson::Document::ConstObject& jsonDocument, type::Struct& instance)
@@ -350,7 +350,7 @@ void from_json(const rapidjson::Document::ConstObject& jsonDocument, type::Struc
 
 void from_json(const rapidjson::Document::ConstObject& jsonDocument, const dots::type::StructDescriptor<> */*td*/, void *data)
 {
-	from_json(jsonDocument, *reinterpret_cast<type::Struct*>(data));
+    from_json(jsonDocument, *reinterpret_cast<type::Struct*>(data));
 }
 
 }
