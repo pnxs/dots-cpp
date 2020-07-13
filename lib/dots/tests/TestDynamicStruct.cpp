@@ -270,6 +270,95 @@ TEST_F(TestDynamicStruct, GetPropertyAllowsImplicitConstructionOfPath)
     EXPECT_EQ(sut._get<int32_t>("subStructProperty.subSubStructProperty.subSubIntProperty"), 42);
 }
 
+TEST_F(TestDynamicStruct, NestedAccessOfMultipleInstancesViaProxyProperty)
+{
+    DynamicStruct sut1{ *m_testDynamicStructDescriptor,
+        DynamicStruct::property_i<DynamicStruct>{ "subStructProperty",
+            DynamicStruct{ *m_testDynamicSubStructDescriptor,
+                DynamicStruct::property_i<int64_t>{ "subIntProperty", 42 },
+                DynamicStruct::property_i<float32_t>{ "subFloatProperty", 3.1415f }
+            }
+        }
+    };
+
+    ProxyProperty<int64_t> subIntProperty{ sut1._propertyArea(), sut1._path("subStructProperty.subIntProperty") };
+    ProxyProperty<float32_t> subFloatProperty{ sut1._propertyArea(), sut1._path("subStructProperty.subFloatProperty") };
+
+    EXPECT_EQ(subIntProperty, int64_t{ 42 });
+    EXPECT_EQ(subFloatProperty, float32_t{ 3.1415f });
+
+    DynamicStruct sut2{ *m_testDynamicStructDescriptor,
+        DynamicStruct::property_i<DynamicStruct>{ "subStructProperty",
+            DynamicStruct{ *m_testDynamicSubStructDescriptor,
+                DynamicStruct::property_i<int64_t>{ "subIntProperty", 21 },
+                DynamicStruct::property_i<float32_t>{ "subFloatProperty", 2.7183f }
+            }
+        }
+    };
+
+    subIntProperty.area(sut2._propertyArea());
+    subFloatProperty.area(sut2._propertyArea());
+
+    EXPECT_EQ(subIntProperty, int64_t{ 21 });
+    EXPECT_EQ(subFloatProperty, float32_t{ 2.7183f });
+
+    DynamicStruct sut3{ *m_testDynamicSubStructDescriptor,
+        DynamicStruct::property_i<int64_t>{ "subIntProperty", 23 },
+        DynamicStruct::property_i<float32_t>{ "subFloatProperty", 6.6261f }
+    };
+
+    subIntProperty.area(sut3._propertyArea(), sut3._path("subIntProperty"));
+    subFloatProperty.area(sut3._propertyArea(), sut3._path("subFloatProperty"));
+
+    EXPECT_EQ(subIntProperty, int64_t{ 23 });
+    EXPECT_EQ(subFloatProperty, float32_t{ 6.6261f });
+}
+
+TEST_F(TestDynamicStruct, NestedAccessViaProxyPropertyLists)
+{
+    DynamicStruct sut{ *m_testDynamicStructDescriptor,
+        DynamicStruct::property_i<int32_t>{ "intProperty", 1 },
+        DynamicStruct::property_i<string_t>{ "stringProperty", "foo" },
+        DynamicStruct::property_i<vector_t<float32_t>>{ "floatVectorProperty", vector_t<float32_t>{ 3.1415f } },
+        DynamicStruct::property_i<DynamicStruct>{ "subStructProperty",
+            DynamicStruct{ *m_testDynamicSubStructDescriptor,
+                DynamicStruct::property_i<int64_t>{ "subIntProperty", 42 },
+                DynamicStruct::property_i<DynamicStruct>{ "subSubStructProperty",
+                    DynamicStruct{ *m_testDynamicSubSubStructDescriptor,
+                        DynamicStruct::property_i<float64_t>{ "subSubDoubleProperty", 21.0 }
+                    }
+                }
+            }
+        }
+    };
+
+    std::vector<ProxyProperty<>> proxyProperties;
+
+    for (const property_path_t& path: m_testDynamicStructDescriptor->propertyPaths())
+    {
+        proxyProperties.emplace_back(sut._propertyArea(), path);
+    }
+
+    EXPECT_TRUE(proxyProperties[0].isValid());
+    EXPECT_TRUE(proxyProperties[1].isValid());
+    EXPECT_TRUE(proxyProperties[3].isValid());
+    EXPECT_TRUE(proxyProperties[4].isValid());
+    EXPECT_TRUE(proxyProperties[5].isValid());
+    EXPECT_TRUE(proxyProperties[6].isValid());
+    EXPECT_TRUE(proxyProperties[8].isValid());
+
+    EXPECT_EQ(proxyProperties[0].to<int32_t>(), 1);
+    EXPECT_EQ(proxyProperties[1].to<string_t>(), "foo");
+    EXPECT_EQ(proxyProperties[3].to<vector_t<float32_t>>(), vector_t<float32_t>{ 3.1415f });
+    EXPECT_EQ(proxyProperties[5].to<int64_t>(), int64_t{ 42 });
+    EXPECT_EQ(proxyProperties[8].to<float64_t>(), 21.0);
+
+    EXPECT_FALSE(proxyProperties[2].isValid());
+    EXPECT_FALSE(proxyProperties[7].isValid());
+    EXPECT_FALSE(proxyProperties[9].isValid());
+}
+
+
 TEST_F(TestDynamicStruct, PropertiesHaveExpectedTags)
 {
     DynamicStruct sut{ *m_testDynamicStructDescriptor };

@@ -52,6 +52,23 @@ namespace dots::type
         ProxyProperty& operator = (const ProxyProperty& rhs) = default;
         ProxyProperty& operator = (ProxyProperty&& rhs) = default;
 
+        const PropertyArea& area() const
+        {
+            return *m_area;
+        }
+
+        void area(PropertyArea& area)
+        {
+            m_area = &area;
+        }
+
+        void area(PropertyArea& area, const property_path_t& path)
+        {
+            m_area = &area;
+            m_path = &path;
+            m_offset = determineOffset();
+        }
+
         template <typename U>
         bool is() const
         {
