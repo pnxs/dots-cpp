@@ -214,7 +214,7 @@ namespace dots::type
             return _desc->propertyDescriptors();
         }
 
-        const std::vector<property_path_t>& derivedPropertyPaths() const
+        const std::vector<PropertyPath>& derivedPropertyPaths() const
         {
             return _desc->propertyPaths();
         }

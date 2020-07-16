@@ -3,6 +3,7 @@
 #include <dots/type/Descriptor.h>
 #include <dots/type/StaticDescriptor.h>
 #include <dots/type/Property.h>
+#include <dots/type/PropertyPath.h>
 
 namespace dots::types
 {
@@ -94,7 +95,7 @@ namespace dots::type
 
         [[deprecated("use property paths instead")]]
         const property_descriptor_container_t& flatPropertyDescriptors() const;
-        const std::vector<property_path_t>& propertyPaths() const;
+        const std::vector<PropertyPath>& propertyPaths() const;
 
         const PropertySet& properties() const;
         const PropertySet& keyProperties() const;
@@ -127,7 +128,7 @@ namespace dots::type
         PropertySet m_dynamicMemoryProperties;
         mutable property_descriptor_container_t m_flatPropertyDescriptors;
         mutable std::deque<PropertyDescriptor> m_subAreaPropertyDescriptors;
-        mutable std::vector<property_path_t> m_propertyPaths;
+        mutable std::vector<PropertyPath> m_propertyPaths;
         mutable const types::StructDescriptorData* m_descriptorData = nullptr;
     };
 

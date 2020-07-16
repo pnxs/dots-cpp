@@ -60,7 +60,7 @@ namespace dots::type
             return static_cast<const Derived&>(*this).derivedPropertyDescriptors();
         }
 
-        constexpr const std::vector<property_path_t>& _propertyPaths() const
+        constexpr const std::vector<PropertyPath>& _propertyPaths() const
         {
             return static_cast<const Derived&>(*this).derivedPropertyPaths();
         }
@@ -249,7 +249,7 @@ namespace dots::type
             });
         }
 
-        const property_path_t& _path(std::string_view propertyPath) const
+        const PropertyPath& _path(std::string_view propertyPath) const
         {
             std::vector<std::string_view> propertyNames;
 
@@ -273,14 +273,14 @@ namespace dots::type
                 }
             }
 
-            for (const property_path_t& path : _propertyPaths())
+            for (const PropertyPath& path : _propertyPaths())
             {
                 auto equal_names = [](const PropertyDescriptor& propertyDescriptor, std::string_view propertyName)
                 {
                     return propertyDescriptor.name() == propertyName;
                 };
 
-                if (std::equal(path.begin(), path.end(), propertyNames.begin(), propertyNames.end(), equal_names))
+                if (std::equal(path.elements().begin(), path.elements().end(), propertyNames.begin(), propertyNames.end(), equal_names))
                 {
                     return path;
                 }
@@ -291,7 +291,7 @@ namespace dots::type
         }
 
         template <typename T = Typeless>
-        ProxyProperty<T> _get(const property_path_t& propertyPath)
+        ProxyProperty<T> _get(const PropertyPath& propertyPath)
         {
             return ProxyProperty<T>{ _propertyArea(), propertyPath };
         }
