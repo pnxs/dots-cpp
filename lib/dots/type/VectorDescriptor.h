@@ -30,10 +30,10 @@ namespace dots::type
         {
             /* do nothing */
         }
-        Descriptor(const std::shared_ptr<Descriptor<>>& valueDescriptorOverride) :
+        Descriptor(const std::shared_ptr<Descriptor<>>& valueDescriptorOverride, bool checkSize = true) :
             StaticDescriptor<Vector<T>, VectorDescriptor>("vector<" + valueDescriptorOverride->name() + ">", valueDescriptorOverride, sizeof(Vector<T>), alignof(Vector<T>))
         {
-            if (valueDescriptorOverride->size() != sizeof(T) || valueDescriptorOverride->alignment() != alignof(T))
+            if (checkSize && (valueDescriptorOverride->size() != sizeof(T) || valueDescriptorOverride->alignment() != alignof(T)))
             {
                 throw std::logic_error{ "attempt to create vector descriptor with incompatible value type" };
             }
