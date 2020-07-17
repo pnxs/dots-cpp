@@ -124,6 +124,8 @@ namespace dots::type
 
         using Struct::_diffProperties;
 
+        using Struct::_propertyArea;
+
         const PropertyArea* propertyAreaGet() const;
         PropertyArea* propertyAreaGet();
 
