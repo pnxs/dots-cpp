@@ -315,8 +315,8 @@ TEST_F(TestDynamicStruct, NestedAccessOfMultipleInstancesViaProxyProperty)
         }
     };
 
-    ProxyProperty<int64_t> subIntProperty{ sut1._propertyArea(), sut1._path("subStructProperty.subIntProperty") };
-    ProxyProperty<float32_t> subFloatProperty{ sut1._propertyArea(), sut1._path("subStructProperty.subFloatProperty") };
+    ProxyProperty<int64_t> subIntProperty{ sut1, sut1._path("subStructProperty.subIntProperty") };
+    ProxyProperty<float32_t> subFloatProperty{ sut1, sut1._path("subStructProperty.subFloatProperty") };
 
     EXPECT_EQ(subIntProperty, int64_t{ 42 });
     EXPECT_EQ(subFloatProperty, float32_t{ 3.1415f });
@@ -330,8 +330,8 @@ TEST_F(TestDynamicStruct, NestedAccessOfMultipleInstancesViaProxyProperty)
         }
     };
 
-    subIntProperty.area(sut2._propertyArea());
-    subFloatProperty.area(sut2._propertyArea());
+    subIntProperty.area(sut2);
+    subFloatProperty.area(sut2);
 
     EXPECT_EQ(subIntProperty, int64_t{ 21 });
     EXPECT_EQ(subFloatProperty, float32_t{ 2.7183f });
@@ -341,8 +341,8 @@ TEST_F(TestDynamicStruct, NestedAccessOfMultipleInstancesViaProxyProperty)
         DynamicStruct::property_i<float32_t>{ "subFloatProperty", 6.6261f }
     };
 
-    subIntProperty.area(sut3._propertyArea(), sut3._path("subIntProperty"));
-    subFloatProperty.area(sut3._propertyArea(), sut3._path("subFloatProperty"));
+    subIntProperty.area(sut3, sut3._path("subIntProperty"));
+    subFloatProperty.area(sut3, sut3._path("subFloatProperty"));
 
     EXPECT_EQ(subIntProperty, int64_t{ 23 });
     EXPECT_EQ(subFloatProperty, float32_t{ 6.6261f });
@@ -366,23 +366,23 @@ TEST_F(TestDynamicStruct, NestedAccessViaPropertyPathList)
         }
     };
 
-    EXPECT_TRUE(ProxyProperty<>(sut._propertyArea(), m_testDynamicStructDescriptor->propertyPaths()[0]).isValid());
-    EXPECT_TRUE(ProxyProperty<>(sut._propertyArea(), m_testDynamicStructDescriptor->propertyPaths()[1]).isValid());
-    EXPECT_TRUE(ProxyProperty<>(sut._propertyArea(), m_testDynamicStructDescriptor->propertyPaths()[3]).isValid());
-    EXPECT_TRUE(ProxyProperty<>(sut._propertyArea(), m_testDynamicStructDescriptor->propertyPaths()[4]).isValid());
-    EXPECT_TRUE(ProxyProperty<>(sut._propertyArea(), m_testDynamicStructDescriptor->propertyPaths()[5]).isValid());
-    EXPECT_TRUE(ProxyProperty<>(sut._propertyArea(), m_testDynamicStructDescriptor->propertyPaths()[6]).isValid());
-    EXPECT_TRUE(ProxyProperty<>(sut._propertyArea(), m_testDynamicStructDescriptor->propertyPaths()[8]).isValid());
+    EXPECT_TRUE(ProxyProperty<>(sut, m_testDynamicStructDescriptor->propertyPaths()[0]).isValid());
+    EXPECT_TRUE(ProxyProperty<>(sut, m_testDynamicStructDescriptor->propertyPaths()[1]).isValid());
+    EXPECT_TRUE(ProxyProperty<>(sut, m_testDynamicStructDescriptor->propertyPaths()[3]).isValid());
+    EXPECT_TRUE(ProxyProperty<>(sut, m_testDynamicStructDescriptor->propertyPaths()[4]).isValid());
+    EXPECT_TRUE(ProxyProperty<>(sut, m_testDynamicStructDescriptor->propertyPaths()[5]).isValid());
+    EXPECT_TRUE(ProxyProperty<>(sut, m_testDynamicStructDescriptor->propertyPaths()[6]).isValid());
+    EXPECT_TRUE(ProxyProperty<>(sut, m_testDynamicStructDescriptor->propertyPaths()[8]).isValid());
 
-    EXPECT_EQ(ProxyProperty<int32_t>(sut._propertyArea(), m_testDynamicStructDescriptor->propertyPaths()[0]), 1);
-    EXPECT_EQ(ProxyProperty<string_t>(sut._propertyArea(), m_testDynamicStructDescriptor->propertyPaths()[1]), "foo");
-    EXPECT_EQ(ProxyProperty<vector_t<float32_t>>(sut._propertyArea(), m_testDynamicStructDescriptor->propertyPaths()[3]), vector_t<float32_t>{ 3.1415f });
-    EXPECT_EQ(ProxyProperty<int64_t>(sut._propertyArea(), m_testDynamicStructDescriptor->propertyPaths()[5]), int64_t{ 42 });
-    EXPECT_EQ(ProxyProperty<float64_t>(sut._propertyArea(), m_testDynamicStructDescriptor->propertyPaths()[8]), 21.0);
+    EXPECT_EQ(ProxyProperty<int32_t>(sut, m_testDynamicStructDescriptor->propertyPaths()[0]), 1);
+    EXPECT_EQ(ProxyProperty<string_t>(sut, m_testDynamicStructDescriptor->propertyPaths()[1]), "foo");
+    EXPECT_EQ(ProxyProperty<vector_t<float32_t>>(sut, m_testDynamicStructDescriptor->propertyPaths()[3]), vector_t<float32_t>{ 3.1415f });
+    EXPECT_EQ(ProxyProperty<int64_t>(sut, m_testDynamicStructDescriptor->propertyPaths()[5]), int64_t{ 42 });
+    EXPECT_EQ(ProxyProperty<float64_t>(sut, m_testDynamicStructDescriptor->propertyPaths()[8]), 21.0);
 
-    EXPECT_FALSE(ProxyProperty<>(sut._propertyArea(), m_testDynamicStructDescriptor->propertyPaths()[2]).isValid());
-    EXPECT_FALSE(ProxyProperty<>(sut._propertyArea(), m_testDynamicStructDescriptor->propertyPaths()[7]).isValid());
-    EXPECT_FALSE(ProxyProperty<>(sut._propertyArea(), m_testDynamicStructDescriptor->propertyPaths()[9]).isValid());
+    EXPECT_FALSE(ProxyProperty<>(sut, m_testDynamicStructDescriptor->propertyPaths()[2]).isValid());
+    EXPECT_FALSE(ProxyProperty<>(sut, m_testDynamicStructDescriptor->propertyPaths()[7]).isValid());
+    EXPECT_FALSE(ProxyProperty<>(sut, m_testDynamicStructDescriptor->propertyPaths()[9]).isValid());
 }
 
 

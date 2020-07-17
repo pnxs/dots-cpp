@@ -40,6 +40,16 @@ namespace dots::type
             return _find(name);
         }
 
+        constexpr operator const PropertyArea&() const
+        {
+            return _propertyArea();
+        }
+
+        constexpr operator PropertyArea&()
+        {
+            return _propertyArea();
+        }
+
         constexpr const PropertyArea& _propertyArea() const
         {
             return static_cast<const Derived&>(*this).derivedPropertyArea();
