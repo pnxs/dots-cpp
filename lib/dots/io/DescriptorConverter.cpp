@@ -80,13 +80,13 @@ namespace dots::io
                 {
                     auto dynStructDescriptor = std::dynamic_pointer_cast<type::Descriptor<type::DynamicStruct>>(valueTypeDescriptor);
 
-                    if ( dynStructDescriptor == nullptr)
+                    if (dynStructDescriptor == nullptr)
                     {
                         const auto& staticStructDescriptor = static_cast<const type::StructDescriptor<>&>(*valueTypeDescriptor);
                         dynStructDescriptor = std::make_shared<type::Descriptor<type::DynamicStruct>>(staticStructDescriptor.name(), staticStructDescriptor.flags(), staticStructDescriptor.propertyDescriptors(), staticStructDescriptor.size());
                     }
 
-                    descriptor = m_registry.get().registerType(type::Descriptor<types::vector_t<type::DynamicStruct>>{ dynStructDescriptor });
+                    descriptor = m_registry.get().registerType(type::Descriptor<types::vector_t<type::DynamicStruct>>{ dynStructDescriptor, false });
                 }
                 else
                 {

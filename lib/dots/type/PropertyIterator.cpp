@@ -1,9 +1,9 @@
-#include <dots/type/ProxyPropertyIterator.h>
+#include <dots/type/PropertyIterator.h>
 
 namespace dots::type
 {
     template <bool IsReverse, bool IsConst>
-    ProxyPropertyIterator<IsReverse, IsConst>::ProxyPropertyIterator(area_t& area, const descriptor_container_t& descriptors, descriptor_iterator_t descriptorIt, const PropertySet& properties/* = PropertySet::All*/) :
+    PropertyIterator<IsReverse, IsConst>::PropertyIterator(area_t& area, const descriptor_container_t& descriptors, descriptor_iterator_t descriptorIt, const PropertySet& properties/* = PropertySet::All*/) :
         m_area(&area),
         m_descriptors(&descriptors),
         m_descriptorIt(std::move(descriptorIt)),
@@ -16,14 +16,14 @@ namespace dots::type
     }
 
     template <bool IsReverse, bool IsConst>
-    void ProxyPropertyIterator<IsReverse, IsConst>::swap(ProxyPropertyIterator& other) noexcept
+    void PropertyIterator<IsReverse, IsConst>::swap(PropertyIterator& other) noexcept
     {
         std::swap(m_area, other.m_area);
         std::swap(m_descriptorIt, other.m_descriptorIt);
     }
 
     template <bool IsReverse, bool IsConst>
-    void ProxyPropertyIterator<IsReverse, IsConst>::swap(ProxyPropertyIterator&& other)
+    void PropertyIterator<IsReverse, IsConst>::swap(PropertyIterator&& other)
     {
         m_area = other.m_area;
         other.m_area = nullptr;
@@ -31,7 +31,7 @@ namespace dots::type
     }
 
     template <bool IsReverse, bool IsConst>
-    auto ProxyPropertyIterator<IsReverse, IsConst>::operator ++ () -> ProxyPropertyIterator&
+    auto PropertyIterator<IsReverse, IsConst>::operator ++ () -> PropertyIterator&
     {
         while (!onEnd())
         {
@@ -47,7 +47,7 @@ namespace dots::type
     }
 
     template <bool IsReverse, bool IsConst>
-    auto ProxyPropertyIterator<IsReverse, IsConst>::operator -- () -> ProxyPropertyIterator&
+    auto PropertyIterator<IsReverse, IsConst>::operator -- () -> PropertyIterator&
     {
         while (!onBegin())
         {
@@ -63,25 +63,25 @@ namespace dots::type
     }
 
     template <bool IsReverse, bool IsConst>
-    auto ProxyPropertyIterator<IsReverse, IsConst>::operator ++ (int) -> ProxyPropertyIterator
+    auto PropertyIterator<IsReverse, IsConst>::operator ++ (int) -> PropertyIterator
     {
-        ProxyPropertyIterator copy = *this;
+        PropertyIterator copy = *this;
         ++(*this);
 
         return copy;
     }
 
     template <bool IsReverse, bool IsConst>
-    auto ProxyPropertyIterator<IsReverse, IsConst>::operator -- (int) -> ProxyPropertyIterator
+    auto PropertyIterator<IsReverse, IsConst>::operator -- (int) -> PropertyIterator
     {
-        ProxyPropertyIterator copy = *this;
+        PropertyIterator copy = *this;
         --(*this);
 
         return copy;
     }
 
     template <bool IsReverse, bool IsConst>
-    auto ProxyPropertyIterator<IsReverse, IsConst>::operator * () -> reference
+    auto PropertyIterator<IsReverse, IsConst>::operator * () -> reference
     {
         if (onEnd())
         {
@@ -92,37 +92,37 @@ namespace dots::type
     }
 
     template <bool IsReverse, bool IsConst>
-    auto ProxyPropertyIterator<IsReverse, IsConst>::operator * () const -> const reference
+    auto PropertyIterator<IsReverse, IsConst>::operator * () const -> const reference
     {
-        return *const_cast<ProxyPropertyIterator&>(*this);
+        return *const_cast<PropertyIterator&>(*this);
     }
 
     template <bool IsReverse, bool IsConst>
-    auto ProxyPropertyIterator<IsReverse, IsConst>::operator -> () -> pointer
-    {
-        return &*(*this);
-    }
-
-    template <bool IsReverse, bool IsConst>
-    auto ProxyPropertyIterator<IsReverse, IsConst>::operator -> () const -> const pointer
+    auto PropertyIterator<IsReverse, IsConst>::operator -> () -> pointer
     {
         return &*(*this);
     }
 
     template <bool IsReverse, bool IsConst>
-    bool ProxyPropertyIterator<IsReverse, IsConst>::operator == (const ProxyPropertyIterator& other) const
+    auto PropertyIterator<IsReverse, IsConst>::operator -> () const -> const pointer
+    {
+        return &*(*this);
+    }
+
+    template <bool IsReverse, bool IsConst>
+    bool PropertyIterator<IsReverse, IsConst>::operator == (const PropertyIterator& other) const
     {
         return m_descriptorIt == other.m_descriptorIt;
     }
 
     template <bool IsReverse, bool IsConst>
-    bool ProxyPropertyIterator<IsReverse, IsConst>::operator != (const ProxyPropertyIterator& other) const
+    bool PropertyIterator<IsReverse, IsConst>::operator != (const PropertyIterator& other) const
     {
         return !(*this == other);
     }
 
     template <bool IsReverse, bool IsConst>
-    bool ProxyPropertyIterator<IsReverse, IsConst>::onBegin() const
+    bool PropertyIterator<IsReverse, IsConst>::onBegin() const
     {
         if constexpr (IsReverse)
         {
@@ -135,7 +135,7 @@ namespace dots::type
     }
 
     template <bool IsReverse, bool IsConst>
-    bool ProxyPropertyIterator<IsReverse, IsConst>::onEnd() const
+    bool PropertyIterator<IsReverse, IsConst>::onEnd() const
     {
         if constexpr (IsReverse)
         {
@@ -148,7 +148,7 @@ namespace dots::type
     }
 
     template <bool IsReverse, bool IsConst>
-    auto ProxyPropertyIterator<IsReverse, IsConst>::emplaceProxy() -> reference
+    auto PropertyIterator<IsReverse, IsConst>::emplaceProxy() -> reference
     {
         if constexpr (IsConst)
         {
@@ -160,13 +160,13 @@ namespace dots::type
         }
     }
 
-    template struct ProxyPropertyIterator<false, false>;
-    template struct ProxyPropertyIterator<false, true>;
-    template struct ProxyPropertyIterator<true, false>;
-    template struct ProxyPropertyIterator<true, true>;
+    template struct PropertyIterator<false, false>;
+    template struct PropertyIterator<false, true>;
+    template struct PropertyIterator<true, false>;
+    template struct PropertyIterator<true, true>;
 
     template <typename Iterator>
-    ProxyPropertyRange<Iterator>::ProxyPropertyRange(Iterator begin, Iterator end):
+    PropertyRange<Iterator>::PropertyRange(Iterator begin, Iterator end):
         m_begin(std::move(begin)),
         m_end(std::move(end))
     {
@@ -174,19 +174,19 @@ namespace dots::type
     }
 
     template <typename Iterator>
-    Iterator ProxyPropertyRange<Iterator>::begin() const
+    Iterator PropertyRange<Iterator>::begin() const
     {
         return m_begin;
     }
 
     template <typename Iterator>
-    Iterator ProxyPropertyRange<Iterator>::end() const
+    Iterator PropertyRange<Iterator>::end() const
     {
         return m_end;
     }
 
-    template struct ProxyPropertyRange<proxy_property_iterator>;
-    template struct ProxyPropertyRange<const_proxy_property_iterator>;
-    template struct ProxyPropertyRange<reverse_proxy_property_iterator>;
-    template struct ProxyPropertyRange<const_reverse_proxy_property_iterator>;
+    template struct PropertyRange<property_iterator>;
+    template struct PropertyRange<const_property_iterator>;
+    template struct PropertyRange<reverse_property_iterator>;
+    template struct PropertyRange<const_reverse_property_iterator>;
 }

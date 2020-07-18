@@ -84,8 +84,9 @@ target_sources(${TARGET_NAME}
         type/DynamicStruct.cpp
         type/EnumDescriptor.cpp
         type/PropertyDescriptor.cpp
-        type/ProxyPropertyIterator.cpp
-        type/ProxyPropertyPairIterator.cpp
+        type/PropertyPath.cpp
+        type/PropertyPairIterator.cpp
+        type/PropertyIterator.cpp
         type/Struct.cpp
         type/StructDescriptor.cpp
         type/Uuid.cpp

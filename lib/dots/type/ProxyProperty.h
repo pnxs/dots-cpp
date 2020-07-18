@@ -1,6 +1,7 @@
 #pragma once
 #include <variant>
 #include <dots/type/Property.h>
+#include <dots/type/PropertyPath.h>
 
 namespace dots::type
 {
@@ -9,16 +10,20 @@ namespace dots::type
     {
         static constexpr bool EnableValueConstructors = !std::is_same_v<T, PropertyArea>;
 
-        ProxyProperty(PropertyArea& area, const property_path_t& path) :
-            m_area(&area),
-            m_path{ &path }
+        ProxyProperty(const PropertyPath& path) :
+            ProxyProperty(nullptr, path_t{ &path })
+        {
+            /* do nothing */
+        }
+
+        ProxyProperty(PropertyArea& area, const PropertyPath& path) :
+            ProxyProperty(&area, path_t{ &path })
         {
             /* do nothing */
         }
 
         ProxyProperty(PropertyArea& area, const PropertyDescriptor& descriptor) :
-            m_area(&area),
-            m_path{ &descriptor }
+            ProxyProperty(&area, path_t{ &descriptor })
         {
             /* do nothing */
         }
@@ -50,11 +55,62 @@ namespace dots::type
         ProxyProperty& operator = (const ProxyProperty& rhs) = default;
         ProxyProperty& operator = (ProxyProperty&& rhs) = default;
 
+        template <typename U>
+        bool is() const
+        {
+            using descriptor_t = Descriptor<U>;
+            static_assert(!is_dynamic_descriptor_v<descriptor_t>);
+
+            return descriptor_t::InstancePtr() == derivedDescriptor().valueDescriptorPtr();
+        }
+
+        template <typename U>
+        const ProxyProperty<U>* as() const
+        {
+            return is<U>() ? reinterpret_cast<const ProxyProperty<U>*>(this) : nullptr;
+        }
+
+        template <typename U>
+        const ProxyProperty<U>* as()
+        {
+            return const_cast<ProxyProperty<U>*>(std::as_const(*this).template as<U>());
+        }
+
+        template <typename U, bool Safe = false>
+        const ProxyProperty<U>& to() const
+        {
+            using descriptor_t = Descriptor<U>;
+            static_assert(!is_dynamic_descriptor_v<descriptor_t>);
+
+            if constexpr (Safe)
+            {
+                if (!is<U>())
+                {
+                    throw std::logic_error{ std::string{ "type mismatch in safe ProxyProperty conversion: expected '" } + derivedDescriptor().valueDescriptor().name() + "' but got '" + descriptor_t::Instance().name() + "'" };
+                }
+            }
+
+            return reinterpret_cast<const ProxyProperty<U>&>(*this);
+        }
+
+        template <typename U, bool Safe = false>
+        ProxyProperty<U>& to()
+        {
+            return const_cast<ProxyProperty<U>&>(std::as_const(*this).template to<U, Safe>());
+        }
+
     private:
 
         friend struct Property<T, ProxyProperty<T>>;
-        using path_t = std::variant<const PropertyDescriptor*, const property_path_t*>;
+        using path_t = std::variant<const PropertyDescriptor*, const PropertyPath*>;
         static constexpr PropertySet None{ PropertySet::None };
+
+        ProxyProperty(PropertyArea* area, path_t path) :
+            m_area(area),
+            m_path{ std::move(path) }
+        {
+            /* do nothing */
+        }
 
         const PropertySet& validPathProperties() const
         {
@@ -64,7 +120,7 @@ namespace dots::type
             }
             else
             {
-                if (const auto& path = *std::get<const property_path_t*>(m_path); path.size() == 1)
+                if (const auto& elements = std::get<const PropertyPath*>(m_path)->elements(); elements.size() == 1)
                 {
                     return m_area->validProperties();
                 }
@@ -72,9 +128,9 @@ namespace dots::type
                 {
                     PropertyArea* area = m_area;
 
-                    for (size_t i = 0; i < path.size() - 1; ++i)
+                    for (size_t i = 0; i < elements.size() - 1; ++i)
                     {
-                        ProxyProperty<> subProperty{ *area, path[i].get() };
+                        ProxyProperty<> subProperty{ *area, elements[i].get() };
 
                         if (subProperty.isValid())
                         {
@@ -99,7 +155,7 @@ namespace dots::type
             }
             else
             {
-                if (const auto& path = *std::get<const property_path_t*>(m_path); path.size() == 1)
+                if (const auto& elements = std::get<const PropertyPath*>(m_path)->elements(); elements.size() == 1)
                 {
                     return m_area->validProperties();
                 }
@@ -107,14 +163,37 @@ namespace dots::type
                 {
                     PropertyArea* area = m_area;
 
-                    for (size_t i = 0; i < path.size() - 1; ++i)
+                    for (size_t i = 0; i < elements.size() - 1; ++i)
                     {
-                        ProxyProperty<> subProperty{ *area, path[i].get() };
+                        ProxyProperty<> subProperty{ *area, elements[i].get() };
                         area = reinterpret_cast<PropertyArea*>(reinterpret_cast<std::byte*>(&subProperty.constructOrValue()) + *subProperty.descriptor().subAreaOffset());
                     }
 
                     return area->validProperties();
                 }
+            }
+        }
+
+        size_t determineOffset()
+        {
+            if (std::holds_alternative<const PropertyDescriptor*>(m_path))
+            {
+                return std::get<const PropertyDescriptor*>(m_path)->offset();
+            }
+            else
+            {
+                size_t offset = 0;
+                const auto& elements = std::get<const PropertyPath*>(m_path)->elements();
+
+                for (size_t i = 0; i < elements.size() - 1; ++i)
+                {
+                    const PropertyDescriptor& descriptor = elements[i];
+                    offset += descriptor.offset();
+                    offset += *descriptor.subAreaOffset();
+                }
+
+                offset += elements[elements.size() - 1].get().offset();
+                return offset;
             }
         }
 
@@ -152,19 +231,7 @@ namespace dots::type
             }
             else
             {
-                size_t offset = 0;
-                const auto& path = *std::get<const property_path_t*>(m_path);
-
-                for (size_t i = 0; i < path.size() - 1; ++i)
-                {
-                    const PropertyDescriptor& descriptor = path[i];
-                    offset += descriptor.offset();
-                    offset += *descriptor.subAreaOffset();
-                }
-
-                offset += path[path.size() - 1].get().offset();
-
-                return m_area->getProperty<T>(offset);
+                return m_area->getProperty<T>(std::get<const PropertyPath*>(m_path)->offset());
             }
         }
 
@@ -181,7 +248,7 @@ namespace dots::type
             }
             else
             {
-                return std::get<const property_path_t*>(m_path)->back();
+                return std::get<const PropertyPath*>(m_path)->elements().back();
             }
         }
 
