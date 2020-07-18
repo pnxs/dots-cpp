@@ -304,7 +304,7 @@ TEST_F(TestDynamicStruct, GetPropertyAllowsImplicitConstructionOfPath)
     EXPECT_EQ(sut._get<int32_t>("subStructProperty.subSubStructProperty.subSubIntProperty"), 42);
 }
 
-TEST_F(TestDynamicStruct, NestedAccessOfMultipleInstancesViaProxyProperty)
+TEST_F(TestDynamicStruct, NestedAccessViaPropertyPathGet)
 {
     DynamicStruct sut1{ *m_testDynamicStructDescriptor,
         DynamicStruct::property_i<DynamicStruct>{ "subStructProperty",
@@ -315,11 +315,8 @@ TEST_F(TestDynamicStruct, NestedAccessOfMultipleInstancesViaProxyProperty)
         }
     };
 
-    ProxyProperty<int64_t> subIntProperty{ sut1, sut1._path("subStructProperty.subIntProperty") };
-    ProxyProperty<float32_t> subFloatProperty{ sut1, sut1._path("subStructProperty.subFloatProperty") };
-
-    EXPECT_EQ(subIntProperty, int64_t{ 42 });
-    EXPECT_EQ(subFloatProperty, float32_t{ 3.1415f });
+    EXPECT_EQ(ProxyProperty<int64_t>(sut1, sut1._path("subStructProperty.subIntProperty")), int64_t{ 42 });
+    EXPECT_EQ(ProxyProperty<float32_t>(sut1, sut1._path("subStructProperty.subFloatProperty")), float32_t{ 3.1415f });
 
     DynamicStruct sut2{ *m_testDynamicStructDescriptor,
         DynamicStruct::property_i<DynamicStruct>{ "subStructProperty",
@@ -330,22 +327,16 @@ TEST_F(TestDynamicStruct, NestedAccessOfMultipleInstancesViaProxyProperty)
         }
     };
 
-    subIntProperty.area(sut2);
-    subFloatProperty.area(sut2);
-
-    EXPECT_EQ(subIntProperty, int64_t{ 21 });
-    EXPECT_EQ(subFloatProperty, float32_t{ 2.7183f });
+    EXPECT_EQ(ProxyProperty<int64_t>(sut2, sut2._path("subStructProperty.subIntProperty")), int64_t{ 21 });
+    EXPECT_EQ(ProxyProperty<float32_t>(sut2, sut2._path("subStructProperty.subFloatProperty")), float32_t{ 2.7183f });
 
     DynamicStruct sut3{ *m_testDynamicSubStructDescriptor,
         DynamicStruct::property_i<int64_t>{ "subIntProperty", 23 },
         DynamicStruct::property_i<float32_t>{ "subFloatProperty", 6.6261f }
     };
 
-    subIntProperty.area(sut3, sut3._path("subIntProperty"));
-    subFloatProperty.area(sut3, sut3._path("subFloatProperty"));
-
-    EXPECT_EQ(subIntProperty, int64_t{ 23 });
-    EXPECT_EQ(subFloatProperty, float32_t{ 6.6261f });
+    EXPECT_EQ(ProxyProperty<int64_t>(sut3, sut3._path("subIntProperty")), int64_t{ 23 });
+    EXPECT_EQ(ProxyProperty<float32_t>(sut3, sut3._path("subFloatProperty")), float32_t{ 6.6261f });
 }
 
 TEST_F(TestDynamicStruct, NestedAccessViaPropertyPathList)
