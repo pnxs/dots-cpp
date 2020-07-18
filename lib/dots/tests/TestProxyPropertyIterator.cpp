@@ -4,7 +4,7 @@
 
 using namespace dots::type;
 
-struct TestProxyPropertyIterator : ::testing::Test
+struct TestPropertyIterator : ::testing::Test
 {
 protected:
 
@@ -46,7 +46,7 @@ protected:
         TestProperty<uint16_t> shortProperty;
     };
 
-    TestProxyPropertyIterator() :
+    TestPropertyIterator() :
         m_propertyDescriptors{
             m_propertyArea.intProperty.descriptor(),
             m_propertyArea.stringProperty.descriptor(),
@@ -62,22 +62,22 @@ protected:
     TestPropertyArea m_propertyArea;
     property_descriptor_container_t m_propertyDescriptors;
 
-    proxy_property_iterator m_forwardBegin;
-    proxy_property_iterator m_forwardEnd;
+    property_iterator m_forwardBegin;
+    property_iterator m_forwardEnd;
 
-    reverse_proxy_property_iterator m_reverseBegin;
-    reverse_proxy_property_iterator m_reverseEnd;
+    reverse_property_iterator m_reverseBegin;
+    reverse_property_iterator m_reverseEnd;
 };
 
-TEST_F(TestProxyPropertyIterator, forward_operator_dereference_ThrowOnInvalid)
+TEST_F(TestPropertyIterator, forward_operator_dereference_ThrowOnInvalid)
 {
-    proxy_property_iterator sut{ m_forwardEnd };
+    property_iterator sut{ m_forwardEnd };
     EXPECT_THROW(*sut, std::logic_error);
 }
 
-TEST_F(TestProxyPropertyIterator, forward_operator_prefixIncrement_ExpectedNumberOfIterations)
+TEST_F(TestPropertyIterator, forward_operator_prefixIncrement_ExpectedNumberOfIterations)
 {
-    proxy_property_iterator sut{ m_forwardBegin };
+    property_iterator sut{ m_forwardBegin };
 
     size_t numIterations = 0;
     std::for_each(sut, m_forwardEnd, [&](const auto&) { ++numIterations; });
@@ -85,9 +85,9 @@ TEST_F(TestProxyPropertyIterator, forward_operator_prefixIncrement_ExpectedNumbe
     EXPECT_EQ(numIterations, 4);
 }
 
-TEST_F(TestProxyPropertyIterator, forward_operator_prefixIncrement_ExpectedIterationWithAllProperties)
+TEST_F(TestPropertyIterator, forward_operator_prefixIncrement_ExpectedIterationWithAllProperties)
 {
-    proxy_property_iterator sut{ m_forwardBegin };
+    property_iterator sut{ m_forwardBegin };
 
     EXPECT_EQ(sut->descriptor().tag(), m_propertyArea.intProperty.descriptor().tag());
     EXPECT_EQ((++sut)->descriptor().tag(), m_propertyArea.stringProperty.descriptor().tag());
@@ -96,18 +96,18 @@ TEST_F(TestProxyPropertyIterator, forward_operator_prefixIncrement_ExpectedItera
     EXPECT_EQ((++sut), m_forwardEnd);
 }
 
-TEST_F(TestProxyPropertyIterator, forward_operator_prefixIncrement_ExpectedIterationWithPartialProperties)
+TEST_F(TestPropertyIterator, forward_operator_prefixIncrement_ExpectedIterationWithPartialProperties)
 {
-    proxy_property_iterator sut{ m_propertyArea, m_propertyDescriptors, m_propertyDescriptors.begin(), m_propertyArea.stringProperty.descriptor().set() + m_propertyArea.shortProperty.descriptor().set() };
+    property_iterator sut{ m_propertyArea, m_propertyDescriptors, m_propertyDescriptors.begin(), m_propertyArea.stringProperty.descriptor().set() + m_propertyArea.shortProperty.descriptor().set() };
 
     EXPECT_EQ(sut->descriptor().tag(), m_propertyArea.stringProperty.descriptor().tag());
     EXPECT_EQ((++sut)->descriptor().tag(), m_propertyArea.shortProperty.descriptor().tag());
     EXPECT_EQ((++sut), m_forwardEnd);
 }
 
-TEST_F(TestProxyPropertyIterator, forward_operator_postfixIncrement_ExpectedIterationWithAllProperties)
+TEST_F(TestPropertyIterator, forward_operator_postfixIncrement_ExpectedIterationWithAllProperties)
 {
-    proxy_property_iterator sut{ m_forwardBegin };
+    property_iterator sut{ m_forwardBegin };
 
     EXPECT_EQ(sut->descriptor().tag(), m_propertyArea.intProperty.descriptor().tag());
     EXPECT_EQ((sut++)->descriptor().tag(), m_propertyArea.intProperty.descriptor().tag());
@@ -117,9 +117,9 @@ TEST_F(TestProxyPropertyIterator, forward_operator_postfixIncrement_ExpectedIter
     EXPECT_EQ((sut), m_forwardEnd);
 }
 
-TEST_F(TestProxyPropertyIterator, forward_operator_postfixIncrement_ExpectedIterationWithPartialProperties)
+TEST_F(TestPropertyIterator, forward_operator_postfixIncrement_ExpectedIterationWithPartialProperties)
 {
-    proxy_property_iterator sut{ m_propertyArea, m_propertyDescriptors, m_propertyDescriptors.begin(), m_propertyArea.stringProperty.descriptor().set() + m_propertyArea.shortProperty.descriptor().set() };
+    property_iterator sut{ m_propertyArea, m_propertyDescriptors, m_propertyDescriptors.begin(), m_propertyArea.stringProperty.descriptor().set() + m_propertyArea.shortProperty.descriptor().set() };
 
     EXPECT_EQ(sut->descriptor().tag(), m_propertyArea.stringProperty.descriptor().tag());
     EXPECT_EQ((sut++)->descriptor().tag(), m_propertyArea.stringProperty.descriptor().tag());
@@ -127,15 +127,15 @@ TEST_F(TestProxyPropertyIterator, forward_operator_postfixIncrement_ExpectedIter
     EXPECT_EQ(sut, m_forwardEnd);
 }
 
-TEST_F(TestProxyPropertyIterator, reverse_operator_dereference_ThrowOnInvalid)
+TEST_F(TestPropertyIterator, reverse_operator_dereference_ThrowOnInvalid)
 {
-    reverse_proxy_property_iterator sut{ m_reverseEnd };
+    reverse_property_iterator sut{ m_reverseEnd };
     EXPECT_THROW(*sut, std::logic_error);
 }
 
-TEST_F(TestProxyPropertyIterator, reverse_operator_prefixIncrement_ExpectedNumberOfIterations)
+TEST_F(TestPropertyIterator, reverse_operator_prefixIncrement_ExpectedNumberOfIterations)
 {
-    reverse_proxy_property_iterator sut{ m_reverseBegin };
+    reverse_property_iterator sut{ m_reverseBegin };
 
     size_t numIterations = 0;
     std::for_each(sut, m_reverseEnd, [&](const auto&) { ++numIterations; });
@@ -143,9 +143,9 @@ TEST_F(TestProxyPropertyIterator, reverse_operator_prefixIncrement_ExpectedNumbe
     EXPECT_EQ(numIterations, 4);
 }
 
-TEST_F(TestProxyPropertyIterator, reverse_operator_prefixIncrement_ExpectedIterationWithAllProperties)
+TEST_F(TestPropertyIterator, reverse_operator_prefixIncrement_ExpectedIterationWithAllProperties)
 {
-    reverse_proxy_property_iterator sut{ m_reverseBegin };
+    reverse_property_iterator sut{ m_reverseBegin };
 
     EXPECT_EQ(sut->descriptor().tag(), m_propertyArea.shortProperty.descriptor().tag());
     EXPECT_EQ((++sut)->descriptor().tag(), m_propertyArea.floatProperty.descriptor().tag());
@@ -154,18 +154,18 @@ TEST_F(TestProxyPropertyIterator, reverse_operator_prefixIncrement_ExpectedItera
     EXPECT_EQ((++sut), m_reverseEnd);
 }
 
-TEST_F(TestProxyPropertyIterator, reverse_operator_prefixIncrement_ExpectedIterationWithPartialProperties)
+TEST_F(TestPropertyIterator, reverse_operator_prefixIncrement_ExpectedIterationWithPartialProperties)
 {
-    reverse_proxy_property_iterator sut{ m_propertyArea, m_propertyDescriptors, m_propertyDescriptors.rbegin(), m_propertyArea.stringProperty.descriptor().set() + m_propertyArea.shortProperty.descriptor().set() };
+    reverse_property_iterator sut{ m_propertyArea, m_propertyDescriptors, m_propertyDescriptors.rbegin(), m_propertyArea.stringProperty.descriptor().set() + m_propertyArea.shortProperty.descriptor().set() };
 
     EXPECT_EQ(sut->descriptor().tag(), m_propertyArea.shortProperty.descriptor().tag());
     EXPECT_EQ((++sut)->descriptor().tag(), m_propertyArea.stringProperty.descriptor().tag());
     EXPECT_EQ((++sut), m_reverseEnd);
 }
 
-TEST_F(TestProxyPropertyIterator, reverse_operator_postfixIncrement_ExpectedIterationWithAllProperties)
+TEST_F(TestPropertyIterator, reverse_operator_postfixIncrement_ExpectedIterationWithAllProperties)
 {
-    reverse_proxy_property_iterator sut{ m_reverseBegin };
+    reverse_property_iterator sut{ m_reverseBegin };
 
     EXPECT_EQ(sut->descriptor().tag(), m_propertyArea.shortProperty.descriptor().tag());
     EXPECT_EQ((sut++)->descriptor().tag(), m_propertyArea.shortProperty.descriptor().tag());
@@ -175,9 +175,9 @@ TEST_F(TestProxyPropertyIterator, reverse_operator_postfixIncrement_ExpectedIter
     EXPECT_EQ((sut), m_reverseEnd);
 }
 
-TEST_F(TestProxyPropertyIterator, reverse_operator_postfixIncrement_ExpectedIterationWithPartialProperties)
+TEST_F(TestPropertyIterator, reverse_operator_postfixIncrement_ExpectedIterationWithPartialProperties)
 {
-    reverse_proxy_property_iterator sut{ m_propertyArea, m_propertyDescriptors, m_propertyDescriptors.rbegin(), m_propertyArea.stringProperty.descriptor().set() + m_propertyArea.shortProperty.descriptor().set() };
+    reverse_property_iterator sut{ m_propertyArea, m_propertyDescriptors, m_propertyDescriptors.rbegin(), m_propertyArea.stringProperty.descriptor().set() + m_propertyArea.shortProperty.descriptor().set() };
 
     EXPECT_EQ(sut->descriptor().tag(), m_propertyArea.shortProperty.descriptor().tag());
     EXPECT_EQ((sut++)->descriptor().tag(), m_propertyArea.shortProperty.descriptor().tag());

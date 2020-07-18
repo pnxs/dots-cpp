@@ -20,22 +20,22 @@ namespace dots::type
         PropertyContainer& operator = (const PropertyContainer& rhs) = default;
         PropertyContainer& operator = (PropertyContainer&& rhs) noexcept = default;
 
-        const_proxy_property_iterator operator [] (PropertySet::index_t tag) const
+        const_property_iterator operator [] (PropertySet::index_t tag) const
         {
             return _find(tag);
         }
 
-        proxy_property_iterator operator [] (PropertySet::index_t tag)
+        property_iterator operator [] (PropertySet::index_t tag)
         {
             return _find(tag);
         }
 
-        const_proxy_property_iterator operator [] (const std::string_view& name) const
+        const_property_iterator operator [] (const std::string_view& name) const
         {
             return _find(name);
         }
 
-        proxy_property_iterator operator [] (const std::string_view& name)
+        property_iterator operator [] (const std::string_view& name)
         {
             return _find(name);
         }
@@ -75,159 +75,159 @@ namespace dots::type
             return static_cast<const Derived&>(*this).derivedPropertyPaths();
         }
 
-        proxy_property_iterator _begin(const PropertySet& includedProperties = PropertySet::All)
+        property_iterator _begin(const PropertySet& includedProperties = PropertySet::All)
         {
-            return proxy_property_iterator{ _propertyArea(), _propertyDescriptors(), _propertyDescriptors().begin(), includedProperties };
+            return property_iterator{ _propertyArea(), _propertyDescriptors(), _propertyDescriptors().begin(), includedProperties };
         }
 
-        const_proxy_property_iterator _begin(const PropertySet& includedProperties = PropertySet::All) const
+        const_property_iterator _begin(const PropertySet& includedProperties = PropertySet::All) const
         {
-            return const_proxy_property_iterator{ _propertyArea(), _propertyDescriptors(), _propertyDescriptors().begin(), includedProperties };
+            return const_property_iterator{ _propertyArea(), _propertyDescriptors(), _propertyDescriptors().begin(), includedProperties };
         }
 
-        proxy_property_iterator _end(const PropertySet& includedProperties = PropertySet::All)
+        property_iterator _end(const PropertySet& includedProperties = PropertySet::All)
         {
-            return proxy_property_iterator{ _propertyArea(), _propertyDescriptors(), _propertyDescriptors().end(), includedProperties };
+            return property_iterator{ _propertyArea(), _propertyDescriptors(), _propertyDescriptors().end(), includedProperties };
         }
 
-        const_proxy_property_iterator _end(const PropertySet& includedProperties = PropertySet::All) const
+        const_property_iterator _end(const PropertySet& includedProperties = PropertySet::All) const
         {
-            return const_proxy_property_iterator{ _propertyArea(), _propertyDescriptors(), _propertyDescriptors().end(), includedProperties };
+            return const_property_iterator{ _propertyArea(), _propertyDescriptors(), _propertyDescriptors().end(), includedProperties };
         }
 
-        reverse_proxy_property_iterator _rbegin(const PropertySet& includedProperties = PropertySet::All)
+        reverse_property_iterator _rbegin(const PropertySet& includedProperties = PropertySet::All)
         {
-            return reverse_proxy_property_iterator{ _propertyArea(),_propertyDescriptors(),  _propertyDescriptors().rbegin(), includedProperties };
+            return reverse_property_iterator{ _propertyArea(),_propertyDescriptors(),  _propertyDescriptors().rbegin(), includedProperties };
         }
 
-        const_reverse_proxy_property_iterator _rbegin(const PropertySet& includedProperties = PropertySet::All) const
+        const_reverse_property_iterator _rbegin(const PropertySet& includedProperties = PropertySet::All) const
         {
-            return const_reverse_proxy_property_iterator{ _propertyArea(), _propertyDescriptors(), _propertyDescriptors().rbegin(), includedProperties };
+            return const_reverse_property_iterator{ _propertyArea(), _propertyDescriptors(), _propertyDescriptors().rbegin(), includedProperties };
         }
 
-        reverse_proxy_property_iterator _rend(const PropertySet& includedProperties = PropertySet::All)
+        reverse_property_iterator _rend(const PropertySet& includedProperties = PropertySet::All)
         {
-            return reverse_proxy_property_iterator{ _propertyArea(), _propertyDescriptors(), _propertyDescriptors().rend(), includedProperties };
+            return reverse_property_iterator{ _propertyArea(), _propertyDescriptors(), _propertyDescriptors().rend(), includedProperties };
         }
 
-        const_reverse_proxy_property_iterator _rend(const PropertySet& includedProperties = PropertySet::All) const
+        const_reverse_property_iterator _rend(const PropertySet& includedProperties = PropertySet::All) const
         {
-            return const_reverse_proxy_property_iterator{ _propertyArea(), _propertyDescriptors(), _propertyDescriptors().rend(), includedProperties };
+            return const_reverse_property_iterator{ _propertyArea(), _propertyDescriptors(), _propertyDescriptors().rend(), includedProperties };
         }
 
-        proxy_property_range _propertyRange(const PropertySet& includedProperties = PropertySet::All)
+        property_range _propertyRange(const PropertySet& includedProperties = PropertySet::All)
         {
-            return proxy_property_range{ _begin(includedProperties), _end(includedProperties) };
+            return property_range{ _begin(includedProperties), _end(includedProperties) };
         }
 
-        const_proxy_property_range _propertyRange(const PropertySet& includedProperties = PropertySet::All) const
+        const_property_range _propertyRange(const PropertySet& includedProperties = PropertySet::All) const
         {
-            return const_proxy_property_range{ _begin(includedProperties), _end(includedProperties) };
+            return const_property_range{ _begin(includedProperties), _end(includedProperties) };
         }
 
-        reverse_proxy_property_range _propertyRangeReversed(const PropertySet& includedProperties = PropertySet::All)
+        reverse_property_range _propertyRangeReversed(const PropertySet& includedProperties = PropertySet::All)
         {
-            return reverse_proxy_property_range{ _rbegin(includedProperties), _rend(includedProperties) };
+            return reverse_property_range{ _rbegin(includedProperties), _rend(includedProperties) };
         }
 
-        const_reverse_proxy_property_range _propertyRangeReversed(const PropertySet& includedProperties = PropertySet::All) const
+        const_reverse_property_range _propertyRangeReversed(const PropertySet& includedProperties = PropertySet::All) const
         {
-            return const_reverse_proxy_property_range{ _rbegin(includedProperties), _rend(includedProperties) };
+            return const_reverse_property_range{ _rbegin(includedProperties), _rend(includedProperties) };
         }
 
-        proxy_property_pair_range _propertyRange(Derived& rhs, const PropertySet& includedProperties = PropertySet::All)
+        property_pair_range _propertyRange(Derived& rhs, const PropertySet& includedProperties = PropertySet::All)
         {
-            return proxy_property_pair_range{ proxy_property_pair_iterator{ _begin(includedProperties), rhs._begin(includedProperties) }, proxy_property_pair_iterator{ _end(includedProperties), rhs._end(includedProperties) } };
+            return property_pair_range{ property_pair_iterator{ _begin(includedProperties), rhs._begin(includedProperties) }, property_pair_iterator{ _end(includedProperties), rhs._end(includedProperties) } };
         }
 
-        proxy_property_pair_range_const _propertyRange(const Derived& rhs, const PropertySet& includedProperties = PropertySet::All)
+        property_pair_range_const _propertyRange(const Derived& rhs, const PropertySet& includedProperties = PropertySet::All)
         {
-            return proxy_property_pair_range_const{ proxy_property_pair_iterator_const{ _begin(includedProperties), rhs._begin(includedProperties) }, proxy_property_pair_iterator_const{ _end(includedProperties), rhs._end(includedProperties) } };
+            return property_pair_range_const{ property_pair_iterator_const{ _begin(includedProperties), rhs._begin(includedProperties) }, property_pair_iterator_const{ _end(includedProperties), rhs._end(includedProperties) } };
         }
 
-        const_proxy_property_pair_range_const _propertyRange(const Derived& rhs, const PropertySet& includedProperties = PropertySet::All) const
+        const_property_pair_range_const _propertyRange(const Derived& rhs, const PropertySet& includedProperties = PropertySet::All) const
         {
-            return const_proxy_property_pair_range_const{ const_proxy_property_pair_iterator_const{ _begin(includedProperties), rhs._begin(includedProperties) }, const_proxy_property_pair_iterator_const{ _end(includedProperties), rhs._end(includedProperties) } };
+            return const_property_pair_range_const{ const_property_pair_iterator_const{ _begin(includedProperties), rhs._begin(includedProperties) }, const_property_pair_iterator_const{ _end(includedProperties), rhs._end(includedProperties) } };
         }
 
-        reverse_proxy_property_pair_range _propertyRangeReversed(Derived& rhs, const PropertySet& includedProperties = PropertySet::All)
+        reverse_property_pair_range _propertyRangeReversed(Derived& rhs, const PropertySet& includedProperties = PropertySet::All)
         {
-            return reverse_proxy_property_pair_range{ reverse_proxy_property_pair_iterator{ _rbegin(includedProperties), rhs._rbegin(includedProperties) }, reverse_proxy_property_pair_iterator{ _rend(includedProperties), rhs._rend(includedProperties) } };
+            return reverse_property_pair_range{ reverse_property_pair_iterator{ _rbegin(includedProperties), rhs._rbegin(includedProperties) }, reverse_property_pair_iterator{ _rend(includedProperties), rhs._rend(includedProperties) } };
         }
 
-        reverse_proxy_property_pair_range_const _propertyRangeReversed(const Derived& rhs, const PropertySet& includedProperties = PropertySet::All)
+        reverse_property_pair_range_const _propertyRangeReversed(const Derived& rhs, const PropertySet& includedProperties = PropertySet::All)
         {
-            return reverse_proxy_property_pair_range_const{ reverse_proxy_property_pair_iterator_const{ _rbegin(includedProperties), rhs._rbegin(includedProperties) }, reverse_proxy_property_pair_iterator_const{ _rend(includedProperties), rhs._rend(includedProperties) } };
+            return reverse_property_pair_range_const{ reverse_property_pair_iterator_const{ _rbegin(includedProperties), rhs._rbegin(includedProperties) }, reverse_property_pair_iterator_const{ _rend(includedProperties), rhs._rend(includedProperties) } };
         }
 
-        const_reverse_proxy_property_pair_range_const _propertyRangeReversed(const Derived& rhs, const PropertySet& includedProperties = PropertySet::All) const
+        const_reverse_property_pair_range_const _propertyRangeReversed(const Derived& rhs, const PropertySet& includedProperties = PropertySet::All) const
         {
-            return const_reverse_proxy_property_pair_range_const{ const_reverse_proxy_property_pair_iterator_const{ _rbegin(includedProperties), rhs._rbegin(includedProperties) }, const_reverse_proxy_property_pair_iterator_const{ _rend(includedProperties), rhs._rend(includedProperties) } };
+            return const_reverse_property_pair_range_const{ const_reverse_property_pair_iterator_const{ _rbegin(includedProperties), rhs._rbegin(includedProperties) }, const_reverse_property_pair_iterator_const{ _rend(includedProperties), rhs._rend(includedProperties) } };
         }
 
-        proxy_property_range _validPropertyRange(const PropertySet& includedProperties = PropertySet::All)
-        {
-            return _propertyRange(_validProperties() ^ includedProperties);
-        }
-
-        const_proxy_property_range _validPropertyRange(const PropertySet& includedProperties = PropertySet::All) const
+        property_range _validPropertyRange(const PropertySet& includedProperties = PropertySet::All)
         {
             return _propertyRange(_validProperties() ^ includedProperties);
         }
 
-        reverse_proxy_property_range _validPropertyRangeReversed(const PropertySet& includedProperties = PropertySet::All)
+        const_property_range _validPropertyRange(const PropertySet& includedProperties = PropertySet::All) const
+        {
+            return _propertyRange(_validProperties() ^ includedProperties);
+        }
+
+        reverse_property_range _validPropertyRangeReversed(const PropertySet& includedProperties = PropertySet::All)
         {
             return _propertyRangeReversed(_validProperties() ^ includedProperties);
         }
 
-        const_reverse_proxy_property_range _validPropertyRangeReversed(const PropertySet& includedProperties = PropertySet::All) const
+        const_reverse_property_range _validPropertyRangeReversed(const PropertySet& includedProperties = PropertySet::All) const
         {
             return _propertyRangeReversed(_validProperties() ^ includedProperties);
         }
 
-        proxy_property_pair_range _validPropertyRange(Derived& rhs, const PropertySet& includedProperties = PropertySet::All)
+        property_pair_range _validPropertyRange(Derived& rhs, const PropertySet& includedProperties = PropertySet::All)
         {
             return _propertyRange(rhs, _validProperties() ^ rhs._validProperties() ^ includedProperties);
         }
 
-        proxy_property_pair_range_const _validPropertyRange(const Derived& rhs, const PropertySet& includedProperties = PropertySet::All)
+        property_pair_range_const _validPropertyRange(const Derived& rhs, const PropertySet& includedProperties = PropertySet::All)
         {
             return _propertyRange(rhs, _validProperties() ^ rhs._validProperties() ^ includedProperties);
         }
 
-        const_proxy_property_pair_range_const _validPropertyRange(const Derived& rhs, const PropertySet& includedProperties = PropertySet::All) const
+        const_property_pair_range_const _validPropertyRange(const Derived& rhs, const PropertySet& includedProperties = PropertySet::All) const
         {
             return _propertyRange(rhs, _validProperties() ^ rhs._validProperties() ^ includedProperties);
         }
 
-        reverse_proxy_property_pair_range _validPropertyRangeReversed(Derived& rhs, const PropertySet& includedProperties = PropertySet::All)
+        reverse_property_pair_range _validPropertyRangeReversed(Derived& rhs, const PropertySet& includedProperties = PropertySet::All)
         {
             return _propertyRangeReversed(rhs, _validProperties() ^ rhs._validProperties() ^ includedProperties);
         }
 
-        reverse_proxy_property_pair_range_const _validPropertyRangeReversed(const Derived& rhs, const PropertySet& includedProperties = PropertySet::All)
+        reverse_property_pair_range_const _validPropertyRangeReversed(const Derived& rhs, const PropertySet& includedProperties = PropertySet::All)
         {
             return _propertyRangeReversed(rhs, _validProperties() ^ rhs._validProperties() ^ includedProperties);
         }
 
-        const_reverse_proxy_property_pair_range_const _validPropertyRangeReversed(const Derived& rhs, const PropertySet& includedProperties = PropertySet::All) const
+        const_reverse_property_pair_range_const _validPropertyRangeReversed(const Derived& rhs, const PropertySet& includedProperties = PropertySet::All) const
         {
             return _propertyRangeReversed(rhs, _validProperties() ^ rhs._validProperties() ^ includedProperties);
         }
 
         template <typename Callable, std::enable_if_t<std::is_invocable_v<Callable, const ProxyProperty<>&>, int> = 0>
-        const_proxy_property_iterator _find(Callable&& callable) const
+        const_property_iterator _find(Callable&& callable) const
         {
             return std::find_if(_begin(), _end(), std::forward<Callable>(callable));
         }
 
         template <typename Callable, std::enable_if_t<std::is_invocable_v<Callable, const ProxyProperty<>&>, int> = 0>
-        proxy_property_iterator _find(Callable&& callable)
+        property_iterator _find(Callable&& callable)
         {
             return std::find_if(_begin(), _end(), std::forward<Callable>(callable));
         }
 
-        const_proxy_property_iterator _find(PropertySet::index_t tag) const
+        const_property_iterator _find(PropertySet::index_t tag) const
         {
             return _find([&](const ProxyProperty<>& property)
             {
@@ -235,7 +235,7 @@ namespace dots::type
             });
         }
 
-        proxy_property_iterator _find(PropertySet::index_t tag)
+        property_iterator _find(PropertySet::index_t tag)
         {
             return _find([&](const ProxyProperty<>& property)
             {
@@ -243,7 +243,7 @@ namespace dots::type
             });
         }
 
-        const_proxy_property_iterator _find(const std::string_view& name) const
+        const_property_iterator _find(const std::string_view& name) const
         {
             return _find([&](const ProxyProperty<>& property)
             {
@@ -251,7 +251,7 @@ namespace dots::type
             });
         }
 
-        proxy_property_iterator _find(const std::string_view& name)
+        property_iterator _find(const std::string_view& name)
         {
             return _find([&](const ProxyProperty<>& property)
             {
@@ -314,49 +314,49 @@ namespace dots::type
     };
 
     template <typename Derived>
-    proxy_property_iterator begin(PropertyContainer<Derived>& container)
+    property_iterator begin(PropertyContainer<Derived>& container)
     {
         return container._begin();
     }
 
     template <typename Derived>
-    const_proxy_property_iterator begin(const PropertyContainer<Derived>& container)
+    const_property_iterator begin(const PropertyContainer<Derived>& container)
     {
         return container._begin();
     }
 
     template <typename Derived>
-    proxy_property_iterator end(PropertyContainer<Derived>& container)
+    property_iterator end(PropertyContainer<Derived>& container)
     {
         return container._end();
     }
 
     template <typename Derived>
-    const_proxy_property_iterator end(const PropertyContainer<Derived>& container)
+    const_property_iterator end(const PropertyContainer<Derived>& container)
     {
         return container._end();
     }
 
     template <typename Derived>
-    reverse_proxy_property_iterator rbegin(PropertyContainer<Derived>& container)
+    reverse_property_iterator rbegin(PropertyContainer<Derived>& container)
     {
         return container._rbegin();
     }
 
     template <typename Derived>
-    const_reverse_proxy_property_iterator rbegin(const PropertyContainer<Derived>& container)
+    const_reverse_property_iterator rbegin(const PropertyContainer<Derived>& container)
     {
         return container._rbegin();
     }
 
     template <typename Derived>
-    reverse_proxy_property_iterator rend(PropertyContainer<Derived>& container)
+    reverse_property_iterator rend(PropertyContainer<Derived>& container)
     {
         return container._rend();
     }
 
     template <typename Derived>
-    const_reverse_proxy_property_iterator rend(const PropertyContainer<Derived>& container)
+    const_reverse_property_iterator rend(const PropertyContainer<Derived>& container)
     {
         return container._rend();
     }
