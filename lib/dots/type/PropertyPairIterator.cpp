@@ -1,4 +1,4 @@
-#include <dots/type/ProxyPropertyPairIterator.h>
+#include <dots/type/PropertyPairIterator.h>
 
 namespace dots::type
 {

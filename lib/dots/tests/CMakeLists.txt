@@ -23,8 +23,8 @@ target_sources(${TARGET_NAME}
         TestDynamicStruct.cpp
         TestPropertySet.cpp
         TestProperty.cpp
+        TestPropertyIterator.cpp
         TestProxyProperty.cpp
-        TestProxyPropertyIterator.cpp
         TestIpNetwork.cpp
 )
 target_include_directories(${TARGET_NAME}

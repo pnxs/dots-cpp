@@ -1,7 +1,7 @@
 #pragma once
 #include <optional>
 #include <utility>
-#include <dots/type/ProxyPropertyIterator.h>
+#include <dots/type/PropertyIterator.h>
 
 namespace dots::type
 {

@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <dots/type/ProxyPropertyIterator.h>
+#include <dots/type/PropertyIterator.h>
 #include <dots/type/FundamentalTypes.h>
 
 using namespace dots::type;

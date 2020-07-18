@@ -85,8 +85,8 @@ target_sources(${TARGET_NAME}
         type/EnumDescriptor.cpp
         type/PropertyDescriptor.cpp
         type/PropertyPath.cpp
-        type/ProxyPropertyIterator.cpp
-        type/ProxyPropertyPairIterator.cpp
+        type/PropertyPairIterator.cpp
+        type/PropertyIterator.cpp
         type/Struct.cpp
         type/StructDescriptor.cpp
         type/Uuid.cpp
