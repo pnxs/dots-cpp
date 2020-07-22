@@ -5,8 +5,10 @@
 #include <string_view>
 #include <dots/io/auth/Nonce.h>
 
-struct SHA256state_st;
-using SHA256_CTX = SHA256state_st;
+namespace picosha2
+{
+    struct hash256_one_by_one;
+}
 
 namespace dots::io
 {
@@ -35,18 +37,16 @@ namespace dots::io
         template<typename T> struct is_contiguous_container<std::vector<T>>: public std::true_type {};
         template<typename T> struct is_contiguous_container<std::basic_string<T>>: public std::true_type {};
 
-        void init(SHA256_CTX& ctx);
-
-        void update(SHA256_CTX& ctx, std::string_view data);
-        void update(SHA256_CTX& ctx, const void* data, size_t len);
+        void update(picosha2::hash256_one_by_one& hasher, std::string_view data);
+        void update(picosha2::hash256_one_by_one& hasher, const uint8_t* data, size_t len);
 
         template<typename T, std::enable_if_t<is_contiguous_container<T>::value, int> = 0>
-        void update(SHA256_CTX& ctx, const T& range)
+        void update(picosha2::hash256_one_by_one& hasher, const T& range)
         {
-            update(ctx, range.data(), range.size());
+            update(hasher, range.data(), range.size());
         }
 
-        auto final(SHA256_CTX& ctx) -> value_t;
+        auto final(picosha2::hash256_one_by_one& hasher) -> value_t;
 
         value_t m_value;
     };
