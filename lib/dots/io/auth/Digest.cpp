@@ -1,9 +1,11 @@
 #include <dots/io/auth/Digest.h>
-#include <openssl/sha.h>
+#include <PicoSHA2/picosha2.h>
 #include <boost/algorithm/hex.hpp>
 
 namespace dots::io
 {
+    static_assert(std::tuple_size<Digest::value_t>::value == picosha2::k_digest_size);
+
     Digest::Digest(const value_t& value) :
         m_value(value)
     {
@@ -25,18 +27,15 @@ namespace dots::io
      Digest::Digest(Nonce nonce, std::string_view cnonce, std::string_view userName, std::string_view secret) :
         Digest([&]()
         {
-            SHA256_CTX a1;
-            init(a1);
-
+            picosha2::hash256_one_by_one a1;
             update(a1, userName);
             update(a1, "::");
             update(a1, secret);
 
-            SHA256_CTX response;
-            init(response);
+            picosha2::hash256_one_by_one response;
             update(response, final(a1));
             update(response, ":");
-            update(response, &nonce.value(), sizeof(nonce));
+            update(response, reinterpret_cast<const uint8_t*>(&nonce.value()), sizeof(nonce));
             update(response, ":");
             update(response, cnonce);
 
@@ -62,25 +61,21 @@ namespace dots::io
         return boost::algorithm::hex_lower(std::string(m_value.begin(), m_value.end()));
     }
 
-    void Digest::init(SHA256_CTX& ctx)
+    void Digest::update(picosha2::hash256_one_by_one& hasher, std::string_view data)
     {
-        SHA256_Init(&ctx);
+        hasher.process(data.begin(), data.end());
     }
 
-    void Digest::update(SHA256_CTX& ctx, std::string_view data)
+    void Digest::update(picosha2::hash256_one_by_one& hasher, const uint8_t* data, size_t len)
     {
-        SHA256_Update(&ctx, data.data(), data.size());
+        hasher.process(data, data + len);
     }
 
-    void Digest::update(SHA256_CTX& ctx, const void* data, size_t len)
+    auto Digest::final(picosha2::hash256_one_by_one& hasher) -> value_t
     {
-        SHA256_Update(&ctx, data, len);
-    }
-
-    auto Digest::final(SHA256_CTX& ctx) -> value_t
-    {
+        hasher.finish();
         value_t value = {0};
-        SHA256_Final(value.data(), &ctx);
+        hasher.get_hash_bytes(value.begin(), value.end());
 
         return value;
     }
