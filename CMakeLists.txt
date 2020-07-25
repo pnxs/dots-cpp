@@ -21,8 +21,8 @@ add_subdirectory(import/cbor-cpp EXCLUDE_FROM_ALL)
 add_subdirectory(import/date EXCLUDE_FROM_ALL)
 
 # sub-projects
-add_subdirectory(lib/dots-cg-cpp)
-add_subdirectory(lib/dots)
+add_subdirectory(dots-cpp/dots-cg-cpp)
+add_subdirectory(dots-cpp/dots)
 add_subdirectory(lib/dots_legacy)
 add_subdirectory(bin/dotsd)
 add_subdirectory(bin/dots-web-connector)
