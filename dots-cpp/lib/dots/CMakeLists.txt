@@ -96,7 +96,7 @@ target_sources(${TARGET_NAME}
 )
 target_include_directories(${TARGET_NAME}
     PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/dots-cpp>
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/dots-cpp/lib>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
         $<INSTALL_INTERFACE:include>
 )
