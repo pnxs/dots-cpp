@@ -1,5 +1,5 @@
 [submodule "import/cbor-cpp"]
-    path = import/cbor-cpp
+	path = dots-cpp/external/cbor-cpp
     url = https://github.com/pnxs/cbor-cpp.git
 [submodule "import/googletest"]
     path = import/googletest
@@ -8,14 +8,14 @@
     path = import/rapidjson
     url = https://github.com/miloyip/rapidjson.git
 [submodule "import/dcg"]
-    path = import/dcg
+	path = dots-cpp/external/dcg
     url = https://github.com/pnxs/dots-code-generator.git
 [submodule "import/websocketpp"]
     path = import/websocketpp
     url = https://github.com/zaphoyd/websocketpp.git
 [submodule "import/date"]
-    path = import/date
+	path = dots-cpp/external/date
     url = https://github.com/HowardHinnant/date.git
 [submodule "import/PicoSHA2"]
-    path = import/PicoSHA2
+	path = dots-cpp/external/PicoSHA2
     url = https://github.com/okdshin/PicoSHA2.git

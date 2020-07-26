@@ -5,7 +5,7 @@ set(TARGET_NAME dots-cg-cpp)
 set(EXPORT_NAME DOTS-CG-CPP)
 
 # code generation
-set(DOTS-CG_DIR ${CMAKE_SOURCE_DIR}/import/dcg)
+set(DOTS-CG_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../external/dcg)
 set(DOTS-CG-CPP_DIR ${CMAKE_CURRENT_LIST_DIR}/src)
 set(DOTS-CG "PYTHONPATH=${DOTS-CG-CPP_DIR}:${DOTS-CG_DIR} ${DOTS-CG_DIR}/bin/dcg.py" CACHE INTERNAL "Internal variable containing the DOTS-CG command")
 include(src/DOTS-CG-CPP.cmake)
@@ -29,7 +29,7 @@ install(
     CODE
         "execute_process(
             COMMAND /usr/bin/python setup.py install --prefix ${CMAKE_INSTALL_PREFIX}/share/dots-cg-cpp
-            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/import/dcg
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../external/dcg
         )"
 )
 install(
