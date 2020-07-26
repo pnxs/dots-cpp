@@ -23,14 +23,14 @@ add_subdirectory(import/date EXCLUDE_FROM_ALL)
 # sub-projects
 add_subdirectory(dots-cpp/dots-cg-cpp)
 add_subdirectory(dots-cpp/lib/dots)
-add_subdirectory(lib/dots_legacy)
+add_subdirectory(dots-legacy/lib/dots_legacy)
 add_subdirectory(dots-cpp/bin/dotsd)
 add_subdirectory(bin/dots-web-connector)
 add_subdirectory(dots-cpp/bin/dotsctl)
 add_subdirectory(dots-cpp/bin/examples/testClient)
 
 if (Sqlite3_FOUND)
-    add_subdirectory(lib/sqlitecpp)
+    add_subdirectory(dots-legacy/sqlitecpp)
     add_subdirectory(bin/dots-persistd)
 endif()
 
