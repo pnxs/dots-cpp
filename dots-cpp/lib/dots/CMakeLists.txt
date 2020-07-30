@@ -24,6 +24,7 @@ add_library(${EXPORT_NAME}::${EXPORT_NAME} ALIAS ${TARGET_NAME})
 
 # properties
 GENERATE_DOTS_TYPES(MODEL_SOURCES MODEL_HEADERS
+    model/authentication.dots
     model/dotstypes.dots
     model/descriptors.dots
     model/dotsmessages.dots
@@ -77,6 +78,7 @@ target_sources(${TARGET_NAME}
         io/auth/Nonce.cpp
         io/auth/Digest.cpp
         io/auth/AuthManager.cpp
+        io/auth/LegacyAuthManager.cpp
 
         type/AnyStruct.cpp
         type/Chrono.cpp

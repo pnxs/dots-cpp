@@ -3,7 +3,7 @@
 #include <dots/dots.h>
 #include <dots/tools/logging.h>
 #include <dots/type/PosixTime.h>
-#include <dots_legacy/io/auth/LegacyAuthManager.h>
+#include <dots/io/auth/LegacyAuthManager.h>
 #include "DotsClient.dots.h"
 #include <StructDescriptorData.dots.h>
 #include <DotsTypes.dots.h>
