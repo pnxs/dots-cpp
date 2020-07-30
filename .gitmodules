@@ -11,7 +11,7 @@
 	path = dots-cpp/external/dcg
     url = https://github.com/pnxs/dots-code-generator.git
 [submodule "import/websocketpp"]
-	path = dots-legacy/external/websocketpp
+	path = dots-cpp-legacy/external/websocketpp
     url = https://github.com/zaphoyd/websocketpp.git
 [submodule "import/date"]
 	path = dots-cpp/external/date

@@ -9,4 +9,4 @@ add_subdirectory(import/googletest EXCLUDE_FROM_ALL)
 
 # sub-projects
 add_subdirectory(dots-cpp)
-add_subdirectory(dots-legacy)
+add_subdirectory(dots-cpp-legacy)
