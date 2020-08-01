@@ -6,12 +6,12 @@ set(TARGET_NAME dotsd)
 #find_package(DOTS REQUIRED) (uncomment when dependency is no longer part of build tree)
 
 # target
-add_executable(${TARGET_NAME} main.cpp)
+add_executable(${TARGET_NAME} src/main.cpp)
 
 # properties
 target_sources(${TARGET_NAME}
     PRIVATE
-        Server.cpp
+        src/Server.cpp
 )
 target_include_directories(${TARGET_NAME}
     PRIVATE

@@ -6,7 +6,7 @@ set(TARGET_NAME testClient)
 #find_package(DOTS REQUIRED) (uncomment when dependency is no longer part of build tree)
 
 # target
-add_executable(${TARGET_NAME} main.cpp)
+add_executable(${TARGET_NAME} src/main.cpp)
 
 # properties
 target_sources(${TARGET_NAME}

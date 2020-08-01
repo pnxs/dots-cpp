@@ -17,6 +17,6 @@ add_subdirectory(external/googletest EXCLUDE_FROM_ALL)
 
 # sub-projects
 add_subdirectory(dots-cg-cpp)
-add_subdirectory(lib/dots)
+add_subdirectory(lib)
 add_subdirectory(bin/dotsd)
 add_subdirectory(bin/examples/testClient)

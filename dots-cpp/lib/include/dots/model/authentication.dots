@@ -1,0 +1,19 @@
+
+struct DotsNetwork [internal,substruct_only] {
+    1: [key] string network; // A mask matching a network
+    2: [key] uint8 prefix;
+}
+
+struct DotsAuthenticationPolicy [internal] {
+    1: [key] string nameSpace; // may be empty, to match all namespaces
+    2: bool accept; // Default policy is accept
+}
+
+struct DotsAuthentication [internal] {
+    1: [key] string nameSpace; // may be empty, to match all namespaces
+    2: [key] DotsNetwork network;
+    3: [key] string clientName; // may be empty, to match all clients
+    6: [key] uint16 priority;
+    4: string secret;
+    5: bool accept;
+}
