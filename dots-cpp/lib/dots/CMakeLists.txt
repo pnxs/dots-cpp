@@ -24,10 +24,10 @@ add_library(${EXPORT_NAME}::${EXPORT_NAME} ALIAS ${TARGET_NAME})
 
 # properties
 GENERATE_DOTS_TYPES(MODEL_SOURCES MODEL_HEADERS
+    ${CMAKE_CURRENT_LIST_DIR}/../../external/dots/model/descriptors.dots
+    ${CMAKE_CURRENT_LIST_DIR}/../../external/dots/model/dotsmessages.dots
+    ${CMAKE_CURRENT_LIST_DIR}/../../external/dots/model/dotstypes.dots
     model/authentication.dots
-    model/dotstypes.dots
-    model/descriptors.dots
-    model/dotsmessages.dots
     model/dotstesttypes.dots
 )
 target_sources(${TARGET_NAME}
