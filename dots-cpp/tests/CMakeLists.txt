@@ -6,27 +6,27 @@ set(TARGET_NAME dots-unittests)
 #find_package(DOTS REQUIRED) (uncomment when dependency is no longer part of build tree)
 
 # target
-add_executable(${TARGET_NAME} TestContainer.cpp)
+add_executable(${TARGET_NAME} src/TestContainer.cpp)
 
 # properties
 target_sources(${TARGET_NAME}
     PRIVATE
-        TestDigest.cpp
-        TestAsciiSerialization.cpp
-        TestCborSerialization.cpp
-        TestChrono.cpp
-        TestDispatcher.cpp
-        TestJsonSerialization.cpp
-        TestEnumDescriptor.cpp
-        TestStaticDescriptor.cpp
-        TestStaticStruct.cpp
-        TestDynamicStruct.cpp
-        TestPropertySet.cpp
-        TestProperty.cpp
-        TestPropertyIterator.cpp
-        TestProxyProperty.cpp
-        TestIpNetwork.cpp
-        TestLegacyAuthManager.cpp
+        src/TestDigest.cpp
+        src/TestAsciiSerialization.cpp
+        src/TestCborSerialization.cpp
+        src/TestChrono.cpp
+        src/TestDispatcher.cpp
+        src/TestJsonSerialization.cpp
+        src/TestEnumDescriptor.cpp
+        src/TestStaticDescriptor.cpp
+        src/TestStaticStruct.cpp
+        src/TestDynamicStruct.cpp
+        src/TestPropertySet.cpp
+        src/TestProperty.cpp
+        src/TestPropertyIterator.cpp
+        src/TestProxyProperty.cpp
+        src/TestIpNetwork.cpp
+        src/TestLegacyAuthManager.cpp
 )
 target_include_directories(${TARGET_NAME}
     PRIVATE
