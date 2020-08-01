@@ -16,7 +16,7 @@
 find_package(PkgConfig)
 pkg_check_modules(PC_RapidJSON QUIET RapidJSON)
 
-set(PC_RapidJSON_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/../../external/rapidjson/include)
+set(PC_RapidJSON_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/../external/rapidjson/include)
 find_path(RapidJSON_INCLUDE_DIR
     NAMES rapidjson.h
     PATHS ${PC_RapidJSON_INCLUDE_DIRS}

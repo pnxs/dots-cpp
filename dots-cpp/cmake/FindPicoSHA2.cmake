@@ -1,7 +1,7 @@
 find_package(PkgConfig)
 pkg_check_modules(PC_PicoSHA2 QUIET PicoSHA2)
 
-set(PC_PicoSHA2_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/../../external)
+set(PC_PicoSHA2_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/../external)
 find_path(PicoSHA2_INCLUDE_DIR
     NAMES picosha2.h
     PATHS ${PC_PicoSHA2_INCLUDE_DIRS}
