@@ -19,3 +19,6 @@
 [submodule "import/PicoSHA2"]
 	path = dots-cpp/external/PicoSHA2
     url = https://github.com/okdshin/PicoSHA2.git
+[submodule "dots-cpp-legacy/external/rapidjson"]
+	path = dots-cpp-legacy/external/rapidjson
+	url = https://github.com/miloyip/rapidjson.git
