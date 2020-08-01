@@ -1,0 +1,6 @@
+
+Boost is linked statically into DOTS library.
+When DOTS is build as a shared library, boost needs to be compiled with fPIC.
+
+./b2 cxxflags=-fPIC cflags=-fPIC --with-filesystem --with-iostreams --with-program_options --with-regex
+
