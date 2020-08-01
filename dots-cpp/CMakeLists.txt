@@ -13,6 +13,7 @@ option(BUILD_UNIT_TESTS "Build the unit tests" ON)
 # external projects
 add_subdirectory(external/cbor-cpp EXCLUDE_FROM_ALL)
 add_subdirectory(external/date EXCLUDE_FROM_ALL)
+add_subdirectory(external/googletest EXCLUDE_FROM_ALL)
 
 # sub-projects
 add_subdirectory(dots-cg-cpp)

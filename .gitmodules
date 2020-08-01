@@ -2,10 +2,10 @@
 	path = dots-cpp/external/cbor-cpp
     url = https://github.com/pnxs/cbor-cpp.git
 [submodule "import/googletest"]
-    path = import/googletest
+	path = dots-cpp/external/googletest
     url = https://github.com/google/googletest.git
 [submodule "import/rapidjson"]
-    path = import/rapidjson
+	path = dots-cpp/external/rapidjson
     url = https://github.com/miloyip/rapidjson.git
 [submodule "import/dcg"]
 	path = dots-cpp/external/dcg

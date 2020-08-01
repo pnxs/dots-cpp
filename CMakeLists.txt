@@ -4,9 +4,6 @@ project(dots LANGUAGES CXX)
 # options
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
 
-# external projects
-add_subdirectory(import/googletest EXCLUDE_FROM_ALL)
-
 # sub-projects
 add_subdirectory(dots-cpp)
 add_subdirectory(dots-cpp-legacy)
