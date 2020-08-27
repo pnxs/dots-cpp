@@ -1,0 +1,28 @@
+
+Dots Code Generator
+
+Current:
+- create 3 files for a struct and 2 for an enum.
+- name of created file-names has to match with the source-filename
+
+
+Changes:
+- add list of templates for type via a config-file, this enables to create as many
+  files from a source file
+
+- create destination-files from struct- or enum-name
+- parse more than one struct or enum per file, allowing to make complete model-files
+
+
+Config-File:
+- Specify templates for types
+- Filename-creation rule
+
+struct = (<template-name>, <template-name>, ...)
+
+Filename is created using <struct/enum-name>.<templ-extension>
+
+Eg.
+struct MyTestStruct {}
+Template: "struct-templ.dots.h"
+Output filename: "MyTestStruct.dots.h"

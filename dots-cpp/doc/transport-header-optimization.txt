@@ -1,0 +1,156 @@
+Typical transport Header:
+
+{1:"SYS", 2: "dstGroup", 3:{1: "dstGroup", 2: 3.1233456, 3: 11223344, 4: false, 5:{1:"clientName", 2:"serverName"}}, 4: 127}
+
+# 75 Byte
+A4                               # map(4)
+   01                            # unsigned(1)
+   63                            # text(3)
+      535953                     # "SYS"
+   02                            # unsigned(2)
+   68                            # text(8)
+      64737447726F7570           # "dstGroup"
+   03                            # unsigned(3)
+   A5                            # map(5)
+      01                         # unsigned(1)
+      68                         # text(8)
+         64737447726F7570        # "dstGroup"
+      02                         # unsigned(2)
+      FB 4008FC9C9E30D80F        # primitive(4614215567840172047)
+      03                         # unsigned(3)
+      1A 00AB4130                # unsigned(11223344)
+      04                         # unsigned(4)
+      F4                         # primitive(20)
+      05                         # unsigned(5)
+      A2                         # map(2)
+         01                      # unsigned(1)
+         6A                      # text(10)
+            636C69656E744E616D65 # "clientName"
+         02                      # unsigned(2)
+         6A                      # text(10)
+            7365727665724E616D65 # "serverName"
+   04                            # unsigned(4)
+   18 7F                         # unsigned(127)
+
+Optimierung
+
+- Typename und dstGroup max 255 Byte, Stringlängendarstellung mit einem Byte.
+- Namespace max. 23 Byte, Stringlängendarstellung innerhalb des CBOR-Types.
+- Payload wird immer mit 4 Byte gesendet.
+- ValidProperties werden immer mit 4 Byte gesendet.
+
+A4 # map(4)
+01 # tag 1
+6x <data> # Namespace: string 1-23 Byte
+02 # tag 2
+78 xx <data># # dstGroup: string 1-255 Byte
+03 # tag 3
+  A5 # DotsHeader: map(5)
+  01 # tag 1
+  78 xx <data> # typename: string 1-255 Byte
+  02 # tag 2
+  FB 4008FC9C9E30D80F # sentTime: double
+  03 # tag 3
+  1A 00AB4130 # valid properties: uint32_t
+  04 # tag 4
+  F4 # remove: true/false
+  05 # tag 5
+    A2 # DotsPeerAddress: map(2)
+    01 # tag 1
+    78 xx <data> # clientName: string 1-255 Byte
+    02 # tag 2
+    78 xx <data> # serverName: string 1-255 Byte
+04 # tag 4
+1A 0000007F # payloadSize: uint32_t
+
+Ax 04 1A aabbccdd Ay 02 FB aabbccddeeffgghh 03 1A aabbccdd 04 Fx 05 A2 01 78 xx <data> 02 78 xx <data> 01 6x <data> 02 78 xx <data>
+
+Further optimization:
+Use client-id instead of DotsPeerAddress
+Assign client-id for connected clients
+
+Ax 04 1A aabbccdd Ay 02 FB aabbccddeeffgghh 03 1A aabbccdd 04 Fx 05 06 1A aabbccdd 01 6x <data> 02 78 xx <data>
+
+Use group-id instead of group
+Use namespace id instead of namespace-name
+
+Ax 04 1A aabbccdd Ay 02 FB aabbccddeeffgghh 03 1A aabbccdd 04 Fx 05 06 1A aabbccdd 01 1A aabbccdd 02 19 aabb
+
+Header has now a fixed length of 43 Byte.
+
+A5                        # map(5)
+   04                     # unsigned(4)
+   1A 00010001            # unsigned(65537) (tag4)
+   03                     # unsigned(3)
+   A3                     # map(3)
+      02                  # unsigned(2)
+      FB 400920C49BA5E354 # primitive(4614255322014802772) (tag3.2)
+      03                  # unsigned(3)
+      1A 00010002         # unsigned(65538) (tag 3.3)
+      04                  # unsigned(4) (tag 3.4)
+      F4                  # primitive(20)
+   06                     # unsigned(6)
+   1A 00010003            # unsigned(65539) (tag6)
+   01                     # unsigned(1)
+   1A 00010004            # unsigned(65540) (tag 1)
+   02                     # unsigned(2)
+   19 012C                # unsigned(300) (tag 2)
+
+Alignment analysis:
+
+0000: A5 04 1A
+0003: 00 11 22 33 (non-aligned)
+0007: 03 A3 02 FB
+000B: 40 09 20 C4 9B A5 E3 54 (non-aligned)
+0013: 03 1A
+0015: 00 11 22 33 (non-aligned)
+0019: 04 F4
+001B: 06 1A
+001D: 00 11 22 33 (non-aligned)
+0021: 01 1A
+0023: 00 11 22 33 (non-aligned)
+0027: 02 19
+0029: 00 11 (non-aligned)
+
+0000: PP A5 04 1A
+0004: 00 11 22 33 (32-bit aligned)
+0008: 03 A3 02 FB
+000C: 40 09 20 C4 9B A5 E3 54 (32-bit aligned)
+0014: 03 1A 00 11 (non-aligned)
+0018: 22 33 04 F4
+001C: 06 1A 00 11 (non-aligned)
+0020: 22 33 01 1A
+0024: 00 11 22 33 (32-bit aligned)
+0028: 02 19 00 11 (alignment?)
+
+0000: PP A5 04 1A
+0004: 00 11 22 33 (32-bit aligned) (tag4) # payloadSize
+0008: 02 19 00 11 (16-bit aligned) (tag2) # dstGroup
+000C: 03 A3 02 FB
+0010: 40 09 20 C4 (64-bit aligned) (tag3.2) # Sendtime
+0014: 9B A5 E3 54
+0018: 04 F4 03 1A (non-aligned bool) (tag3.4) # Remove
+001C: 00 11 22 33 (32-bit aligned) (tag3.3) # valid properties
+0020: 06 1A 00 11
+0024: 22 33 01 1A (non-aligned uint32) (tag6) # sending client-id
+0028: 00 11 22 33 (32-bit aligned) (tag1) # namespace
+
+# Using
+
+0000: PP A5 04 1A
+0004: 00 11 22 33 (32-bit aligned) (tag4) # payloadSize
+0008: 02 19 00 11 (16-bit aligned) (tag2) # dstGroup
+000C: 03 A3 02 FB
+0010: 40 09 20 C4 (64-bit aligned) (tag3.2) # Sendtime
+0014: 9B A5 E3 54
+0018: 04 F4 03 1A (non-aligned bool) (tag3.4) # Remove
+001C: 00 11 22 33 (32-bit aligned) (tag3.3) # valid properties
+0020: 06 1A 00 11
+0024: 22 33 01 1A (non-aligned uint32) (tag6) # sending client-id
+0028: 00 11 22 33 (32-bit aligned) (tag1) # namespace
+
+
+0 1 2 3
+4 5 6 7
+8 9 A B
+C D E F

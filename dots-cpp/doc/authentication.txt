@@ -1,0 +1,40 @@
+DOTS uses a Challenge-Response Authentication
+
+1. The dotsd sends a 64-Bit nonce in DotsMsgHello (a random value)
+2. The connecting client generates a 64-Bit cnonce
+3. The connecting client computes a response-hash using client-name, nonce and cnonce.
+4. The dotsd computes the expected response using the same values as the client and compares the result.
+5. When the results are equal, the authentication is successful
+
+
+Computation
+===========
+
+A1 = clientName ":" ":" secret
+
+response = H( H(A1) ":" nonce ":" cnonce )
+
+H is a SHA256 hashing algorithm.
+
+
+Configuration
+=============
+
+Dotsd is configured, via a special DOTS-Type (DotsAuthentication).
+
+struct DotsNetwork ["substruct_only"] {
+    1: string network; // A mask matching a network
+    2: uint8 prefix;
+}
+
+struct DotsAuthenticationPolicy ["internal"] {
+    1: bool accept; // Default policy is accept
+}
+
+struct DotsAuthentication ["internal"] {
+    1: DotsNetwork network;
+    2: string clientName; // may be empty, to match all clients
+    3: string namespace; // may be empty, to match all namespaces
+    4: string secret;
+    5: bool accept;
+}

@@ -8,23 +8,19 @@ build_ubuntu:
     stage: build
     script:
         - pwd
-        - cmake -Bbuild -H. -DBUILD_XDOTS=OFF
+        - cmake -Bbuild -H.
         - make -Cbuild -j4
     artifacts:
         paths:
-            - ./build/bin/examples/dots-test/dots-test
-            - ./build/bin/examples/testClient/testClient
-            - ./build/bin/dots-persistd/dots-persistd
-            - ./build/bin/dots-web-connector/dots-web-connector
-            - ./build/bin/dotsd/dotsd
-            - ./build/bin/dotsd/tests/dotsd-unittests
-            - ./build/bin/utils/dots_record/dots_record
-            - ./build/bin/utils/ndots/ndots
-            - ./build/bin/utils/dotstrace/dotstrace
-            - ./build/bin/utils/dotscli/dotscli
-            - ./build/lib/dots/libdots.so.0
-            - ./build/lib/dots/tests/dots-unittests
-            - ./build/lib/dots_legacy/tests/dots_legacy-unittests
+            - ./build/dots-cpp/lib/libdots.a
+            - ./build/dots-cpp/bin/dotsd/dotsd
+            - ./build/dots-cpp/bin/examples/testClient/testClient
+            - ./build/dots-cpp/tests/dots-unittests
+            - ./build/dots-cpp-legacy/lib/dots_legacy/libdots_legacy.a
+            - ./build/dots-cpp-legacy/bin/dotsctl/dots
+            - ./build/dots-cpp-legacy/bin/dots-persistd/dots-persistd
+            - ./build/dots-cpp-legacy/bin/dots-web-connector/dots-web-connector
+            - ./build/dots-cpp-legacy/lib/dots_legacy/tests/dots_legacy-unittests
 
 run_unittests:
     stage: test
@@ -33,11 +29,10 @@ run_unittests:
     script:
         - pwd
         - find
-        - ./build/lib/dots/tests/dots-unittests --gtest_output="xml:report.xml"
-        - ./build/lib/dots_legacy/tests/dots_legacy-unittests --gtest_output="xml:report_legacy.xml"
+        - ./build/dots-cpp/tests/dots-unittests --gtest_output="xml:report.xml"
+        - ./build/dots-cpp-legacy/lib/dots_legacy/tests/dots_legacy-unittests --gtest_output="xml:report_legacy.xml"
     artifacts:
         reports:
             junit:
                 - report.xml
                 - report_legacy.xml
-

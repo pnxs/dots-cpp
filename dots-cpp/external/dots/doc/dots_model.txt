@@ -1,0 +1,145 @@
+
+import AttributeDescriptor
+
+# Scalar value types
++-----------+--------------------+------------+----------+--------------+
+| Dots-     | C++                | C#         | Python   | Java         |
+| type      | Type               | Type       | Type     | Type         |
++-----------+--------------------+------------+----------+--------------+
+| float16   | float              | float      | float    | float        |
+| float32   | float              | float      | float    | float        |
+| float64   | double             | double     | float    | double       |
+| float128  | long double        | ?          | ?        | ?            |
+| bool      | bool               | bool       | bool     | boolean      |
+| string    | string             | string     | str      | String       |
+| bytes     | string             | ByteString | str      | ByteString   |
+| int8      | int8_t             | sbyte      | number   | ?            |
+| int16     | int16_t            |            |          |              |
+| int32     | int32_t            |            |          |              |
+| int64     | int64_t            |            |          |              |
+| uint8     | uint8_t            | byte       | number   | ?            |
+| uint16    | uint16_t           |            |          |              |
+| uint32    | uint32_t           |            |          |              |
+| uint64    | uint64_t           |            |          |              |
+| timepoint | time_point<double> |            |          |              |
+| steady_tp.| st._tp.<double>    |            |          |              |
+| duration  | duration<double>   |            |          |              |
+| uuid      | boost::uuids::uuid | guid?      |          |              |
++-----------+--------------------+------------+----------+--------------+
+
+Types defined in DDL are in the namespace "dots::types", on the wire, the basename is used.
+E.g. dots::types::MyType in C++ is MyType on wire. When using typenames with capital first letter,
+a conflict with intrinsic types is avoided.
+
+
+# Well-known Types:
+int8, int16, int32, int64
+uint8, uint16, uin32, uint64
+bool
+float, double
+string, Blob
+propertyset_t
+
+# Proto3 types:
+double, float
+int32, int64
+uint32, uint64
+sint32, sint64, fixed32, fixed64, sfixed32, sfixed64
+bool
+string, bytes
+messageType, enumType
+
+
+# Type-IDs
+e.g.:
+1: int8
+2: int16
+...
+
+
+struct AttributeDescriptor {
+    1: string name; // name of attribute
+    2: uint32_t tag; // unique attribute tag
+    3: bool key;
+    5: string type; // name of type... or
+    6: uint32_t typeId; //... id of type
+    7: string comment;
+}
+
+enum StructScope {
+    program, // Ony for client-internal use
+    server, // Will only be routed to clients, connected to the same server
+    site,   // Route to clients withhin the same site
+    global  // No limitation
+}
+
+struct StructFlags {
+    1: bool cached;
+    2: bool internal;
+    3: bool persistent;
+    4: bool cleanup;
+}
+
+#STRUCT_FLAG_CACHED     0x01
+#STRUCT_FLAG_INTERNAL   0x02
+#STRUCT_FLAG_PERSISTENT 0x04
+#STRUCT_FLAG_CLEANUP    0x08
+
+struct StructDescriptor {
+    1: [key] string name;
+    2: StructScope scope; // NOTE: Has nothing to do with serialization
+    3: vector<AttributeDescriptor> attributes;
+    4: StructFlags flags; // NOTE: Has nothing to do with serialization
+    5: string comment;
+}
+
+# Alternative:
+
+struct StructDocumentation {
+    1: string description;
+    2: string comment;
+}
+
+struct DotsStruct {
+    1: StructDescriptor struct;
+    2: StructScope scope;
+    4: StructFlags flags;
+}
+
+struct StructDescriptor {
+    1: [key] string name;
+    3: vector<PropertyDescriptor> properties;
+    5: StructDocumentation documentation;
+}
+
+# EO Alternative
+
+// Same for pure serialization
+struct StructDescriptor {
+    1: [key] string name; // name of structure
+    3: vector<AttributeDescriptor> attributes;
+    5: string comment;
+}
+
+struct VectorDescriptor {
+    1: string name; // name of vector?
+    2: string valueType; // type of contained value
+}
+
+# Special translation for enums:
+e.g. a enum { hello=4, world=99 }
+is translated into this representation:
+1: hello (=4)
+2: world (=99)
+
+struct EnumElementDescriptor {
+    1: [key] enum_value;
+    2: string name;
+    3: uint32_t tag;
+}
+
+struct EnumDesciptor {
+    1: [key] string name;
+    2: vector<EnumElementDescriptor> elements;
+}
+
