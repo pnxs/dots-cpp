@@ -3,4 +3,3 @@ project(dots LANGUAGES CXX)
 
 # sub-projects
 add_subdirectory(dots-cpp)
-add_subdirectory(dots-cpp-legacy)

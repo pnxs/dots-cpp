@@ -16,11 +16,6 @@ build_ubuntu:
             - ./build/dots-cpp/bin/dotsd/dotsd
             - ./build/dots-cpp/bin/examples/testClient/testClient
             - ./build/dots-cpp/tests/dots-unittests
-            - ./build/dots-cpp-legacy/lib/dots_legacy/libdots_legacy.a
-            - ./build/dots-cpp-legacy/bin/dotsctl/dots
-            - ./build/dots-cpp-legacy/bin/dots-persistd/dots-persistd
-            - ./build/dots-cpp-legacy/bin/dots-web-connector/dots-web-connector
-            - ./build/dots-cpp-legacy/lib/dots_legacy/tests/dots_legacy-unittests
 
 run_unittests:
     stage: test
@@ -30,9 +25,7 @@ run_unittests:
         - pwd
         - find
         - ./build/dots-cpp/tests/dots-unittests --gtest_output="xml:report.xml"
-        - ./build/dots-cpp-legacy/lib/dots_legacy/tests/dots_legacy-unittests --gtest_output="xml:report_legacy.xml"
     artifacts:
         reports:
             junit:
                 - report.xml
-                - report_legacy.xml
