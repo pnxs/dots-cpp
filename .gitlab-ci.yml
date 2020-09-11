@@ -12,15 +12,10 @@ build_ubuntu:
         - make -Cbuild -j4
     artifacts:
         paths:
-            - ./build/dots-cpp/lib/libdots.a
-            - ./build/dots-cpp/bin/dotsd/dotsd
-            - ./build/dots-cpp/bin/examples/testClient/testClient
-            - ./build/dots-cpp/tests/dots-unittests
-            - ./build/dots-cpp-legacy/lib/dots_legacy/libdots_legacy.a
-            - ./build/dots-cpp-legacy/bin/dotsctl/dots
-            - ./build/dots-cpp-legacy/bin/dots-persistd/dots-persistd
-            - ./build/dots-cpp-legacy/bin/dots-web-connector/dots-web-connector
-            - ./build/dots-cpp-legacy/lib/dots_legacy/tests/dots_legacy-unittests
+            - ./build/lib/libdots.a
+            - ./build/bin/dotsd/dotsd
+            - ./build/bin/examples/testClient/testClient
+            - ./build/tests/dots-unittests
 
 run_unittests:
     stage: test
@@ -29,10 +24,8 @@ run_unittests:
     script:
         - pwd
         - find
-        - ./build/dots-cpp/tests/dots-unittests --gtest_output="xml:report.xml"
-        - ./build/dots-cpp-legacy/lib/dots_legacy/tests/dots_legacy-unittests --gtest_output="xml:report_legacy.xml"
+        - ./build/tests/dots-unittests --gtest_output="xml:report.xml"
     artifacts:
         reports:
             junit:
                 - report.xml
-                - report_legacy.xml
