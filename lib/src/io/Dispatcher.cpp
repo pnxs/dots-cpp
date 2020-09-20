@@ -49,7 +49,7 @@ namespace dots::io
         return m_containerPool.get(descriptor);
     }
 
-    Subscription Dispatcher::subscribe(const type::StructDescriptor<>& descriptor, transmission_handler_t<>&& handler)
+    Subscription Dispatcher::subscribe(const type::StructDescriptor<>& descriptor, transmission_handler_t&& handler)
     {
         Subscription subscription{ m_this, descriptor };
         m_transmissionHandlerPool[&descriptor].emplace(subscription.id(), std::move(handler));
@@ -124,7 +124,7 @@ namespace dots::io
                 try
                 {
                     (void)id;
-                    handler(transmission.header(), transmission.instance());
+                    handler(transmission);
                 }
                 catch (...)
                 {

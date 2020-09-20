@@ -42,7 +42,7 @@ namespace dots::io
         return m_dispatcher.container(descriptor);
     }
 
-    Subscription Transceiver::subscribe(const type::StructDescriptor<>& descriptor, transmission_handler_t<>&& handler)
+    Subscription Transceiver::subscribe(const type::StructDescriptor<>& descriptor, transmission_handler_t&& handler)
     {
         if (descriptor.substructOnly())
         {
@@ -64,7 +64,7 @@ namespace dots::io
         return m_dispatcher.subscribe(descriptor, std::move(handler));
     }
 
-    Subscription Transceiver::subscribe(const std::string_view& name, transmission_handler_t<>&& handler)
+    Subscription Transceiver::subscribe(const std::string_view& name, transmission_handler_t&& handler)
     {
         return subscribe(m_registry.getStructType(name), std::move(handler));
     }

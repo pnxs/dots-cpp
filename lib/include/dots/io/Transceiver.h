@@ -14,8 +14,7 @@ namespace dots::io
     {
         using descriptor_map_t = std::map<std::string_view, type::StructDescriptor<>*>;
 
-        template <typename T = type::Struct>
-        using transmission_handler_t = Dispatcher::transmission_handler_t<T>;
+        using transmission_handler_t = Dispatcher::transmission_handler_t;
         template <typename T = type::Struct>
         using event_handler_t = Dispatcher::event_handler_t<T>;
 
@@ -37,10 +36,10 @@ namespace dots::io
         const ContainerPool& pool() const;
         const Container<>& container(const type::StructDescriptor<>& descriptor);
 
-        Subscription subscribe(const type::StructDescriptor<>& descriptor, transmission_handler_t<>&& handler);
+        Subscription subscribe(const type::StructDescriptor<>& descriptor, transmission_handler_t&& handler);
         Subscription subscribe(const type::StructDescriptor<>& descriptor, event_handler_t<>&& handler);
 
-        Subscription subscribe(const std::string_view& name, transmission_handler_t<>&& handler);
+        Subscription subscribe(const std::string_view& name, transmission_handler_t&& handler);
         Subscription subscribe(const std::string_view& name, event_handler_t<>&& handler);
 
         void subscribe(new_type_handler_t&& handler);
@@ -52,14 +51,6 @@ namespace dots::io
         const Container<T>& container()
         {
             return m_dispatcher.container<T>();
-        }
-
-        template<typename T>
-        Subscription subscribe(transmission_handler_t<T>&& handler)
-        {
-            static_assert(!T::_SubstructOnly, "it is not allowed to subscribe to a struct that is marked with 'substruct_only'!");
-            joinGroup(T::_Descriptor().name());
-            return m_dispatcher.subscribe<T>(std::move(handler));
         }
 
         template<typename T>

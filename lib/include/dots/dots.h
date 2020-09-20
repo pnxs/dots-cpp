@@ -36,11 +36,9 @@ namespace dots
     template<typename  T>
     void remove(const T& instance);
 
-    Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::transmission_handler_t<>&& handler);
+    Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::transmission_handler_t&& handler);
     Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::event_handler_t<>&& handler);
 
-    template<typename T>
-    Subscription subscribe(io::Dispatcher::transmission_handler_t<T>&& handler);
     template<typename T>
     Subscription subscribe(Transceiver::event_handler_t<T>&& handler);
 
@@ -64,13 +62,6 @@ namespace dots
         static_assert(!T::_IsSubstructOnly(), "it is not allowed to remove to a struct that is marked with 'substruct_only'!");
         io::register_global_publish_type<T>();
         remove(instance);
-    }
-
-    template<typename T>
-    Subscription subscribe(Transceiver::transmission_handler_t<T>&& handler)
-    {
-        io::register_global_subscribe_type<T>();
-        return transceiver().subscribe<T>(std::move(handler));
     }
 
     template<typename T>

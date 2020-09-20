@@ -14,8 +14,7 @@ namespace dots::io
 {
     struct Dispatcher
     {
-        template <typename T = type::Struct>
-        using transmission_handler_t = std::function<void(const DotsHeader&, const T&)>;
+        using transmission_handler_t = std::function<void(const Transmission&)>;
         template <typename T = type::Struct>
         using event_handler_t = std::function<void(const Event<T>&)>;
 
@@ -33,7 +32,7 @@ namespace dots::io
         const Container<>& container(const type::StructDescriptor<>& descriptor) const;
         Container<>& container(const type::StructDescriptor<>& descriptor);
 
-        Subscription subscribe(const type::StructDescriptor<>& descriptor, transmission_handler_t<>&& handler);
+        Subscription subscribe(const type::StructDescriptor<>& descriptor, transmission_handler_t&& handler);
         Subscription subscribe(const type::StructDescriptor<>& descriptor, event_handler_t<>&& handler);
 
         void unsubscribe(const Subscription& subscription);
@@ -53,15 +52,6 @@ namespace dots::io
         }
 
         template<typename T>
-        Subscription subscribe(transmission_handler_t<T>&& handler)
-        {
-            return subscribe(T::_Descriptor(), [_handler(std::move(handler))](const DotsHeader& header, const type::Struct& instance, bool isFromMyself)
-            {
-                _handler(header, static_cast<const T&>(instance), isFromMyself);
-            });
-        }
-
-        template<typename T>
         Subscription subscribe(event_handler_t<T>&& handler)
         {
             return subscribe(T::_Descriptor(), [_handler(std::move(handler))](const Event<>& e)
@@ -72,7 +62,7 @@ namespace dots::io
 
     private:
 
-        using transmission_handlers_t = std::map<Subscription::id_t, transmission_handler_t<>>;
+        using transmission_handlers_t = std::map<Subscription::id_t, transmission_handler_t>;
         using transmission_handler_pool_t = std::unordered_map<const type::StructDescriptor<>*, transmission_handlers_t>;
 
         using event_handlers_t = std::map<Subscription::id_t, event_handler_t<>>;
