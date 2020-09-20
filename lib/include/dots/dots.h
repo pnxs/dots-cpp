@@ -5,6 +5,7 @@
 #include <dots/io/Timer.h>
 #include <dots/io/GuestTransceiver.h>
 #include <dots/io/Publisher.h>
+#include <dots/io/GlobalType.h>
 
 namespace dots
 {

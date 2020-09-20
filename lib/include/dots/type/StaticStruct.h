@@ -3,7 +3,7 @@
 #include <utility>
 #include <dots/type/Struct.h>
 #include <dots/type/PropertyInitializer.h>
-#include <dots/io/Subscription.h>
+#include <dots/io/GlobalType.h>
 
 namespace dots::io
 {
