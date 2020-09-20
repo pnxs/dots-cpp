@@ -116,6 +116,21 @@ namespace dots::io
 
     void Dispatcher::dispatchTransmission(const Transmission& transmission, bool isFromMyself)
     {
+        auto dispatchTransmissionToHandlers = [](const transmission_handlers_t& transmissionHandlers, const Transmission& transmission, bool isFromMyself)
+        {
+            for (const auto& [id, handler] : transmissionHandlers)
+            {
+                try
+                {
+                    (void)id;
+                    handler(transmission.header(), transmission.instance(), isFromMyself);
+                }
+                catch (...)
+                {
+                    // TODO: logging?
+                }
+            }
+        };
         const type::StructDescriptor<>& descriptor = transmission.instance()->_descriptor();
 
         auto itHandlers = m_transmissionHandlerPool.find(&descriptor);
@@ -126,12 +141,7 @@ namespace dots::io
         }
 
         const transmission_handlers_t& handlers = itHandlers->second;
-
-        for (const auto& [id, handler] : handlers)
-        {
-            (void)id;
-            handler(transmission.header(), transmission.instance(), isFromMyself);
-        }
+        dispatchTransmissionToHandlers(handlers, transmission, isFromMyself);
     }
 
     void Dispatcher::dispatchEvent(const DotsHeader& header, const type::AnyStruct& instance, bool isFromMyself)
@@ -143,8 +153,15 @@ namespace dots::io
         {
             for (const auto& [id, handler] : handlers)
             {
-                (void)id;
-                handler(e);
+                try
+                {
+                    (void)id;
+                    handler(e);
+                }
+                catch (...)
+                {
+                    // TODO: logging?
+                }
             }
         };
 
