@@ -12,7 +12,7 @@ namespace dots::io
     template<>
     struct Event<type::Struct>
     {
-        Event(const DotsHeader& header, const type::Struct& transmitted, const type::Struct& updated, const DotsCloneInformation& cloneInfo, bool isFromMyself, std::optional<DotsMt> mt = std::nullopt);
+        Event(const DotsHeader& header, const type::Struct& transmitted, const type::Struct& updated, const DotsCloneInformation& cloneInfo, std::optional<DotsMt> mt = std::nullopt);
         Event(const Event& other) = delete;
         Event(Event&& other) = delete;
         ~Event() = default;
@@ -66,7 +66,6 @@ namespace dots::io
         const type::Struct& m_transmitted;
         const type::Struct& m_updated;
         const DotsCloneInformation m_cloneInfo;
-        bool m_isFromMyself;
         DotsMt m_mt;
     };
 
@@ -75,8 +74,8 @@ namespace dots::io
     {
         static_assert(std::is_base_of_v<type::Struct, T>);
 
-        Event(const DotsHeader& header, const T& transmitted, const T& updated, const DotsCloneInformation& cloneInfo, bool isFromMyself, std::optional<DotsMt> mt = std::nullopt) :
-            Event<type::Struct>(header, transmitted, updated, cloneInfo, isFromMyself, mt)
+        Event(const DotsHeader& header, const T& transmitted, const T& updated, const DotsCloneInformation& cloneInfo, std::optional<DotsMt> mt = std::nullopt) :
+            Event<type::Struct>(header, transmitted, updated, cloneInfo, mt)
         {
             /* do nothing */
         }

@@ -26,7 +26,7 @@ namespace dots::io
         static constexpr id_t HostId = 1;
         static constexpr id_t FirstGuestId = 2;
 
-        using receive_handler_t = std::function<bool(Connection&, Transmission, bool)>;
+        using receive_handler_t = std::function<bool(Connection&, Transmission)>;
         using transition_handler_t = std::function<void(Connection&, const std::exception_ptr&)>;
 
         Connection(channel_ptr_t channel, bool host, std::optional<std::string> authSecret = std::nullopt);

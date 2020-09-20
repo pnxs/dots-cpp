@@ -69,14 +69,15 @@ namespace dots::io
             DotsHeader header{
                 DotsHeader::typeName_i{ descriptor.name() },
                 DotsHeader::removeObj_i{ false },
-                DotsHeader::fromCache_i{ container.size() }
+                DotsHeader::fromCache_i{ container.size() },
+                DotsHeader::isFromMyself_i{ false }
             };
 
             for (const auto& [instance, cloneInfo] : container)
             {
                 header.attributes = instance->_validProperties();
                 --* header.fromCache;
-                handler_(Event<>{ header, instance, instance, cloneInfo, false, DotsMt::create });
+                handler_(Event<>{ header, instance, instance, cloneInfo, DotsMt::create });
             }
         }
 
@@ -108,22 +109,22 @@ namespace dots::io
         }
     }
 
-    void Dispatcher::dispatch(const Transmission& transmission, bool isFromMyself)
+    void Dispatcher::dispatch(const Transmission& transmission)
     {
-        dispatchTransmission(transmission, isFromMyself);
-        dispatchEvent(transmission.header(), transmission.instance(), isFromMyself);
+        dispatchTransmission(transmission);
+        dispatchEvent(transmission.header(), transmission.instance());
     }
 
-    void Dispatcher::dispatchTransmission(const Transmission& transmission, bool isFromMyself)
+    void Dispatcher::dispatchTransmission(const Transmission& transmission)
     {
-        auto dispatchTransmissionToHandlers = [](const transmission_handlers_t& transmissionHandlers, const Transmission& transmission, bool isFromMyself)
+        auto dispatchTransmissionToHandlers = [](const transmission_handlers_t& transmissionHandlers, const Transmission& transmission)
         {
             for (const auto& [id, handler] : transmissionHandlers)
             {
                 try
                 {
                     (void)id;
-                    handler(transmission.header(), transmission.instance(), isFromMyself);
+                    handler(transmission.header(), transmission.instance());
                 }
                 catch (...)
                 {
@@ -141,10 +142,10 @@ namespace dots::io
         }
 
         const transmission_handlers_t& handlers = itHandlers->second;
-        dispatchTransmissionToHandlers(handlers, transmission, isFromMyself);
+        dispatchTransmissionToHandlers(handlers, transmission);
     }
 
-    void Dispatcher::dispatchEvent(const DotsHeader& header, const type::AnyStruct& instance, bool isFromMyself)
+    void Dispatcher::dispatchEvent(const DotsHeader& header, const type::AnyStruct& instance)
     {
         const type::StructDescriptor<>& descriptor = instance->_descriptor();
         const event_handlers_t& handlers = m_eventHandlerPool[&descriptor];
@@ -172,12 +173,12 @@ namespace dots::io
             if (header.removeObj == true)
             {
                 Container<>::node_t removed = container.remove(header, instance);
-                dispatchEventToHandlers(Event<>{ header, instance, removed.key(), removed.mapped(), isFromMyself });
+                dispatchEventToHandlers(Event<>{ header, instance, removed.key(), removed.mapped() });
             }
             else
             {
                 const auto& [updated, cloneInfo] = container.insert(header, instance);
-                dispatchEventToHandlers(Event<>{ header, instance, updated, cloneInfo, isFromMyself });
+                dispatchEventToHandlers(Event<>{ header, instance, updated, cloneInfo });
             }
         }
         else
@@ -193,8 +194,7 @@ namespace dots::io
                     DotsCloneInformation::createdFrom_i{ header.sender },
                     DotsCloneInformation::created_i{ header.sentTime },
                     DotsCloneInformation::localUpdateTime_i{ types::timepoint_t::Now() }
-                },
-                isFromMyself
+                }
             });
         }
     }

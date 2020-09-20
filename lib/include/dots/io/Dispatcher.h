@@ -15,7 +15,7 @@ namespace dots::io
     struct Dispatcher
     {
         template <typename T = type::Struct>
-        using transmission_handler_t = std::function<void(const DotsHeader&, const T&, bool)>;
+        using transmission_handler_t = std::function<void(const DotsHeader&, const T&)>;
         template <typename T = type::Struct>
         using event_handler_t = std::function<void(const Event<T>&)>;
 
@@ -38,7 +38,7 @@ namespace dots::io
 
         void unsubscribe(const Subscription& subscription);
 
-        void dispatch(const Transmission& transmission, bool isFromMyself);
+        void dispatch(const Transmission& transmission);
 
         template <typename T>
         const Container<T>& container() const
@@ -78,8 +78,8 @@ namespace dots::io
         using event_handlers_t = std::map<Subscription::id_t, event_handler_t<>>;
         using event_handler_pool_t = std::unordered_map<const type::StructDescriptor<>*, event_handlers_t>;
 
-        void dispatchTransmission(const Transmission& transmission, bool isFromMyself);
-        void dispatchEvent(const DotsHeader& header, const type::AnyStruct& instance, bool isFromMyself);
+        void dispatchTransmission(const Transmission& transmission);
+        void dispatchEvent(const DotsHeader& header, const type::AnyStruct& instance);
 
         std::shared_ptr<Dispatcher*> m_this;
         ContainerPool m_containerPool;

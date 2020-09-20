@@ -23,7 +23,7 @@ namespace dots::io
 
         m_hostConnection.emplace(std::move(channel), false, std::move(authSecret));
         m_hostConnection->asyncReceive(registry(), nullptr, selfName(),
-            [this](io::Connection& connection, Transmission transmission, bool isFromMyself){ return handleTransmission(connection, std::move(transmission), isFromMyself); },
+            [this](io::Connection& connection, Transmission transmission){ return handleTransmission(connection, std::move(transmission)); },
             [this](io::Connection& connection, const std::exception_ptr& e){ handleTransition(connection, e); }
         );
 
@@ -74,9 +74,9 @@ namespace dots::io
         });
     }
 
-    bool GuestTransceiver::handleTransmission(io::Connection&/* connection*/, Transmission transmission, bool isFromMyself)
+    bool GuestTransceiver::handleTransmission(io::Connection&/* connection*/, Transmission transmission)
     {
-        dispatcher().dispatch(transmission, isFromMyself);
+        dispatcher().dispatch(transmission);
         return true;
     }
 
