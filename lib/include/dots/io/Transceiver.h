@@ -18,15 +18,15 @@ namespace dots::io
         template <typename T = type::Struct>
         using event_handler_t = Dispatcher::event_handler_t<T>;
 
-        using new_type_handler_t = io::Registry::new_type_handler_t;
+        using new_type_handler_t = Registry::new_type_handler_t;
 
         Transceiver(std::string selfName);
         Transceiver(const Transceiver& other) = delete;
-        Transceiver(Transceiver&& other) = default;
+        Transceiver(Transceiver&& other) noexcept;
         virtual ~Transceiver() = default;
 
         Transceiver& operator = (const Transceiver& rhs) = delete;
-        Transceiver& operator = (Transceiver&& rhs) = default;
+        Transceiver& operator = (Transceiver&& rhs) noexcept;
 
         const std::string& selfName() const;
 
@@ -57,9 +57,11 @@ namespace dots::io
         Subscription subscribe(event_handler_t<T>&& handler)
         {
             static_assert(!T::_SubstructOnly, "it is not allowed to subscribe to a struct that is marked with 'substruct_only'!");
-            joinGroup(T::_Descriptor().name());
 
-            return m_dispatcher.subscribe<T>(std::move(handler));
+            joinGroup(T::_Descriptor().name());
+            Dispatcher::id_t id = m_dispatcher.addEventHandler(std::move(handler));
+
+            return makeSubscription([&, id]{ m_dispatcher.removeEventHandler(T::_Descriptor(), id); });
         }
 
         template <type::Type TType, typename NewTypeHandler>
@@ -105,16 +107,34 @@ namespace dots::io
 
     private:
 
+        using id_t = uint64_t;
         using new_type_handlers_t = std::deque<new_type_handler_t>;
 
         virtual void joinGroup(const std::string_view& name) = 0;
         virtual void leaveGroup(const std::string_view& name) = 0;
 
+        template <typename UnsubscribeHandler>
+        Subscription makeSubscription(UnsubscribeHandler&& unsubscribeHandler);
+
         void handleNewType(const type::Descriptor<>& descriptor) noexcept;
 
+        id_t m_nextId;
+        std::shared_ptr<Transceiver*> m_this;
         io::Registry m_registry;
         Dispatcher m_dispatcher;
         std::string m_selfName;
         new_type_handlers_t m_newTypeHandlers;
     };
+
+    template <typename UnsubscribeHandler>
+    Subscription Transceiver::makeSubscription(UnsubscribeHandler&& unsubscribeHandler)
+    {
+        return Subscription{ [this, this_ = std::weak_ptr<Transceiver*>{ m_this }, unsubscribeHandler{ std::forward<UnsubscribeHandler>(unsubscribeHandler) }]()
+        {
+            if (this_.lock())
+            {
+                unsubscribeHandler();
+            }
+        } };
+    }
 }

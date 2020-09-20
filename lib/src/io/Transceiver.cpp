@@ -6,10 +6,37 @@
 namespace dots::io
 {
     Transceiver::Transceiver(std::string selfName) :
+        m_nextId(0),
+        m_this(std::make_shared<Transceiver*>(this)),
         m_registry{ [&](const type::Descriptor<>& descriptor){ handleNewType(descriptor); } },
         m_selfName{ std::move(selfName) }
     {
         /* do nothing */
+    }
+
+    Transceiver::Transceiver(Transceiver&& other) noexcept :
+        m_nextId(other.m_nextId),
+        m_this{ std::move(other.m_this) },
+        m_registry{ std::move(other.m_registry) },
+        m_dispatcher{ std::move(other.m_dispatcher) },
+        m_selfName{ std::move(other.m_selfName) },
+        m_newTypeHandlers{ std::move(other.m_newTypeHandlers) }
+    {
+        /* do nothing */
+    }
+
+    Transceiver& Transceiver::operator = (Transceiver&& rhs) noexcept
+    {
+        m_nextId = rhs.m_nextId;
+        m_this = std::move(rhs.m_this);
+        m_registry = std::move(rhs.m_registry);
+        m_dispatcher = std::move(rhs.m_dispatcher);
+        m_selfName = std::move(rhs.m_selfName);
+        m_newTypeHandlers = std::move(rhs.m_newTypeHandlers);
+
+        *m_this = this;
+
+        return *this;
     }
 
     const std::string& Transceiver::selfName() const
@@ -50,7 +77,9 @@ namespace dots::io
         }
 
         joinGroup(descriptor.name());
-        return m_dispatcher.subscribe(descriptor, std::move(handler));
+        Dispatcher::id_t id = m_dispatcher.addTransmissionHandler(descriptor, std::move(handler));
+
+        return makeSubscription([&, id]{ m_dispatcher.removeTransmissionHandler(descriptor, id); });
     }
 
     Subscription Transceiver::subscribe(const type::StructDescriptor<>& descriptor, event_handler_t<>&& handler)
@@ -61,7 +90,9 @@ namespace dots::io
         }
 
         joinGroup(descriptor.name());
-        return m_dispatcher.subscribe(descriptor, std::move(handler));
+        Dispatcher::id_t id = m_dispatcher.addEventHandler(descriptor, std::move(handler));
+
+        return makeSubscription([&, id]{ m_dispatcher.removeEventHandler(descriptor, id); });
     }
 
     Subscription Transceiver::subscribe(const std::string_view& name, transmission_handler_t&& handler)

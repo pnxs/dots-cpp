@@ -2,33 +2,6 @@
 
 namespace dots::io
 {
-    Dispatcher::Dispatcher() :
-        m_this(std::make_shared<Dispatcher*>(this))
-    {
-        /* do nothing*/
-    }
-
-    Dispatcher::Dispatcher(Dispatcher&& other) noexcept :
-        m_this(std::move(other.m_this)),
-        m_containerPool(std::move(other.m_containerPool)),
-        m_transmissionHandlerPool(std::move(other.m_transmissionHandlerPool)),
-        m_eventHandlerPool(std::move(other.m_eventHandlerPool))
-    {
-        *m_this = this;
-    }
-
-    Dispatcher& Dispatcher::operator = (Dispatcher&& rhs) noexcept
-    {
-        m_this = std::move(rhs.m_this);
-        m_containerPool = std::move(rhs.m_containerPool);
-        m_transmissionHandlerPool = std::move(rhs.m_transmissionHandlerPool);
-        m_eventHandlerPool = std::move(rhs.m_eventHandlerPool);
-
-        *m_this = this;
-
-        return *this;
-    }
-
     const ContainerPool& Dispatcher::pool() const
     {
         return m_containerPool;
@@ -49,18 +22,19 @@ namespace dots::io
         return m_containerPool.get(descriptor);
     }
 
-    Subscription Dispatcher::subscribe(const type::StructDescriptor<>& descriptor, transmission_handler_t&& handler)
+    auto Dispatcher::addTransmissionHandler(const type::StructDescriptor<>& descriptor, transmission_handler_t&& handler) -> id_t
     {
-        Subscription subscription{ m_this, descriptor };
-        m_transmissionHandlerPool[&descriptor].emplace(subscription.id(), std::move(handler));
+        id_t id = m_nextId++;
+        m_transmissionHandlerPool[&descriptor].emplace(id, std::move(handler));
 
-        return subscription;
+        return id;
     }
 
-    Subscription Dispatcher::subscribe(const type::StructDescriptor<>& descriptor, event_handler_t<>&& handler)
+    auto Dispatcher::addEventHandler(const type::StructDescriptor<>& descriptor, event_handler_t<>&& handler) -> id_t
     {
-        Subscription subscription{ m_this, descriptor };
-        const event_handler_t<>& handler_ = m_eventHandlerPool[&descriptor].emplace(subscription.id(), std::move(handler)).first->second;
+        id_t id = m_nextId++;
+        event_handlers_t& handlers = m_eventHandlerPool[&descriptor];
+        const event_handler_t<>& handler_ = handlers.emplace(id, std::move(handler)).first->second;
 
         const Container<>& container = m_containerPool.get(descriptor);
 
@@ -76,37 +50,44 @@ namespace dots::io
             for (const auto& [instance, cloneInfo] : container)
             {
                 header.attributes = instance->_validProperties();
-                --* header.fromCache;
+                --*header.fromCache;
                 handler_(Event<>{ header, instance, instance, cloneInfo, DotsMt::create });
             }
         }
 
-        return subscription;
+        return id;
     }
 
-    void Dispatcher::unsubscribe(const Subscription& subscription)
+    void Dispatcher::removeTransmissionHandler(const type::StructDescriptor<>& descriptor, id_t id)
     {
-        auto try_remove_handler = [&subscription](auto& handlerPool)
+        if (auto itHandlers = m_transmissionHandlerPool.find(&descriptor); itHandlers != m_transmissionHandlerPool.end())
         {
-            if (auto itHandlers = handlerPool.find(&subscription.descriptor()); itHandlers != handlerPool.end())
+            transmission_handlers_t& handlers = itHandlers->second;
+
+            if (auto itHandler = handlers.find(id); itHandler != handlers.end())
             {
-                auto& handlers = itHandlers->second;
-                auto itHandler = handlers.find(subscription.id());
-
-                if (itHandler != handlers.end())
-                {
-                    handlers.erase(itHandler);
-                    return true;
-                }
+                handlers.erase(itHandler);
+                return;
             }
-
-            return false;
-        };
-
-        if (!(try_remove_handler(m_eventHandlerPool) || try_remove_handler(m_transmissionHandlerPool)))
-        {
-            throw std::logic_error{ "cannot unsubscribe unknown subscription for type: " + subscription.descriptor().name() };
         }
+
+        throw std::logic_error{ "cannot remove unknown transmission handler for type: " + descriptor.name() };
+    }
+
+    void Dispatcher::removeEventHandler(const type::StructDescriptor<>& descriptor, id_t id)
+    {
+        if (auto itHandlers = m_eventHandlerPool.find(&descriptor); itHandlers != m_eventHandlerPool.end())
+        {
+            event_handlers_t& handlers = itHandlers->second;
+
+            if (auto itHandler = handlers.find(id); itHandler != handlers.end())
+            {
+                handlers.erase(itHandler);
+                return;
+            }
+        }
+
+        throw std::logic_error{ "cannot remove unknown event handler for type: " + descriptor.name() };
     }
 
     void Dispatcher::dispatch(const Transmission& transmission)
