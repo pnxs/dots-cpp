@@ -36,11 +36,11 @@ namespace dots
     template<typename  T>
     void remove(const T& instance);
 
-    Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::receive_handler_t<>&& handler);
+    Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::transmission_handler_t<>&& handler);
     Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::event_handler_t<>&& handler);
 
     template<typename T>
-    Subscription subscribe(io::Dispatcher::receive_handler_t<T>&& handler);
+    Subscription subscribe(io::Dispatcher::transmission_handler_t<T>&& handler);
     template<typename T>
     Subscription subscribe(Transceiver::event_handler_t<T>&& handler);
 
@@ -67,7 +67,7 @@ namespace dots
     }
 
     template<typename T>
-    Subscription subscribe(Transceiver::receive_handler_t<T>&& handler)
+    Subscription subscribe(Transceiver::transmission_handler_t<T>&& handler)
     {
         io::register_global_subscribe_type<T>();
         return transceiver().subscribe<T>(std::move(handler));

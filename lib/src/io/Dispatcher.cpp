@@ -11,7 +11,7 @@ namespace dots::io
     Dispatcher::Dispatcher(Dispatcher&& other) noexcept :
         m_this(std::move(other.m_this)),
         m_containerPool(std::move(other.m_containerPool)),
-        m_receiveHandlerPool(std::move(other.m_receiveHandlerPool)),
+        m_transmissionHandlerPool(std::move(other.m_transmissionHandlerPool)),
         m_eventHandlerPool(std::move(other.m_eventHandlerPool))
     {
         *m_this = this;
@@ -21,7 +21,7 @@ namespace dots::io
     {
         m_this = std::move(rhs.m_this);
         m_containerPool = std::move(rhs.m_containerPool);
-        m_receiveHandlerPool = std::move(rhs.m_receiveHandlerPool);
+        m_transmissionHandlerPool = std::move(rhs.m_transmissionHandlerPool);
         m_eventHandlerPool = std::move(rhs.m_eventHandlerPool);
 
         *m_this = this;
@@ -49,10 +49,10 @@ namespace dots::io
         return m_containerPool.get(descriptor);
     }
 
-    Subscription Dispatcher::subscribe(const type::StructDescriptor<>& descriptor, receive_handler_t<>&& handler)
+    Subscription Dispatcher::subscribe(const type::StructDescriptor<>& descriptor, transmission_handler_t<>&& handler)
     {
         Subscription subscription{ m_this, descriptor };
-        m_receiveHandlerPool[&descriptor].emplace(subscription.id(), std::move(handler));
+        m_transmissionHandlerPool[&descriptor].emplace(subscription.id(), std::move(handler));
 
         return subscription;
     }
@@ -102,35 +102,35 @@ namespace dots::io
             return false;
         };
 
-        if (!(try_remove_handler(m_eventHandlerPool) || try_remove_handler(m_receiveHandlerPool)))
+        if (!(try_remove_handler(m_eventHandlerPool) || try_remove_handler(m_transmissionHandlerPool)))
         {
             throw std::logic_error{ "cannot unsubscribe unknown subscription for type: " + subscription.descriptor().name() };
         }
     }
 
-    void Dispatcher::dispatch(const DotsHeader& header, const type::AnyStruct& instance, bool isFromMyself)
+    void Dispatcher::dispatch(const Transmission& transmission, bool isFromMyself)
     {
-        dispatchReceive(header, instance, isFromMyself);
-        dispatchEvent(header, instance, isFromMyself);
+        dispatchTransmission(transmission, isFromMyself);
+        dispatchEvent(transmission.header(), transmission.instance(), isFromMyself);
     }
 
-    void Dispatcher::dispatchReceive(const DotsHeader& header, const type::AnyStruct& instance, bool isFromMyself)
+    void Dispatcher::dispatchTransmission(const Transmission& transmission, bool isFromMyself)
     {
-        const type::StructDescriptor<>& descriptor = instance->_descriptor();
+        const type::StructDescriptor<>& descriptor = transmission.instance()->_descriptor();
 
-        auto itHandlers = m_receiveHandlerPool.find(&descriptor);
+        auto itHandlers = m_transmissionHandlerPool.find(&descriptor);
 
-        if (itHandlers == m_receiveHandlerPool.end())
+        if (itHandlers == m_transmissionHandlerPool.end())
         {
             return;
         }
 
-        const receive_handlers_t& handlers = itHandlers->second;
+        const transmission_handlers_t& handlers = itHandlers->second;
 
         for (const auto& [id, handler] : handlers)
         {
             (void)id;
-            handler(header, instance, isFromMyself);
+            handler(transmission.header(), transmission.instance(), isFromMyself);
         }
     }
 
