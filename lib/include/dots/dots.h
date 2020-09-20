@@ -53,7 +53,7 @@ namespace dots
     void publish(const T& instance, const types::property_set_t& includedProperties/* = types::property_set_t::All*/, bool remove/* = false*/)
     {
         static_assert(!T::_IsSubstructOnly(), "it is not allowed to publish to a struct that is marked with 'substruct_only'!");
-        io::registerTypeUsage<T, io::PublishedType>();
+        io::register_global_publish_type<T>();
         publish(T::_Descriptor(), &instance, includedProperties, remove);
     }
 
@@ -61,28 +61,28 @@ namespace dots
     void remove(const T& instance)
     {
         static_assert(!T::_IsSubstructOnly(), "it is not allowed to remove to a struct that is marked with 'substruct_only'!");
-        io::registerTypeUsage<T, io::PublishedType>();
+        io::register_global_publish_type<T>();
         remove(instance);
     }
 
     template<typename T>
     Subscription subscribe(Transceiver::receive_handler_t<T>&& handler)
     {
-        io::registerTypeUsage<T, io::SubscribedType>();
+        io::register_global_subscribe_type<T>();
         return transceiver().subscribe<T>(std::move(handler));
     }
 
     template<typename T>
     Subscription subscribe(Transceiver::event_handler_t<T>&& handler)
     {
-        io::registerTypeUsage<T, io::SubscribedType>();
+        io::register_global_subscribe_type<T>();
         return transceiver().subscribe<T>(std::move(handler));
     }
 
     template <typename T>
     const Container<T>& container()
     {
-        io::registerTypeUsage<T, io::SubscribedType>();
+        io::register_global_subscribe_type<T>();
         return transceiver().container<T>();
     }
 

@@ -1,21 +1,8 @@
 #include <dots/io/Subscription.h>
 #include <dots/io/Dispatcher.h>
-#include <dots/tools/logging.h>
 
 namespace dots::io
 {
-    PublishedType::PublishedType(const type::StructDescriptor<>* td)
-    :td(td)
-    {
-        LOG_DEBUG_S("PubType: " << td->name());
-    }
-
-    SubscribedType::SubscribedType(const type::StructDescriptor<>* td)
-    :td(td)
-    {
-        LOG_DEBUG_S("SubType: " << td->name());
-    }
-
     Subscription::Subscription(std::weak_ptr<Dispatcher*> dispatcher, const type::StructDescriptor<>& descriptor) :
         m_dispatcher(std::move(dispatcher)),
         m_descriptor(&descriptor),

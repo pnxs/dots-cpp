@@ -108,18 +108,18 @@ namespace dots
     {
         GuestTransceiver::descriptor_map_t sds;
 
-        for (const auto& e : dots::io::PublishedType::allChained())
+        for (const dots::type::StructDescriptor<>& descriptor : dots::io::global_publish_types())
         {
-            auto td = transceiver().registry().findStructType(e->td->name());
+            auto td = transceiver().registry().findStructType(descriptor.name());
             if (!td) {
-                throw std::runtime_error("struct decriptor not found for " + e->td->name());
+                throw std::runtime_error("struct decriptor not found for " + descriptor.name());
             }
             if (td) {
                 sds.emplace(td->name(), td.get());
             }
             else
             {
-                LOG_ERROR_S("td is NULL: " << e->td->name())
+                LOG_ERROR_S("td is NULL: " << descriptor.name())
             }
         }
         return sds;
@@ -129,18 +129,18 @@ namespace dots
     {
         GuestTransceiver::descriptor_map_t sds;
 
-        for (const auto& e : dots::io::SubscribedType::allChained())
+        for (const dots::type::StructDescriptor<>& descriptor : dots::io::global_subscribe_types())
         {
-            auto td = transceiver().registry().findStructType(e->td->name());
+            auto td = transceiver().registry().findStructType(descriptor.name());
             if (!td) {
-                throw std::runtime_error("struct decriptor1 not found for " + e->td->name());
+                throw std::runtime_error("struct decriptor1 not found for " + descriptor.name());
             }
             if (td) {
                 sds.emplace(td->name(), td.get());
             }
             else
             {
-                LOG_ERROR_S("td is NULL: " << e->td->name());
+                LOG_ERROR_S("td is NULL: " << descriptor.name());
             }
         }
         return sds;
