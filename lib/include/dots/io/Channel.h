@@ -35,7 +35,7 @@ namespace dots::io
         void transmit(const type::Struct& instance);
         void transmit(const DotsHeader& header, const type::Struct& instance);
         void transmit(const Transmission& transmission);
-        void transmit(const type::StructDescriptor<>& descriptor);
+        void transmit(const type::Descriptor<>& descriptor);
 
         virtual const Medium& medium() const;
 
