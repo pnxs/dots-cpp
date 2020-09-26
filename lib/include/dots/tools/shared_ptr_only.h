@@ -26,7 +26,7 @@ namespace dots::tools
         shared_ptr_only(key_t) {};
         shared_ptr_only(const shared_ptr_only& other) = delete;
         shared_ptr_only(shared_ptr_only&& other) = delete;
-        ~shared_ptr_only() = default;
+        virtual ~shared_ptr_only() = default;
 
         shared_ptr_only& operator = (const shared_ptr_only& rhs) = delete;
         shared_ptr_only& operator = (shared_ptr_only&& rhs) = delete;
