@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <optional>
 #include <dots/io/HostTransceiver.h>
 #include "DotsDaemonStatus.dots.h"
 
@@ -34,5 +35,6 @@ namespace dots
 
         io::HostTransceiver m_hostTransceiver;
         DotsDaemonStatus m_daemonStatus;
+        std::optional<io::Subscription> m_descriptorSubscription;
     };
 }

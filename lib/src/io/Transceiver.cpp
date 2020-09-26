@@ -105,9 +105,9 @@ namespace dots::io
         return subscribe(m_registry.getStructType(name), std::move(handler));
     }
 
-    void Transceiver::subscribe(new_type_handler_t&& handler)
+    Subscription Transceiver::subscribe(new_type_handler_t&& handler)
     {
-        const new_type_handler_t& handler_ = m_newTypeHandlers.emplace_back(std::move(handler));
+        const auto& [id, handler_] = *m_newTypeHandlers.try_emplace(m_nextId++, std::move(handler)).first;
 
         for (const auto& [name, descriptor] : type::StaticDescriptorMap::Descriptors())
         {
@@ -120,6 +120,8 @@ namespace dots::io
             (void)name;
             handler_(*descriptor);
         }
+
+        return makeSubscription([&, id(id)]{ m_newTypeHandlers.extract(id); });
     }
 
     void Transceiver::remove(const type::Struct& instance)
@@ -134,7 +136,7 @@ namespace dots::io
 
     void Transceiver::handleNewType(const type::Descriptor<>& descriptor) noexcept
     {
-        for (const new_type_handler_t& handler : m_newTypeHandlers)
+        for (const auto& [id, handler] : m_newTypeHandlers)
         {
             try
             {

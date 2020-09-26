@@ -42,7 +42,7 @@ namespace dots::io
         Subscription subscribe(const std::string_view& name, transmission_handler_t&& handler);
         Subscription subscribe(const std::string_view& name, event_handler_t<>&& handler);
 
-        void subscribe(new_type_handler_t&& handler);
+        Subscription subscribe(new_type_handler_t&& handler);
 
         virtual void publish(const type::Struct& instance, types::property_set_t what = types::property_set_t::All, bool remove = false) = 0;
         void remove(const type::Struct& instance);
@@ -65,9 +65,9 @@ namespace dots::io
         }
 
         template <type::Type TType, typename NewTypeHandler>
-        void subscribe(NewTypeHandler&& handler)
+        Subscription subscribe(NewTypeHandler&& handler)
         {
-            subscribe([handler_ = std::move(handler)](const type::Descriptor<>& descriptor)
+            return subscribe([handler_ = std::move(handler)](const type::Descriptor<>& descriptor)
             {
                 // TODO: shorten once descriptor traits were added
                 if constexpr (TType == type::Type::Vector)
@@ -108,7 +108,7 @@ namespace dots::io
     private:
 
         using id_t = uint64_t;
-        using new_type_handlers_t = std::deque<new_type_handler_t>;
+        using new_type_handlers_t = std::map<id_t, new_type_handler_t>;
 
         virtual void joinGroup(const std::string_view& name) = 0;
         virtual void leaveGroup(const std::string_view& name) = 0;
