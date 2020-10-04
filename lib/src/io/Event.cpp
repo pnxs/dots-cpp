@@ -2,12 +2,11 @@
 
 namespace dots::io
 {
-    Event<type::Struct>::Event(const DotsHeader& header, const type::Struct& transmitted, const type::Struct& updated, const DotsCloneInformation& cloneInfo, bool isFromMyself, std::optional<DotsMt> mt/* = std::nullopt*/) :
+    Event<type::Struct>::Event(const DotsHeader& header, const type::Struct& transmitted, const type::Struct& updated, const DotsCloneInformation& cloneInfo, std::optional<DotsMt> mt/* = std::nullopt*/) :
         m_header(header),
         m_transmitted(transmitted),
         m_updated(updated),
         m_cloneInfo(cloneInfo),
-        m_isFromMyself(isFromMyself),
         m_mt(mt == std::nullopt ? m_cloneInfo.lastOperation : *mt)
     {
         /* do nothing */
@@ -68,11 +67,11 @@ namespace dots::io
 
     bool Event<type::Struct>::isFromMyself() const
     {
-        return m_isFromMyself;
+        return m_header.isFromMyself == true;
     }
 
     bool Event<type::Struct>::isOwnUpdate() const
     {
-        return m_isFromMyself;
+        return m_header.isFromMyself == true;
     }
 }

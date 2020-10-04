@@ -35,13 +35,15 @@ namespace dots::io
             DotsHeader::serverSentTime_i{ types::timepoint_t::Now() },
             DotsHeader::attributes_i{ includedProperties ==  types::property_set_t::All ? instance._validProperties() : includedProperties },
             DotsHeader::sender_i{ io::Connection::HostId },
-            DotsHeader::removeObj_i{ remove }
+            DotsHeader::removeObj_i{ remove },
+            DotsHeader::isFromMyself_i{ true }
         };
         type::AnyStruct{ instance };
 
-        dispatcher().dispatch(header, instance, true);
+        Transmission transmission{ std::move(header), std::move(instance) };
+        dispatcher().dispatch(transmission);
         header.sender.destroy();
-        transmit(nullptr, Transmission{ std::move(header), std::move(instance) });
+        transmit(nullptr, std::move(transmission));
     }
 
     void HostTransceiver::joinGroup(const std::string_view&/* name*/)
@@ -103,7 +105,7 @@ namespace dots::io
     {
         auto connection = std::make_shared<io::Connection>(std::move(channel), true);
         connection->asyncReceive(registry(), m_authManager.get(), selfName(),
-            [this](io::Connection& connection, Transmission transmission, bool isFromMyself) { return handleReceive(connection, std::move(transmission), isFromMyself); },
+            [this](io::Connection& connection, Transmission transmission) { return handleTransmission(connection, std::move(transmission)); },
             [this](io::Connection& connection, const std::exception_ptr& e) { handleTransition(connection, e); }
         );
         m_guestConnections.emplace(connection.get(), connection);
@@ -125,7 +127,7 @@ namespace dots::io
         m_listeners.erase(&listener);
     }
 
-    bool HostTransceiver::handleReceive(io::Connection& connection, Transmission transmission, bool isFromMyself)
+    bool HostTransceiver::handleTransmission(io::Connection& connection, Transmission transmission)
     {
         const auto& [header, instance] = transmission;
 
@@ -145,7 +147,7 @@ namespace dots::io
             }
         }
 
-        dispatcher().dispatch(header, instance, isFromMyself);
+        dispatcher().dispatch(transmission);
         transmit(&connection, std::move(transmission));
 
         return true;

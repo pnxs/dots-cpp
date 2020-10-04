@@ -83,15 +83,15 @@ int main(int argc, char *argv[])
     mcc.publishStruct();
 
 #if 0
-    LOG_INFO_S("Published types (" << dots::PublishedType::allChained().size() << "):")
-    for (auto &e : dots::PublishedType::allChained())
+    LOG_INFO_S("Published types (" << dots::io::global_publish_types().size() << "):")
+    for (const dots::type::StructDescriptor<>& descriptor : dots::io::global_publish_types())
     {
-        LOG_INFO_S("  " << e->td->typeName());
+        LOG_INFO_S("  " << descriptor.name());
     }
-    LOG_INFO_S("Subscribed types (" << dots::SubscribedType::allChained().size() << "):");
-    for (auto &e : dots::SubscribedType::allChained())
+    LOG_INFO_S("Subscribed types (" << dots::io::global_subscribe_types().size() << "):");
+    for (const dots::type::StructDescriptor<>& descriptor : dots::io::global_subscribe_types())
     {
-        LOG_INFO_S("  " << e->td->typeName());
+        LOG_INFO_S("  " << descriptor.name());
     }
 #endif
 

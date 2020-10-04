@@ -6,10 +6,37 @@
 namespace dots::io
 {
     Transceiver::Transceiver(std::string selfName) :
+        m_nextId(0),
+        m_this(std::make_shared<Transceiver*>(this)),
         m_registry{ [&](const type::Descriptor<>& descriptor){ handleNewType(descriptor); } },
         m_selfName{ std::move(selfName) }
     {
         /* do nothing */
+    }
+
+    Transceiver::Transceiver(Transceiver&& other) noexcept :
+        m_nextId(other.m_nextId),
+        m_this{ std::move(other.m_this) },
+        m_registry{ std::move(other.m_registry) },
+        m_dispatcher{ std::move(other.m_dispatcher) },
+        m_selfName{ std::move(other.m_selfName) },
+        m_newTypeHandlers{ std::move(other.m_newTypeHandlers) }
+    {
+        /* do nothing */
+    }
+
+    Transceiver& Transceiver::operator = (Transceiver&& rhs) noexcept
+    {
+        m_nextId = rhs.m_nextId;
+        m_this = std::move(rhs.m_this);
+        m_registry = std::move(rhs.m_registry);
+        m_dispatcher = std::move(rhs.m_dispatcher);
+        m_selfName = std::move(rhs.m_selfName);
+        m_newTypeHandlers = std::move(rhs.m_newTypeHandlers);
+
+        *m_this = this;
+
+        return *this;
     }
 
     const std::string& Transceiver::selfName() const
@@ -42,7 +69,7 @@ namespace dots::io
         return m_dispatcher.container(descriptor);
     }
 
-    Subscription Transceiver::subscribe(const type::StructDescriptor<>& descriptor, receive_handler_t<>&& handler)
+    Subscription Transceiver::subscribe(const type::StructDescriptor<>& descriptor, transmission_handler_t&& handler)
     {
         if (descriptor.substructOnly())
         {
@@ -50,7 +77,9 @@ namespace dots::io
         }
 
         joinGroup(descriptor.name());
-        return m_dispatcher.subscribe(descriptor, std::move(handler));
+        Dispatcher::id_t id = m_dispatcher.addTransmissionHandler(descriptor, std::move(handler));
+
+        return makeSubscription([&, id]{ m_dispatcher.removeTransmissionHandler(descriptor, id); });
     }
 
     Subscription Transceiver::subscribe(const type::StructDescriptor<>& descriptor, event_handler_t<>&& handler)
@@ -61,10 +90,12 @@ namespace dots::io
         }
 
         joinGroup(descriptor.name());
-        return m_dispatcher.subscribe(descriptor, std::move(handler));
+        Dispatcher::id_t id = m_dispatcher.addEventHandler(descriptor, std::move(handler));
+
+        return makeSubscription([&, id]{ m_dispatcher.removeEventHandler(descriptor, id); });
     }
 
-    Subscription Transceiver::subscribe(const std::string_view& name, receive_handler_t<>&& handler)
+    Subscription Transceiver::subscribe(const std::string_view& name, transmission_handler_t&& handler)
     {
         return subscribe(m_registry.getStructType(name), std::move(handler));
     }
@@ -74,9 +105,9 @@ namespace dots::io
         return subscribe(m_registry.getStructType(name), std::move(handler));
     }
 
-    void Transceiver::subscribe(new_type_handler_t&& handler)
+    Subscription Transceiver::subscribe(new_type_handler_t&& handler)
     {
-        const new_type_handler_t& handler_ = m_newTypeHandlers.emplace_back(std::move(handler));
+        const auto& [id, handler_] = *m_newTypeHandlers.try_emplace(m_nextId++, std::move(handler)).first;
 
         for (const auto& [name, descriptor] : type::StaticDescriptorMap::Descriptors())
         {
@@ -89,6 +120,8 @@ namespace dots::io
             (void)name;
             handler_(*descriptor);
         }
+
+        return makeSubscription([&, id(id)]{ m_newTypeHandlers.extract(id); });
     }
 
     void Transceiver::remove(const type::Struct& instance)
@@ -103,7 +136,7 @@ namespace dots::io
 
     void Transceiver::handleNewType(const type::Descriptor<>& descriptor) noexcept
     {
-        for (const new_type_handler_t& handler : m_newTypeHandlers)
+        for (const auto& [id, handler] : m_newTypeHandlers)
         {
             try
             {

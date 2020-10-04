@@ -210,7 +210,8 @@ namespace dots::io
                         header.sentTime = header.serverSentTime;
                     }
 
-                    m_receiveHandler(*this, std::move(transmission), header.sender == m_selfId);
+                    header.isFromMyself = header.sender == m_selfId;
+                    m_receiveHandler(*this, std::move(transmission));
                 }
                 else
                 {
@@ -221,12 +222,14 @@ namespace dots::io
 
                     if (header.sender.isValid())
                     {
-                        m_receiveHandler(*this, std::move(transmission), header.sender == m_selfId);
+                        header.isFromMyself = header.sender == m_selfId;
+                        m_receiveHandler(*this, std::move(transmission));
                     }
                     else
                     {
                         header.sender(m_peerId);
-                        m_receiveHandler(*this, std::move(transmission), false);
+                        header.isFromMyself = false;
+                        m_receiveHandler(*this, std::move(transmission));
                     }
                 }
             }

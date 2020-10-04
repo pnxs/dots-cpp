@@ -60,7 +60,7 @@ namespace dots::io
         transmitImpl(transmission);
     }
 
-    void Channel::transmit(const type::StructDescriptor<>& descriptor)
+    void Channel::transmit(const type::Descriptor<>& descriptor)
     {
         exportDependencies(descriptor);
     }

@@ -3,7 +3,7 @@
 #include <utility>
 #include <dots/type/Struct.h>
 #include <dots/type/PropertyInitializer.h>
-#include <dots/io/Subscription.h>
+#include <dots/io/GlobalType.h>
 
 namespace dots::io
 {
@@ -321,7 +321,7 @@ namespace dots::type
         {
             static_assert(!Derived::_SubstructOnly, "a substruct-only type cannot be published");
 
-            io::registerTypeUsage<Derived, io::PublishedType>();
+            io::register_global_publish_type<Derived>();
             Struct::_publish(includedProperties, remove);
         }
 
@@ -329,7 +329,7 @@ namespace dots::type
         {
             static_assert(!Derived::_SubstructOnly, "a substruct-only type cannot be removed");
 
-            io::registerTypeUsage<Derived, io::PublishedType>();
+            io::register_global_publish_type<Derived>();
             Struct::_remove();
         }
 
