@@ -10,12 +10,16 @@ build_ubuntu:
         - pwd
         - cmake -Bbuild -H.
         - make -Cbuild -j4
+        - cd build && cpack && cd -
     artifacts:
         paths:
             - ./build/lib/libdots.a
             - ./build/bin/dotsd/dotsd
             - ./build/bin/examples/testClient/testClient
             - ./build/tests/dots-unittests
+            - ./build/dots-cpp_*.deb
+            - ./build/dots-cpp-dev_*.deb
+            - ./build/dots-cpp-testclient_*.deb
 
 run_unittests:
     stage: test
