@@ -30,4 +30,4 @@ target_link_libraries(${TARGET_NAME}
 )
 
 # install
-install (TARGETS ${TARGET_NAME} DESTINATION bin)
+install (TARGETS ${TARGET_NAME} DESTINATION bin COMPONENT testclient)

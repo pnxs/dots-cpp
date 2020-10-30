@@ -32,4 +32,4 @@ target_link_libraries(${TARGET_NAME}
 )
 
 # install
-install (TARGETS ${TARGET_NAME} DESTINATION sbin)
+install (TARGETS ${TARGET_NAME} DESTINATION sbin COMPONENT main)
