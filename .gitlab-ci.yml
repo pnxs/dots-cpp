@@ -1,5 +1,5 @@
 
-image: pnxs/dots_devenv:2
+image: pnxs/dots_devenv:20.04
 
 variables:
     GIT_SUBMODULE_STRATEGY: recursive
