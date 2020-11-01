@@ -33,3 +33,8 @@ run_unittests:
         reports:
             junit:
                 - report.xml
+
+deploy:
+    stage: deploy
+    script:
+        - "wget 'https://git2.pnxs.de/api/v4/projects/34/trigger/pipeline?token=${ARTIFACT_DL_TOKEN}&ref=${CI_COMMIT_BRANCH}'"
