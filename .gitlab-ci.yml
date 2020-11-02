@@ -37,4 +37,4 @@ run_unittests:
 deploy:
     stage: deploy
     script:
-        - wget https://git2.pnxs.de/api/v4/projects/34/trigger/pipeline?token=${ARTIFACT_DL_TOKEN}&ref=${CI_COMMIT_BRANCH}
+        - wget https://git2.pnxs.de/api/v4/projects/34/trigger/pipeline?token=${TRIGGER_TOKEN_DOTS_LEGACY}&ref=${CI_COMMIT_BRANCH}
