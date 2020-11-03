@@ -9,15 +9,14 @@ function(bundle_static_library tgt_name)
     endif()
     get_target_property(public_dependencies ${input_target} ${_input_link_libraries})
     foreach(dependency IN LISTS public_dependencies)
-      message("Dep: ${dependency}")
+
       if(TARGET ${dependency})
         get_target_property(alias ${dependency} ALIASED_TARGET)
         if (TARGET ${alias})
-          message("Is alias: ${alias}")
           set(dependency ${alias})
         endif()
         get_target_property(_type ${dependency} TYPE)
-        message("Type of ${dependency} : ${_type}")
+
         if (${_type} STREQUAL "STATIC_LIBRARY")
           list(APPEND static_libs ${dependency})
         endif()
@@ -33,12 +32,9 @@ function(bundle_static_library tgt_name)
     set(static_libs ${static_libs} PARENT_SCOPE)
   endfunction()
 
-  message("Get target dependencies...")
   _recursively_collect_dependencies(${tgt_name})
 
   list(REMOVE_DUPLICATES static_libs)
-  
-  message("Static libs: ${static_libs}")
 
   set(bundled_tgt_name ${tgt_name}_bundle)
 
@@ -92,7 +88,6 @@ function(bundle_static_library tgt_name)
   add_custom_target(bundling_target ALL DEPENDS ${bundled_tgt_full_name})
   add_dependencies(bundling_target ${tgt_name})
 
-  message("Add bundle target ${bundled_tgt_name}")
   add_library(${bundled_tgt_name} STATIC IMPORTED)
   set_target_properties(${bundled_tgt_name} 
     PROPERTIES 
