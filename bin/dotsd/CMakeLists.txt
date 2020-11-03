@@ -19,7 +19,7 @@ target_include_directories(${TARGET_NAME}
 )
 target_compile_options(${TARGET_NAME}
     PRIVATE
-        $<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-O2 -flto -Wall -Wextra -Wpedantic -Werror -Wno-deprecated-declarations>>
+        $<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-O2 -Wall -Wextra -Wpedantic -Werror -Wno-deprecated-declarations>>
 )
 target_compile_features(${TARGET_NAME}
     PRIVATE
@@ -32,4 +32,4 @@ target_link_libraries(${TARGET_NAME}
 )
 
 # install
-install (TARGETS ${TARGET_NAME} DESTINATION sbin)
+install (TARGETS ${TARGET_NAME} DESTINATION sbin COMPONENT main)

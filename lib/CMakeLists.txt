@@ -4,13 +4,15 @@ project(libDOTS VERSION 0.1.0 LANGUAGES CXX)
 set(TARGET_NAME dots)
 set(EXPORT_NAME DOTS)
 
+include(LibraryUtils)
+
 # options
 option(BUILD_DOTS_SHARED "Build DOTS as a shared instead of a static library" OFF)
 
 # dependencies
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
-find_package(Boost 1.72 REQUIRED COMPONENTS filesystem iostreams program_options)
-find_package(Rapidjson REQUIRED MODULE)
+find_package(Boost 1.71 REQUIRED COMPONENTS filesystem iostreams program_options)
+find_package(RapidJSON REQUIRED MODULE)
 find_package(PicoSHA2 REQUIRED)
 #find_package(cborcpp REQUIRED) (uncomment when dependency is no longer part of build tree)
 
@@ -20,6 +22,7 @@ if (BUILD_DOTS_SHARED)
 else()
     add_library(${TARGET_NAME} STATIC)
 endif()
+
 add_library(${EXPORT_NAME}::${EXPORT_NAME} ALIAS ${TARGET_NAME})
 
 # properties
@@ -108,7 +111,7 @@ target_compile_features(${TARGET_NAME}
 )
 target_compile_options(${TARGET_NAME}
     PRIVATE
-        $<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-O2 -flto -Wall -Wextra -Wpedantic -Werror -Wno-deprecated-declarations>>
+        $<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-O2 -Wall -Wextra -Wpedantic -Werror -Wno-deprecated-declarations>>
 )
 target_compile_definitions(${TARGET_NAME}
     PUBLIC
@@ -132,6 +135,21 @@ set_target_properties(${TARGET_NAME} PROPERTIES
     SOVERSION 0
 )
 
+bundle_static_library(${TARGET_NAME})
+
+# Strip libs
+get_property(ILL
+    TARGET ${TARGET_NAME}
+    PROPERTY INTERFACE_LINK_LIBRARIES)
+list(FILTER ILL EXCLUDE REGEX ".*cborcpp.*")
+list(FILTER ILL EXCLUDE REGEX ".*date::.*")
+list(FILTER ILL EXCLUDE REGEX ".*RapidJSON::.*")
+list(FILTER ILL EXCLUDE REGEX ".*PicoSHA2::.*")
+list(LENGTH ILL mylength)
+set_property(
+    TARGET ${TARGET_NAME}
+    PROPERTY INTERFACE_LINK_LIBRARIES ${ILL})
+
 # install
 include(GNUInstallDirs)
 set_target_properties(${TARGET_NAME} PROPERTIES EXPORT_NAME ${EXPORT_NAME})
@@ -139,6 +157,7 @@ install(TARGETS ${TARGET_NAME}
     EXPORT ${TARGET_NAME}-targets
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    COMPONENT dev
 )
 install(EXPORT ${TARGET_NAME}-targets
     NAMESPACE ${EXPORT_NAME}::
@@ -146,12 +165,20 @@ install(EXPORT ${TARGET_NAME}-targets
         ${EXPORT_NAME}Targets.cmake
     DESTINATION
         ${CMAKE_INSTALL_LIBDIR}/cmake/${EXPORT_NAME}
+    COMPONENT dev
 )
 install(FILES
     ${CMAKE_SOURCE_DIR}/cmake/${EXPORT_NAME}Config.cmake
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${EXPORT_NAME}
+    COMPONENT dev
 )
 install(DIRECTORY
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    COMPONENT dev
+)
+install(FILES
+    ${MODEL_HEADERS}
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    COMPONENT dev
 )

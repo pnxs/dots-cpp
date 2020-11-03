@@ -23,3 +23,17 @@ add_subdirectory(bin/examples/testClient)
 if (BUILD_UNIT_TESTS)
     add_subdirectory(tests)
 endif()
+
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Thomas Schätzlein")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6 (>= 2.31), libstdc++6, libboost-program-options1.71.0")
+set(CPACK_DEBIAN_MAIN_PACKAGE_NAME dots-cpp)
+set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
+set(CPACK_DEBIAN_MAIN_FILE_NAME DEB-DEFAULT)
+set(CPACK_DEBIAN_DEV_FILE_NAME DEB-DEFAULT)
+set(CPACK_DEBIAN_TESTCLIENT_FILE_NAME DEB-DEFAULT)
+set(CPACK_DEB_COMPONENT_INSTALL ON)
+
+set(CPACK_STRIP_FILES TRUE)
+set(CPACK_GENERATOR "DEB")
+
+include(CPack)
