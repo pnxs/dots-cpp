@@ -11,18 +11,16 @@ namespace dots::type
 {
     struct StaticDescriptorMap
     {
-        template <typename D, std::enable_if_t<std::is_base_of_v<Descriptor<>, D>, int> = 0>
-        static std::shared_ptr<D> Emplace(D&& descriptor)
+        static std::shared_ptr<Descriptor<>> Emplace(std::shared_ptr<Descriptor<>> descriptor)
         {
-            auto descriptor_ = std::make_shared<D>(std::forward<D>(descriptor));
-            auto [it, emplaced] = DescriptorsMutable().try_emplace(descriptor_->name(), descriptor_);
+            auto [it, emplaced] = DescriptorsMutable().try_emplace(descriptor->name(), descriptor);
 
             if (!emplaced)
             {
-                throw std::logic_error{ "there already is a static descriptor with name: " + descriptor_->name() };
+                throw std::logic_error{ "there already is a static descriptor with name: " + descriptor->name() };
             }
 
-            return descriptor_;
+            return descriptor;
         }
 
         static std::shared_ptr<Descriptor<>> Find(const std::string_view& name)
@@ -326,7 +324,19 @@ namespace dots::type
         {
             if constexpr (std::is_default_constructible_v<Descriptor<T>>)
             {
-                return InstanceUnchecked();
+                if constexpr (std::is_default_constructible_v<Descriptor<T>>)
+                {
+                    if (M_descriptor == nullptr)
+                    {
+                        M_descriptor = std::static_pointer_cast<Descriptor<T>>(StaticDescriptorMap::Emplace(std::make_shared<Descriptor<T>>()));
+                    }
+
+                    return M_descriptor;
+                }
+                else
+                {
+                    return nullptr;
+                }
             }
             else
             {
@@ -359,23 +369,9 @@ namespace dots::type
         template <typename U>
         static constexpr bool is_istreamable_v = is_istreamable_t<U>::value;
 
-        static const std::shared_ptr<Descriptor<T>>& InstanceUnchecked()
-        {
-            static std::shared_ptr<Descriptor<T>> Instance_ = []()
-            {
-                if constexpr (std::is_default_constructible_v<Descriptor<T>>)
-                {
-                    return StaticDescriptorMap::Emplace(Descriptor<T>{});
-                }
-                else
-                {
-                    return nullptr;
-                }
-            }();
+        inline static std::shared_ptr<Descriptor<T>> M_descriptor;
 
-            return Instance_;
-        }
-
-        inline static const std::shared_ptr<Descriptor<T>>& M_descriptor = InstanceUnchecked();
+        // initialize a reference to the descriptor to ensure that it is always added to the static descriptor map 
+        inline static const std::shared_ptr<Descriptor<T>>& M_descriptorRef = InstancePtr();
     };
 }
