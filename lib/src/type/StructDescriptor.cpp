@@ -40,6 +40,8 @@ namespace dots::type
     Struct& StructDescriptor<Typeless, void>::construct(Struct& instance) const
     {
         ::new(static_cast<void*>(::std::addressof(instance))) Struct{ *this };
+        ::new(static_cast<void*>(::std::addressof(propertyArea(instance)))) PropertyArea{};
+
         return instance;
     }
 
@@ -51,10 +53,11 @@ namespace dots::type
     Struct& StructDescriptor<Typeless, void>::construct(Struct& instance, const Struct& other) const
     {
         ::new(static_cast<void*>(::std::addressof(instance))) Struct{ other };
+        ::new(static_cast<void*>(::std::addressof(propertyArea(instance)))) PropertyArea{};
 
-        for (auto& property : instance._propertyRange())
+        for (auto&[propertyInstance, propertyOther] : instance._propertyRange(other))
         {
-            property.construct(property);
+            propertyInstance.construct(propertyOther);
         }
 
         return instance;
@@ -68,10 +71,11 @@ namespace dots::type
     Struct& StructDescriptor<Typeless, void>::construct(Struct& instance, Struct&& other) const
     {
         ::new(static_cast<void*>(::std::addressof(instance))) Struct{ std::move(other) };
+        ::new(static_cast<void*>(::std::addressof(propertyArea(instance)))) PropertyArea{};
 
-        for (auto& property : instance._propertyRange())
+        for (auto&[propertyInstance, propertyOther] : instance._propertyRange(other))
         {
-            property.construct(std::move(property));
+            propertyInstance.construct(std::move(propertyOther));
         }
 
         return instance;
@@ -169,6 +173,155 @@ namespace dots::type
         {
             return 0;
         }
+    }
+
+    Struct& StructDescriptor<Typeless, void>::assign(Struct& instance, const Struct& other, const PropertySet& includedProperties) const
+    {
+        PropertySet assignProperties = other._validProperties() ^ includedProperties;
+
+        for (auto&[propertyThis, propertyOther] : instance._propertyRange(other))
+        {
+            if (propertyThis.isPartOf(assignProperties))
+            {
+                propertyThis.constructOrAssign(propertyOther);
+            }
+            else
+            {
+                propertyThis.destroy();
+            }
+        }
+
+        return instance;
+    }
+
+    Struct& StructDescriptor<Typeless, void>::copy(Struct& instance, const Struct& other, const PropertySet& includedProperties) const
+    {
+        PropertySet copyProperties = (instance._validProperties() + other._validProperties()) ^ includedProperties;
+
+        for (auto&[propertyThis, propertyOther] : instance._propertyRange(other, copyProperties))
+        {
+            if (propertyOther.isValid())
+            {
+                propertyThis.constructOrAssign(propertyOther);
+            }
+            else
+            {
+                propertyThis.destroy();
+            }
+        }
+
+        return instance;
+    }
+
+    Struct& StructDescriptor<Typeless, void>::merge(Struct& instance, const Struct& other, const PropertySet& includedProperties) const
+    {
+        PropertySet mergeProperties = other._validProperties() ^ includedProperties;
+
+        for (auto& [propertyThis, propertyOther] : instance._propertyRange(other, mergeProperties))
+        {
+            if (propertyThis.descriptor().valueDescriptor().type() == Type::Struct)
+            {
+                propertyThis.constructOrValue().to<Struct>()._merge(propertyOther->to<Struct>());
+            }
+            else
+            {
+                propertyThis.constructOrAssign(propertyOther);
+            }
+        }
+
+        return instance;
+    }
+
+    void StructDescriptor<Typeless, void>::swap(Struct& instance, Struct& other, const PropertySet& includedProperties) const
+    {
+        for (auto&[propertyThis, propertyOther] : instance._propertyRange(other, includedProperties))
+        {
+            propertyThis.swap(propertyOther);
+        }
+    }
+
+    void StructDescriptor<Typeless, void>::clear(Struct& instance, const PropertySet& includedProperties) const
+    {
+        for (auto& property : instance._propertyRange(includedProperties))
+        {
+            property.destroy();
+        }
+    }
+
+    bool StructDescriptor<Typeless, void>::equal(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const
+    {
+        for (const auto&[propertyThis, propertyOther] : lhs._propertyRange(rhs, includedProperties))
+        {
+            if (propertyThis != propertyOther)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    bool StructDescriptor<Typeless, void>::same(const Struct& lhs, const Struct& rhs) const
+    {
+        return lhs._equal(rhs, lhs._keyProperties());
+    }
+
+    bool StructDescriptor<Typeless, void>::less(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const
+    {
+        if (includedProperties.empty())
+        {
+            return false;
+        }
+        else
+        {
+            for (const auto&[propertyThis, propertyOther] : lhs._propertyRange(rhs, includedProperties))
+            {
+                if (propertyThis < propertyOther)
+                {
+                    return true;
+                }
+                else if (propertyThis > propertyOther)
+                {
+                    return false;
+                }
+            }
+
+            return false;
+        }
+    }
+
+    bool StructDescriptor<Typeless, void>::lessEqual(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const
+    {
+        return !lhs._greater(rhs, includedProperties);
+    }
+
+    bool StructDescriptor<Typeless, void>::greater(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const
+    {
+        return rhs._less(lhs, includedProperties);
+    }
+
+    bool StructDescriptor<Typeless, void>::greaterEqual(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const
+    {
+        return !lhs._less(rhs, includedProperties);
+    }
+
+    PropertySet StructDescriptor<Typeless, void>::diffProperties(const Struct& instance, const Struct& other, const PropertySet& includedProperties) const
+    {
+        PropertySet symmetricDiff = instance._validProperties().symmetricDifference(other._validProperties()) ^ includedProperties;
+        PropertySet intersection = instance._validProperties() ^ other._validProperties() ^ includedProperties;
+
+        if (!intersection.empty())
+        {
+            for (const auto&[propertyThis, propertyOther] : instance._propertyRange(other, intersection))
+            {
+                if (propertyThis != propertyOther)
+                {
+                    symmetricDiff += propertyThis.descriptor().set();
+                }
+            }
+        }
+
+        return symmetricDiff;
     }
 
     uint8_t StructDescriptor<Typeless, void>::flags() const
