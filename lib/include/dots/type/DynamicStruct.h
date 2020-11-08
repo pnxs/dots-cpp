@@ -50,6 +50,8 @@ namespace dots::type
         template <typename T>
         using property_i = DynamicPropertyInitializer<T>;
 
+        static constexpr bool _UseStaticDescriptorOperations = false;
+
         DynamicStruct(const Descriptor<DynamicStruct>& descriptor);
         DynamicStruct(const Descriptor<DynamicStruct>& descriptor, PropertyArea* propertyArea);
 
@@ -81,6 +83,22 @@ namespace dots::type
         bool operator > (const DynamicStruct& rhs) const;
         bool operator >= (const DynamicStruct& rhs) const;
 
+        using Struct::_assign;
+        using Struct::_copy;
+        using Struct::_merge;
+        using Struct::_swap;
+        using Struct::_clear;
+
+        using Struct::_equal;
+        using Struct::_same;
+
+        using Struct::_less;
+        using Struct::_lessEqual;
+        using Struct::_greater;
+        using Struct::_greaterEqual;
+
+        using Struct::_diffProperties;
+
         DynamicStruct& _assign(const DynamicStruct& other, const PropertySet& includedProperties = PropertySet::All);
         DynamicStruct& _assign(DynamicStruct&& other, const PropertySet& includedProperties = PropertySet::All);
         DynamicStruct& _copy(const DynamicStruct& other, const PropertySet& includedProperties = PropertySet::All);
@@ -107,22 +125,6 @@ namespace dots::type
         using strip_t = std::remove_pointer_t<std::decay_t<T>>;
 
         using pointer_t = std::variant<PropertyArea*, std::unique_ptr<PropertyArea>>;
-
-        using Struct::_assign;
-        using Struct::_copy;
-        using Struct::_merge;
-        using Struct::_swap;
-        using Struct::_clear;
-
-        using Struct::_equal;
-        using Struct::_same;
-
-        using Struct::_less;
-        using Struct::_lessEqual;
-        using Struct::_greater;
-        using Struct::_greaterEqual;
-
-        using Struct::_diffProperties;
 
         using Struct::_propertyArea;
 
