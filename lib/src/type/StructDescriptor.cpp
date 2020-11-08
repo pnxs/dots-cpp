@@ -103,7 +103,7 @@ namespace dots::type
 
     Typeless& StructDescriptor<Typeless, false, void>::assign(Typeless& lhs, Typeless&& rhs) const
     {
-        return Typeless::From(assign(lhs.to<Struct>(), rhs.to<Struct>(), PropertySet::All));
+        return Typeless::From(assign(lhs.to<Struct>(), std::move(rhs).to<Struct>(), PropertySet::All));
     }
 
     void StructDescriptor<Typeless, false, void>::swap(Typeless& value, Typeless& other) const
@@ -184,6 +184,25 @@ namespace dots::type
             if (propertyThis.isPartOf(assignProperties))
             {
                 propertyThis.constructOrAssign(propertyOther);
+            }
+            else
+            {
+                propertyThis.destroy();
+            }
+        }
+
+        return instance;
+    }
+
+    Struct& StructDescriptor<Typeless, false, void>::assign(Struct& instance, Struct&& other, const PropertySet& includedProperties) const
+    {
+        PropertySet assignProperties = other._validProperties() ^ includedProperties;
+
+        for (auto&[propertyThis, propertyOther] : instance._propertyRange(other))
+        {
+            if (propertyThis.isPartOf(assignProperties))
+            {
+                propertyThis.constructOrAssign(std::move(propertyOther));
             }
             else
             {

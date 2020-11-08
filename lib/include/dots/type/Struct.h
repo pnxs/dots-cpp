@@ -28,6 +28,7 @@ namespace dots::type
         const PropertySet& _keyProperties() const;
 
         Struct& _assign(const Struct& other, const PropertySet& includedProperties = PropertySet::All);
+        Struct& _assign(Struct&& other, const PropertySet& includedProperties = PropertySet::All);
         Struct& _copy(const Struct& other, const PropertySet& includedProperties = PropertySet::All);
         Struct& _merge(const Struct& other, const PropertySet& includedProperties = PropertySet::All);
         void _swap(Struct& other, const PropertySet& includedProperties = PropertySet::All);

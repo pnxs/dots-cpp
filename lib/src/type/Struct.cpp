@@ -45,6 +45,11 @@ namespace dots::type
         return _desc->assign(*this, other, includedProperties);
     }
 
+    Struct& Struct::_assign(Struct&& other, const PropertySet& includedProperties)
+    {
+        return _desc->assign(*this, std::move(other), includedProperties);
+    }
+
     Struct& Struct::_copy(const Struct& other, const PropertySet& includedProperties/* = PropertySet:All*/)
     {
         return _desc->copy(*this, other, includedProperties);

@@ -136,6 +136,29 @@ namespace dots::type
             return static_cast<Derived&>(*this);
         }
 
+        Derived& _assign(Derived&& other, const PropertySet& includedProperties = PropertySet::All)
+        {
+            _applyPropertyPairs(other, [&](const auto&... propertyPairs)
+            {
+                auto assign = [&](auto& propertyThis, auto& propertyOther)
+                {
+                    if (strip_t<decltype(propertyThis)>::IsPartOf(includedProperties))
+                    {
+                        propertyThis = std::move(propertyOther);
+                    }
+                    else
+                    {
+                        propertyThis.destroy();
+                    }
+                };
+                (void)assign;
+
+                (assign(propertyPairs.first, propertyPairs.second), ...);
+            });
+
+            return static_cast<Derived&>(*this);
+        }
+
         Derived& _copy(const Derived& other, const PropertySet& includedProperties = PropertySet::All)
         {
             _applyPropertyPairs(other, [&](const auto&... propertyPairs)

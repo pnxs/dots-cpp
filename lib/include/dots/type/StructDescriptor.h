@@ -64,6 +64,7 @@ namespace dots::type
         size_t dynamicMemoryUsage(const Struct& instance) const;
 
         virtual Struct& assign(Struct& instance, const Struct& other, const PropertySet& includedProperties) const;
+        virtual Struct& assign(Struct& instance, Struct&& other, const PropertySet& includedProperties) const;
         virtual Struct& copy(Struct& instance, const Struct& other, const PropertySet& includedProperties) const;
         virtual Struct& merge(Struct& instance, const Struct& other, const PropertySet& includedProperties) const;
         virtual void swap(Struct& instance, Struct& other, const PropertySet& includedProperties) const;
@@ -177,6 +178,11 @@ namespace dots::type
             return instance._assign(other, includedProperties);
         }
 
+        static T& assign(T& instance, T&& other, const PropertySet& includedProperties)
+        {
+            return instance._assign(std::move(other), includedProperties);
+        }
+
         static T& copy(T& instance, const T& other, const PropertySet& includedProperties)
         {
             return instance._copy(other, includedProperties);
@@ -281,6 +287,11 @@ namespace dots::type
         Struct& assign(Struct& instance, const Struct& other, const PropertySet& includedProperties) const override
         {
             return assign(static_cast<T&>(instance), static_cast<const T&>(other), includedProperties);
+        }
+
+        Struct& assign(Struct& instance, Struct&& other, const PropertySet& includedProperties) const override
+        {
+            return assign(static_cast<T&>(instance), static_cast<T&&>(other), includedProperties);
         }
 
         Struct& copy(Struct& instance, const Struct& other, const PropertySet& includedProperties) const override
