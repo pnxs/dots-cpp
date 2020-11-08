@@ -149,7 +149,7 @@ namespace dots::type
         Descriptor& operator = (const Descriptor& rhs) = default;
         Descriptor& operator = (Descriptor&& rhs) = default;
 
-        using StaticDescriptor<DynamicStruct, StructDescriptor<>>::construct;
+        using StructDescriptor<DynamicStruct>::construct;
 
         Typeless& construct(Typeless& value) const override
         {

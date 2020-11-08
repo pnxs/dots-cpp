@@ -14,7 +14,7 @@ namespace dots::type
 {
     struct Struct;
 
-    template <typename T = Typeless, typename = void>
+    template <typename T = Typeless, bool = details::use_static_descriptor_operations_v<T>, typename = void>
     struct StructDescriptor;
 
     template <>
@@ -133,7 +133,7 @@ namespace dots::type
     };
 
     template <typename T>
-    struct StructDescriptor<T> : StaticDescriptor<T, StructDescriptor<Typeless>>
+    struct StructDescriptor<T, false> : StaticDescriptor<T, StructDescriptor<Typeless>>
     {
         static_assert(std::is_base_of_v<Struct, T>);
 
@@ -161,150 +161,6 @@ namespace dots::type
         using StaticDescriptor<T, StructDescriptor<Typeless>>::lessEqual;
         using StaticDescriptor<T, StructDescriptor<Typeless>>::greater;
         using StaticDescriptor<T, StructDescriptor<Typeless>>::greaterEqual;
-
-        Struct& assign(Struct& instance, const Struct& other, const PropertySet& includedProperties) const override
-        {
-            if constexpr (UseStaticDescriptorOperations)
-            {
-                return StructDescriptor::assign(static_cast<T&>(instance), static_cast<const T&>(other), includedProperties);
-            }
-            else
-            {
-                return StructDescriptor<Typeless>::assign(instance, other, includedProperties);
-            }
-        }
-
-        Struct& copy(Struct& instance, const Struct& other, const PropertySet& includedProperties) const override
-        {
-            if constexpr (UseStaticDescriptorOperations)
-            {
-                return StructDescriptor::copy(static_cast<T&>(instance), static_cast<const T&>(other), includedProperties);
-            }
-            else
-            {
-                return StructDescriptor<Typeless>::copy(instance, other, includedProperties);
-            }
-        }
-
-        Struct& merge(Struct& instance, const Struct& other, const PropertySet& includedProperties) const override
-        {
-            if constexpr (UseStaticDescriptorOperations)
-            {
-                return StructDescriptor::merge(static_cast<T&>(instance), static_cast<const T&>(other), includedProperties);
-            }
-            else
-            {
-                return StructDescriptor<Typeless>::merge(instance, other, includedProperties);
-            }
-        }
-
-        void swap(Struct& instance, Struct& other, const PropertySet& includedProperties) const override
-        {
-            if constexpr (UseStaticDescriptorOperations)
-            {
-                StructDescriptor::swap(static_cast<T&>(instance), static_cast<T&>(other), includedProperties);
-            }
-            else
-            {
-                StructDescriptor<Typeless>::swap(instance, other, includedProperties);
-            }
-        }
-
-        void clear(Struct& instance, const PropertySet& includedProperties) const override
-        {
-            if constexpr (UseStaticDescriptorOperations)
-            {
-                StructDescriptor::clear(static_cast<T&>(instance), includedProperties);
-            }
-            else
-            {
-                StructDescriptor<Typeless>::clear(instance, includedProperties);
-            }
-        }
-
-        bool equal(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const override
-        {
-            if constexpr (UseStaticDescriptorOperations)
-            {
-                return StructDescriptor::equal(static_cast<const T&>(lhs), static_cast<const T&>(rhs), includedProperties);
-            }
-            else
-            {
-                return StructDescriptor<Typeless>::equal(lhs, rhs, includedProperties);
-            }
-        }
-
-        bool same(const Struct& lhs, const Struct& rhs) const override
-        {
-            if constexpr (UseStaticDescriptorOperations)
-            {
-                return StructDescriptor::same(static_cast<const T&>(lhs), static_cast<const T&>(rhs));
-            }
-            else
-            {
-                return StructDescriptor<Typeless>::same(lhs, rhs);
-            }
-        }
-
-        bool less(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const override
-        {
-            if constexpr (UseStaticDescriptorOperations)
-            {
-                return StructDescriptor::less(static_cast<const T&>(lhs), static_cast<const T&>(rhs), includedProperties);
-            }
-            else
-            {
-                return StructDescriptor<Typeless>::less(lhs, rhs, includedProperties);
-            }
-        }
-
-        bool lessEqual(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const override
-        {
-            if constexpr (UseStaticDescriptorOperations)
-            {
-                return StructDescriptor::lessEqual(static_cast<const T&>(lhs), static_cast<const T&>(rhs), includedProperties);
-            }
-            else
-            {
-                return StructDescriptor<Typeless>::lessEqual(lhs, rhs, includedProperties);
-            }
-        }
-
-        bool greater(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const override
-        {
-            if constexpr (UseStaticDescriptorOperations)
-            {
-                return StructDescriptor::greater(static_cast<const T&>(lhs), static_cast<const T&>(rhs), includedProperties);
-            }
-            else
-            {
-                return StructDescriptor<Typeless>::greater(lhs, rhs, includedProperties);
-            }
-        }
-
-        bool greaterEqual(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const override
-        {
-            if constexpr (UseStaticDescriptorOperations)
-            {
-                return StructDescriptor::greaterEqual(static_cast<const T&>(lhs), static_cast<const T&>(rhs), includedProperties);
-            }
-            else
-            {
-                return StructDescriptor<Typeless>::greaterEqual(lhs, rhs, includedProperties);
-            }
-        }
-
-        PropertySet diffProperties(const Struct& instance, const Struct& other, const PropertySet& includedProperties) const override
-        {
-            if constexpr (UseStaticDescriptorOperations)
-            {
-                return StructDescriptor::diffProperties(static_cast<const T&>(instance), static_cast<const T&>(other), includedProperties);
-            }
-            else
-            {
-                return StructDescriptor<Typeless>::diffProperties(instance, other, includedProperties);
-            }
-        }
 
         const PropertyArea& propertyArea(const Struct& instance) const override
         {
@@ -385,10 +241,102 @@ namespace dots::type
         {
             return instance._propertyArea();
         }
+    };
 
-    private:
+    template <typename T>
+    struct StructDescriptor<T, true> : StructDescriptor<T, false>
+    {
+        static_assert(std::is_base_of_v<Struct, T>);
 
-        static constexpr bool UseStaticDescriptorOperations = StaticDescriptor<T, StructDescriptor<Typeless>>::UseStaticDescriptorOperations;
+        StructDescriptor(std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptor) :
+            StructDescriptor<T, false>(std::move(name), flags, propertyDescriptor, sizeof(const StructDescriptor<>*), sizeof(T), alignof(T))
+        {
+            /* do nothing */
+        }
+        StructDescriptor(std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptor, size_t areaOffset, size_t size, size_t alignment) :
+            StructDescriptor<T, false>(std::move(name), flags, propertyDescriptor, areaOffset, size, alignment)
+        {
+            /* do nothing */
+        }
+        StructDescriptor(const StructDescriptor& other) = default;
+        StructDescriptor(StructDescriptor&& other) = default;
+        ~StructDescriptor() = default;
+
+        StructDescriptor& operator = (const StructDescriptor& rhs) = default;
+        StructDescriptor& operator = (StructDescriptor&& rhs) = default;
+
+        using StructDescriptor<T, false>::assign;
+        using StructDescriptor<T, false>::copy;
+        using StructDescriptor<T, false>::merge;
+        using StructDescriptor<T, false>::swap;
+        using StructDescriptor<T, false>::clear;
+        using StructDescriptor<T, false>::equal;
+        using StructDescriptor<T, false>::same;
+        using StructDescriptor<T, false>::less;
+        using StructDescriptor<T, false>::lessEqual;
+        using StructDescriptor<T, false>::greater;
+        using StructDescriptor<T, false>::greaterEqual;
+        using StructDescriptor<T, false>::diffProperties;
+
+        Struct& assign(Struct& instance, const Struct& other, const PropertySet& includedProperties) const override
+        {
+            return assign(static_cast<T&>(instance), static_cast<const T&>(other), includedProperties);
+        }
+
+        Struct& copy(Struct& instance, const Struct& other, const PropertySet& includedProperties) const override
+        {
+            return copy(static_cast<T&>(instance), static_cast<const T&>(other), includedProperties);
+        }
+
+        Struct& merge(Struct& instance, const Struct& other, const PropertySet& includedProperties) const override
+        {
+            return merge(static_cast<T&>(instance), static_cast<const T&>(other), includedProperties);
+        }
+
+        void swap(Struct& instance, Struct& other, const PropertySet& includedProperties) const override
+        {
+            swap(static_cast<T&>(instance), static_cast<T&>(other), includedProperties);
+        }
+
+        void clear(Struct& instance, const PropertySet& includedProperties) const override
+        {
+            clear(static_cast<T&>(instance), includedProperties);
+        }
+
+        bool equal(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const override
+        {
+            return equal(static_cast<const T&>(lhs), static_cast<const T&>(rhs), includedProperties);
+        }
+
+        bool same(const Struct& lhs, const Struct& rhs) const override
+        {
+            return same(static_cast<const T&>(lhs), static_cast<const T&>(rhs));
+        }
+
+        bool less(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const override
+        {
+            return less(static_cast<const T&>(lhs), static_cast<const T&>(rhs), includedProperties);
+        }
+
+        bool lessEqual(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const override
+        {
+            return lessEqual(static_cast<const T&>(lhs), static_cast<const T&>(rhs), includedProperties);
+        }
+
+        bool greater(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const override
+        {
+            return greater(static_cast<const T&>(lhs), static_cast<const T&>(rhs), includedProperties);
+        }
+
+        bool greaterEqual(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const override
+        {
+            return greaterEqual(static_cast<const T&>(lhs), static_cast<const T&>(rhs), includedProperties);
+        }
+
+        PropertySet diffProperties(const Struct& instance, const Struct& other, const PropertySet& includedProperties) const override
+        {
+            return diffProperties(static_cast<const T&>(instance), static_cast<const T&>(other), includedProperties);
+        }
     };
 
     [[deprecated("only available for backwards compatibility")]]
