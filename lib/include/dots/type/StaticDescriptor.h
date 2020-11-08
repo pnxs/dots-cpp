@@ -11,17 +11,7 @@ namespace dots::type
 {
     struct StaticDescriptorMap
     {
-        static std::shared_ptr<Descriptor<>> Emplace(std::shared_ptr<Descriptor<>> descriptor)
-        {
-            auto [it, emplaced] = DescriptorsMutable().try_emplace(descriptor->name(), descriptor);
-
-            if (!emplaced)
-            {
-                throw std::logic_error{ "there already is a static descriptor with name: " + descriptor->name() };
-            }
-
-            return descriptor;
-        }
+        static std::shared_ptr<Descriptor<>> Emplace(std::shared_ptr<Descriptor<>> descriptor);
 
         static std::shared_ptr<Descriptor<>> Find(const std::string_view& name)
         {
