@@ -10,19 +10,42 @@ namespace dots::io
     TcpChannel::TcpChannel(Channel::key_t key, boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port) :
         TcpChannel(key, boost::asio::ip::tcp::socket{ ioContext })
     {
-        boost::asio::ip::tcp::resolver resolver{ m_socket.get_executor() };
-        auto endpoints = resolver.resolve(boost::asio::ip::tcp::socket::protocol_type::v4(), host, port, boost::asio::ip::resolver_query_base::numeric_service);
+#if 0
+        bool finished = false;
+        std::optional<boost::asio::ip::tcp::endpoint> endpoint;
+
+        asyncResolveEndpoint(host, port, [&, host, port](auto& /*error*/, auto resolved_endpoint) {
+            endpoint = resolved_endpoint;
+            finished = true;
+        });
+
+        while(not finished) {
+            ioContext.run_one();
+        }
+
+        try
+        {
+            std::cout << "Connect to " << *endpoint << std::endl;
+            m_socket.connect(*endpoint);
+            setDefaultSocketOptions();
+            m_medium.emplace(TcpSocketCategory, m_socket.remote_endpoint().address().to_string());
+
+            return;
+        }
+        catch (const std::exception &/* e*/)
+        {
+            /* do nothing */
+        }
+        throw std::runtime_error{ "could not open TCP connection: " + std::string{ host } + ":" + std::string{ port } };
+#else
+        auto endpoints = m_resolver.resolve(boost::asio::ip::tcp::socket::protocol_type::v4(), host, port, boost::asio::ip::resolver_query_base::numeric_service);
 
         for (const boost::asio::ip::tcp::endpoint& endpoint: endpoints)
         {
             try
             {
                 m_socket.connect(endpoint);
-
-                m_socket.set_option(boost::asio::ip::tcp::no_delay(true));
-                m_socket.set_option(boost::asio::ip::tcp::socket::keep_alive(true));
-                m_socket.set_option(boost::asio::socket_base::linger(true, 10));
-
+                setDefaultSocketOptions();
                 m_medium.emplace(TcpSocketCategory, m_socket.remote_endpoint().address().to_string());
 
                 return;
@@ -34,11 +57,38 @@ namespace dots::io
         }
 
         throw std::runtime_error{ "could not open TCP connection: " + std::string{ host } + ":" + std::string{ port } };
+#endif
+    }
+
+    TcpChannel::TcpChannel(Channel::key_t key, boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port, std::function<void(const boost::system::error_code& error)> onConnect) :
+        TcpChannel(key, boost::asio::ip::tcp::socket{ ioContext })
+    {
+        asyncResolveEndpoint(host, port, [this, host, port, onConnect](auto& error, auto endpoint) {
+            if (error)
+            {
+                onConnect(error);
+            }
+
+            m_socket.async_connect(*endpoint, [this, endpoint, onConnect, host, port](const boost::system::error_code& error) {
+                if (error)
+                {
+                    onConnect(error);
+                    //throw std::runtime_error{ "could not open TCP connection: " + std::string{ host } + ":" + std::string{ port } };
+                }
+                else
+                {
+                    setDefaultSocketOptions();
+                    m_medium.emplace(TcpSocketCategory, m_socket.remote_endpoint().address().to_string());
+                    onConnect(error);
+                }
+            });
+        });
     }
 
     TcpChannel::TcpChannel(Channel::key_t key, boost::asio::ip::tcp::socket&& socket) :
         Channel(key),
         m_socket{ std::move(socket) },
+        m_resolver( socket.get_executor()),
         m_headerSize(0)
     {
         m_instanceBuffer.resize(8192);
@@ -48,6 +98,39 @@ namespace dots::io
         {
             m_medium.emplace(TcpSocketCategory, m_socket.remote_endpoint().address().to_string());
         }
+    }
+
+    void TcpChannel::asyncResolveEndpoint(const std::string_view& host, const std::string_view& port, std::function<void(const boost::system::error_code& error, std::optional<boost::asio::ip::tcp::endpoint>)> cb)
+    {
+        m_resolver.async_resolve(host, port, boost::asio::ip::resolver_query_base::numeric_service, [port, cb](const boost::system::error_code& error, auto iter) {
+            if (error)
+            {
+                cb(error, {});
+                return;
+            }
+
+            decltype(iter) iterEnd;
+
+            for (; iter != iterEnd; ++iter)
+            {
+                const auto& address = iter->endpoint().address();
+
+                if (address.is_v4() or address.is_v6())
+                {
+                    cb(error, iter->endpoint());
+                    return;
+                }
+            }
+
+            cb(boost::system::error_code(boost::system::errc::io_error, boost::system::generic_category()), {});
+        });
+    }
+
+    void TcpChannel::setDefaultSocketOptions()
+    {
+        m_socket.set_option(boost::asio::ip::tcp::no_delay(true));
+        m_socket.set_option(boost::asio::ip::tcp::socket::keep_alive(true));
+        m_socket.set_option(boost::asio::socket_base::linger(true, 10));
     }
 
     const Medium& TcpChannel::medium() const
