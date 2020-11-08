@@ -58,20 +58,28 @@ namespace dots::io
 
     void GuestTransceiver::joinGroup(const std::string_view& name)
     {
-        LOG_DEBUG_S("send DotsMember (join " << name << ")");
-        publish(DotsMember{
-            DotsMember::groupName_i{ name },
-            DotsMember::event_i{ DotsMemberEvent::join }
-        });
+        if (m_joinedGroups.count(std::string(name)) == 0)
+        {
+            LOG_DEBUG_S("send DotsMember (join " << name << ")");
+            publish(DotsMember{
+                DotsMember::groupName_i{name},
+                DotsMember::event_i{DotsMemberEvent::join}
+            });
+            m_joinedGroups.insert(std::string(name));
+        }
     }
 
     void GuestTransceiver::leaveGroup(const std::string_view& name)
     {
-        LOG_DEBUG_S("send DotsMember (leave " << name << ")");
-        publish(DotsMember{
-            DotsMember::groupName_i{ name },
-            DotsMember::event_i{ DotsMemberEvent::leave }
-        });
+        if (m_joinedGroups.count(std::string(name)))
+        {
+            LOG_DEBUG_S("send DotsMember (leave " << name << ")");
+            publish(DotsMember{
+                DotsMember::groupName_i{name},
+                DotsMember::event_i{DotsMemberEvent::leave}
+            });
+            m_joinedGroups.erase(std::string(name));
+        }
     }
 
     bool GuestTransceiver::handleTransmission(io::Connection&/* connection*/, Transmission transmission)
