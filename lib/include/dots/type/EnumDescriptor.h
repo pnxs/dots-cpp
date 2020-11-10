@@ -96,7 +96,7 @@ namespace dots::type
         enum_t m_value;
     };
 
-    template <typename E = Typeless, typename = void>
+    template <typename E = Typeless, bool UseStaticDescriptorOperations = false, typename = void>
     struct EnumDescriptor;
 
     template <>
@@ -111,6 +111,86 @@ namespace dots::type
 
         EnumDescriptor& operator = (const EnumDescriptor& rhs) = default;
         EnumDescriptor& operator = (EnumDescriptor&& rhs) = default;
+
+        Typeless& construct(Typeless& value) const override
+        {
+            return underlyingDescriptor().construct(value);
+        }
+
+        Typeless& construct(Typeless& value, const Typeless& other) const override
+        {
+            return underlyingDescriptor().construct(value, other);
+        }
+
+        Typeless& construct(Typeless& value, Typeless&& other) const override
+        {
+            return underlyingDescriptor().construct(value, std::move(other));
+        }
+
+        void destruct(Typeless& value) const override
+        {
+            underlyingDescriptor().destruct(value);
+        }
+
+        Typeless& assign(Typeless& lhs, const Typeless& rhs) const override
+        {
+            return underlyingDescriptor().assign(lhs, rhs);
+        }
+
+        Typeless& assign(Typeless& lhs, Typeless&& rhs) const override
+        {
+            return underlyingDescriptor().assign(lhs, std::move(rhs));
+        }
+
+        void swap(Typeless& value, Typeless& other) const override
+        {
+            underlyingDescriptor().swap(value, other);
+        }
+
+        bool equal(const Typeless& lhs, const Typeless& rhs) const override
+        {
+            return underlyingDescriptor().equal(lhs, rhs);
+        }
+
+        bool less(const Typeless& lhs, const Typeless& rhs) const override
+        {
+            return underlyingDescriptor().less(lhs, rhs);
+        }
+
+        bool lessEqual(const Typeless& lhs, const Typeless& rhs) const override
+        {
+            return underlyingDescriptor().lessEqual(lhs, rhs);
+        }
+
+        bool greater(const Typeless& lhs, const Typeless& rhs) const override
+        {
+            return underlyingDescriptor().greater(lhs, rhs);
+        }
+
+        bool greaterEqual(const Typeless& lhs, const Typeless& rhs) const override
+        {
+            return underlyingDescriptor().greaterEqual(lhs, rhs);
+        }
+
+        size_t dynamicMemoryUsage(const Typeless& value) const override
+        {
+            return underlyingDescriptor().dynamicMemoryUsage(value);
+        }
+
+        bool usesDynamicMemory() const override
+        {
+            return underlyingDescriptor().usesDynamicMemory();
+        }
+
+        void fromString(Typeless& storage, const std::string_view& value) const override
+        {
+            underlyingDescriptor().fromString(storage, value);
+        }
+
+        std::string toString(const Typeless& value) const override
+        {
+            return underlyingDescriptor().toString(value);
+        }
 
         virtual std::shared_ptr<Descriptor<>> underlyingDescriptorPtr() const = 0;
         virtual const Descriptor<Typeless>& underlyingDescriptor() const = 0;
@@ -132,14 +212,14 @@ namespace dots::type
         mutable const types::EnumDescriptorData* m_descriptorData = nullptr;
     };
 
-    template <typename E>
-    struct EnumDescriptor<E> : StaticDescriptor<E, EnumDescriptor<Typeless>>
+    template <typename E, bool UseStaticDescriptorOperations>
+    struct EnumDescriptor<E, UseStaticDescriptorOperations> : StaticDescriptor<E, EnumDescriptor<Typeless>, UseStaticDescriptorOperations>
     {
         using enum_t = E;
         using underlying_type_t = details::underlying_type_t<E>;
 
         EnumDescriptor(std::string name, std::vector<EnumeratorDescriptor<E>> enumeratorDescriptors) :
-            StaticDescriptor<E, EnumDescriptor<Typeless>>(std::move(name), underlyingDescriptor()),
+            StaticDescriptor<E, EnumDescriptor<Typeless>, UseStaticDescriptorOperations>(std::move(name), underlyingDescriptor()),
             m_enumerators{ std::move(enumeratorDescriptors) }
         {
             for (EnumeratorDescriptor<>& enumerator : m_enumerators)

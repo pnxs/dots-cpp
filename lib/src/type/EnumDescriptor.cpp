@@ -20,13 +20,13 @@ namespace dots::type
         return m_name;
     }
 
-    EnumDescriptor<Typeless, void>::EnumDescriptor(std::string name, const Descriptor<Typeless>& underlyingDescriptor):
+    EnumDescriptor<Typeless, false, void>::EnumDescriptor(std::string name, const Descriptor<Typeless>& underlyingDescriptor):
         Descriptor<Typeless>(Type::Enum, std::move(name), underlyingDescriptor.size(), underlyingDescriptor.alignment())
     {
         /* do nothing */
     }
 
-    const types::EnumDescriptorData& EnumDescriptor<Typeless, void>::descriptorData() const
+    const types::EnumDescriptorData& EnumDescriptor<Typeless, false, void>::descriptorData() const
     {
         if (m_descriptorData == nullptr)
         {
@@ -36,7 +36,7 @@ namespace dots::type
         return *m_descriptorData;
     }
 
-    const EnumDescriptor<>* EnumDescriptor<Typeless, void>::createFromEnumDescriptorData(const types::EnumDescriptorData& sd)
+    const EnumDescriptor<>* EnumDescriptor<Typeless, false, void>::createFromEnumDescriptorData(const types::EnumDescriptorData& sd)
     {
         return io::DescriptorConverter{}(sd).get();
     }
