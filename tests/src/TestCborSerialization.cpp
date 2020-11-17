@@ -6,7 +6,6 @@
 #include "DotsTestVectorStruct.dots.h"
 #include "EnumDescriptorData.dots.h"
 #include "dots/io/Registry.h"
-#include <dots/dots.h>
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 

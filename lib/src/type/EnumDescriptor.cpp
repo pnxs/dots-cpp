@@ -1,5 +1,6 @@
 #include <dots/type/EnumDescriptor.h>
 #include <dots/io/DescriptorConverter.h>
+#include <dots/dots.h>
 
 namespace dots::type
 {
@@ -30,7 +31,7 @@ namespace dots::type
     {
         if (m_descriptorData == nullptr)
         {
-            m_descriptorData = new types::EnumDescriptorData{ io::DescriptorConverter{}(*this) };
+            m_descriptorData = new types::EnumDescriptorData{ io::DescriptorConverter{ dots::transceiver().registry() }(*this) };
         }
 
         return *m_descriptorData;
@@ -38,6 +39,6 @@ namespace dots::type
 
     const EnumDescriptor<>* EnumDescriptor<Typeless, false, void>::createFromEnumDescriptorData(const types::EnumDescriptorData& sd)
     {
-        return io::DescriptorConverter{}(sd).get();
+        return io::DescriptorConverter{ dots::transceiver().registry() }(sd).get();
     }
 }

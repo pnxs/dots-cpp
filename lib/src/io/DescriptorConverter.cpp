@@ -1,10 +1,9 @@
 #include <dots/io/DescriptorConverter.h>
 #include <dots/type/DynamicStruct.h>
-#include <dots/dots.h>
 
 namespace dots::io
 {
-    DescriptorConverter::DescriptorConverter(Registry& registry/* = transceiver().registry()*/) :
+    DescriptorConverter::DescriptorConverter(Registry& registry) :
         m_registry(std::ref(registry))
     {
         /* do nothing */
