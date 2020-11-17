@@ -24,6 +24,8 @@ namespace dots
     void add_fd_handler(int fileDescriptor, const std::function<void()>& handler);
     void remove_fd_handler(int fileDescriptor);
 
+    #ifndef DOTS_NO_GLOBAL_TRANSCEIVER
+
     Publisher*& publisher();
     GuestTransceiver& transceiver(const std::string_view& name = "dots-transceiver");
 
@@ -80,4 +82,6 @@ namespace dots
 
     [[deprecated("only available for backwards compatibility")]]
     void publish(const type::StructDescriptor<>* td, const type::Struct& instance, types::property_set_t what, bool remove);
+
+    #endif
 }
