@@ -1,5 +1,6 @@
 #include <dots/type/EnumDescriptor.h>
 #include <dots/io/DescriptorConverter.h>
+#undef DOTS_NO_GLOBAL_TRANSCEIVER 
 #include <dots/dots.h>
 
 namespace dots::type

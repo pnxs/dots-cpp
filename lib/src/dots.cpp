@@ -1,3 +1,4 @@
+#undef DOTS_NO_GLOBAL_TRANSCEIVER 
 #include <dots/dots.h>
 #include <dots/io/Io.h>
 #include <dots/io/services/TimerService.h>

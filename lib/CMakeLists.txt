@@ -117,6 +117,8 @@ target_compile_options(${TARGET_NAME}
 target_compile_definitions(${TARGET_NAME}
     PUBLIC
         $<BUILD_INTERFACE:BOOST_ASIO_DISABLE_EPOLL>
+    PRIVATE
+        DOTS_NO_GLOBAL_TRANSCEIVER
 )
 target_link_libraries(${TARGET_NAME}
     PUBLIC

@@ -1,3 +1,4 @@
+#undef DOTS_NO_GLOBAL_TRANSCEIVER 
 #include <dots/Application.h>
 #include <boost/program_options.hpp>
 #include <dots/io/Io.h>
