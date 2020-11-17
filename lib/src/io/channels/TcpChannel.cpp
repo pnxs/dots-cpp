@@ -40,7 +40,7 @@ namespace dots::io
 #else
         auto endpoints = m_resolver.resolve(boost::asio::ip::tcp::socket::protocol_type::v4(), host, port, boost::asio::ip::resolver_query_base::numeric_service);
 
-        for (const boost::asio::ip::tcp::endpoint& endpoint: endpoints)
+        for (const auto& endpoint: endpoints)
         {
             try
             {
