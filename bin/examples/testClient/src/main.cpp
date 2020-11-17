@@ -27,7 +27,7 @@ public:
         DotsTestStruct ts;
 
         ts.indKeyfField(1);
-        ts._publish();
+        dots::publish(ts);
     }
 
 private:
@@ -37,7 +37,7 @@ private:
         DotsTestStruct ts;
         ts.indKeyfField(1);
         ts.floatField(m_value++);
-        ts._publish();
+        dots::publish(ts);
 
         DotsTestVectorStruct tvs;
         auto& intList = tvs.intList();
@@ -51,7 +51,7 @@ private:
         subStruct.flag1(true);
 
         ssList.push_back(subStruct);
-        tvs._publish();
+        dots::publish(tvs);
 
         if (m_value == 1000) {
             dots::Application::instance()->exit();
