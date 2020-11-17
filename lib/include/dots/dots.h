@@ -51,15 +51,15 @@ namespace dots
     template<typename T>
     void publish(const T& instance, const types::property_set_t& includedProperties/* = types::property_set_t::All*/, bool remove/* = false*/)
     {
-        static_assert(!T::_IsSubstructOnly(), "it is not allowed to publish to a struct that is marked with 'substruct_only'!");
+        static_assert(!T::_SubstructOnly, "it is not allowed to publish to a struct that is marked with 'substruct_only'!");
         io::register_global_publish_type<T>();
-        publish(T::_Descriptor(), &instance, includedProperties, remove);
+        publish(instance, includedProperties, remove);
     }
 
     template<typename T>
     void remove(const T& instance)
     {
-        static_assert(!T::_IsSubstructOnly(), "it is not allowed to remove to a struct that is marked with 'substruct_only'!");
+        static_assert(!T::_SubstructOnly, "it is not allowed to remove to a struct that is marked with 'substruct_only'!");
         io::register_global_publish_type<T>();
         remove(instance);
     }
