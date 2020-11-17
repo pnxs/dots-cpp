@@ -10,7 +10,7 @@ namespace dots::io
     TcpChannel::TcpChannel(Channel::key_t key, boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port) :
         TcpChannel(key, boost::asio::ip::tcp::socket{ ioContext })
     {
-#if 0
+#ifdef USE_ASYNC_RESOLVE_IN_SYNC_CONNECT
         bool finished = false;
         std::optional<boost::asio::ip::tcp::endpoint> endpoint;
 
