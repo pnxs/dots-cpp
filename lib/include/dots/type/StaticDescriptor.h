@@ -9,21 +9,21 @@
 
 namespace dots::type
 {
+    namespace details
+    {
+        template<typename U, typename = void>
+        struct use_static_descriptor_operations: std::true_type {};
+        template<typename U>
+        struct use_static_descriptor_operations<U, std::void_t<decltype(U::_UseStaticDescriptorOperations)>> : std::integral_constant<bool, U::_UseStaticDescriptorOperations> {};
+        template <typename U>
+        using use_static_descriptor_operations_t = typename use_static_descriptor_operations<U>::type;
+        template <typename U>
+        static constexpr bool use_static_descriptor_operations_v = use_static_descriptor_operations_t<U>::value;
+    }
+
     struct StaticDescriptorMap
     {
-        template <typename D, std::enable_if_t<std::is_base_of_v<Descriptor<>, D>, int> = 0>
-        static std::shared_ptr<D> Emplace(D&& descriptor)
-        {
-            auto descriptor_ = std::make_shared<D>(std::forward<D>(descriptor));
-            auto [it, emplaced] = DescriptorsMutable().try_emplace(descriptor_->name(), descriptor_);
-
-            if (!emplaced)
-            {
-                throw std::logic_error{ "there already is a static descriptor with name: " + descriptor_->name() };
-            }
-
-            return descriptor_;
-        }
+        static std::shared_ptr<Descriptor<>> Emplace(std::shared_ptr<Descriptor<>> descriptor);
 
         static std::shared_ptr<Descriptor<>> Find(const std::string_view& name)
         {
@@ -45,8 +45,11 @@ namespace dots::type
         }
     };
 
-    template <typename T, typename Base = Descriptor<Typeless>>
-    struct StaticDescriptor : Base
+    template <typename T, typename Base = Descriptor<Typeless>, bool UseStaticDescriptorOperations = details::use_static_descriptor_operations_v<T>, typename = void>
+    struct StaticDescriptor;
+
+    template <typename T, typename Base>
+    struct StaticDescriptor<T, Base, false> : Base
     {
         template <typename Base_ = Base, std::enable_if_t<std::is_same_v<Base_, Descriptor<Typeless>>, int> = 0>
         StaticDescriptor(Type type, std::string name) : Base(type, std::move(name), sizeof(T), alignof(T))
@@ -67,6 +70,8 @@ namespace dots::type
         StaticDescriptor& operator = (const StaticDescriptor& rhs) = default;
         StaticDescriptor& operator = (StaticDescriptor&& rhs) = default;
 
+        using Base::construct;
+        using Base::destruct;
         using Base::assign;
         using Base::swap;
         using Base::equal;
@@ -74,93 +79,9 @@ namespace dots::type
         using Base::lessEqual;
         using Base::greater;
         using Base::greaterEqual;
-
-        Typeless& construct(Typeless& value) const override
-        {
-            if constexpr (std::is_default_constructible_v<T>)
-            {
-                return reinterpret_cast<Typeless&>(StaticDescriptor::construct(reinterpret_cast<T&>(value)));
-            }
-            else
-            {
-                throw std::logic_error{ "construct has to be overridden in sub-class because T is not default constructible" };
-            }
-        }
-
-        Typeless& construct(Typeless& value, const Typeless& other) const override
-        {
-            return reinterpret_cast<Typeless&>(StaticDescriptor::construct(reinterpret_cast<T&>(value), reinterpret_cast<const T&>(other)));
-        }
-
-        Typeless& construct(Typeless& value, Typeless&& other) const override
-        {
-            return reinterpret_cast<Typeless&>(StaticDescriptor::construct(reinterpret_cast<T&>(value), reinterpret_cast<T&&>(other)));
-        }
-
-        void destruct(Typeless& value) const override
-        {
-            StaticDescriptor::destruct(reinterpret_cast<T&>(value));
-        }
-
-        Typeless& assign(Typeless& lhs, const Typeless& rhs) const override
-        {
-            return reinterpret_cast<Typeless&>(StaticDescriptor::assign(reinterpret_cast<T&>(lhs), reinterpret_cast<const T&>(rhs)));
-        }
-
-        Typeless& assign(Typeless& lhs, Typeless&& rhs) const override
-        {
-            return reinterpret_cast<Typeless&>(StaticDescriptor::assign(reinterpret_cast<T&>(lhs), reinterpret_cast<T&&>(rhs)));
-        }
-
-        void swap(Typeless& value, Typeless& other) const override
-        {
-            StaticDescriptor::swap(reinterpret_cast<T&>(value), reinterpret_cast<T&>(other));
-        }
-
-        bool equal(const Typeless& lhs, const Typeless& rhs) const override
-        {
-            return StaticDescriptor::equal(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
-        }
-
-        bool less(const Typeless& lhs, const Typeless& rhs) const override
-        {
-            return StaticDescriptor::less(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
-        }
-
-        bool lessEqual(const Typeless& lhs, const Typeless& rhs) const override
-        {
-            return StaticDescriptor::lessEqual(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
-        }
-
-        bool greater(const Typeless& lhs, const Typeless& rhs) const override
-        {
-            return StaticDescriptor::greater(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
-        }
-
-        bool greaterEqual(const Typeless& lhs, const Typeless& rhs) const override
-        {
-            return StaticDescriptor::greaterEqual(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
-        }
-
-        size_t dynamicMemoryUsage(const Typeless& value) const override
-        {
-            return StaticDescriptor::dynamicMemoryUsage(reinterpret_cast<const T&>(value));
-        }
-
-        bool usesDynamicMemory() const override
-        {
-            return false;
-        }
-
-        void fromString(Typeless& storage, const std::string_view& value) const override
-        {
-            fromString(storage.to<T>(), value);
-        }
-
-        std::string toString(const Typeless& value) const override
-        {
-            return toString(value.to<T>());
-        }
+        using Base::dynamicMemoryUsage;
+        using Base::fromString;
+        using Base::toString;
 
         template <typename... Args>
         static constexpr T& construct(T& value, Args&&... args)
@@ -326,7 +247,19 @@ namespace dots::type
         {
             if constexpr (std::is_default_constructible_v<Descriptor<T>>)
             {
-                return InstanceUnchecked();
+                if constexpr (std::is_default_constructible_v<Descriptor<T>>)
+                {
+                    if (M_descriptor == nullptr)
+                    {
+                        M_descriptor = std::static_pointer_cast<Descriptor<T>>(StaticDescriptorMap::Emplace(std::make_shared<Descriptor<T>>()));
+                    }
+
+                    return M_descriptor;
+                }
+                else
+                {
+                    return nullptr;
+                }
             }
             else
             {
@@ -359,23 +292,126 @@ namespace dots::type
         template <typename U>
         static constexpr bool is_istreamable_v = is_istreamable_t<U>::value;
 
-        static const std::shared_ptr<Descriptor<T>>& InstanceUnchecked()
-        {
-            static std::shared_ptr<Descriptor<T>> Instance_ = []()
-            {
-                if constexpr (std::is_default_constructible_v<Descriptor<T>>)
-                {
-                    return StaticDescriptorMap::Emplace(Descriptor<T>{});
-                }
-                else
-                {
-                    return nullptr;
-                }
-            }();
+        inline static std::shared_ptr<Descriptor<T>> M_descriptor;
 
-            return Instance_;
+        // initialize a reference to the descriptor to ensure that it is always added to the static descriptor map 
+        inline static const std::shared_ptr<Descriptor<T>>& M_descriptorRef = InstancePtr();
+    };
+
+    template <typename T, typename Base>
+    struct StaticDescriptor<T, Base, true> : StaticDescriptor<T, Base, false>
+    {
+        template <typename... Args>
+        StaticDescriptor(Args&&... args) : StaticDescriptor<T, Base, false>(std::forward<Args>(args)...)
+        {
+            /* do nothing */
         }
 
-        inline static const std::shared_ptr<Descriptor<T>>& M_descriptor = InstanceUnchecked();
+        StaticDescriptor(const StaticDescriptor& other) = default;
+        StaticDescriptor(StaticDescriptor&& other) = default;
+        ~StaticDescriptor() = default;
+
+        StaticDescriptor& operator = (const StaticDescriptor& rhs) = default;
+        StaticDescriptor& operator = (StaticDescriptor&& rhs) = default;
+
+        using StaticDescriptor<T, Base, false>::construct;
+        using StaticDescriptor<T, Base, false>::destruct;
+        using StaticDescriptor<T, Base, false>::assign;
+        using StaticDescriptor<T, Base, false>::swap;
+        using StaticDescriptor<T, Base, false>::equal;
+        using StaticDescriptor<T, Base, false>::less;
+        using StaticDescriptor<T, Base, false>::lessEqual;
+        using StaticDescriptor<T, Base, false>::greater;
+        using StaticDescriptor<T, Base, false>::greaterEqual;
+        using StaticDescriptor<T, Base, false>::dynamicMemoryUsage;
+        using StaticDescriptor<T, Base, false>::fromString;
+        using StaticDescriptor<T, Base, false>::toString;
+
+        Typeless& construct(Typeless& value) const override
+        {
+            if constexpr (std::is_default_constructible_v<T>)
+            {
+                return reinterpret_cast<Typeless&>(construct(reinterpret_cast<T&>(value)));
+            }
+            else
+            {
+                throw std::logic_error{ "construct has to be overridden in sub-class because T is not default constructible" };
+            }
+        }
+
+        Typeless& construct(Typeless& value, const Typeless& other) const override
+        {
+            return reinterpret_cast<Typeless&>(construct(reinterpret_cast<T&>(value), reinterpret_cast<const T&>(other)));
+        }
+
+        Typeless& construct(Typeless& value, Typeless&& other) const override
+        {
+            return reinterpret_cast<Typeless&>(construct(reinterpret_cast<T&>(value), reinterpret_cast<T&&>(other)));
+        }
+
+        void destruct(Typeless& value) const override
+        {
+            destruct(reinterpret_cast<T&>(value));
+        }
+
+        Typeless& assign(Typeless& lhs, const Typeless& rhs) const override
+        {
+            return reinterpret_cast<Typeless&>(assign(reinterpret_cast<T&>(lhs), reinterpret_cast<const T&>(rhs)));
+        }
+
+        Typeless& assign(Typeless& lhs, Typeless&& rhs) const override
+        {
+            return reinterpret_cast<Typeless&>(assign(reinterpret_cast<T&>(lhs), reinterpret_cast<T&&>(rhs)));
+        }
+
+        void swap(Typeless& value, Typeless& other) const override
+        {
+            swap(reinterpret_cast<T&>(value), reinterpret_cast<T&>(other));
+        }
+
+        bool equal(const Typeless& lhs, const Typeless& rhs) const override
+        {
+            return equal(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
+        }
+
+        bool less(const Typeless& lhs, const Typeless& rhs) const override
+        {
+            return less(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
+        }
+
+        bool lessEqual(const Typeless& lhs, const Typeless& rhs) const override
+        {
+            return lessEqual(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
+        }
+
+        bool greater(const Typeless& lhs, const Typeless& rhs) const override
+        {
+            return greater(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
+        }
+
+        bool greaterEqual(const Typeless& lhs, const Typeless& rhs) const override
+        {
+            return greaterEqual(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
+        }
+
+        size_t dynamicMemoryUsage(const Typeless& value) const override
+        {
+            return dynamicMemoryUsage(reinterpret_cast<const T&>(value));
+        }
+
+        bool usesDynamicMemory() const override
+        {
+            return false;
+        }
+
+        void fromString(Typeless& storage, const std::string_view& value) const override
+        {
+            fromString(storage.to<T>(), value);
+        }
+
+        std::string toString(const Typeless& value) const override
+        {
+            return toString(value.to<T>());
+        }
     };
 }
