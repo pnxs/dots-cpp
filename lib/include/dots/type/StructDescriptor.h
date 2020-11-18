@@ -110,11 +110,15 @@ namespace dots::type
         [[deprecated("only available for backwards compatibility")]]
         PropertySet& validProperties(void* instance) const;
 
+        #ifndef DOTS_NO_GLOBAL_TRANSCEIVER
+
         [[deprecated("only available for backwards compatibility")]]
         const types::StructDescriptorData& descriptorData() const;
 
         [[deprecated("only available for backwards compatibility")]]
         static const StructDescriptor<>* createFromStructDescriptorData(const types::StructDescriptorData& sd);
+
+        #endif
 
     private:
 
