@@ -44,9 +44,6 @@ namespace dots::type
 
         PropertySet _diffProperties(const Struct& other, const PropertySet& includedProperties = PropertySet::All) const;
 
-        void _publish(const PropertySet& includedProperties = PropertySet::All, bool remove = false) const;
-        void _remove() const;
-
         template <bool AllowSubset = true>
         bool _hasProperties(const PropertySet& properties) const
         {

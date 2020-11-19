@@ -1,6 +1,5 @@
 #include <dots/type/Struct.h>
 #include <dots/type/StructDescriptor.h>
-#include <dots/dots.h>
 
 namespace dots::type
 {
@@ -103,15 +102,5 @@ namespace dots::type
     PropertySet Struct::_diffProperties(const Struct& other, const PropertySet& includedProperties/* = PropertySet::All*/) const
     {
         return _desc->diffProperties(*this, other, includedProperties);
-    }
-
-    void Struct::_publish(const PropertySet& includedProperties/* = PropertySet::All*/, bool remove/* = false*/) const
-    {
-        publish(*this, includedProperties ^ _validProperties(), remove);
-    }
-
-    void Struct::_remove() const
-    {
-        remove(*this);
     }
 }

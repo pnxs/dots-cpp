@@ -34,12 +34,6 @@ namespace dots::type
             return Set() <= propertySet;
         }
 
-        template <typename... Args>
-        static void Publish(Args&&... args)
-        {
-            Derived::struct_t::_Publish(std::forward<Args>(args)...);
-        }
-
     protected:
 
         StaticProperty()

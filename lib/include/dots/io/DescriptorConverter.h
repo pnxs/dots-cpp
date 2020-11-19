@@ -1,6 +1,5 @@
 #pragma once
 #include <dots/io/Registry.h>
-#include <dots/dots.h>
 #include <EnumDescriptorData.dots.h>
 #include <StructDescriptorData.dots.h>
 
@@ -8,7 +7,7 @@ namespace dots::io
 {
     struct DescriptorConverter
     {
-        DescriptorConverter(Registry& registry = transceiver().registry());
+        DescriptorConverter(Registry& registry);
         DescriptorConverter(const DescriptorConverter& other) = default;
         DescriptorConverter(DescriptorConverter&& other) noexcept = default;
         ~DescriptorConverter() = default;

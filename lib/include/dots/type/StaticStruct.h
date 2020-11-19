@@ -3,7 +3,6 @@
 #include <utility>
 #include <dots/type/Struct.h>
 #include <dots/type/PropertyInitializer.h>
-#include <dots/io/GlobalType.h>
 
 namespace dots::io
 {
@@ -340,22 +339,6 @@ namespace dots::type
             return symmetricDiff;
         }
 
-        void _publish(const PropertySet& includedProperties = PropertySet::All, bool remove = false) const
-        {
-            static_assert(!Derived::_SubstructOnly, "a substruct-only type cannot be published");
-
-            io::register_global_publish_type<Derived>();
-            Struct::_publish(includedProperties, remove);
-        }
-
-        void _remove() const
-        {
-            static_assert(!Derived::_SubstructOnly, "a substruct-only type cannot be removed");
-
-            io::register_global_publish_type<Derived>();
-            Struct::_remove();
-        }
-
         const PropertyArea& _propertyArea() const
         {
             return m_propertyArea;
@@ -441,9 +424,6 @@ namespace dots::type
         using Struct::_greaterEqual;
 
         using Struct::_diffProperties;
-
-        using Struct::_publish;
-        using Struct::_remove;
 
         using Struct::_propertyArea;
         using Struct::_validProperties;

@@ -1,7 +1,10 @@
+#undef DOTS_NO_GLOBAL_TRANSCEIVER 
 #include <dots/type/StructDescriptor.h>
 #include <dots/type/Struct.h>
 #include <dots/io/DescriptorConverter.h>
 #include <dots/type/DynamicStruct.h>
+#include <dots/dots.h>
+
 namespace dots::type
 {
     StructDescriptor<Typeless, false, void>::StructDescriptor(std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptors, size_t areaOffset, size_t size, size_t alignment) :
@@ -495,7 +498,7 @@ namespace dots::type
     {
         if (m_descriptorData == nullptr)
         {
-            m_descriptorData = new types::StructDescriptorData{ io::DescriptorConverter{}(*this) };
+            m_descriptorData = new types::StructDescriptorData{ io::DescriptorConverter{ dots::transceiver().registry() }(*this) };
         }
 
         return *m_descriptorData;
@@ -503,6 +506,6 @@ namespace dots::type
 
     const StructDescriptor<>* StructDescriptor<Typeless, false, void>::createFromStructDescriptorData(const types::StructDescriptorData& sd)
     {
-        return io::DescriptorConverter{}(sd).get();
+        return io::DescriptorConverter{ dots::transceiver().registry() }(sd).get();
     }
 }
