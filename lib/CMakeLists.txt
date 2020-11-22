@@ -1,5 +1,5 @@
 # project
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.12)
 project(libDOTS VERSION 0.1.0 LANGUAGES CXX)
 set(TARGET_NAME dots)
 set(EXPORT_NAME DOTS)
