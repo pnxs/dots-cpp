@@ -1,6 +1,7 @@
 #include <dots/io/auth/Digest.h>
 #include <random>
 #include <iomanip>
+#include <sstream>
 
 namespace dots::io
 {
