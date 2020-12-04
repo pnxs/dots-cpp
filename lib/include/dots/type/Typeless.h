@@ -16,7 +16,7 @@ namespace dots::type
         Typeless& operator = (Typeless&& rhs) = delete;
 
         template <typename T>
-        const T& to() const
+        const T& to() const &
         {
             return reinterpret_cast<const T&>(*this);
         }
