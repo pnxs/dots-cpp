@@ -29,7 +29,7 @@ namespace dots::io
         TcpChannel(Channel::key_t key, boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port, std::function<void(const boost::system::error_code& error)> onConnect);
 
         /**
-         * Constuct channel with an already connected socket.
+         * Construct channel with an already connected socket.
          * @param key
          * @param socket
          */
