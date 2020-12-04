@@ -10,34 +10,6 @@ namespace dots::io
     TcpChannel::TcpChannel(Channel::key_t key, boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port) :
         TcpChannel(key, boost::asio::ip::tcp::socket{ ioContext })
     {
-#ifdef USE_ASYNC_RESOLVE_IN_SYNC_CONNECT
-        bool finished = false;
-        std::optional<boost::asio::ip::tcp::endpoint> endpoint;
-
-        asyncResolveEndpoint(host, port, [&, host, port](auto& /*error*/, auto resolved_endpoint) {
-            endpoint = resolved_endpoint;
-            finished = true;
-        });
-
-        while(not finished) {
-            ioContext.run_one();
-        }
-
-        try
-        {
-            std::cout << "Connect to " << *endpoint << std::endl;
-            m_socket.connect(*endpoint);
-            setDefaultSocketOptions();
-            m_medium.emplace(TcpSocketCategory, m_socket.remote_endpoint().address().to_string());
-
-            return;
-        }
-        catch (const std::exception &/* e*/)
-        {
-            /* do nothing */
-        }
-        throw std::runtime_error{ "could not open TCP connection: " + std::string{ host } + ":" + std::string{ port } };
-#else
         auto endpoints = m_resolver.resolve(boost::asio::ip::tcp::socket::protocol_type::v4(), host, port, boost::asio::ip::resolver_query_base::numeric_service);
 
         for (const auto& endpoint: endpoints)
@@ -57,7 +29,6 @@ namespace dots::io
         }
 
         throw std::runtime_error{ "could not open TCP connection: " + std::string{ host } + ":" + std::string{ port } };
-#endif
     }
 
     TcpChannel::TcpChannel(Channel::key_t key, boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port, std::function<void(const boost::system::error_code& error)> onConnect) :
