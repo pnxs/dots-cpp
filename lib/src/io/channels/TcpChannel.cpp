@@ -140,7 +140,7 @@ namespace dots::io
 
     void TcpChannel::asyncReceiveImpl()
     {
-        asynReadHeaderLength();
+        asyncReadHeaderLength();
     }
 
     void TcpChannel::transmitImpl(const DotsHeader& header, const type::Struct& instance)
@@ -189,7 +189,7 @@ namespace dots::io
         m_socket.write_some(buffers);
     }
 
-    void TcpChannel::asynReadHeaderLength()
+    void TcpChannel::asyncReadHeaderLength()
     {
         boost::asio::async_read(m_socket, boost::asio::buffer(&m_headerSize, sizeof(m_headerSize)), [&, this_{ weak_from_this() }](auto ec, auto /*bytes*/)
         {
