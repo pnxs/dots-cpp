@@ -69,6 +69,16 @@ namespace dots::type
         return const_cast<AnyStruct&>(*this).get();
     }
 
+    AnyStruct::operator const PropertyArea&() const
+    {
+        return *_instance;
+    }
+
+    AnyStruct::operator PropertyArea&()
+    {
+        return *_instance;
+    }
+
     Struct& AnyStruct::get()
     {
         return *_instance;
