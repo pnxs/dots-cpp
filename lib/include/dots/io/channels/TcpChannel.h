@@ -51,6 +51,7 @@ namespace dots::io
     private:
 
         static constexpr char TcpSocketCategory[] = "tcp";
+        using resolve_handler_t = std::function<void(const boost::system::error_code& error, std::optional<boost::asio::ip::tcp::endpoint>)>;
 
 	    void setDefaultSocketOptions();
 
@@ -58,7 +59,7 @@ namespace dots::io
         void asyncReadHeader();
         void asyncReadInstance();
 
-        void asyncResolveEndpoint(const std::string_view& host, const std::string_view& port, std::function<void(const boost::system::error_code& error, std::optional<boost::asio::ip::tcp::endpoint>)> cb);
+        void asyncResolveEndpoint(const std::string_view& host, const std::string_view& port, resolve_handler_t handler);
 
         void verifyErrorCode(const boost::system::error_code& error);
 

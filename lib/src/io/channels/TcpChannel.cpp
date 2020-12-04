@@ -71,39 +71,6 @@ namespace dots::io
         }
     }
 
-    void TcpChannel::asyncResolveEndpoint(const std::string_view& host, const std::string_view& port, std::function<void(const boost::system::error_code& error, std::optional<boost::asio::ip::tcp::endpoint>)> cb)
-    {
-        m_resolver.async_resolve(host, port, boost::asio::ip::resolver_query_base::numeric_service, [port, cb](const boost::system::error_code& error, auto iter) {
-            if (error)
-            {
-                cb(error, {});
-                return;
-            }
-
-            decltype(iter) iterEnd;
-
-            for (; iter != iterEnd; ++iter)
-            {
-                const auto& address = iter->endpoint().address();
-
-                if (address.is_v4() or address.is_v6())
-                {
-                    cb(error, iter->endpoint());
-                    return;
-                }
-            }
-
-            cb(boost::system::error_code(boost::system::errc::io_error, boost::system::generic_category()), {});
-        });
-    }
-
-    void TcpChannel::setDefaultSocketOptions()
-    {
-        m_socket.set_option(boost::asio::ip::tcp::no_delay(true));
-        m_socket.set_option(boost::asio::ip::tcp::socket::keep_alive(true));
-        m_socket.set_option(boost::asio::socket_base::linger(true, 10));
-    }
-
     const Medium& TcpChannel::medium() const
     {
         return *m_medium;
@@ -158,6 +125,13 @@ namespace dots::io
         };
 
         m_socket.write_some(buffers);
+    }
+
+    void TcpChannel::setDefaultSocketOptions()
+    {
+        m_socket.set_option(boost::asio::ip::tcp::no_delay(true));
+        m_socket.set_option(boost::asio::ip::tcp::socket::keep_alive(true));
+        m_socket.set_option(boost::asio::socket_base::linger(true, 10));
     }
 
     void TcpChannel::asyncReadHeaderLength()
@@ -247,6 +221,32 @@ namespace dots::io
             {
                 processError(std::current_exception());
             }
+        });
+    }
+
+    void TcpChannel::asyncResolveEndpoint(const std::string_view& host, const std::string_view& port, resolve_handler_t handler)
+    {
+        m_resolver.async_resolve(host, port, boost::asio::ip::resolver_query_base::numeric_service, [port, handler](const boost::system::error_code& error, auto iter) {
+            if (error)
+            {
+                handler(error, {});
+                return;
+            }
+
+            decltype(iter) iterEnd;
+
+            for (; iter != iterEnd; ++iter)
+            {
+                const auto& address = iter->endpoint().address();
+
+                if (address.is_v4() || address.is_v6())
+                {
+                    handler(error, iter->endpoint());
+                    return;
+                }
+            }
+
+            handler(boost::system::error_code(boost::system::errc::io_error, boost::system::generic_category()), {});
         });
     }
 
