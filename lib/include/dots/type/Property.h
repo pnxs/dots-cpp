@@ -422,6 +422,25 @@ namespace dots::type
             return !less(rhs);
         }
 
+        std::string toString() const
+        {
+            if (isValid())
+            {
+                if constexpr (IsTypelessOrDynamic)
+                {
+                    return descriptor().valueDescriptor().toString(value());
+                }
+                else
+                {
+                    return Descriptor<T>::toString(value());
+                }
+            }
+            else
+            {
+                return "<invalid>";
+            }
+        }
+
         constexpr const PropertyDescriptor& descriptor() const
         {
             return static_cast<const Derived&>(*this).derivedDescriptor();
@@ -514,15 +533,7 @@ namespace dots::type
     template <typename T, typename Derived>
     std::ostream& operator << (std::ostream& os, const Property<T, Derived>& property)
     {
-        if (property.isValid())
-        {
-            os << *property;
-        }
-        else
-        {
-            os << "<invalid-property>";
-        }
-
+        os << property.toString();
         return os;
     }
 }
