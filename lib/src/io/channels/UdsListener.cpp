@@ -1,3 +1,5 @@
+#include <boost/asio.hpp>
+#if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
 #include <dots/io/channels/UdsListener.h>
 
 namespace dots::io::posix
@@ -81,3 +83,4 @@ namespace dots::io::posix
         });
     }
 }
+#endif

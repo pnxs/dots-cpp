@@ -1,8 +1,8 @@
 #pragma once
 #include <boost/asio.hpp>
+#if defined(BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR)
 
 namespace dots::io {
-
 class FdHandler
 {
     boost::asio::posix::stream_descriptor m_sd;
@@ -34,3 +34,6 @@ public:
 };
 
 }
+#else
+#error #error "POSIX stream descriptors are not available on this platform"
+#endif

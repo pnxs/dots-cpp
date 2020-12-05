@@ -1,7 +1,8 @@
 #pragma once
+#include <boost/asio.hpp>
+#if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
 #include <string_view>
 #include <optional>
-#include <boost/asio.hpp>
 #include <dots/io/Listener.h>
 #include <dots/io/channels/UdsChannel.h>
 
@@ -28,3 +29,6 @@ namespace dots::io::posix
         boost::asio::local::stream_protocol::socket m_socket;
     };
 }
+#else
+#error "Local sockets are not available on this platform"
+#endif

@@ -1,3 +1,5 @@
+#include <boost/asio.hpp>
+#if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
 #include <dots/io/channels/UdsChannel.h>
 #include <csignal>
 #include <dots/io/Io.h>
@@ -174,3 +176,4 @@ namespace dots::io::posix
         (void)IgnorePipesSignals;
     }
 }
+#endif

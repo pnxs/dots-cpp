@@ -1,6 +1,7 @@
 #pragma once
 #include <functional>
 #include <string_view>
+#include <boost/asio.hpp>
 #include <dots/type/Chrono.h>
 #include <dots/io/Timer.h>
 #include <dots/io/GuestTransceiver.h>
@@ -21,8 +22,10 @@ namespace dots
     Timer::id_t add_timer(const type::Duration& timeout, const std::function<void()>& handler, bool periodic = false);
     void remove_timer(Timer::id_t id);
 
+    #if defined(BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR)
     void add_fd_handler(int fileDescriptor, const std::function<void()>& handler);
     void remove_fd_handler(int fileDescriptor);
+    #endif
 
     #ifndef DOTS_NO_GLOBAL_TRANSCEIVER
 
