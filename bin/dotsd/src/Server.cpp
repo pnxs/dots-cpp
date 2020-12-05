@@ -1,10 +1,10 @@
 #include "Server.h"
 #ifdef __unix__
 #include <sys/resource.h>
+#include <dots/type/PosixTime.h>
 #endif
 #include <dots/dots.h>
 #include <dots/tools/logging.h>
-#include <dots/type/PosixTime.h>
 #include <dots/io/auth/LegacyAuthManager.h>
 #include "DotsClient.dots.h"
 #include <StructDescriptorData.dots.h>
