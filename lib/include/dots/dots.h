@@ -55,7 +55,7 @@ namespace dots
     {
         static_assert(!T::_SubstructOnly, "it is not allowed to publish to a struct that is marked with 'substruct_only'!");
         io::register_global_publish_type<T>();
-        publish(instance, includedProperties, remove);
+        publish(static_cast<type::Struct>(instance), includedProperties, remove);
     }
 
     template<typename T>
@@ -63,7 +63,7 @@ namespace dots
     {
         static_assert(!T::_SubstructOnly, "it is not allowed to remove to a struct that is marked with 'substruct_only'!");
         io::register_global_publish_type<T>();
-        remove(instance);
+        remove(static_cast<type::Struct>(instance));
     }
 
     template<typename T>
