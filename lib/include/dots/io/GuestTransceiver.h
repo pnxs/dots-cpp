@@ -1,6 +1,7 @@
 #pragma once
 #include <string_view>
 #include <optional>
+#include <set>
 #include <dots/io/Transceiver.h>
 #include <dots/io/Connection.h>
 
@@ -30,5 +31,6 @@ namespace dots::io
         std::optional<io::Connection> m_hostConnection;
         descriptor_map_t m_preloadPublishTypes;
         descriptor_map_t m_preloadSubscribeTypes;
+        std::set<std::string> m_joinedGroups;
     };
 }
