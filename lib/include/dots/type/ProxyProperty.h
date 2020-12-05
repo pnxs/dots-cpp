@@ -28,21 +28,21 @@ namespace dots::type
             /* do nothing */
         }
 
-        template <std::enable_if_t<EnableValueConstructors, int> = 0>
+        template <bool C = EnableValueConstructors, std::enable_if_t<C, int> = 0>
         ProxyProperty(T& value, const PropertyDescriptor& descriptor) :
             ProxyProperty(PropertyArea::GetArea<T>(value, descriptor.offset()), descriptor)
         {
             /* do nothing */
         }
 
-        template <typename Derived, std::enable_if_t<EnableValueConstructors && !Property<T, ProxyProperty<T>>::IsTypeless && !std::is_same_v<Derived, ProxyProperty<T>>, int> = 0>
+        template <typename Derived, std::enable_if_t<std::conjunction_v<std::integral_constant<bool, EnableValueConstructors>, std::negation<std::integral_constant<bool, Property<T, ProxyProperty<T>>::IsTypeless>>, std::negation<std::is_same<Derived, ProxyProperty<T>>>>, int> = 0>
         ProxyProperty(Property<T, Derived>& property) :
             ProxyProperty(property.storage(), property.descriptor())
         {
             /* do nothing */
         }
 
-        template <typename U, typename Derived, std::enable_if_t<EnableValueConstructors && Property<T, ProxyProperty<T>>::IsTypeless && !std::is_same_v<Derived, ProxyProperty<T>>, int> = 0>
+        template <typename U, typename Derived, std::enable_if_t<std::conjunction_v<std::integral_constant<bool, EnableValueConstructors>, std::integral_constant<bool, Property<T, ProxyProperty<T>>::IsTypeless>, std::negation<std::is_same<Derived, ProxyProperty<T>>>>, int> = 0>
         ProxyProperty(Property<U, Derived>& property) :
             ProxyProperty(Typeless::From(property.storage()), property.descriptor())
         {
