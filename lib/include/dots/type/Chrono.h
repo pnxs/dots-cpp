@@ -41,10 +41,10 @@ namespace dots::type
 
         constexpr bool isZero() const { return *this == base_t::zero(); }
         constexpr double toFractionalSeconds() const { return std::chrono::duration_cast<std::chrono::duration<double>>(*this).count(); }
-        constexpr int toSeconds() const { return std::chrono::round<std::chrono::seconds>(*this).count(); }
-        constexpr int toMilliseconds() const { return std::chrono::round<std::chrono::milliseconds>(*this).count(); }
-        constexpr int toMicroseconds() const { return std::chrono::round<std::chrono::microseconds>(*this).count(); }
-        constexpr int toNanoseconds() const { return std::chrono::round<std::chrono::nanoseconds>(*this).count(); }
+        constexpr int toSeconds() const { return static_cast<int>(std::chrono::round<std::chrono::seconds>(*this).count()); }
+        constexpr int toMilliseconds() const { return static_cast<int>(std::chrono::round<std::chrono::milliseconds>(*this).count()); }
+        constexpr int toMicroseconds() const { return static_cast<int>(std::chrono::round<std::chrono::microseconds>(*this).count()); }
+        constexpr int toNanoseconds() const { return static_cast<int>(std::chrono::round<std::chrono::nanoseconds>(*this).count()); }
 
         std::string toString() const;
         bool fromString(const std::string_view& value);
