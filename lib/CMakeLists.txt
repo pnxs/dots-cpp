@@ -86,6 +86,7 @@ target_sources(${TARGET_NAME}
         src/type/AnyStruct.cpp
         src/type/Chrono.cpp
         src/type/Descriptor.cpp
+        src/type/DynamicEnum.cpp
         src/type/DynamicStruct.cpp
         src/type/EnumDescriptor.cpp
         src/type/PropertyDescriptor.cpp
