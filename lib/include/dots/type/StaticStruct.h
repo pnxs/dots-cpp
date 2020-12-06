@@ -507,7 +507,12 @@ namespace dots::type
         template <typename T>
         using strip_t = std::remove_pointer_t<std::decay_t<T>>;
 
-        inline static const Descriptor<Derived>& M_descriptor = Descriptor<Derived>::Instance();
+        static const Descriptor<Derived>& DescriptorInstance()
+        {
+            return Descriptor<Derived>::Instance();
+        }
+
+        inline static const Descriptor<Derived>& M_descriptor = DescriptorInstance();
         PropertyArea m_propertyArea;
     };
 }
