@@ -147,7 +147,7 @@ namespace dots::type
             return 0;
         }
 
-        void fromString(T& storage, const std::string_view& value) const
+        static void fromString(T& storage, const std::string_view& value)
         {
             // TODO: use std::from_chars where applicable
 
@@ -192,11 +192,11 @@ namespace dots::type
             }
             else
             {
-                return Descriptor<>::fromString(Typeless::From(storage), value);
+                throw std::logic_error{ "from string conversion not available for type" };
             }
         }
 
-        std::string toString(const T& value) const
+        static std::string toString(const T& value)
         {
             // TODO: use std::to_chars where applicable
 
@@ -239,7 +239,7 @@ namespace dots::type
             }
             else
             {
-                return Descriptor<>::toString(Typeless::From(value));
+                throw std::logic_error{ "to string conversion not available for type" };
             }
         }
 
