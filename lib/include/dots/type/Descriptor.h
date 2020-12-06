@@ -137,7 +137,7 @@ namespace dots::type
     struct is_dynamic_descriptor: std::false_type {};
 
     template<typename T>
-    struct is_dynamic_descriptor<T, std::void_t<typename T::dynamic_descriptor_tag_t>> : std::true_type {};
+    struct is_dynamic_descriptor<T, std::void_t<decltype(T::IsDynamic)>> : std::integral_constant<bool, T::IsDynamic> {};
 
     template <typename T>
     using is_dynamic_descriptor_t = typename is_dynamic_descriptor<T>::type;
