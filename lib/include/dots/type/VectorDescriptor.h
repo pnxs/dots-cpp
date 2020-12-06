@@ -25,6 +25,8 @@ namespace dots::type
     template <typename T>
     struct Descriptor<Vector<T>> : StaticDescriptor<Vector<T>, VectorDescriptor>
     {
+        static constexpr bool IsDynamic = is_dynamic_descriptor_v<Descriptor<T>>;
+
         Descriptor() :
             StaticDescriptor<Vector<T>, VectorDescriptor>("vector<" + valueDescriptor().name() + ">", valueDescriptorPtr(), sizeof(Vector<T>), alignof(Vector<T>))
         {
