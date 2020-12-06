@@ -19,13 +19,15 @@ namespace dots::io
 
         id_t id() const;
 
-        const DotsHeader& header() const;
-        DotsHeader& header();
+        const DotsHeader& header() const&;
+        DotsHeader& header() &;
+        DotsHeader header() &&;
 
-        const type::AnyStruct& instance() const;
+        const type::AnyStruct& instance() const&;
+        type::AnyStruct instance() &&;
 
         template <size_t I>
-        auto& get() const
+        const auto& get() const &
         {
             if constexpr (I == 0)
             {
@@ -38,7 +40,7 @@ namespace dots::io
         }
 
         template <size_t I>
-        auto& get()
+        auto& get() &
         {
             if constexpr (I == 0)
             {
@@ -47,6 +49,19 @@ namespace dots::io
             else if constexpr (I == 1)
             {
                 return instance();
+            }
+        }
+
+        template <size_t I>
+        auto get() &&
+        {
+            if constexpr (I == 0)
+            {
+                return std::move(*this).header();
+            }
+            else if constexpr (I == 1)
+            {
+                return std::move(*this).instance();
             }
         }
 
