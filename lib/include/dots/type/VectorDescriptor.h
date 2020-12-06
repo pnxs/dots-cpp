@@ -74,11 +74,6 @@ namespace dots::type
         {
             return Descriptor<T>::Instance();
         }
-
-    private:
-
-        using VectorDescriptor::valueDescriptorPtr;
-        using VectorDescriptor::valueDescriptor;
     };
 
     [[deprecated("only available for backwards compatibility")]]
