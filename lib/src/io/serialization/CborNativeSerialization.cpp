@@ -1,11 +1,15 @@
 #include <dots/io/serialization/CborNativeSerialization.h>
 #include <dots/tools/logging.h>
 #include "StructDescriptorData.dots.h"
+#if defined(__GNUC__)
 #undef major
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #include "cbor.h"
 #pragma GCC diagnostic pop
+#else
+#include "cbor.h"
+#endif
 
 #include <map>
 #include <iostream>
