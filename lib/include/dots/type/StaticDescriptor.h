@@ -293,9 +293,6 @@ namespace dots::type
         static constexpr bool is_istreamable_v = is_istreamable_t<U>::value;
 
         inline static std::shared_ptr<Descriptor<T>> M_descriptor;
-
-        // initialize a reference to the descriptor to ensure that it is always added to the static descriptor map 
-        inline static const std::shared_ptr<Descriptor<T>>& M_descriptorRef = InstancePtr();
     };
 
     template <typename T, typename Base>
