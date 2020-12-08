@@ -104,7 +104,7 @@ namespace dots::type
     {
         using enumerator_ref_t = std::reference_wrapper<EnumeratorDescriptor<>>;
 
-        EnumDescriptor(std::string name, const Descriptor<Typeless>& underlyingDescriptor);
+        EnumDescriptor(std::string name, size_t underlyingTypeSize, size_t underlyingTypeAlignment);
         EnumDescriptor(const EnumDescriptor& other) = default;
         EnumDescriptor(EnumDescriptor&& other) = default;
         ~EnumDescriptor() = default;
@@ -223,7 +223,7 @@ namespace dots::type
         using underlying_type_t = details::underlying_type_t<E>;
 
         EnumDescriptor(std::string name, std::vector<EnumeratorDescriptor<E>> enumeratorDescriptors) :
-            StaticDescriptor<E, EnumDescriptor<Typeless>, UseStaticDescriptorOperations>(std::move(name), underlyingDescriptor()),
+            StaticDescriptor<E, EnumDescriptor<Typeless>, UseStaticDescriptorOperations>(std::move(name), sizeof(underlying_type_t), alignof(underlying_type_t)),
             m_enumerators{ std::move(enumeratorDescriptors) }
         {
             for (EnumeratorDescriptor<>& enumerator : m_enumerators)
@@ -320,9 +320,9 @@ namespace dots::type
         return descriptor->type() == Type::Enum ? static_cast<const EnumDescriptor<>*>(descriptor) : nullptr;
     }
 }
+
 namespace dots::type
 {
-
     template<typename T, typename = void>
     constexpr bool is_defined_v = false;
     template<typename T>
