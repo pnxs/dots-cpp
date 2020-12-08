@@ -444,7 +444,7 @@ namespace dots::type
         static property_descriptor_container_t _MakePropertyDescriptors(std::tuple<Properties...>)
         {
             property_descriptor_container_t propertyDescriptors;
-            (propertyDescriptors.emplace_back(strip_t<Properties>::Descriptor), ...);
+            (propertyDescriptors.emplace_back(strip_t<Properties>::InitDescriptor()), ...);
 
             return propertyDescriptors;
         }

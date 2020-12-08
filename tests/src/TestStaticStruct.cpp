@@ -11,19 +11,19 @@ namespace dots::types
         struct p1_t : type::StaticProperty<bool_t, p1_t>
         {
             static constexpr auto Offset = type::PropertyOffset<bool_t>::Make();
-            inline static auto Descriptor = type::PropertyDescriptor{ type::Descriptor<bool_t>::InstancePtr(), "p1", 1, true, Offset };
+            static type::PropertyDescriptor MakeDescriptor() { return type::PropertyDescriptor{ type::Descriptor<bool_t>::InstancePtr(), "p1", 1, true, Offset }; }
         };
 
         struct p2_t : type::StaticProperty<bool_t, p2_t>
         {
             static constexpr auto Offset = type::PropertyOffset<bool_t>::Make(p1_t::Offset);
-            inline static auto Descriptor = type::PropertyDescriptor{ type::Descriptor<bool_t>::InstancePtr(), "p2", 2, false, Offset };
+            static type::PropertyDescriptor MakeDescriptor() { return type::PropertyDescriptor{ type::Descriptor<bool_t>::InstancePtr(), "p2", 2, false, Offset }; }
         };
 
         struct p3_t : type::StaticProperty<float64_t, p3_t>
         {
             static constexpr auto Offset = type::PropertyOffset<float64_t>::Make(p2_t::Offset);
-            inline static auto Descriptor = type::PropertyDescriptor{ type::Descriptor<float64_t>::InstancePtr(), "p3", 3, false, Offset };
+            static type::PropertyDescriptor MakeDescriptor() { return type::PropertyDescriptor{ type::Descriptor<float64_t>::InstancePtr(), "p3", 3, false, Offset }; }
         };
 
         using p1_i = type::PropertyInitializer<p1_t>;
@@ -97,31 +97,31 @@ namespace dots::types
         struct intProperty_t : type::StaticProperty<int32_t, intProperty_t>
         {
             static constexpr auto Offset = type::PropertyOffset<int32_t>::Make();
-            inline static auto Descriptor = type::PropertyDescriptor{ type::Descriptor<int32_t>::InstancePtr(), "intProperty", 1, true, Offset };
+            static type::PropertyDescriptor MakeDescriptor() { return type::PropertyDescriptor{ type::Descriptor<int32_t>::InstancePtr(), "intProperty", 1, true, Offset }; }
         };
 
         struct stringProperty_t : type::StaticProperty<string_t, stringProperty_t>
         {
             static constexpr auto Offset = type::PropertyOffset<string_t>::Make(intProperty_t::Offset);
-            inline static auto Descriptor = type::PropertyDescriptor{ type::Descriptor<string_t>::InstancePtr(), "stringProperty", 2, false, Offset };
+            static type::PropertyDescriptor MakeDescriptor() { return type::PropertyDescriptor{ type::Descriptor<string_t>::InstancePtr(), "stringProperty", 2, false, Offset }; }
         };
 
         struct boolProperty_t : type::StaticProperty<bool_t, boolProperty_t>
         {
             static constexpr auto Offset = type::PropertyOffset<bool_t>::Make(stringProperty_t::Offset);
-            inline static auto Descriptor = type::PropertyDescriptor{ type::Descriptor<bool_t>::InstancePtr(), "boolProperty", 3, false, Offset };
+            static type::PropertyDescriptor MakeDescriptor() { return type::PropertyDescriptor{ type::Descriptor<bool_t>::InstancePtr(), "boolProperty", 3, false, Offset }; }
         };
 
         struct floatVectorProperty_t : type::StaticProperty<vector_t<float32_t>, floatVectorProperty_t>
         {
             static constexpr auto Offset = type::PropertyOffset<vector_t<float32_t>>::Make(boolProperty_t::Offset);
-            inline static auto Descriptor = type::PropertyDescriptor{ type::Descriptor<vector_t<float32_t>>::InstancePtr(), "floatVectorProperty", 4, false, Offset };
+            static type::PropertyDescriptor MakeDescriptor() { return type::PropertyDescriptor{ type::Descriptor<vector_t<float32_t>>::InstancePtr(), "floatVectorProperty", 4, false, Offset }; }
         };
 
         struct subStruct_t : type::StaticProperty<TestSubStruct, subStruct_t>
         {
             static constexpr auto Offset = type::PropertyOffset<TestSubStruct>::Make(floatVectorProperty_t::Offset);
-            inline static auto Descriptor = type::PropertyDescriptor{ type::Descriptor<TestSubStruct>::InstancePtr(), "subStruct", 5, false, Offset };
+            static type::PropertyDescriptor MakeDescriptor() { return type::PropertyDescriptor{ type::Descriptor<TestSubStruct>::InstancePtr(), "subStruct", 5, false, Offset }; }
         };
 
         using intProperty_i = type::PropertyInitializer<intProperty_t>;
