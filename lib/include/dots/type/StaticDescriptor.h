@@ -245,25 +245,20 @@ namespace dots::type
 
         static const std::shared_ptr<Descriptor<T>>& InstancePtr()
         {
-            if constexpr (std::is_default_constructible_v<Descriptor<T>>)
+            if constexpr (is_dynamic_descriptor_v<Descriptor<T>>)
             {
-                if constexpr (std::is_default_constructible_v<Descriptor<T>>)
-                {
-                    if (M_descriptor == nullptr)
-                    {
-                        M_descriptor = std::static_pointer_cast<Descriptor<T>>(StaticDescriptorMap::Emplace(std::make_shared<Descriptor<T>>()));
-                    }
-
-                    return M_descriptor;
-                }
-                else
-                {
-                    return nullptr;
-                }
+                throw std::logic_error{ "global descriptor not available because Descriptor<T> dynamic" };
             }
             else
             {
-                throw std::logic_error{ "global descriptor not available because Descriptor<T> is not default constructible" };
+                static_assert(std::is_default_constructible_v<Descriptor<T>>);
+
+                if (M_instanceStorage == nullptr)
+                {
+                    M_instanceStorage = std::static_pointer_cast<Descriptor<T>>(StaticDescriptorMap::Emplace(std::make_shared<Descriptor<T>>()));
+                }
+
+                return M_instanceStorage;
             }
         }
 
@@ -292,7 +287,7 @@ namespace dots::type
         template <typename U>
         static constexpr bool is_istreamable_v = is_istreamable_t<U>::value;
 
-        inline static std::shared_ptr<Descriptor<T>> M_descriptor;
+        inline static std::shared_ptr<Descriptor<T>> M_instanceStorage;
     };
 
     template <typename T, typename Base>
