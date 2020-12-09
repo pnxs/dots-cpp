@@ -127,7 +127,8 @@ target_link_libraries(${TARGET_NAME}
         Boost::program_options
         Boost::iostreams
         Boost::filesystem
-        pthread
+        # link pthread which is required for C++ threads on Linux and OSX
+        $<$<OR:$<PLATFORM_ID:Linux>,$<PLATFORM_ID:Darwin>>:pthread>
     PRIVATE
         cborcpp
         RapidJSON::RapidJSON
