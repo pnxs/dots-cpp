@@ -144,30 +144,19 @@ target_link_libraries(${TARGET_NAME}
         # link bcrypt which is required for certain Boost funcionality on Windows
         $<$<PLATFORM_ID:Windows>:bcrypt>
     PRIVATE
-        CBOR-CPP::CBOR-CPP
-        RapidJSON::RapidJSON
-        date::date
-        date::tz
-        PicoSHA2::PicoSHA2
+        $<BUILD_INTERFACE:CBOR-CPP::CBOR-CPP>
+        $<BUILD_INTERFACE:RapidJSON::RapidJSON>
+        $<BUILD_INTERFACE:date::date>
+        $<BUILD_INTERFACE:date::tz>
+        $<BUILD_INTERFACE:PicoSHA2::PicoSHA2>
 )
 set_target_properties(${TARGET_NAME} PROPERTIES
     SOVERSION 0
 )
 
-bundle_static_library(${TARGET_NAME})
-
-# Strip libs
-get_property(ILL
-    TARGET ${TARGET_NAME}
-    PROPERTY INTERFACE_LINK_LIBRARIES)
-list(FILTER ILL EXCLUDE REGEX ".*CBOR-CPP::.*")
-list(FILTER ILL EXCLUDE REGEX ".*date::.*")
-list(FILTER ILL EXCLUDE REGEX ".*RapidJSON::.*")
-list(FILTER ILL EXCLUDE REGEX ".*PicoSHA2::.*")
-list(LENGTH ILL mylength)
-set_property(
-    TARGET ${TARGET_NAME}
-    PROPERTY INTERFACE_LINK_LIBRARIES ${ILL})
+if (NOT BUILD_DOTS_SHARED)
+    bundle_static_library(${TARGET_NAME})
+endif()
 
 # install
 include(GNUInstallDirs)

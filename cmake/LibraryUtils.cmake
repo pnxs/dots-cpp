@@ -9,7 +9,7 @@ function(bundle_static_library tgt_name)
     endif()
     get_target_property(public_dependencies ${input_target} ${_input_link_libraries})
     foreach(dependency IN LISTS public_dependencies)
-
+      string(REGEX REPLACE [[\$<BUILD_INTERFACE:([^>]+)>]] [[\1]] dependency ${dependency})
       if(TARGET ${dependency})
         get_target_property(alias ${dependency} ALIASED_TARGET)
         if (TARGET ${alias})
@@ -64,9 +64,9 @@ function(bundle_static_library tgt_name)
       set(ar_tool ${CMAKE_CXX_COMPILER_AR})
     endif()
 
-    add_custom_command(
-      COMMAND ${ar_tool} -M < ${CMAKE_BINARY_DIR}/${bundled_tgt_name}.ar && cp ${bundled_tgt_full_name} ${tgt_full_name}
-      OUTPUT ${bundled_tgt_full_name}
+    add_custom_command(TARGET ${tgt_name} POST_BUILD
+      COMMAND ${ar_tool} -M < ${CMAKE_BINARY_DIR}/${bundled_tgt_name}.ar
+      COMMAND ${CMAKE_COMMAND} -E copy ${bundled_tgt_full_name} ${tgt_full_name}
       COMMENT "Bundling ${bundled_tgt_name}"
       VERBATIM)
   elseif(MSVC)
@@ -76,23 +76,13 @@ function(bundle_static_library tgt_name)
       list(APPEND static_libs_full_names $<TARGET_FILE:${tgt}>)
     endforeach()
 
-    add_custom_command(
+    add_custom_command(TARGET ${tgt_name} POST_BUILD
       COMMAND ${lib_tool} /NOLOGO /OUT:${bundled_tgt_full_name} ${static_libs_full_names}
-      OUTPUT ${bundled_tgt_full_name}
+      COMMAND ${CMAKE_COMMAND} -E copy ${bundled_tgt_full_name} ${tgt_full_name}
       COMMENT "Bundling ${bundled_tgt_name}"
       VERBATIM)
   else()
     message(FATAL_ERROR "Unknown bundle scenario!")
   endif()
-
-  add_custom_target(bundling_target ALL DEPENDS ${bundled_tgt_full_name})
-  add_dependencies(bundling_target ${tgt_name})
-
-  add_library(${bundled_tgt_name} STATIC IMPORTED)
-  set_target_properties(${bundled_tgt_name} 
-    PROPERTIES 
-      IMPORTED_LOCATION ${bundled_tgt_full_name}
-      INTERFACE_INCLUDE_DIRECTORIES $<TARGET_PROPERTY:${tgt_name},INTERFACE_INCLUDE_DIRECTORIES>)
-  add_dependencies(${bundled_tgt_name} bundling_target)
 
 endfunction()
