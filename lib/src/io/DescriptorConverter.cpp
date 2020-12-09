@@ -96,17 +96,17 @@ namespace dots::io
 
             if (last == nullptr)
             {
-                last = &propertyDescriptors.emplace_back(descriptor, propertyData.name, propertyData.tag, propertyData.isKey);
+                last = &propertyDescriptors.emplace_back(descriptor, propertyData.name, propertyData.tag, propertyData.isKey, type::PropertyOffset::First(descriptor->alignment(), sizeof(type::PropertyArea)));
             }
             else
             {
-                last = &propertyDescriptors.emplace_back(type::PropertyDescriptor{ descriptor, propertyData.name, propertyData.tag, propertyData.isKey, type::PropertyOffset<>{ descriptor->alignment(), last->offset(), last->valueDescriptor().size() } });
+                last = &propertyDescriptors.emplace_back(descriptor, propertyData.name, propertyData.tag, propertyData.isKey, type::PropertyOffset::Next(descriptor->alignment(), last->offset(), last->valueDescriptor().size()));
             }
 
             alignment = std::max(last->valueDescriptor().alignment(), alignment);
         }
 
-        size_t size = type::PropertyOffset<>{ alignment, last->offset(), last->valueDescriptor().size() };
+        size_t size = type::PropertyOffset::Next(alignment, last->offset(), last->valueDescriptor().size());
         std::shared_ptr<type::StructDescriptor<>> descriptor = m_registry.get().registerType(type::Descriptor<type::DynamicStruct>{ structData.name, flags, propertyDescriptors, sizeof(type::DynamicStruct) + size });
 
         return descriptor;

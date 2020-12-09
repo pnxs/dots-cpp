@@ -122,7 +122,7 @@ namespace dots::type
 
     private:
 
-        void flatPropertyDescriptors(PropertyOffset<> previousOffset, size_t previousSize, property_descriptor_container_t& flatPropertyDescriptors) const;
+        void flatPropertyDescriptors(PropertyOffset previousOffset, size_t previousSize, property_descriptor_container_t& flatPropertyDescriptors) const;
 
         uint8_t m_flags;
         property_descriptor_container_t m_propertyDescriptors;

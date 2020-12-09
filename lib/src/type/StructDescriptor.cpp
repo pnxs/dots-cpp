@@ -411,25 +411,25 @@ namespace dots::type
         {
             if (m_flatPropertyDescriptors.empty())
             {
-                flatPropertyDescriptors(PropertyOffset<>{ std::in_place, 0 }, sizeof(PropertyArea), m_flatPropertyDescriptors);
+                flatPropertyDescriptors(PropertyOffset{ std::in_place, 0 }, sizeof(PropertyArea), m_flatPropertyDescriptors);
             }
 
             return m_flatPropertyDescriptors;
         }
     }
 
-    void StructDescriptor<Typeless, false, void>::flatPropertyDescriptors(PropertyOffset<> previousOffset, size_t previousSize, property_descriptor_container_t& flatPropertyDescriptors) const
+    void StructDescriptor<Typeless, false, void>::flatPropertyDescriptors(PropertyOffset previousOffset, size_t previousSize, property_descriptor_container_t& flatPropertyDescriptors) const
     {
         for (const PropertyDescriptor& propertyDescriptor : m_propertyDescriptors)
         {
             if (propertyDescriptor.valueDescriptor().type() == Type::Struct)
             {
                 const auto& subStructDescriptor = static_cast<const StructDescriptor&>(propertyDescriptor.valueDescriptor());
-                const PropertyDescriptor& flatPropertyDescriptor = flatPropertyDescriptors.emplace_back(propertyDescriptor.valueDescriptorPtr(), propertyDescriptor.name(), propertyDescriptor.tag(), propertyDescriptor.isKey(), PropertyOffset<>{ subStructDescriptor.alignment(), previousOffset, previousSize });
+                const PropertyDescriptor& flatPropertyDescriptor = flatPropertyDescriptors.emplace_back(propertyDescriptor.valueDescriptorPtr(), propertyDescriptor.name(), propertyDescriptor.tag(), propertyDescriptor.isKey(), PropertyOffset::Next(subStructDescriptor.alignment(), previousOffset, previousSize));
                 previousOffset = flatPropertyDescriptor.offset();
                 previousSize = subStructDescriptor.areaOffset();
 
-                previousOffset = PropertyOffset<>{ alignof(PropertyArea), previousOffset, previousSize };
+                previousOffset = PropertyOffset::Next(alignof(PropertyArea), previousOffset, previousSize);
                 previousSize = sizeof(PropertyArea);
 
                 subStructDescriptor.flatPropertyDescriptors(previousOffset, previousSize, flatPropertyDescriptors);
@@ -438,7 +438,7 @@ namespace dots::type
             }
             else
             {
-                const PropertyDescriptor& flatPropertyDescriptor = flatPropertyDescriptors.emplace_back(propertyDescriptor.valueDescriptorPtr(), propertyDescriptor.name(), propertyDescriptor.tag(), propertyDescriptor.isKey(), PropertyOffset<>{ propertyDescriptor.valueDescriptor().alignment(), previousOffset, previousSize });
+                const PropertyDescriptor& flatPropertyDescriptor = flatPropertyDescriptors.emplace_back(propertyDescriptor.valueDescriptorPtr(), propertyDescriptor.name(), propertyDescriptor.tag(), propertyDescriptor.isKey(), PropertyOffset::Next(propertyDescriptor.valueDescriptor().alignment(), previousOffset, previousSize));
                 previousOffset = flatPropertyDescriptor.offset();
                 previousSize = flatPropertyDescriptor.valueDescriptor().size();
             }
