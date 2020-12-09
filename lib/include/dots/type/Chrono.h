@@ -90,17 +90,13 @@ namespace dots::type
         }
     };
 
-#ifndef WIN32
+    #ifdef _MSC_VER
+    using SystemTimePointBase = std::chrono::time_point<std::chrono::system_clock, std::chrono::duration<double>>;
+    using SteadyTimePointBase = std::chrono::time_point<std::chrono::steady_clock, std::chrono::duration<double>>;
+    #else
     using SystemTimePointBase = std::chrono::time_point<std::chrono::system_clock, Duration>;
-#else
-    using SystemTimePointBase = std::chrono::time_point<std::chrono::system_clock, Duration::Base>;
-#endif
-
-#ifndef WIN32
     using SteadyTimePointBase = std::chrono::time_point<std::chrono::steady_clock, Duration>;
-#else
-    using SteadyTimePointBase = std::chrono::time_point<std::chrono::steady_clock, Duration::Base>;
-#endif
+    #endif
 
     extern template struct TimePointImpl<SystemTimePointBase>;
     extern template struct TimePointImpl<SteadyTimePointBase>;

@@ -112,12 +112,24 @@ target_compile_features(${TARGET_NAME}
         cxx_std_17
 )
 target_compile_options(${TARGET_NAME}
+    PUBLIC
+        # disable permissive mode to enable alternative logical operators
+        # note that this needs to be mandatory to ensure portability
+        $<$<CXX_COMPILER_ID:MSVC>:/permissive->
+        # use standard C++ exception model and assume no exceptions for external C functions
+        # note that this needs to be public because MSVC is disadvising from mixing exceptions modes
+        $<$<CXX_COMPILER_ID:MSVC>:/EHsc>
+        # set Windows SDK to target Windows 10
+        $<$<CXX_COMPILER_ID:MSVC>:/DWINVER=0x0A00 /D_WIN32_WINNT=0x0A00>
     PRIVATE
         $<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-O2 -Wall -Wextra -Wpedantic -Werror -Wno-deprecated-declarations>>
+        $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>>:/W4>
 )
 target_compile_definitions(${TARGET_NAME}
     PUBLIC
         $<BUILD_INTERFACE:BOOST_ASIO_DISABLE_EPOLL>
+        # suppress warning for usage of deprecated Win32 socket functions in Boost
+        $<$<PLATFORM_ID:Windows>:_WINSOCK_DEPRECATED_NO_WARNINGS>
     PRIVATE
         DOTS_NO_GLOBAL_TRANSCEIVER
 )
@@ -129,8 +141,10 @@ target_link_libraries(${TARGET_NAME}
         Boost::filesystem
         # link pthread which is required for C++ threads on Linux and OSX
         $<$<OR:$<PLATFORM_ID:Linux>,$<PLATFORM_ID:Darwin>>:pthread>
+        # link bcrypt which is required for certain Boost funcionality on Windows
+        $<$<PLATFORM_ID:Windows>:bcrypt>
     PRIVATE
-        cborcpp
+        CBOR-CPP::CBOR-CPP
         RapidJSON::RapidJSON
         date::date
         date::tz
@@ -146,7 +160,7 @@ bundle_static_library(${TARGET_NAME})
 get_property(ILL
     TARGET ${TARGET_NAME}
     PROPERTY INTERFACE_LINK_LIBRARIES)
-list(FILTER ILL EXCLUDE REGEX ".*cborcpp.*")
+list(FILTER ILL EXCLUDE REGEX ".*CBOR-CPP::.*")
 list(FILTER ILL EXCLUDE REGEX ".*date::.*")
 list(FILTER ILL EXCLUDE REGEX ".*RapidJSON::.*")
 list(FILTER ILL EXCLUDE REGEX ".*PicoSHA2::.*")
