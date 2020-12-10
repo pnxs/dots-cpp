@@ -114,19 +114,17 @@ namespace dots::io
     {
         node_t node = m_instances.extract(instance);
 
-        if (node.empty())
+        if (!node.empty())
         {
-            throw std::logic_error{ "instance to remove is not part of container" };
+            type::Struct& removed = node.key();
+            DotsCloneInformation& cloneInfo = node.mapped();
+
+            removed._copy(instance, instance._validProperties() - instance._keyProperties());
+            cloneInfo.lastOperation = DotsMt::remove;
+            cloneInfo.lastUpdateFrom = header.sender;
+            cloneInfo.modified = header.sentTime;
+            cloneInfo.localUpdateTime = types::timepoint_t::Now();
         }
-
-        type::Struct& removed = node.key();
-        DotsCloneInformation& cloneInfo = node.mapped();
-
-        removed._copy(instance, instance._validProperties() - instance._keyProperties());
-        cloneInfo.lastOperation = DotsMt::remove;
-        cloneInfo.lastUpdateFrom = header.sender;
-        cloneInfo.modified = header.sentTime;
-        cloneInfo.localUpdateTime = types::timepoint_t::Now();
 
         return node;
     }

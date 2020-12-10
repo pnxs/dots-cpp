@@ -146,16 +146,16 @@ TEST(TestContainer, insert_CreateDifferentInstanceWhenNotEmpty)
     ASSERT_EQ(cloneInfo.modified, cloneInfo.created);
 }
 
-TEST(TestContainer, remove_ThrowWhenEmpty)
+TEST(TestContainer, remove_EmptyNodeWhenEmpty)
 {
     dots::Container<DotsTestStruct> sut;
     DotsTestStruct dts{    DotsTestStruct::indKeyfField_i{ 1 } };
     DotsHeader header = test_helpers::make_header(dts, 42);
 
-    ASSERT_THROW(sut.remove(header, dts), std::logic_error);
+    ASSERT_TRUE(sut.remove(header, dts).empty());
 }
 
-TEST(TestContainer, remove_ThrowWhenNotContained)
+TEST(TestContainer, remove_EmptyNodeWhenNotContained)
 {
     dots::Container<DotsTestStruct> sut;
     DotsTestStruct dts1{ DotsTestStruct::indKeyfField_i{ 1 } };
@@ -166,7 +166,7 @@ TEST(TestContainer, remove_ThrowWhenNotContained)
     sut.insert(header1, dts1);
 
     ASSERT_EQ(sut.find(dts2), nullptr);
-    ASSERT_THROW(sut.remove(header2, dts2), std::logic_error);
+    ASSERT_TRUE(sut.remove(header2, dts2).empty());
 }
 
 TEST(TestContainer, remove_RemoveWhenContained)
