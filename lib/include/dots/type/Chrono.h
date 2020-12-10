@@ -90,13 +90,8 @@ namespace dots::type
         }
     };
 
-    #ifdef _MSC_VER
     using SystemTimePointBase = std::chrono::time_point<std::chrono::system_clock, std::chrono::duration<double>>;
     using SteadyTimePointBase = std::chrono::time_point<std::chrono::steady_clock, std::chrono::duration<double>>;
-    #else
-    using SystemTimePointBase = std::chrono::time_point<std::chrono::system_clock, Duration>;
-    using SteadyTimePointBase = std::chrono::time_point<std::chrono::steady_clock, Duration>;
-    #endif
 
     extern template struct TimePointImpl<SystemTimePointBase>;
     extern template struct TimePointImpl<SteadyTimePointBase>;
