@@ -36,4 +36,4 @@ run_unittests:
 deploy:
     stage: deploy
     script:
-        - "curl -X POST -F token=${TRIGGER_TOKEN_DOTS_LEGACY} -F ref=${CI_COMMIT_BRANCH} -F \"variables[TRIGGER_BRANCH]=${CI_COMMIT_BRANCH}\" -F \"variables[TRIGGER_JOB_ID]=${CI_JOB_ID}\" https://git2.pnxs.de/api/v4/projects/34/trigger/pipeline"
+        - "curl -X POST -F token=${TRIGGER_TOKEN_DOTS_LEGACY} -F ref=${CI_COMMIT_BRANCH} -F \"variables[DOTS_LIB_NAME]=dots-cpp-dev_1.1.${CI_PIPELINE_ID}_amd64.deb\" -F \"variables[TRIGGER_BRANCH]=${CI_COMMIT_BRANCH}\" -F \"variables[TRIGGER_JOB_ID]=${CI_JOB_ID}\" https://git2.pnxs.de/api/v4/projects/34/trigger/pipeline"
