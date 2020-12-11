@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.12)
-project(dots-cpp LANGUAGES CXX)
+project(dots-cpp
+    VERSION 1.1
+    DESCRIPTION "Distributed Objects in Time and Space - C++ implementation"
+    LANGUAGES CXX
+)
+
 
 # options
 add_definitions(-DENABLE_LOG_DEBUG -DENABLE_LOG_DATA -DBOOST_ERROR_CODE_HEADER_ONLY -DBOOST_SYSTEM_NO_DEPRECATED)
