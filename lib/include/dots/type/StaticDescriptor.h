@@ -147,7 +147,7 @@ namespace dots::type
             return 0;
         }
 
-        void fromString(T& storage, const std::string_view& value) const
+        static void fromString(T& storage, const std::string_view& value)
         {
             // TODO: use std::from_chars where applicable
 
@@ -192,11 +192,11 @@ namespace dots::type
             }
             else
             {
-                return Descriptor<>::fromString(Typeless::From(storage), value);
+                throw std::logic_error{ "from string conversion not available for type" };
             }
         }
 
-        std::string toString(const T& value) const
+        static std::string toString(const T& value)
         {
             // TODO: use std::to_chars where applicable
 
@@ -239,31 +239,26 @@ namespace dots::type
             }
             else
             {
-                return Descriptor<>::toString(Typeless::From(value));
+                throw std::logic_error{ "to string conversion not available for type" };
             }
         }
 
         static const std::shared_ptr<Descriptor<T>>& InstancePtr()
         {
-            if constexpr (std::is_default_constructible_v<Descriptor<T>>)
+            if constexpr (is_dynamic_descriptor_v<Descriptor<T>>)
             {
-                if constexpr (std::is_default_constructible_v<Descriptor<T>>)
-                {
-                    if (M_descriptor == nullptr)
-                    {
-                        M_descriptor = std::static_pointer_cast<Descriptor<T>>(StaticDescriptorMap::Emplace(std::make_shared<Descriptor<T>>()));
-                    }
-
-                    return M_descriptor;
-                }
-                else
-                {
-                    return nullptr;
-                }
+                throw std::logic_error{ "global descriptor not available because Descriptor<T> dynamic" };
             }
             else
             {
-                throw std::logic_error{ "global descriptor not available because Descriptor<T> is not default constructible" };
+                static_assert(std::is_default_constructible_v<Descriptor<T>>);
+
+                if (M_instanceStorage == nullptr)
+                {
+                    M_instanceStorage = std::static_pointer_cast<Descriptor<T>>(StaticDescriptorMap::Emplace(std::make_shared<Descriptor<T>>()));
+                }
+
+                return M_instanceStorage;
             }
         }
 
@@ -292,10 +287,7 @@ namespace dots::type
         template <typename U>
         static constexpr bool is_istreamable_v = is_istreamable_t<U>::value;
 
-        inline static std::shared_ptr<Descriptor<T>> M_descriptor;
-
-        // initialize a reference to the descriptor to ensure that it is always added to the static descriptor map 
-        inline static const std::shared_ptr<Descriptor<T>>& M_descriptorRef = InstancePtr();
+        inline static std::shared_ptr<Descriptor<T>> M_instanceStorage;
     };
 
     template <typename T, typename Base>

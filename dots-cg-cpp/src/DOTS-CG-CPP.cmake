@@ -1,5 +1,11 @@
 # helper variables
-set(DOTS-CG-CPP_DIR "${CMAKE_CURRENT_LIST_DIR}" CACHE INTERNAL "Internal helper variable containing the DOTS-CG-CPP directory")
+find_package(Python3 3.7 REQUIRED COMPONENTS Interpreter)
+if(NOT DEFINED DOTS-CG-CPP_DIR)
+    message(FATAL_ERROR "DOTS-CG-CPP_DIR variable is not set")
+endif()
+if(NOT DEFINED DOTS-CG)
+    message(FATAL_ERROR "DOTS-CG variable is not set")
+endif()
 set(DOTS-CG_CONFIG "config_cpp" CACHE INTERNAL "Internal helper variable containing the DOTS-CG config file name for C++")
 set(DOTS-CG_TEMPLATE_DIR ${DOTS-CG-CPP_DIR} CACHE INTERNAL "Internal helper variable containing the DOTS-CG template directory")
 set(DOTS-CG_TEMPLATE_LIST
@@ -7,13 +13,20 @@ set(DOTS-CG_TEMPLATE_LIST
     ${DOTS-CG-CPP_DIR}/enum.dots.h.dotsT;
     CACHE INTERNAL "Internal helper variable containing the C++ code generation templates"
 )
+set(DOTS-CG-CPP-GENERATE_CMD 
+    ${Python3_EXECUTABLE} ${DOTS-CG} --config=${DOTS-CG-CPP_DIR}/${DOTS-CG_CONFIG}.py --templatePath=${DOTS-CG_TEMPLATE_DIR}
+    CACHE INTERNAL "Internal helper variable containing the DOTS-CG generate command"
+)
 
 # code generation
 function(GET_GENERATED_DOTS_TYPES GENERATED_TYPES MODEL)
-    execute_process(COMMAND "sh" "-c" "${DOTS-CG} -C ${DOTS-CG_CONFIG} -T ${DOTS-CG_TEMPLATE_DIR} -M ${MODEL}"
+    execute_process(COMMAND ${DOTS-CG-CPP-GENERATE_CMD} --list-generated ${MODEL}
         OUTPUT_VARIABLE generated_types_list
         RESULT_VARIABLE rv
     )
+    if (NOT ${rv} MATCHES "0")
+        message(FATAL_ERROR "Could not generate type list: ${rv}")
+    endif()
     string(REPLACE "\n" ";" out_types ${generated_types_list})
     set(${GENERATED_TYPES} ${out_types} PARENT_SCOPE)
 endfunction(GET_GENERATED_DOTS_TYPES)
@@ -37,7 +50,7 @@ function(GENERATE_DOTS_TYPES GENERATED_SOURCES GENERATED_HEADERS)
 
         # create generation target for all types in model
         add_custom_command(OUTPUT ${GENERATED_TYPES}
-            COMMAND "sh" "-c" "${DOTS-CG} -C ${DOTS-CG_CONFIG} -T ${DOTS-CG_TEMPLATE_DIR} ${MODEL}"
+            COMMAND ${DOTS-CG-CPP-GENERATE_CMD} ${MODEL}
             DEPENDS ${DOTS-CG_TEMPLATE_LIST} ${MODEL}
             COMMENT "Generate DOTS C++ classes from ${MODEL}"
         )

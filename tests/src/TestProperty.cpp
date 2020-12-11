@@ -15,7 +15,7 @@ protected:
     struct test_property_t : Property<T, test_property_t<T>>
     {
         test_property_t(const dots::type::PropertyArea& area, std::string name, uint32_t tag) :
-            m_descriptor{ dots::type::PropertyDescriptor{ Descriptor<T>::InstancePtr(), std::move(name), tag, false, PropertyOffset<>{ std::in_place, static_cast<uint32_t>(reinterpret_cast<char*>(this) - reinterpret_cast<const char*>(&area)) } } } {}
+            m_descriptor{ dots::type::PropertyDescriptor{ Descriptor<T>::InstancePtr(), std::move(name), tag, false, PropertyOffset{ std::in_place, static_cast<uint32_t>(reinterpret_cast<char*>(this) - reinterpret_cast<const char*>(&area)) } } } {}
         test_property_t(const test_property_t& other) = delete;
         test_property_t(test_property_t&& other) = delete;
         ~test_property_t() { Property<T, test_property_t<T>>::destroy(); }

@@ -41,10 +41,10 @@ namespace dots::type
 
         constexpr bool isZero() const { return *this == base_t::zero(); }
         constexpr double toFractionalSeconds() const { return std::chrono::duration_cast<std::chrono::duration<double>>(*this).count(); }
-        constexpr int toSeconds() const { return std::chrono::round<std::chrono::seconds>(*this).count(); }
-        constexpr int toMilliseconds() const { return std::chrono::round<std::chrono::milliseconds>(*this).count(); }
-        constexpr int toMicroseconds() const { return std::chrono::round<std::chrono::microseconds>(*this).count(); }
-        constexpr int toNanoseconds() const { return std::chrono::round<std::chrono::nanoseconds>(*this).count(); }
+        constexpr int toSeconds() const { return static_cast<int>(std::chrono::round<std::chrono::seconds>(*this).count()); }
+        constexpr int toMilliseconds() const { return static_cast<int>(std::chrono::round<std::chrono::milliseconds>(*this).count()); }
+        constexpr int toMicroseconds() const { return static_cast<int>(std::chrono::round<std::chrono::microseconds>(*this).count()); }
+        constexpr int toNanoseconds() const { return static_cast<int>(std::chrono::round<std::chrono::nanoseconds>(*this).count()); }
 
         std::string toString() const;
         bool fromString(const std::string_view& value);
@@ -90,17 +90,8 @@ namespace dots::type
         }
     };
 
-#ifndef WIN32
-    using SystemTimePointBase = std::chrono::time_point<std::chrono::system_clock, Duration>;
-#else
-    using SystemTimePointBase = std::chrono::time_point<std::chrono::system_clock, Duration::Base>;
-#endif
-
-#ifndef WIN32
-    using SteadyTimePointBase = std::chrono::time_point<std::chrono::steady_clock, Duration>;
-#else
-    using SteadyTimePointBase = std::chrono::time_point<std::chrono::steady_clock, Duration::Base>;
-#endif
+    using SystemTimePointBase = std::chrono::time_point<std::chrono::system_clock, std::chrono::duration<double>>;
+    using SteadyTimePointBase = std::chrono::time_point<std::chrono::steady_clock, std::chrono::duration<double>>;
 
     extern template struct TimePointImpl<SystemTimePointBase>;
     extern template struct TimePointImpl<SteadyTimePointBase>;

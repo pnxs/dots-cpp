@@ -1,5 +1,6 @@
 #pragma once
 #include <type_traits>
+#include <optional>
 #include <dots/type/Property.h>
 
 namespace dots::type
@@ -9,24 +10,36 @@ namespace dots::type
     {
         using Property<T, Derived>::operator=;
 
+        static PropertyDescriptor InitDescriptor() 
+        {
+            if (M_descriptorStorage == std::nullopt)
+            {
+                M_descriptorStorage.emplace(Derived::MakeDescriptor());
+            }
+
+            return *M_descriptorStorage; 
+        }
+
+        inline static const type::PropertyDescriptor& Descriptor = InitDescriptor();
+
         static std::string_view Name()
         {
-            return Derived::Descriptor.name();
+            return Descriptor.name();
         }
 
         static uint32_t Tag()
         {
-            return Derived::Descriptor.tag();
+            return Descriptor.tag();
         }
 
         static bool IsKey()
         {
-            return Derived::Descriptor.isKey();
+            return Descriptor.isKey();
         }
 
         static PropertySet Set()
         {
-            return Derived::Descriptor.set();
+            return Descriptor.set();
         }
 
         static bool IsPartOf(const PropertySet& propertySet)
@@ -113,6 +126,8 @@ namespace dots::type
         {
             return Derived::Descriptor;
         }
+
+        inline static std::optional<type::PropertyDescriptor> M_descriptorStorage;
 
         union
         {

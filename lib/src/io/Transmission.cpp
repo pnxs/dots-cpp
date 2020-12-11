@@ -13,18 +13,28 @@ namespace dots::io
         return m_data->id;
     }
 
-    const DotsHeader& Transmission::header() const
+    const DotsHeader& Transmission::header() const&
     {
         return m_data->header;
     }
 
-    DotsHeader& Transmission::header()
+    DotsHeader& Transmission::header() &
     {
         return m_data->header;
     }
 
-    const type::AnyStruct& Transmission::instance() const
+    DotsHeader Transmission::header() &&
+    {
+        return DotsHeader{ std::move(m_data->header) };
+    }
+
+    const type::AnyStruct& Transmission::instance() const&
     {
         return m_data->instance;
+    }
+
+    type::AnyStruct Transmission::instance() &&
+    {
+        return type::AnyStruct{ std::move(m_data->instance) };
     }
 }

@@ -15,7 +15,6 @@ namespace dots::type
         static_assert(std::conjunction_v<std::negation<std::is_pointer<T>>, std::negation<std::is_reference<T>>>);
         using value_t = T;
         static constexpr bool IsTypeless = std::is_same_v<T, Typeless>;
-        static constexpr bool IsTypelessOrDynamic = std::disjunction_v<std::is_same<T, Typeless>, is_dynamic_descriptor<Descriptor<T>>>;
 
         template <typename U, std::enable_if_t<!std::disjunction_v<std::is_same<std::remove_reference_t<U>, Property>, std::is_same<std::remove_reference_t<U>, Derived>>, int> = 0>
         Derived& operator = (U&& rhs)
@@ -154,8 +153,8 @@ namespace dots::type
 
             setValid();
 
-            static_assert(!IsTypelessOrDynamic || sizeof...(Args) <= 1, "typeless construct only supports a single argument");
-            if constexpr (!IsTypelessOrDynamic)
+            static_assert(!IsTypeless || sizeof...(Args) <= 1, "typeless construct only supports a single argument");
+            if constexpr (!IsTypeless)
             {
                 Descriptor<T>::construct(storage(), std::forward<Args>(args)...);
             }
@@ -175,7 +174,7 @@ namespace dots::type
         {
             if (isValid())
             {
-                if constexpr (IsTypelessOrDynamic)
+                if constexpr (IsTypeless)
                 {
                     descriptor().valueDescriptor().destruct(storage());
                 }
@@ -258,8 +257,8 @@ namespace dots::type
 
             setValid();
 
-            static_assert(!IsTypelessOrDynamic || sizeof...(Args) <= 1, "typeless assignment only supports a single argument");
-            if constexpr (!IsTypelessOrDynamic)
+            static_assert(!IsTypeless || sizeof...(Args) <= 1, "typeless assignment only supports a single argument");
+            if constexpr (!IsTypeless)
             {
                 Descriptor<T>::assign(storage(), std::forward<Args>(args)...);
             }
@@ -294,7 +293,7 @@ namespace dots::type
             {
                 if (other.isValid())
                 {
-                    if constexpr (IsTypelessOrDynamic)
+                    if constexpr (IsTypeless)
                     {
                         return descriptor().valueDescriptor().swap(storage(), other);
                     }
@@ -320,7 +319,7 @@ namespace dots::type
         {
             if (isValid())
             {
-                if constexpr (IsTypelessOrDynamic)
+                if constexpr (IsTypeless)
                 {
                     return descriptor().valueDescriptor().equal(storage(), rhs);
                 }
@@ -351,7 +350,7 @@ namespace dots::type
         {
             if (isValid())
             {
-                if constexpr (IsTypelessOrDynamic)
+                if constexpr (IsTypeless)
                 {
                     return descriptor().valueDescriptor().less(storage(), rhs);
                 }
@@ -392,7 +391,7 @@ namespace dots::type
         {
             if (isValid())
             {
-                if constexpr (IsTypelessOrDynamic)
+                if constexpr (IsTypeless)
                 {
                     return descriptor().valueDescriptor().less(rhs, storage());
                 }
@@ -420,6 +419,25 @@ namespace dots::type
         bool greaterEqual(const Derived& rhs) const
         {
             return !less(rhs);
+        }
+
+        std::string toString() const
+        {
+            if (isValid())
+            {
+                if constexpr (IsTypeless)
+                {
+                    return descriptor().valueDescriptor().toString(value());
+                }
+                else
+                {
+                    return Descriptor<T>::toString(value());
+                }
+            }
+            else
+            {
+                return "<invalid>";
+            }
         }
 
         constexpr const PropertyDescriptor& descriptor() const
@@ -514,15 +532,7 @@ namespace dots::type
     template <typename T, typename Derived>
     std::ostream& operator << (std::ostream& os, const Property<T, Derived>& property)
     {
-        if (property.isValid())
-        {
-            os << *property;
-        }
-        else
-        {
-            os << "<invalid-property>";
-        }
-
+        os << property.toString();
         return os;
     }
 }

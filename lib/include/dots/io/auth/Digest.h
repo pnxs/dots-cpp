@@ -7,7 +7,7 @@
 
 namespace picosha2
 {
-    struct hash256_one_by_one;
+    class hash256_one_by_one;
 }
 
 namespace dots::io

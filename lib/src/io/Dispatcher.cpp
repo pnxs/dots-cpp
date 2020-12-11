@@ -153,8 +153,10 @@ namespace dots::io
 
             if (header.removeObj == true)
             {
-                Container<>::node_t removed = container.remove(header, instance);
-                dispatchEventToHandlers(Event<>{ header, instance, removed.key(), removed.mapped() });
+                if (Container<>::node_t removed = container.remove(header, instance); !removed.empty())
+                {
+                    dispatchEventToHandlers(Event<>{ header, instance, removed.key(), removed.mapped() });
+                }
             }
             else
             {

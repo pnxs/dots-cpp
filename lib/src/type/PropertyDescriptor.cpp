@@ -1,16 +1,17 @@
 #include <dots/type/PropertyDescriptor.h>
 #include <dots/type/Struct.h>
+#include <dots/type/PropertyArea.h>
 
 namespace dots::type
 {
 
-    PropertyDescriptor::PropertyDescriptor(std::shared_ptr<Descriptor<>> descriptor, std::string name, uint32_t tag, bool isKey, std::optional<PropertyOffset<>> offset/* = std::nullopt*/) :
+    PropertyDescriptor::PropertyDescriptor(std::shared_ptr<Descriptor<>> descriptor, std::string name, uint32_t tag, bool isKey, PropertyOffset offset) :
         m_descriptor{ descriptor },
         m_name{ std::move(name) },
         m_tag(tag),
         m_isKey(isKey),
         m_set{ PropertySet::FromIndex(m_tag) },
-        m_offset{ offset == std::nullopt ? PropertyOffset<>{ descriptor->alignment() } : *offset }
+        m_offset{ std::move(offset) }
     {
         if (m_descriptor->type() == Type::Struct)
         {
@@ -48,12 +49,12 @@ namespace dots::type
         return m_set;
     }
 
-    PropertyOffset<> PropertyDescriptor::offset() const
+    PropertyOffset PropertyDescriptor::offset() const
     {
         return m_offset;
     }
 
-    std::optional<PropertyOffset<>> PropertyDescriptor::subAreaOffset() const
+    std::optional<PropertyOffset> PropertyDescriptor::subAreaOffset() const
     {
         return m_subAreaOffset;
     }

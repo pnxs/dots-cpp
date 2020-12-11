@@ -15,7 +15,7 @@ namespace dots::io
         DescriptorConverter& operator = (const DescriptorConverter& rhs) = default;
         DescriptorConverter& operator = (DescriptorConverter&& rhs) noexcept = default;
 
-        std::shared_ptr<type::EnumDescriptor<types::int32_t>> operator () (const types::EnumDescriptorData& structDescriptorData);
+        std::shared_ptr<type::EnumDescriptor<>> operator () (const types::EnumDescriptorData& structDescriptorData);
         std::shared_ptr<type::StructDescriptor<>> operator () (const types::StructDescriptorData& structData);
 
         types::EnumDescriptorData operator () (const type::EnumDescriptor<>& enumDescriptor);

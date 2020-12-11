@@ -432,6 +432,32 @@ TEST(TestDispatcher, dispatch_CreateEventWhenAddedHandlerForUncachedType)
     ASSERT_EQ(i, 2);
 }
 
+TEST(TestDispatcher, dispatch_NoEventAfterRedundantRemoveForCachedType)
+{
+    dots::Dispatcher sut;
+    DotsTestStruct dts{ DotsTestStruct::indKeyfField_i{ 1 } };
+    DotsHeader headerCreate = test_helpers::make_header(dts, 42);
+    DotsHeader headerRemove = test_helpers::make_header(dts, 42, true);
+
+    sut.dispatch(dots::Transmission{ headerCreate, dts });
+
+    size_t i = 0;
+
+    dots::Dispatcher::id_t id = sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>& e)
+    {
+        if (e.isRemove())
+        {
+            ++i;
+        }
+    });
+    (void)id;
+
+    sut.dispatch(dots::Transmission{ headerRemove, dts });
+    sut.dispatch(dots::Transmission{ headerRemove, dts });
+
+    ASSERT_EQ(i, 1);
+}
+
 TEST(TestDispatcher, dispatch_ThrowWhenRemovingUncachedType)
 {
     dots::Dispatcher sut;

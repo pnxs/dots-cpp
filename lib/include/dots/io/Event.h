@@ -100,11 +100,5 @@ namespace dots::io
         {
             return static_cast<const T&>(Event<type::Struct>::updated());
         }
-
-    private:
-
-        using Event<type::Struct>::operator();
-        using Event<type::Struct>::transmitted;
-        using Event<type::Struct>::updated;
     };
 }

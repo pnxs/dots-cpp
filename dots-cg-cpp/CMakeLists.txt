@@ -1,13 +1,13 @@
 # project
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.12)
 project(DOTS-CG-CPP LANGUAGES CXX)
 set(TARGET_NAME dots-cg-cpp)
 set(EXPORT_NAME DOTS-CG-CPP)
 
 # code generation
 set(DOTS-CG_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../external/dcg)
-set(DOTS-CG-CPP_DIR ${CMAKE_CURRENT_LIST_DIR}/src)
-set(DOTS-CG "PYTHONPATH=${DOTS-CG-CPP_DIR}:${DOTS-CG_DIR} ${DOTS-CG_DIR}/bin/dcg.py" CACHE INTERNAL "Internal variable containing the DOTS-CG command")
+set(DOTS-CG-CPP_DIR ${CMAKE_CURRENT_LIST_DIR}/src CACHE INTERNAL "Internal helper variable containing the DOTS-CG-CPP directory")
+set(DOTS-CG "${DOTS-CG_DIR}/bin/dcg.py" CACHE INTERNAL "Internal variable containing the DOTS-CG command")
 include(src/DOTS-CG-CPP.cmake)
 
 # install

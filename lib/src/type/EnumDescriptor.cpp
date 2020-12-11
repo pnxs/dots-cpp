@@ -22,8 +22,8 @@ namespace dots::type
         return m_name;
     }
 
-    EnumDescriptor<Typeless, false, void>::EnumDescriptor(std::string name, const Descriptor<Typeless>& underlyingDescriptor):
-        Descriptor<Typeless>(Type::Enum, std::move(name), underlyingDescriptor.size(), underlyingDescriptor.alignment())
+    EnumDescriptor<Typeless, false, void>::EnumDescriptor(std::string name, size_t underlyingTypeSize, size_t underlyingTypeAlignment) :
+        Descriptor<Typeless>(Type::Enum, std::move(name), underlyingTypeSize, underlyingTypeAlignment)
     {
         /* do nothing */
     }

@@ -116,7 +116,7 @@ namespace dots::io
         }
 
         auto serializedHeader = to_cbor(transportHeader);
-        uint16_t headerSize = serializedHeader.size();
+        uint16_t headerSize = static_cast<uint16_t>(serializedHeader.size());
 
         std::array<boost::asio::const_buffer, 3> buffers{
             boost::asio::buffer(&headerSize, sizeof(headerSize)),

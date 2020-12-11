@@ -444,7 +444,7 @@ namespace dots::type
         static property_descriptor_container_t _MakePropertyDescriptors(std::tuple<Properties...>)
         {
             property_descriptor_container_t propertyDescriptors;
-            (propertyDescriptors.emplace_back(strip_t<Properties>::Descriptor), ...);
+            (propertyDescriptors.emplace_back(strip_t<Properties>::InitDescriptor()), ...);
 
             return propertyDescriptors;
         }
@@ -507,7 +507,12 @@ namespace dots::type
         template <typename T>
         using strip_t = std::remove_pointer_t<std::decay_t<T>>;
 
-        inline static const Descriptor<Derived>& M_descriptor = Descriptor<Derived>::Instance();
+        static const Descriptor<Derived>& DescriptorInstance()
+        {
+            return Descriptor<Derived>::Instance();
+        }
+
+        inline static const Descriptor<Derived>& M_descriptor = DescriptorInstance();
         PropertyArea m_propertyArea;
     };
 }

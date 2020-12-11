@@ -4,6 +4,7 @@
 #include <dots/type/FundamentalTypes.h>
 #include <dots/type/StaticStruct.h>
 #include <dots/type/StaticProperty.h>
+#include <dots/type/StaticPropertyOffset.h>
 {% for imp in imports %}
 #include "{{imp}}.dots.h"
 {% endfor %}
@@ -49,14 +50,19 @@ namespace dots::types
         struct {{property.name}}_t : type::StaticProperty<types::{{property.cxx_type}}, {{property.name}}_t>
         {
             using struct_t = {{name}};
-            static constexpr auto Offset = type::PropertyOffset<types::{{property.cxx_type}}>::Make({% if not loop.first %}{{loop.previtem.name}}_t::Offset{% endif %});
-            inline static auto Descriptor = type::PropertyDescriptor{ type::Descriptor<types::{{property.cxx_type}}>::InstancePtr(), "{{property.name}}", {{property.tag}}, {% if property.key %}true{% else %}false{% endif %}, Offset };
+            static constexpr auto Offset = type::StaticPropertyOffset<types::{{property.cxx_type}}>::{% if loop.first %}First(){% else %}Next({{loop.previtem.name}}_t::Offset){% endif %};
+
+            static type::PropertyDescriptor MakeDescriptor() 
+            {
+                return type::PropertyDescriptor{ type::Descriptor<types::{{property.cxx_type}}>::InstancePtr(), "{{property.name}}", {{property.tag}}, {% if property.key %}true{% else %}false{% endif %}, Offset };
+            }
 
             {{property.name}}_t& operator = (const {{property.name}}_t& rhs) = default;
             {{property.name}}_t& operator = ({{property.name}}_t&& rhs) = default;
             using StaticProperty::operator=;
 
         private:
+
             friend struct {{name}};
 
             {{property.name}}_t() = default;

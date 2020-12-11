@@ -1,7 +1,8 @@
 #pragma once
+#include <boost/asio.hpp>
+#if defined(BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR)
 #include <functional>
 #include <map>
-#include <boost/asio.hpp>
 #include <dots/io/services/FdHandler.h>
 
 namespace dots::io
@@ -29,3 +30,6 @@ namespace dots::io
         std::map<int, FdHandler> m_inEventHandlers;
     };
 }
+#else
+#error #error "POSIX stream descriptors are not available on this platform"
+#endif

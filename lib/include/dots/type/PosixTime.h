@@ -1,4 +1,5 @@
 #pragma once
+#ifdef __unix__
 #include <string_view>
 #include <dots/type/LibcTime.h>
 #include <dots/type/Chrono.h>
@@ -153,3 +154,6 @@ namespace dots::type::posix
         return Duration{ lhs } > Duration{ rhs };
     }
 }
+#else
+#error "POSIX time is not available on this platform"
+#endif

@@ -1,5 +1,5 @@
 # project
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.12)
 project(libDOTS VERSION 0.1.0 LANGUAGES CXX)
 set(TARGET_NAME dots)
 set(EXPORT_NAME DOTS)
@@ -86,6 +86,7 @@ target_sources(${TARGET_NAME}
         src/type/AnyStruct.cpp
         src/type/Chrono.cpp
         src/type/Descriptor.cpp
+        src/type/DynamicEnum.cpp
         src/type/DynamicStruct.cpp
         src/type/EnumDescriptor.cpp
         src/type/PropertyDescriptor.cpp
@@ -111,12 +112,24 @@ target_compile_features(${TARGET_NAME}
         cxx_std_17
 )
 target_compile_options(${TARGET_NAME}
+    PUBLIC
+        # disable permissive mode to enable alternative logical operators
+        # note that this needs to be mandatory to ensure portability
+        $<$<CXX_COMPILER_ID:MSVC>:/permissive->
+        # use standard C++ exception model and assume no exceptions for external C functions
+        # note that this needs to be public because MSVC is disadvising from mixing exceptions modes
+        $<$<CXX_COMPILER_ID:MSVC>:/EHsc>
+        # set Windows SDK to target Windows 10
+        $<$<CXX_COMPILER_ID:MSVC>:/DWINVER=0x0A00 /D_WIN32_WINNT=0x0A00>
     PRIVATE
         $<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-O2 -Wall -Wextra -Wpedantic -Werror -Wno-deprecated-declarations>>
+        $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>>:/W4>
 )
 target_compile_definitions(${TARGET_NAME}
     PUBLIC
         $<BUILD_INTERFACE:BOOST_ASIO_DISABLE_EPOLL>
+        # suppress warning for usage of deprecated Win32 socket functions in Boost
+        $<$<PLATFORM_ID:Windows>:_WINSOCK_DEPRECATED_NO_WARNINGS>
     PRIVATE
         DOTS_NO_GLOBAL_TRANSCEIVER
 )
@@ -126,32 +139,24 @@ target_link_libraries(${TARGET_NAME}
         Boost::program_options
         Boost::iostreams
         Boost::filesystem
-        pthread
+        # link pthread which is required for C++ threads on Linux and OSX
+        $<$<OR:$<PLATFORM_ID:Linux>,$<PLATFORM_ID:Darwin>>:pthread>
+        # link bcrypt which is required for certain Boost funcionality on Windows
+        $<$<PLATFORM_ID:Windows>:bcrypt>
     PRIVATE
-        cborcpp
-        RapidJSON::RapidJSON
-        date::date
-        date::tz
-        PicoSHA2::PicoSHA2
+        $<BUILD_INTERFACE:CBOR-CPP::CBOR-CPP>
+        $<BUILD_INTERFACE:RapidJSON::RapidJSON>
+        $<BUILD_INTERFACE:date::date>
+        $<BUILD_INTERFACE:date::tz>
+        $<BUILD_INTERFACE:PicoSHA2::PicoSHA2>
 )
 set_target_properties(${TARGET_NAME} PROPERTIES
     SOVERSION 0
 )
 
-bundle_static_library(${TARGET_NAME})
-
-# Strip libs
-get_property(ILL
-    TARGET ${TARGET_NAME}
-    PROPERTY INTERFACE_LINK_LIBRARIES)
-list(FILTER ILL EXCLUDE REGEX ".*cborcpp.*")
-list(FILTER ILL EXCLUDE REGEX ".*date::.*")
-list(FILTER ILL EXCLUDE REGEX ".*RapidJSON::.*")
-list(FILTER ILL EXCLUDE REGEX ".*PicoSHA2::.*")
-list(LENGTH ILL mylength)
-set_property(
-    TARGET ${TARGET_NAME}
-    PROPERTY INTERFACE_LINK_LIBRARIES ${ILL})
+if (NOT BUILD_DOTS_SHARED)
+    bundle_static_library(${TARGET_NAME})
+endif()
 
 # install
 include(GNUInstallDirs)
@@ -160,6 +165,7 @@ install(TARGETS ${TARGET_NAME}
     EXPORT ${TARGET_NAME}-targets
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}
     COMPONENT dev
 )
 install(EXPORT ${TARGET_NAME}-targets

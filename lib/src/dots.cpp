@@ -2,7 +2,9 @@
 #include <dots/dots.h>
 #include <dots/io/Io.h>
 #include <dots/io/services/TimerService.h>
+#if defined(BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR)
 #include <dots/io/services/FdHandlerService.h>
+#endif
 
 namespace dots
 {
@@ -16,6 +18,7 @@ namespace dots
         io::global_service<io::TimerService>().removeTimer(id);
     }
 
+    #if defined(BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR)
     void add_fd_handler(int fileDescriptor, const std::function<void()>& handler)
     {
         io::global_service<io::FdHandlerService>().addInEventHandler(fileDescriptor, handler);
@@ -25,6 +28,7 @@ namespace dots
     {
         io::global_service<io::FdHandlerService>().removeInEventHandler(fileDescriptor);
     }
+    #endif
 
     Publisher*& publisher()
     {

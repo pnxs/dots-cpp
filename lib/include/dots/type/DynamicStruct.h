@@ -137,7 +137,7 @@ namespace dots::type
     template <>
     struct Descriptor<DynamicStruct> : StructDescriptor<DynamicStruct>
     {
-        using dynamic_descriptor_tag_t = void;
+        static constexpr bool IsDynamic = true;
 
         Descriptor(std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptors, size_t size) :
             StructDescriptor<DynamicStruct>(std::move(name), flags, propertyDescriptors, sizeof(DynamicStruct), size, alignof(DynamicStruct))

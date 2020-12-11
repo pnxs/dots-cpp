@@ -42,12 +42,12 @@ namespace dots::io
         return m_connectionState;
     }
 
-    id_t Connection::selfId() const
+    auto Connection::selfId() const -> id_t
     {
         return m_selfId;
     }
 
-    id_t Connection::peerId() const
+    auto Connection::peerId() const -> id_t
     {
         return m_peerId;
     }

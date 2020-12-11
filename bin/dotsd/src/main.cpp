@@ -18,7 +18,9 @@ int main(int argc, char* argv[])
             ("dots-address", po::value<string>()->default_value("127.0.0.1"), "address to bind to")
             ("dots-port", po::value<string>()->default_value("11234"), "port to bind to")
             ("server-name,n", po::value<string>()->default_value("dotsd"), "set servername")
+            #ifdef __linux__
             ("daemon,d", "daemonize")
+            #endif
             ;
 
     po::variables_map vm;
@@ -55,6 +57,7 @@ int main(int argc, char* argv[])
         server.reset();
     });
 
+    #ifdef __linux__
     if (vm.count("daemon"))
     {
         if (daemon(0, 0) == -1)
@@ -63,6 +66,7 @@ int main(int argc, char* argv[])
             return EXIT_FAILURE;
         }
     }
+    #endif
 
     LOG_DEBUG_S("run mainloop");
     io_context.run();

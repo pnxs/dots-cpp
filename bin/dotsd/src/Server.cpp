@@ -1,8 +1,10 @@
 #include "Server.h"
+#ifdef __unix__
 #include <sys/resource.h>
+#include <dots/type/PosixTime.h>
+#endif
 #include <dots/dots.h>
 #include <dots/tools/logging.h>
-#include <dots/type/PosixTime.h>
 #include <dots/io/auth/LegacyAuthManager.h>
 #include "DotsClient.dots.h"
 #include <StructDescriptorData.dots.h>
@@ -96,6 +98,7 @@ namespace dots
             {
                 LOG_DEBUG_S("updateServerStatus");
 
+                #ifdef __unix__
                 struct rusage usage;
                 ::getrusage(RUSAGE_SELF, &usage);
 
@@ -112,6 +115,7 @@ namespace dots
                     DotsResourceUsage::nrVoluntaryContextSwitches_i{ usage.ru_nvcsw },
                     DotsResourceUsage::nrInvoluntaryContextSwitches_i{ usage.ru_nivcsw }
                 };
+                #endif
                 ds.cache = cacheStatus();
 
                 m_hostTransceiver.publish(ds);

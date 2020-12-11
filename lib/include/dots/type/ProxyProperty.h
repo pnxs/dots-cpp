@@ -10,6 +10,12 @@ namespace dots::type
     {
         static constexpr bool EnableValueConstructors = !std::is_same_v<T, PropertyArea>;
 
+        template <typename Derived>
+        static constexpr bool is_compatible_property_v = std::conjunction_v<std::negation<std::integral_constant<bool, Property<T, ProxyProperty<T>>::IsTypeless>>, std::integral_constant<bool, !std::is_same_v<T, PropertyArea>>, std::negation<std::is_same<Derived, ProxyProperty<T>>>>;
+
+        template <typename Derived>
+        static constexpr bool is_compatible_typeless_property_v = std::conjunction_v<std::integral_constant<bool, Property<T, ProxyProperty<T>>::IsTypeless>, std::integral_constant<bool, EnableValueConstructors>, std::negation<std::is_same<Derived, ProxyProperty<T>>>>;
+
         ProxyProperty(const PropertyPath& path) :
             ProxyProperty(nullptr, path_t{ &path })
         {
@@ -28,21 +34,21 @@ namespace dots::type
             /* do nothing */
         }
 
-        template <std::enable_if_t<EnableValueConstructors, int> = 0>
+        template <bool C = EnableValueConstructors, std::enable_if_t<C, int> = 0>
         ProxyProperty(T& value, const PropertyDescriptor& descriptor) :
             ProxyProperty(PropertyArea::GetArea<T>(value, descriptor.offset()), descriptor)
         {
             /* do nothing */
         }
 
-        template <typename Derived, std::enable_if_t<EnableValueConstructors && !Property<T, ProxyProperty<T>>::IsTypeless && !std::is_same_v<Derived, ProxyProperty<T>>, int> = 0>
+        template <typename Derived, std::enable_if_t<is_compatible_property_v<Derived>, int> = 0>
         ProxyProperty(Property<T, Derived>& property) :
             ProxyProperty(property.storage(), property.descriptor())
         {
             /* do nothing */
         }
 
-        template <typename U, typename Derived, std::enable_if_t<EnableValueConstructors && Property<T, ProxyProperty<T>>::IsTypeless && !std::is_same_v<Derived, ProxyProperty<T>>, int> = 0>
+        template <typename U, typename Derived, std::enable_if_t<is_compatible_typeless_property_v<Derived>, int> = 0>
         ProxyProperty(Property<U, Derived>& property) :
             ProxyProperty(Typeless::From(property.storage()), property.descriptor())
         {

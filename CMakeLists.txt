@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.12)
 project(dots-cpp LANGUAGES CXX)
 
 # options
@@ -9,6 +9,14 @@ set(Boost_USE_STATIC_LIBS ON)
 option(BUILD_TZ_LIB "" ON)
 option(USE_SYSTEM_TZ_DB "" ON)
 option(BUILD_UNIT_TESTS "Build the unit tests" ON)
+if (MSVC)
+    # force shared CRT because GTest defaults to static CRT when it is itself linked statically
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    # use standard C++ exception model and assume no exceptions for external C functions
+    # note that this needs to be set globally to include external targets because MSVC is disadvising 
+    # from mixing exceptions modes
+    add_compile_options(/EHsc)
+endif()
 
 # external projects
 add_subdirectory(external/cbor-cpp EXCLUDE_FROM_ALL)

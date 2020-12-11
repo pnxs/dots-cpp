@@ -1,3 +1,5 @@
+#include <boost/asio.hpp>
+#if defined(BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR)
 #include <dots/io/services/FdHandlerService.h>
 
 namespace dots::io
@@ -26,3 +28,4 @@ namespace dots::io
         m_inEventHandlers.clear();
     }
 }
+#endif

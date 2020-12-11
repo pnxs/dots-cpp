@@ -25,6 +25,9 @@ namespace dots::type
         operator Struct&();
         operator const Struct&() const;
 
+        operator const PropertyArea&() const;
+        operator PropertyArea&();
+
         template <typename T>
         bool is() const
         {

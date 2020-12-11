@@ -1,6 +1,7 @@
 #pragma once
-#include <string_view>
 #include <boost/asio.hpp>
+#if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
+#include <string_view>
 #include <dots/io/Channel.h>
 #include <DotsTransportHeader.dots.h>
 
@@ -43,3 +44,6 @@ namespace dots::io::posix
         std::vector<uint8_t> m_instanceBuffer;
     };
 }
+#else
+#error "Local sockets are not available on this platform"
+#endif
