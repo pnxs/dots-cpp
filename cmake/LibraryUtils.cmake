@@ -67,6 +67,10 @@ function(bundle_static_library tgt_name)
     add_custom_command(TARGET ${tgt_name} POST_BUILD
       COMMAND ${ar_tool} -M < ${CMAKE_BINARY_DIR}/${bundled_tgt_name}.ar
       COMMAND ${CMAKE_COMMAND} -E copy ${bundled_tgt_full_name} ${tgt_full_name}
+      COMMAND ${CMAKE_COMMAND} -E remove ${bundled_tgt_full_name}
+      BYPRODUCTS
+        ${CMAKE_BINARY_DIR}/${bundled_tgt_name}.ar
+        ${CMAKE_BINARY_DIR}/${bundled_tgt_name}.ar.in
       COMMENT "Bundling ${bundled_tgt_name}"
       VERBATIM)
   elseif(MSVC)
@@ -79,6 +83,10 @@ function(bundle_static_library tgt_name)
     add_custom_command(TARGET ${tgt_name} POST_BUILD
       COMMAND ${lib_tool} /NOLOGO /OUT:${bundled_tgt_full_name} ${static_libs_full_names}
       COMMAND ${CMAKE_COMMAND} -E copy ${bundled_tgt_full_name} ${tgt_full_name}
+      COMMAND ${CMAKE_COMMAND} -E remove ${bundled_tgt_full_name}
+      BYPRODUCTS
+        ${CMAKE_BINARY_DIR}/${bundled_tgt_name}.ar
+        ${CMAKE_BINARY_DIR}/${bundled_tgt_name}.ar.in
       COMMENT "Bundling ${bundled_tgt_name}"
       VERBATIM)
   else()
