@@ -7,7 +7,7 @@ build_ubuntu:
     stage: build
     script:
         - pwd
-        - cmake -Bbuild -H.
+        - cmake -Bbuild -H. -DCMAKE_BUILD_TYPE=Release -DCPACK_PACKAGE_VERSION_PATCH=${CI_PIPELINE_ID}
         - make -Cbuild -j4
         - cd build && cpack && cd -
     artifacts:
