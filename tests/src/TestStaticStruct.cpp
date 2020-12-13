@@ -450,6 +450,7 @@ TEST_F(TestStaticStruct, copy_PartialCopy)
     TestStruct sutThis{
         TestStruct::intProperty_i{ 1 },
         TestStruct::stringProperty_i{ "foo" },
+        TestStruct::boolProperty_i{ true },
         TestStruct::floatVectorProperty_i{ vector_t<float32_t>{ 3.1415f } }
     };
 
@@ -458,9 +459,9 @@ TEST_F(TestStaticStruct, copy_PartialCopy)
         TestStruct::stringProperty_i{ "bar" }
     };
 
-    sutThis._copy(sutOther, ~TestStruct::floatVectorProperty_p);
+    sutThis._copy(sutOther, TestStruct::stringProperty_p + TestStruct::boolProperty_p);
 
-    EXPECT_EQ(sutThis.intProperty, 2);
+    EXPECT_EQ(sutThis.intProperty, 1);
     EXPECT_EQ(sutThis.stringProperty, "bar");
     EXPECT_FALSE(sutThis.boolProperty.isValid());
     EXPECT_EQ(sutThis.floatVectorProperty, vector_t<float32_t>{ 3.1415f });
