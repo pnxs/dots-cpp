@@ -687,6 +687,7 @@ TEST_F(TestDynamicStruct, copy_PartialCopy)
     DynamicStruct sutThis{ *m_testDynamicStructDescriptor,
         DynamicStruct::property_i<int32_t>{ "intProperty", 1 },
         DynamicStruct::property_i<string_t>{ "stringProperty", "foo" },
+        DynamicStruct::property_i<bool_t>{ "boolProperty", true },
         DynamicStruct::property_i<vector_t<float32_t>>{ "floatVectorProperty", vector_t<float32_t>{ 3.1415f } }
     };
 
@@ -695,9 +696,9 @@ TEST_F(TestDynamicStruct, copy_PartialCopy)
         DynamicStruct::property_i<string_t>{ "stringProperty", "bar" }
     };
 
-    sutThis._copy(sutOther, ~sutThis._get("floatVectorProperty").descriptor().set());
+    sutThis._copy(sutOther, sutThis._get("stringProperty").descriptor().set() + sutThis._get("boolProperty").descriptor().set());
 
-    EXPECT_EQ(sutThis._get<int32_t>("intProperty"), 2);
+    EXPECT_EQ(sutThis._get<int32_t>("intProperty"), 1);
     EXPECT_EQ(sutThis._get<string_t>("stringProperty"), "bar");
     EXPECT_FALSE(sutThis._get("boolProperty").isValid());
     EXPECT_EQ(sutThis._get<vector_t<float32_t>>("floatVectorProperty"), vector_t<float32_t>{ 3.1415f });
