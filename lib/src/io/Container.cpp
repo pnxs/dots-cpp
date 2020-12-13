@@ -98,7 +98,7 @@ namespace dots::io
             type::Struct& existing = node.key();
             DotsCloneInformation& cloneInfo = node.mapped();
 
-            existing._copy(instance, instance._validProperties() - instance._keyProperties());
+            existing._copy(instance, *header.attributes - instance._keyProperties());
             cloneInfo.lastOperation = DotsMt::update;
             cloneInfo.lastUpdateFrom = header.sender;
             cloneInfo.modified = header.sentTime;
@@ -119,7 +119,7 @@ namespace dots::io
             type::Struct& removed = node.key();
             DotsCloneInformation& cloneInfo = node.mapped();
 
-            removed._copy(instance, instance._validProperties() - instance._keyProperties());
+            removed._copy(instance, *header.attributes - instance._keyProperties());
             cloneInfo.lastOperation = DotsMt::remove;
             cloneInfo.lastUpdateFrom = header.sender;
             cloneInfo.modified = header.sentTime;
