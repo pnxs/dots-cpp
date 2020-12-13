@@ -221,7 +221,7 @@ TEST(TestContainer, remove_RemoveWhenContained)
     ASSERT_LE(*cloneInfo.localUpdateTime, dots::types::timepoint_t::Now());
 }
 
-TEST(TestContainer, begin_end_YieldsExpectedInstances)
+TEST(TestContainer, begin_end_IterationYieldsExpectedInstances)
 {
     dots::Container<DotsTestStruct> sut;
     std::vector<DotsTestStruct> expected;
@@ -255,7 +255,7 @@ TEST(TestContainer, begin_end_YieldsExpectedInstances)
     }
 }
 
-TEST(TestContainer, forEach_YieldsExpectedInstances)
+TEST(TestContainer, forEach_IterationYieldsExpectedInstances)
 {
     dots::Container<DotsTestStruct> sut;
     std::vector<DotsTestStruct> expected;
