@@ -22,6 +22,12 @@ namespace
                 DotsHeader::removeObj_i{ remove },
             };
         }
+
+        std::pair<DotsHeader, DotsTestStruct> make_instance(DotsTestStruct instance, uint32_t sender, bool remove = false, dots::property_set_t includeProperties = dots::property_set_t::All)
+        {
+            DotsHeader header = make_header(instance, sender, remove, includeProperties);
+            return std::make_pair(std::move(header), std::move(instance));
+        }
     }
 }
 
@@ -213,4 +219,70 @@ TEST(TestContainer, remove_RemoveWhenContained)
 
     ASSERT_GE(*cloneInfo.localUpdateTime, *header3.sentTime);
     ASSERT_LE(*cloneInfo.localUpdateTime, dots::types::timepoint_t::Now());
+}
+
+TEST(TestContainer, begin_end_YieldsExpectedInstances)
+{
+    dots::Container<DotsTestStruct> sut;
+    std::vector<DotsTestStruct> expected;
+
+    auto [header1, dts1] = test_helpers::make_instance(DotsTestStruct{ DotsTestStruct::indKeyfField_i{ 1 }, DotsTestStruct::stringField_i{ "foo" } }, 42);
+    auto [header2, dts2] = test_helpers::make_instance(DotsTestStruct{ DotsTestStruct::indKeyfField_i{ 2 }, DotsTestStruct::stringField_i{ "bar" } }, 42);
+    auto [header3, dts3] = test_helpers::make_instance(DotsTestStruct{ DotsTestStruct::indKeyfField_i{ 3 }, DotsTestStruct::stringField_i{ "baz" } }, 42);
+    auto [header4, dts4] = test_helpers::make_instance(DotsTestStruct{ DotsTestStruct::indKeyfField_i{ 4 }, DotsTestStruct::stringField_i{ "qux" } }, 42);
+
+    expected.emplace_back(sut.insert(header1, dts1).first.to<DotsTestStruct>());
+    expected.emplace_back(sut.insert(header2, dts2).first.to<DotsTestStruct>());
+    expected.emplace_back(sut.insert(header3, dts3).first.to<DotsTestStruct>());
+    expected.emplace_back(sut.insert(header4, dts4).first.to<DotsTestStruct>());
+
+    size_t i = 0;
+
+    for (const auto& [instance, cloneInfo] : sut)
+    {
+        (void)instance;
+        (void)cloneInfo;
+        ++i;
+    }
+
+    ASSERT_EQ(i, expected.size());
+
+    auto itExpected = expected.begin();
+
+    for (const auto& [instance, cloneInfo]: sut)
+    {
+        EXPECT_EQ(instance.to<DotsTestStruct>(), *itExpected++);
+    }
+}
+
+TEST(TestContainer, forEach_YieldsExpectedInstances)
+{
+    dots::Container<DotsTestStruct> sut;
+    std::vector<DotsTestStruct> expected;
+
+    auto [header1, dts1] = test_helpers::make_instance(DotsTestStruct{ DotsTestStruct::indKeyfField_i{ 1 }, DotsTestStruct::stringField_i{ "foo" } }, 42);
+    auto [header2, dts2] = test_helpers::make_instance(DotsTestStruct{ DotsTestStruct::indKeyfField_i{ 2 }, DotsTestStruct::stringField_i{ "bar" } }, 42);
+    auto [header3, dts3] = test_helpers::make_instance(DotsTestStruct{ DotsTestStruct::indKeyfField_i{ 3 }, DotsTestStruct::stringField_i{ "baz" } }, 42);
+    auto [header4, dts4] = test_helpers::make_instance(DotsTestStruct{ DotsTestStruct::indKeyfField_i{ 4 }, DotsTestStruct::stringField_i{ "qux" } }, 42);
+
+    expected.emplace_back(sut.insert(header1, dts1).first.to<DotsTestStruct>());
+    expected.emplace_back(sut.insert(header2, dts2).first.to<DotsTestStruct>());
+    expected.emplace_back(sut.insert(header3, dts3).first.to<DotsTestStruct>());
+    expected.emplace_back(sut.insert(header4, dts4).first.to<DotsTestStruct>());
+
+    size_t i = 0;
+
+    sut.forEach([&](const DotsTestStruct&/* instance*/)
+    {
+        ++i;
+    });
+
+    ASSERT_EQ(i, expected.size());
+
+    auto itExpected = expected.begin();
+
+    sut.forEach([&](const DotsTestStruct& instance)
+    {
+        EXPECT_EQ(instance, *itExpected++);
+    });
 }
