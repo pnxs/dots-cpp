@@ -16,6 +16,21 @@ namespace dots::type
     struct Descriptor<std::string> : StaticDescriptor<std::string>
     {
         Descriptor() : StaticDescriptor(Type::string, "string") {}
+
+        bool usesDynamicMemory() const override
+        {
+            return true;
+        }
+
+        size_t dynamicMemoryUsage(const Typeless& value) const override
+        {
+            return dynamicMemoryUsage(value.to<std::string>());
+        }
+
+        size_t dynamicMemoryUsage(const std::string& value) const
+        {
+            return value.empty() ? 0 : value.size() + 1;
+        }
     };
 
     template <>
