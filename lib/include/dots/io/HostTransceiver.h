@@ -25,7 +25,7 @@ namespace dots::io
         HostTransceiver& operator = (HostTransceiver&& rhs) = default;
 
         void listen(listener_ptr_t&& listener);
-        void publish(const type::Struct& instance, types::property_set_t includedProperties = types::property_set_t::All, bool remove = false) override;
+        void publish(const type::Struct& instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false) override;
 
         template <typename T, typename... Args>
         void setAuthManager(Args&&... args)

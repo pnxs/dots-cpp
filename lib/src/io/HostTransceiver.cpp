@@ -24,15 +24,22 @@ namespace dots::io
         );
     }
 
-    void HostTransceiver::publish(const type::Struct& instance, types::property_set_t includedProperties, bool remove)
+    void HostTransceiver::publish(const type::Struct& instance, std::optional<types::property_set_t> includedProperties/* = std::nullopt*/, bool remove/* = false*/)
     {
-        const type::StructDescriptor<>& descriptor = instance._descriptor();
+        if (includedProperties == std::nullopt)
+        {
+            includedProperties = instance._validProperties();
+        }
+        else
+        {
+            *includedProperties ^= instance._descriptor().properties();
+        }
 
         DotsHeader header{
-            DotsHeader::typeName_i{ descriptor.name() },
+            DotsHeader::typeName_i{ instance._descriptor().name() },
             DotsHeader::sentTime_i{ types::timepoint_t::Now() },
             DotsHeader::serverSentTime_i{ types::timepoint_t::Now() },
-            DotsHeader::attributes_i{ includedProperties ==  types::property_set_t::All ? instance._validProperties() : includedProperties },
+            DotsHeader::attributes_i{ *includedProperties },
             DotsHeader::sender_i{ io::Connection::HostId },
             DotsHeader::removeObj_i{ remove },
             DotsHeader::isFromMyself_i{ true }

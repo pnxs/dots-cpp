@@ -115,12 +115,21 @@ namespace dots::io
         }
     }
 
-    void Connection::transmit(const type::Struct& instance, types::property_set_t includedProperties, bool remove)
+    void Connection::transmit(const type::Struct& instance, std::optional<types::property_set_t> includedProperties/* = std::nullopt*/, bool remove/* = false*/)
     {
+        if (includedProperties == std::nullopt)
+        {
+            includedProperties = instance._validProperties();
+        }
+        else
+        {
+            *includedProperties ^= instance._descriptor().properties();
+        }
+
         transmit(DotsHeader{
             DotsHeader::typeName_i{ instance._descriptor().name() },
             DotsHeader::sentTime_i{ types::timepoint_t::Now() },
-            DotsHeader::attributes_i{ includedProperties ==  types::property_set_t::All ? instance._validProperties() : includedProperties },
+            DotsHeader::attributes_i{ *includedProperties },
             DotsHeader::removeObj_i{ remove }
         }, instance);
     }
