@@ -44,11 +44,9 @@ namespace dots::io
             DotsHeader::removeObj_i{ remove },
             DotsHeader::isFromMyself_i{ true }
         };
-        type::AnyStruct{ instance };
 
-        Transmission transmission{ std::move(header), std::move(instance) };
+        Transmission transmission{ std::move(header), instance };
         dispatcher().dispatch(transmission);
-        header.sender.destroy();
         transmit(nullptr, std::move(transmission));
     }
 
