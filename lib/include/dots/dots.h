@@ -32,7 +32,7 @@ namespace dots
     Publisher*& publisher();
     GuestTransceiver& transceiver(const std::string_view& name = "dots-transceiver");
 
-    void publish(const type::Struct& instance, types::property_set_t includedProperties, bool remove);
+    void publish(const type::Struct& instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false);
     void remove(const type::Struct& instance);
 
     template<typename T>
@@ -58,7 +58,7 @@ namespace dots
     {
         static_assert(!T::_SubstructOnly, "it is not allowed to publish to a struct that is marked with 'substruct_only'!");
         io::register_global_publish_type<T>();
-        publish(static_cast<const type::Struct&>(instance), includedProperties == std::nullopt ? instance._validProperties() : *includedProperties, remove);
+        publish(static_cast<const type::Struct&>(instance), includedProperties, remove);
     }
 
     template<typename T>
