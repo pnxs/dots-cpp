@@ -44,7 +44,7 @@ namespace dots::io
 
         Subscription subscribe(new_type_handler_t&& handler);
 
-        virtual void publish(const type::Struct& instance, types::property_set_t what = types::property_set_t::All, bool remove = false) = 0;
+        virtual void publish(const type::Struct& instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false) = 0;
         void remove(const type::Struct& instance);
 
         template <typename T>

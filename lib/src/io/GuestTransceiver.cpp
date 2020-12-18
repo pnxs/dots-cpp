@@ -30,7 +30,7 @@ namespace dots::io
         return *m_hostConnection;
     }
 
-    void GuestTransceiver::publish(const type::Struct& instance, types::property_set_t includedProperties/*t = types::property_set_t::All*/, bool remove/* = false*/)
+    void GuestTransceiver::publish(const type::Struct& instance, std::optional<types::property_set_t> includedProperties/* = std::nullopt*/, bool remove/* = false*/)
     {
         const type::StructDescriptor<>& descriptor = instance._descriptor();
 
@@ -39,12 +39,17 @@ namespace dots::io
             throw std::logic_error{ "attempt to publish substruct-only type: " + descriptor.name() };
         }
 
-        if (!(descriptor.keyProperties() <= includedProperties))
+        if (includedProperties == std::nullopt)
         {
-            throw std::runtime_error("tried to publish instance with invalid key (not all key-fields are set) what=" + includedProperties.toString() + " tdkeys=" + descriptor.keyProperties().toString());
+            includedProperties = instance._validProperties();
         }
 
-        LOG_DATA_S("data:" << to_ascii(&descriptor, &instance, includedProperties));
+        if (!(descriptor.keyProperties() <= *includedProperties))
+        {
+            throw std::runtime_error("tried to publish instance with invalid key (not all key-fields are set) what=" + includedProperties->toString() + " tdkeys=" + descriptor.keyProperties().toString());
+        }
+
+        LOG_DATA_S("data:" << to_ascii(&descriptor, &instance, *includedProperties));
 
         try
         {
