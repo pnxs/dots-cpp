@@ -5,7 +5,6 @@ project(dots-cpp
     LANGUAGES CXX
 )
 
-
 # options
 add_definitions(-DENABLE_LOG_DEBUG -DENABLE_LOG_DATA -DBOOST_ERROR_CODE_HEADER_ONLY -DBOOST_SYSTEM_NO_DEPRECATED)
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
@@ -27,6 +26,11 @@ endif()
 add_subdirectory(external/cbor-cpp EXCLUDE_FROM_ALL)
 add_subdirectory(external/date EXCLUDE_FROM_ALL)
 add_subdirectory(external/googletest EXCLUDE_FROM_ALL)
+
+# allow external packages to be found when cross-compiling
+if (${CMAKE_CROSSCOMPILING})
+    list(APPEND CMAKE_FIND_ROOT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/external/)
+endif()
 
 # sub-projects
 add_subdirectory(dots-cg-cpp)
