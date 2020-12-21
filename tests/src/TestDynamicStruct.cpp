@@ -129,7 +129,7 @@ TEST_F(TestDynamicStruct, PropertyOffsetsMatchExpectedOffsets)
     EXPECT_EQ(sut._get("intProperty").descriptor().offset(), sizeof(PropertyArea));
     EXPECT_EQ(sut._get("stringProperty").descriptor().offset(), sut._get("intProperty").descriptor().offset() + 4);
     EXPECT_EQ(sut._get("boolProperty").descriptor().offset(), sut._get("stringProperty").descriptor().offset() + sizeof(string_t));
-    EXPECT_EQ(sut._get("floatVectorProperty").descriptor().offset(), sut._get("boolProperty").descriptor().offset() + sizeof(bool_t) + 7);
+    EXPECT_EQ(sut._get("floatVectorProperty").descriptor().offset(), sut._get("boolProperty").descriptor().offset() + sizeof(bool_t) + (sizeof(void*) == 4 ? 3 :7));
     EXPECT_EQ(sut._get("subStructProperty").descriptor().offset(), sut._get("floatVectorProperty").descriptor().offset() + sizeof(vector_t<float32_t>));
     EXPECT_EQ(sut._get("structVectorProperty").descriptor().offset(), sut._get("subStructProperty").descriptor().offset() + sut._get("subStructProperty").descriptor().valueDescriptor().size());
     EXPECT_EQ(sut._descriptor().size(), sizeof(DynamicStruct) + sut._get("structVectorProperty").descriptor().offset() + sizeof(vector_t<DynamicStruct>));
