@@ -5,40 +5,34 @@ namespace dots::type
 {
     namespace details
     {
-        struct ProtoStaticStruct : Struct
+        struct ProtoBase
         {
-            ProtoStaticStruct(const StructDescriptor<>& descriptor) : Struct(descriptor) {}
-            PropertyArea m_propertyArea;
+            // intentionally empty
         };
 
-        template <typename P>
-        struct ProtoStruct : ProtoStaticStruct
+        struct ProtoStruct : ProtoBase
         {
-            P p1;
+            void* _descriptor = nullptr;
         };
 
-        template <typename P>
-        constexpr bool is_tightly_packed_v = sizeof(ProtoStruct<P>) == sizeof(ProtoStaticStruct);
+        template <typename T>
+        struct ProtoStaticProperty : ProtoBase
+        {
+            std::aligned_storage_t<sizeof(T), alignof(T)> t;
+        };
 
-        template <typename P>
-        constexpr size_t initial_padding_v = is_tightly_packed_v<P> ? 0 : sizeof(ProtoStaticStruct) - sizeof(Struct) - sizeof(PropertyArea);
-
-        template <typename P>
-        constexpr size_t initial_offset_v = sizeof(PropertyArea) + initial_padding_v<P>;
+        struct ProtoStaticStruct : ProtoStruct
+        {
+            ProtoStaticProperty<PropertyArea> _propertyArea;
+        };
     }
 
-    template <typename T>
     struct StaticPropertyOffset : PropertyOffset
     {
-        static constexpr StaticPropertyOffset<T> First()
+        static constexpr StaticPropertyOffset MakeOffset(const details::ProtoBase* propertyArea, const details::ProtoBase* property)
         {
-            return StaticPropertyOffset<T>{ 0, details::initial_offset_v<T> };
-        }
-
-        template <typename U>
-        static constexpr StaticPropertyOffset<T> Next(const StaticPropertyOffset<U>& previous)
-        {
-            return StaticPropertyOffset<T>{ previous, sizeof(U) }; 
+            static_assert(sizeof(details::ProtoBase) == 1);
+            return StaticPropertyOffset{ static_cast<size_t>(property - propertyArea) };
         }
 
         StaticPropertyOffset(const StaticPropertyOffset& other) = default;
@@ -50,8 +44,8 @@ namespace dots::type
 
     private:
 
-        constexpr StaticPropertyOffset(size_t previousOffset, size_t previousSize) :
-            PropertyOffset(alignof(T), previousOffset, previousSize)
+        constexpr StaticPropertyOffset(size_t offset) :
+            PropertyOffset(std::in_place, offset)
         {
             /* do nothing */
         }

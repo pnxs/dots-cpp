@@ -130,6 +130,9 @@ target_compile_definitions(${TARGET_NAME}
         BOOST_ASIO_DISABLE_EPOLL
         # suppress warning for usage of deprecated Win32 socket functions in Boost
         $<$<PLATFORM_ID:Windows>:_WINSOCK_DEPRECATED_NO_WARNINGS>
+        # use constexpr property offsets on supported compilers
+        # note that this is currently not compatible with Clang
+        $<$<NOT:$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:MSVC>>>:DOTS_PROPERTIES_NO_CONSTEXPR_OFFSETS>
     PRIVATE
         DOTS_NO_GLOBAL_TRANSCEIVER
 )
