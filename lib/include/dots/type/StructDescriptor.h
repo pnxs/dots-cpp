@@ -94,8 +94,6 @@ namespace dots::type
         const property_descriptor_container_t& propertyDescriptors() const;
         partial_property_descriptor_container_t propertyDescriptors(const PropertySet& properties) const;
 
-        [[deprecated("use property paths instead")]]
-        const property_descriptor_container_t& flatPropertyDescriptors() const;
         const std::vector<PropertyPath>& propertyPaths() const;
 
         const PropertySet& properties() const;
@@ -121,8 +119,6 @@ namespace dots::type
         #endif
 
     private:
-
-        void flatPropertyDescriptors(PropertyOffset previousOffset, size_t previousSize, property_descriptor_container_t& flatPropertyDescriptors) const;
 
         uint8_t m_flags;
         property_descriptor_container_t m_propertyDescriptors;

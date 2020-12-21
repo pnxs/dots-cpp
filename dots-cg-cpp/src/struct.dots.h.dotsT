@@ -14,6 +14,16 @@
 
 namespace dots::types
 {
+    namespace details
+    {
+        struct Proto{{name}} : type::details::ProtoStaticStruct
+        {
+{% for property in attributes %}
+            type::details::ProtoStaticProperty<types::{{property.cxx_type}}> {{property.name}};
+{% endfor %}
+        };
+    }
+
 {% for comment_line in structComment %}
     /// {{comment_line}}
 {% endfor %}
@@ -50,7 +60,11 @@ namespace dots::types
         struct {{property.name}}_t : type::StaticProperty<types::{{property.cxx_type}}, {{property.name}}_t>
         {
             using struct_t = {{name}};
-            static constexpr auto Offset = type::StaticPropertyOffset<types::{{property.cxx_type}}>::{% if loop.first %}First(){% else %}Next({{loop.previtem.name}}_t::Offset){% endif %};
+            #if (defined DOTS_PROPERTIES_NO_CONSTEXPR_OFFSETS)
+            inline static auto Offset = [](){ auto proto{{name}} = details::Proto{{name}}{}; return type::StaticPropertyOffset::MakeOffset(&proto{{name}}._propertyArea, &proto{{name}}.{{property.name}}); }();
+            #else
+            static constexpr auto Offset = [](){ constexpr auto proto{{name}} = details::Proto{{name}}{}; return type::StaticPropertyOffset::MakeOffset(&proto{{name}}._propertyArea, &proto{{name}}.{{property.name}}); }();
+            #endif
 
             static type::PropertyDescriptor MakeDescriptor() 
             {
