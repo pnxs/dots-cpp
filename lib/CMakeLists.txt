@@ -39,7 +39,6 @@ target_sources(${TARGET_NAME}
         src/Application.cpp
 
         src/tools/logging.cpp
-        src/tools/signal.cpp
         src/tools/IpNetwork.cpp
 
         src/io/Transceiver.cpp
