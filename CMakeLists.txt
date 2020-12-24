@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 project(dots-cpp
-    VERSION 1.1
+    VERSION 1.2
     DESCRIPTION "Distributed Objects in Time and Space - C++ implementation"
     LANGUAGES CXX
 )
