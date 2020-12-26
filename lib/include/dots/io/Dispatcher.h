@@ -50,15 +50,43 @@ namespace dots::io
             return m_containerPool.get<T>();
         }
 
-        template<typename T>
-        id_t addEventHandler(event_handler_t<T>&& handler)
+        template<typename T, typename EventHandler, typename... Args>
+        id_t addEventHandler(EventHandler&& handler, Args&&... args)
         {
-            static_assert(std::is_base_of_v<type::Struct, T>, "T has to be a sub-class of Struct");
+            constexpr bool is_top_level_struct = std::conjunction_v<std::is_base_of<type::Struct, T>, std::negation<std::bool_constant<T::_SubstructOnly>>>;
+            constexpr bool is_event_handler = std::is_invocable_v<EventHandler, Args&..., const Event<T>&>;
 
-            return addEventHandler(T::_Descriptor(), [_handler(std::move(handler))](const Event<>& e)
+            static_assert(is_top_level_struct, "T has to be a top-level DOTS struct type");
+            static_assert(is_event_handler, "Handler has to be a valid DOTS event handler type and be invocable with args");
+
+            if constexpr (is_top_level_struct && is_event_handler)
             {
-                _handler(e.as<T>());
-            });
+                // note that the two branches are intentionally identical except for the mutability of the outer lambda
+                if constexpr (std::is_const_v<EventHandler>)
+                {
+                    return addEventHandler(T::_Descriptor(), [handler_{ std::forward<EventHandler>(handler) }, args = std::make_tuple(std::forward<Args>(args)...)](const Event<>& e)
+                    {
+                        std::apply([&](auto&... args)
+                        {
+                            std::invoke(handler_, args..., e.as<T>());
+                        }, args);
+                    });
+                }
+                else
+                {
+                    return addEventHandler(T::_Descriptor(), [handler_{ std::forward<EventHandler>(handler) }, args = std::make_tuple(std::forward<Args>(args)...)](const Event<>& e) mutable
+                    {
+                        std::apply([&](auto&... args)
+                        {
+                            std::invoke(handler_, args..., e.as<T>());
+                        }, args);
+                    });
+                }
+            }
+            else
+            {
+                return 0;
+            }
         }
 
     private:

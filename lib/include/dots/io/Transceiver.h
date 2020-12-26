@@ -53,13 +53,13 @@ namespace dots::io
             return m_dispatcher.container<T>();
         }
 
-        template<typename T>
-        Subscription subscribe(event_handler_t<T>&& handler)
+        template<typename T, typename EventHandler, typename... Args>
+        Subscription subscribe(EventHandler&& handler, Args&&... args)
         {
             static_assert(!T::_SubstructOnly, "it is not allowed to subscribe to a struct that is marked with 'substruct_only'!");
 
             joinGroup(T::_Descriptor().name());
-            Dispatcher::id_t id = m_dispatcher.addEventHandler(std::move(handler));
+            Dispatcher::id_t id = m_dispatcher.addEventHandler<T>(std::forward<EventHandler>(handler), std::forward<Args>(args)...);
 
             return makeSubscription([&, id]{ m_dispatcher.removeEventHandler(T::_Descriptor(), id); });
         }
