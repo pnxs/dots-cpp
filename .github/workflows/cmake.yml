@@ -51,13 +51,11 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build
       shell: bash
-      run: |
-        tests/dots-unittests --gtest_output="xml:report.xml"
-        find
+      run: tests/dots-unittests --gtest_output="xml:report.xml"
     
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action@v1.6
       if: always()
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        files: build/tests/report.xml
+        files: build/report.xml
