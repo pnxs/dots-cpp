@@ -58,4 +58,4 @@ jobs:
       if: always()
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        files: ${{runner.workspace}}/build/report.xml
+        files: build/report.xml
