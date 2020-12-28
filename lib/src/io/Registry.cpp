@@ -55,31 +55,6 @@ namespace dots::io
         type::Descriptor<types::vector_t<types::string_t>>::InstancePtr();
     }
 
-    const Registry::type_map_t& Registry::types() const
-    {
-        return m_types;
-    }
-
-    Registry::const_iterator_t Registry::begin() const
-    {
-        return m_types.begin();
-    }
-
-    Registry::const_iterator_t Registry::end() const
-    {
-        return m_types.end();
-    }
-
-    Registry::const_iterator_t Registry::cbegin() const
-    {
-        return m_types.cbegin();
-    }
-
-    Registry::const_iterator_t Registry::cend() const
-    {
-        return m_types.cend();
-    }
-
     std::shared_ptr<type::Descriptor<>> Registry::findType(const std::string_view& name, bool assertNotNull/* = false*/) const
     {
         if (const std::shared_ptr<type::Descriptor<>>& descriptor = type::StaticDescriptorMap::Find(name); descriptor == nullptr)
@@ -221,6 +196,6 @@ namespace dots::io
 
     const std::map<std::string_view, std::shared_ptr<type::Descriptor<>>>& Registry::getTypes()
     {
-        return types();
+        return m_types;
     }
 }

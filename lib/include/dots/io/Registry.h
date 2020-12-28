@@ -24,13 +24,27 @@ namespace dots::io
         Registry& operator = (const Registry& rhs) = default;
         Registry& operator = (Registry&& rhs) noexcept = default;
 
-        const type_map_t& types() const;
+        template <typename Handler>
+        void forEach(Handler&& handler)
+        {
+            constexpr bool is_type_handler = std::is_invocable_v<Handler, const type::Descriptor<>&>;
+            static_assert(is_type_handler, "Handler has to be a valid type handler type");
 
-        const_iterator_t begin() const;
-        const_iterator_t end() const;
+            if constexpr (is_type_handler)
+            {
+                for (const auto& [name, descriptor] : type::StaticDescriptorMap::Descriptors())
+                {
+                    (void)name;
+                    handler(*descriptor);
+                }
 
-        const_iterator_t cbegin() const;
-        const_iterator_t cend() const;
+                for (const auto& [name, descriptor] : m_types)
+                {
+                    (void)name;
+                    handler(*descriptor);
+                }
+            }
+        }
 
         std::shared_ptr<type::Descriptor<>> findType(const std::string_view& name, bool assertNotNull = false) const;
         std::shared_ptr<type::EnumDescriptor<>> findEnumType(const std::string_view& name, bool assertNotNull = false) const;

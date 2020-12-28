@@ -108,18 +108,7 @@ namespace dots::io
     Subscription Transceiver::subscribe(new_type_handler_t&& handler)
     {
         const auto& [id, handler_] = *m_newTypeHandlers.try_emplace(m_nextId++, std::move(handler)).first;
-
-        for (const auto& [name, descriptor] : type::StaticDescriptorMap::Descriptors())
-        {
-            (void)name;
-            handler_(*descriptor);
-        }
-
-        for (const auto& [name, descriptor] : m_registry)
-        {
-            (void)name;
-            handler_(*descriptor);
-        }
+        m_registry.forEach(handler_);
 
         return makeSubscription([&, id(id)]{ m_newTypeHandlers.extract(id); });
     }
