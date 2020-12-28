@@ -51,7 +51,9 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build
       shell: bash
-      run: tests/dots-unittests --gtest_output="xml:report.xml"
+      run: |
+        tests/dots-unittests --gtest_output="xml:report.xml"
+        find
     
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action@v1.6
