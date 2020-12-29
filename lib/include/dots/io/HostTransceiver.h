@@ -16,7 +16,7 @@ namespace dots::io
     {
         using transition_handler_t = std::function<void(const io::Connection&)>;
 
-        HostTransceiver(std::string selfName = "DotsHostTransceiver", boost::asio::io_context& ioContext = global_io_context(), transition_handler_t transitionHandler = nullptr);
+        HostTransceiver(std::string selfName = "DotsHostTransceiver", boost::asio::io_context& ioContext = global_io_context(), bool staticUserTypes = true, transition_handler_t transitionHandler = nullptr);
         HostTransceiver(const HostTransceiver& other) = delete;
         HostTransceiver(HostTransceiver&& other) = default;
         virtual ~HostTransceiver() = default;

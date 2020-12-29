@@ -17,7 +17,7 @@ using namespace dots::types::literals;
 namespace dots
 {
     Server::Server(std::string name, listeners_t listeners, boost::asio::io_context& ioContext/* = dots::io::global_io_context()*/) :
-        m_hostTransceiver{ std::move(name), ioContext, [&](const io::Connection& connection){ handleTransition(connection); } },
+        m_hostTransceiver{ std::move(name), ioContext, false, [&](const io::Connection& connection){ handleTransition(connection); } },
         m_daemonStatus{ DotsDaemonStatus::serverName_i{ m_hostTransceiver.selfName() }, DotsDaemonStatus::startTime_i{ types::timepoint_t::Now() } }
     {
         add_timer(1s, [&](){ updateServerStatus(); }, true);

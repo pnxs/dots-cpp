@@ -3,8 +3,9 @@
 
 namespace dots::io
 {
-    Registry::Registry(new_type_handler_t newTypeHandler/* = nullptr*/) :
-        m_newTypeHandler(std::move(newTypeHandler))
+    Registry::Registry(new_type_handler_t newTypeHandler/* = nullptr*/, bool staticUserTypes/* = true*/) :
+        m_newTypeHandler(std::move(newTypeHandler)),
+        m_staticUserTypes(staticUserTypes)
     {
         // ensure fundamental types are instantiated and added to static descriptor map
         type::Descriptor<types::bool_t>::InstancePtr();
@@ -57,9 +58,9 @@ namespace dots::io
 
     std::shared_ptr<type::Descriptor<>> Registry::findType(const std::string_view& name, bool assertNotNull/* = false*/) const
     {
-        if (const std::shared_ptr<type::Descriptor<>>& descriptor = type::StaticDescriptorMap::Find(name); descriptor == nullptr)
+        if (auto it = m_types.find(name); it == m_types.end())
         {
-            if (auto it = m_types.find(name); it == m_types.end())
+            if (const std::shared_ptr<type::Descriptor<>>& descriptor = type::StaticDescriptorMap::Find(name); descriptor == nullptr || !m_staticUserTypes && IsUserType(*descriptor))
             {
                 if (assertNotNull)
                 {
@@ -72,12 +73,12 @@ namespace dots::io
             }
             else
             {
-                return it->second;
+                return descriptor;
             }
         }
         else
         {
-            return descriptor;
+            return it->second;
         }
     }
 
@@ -197,5 +198,18 @@ namespace dots::io
     const std::map<std::string_view, std::shared_ptr<type::Descriptor<>>>& Registry::getTypes()
     {
         return m_types;
+    }
+
+    bool Registry::IsUserType(const type::Descriptor<>& descriptor)
+    {
+        switch (descriptor.type())
+        {
+            case type::Type::Struct:
+                return !static_cast<const type::StructDescriptor<>&>(descriptor).internal();
+            case type::Type::Vector:
+                return IsUserType(static_cast<const type::VectorDescriptor&>(descriptor).valueDescriptor());
+            default:
+                return false;
+        }
     }
 }

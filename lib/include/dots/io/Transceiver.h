@@ -22,7 +22,7 @@ namespace dots::io
 
         using new_type_handler_t = Registry::new_type_handler_t;
 
-        Transceiver(std::string selfName, boost::asio::io_context& ioContext = global_io_context());
+        Transceiver(std::string selfName, boost::asio::io_context& ioContext = global_io_context(), bool staticUserTypes = true);
         Transceiver(const Transceiver& other) = delete;
         Transceiver(Transceiver&& other) noexcept;
         virtual ~Transceiver() = default;

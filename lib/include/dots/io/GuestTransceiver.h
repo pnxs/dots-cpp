@@ -9,7 +9,7 @@ namespace dots::io
 {
     struct GuestTransceiver : Transceiver
     {
-        GuestTransceiver(std::string selfName, boost::asio::io_context& ioContext = global_io_context());
+        GuestTransceiver(std::string selfName, boost::asio::io_context& ioContext = global_io_context(), bool staticUserTypes = true);
         GuestTransceiver(const GuestTransceiver& other) = delete;
         GuestTransceiver(GuestTransceiver&& other) = default;
         virtual ~GuestTransceiver() = default;

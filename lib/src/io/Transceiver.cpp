@@ -5,10 +5,10 @@
 
 namespace dots::io
 {
-    Transceiver::Transceiver(std::string selfName, boost::asio::io_context& ioContext/* = global_io_context()*/) :
+    Transceiver::Transceiver(std::string selfName, boost::asio::io_context& ioContext/* = global_io_context()*/, bool staticUserTypes/* = true*/) :
         m_nextId(0),
         m_this(std::make_shared<Transceiver*>(this)),
-        m_registry{ [&](const type::Descriptor<>& descriptor){ handleNewType(descriptor); } },
+        m_registry{ [&](const type::Descriptor<>& descriptor){ handleNewType(descriptor); }, staticUserTypes },
         m_selfName{ std::move(selfName) },
         m_ioContext(std::ref(ioContext))
     {

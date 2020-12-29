@@ -16,7 +16,7 @@ namespace dots::io
         using const_iterator_t = type_map_t::const_iterator;
         using new_type_handler_t = std::function<void(const type::Descriptor<>&)>;
 
-        Registry(new_type_handler_t newTypeHandler = nullptr);
+        Registry(new_type_handler_t newTypeHandler = nullptr, bool staticUserTypes = true);
         Registry(const Registry& other) = default;
         Registry(Registry&& other) noexcept = default;
         ~Registry() = default;
@@ -34,8 +34,11 @@ namespace dots::io
             {
                 for (const auto& [name, descriptor] : type::StaticDescriptorMap::Descriptors())
                 {
-                    (void)name;
-                    handler(*descriptor);
+                    if (m_staticUserTypes || !IsUserType(*descriptor))
+                    {
+                        (void)name;
+                        handler(*descriptor);
+                    }
                 }
 
                 for (const auto& [name, descriptor] : m_types)
@@ -79,7 +82,10 @@ namespace dots::io
 
     private:
 
+        static bool IsUserType(const type::Descriptor<>& descriptor);
+
         new_type_handler_t m_newTypeHandler;
+        bool m_staticUserTypes;
         type_map_t m_types;
     };
 }
