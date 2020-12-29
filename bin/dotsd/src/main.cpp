@@ -1,5 +1,4 @@
 #include <dots/io/Io.h>
-#include <dots/io/services/ChannelService.h>
 #include <dots/io/channels/TcpListener.h>
 #include <dots/tools/logging.h>
 #include "Server.h"
@@ -47,7 +46,7 @@ int main(int argc, char* argv[])
     string port = vm["dots-port"].as<string>();
 
     dots::Server::listeners_t listeners;
-    listeners.emplace_back(dots::io::global_service<dots::io::ChannelService>().makeListener<dots::io::TcpListener>(host, port));
+    listeners.emplace_back(std::make_unique<dots::io::TcpListener>(dots::io::global_io_context(), host, port));
     std::optional<dots::Server> server{ std::in_place, std::move(serverName), std::move(listeners) };
     LOG_NOTICE_S("Listen to " << host << ":" << port);
 

@@ -5,11 +5,12 @@
 
 namespace dots::io
 {
-    Transceiver::Transceiver(std::string selfName) :
+    Transceiver::Transceiver(std::string selfName, boost::asio::io_context& ioContext/* = global_io_context()*/) :
         m_nextId(0),
         m_this(std::make_shared<Transceiver*>(this)),
         m_registry{ [&](const type::Descriptor<>& descriptor){ handleNewType(descriptor); } },
-        m_selfName{ std::move(selfName) }
+        m_selfName{ std::move(selfName) },
+        m_ioContext(std::ref(ioContext))
     {
         /* do nothing */
     }
@@ -20,6 +21,7 @@ namespace dots::io
         m_registry{ std::move(other.m_registry) },
         m_dispatcher{ std::move(other.m_dispatcher) },
         m_selfName{ std::move(other.m_selfName) },
+        m_ioContext{ std::move(other.m_ioContext) },
         m_newTypeHandlers{ std::move(other.m_newTypeHandlers) }
     {
         /* do nothing */
@@ -32,6 +34,7 @@ namespace dots::io
         m_registry = std::move(rhs.m_registry);
         m_dispatcher = std::move(rhs.m_dispatcher);
         m_selfName = std::move(rhs.m_selfName);
+        m_ioContext = std::move(rhs.m_ioContext);
         m_newTypeHandlers = std::move(rhs.m_newTypeHandlers);
 
         *m_this = this;
@@ -42,6 +45,16 @@ namespace dots::io
     const std::string& Transceiver::selfName() const
     {
         return m_selfName;
+    }
+
+    const boost::asio::io_context& Transceiver::ioContext() const
+    {
+        return m_ioContext;
+    }
+
+    boost::asio::io_context& Transceiver::ioContext()
+    {
+        return m_ioContext;
     }
 
     const io::Registry& Transceiver::registry() const

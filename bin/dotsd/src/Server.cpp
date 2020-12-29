@@ -17,7 +17,7 @@ using namespace dots::types::literals;
 namespace dots
 {
     Server::Server(std::string name, listeners_t listeners) :
-        m_hostTransceiver{ std::move(name), [&](const io::Connection& connection){ handleTransition(connection); } },
+        m_hostTransceiver{ std::move(name), io::global_io_context(), [&](const io::Connection& connection){ handleTransition(connection); } },
         m_daemonStatus{ DotsDaemonStatus::serverName_i{ m_hostTransceiver.selfName() }, DotsDaemonStatus::startTime_i{ types::timepoint_t::Now() } }
     {
         add_timer(1s, [&](){ updateServerStatus(); }, true);

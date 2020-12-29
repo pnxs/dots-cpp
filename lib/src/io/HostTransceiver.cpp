@@ -6,14 +6,14 @@
 
 namespace dots::io
 {
-    HostTransceiver::HostTransceiver(std::string selfName/* = "DotsHostTransceiver"*/, transition_handler_t transitionHandler/* = nullpt*/) :
-        Transceiver(std::move(selfName)),
+    HostTransceiver::HostTransceiver(std::string selfName/* = "DotsHostTransceiver"*/, boost::asio::io_context& ioContext/* = global_io_context()*/, transition_handler_t transitionHandler/* = nullpt*/) :
+        Transceiver(std::move(selfName), ioContext),
         m_transitionHandler{ std::move(transitionHandler) }
     {
         /* do nothing */
     }
 
-    void HostTransceiver::listen(listener_ptr_t&& listener)
+    Listener& HostTransceiver::listen(listener_ptr_t&& listener)
     {
         Listener* listenerPtr = listener.get();
         m_listeners.emplace(listenerPtr, std::move(listener));
@@ -22,6 +22,8 @@ namespace dots::io
             [this](Listener& listener, channel_ptr_t channel){ return handleListenAccept(listener, std::move(channel)); },
             [this](Listener& listener, const std::exception_ptr& e){ handleListenError(listener, e); }
         );
+
+        return *listenerPtr;
     }
 
     void HostTransceiver::publish(const type::Struct& instance, std::optional<types::property_set_t> includedProperties/* = std::nullopt*/, bool remove/* = false*/)

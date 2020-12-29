@@ -2,7 +2,6 @@
 #include <dots/Application.h>
 #include <boost/program_options.hpp>
 #include <dots/io/Io.h>
-#include <dots/io/services/ChannelService.h>
 #include <dots/io/channels/TcpChannel.h>
 #include <dots/io/Registry.h>
 #include <dots/tools/logging.h>
@@ -19,8 +18,7 @@ namespace dots
         // Connect to dotsd
 
         GuestTransceiver& globalGuestTransceiver = dots::transceiver(name);
-        auto channel = io::global_service<io::ChannelService>().makeChannel<io::TcpChannel>(m_serverAddress, m_serverPort);
-        const io::Connection& connection = globalGuestTransceiver.open(std::move(channel), getPreloadPublishTypes(), getPreloadSubscribeTypes(), m_authSecret);
+        const io::Connection& connection = globalGuestTransceiver.open<io::TcpChannel>(getPreloadPublishTypes(), getPreloadSubscribeTypes(), m_authSecret, m_serverAddress, m_serverPort);
 
         LOG_DEBUG_S("run until state connected...");
         while (!connection.connected())

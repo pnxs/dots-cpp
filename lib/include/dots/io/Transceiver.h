@@ -2,6 +2,8 @@
 #include <string_view>
 #include <optional>
 #include <deque>
+#include <functional>
+#include <dots/io/Io.h>
 #include <dots/io/Connection.h>
 #include <dots/io/Dispatcher.h>
 #include <dots/io/Subscription.h>
@@ -20,7 +22,7 @@ namespace dots::io
 
         using new_type_handler_t = Registry::new_type_handler_t;
 
-        Transceiver(std::string selfName);
+        Transceiver(std::string selfName, boost::asio::io_context& ioContext = global_io_context());
         Transceiver(const Transceiver& other) = delete;
         Transceiver(Transceiver&& other) noexcept;
         virtual ~Transceiver() = default;
@@ -29,6 +31,9 @@ namespace dots::io
         Transceiver& operator = (Transceiver&& rhs) noexcept;
 
         const std::string& selfName() const;
+
+        const boost::asio::io_context& ioContext() const;
+        boost::asio::io_context& ioContext();
 
         const io::Registry& registry() const;
         io::Registry& registry();
@@ -123,6 +128,7 @@ namespace dots::io
         io::Registry m_registry;
         Dispatcher m_dispatcher;
         std::string m_selfName;
+        std::reference_wrapper<boost::asio::io_context> m_ioContext;
         new_type_handlers_t m_newTypeHandlers;
     };
 

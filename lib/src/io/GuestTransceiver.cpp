@@ -5,13 +5,13 @@
 
 namespace dots::io
 {
-    GuestTransceiver::GuestTransceiver(std::string selfName) :
-        Transceiver(std::move(selfName))
+    GuestTransceiver::GuestTransceiver(std::string selfName, boost::asio::io_context& ioContext/* = global_io_context()*/) :
+        Transceiver(std::move(selfName), ioContext)
     {
         /* do nothing */
     }
 
-    const io::Connection& GuestTransceiver::open(channel_ptr_t channel, descriptor_map_t preloadPublishTypes/* = {}*/, descriptor_map_t preloadSubscribeTypes/* = {}*/, std::optional<std::string> authSecret/* = std::nullopt*/)
+    const io::Connection& GuestTransceiver::open(descriptor_map_t preloadPublishTypes, descriptor_map_t preloadSubscribeTypes, std::optional<std::string> authSecret, channel_ptr_t channel)
     {
         if (m_hostConnection != std::nullopt)
         {
@@ -28,6 +28,11 @@ namespace dots::io
         );
 
         return *m_hostConnection;
+    }
+
+    const io::Connection& GuestTransceiver::open(channel_ptr_t channel)
+    {
+        return open({}, {}, std::nullopt, std::move(channel));
     }
 
     void GuestTransceiver::publish(const type::Struct& instance, std::optional<types::property_set_t> includedProperties/* = std::nullopt*/, bool remove/* = false*/)
