@@ -18,7 +18,7 @@ namespace dots
         // Connect to dotsd
 
         GuestTransceiver& globalGuestTransceiver = dots::transceiver(name);
-        const io::Connection& connection = globalGuestTransceiver.open<io::TcpChannel>(getPreloadPublishTypes(), getPreloadSubscribeTypes(), m_authSecret, m_serverAddress, m_serverPort);
+        const io::Connection& connection = globalGuestTransceiver.open<io::TcpChannel>(io::global_publish_types(), io::global_subscribe_types(), m_authSecret, m_serverAddress, m_serverPort);
 
         LOG_DEBUG_S("run until state connected...");
         while (!connection.connected())
@@ -101,47 +101,5 @@ namespace dots
         {
             m_authSecret = vm["auth-secret"].as<std::string>();
         }
-    }
-
-    GuestTransceiver::descriptor_map_t Application::getPreloadPublishTypes() const
-    {
-        GuestTransceiver::descriptor_map_t sds;
-
-        for (const dots::type::StructDescriptor<>& descriptor : dots::io::global_publish_types())
-        {
-            auto td = transceiver().registry().findStructType(descriptor.name());
-            if (!td) {
-                throw std::runtime_error("struct decriptor not found for " + descriptor.name());
-            }
-            if (td) {
-                sds.emplace(td->name(), td.get());
-            }
-            else
-            {
-                LOG_ERROR_S("td is NULL: " << descriptor.name())
-            }
-        }
-        return sds;
-    }
-
-    GuestTransceiver::descriptor_map_t Application::getPreloadSubscribeTypes() const
-    {
-        GuestTransceiver::descriptor_map_t sds;
-
-        for (const dots::type::StructDescriptor<>& descriptor : dots::io::global_subscribe_types())
-        {
-            auto td = transceiver().registry().findStructType(descriptor.name());
-            if (!td) {
-                throw std::runtime_error("struct decriptor1 not found for " + descriptor.name());
-            }
-            if (td) {
-                sds.emplace(td->name(), td.get());
-            }
-            else
-            {
-                LOG_ERROR_S("td is NULL: " << descriptor.name());
-            }
-        }
-        return sds;
     }
 }

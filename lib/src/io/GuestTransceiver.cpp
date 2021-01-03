@@ -11,7 +11,7 @@ namespace dots::io
         /* do nothing */
     }
 
-    const io::Connection& GuestTransceiver::open(descriptor_map_t preloadPublishTypes, descriptor_map_t preloadSubscribeTypes, std::optional<std::string> authSecret, channel_ptr_t channel)
+    const io::Connection& GuestTransceiver::open(type::DescriptorMap preloadPublishTypes, type::DescriptorMap preloadSubscribeTypes, std::optional<std::string> authSecret, channel_ptr_t channel)
     {
         if (m_hostConnection != std::nullopt)
         {
@@ -107,12 +107,12 @@ namespace dots::io
                 for (const auto& [name, descriptor] : m_preloadPublishTypes)
                 {
                     (void)name;
-                    connection.transmit(*descriptor);
+                    connection.transmit(static_cast<const type::StructDescriptor<>&>(*descriptor));
                 }
 
                 for (const auto& [name, descriptor] : m_preloadSubscribeTypes)
                 {
-                    connection.transmit(*descriptor);
+                    connection.transmit(static_cast<const type::StructDescriptor<>&>(*descriptor));
                     connection.transmit(DotsMember{
                         DotsMember::groupName_i{ name },
                         DotsMember::event_i{ DotsMemberEvent::join }

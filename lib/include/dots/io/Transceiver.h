@@ -14,8 +14,6 @@ namespace dots::io
 {
     struct Transceiver : Publisher
     {
-        using descriptor_map_t = std::map<std::string_view, type::StructDescriptor<>*>;
-
         using transmission_handler_t = Dispatcher::transmission_handler_t;
         template <typename T = type::Struct>
         using event_handler_t = Dispatcher::event_handler_t<T>;

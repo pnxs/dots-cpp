@@ -3,7 +3,7 @@
 #include <memory>
 #include <functional>
 #include <type_traits>
-#include <dots/type/Descriptor.h>
+#include <dots/type/DescriptorMap.h>
 #include <dots/type/FundamentalTypes.h>
 #include <dots/type/EnumDescriptor.h>
 #include <dots/type/StructDescriptor.h>
@@ -12,8 +12,6 @@ namespace dots::io
 {
     struct Registry
     {
-        using type_map_t = std::map<std::string_view, std::shared_ptr<type::Descriptor<>>>;
-        using const_iterator_t = type_map_t::const_iterator;
         using new_type_handler_t = std::function<void(const type::Descriptor<>&)>;
 
         Registry(new_type_handler_t newTypeHandler = nullptr, bool staticUserTypes = true);
@@ -32,7 +30,7 @@ namespace dots::io
 
             if constexpr (is_type_handler)
             {
-                for (const auto& [name, descriptor] : type::StaticDescriptorMap::Descriptors())
+                for (const auto& [name, descriptor] : type::StaticDescriptorMap)
                 {
                     if (m_staticUserTypes || !IsUserType(*descriptor))
                     {
@@ -86,6 +84,6 @@ namespace dots::io
 
         new_type_handler_t m_newTypeHandler;
         bool m_staticUserTypes;
-        type_map_t m_types;
+        type::DescriptorMap m_types;
     };
 }
