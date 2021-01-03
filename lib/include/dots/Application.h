@@ -21,9 +21,6 @@ namespace dots
 
         void parseProgramOptions(int argc, char* argv[]);
 
-        GuestTransceiver::descriptor_map_t getPreloadPublishTypes() const;
-        GuestTransceiver::descriptor_map_t getPreloadSubscribeTypes() const;
-
         inline static Application* m_instance = nullptr;
         int m_exitCode;
         std::string m_serverAddress;

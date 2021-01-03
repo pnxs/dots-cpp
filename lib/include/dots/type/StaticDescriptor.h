@@ -3,9 +3,9 @@
 #include <string_view>
 #include <sstream>
 #include <iomanip>
-#include <map>
 #include <charconv>
 #include <dots/type/Descriptor.h>
+#include <dots/type/DescriptorMap.h>
 
 namespace dots::type
 {
@@ -21,29 +21,7 @@ namespace dots::type
         static constexpr bool use_static_descriptor_operations_v = use_static_descriptor_operations_t<U>::value;
     }
 
-    struct StaticDescriptorMap
-    {
-        static std::shared_ptr<Descriptor<>> Emplace(std::shared_ptr<Descriptor<>> descriptor);
-
-        static std::shared_ptr<Descriptor<>> Find(const std::string_view& name)
-        {
-            auto it = DescriptorsMutable().find(name);
-            return it == DescriptorsMutable().end() ? nullptr : it->second;
-        }
-
-        static const std::map<std::string_view, std::shared_ptr<Descriptor<>>>& Descriptors()
-        {
-            return DescriptorsMutable();
-        }
-
-    private:
-
-        static std::map<std::string_view, std::shared_ptr<Descriptor<>>>& DescriptorsMutable()
-        {
-            static std::map<std::string_view, std::shared_ptr<Descriptor<>>> Descriptors_;
-            return Descriptors_;
-        }
-    };
+    inline DescriptorMap StaticDescriptorMap;
 
     template <typename T, typename Base = Descriptor<Typeless>, bool UseStaticDescriptorOperations = details::use_static_descriptor_operations_v<T>, typename = void>
     struct StaticDescriptor;
@@ -255,7 +233,7 @@ namespace dots::type
 
                 if (M_instanceStorage == nullptr)
                 {
-                    M_instanceStorage = std::static_pointer_cast<Descriptor<T>>(StaticDescriptorMap::Emplace(std::make_shared<Descriptor<T>>()));
+                    M_instanceStorage = StaticDescriptorMap.emplace<Descriptor<T>>();
                 }
 
                 return M_instanceStorage;

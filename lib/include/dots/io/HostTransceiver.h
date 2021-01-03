@@ -16,7 +16,7 @@ namespace dots::io
     {
         using transition_handler_t = std::function<void(const io::Connection&)>;
 
-        HostTransceiver(std::string selfName = "DotsHostTransceiver", transition_handler_t transitionHandler = nullptr);
+        HostTransceiver(std::string selfName = "DotsHostTransceiver", boost::asio::io_context& ioContext = global_io_context(), bool staticUserTypes = true, transition_handler_t transitionHandler = nullptr);
         HostTransceiver(const HostTransceiver& other) = delete;
         HostTransceiver(HostTransceiver&& other) = default;
         virtual ~HostTransceiver() = default;
@@ -24,7 +24,14 @@ namespace dots::io
         HostTransceiver& operator = (const HostTransceiver& rhs) = delete;
         HostTransceiver& operator = (HostTransceiver&& rhs) = default;
 
-        void listen(listener_ptr_t&& listener);
+        Listener& listen(listener_ptr_t&& listener);
+
+        template <typename TListener, typename... Args>
+        TListener& listen(Args&&... args)
+        {
+            return static_cast<TListener&>(listen(std::make_unique<TListener>(ioContext(), std::forward<Args>(args)...)));
+        }
+
         void publish(const type::Struct& instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false) override;
 
         template <typename T, typename... Args>

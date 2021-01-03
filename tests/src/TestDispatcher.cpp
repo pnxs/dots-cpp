@@ -39,6 +39,69 @@ namespace
 //    ASSERT_THROW(sut.dispatch(header, dts), std::logic_error);
 //}
 
+TEST(TestDispatcher, addEventHandler_AllowsUsageOfVariousHandlerTypes)
+{
+    dots::Dispatcher sut;
+    DotsTestStruct dts{ DotsTestStruct::indKeyfField_i{ 1 } };
+    DotsHeader header = test_helpers::make_header(dts, 42);
+
+    static int I = 0;
+
+    struct Foobar
+    {
+        void NonStaticEventHandler(const dots::Event<DotsTestStruct>&/* e*/)
+        {
+            ++I;
+        }
+
+        void NonStaticEventHandlerConst(const dots::Event<DotsTestStruct>&/* e*/) const
+        {
+            ++I;
+        }
+
+        void NonStaticEventHandlerWithBindings(int i, float f, const dots::Event<DotsTestStruct>&/* e*/)
+        {
+            ++I;
+            I += i;
+            I += static_cast<int>(f);
+        }
+
+        static void StaticEventHandler(const dots::Event<DotsTestStruct>&/* e*/)
+        {
+            ++I;
+        }
+    };
+
+    Foobar foobar;
+    Foobar* this_ = &foobar;
+
+    // lambda
+    sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/){ ++I; });
+
+    // mutable lambda
+    sut.addEventHandler<DotsTestStruct>([&, i = 0](const dots::Event<DotsTestStruct>&/* e*/) mutable { ++I; I += ++i; }); 
+
+    // static member function
+    sut.addEventHandler<DotsTestStruct>(Foobar::StaticEventHandler);
+
+    // non-static member function
+    sut.addEventHandler<DotsTestStruct>(&Foobar::NonStaticEventHandler, this_);
+
+    // non-static const member function
+    sut.addEventHandler<DotsTestStruct>(&Foobar::NonStaticEventHandlerConst, this_);
+
+    // function pointer
+    auto fPtr = &Foobar::StaticEventHandler;
+    sut.addEventHandler<DotsTestStruct>(fPtr);
+
+    // handler with bindings
+    sut.addEventHandler<DotsTestStruct>(&Foobar::NonStaticEventHandlerWithBindings, this_, 5, 2.3f);
+
+    sut.dispatch(dots::Transmission{ header, dts });
+
+    ASSERT_EQ(I, 15);
+}
+
 TEST(TestDispatcher, dispatch_CreateEventWhenAddedHandlerForCachedType)
 {
     dots::Dispatcher sut;

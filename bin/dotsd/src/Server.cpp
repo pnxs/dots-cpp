@@ -16,8 +16,8 @@ using namespace dots::types::literals;
 
 namespace dots
 {
-    Server::Server(std::string name, listeners_t listeners) :
-        m_hostTransceiver{ std::move(name), [&](const io::Connection& connection){ handleTransition(connection); } },
+    Server::Server(std::string name, listeners_t listeners, boost::asio::io_context& ioContext/* = dots::io::global_io_context()*/) :
+        m_hostTransceiver{ std::move(name), ioContext, false, [&](const io::Connection& connection){ handleTransition(connection); } },
         m_daemonStatus{ DotsDaemonStatus::serverName_i{ m_hostTransceiver.selfName() }, DotsDaemonStatus::startTime_i{ types::timepoint_t::Now() } }
     {
         add_timer(1s, [&](){ updateServerStatus(); }, true);
@@ -30,6 +30,16 @@ namespace dots
 
         m_descriptorSubscription.emplace(m_hostTransceiver.subscribe<type::Type::Struct>([&](const type::StructDescriptor<>& descriptor){ handleNewStructType(descriptor); }));
         m_hostTransceiver.setAuthManager<io::LegacyAuthManager>();
+    }
+
+    const boost::asio::io_context& Server::ioContext() const
+    {
+        return m_hostTransceiver.ioContext();
+    }
+
+    boost::asio::io_context& Server::ioContext()
+    {
+        return m_hostTransceiver.ioContext();
     }
 
     void Server::handleTransition(const io::Connection& connection)

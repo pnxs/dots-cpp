@@ -44,8 +44,8 @@ namespace dots
     Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::transmission_handler_t&& handler);
     Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::event_handler_t<>&& handler);
 
-    template<typename T>
-    Subscription subscribe(Transceiver::event_handler_t<T>&& handler);
+    template<typename T, typename EventHandler, typename... Args>
+    Subscription subscribe(EventHandler&& handler, Args&&... args);
 
     const ContainerPool& pool();
 
@@ -69,11 +69,11 @@ namespace dots
         remove(static_cast<const type::Struct&>(instance));
     }
 
-    template<typename T>
-    Subscription subscribe(Transceiver::event_handler_t<T>&& handler)
+    template<typename T, typename EventHandler, typename... Args>
+    Subscription subscribe(EventHandler&& handler, Args&&... args)
     {
         io::register_global_subscribe_type<T>();
-        return transceiver().subscribe<T>(std::move(handler));
+        return transceiver().subscribe<T>(std::forward<EventHandler>(handler), std::forward<Args>(args)...);
     }
 
     template <typename T>

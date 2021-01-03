@@ -3,8 +3,9 @@
 
 namespace dots::io
 {
-    Registry::Registry(new_type_handler_t newTypeHandler/* = nullptr*/) :
-        m_newTypeHandler(std::move(newTypeHandler))
+    Registry::Registry(new_type_handler_t newTypeHandler/* = nullptr*/, bool staticUserTypes/* = true*/) :
+        m_newTypeHandler(std::move(newTypeHandler)),
+        m_staticUserTypes(staticUserTypes)
     {
         // ensure fundamental types are instantiated and added to static descriptor map
         type::Descriptor<types::bool_t>::InstancePtr();
@@ -55,36 +56,11 @@ namespace dots::io
         type::Descriptor<types::vector_t<types::string_t>>::InstancePtr();
     }
 
-    const Registry::type_map_t& Registry::types() const
-    {
-        return m_types;
-    }
-
-    Registry::const_iterator_t Registry::begin() const
-    {
-        return m_types.begin();
-    }
-
-    Registry::const_iterator_t Registry::end() const
-    {
-        return m_types.end();
-    }
-
-    Registry::const_iterator_t Registry::cbegin() const
-    {
-        return m_types.cbegin();
-    }
-
-    Registry::const_iterator_t Registry::cend() const
-    {
-        return m_types.cend();
-    }
-
     std::shared_ptr<type::Descriptor<>> Registry::findType(const std::string_view& name, bool assertNotNull/* = false*/) const
     {
-        if (const std::shared_ptr<type::Descriptor<>>& descriptor = type::StaticDescriptorMap::Find(name); descriptor == nullptr)
+        if (std::shared_ptr<type::Descriptor<>> descriptor = m_types.find(name); descriptor == nullptr)
         {
-            if (auto it = m_types.find(name); it == m_types.end())
+            if (descriptor = type::StaticDescriptorMap.find(name); descriptor == nullptr || (!m_staticUserTypes && IsUserType(*descriptor)))
             {
                 if (assertNotNull)
                 {
@@ -97,7 +73,7 @@ namespace dots::io
             }
             else
             {
-                return it->second;
+                return descriptor;
             }
         }
         else
@@ -140,7 +116,7 @@ namespace dots::io
 
     std::shared_ptr<type::Descriptor<>> Registry::registerType(std::shared_ptr<type::Descriptor<>> descriptor, bool assertNewType/* = true*/)
     {
-        auto [it, emplaced] = m_types.try_emplace(descriptor->name(), descriptor);
+        auto [descriptor_, emplaced] = m_types.tryEmplace(descriptor);
 
         if (!emplaced)
         {
@@ -150,7 +126,7 @@ namespace dots::io
             }
             else
             {
-                return it->second;
+                return descriptor_;
             }
         }
 
@@ -176,37 +152,25 @@ namespace dots::io
 
         if (m_newTypeHandler != nullptr)
         {
-            m_newTypeHandler(*it->second);
+            m_newTypeHandler(*descriptor_);
         }
 
-        return it->second;
+        return descriptor_;
     }
 
     void Registry::deregisterType(const std::shared_ptr<type::Descriptor<>>& descriptor, bool assertRegisteredType/* = true*/)
     {
-        deregisterType(descriptor->name(), assertRegisteredType);
+        m_types.erase(descriptor->name(), assertRegisteredType);
     }
 
     void Registry::deregisterType(const type::Descriptor<>& descriptor, bool assertRegisteredType/* = true*/)
     {
-        deregisterType(descriptor.name(), assertRegisteredType);
+        m_types.erase(descriptor.name(), assertRegisteredType);
     }
 
     void Registry::deregisterType(const std::string_view& name, bool assertRegisteredType/* = true*/)
     {
-        auto it = m_types.find(name);
-
-        if (it == m_types.end())
-        {
-            if (assertRegisteredType)
-            {
-                throw std::logic_error{ std::string{ "no type registered with name: " } + name.data() };
-            }
-        }
-        else
-        {
-            m_types.erase(it);
-        }
+        m_types.erase(name, assertRegisteredType);
     }
 
     const type::Descriptor<>* Registry::findDescriptor(const std::string& name) const
@@ -221,6 +185,19 @@ namespace dots::io
 
     const std::map<std::string_view, std::shared_ptr<type::Descriptor<>>>& Registry::getTypes()
     {
-        return types();
+        return m_types.data();
+    }
+
+    bool Registry::IsUserType(const type::Descriptor<>& descriptor)
+    {
+        switch (descriptor.type())
+        {
+            case type::Type::Struct:
+                return !static_cast<const type::StructDescriptor<>&>(descriptor).internal();
+            case type::Type::Vector:
+                return IsUserType(static_cast<const type::VectorDescriptor&>(descriptor).valueDescriptor());
+            default:
+                return false;
+        }
     }
 }

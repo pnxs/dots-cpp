@@ -10,13 +10,16 @@ namespace dots
     {
         using listeners_t = std::vector<io::listener_ptr_t>;
 
-        Server(std::string name, listeners_t listeners);
+        Server(std::string name, listeners_t listeners, boost::asio::io_context& ioContext = dots::io::global_io_context());
         Server(const Server& other) = delete;
         Server(Server&& other) = delete;
         ~Server() = default;
 
         Server& operator = (const Server& rhs) = delete;
         Server& operator = (Server&& rhs) = delete;
+
+        const boost::asio::io_context& ioContext() const;
+        boost::asio::io_context& ioContext();
 
     private:
 

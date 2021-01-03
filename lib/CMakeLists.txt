@@ -85,6 +85,7 @@ target_sources(${TARGET_NAME}
         src/type/AnyStruct.cpp
         src/type/Chrono.cpp
         src/type/Descriptor.cpp
+        src/type/DescriptorMap.cpp
         src/type/DynamicEnum.cpp
         src/type/DynamicStruct.cpp
         src/type/EnumDescriptor.cpp
@@ -92,7 +93,6 @@ target_sources(${TARGET_NAME}
         src/type/PropertyPath.cpp
         src/type/PropertyPairIterator.cpp
         src/type/PropertyIterator.cpp
-        src/type/StaticDescriptor.cpp
         src/type/Struct.cpp
         src/type/StructDescriptor.cpp
         src/type/Uuid.cpp
