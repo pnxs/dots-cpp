@@ -25,11 +25,11 @@ namespace dots::io
         using timer_t = boost::asio::steady_timer;
         using duration_t = timer_t::clock_type::duration;
 
-        void callCb();
-        void onTimeout(const boost::system::error_code& error);
         void startRelative(const type::Duration& duration);
         void startAbsolute(const type::SteadyTimePoint& timepoint);
+        void asyncWait();
 
+        std::shared_ptr<Timer*> m_this;
         timer_t m_timer;
         callback_t m_cb;
         id_t m_id;
