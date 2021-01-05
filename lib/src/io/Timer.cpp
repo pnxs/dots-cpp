@@ -25,7 +25,14 @@ namespace dots::io
 
     Timer::~Timer()
     {
-        m_timer.cancel();
+        try
+        {
+            m_timer.cancel();
+        }
+        catch (...)
+        {
+            /* do nothing */
+        }
     }
 
     void Timer::startRelative(const type::Duration & duration)
