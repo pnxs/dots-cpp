@@ -25,10 +25,10 @@ namespace dots
         add_timer(1s, [&](){ updateServerStatus(); }, true);
         add_timer(10s, [&](){ cleanUpClients(); }, true);
 
-        // For backward compatibility: in the previous version of DOTS,
+        // For backward compatibility: in the legacy version of DOTS,
         // DotsContinuousRecorderStatus and DotsDumpContinuousRecorder where internal-types.
         // The clients do not publish the StructDescriptors for internal-types.
-        // So old clients, like dots record, will not function without those registered types.
+        // So legacy clients, like dots record, will not function without those registered types.
         m_hostTransceiver.registry().registerType(type::Descriptor<DotsContinuousRecorderStatus>());
         m_hostTransceiver.registry().registerType(type::Descriptor<DotsDumpContinuousRecorder>());
 
