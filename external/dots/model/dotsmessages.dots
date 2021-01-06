@@ -80,7 +80,7 @@ enum DotsContinuousRecorderState {
     3: dumping
 }
 
-struct DotsContinuousRecorderStatus {
+struct DotsContinuousRecorderStatus [cleanup] {
     1: [key] string recorderId;
     2: uint32 bufferSize;
     3: uint32 bufferSizeUsed;
