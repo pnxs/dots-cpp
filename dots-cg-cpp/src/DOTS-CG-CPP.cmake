@@ -4,7 +4,7 @@ execute_process(COMMAND ${Python3_EXECUTABLE} -m site --user-site
     OUTPUT_VARIABLE Python3_SITEUSER
     RESULT_VARIABLE rv
 )
-if (NOT ${rv} MATCHES "0")
+if (${rv} GREATER 2)
     message(FATAL_ERROR "Could not determine Python3 user site-package location: ${rv}")
 endif()
 string(REPLACE "\n" "" Python3_SITEUSER ${Python3_SITEUSER})
