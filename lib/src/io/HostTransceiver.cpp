@@ -257,7 +257,7 @@ namespace dots::io
             auto structDescriptor = registry().findStructType(groupName);
             if (structDescriptor && structDescriptor->cached())
             {
-                if (const Container<> *container = pool().find(*structDescriptor.get()); container != nullptr)
+                if (const Container<> *container = pool().find(*structDescriptor); container != nullptr)
                 {
                     transmitContainer(connection, *container);
                 }
