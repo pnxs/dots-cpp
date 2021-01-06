@@ -29,8 +29,8 @@ namespace dots
         // DotsContinuousRecorderStatus and DotsDumpContinuousRecorder where internal-types.
         // The clients do not publish the StructDescriptors for internal-types.
         // So legacy clients, like dots record, will not function without those registered types.
-        m_hostTransceiver.registry().registerType(type::Descriptor<DotsContinuousRecorderStatus>());
-        m_hostTransceiver.registry().registerType(type::Descriptor<DotsDumpContinuousRecorder>());
+        type::Descriptor<DotsContinuousRecorderStatus>::InstancePtr();
+        type::Descriptor<DotsDumpContinuousRecorder>::InstancePtr();
 
         for (io::listener_ptr_t& listener : listeners)
         {
