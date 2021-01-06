@@ -10,7 +10,6 @@
 #include "DotsContinuousRecorderStatus.dots.h"
 #include "DotsDumpContinuousRecorder.dots.h"
 #include <StructDescriptorData.dots.h>
-#include <DotsTypes.dots.h>
 #include <DotsStatistics.dots.h>
 #include <DotsCacheStatus.dots.h>
 
@@ -63,11 +62,6 @@ namespace dots
     void Server::handleNewStructType(const type::StructDescriptor<>& descriptor)
     {
         LOG_DEBUG_S("onNewType name=" << descriptor.name() << " flags:" << flags2String(&descriptor));
-
-        m_hostTransceiver.publish(DotsTypes{
-            DotsTypes::id_i{ M_nextTypeId++ },
-            DotsTypes::name_i{ descriptor.name() }
-        });
     }
 
     void Server::cleanUpClients()
