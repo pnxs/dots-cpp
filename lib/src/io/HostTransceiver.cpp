@@ -254,9 +254,10 @@ namespace dots::io
 
             // note: transmitting the container content even when the guest has already joined the group is currently
             // necessary to retain backwards compatibility
-            if (const Container<>* container = pool().find(groupName); container != nullptr)
+            auto structDescriptor = registry().findStructType(groupName);
+            if (structDescriptor && structDescriptor->cached())
             {
-                if (container->descriptor().cached())
+                if (const Container<> *container = pool().find(*structDescriptor.get()); container != nullptr)
                 {
                     transmitContainer(connection, *container);
                 }
