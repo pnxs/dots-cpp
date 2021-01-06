@@ -277,7 +277,7 @@ namespace dots::io
 
         LOG_INFO_S("received DescriptorRequest from " << connection.peerName() << "(" << connection.peerId() << ")");
 
-        registry().forEach([&](const type::Descriptor<>& descriptor)                                                                    {
+        registry().forEach([&](const type::Descriptor<>& descriptor) {
             if (descriptor.type() != type::Type::Struct)
             {
                 return;
