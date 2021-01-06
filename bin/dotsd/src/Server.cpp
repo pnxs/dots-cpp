@@ -7,6 +7,8 @@
 #include <dots/tools/logging.h>
 #include <dots/io/auth/LegacyAuthManager.h>
 #include "DotsClient.dots.h"
+#include "DotsContinuousRecorderStatus.dots.h"
+#include "DotsDumpContinuousRecorder.dots.h"
 #include <StructDescriptorData.dots.h>
 #include <DotsTypes.dots.h>
 #include <DotsStatistics.dots.h>
@@ -22,6 +24,13 @@ namespace dots
     {
         add_timer(1s, [&](){ updateServerStatus(); }, true);
         add_timer(10s, [&](){ cleanUpClients(); }, true);
+
+        // For backward compatibility: in the previous version of DOTS,
+        // DotsContinuousRecorderStatus and DotsDumpContinuousRecorder where internal-types.
+        // The clients do not publish the StructDescriptors for internal-types.
+        // So old clients, like dots record, will not function without those registered types.
+        m_hostTransceiver.registry().registerType(type::Descriptor<DotsContinuousRecorderStatus>());
+        m_hostTransceiver.registry().registerType(type::Descriptor<DotsDumpContinuousRecorder>());
 
         for (io::listener_ptr_t& listener : listeners)
         {
