@@ -7,9 +7,6 @@
 [submodule "import/rapidjson"]
 	path = external/rapidjson
 	url = https://github.com/miloyip/rapidjson.git
-[submodule "import/dcg"]
-	path = external/dcg
-	url = https://github.com/pnxs/dots-code-generator.git
 [submodule "import/date"]
 	path = external/date
 	url = https://github.com/HowardHinnant/date.git

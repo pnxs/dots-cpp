@@ -7,8 +7,9 @@
 #include <dots/tools/logging.h>
 #include <dots/io/auth/LegacyAuthManager.h>
 #include "DotsClient.dots.h"
+#include "DotsContinuousRecorderStatus.dots.h"
+#include "DotsDumpContinuousRecorder.dots.h"
 #include <StructDescriptorData.dots.h>
-#include <DotsTypes.dots.h>
 #include <DotsStatistics.dots.h>
 #include <DotsCacheStatus.dots.h>
 
@@ -22,6 +23,13 @@ namespace dots
     {
         add_timer(1s, [&](){ updateServerStatus(); }, true);
         add_timer(10s, [&](){ cleanUpClients(); }, true);
+
+        // For backward compatibility: in the legacy version of DOTS,
+        // DotsContinuousRecorderStatus and DotsDumpContinuousRecorder where internal-types.
+        // The clients do not publish the StructDescriptors for internal-types.
+        // So legacy clients, like dots record, will not function without those registered types.
+        type::Descriptor<DotsContinuousRecorderStatus>::InstancePtr();
+        type::Descriptor<DotsDumpContinuousRecorder>::InstancePtr();
 
         for (io::listener_ptr_t& listener : listeners)
         {
@@ -54,11 +62,6 @@ namespace dots
     void Server::handleNewStructType(const type::StructDescriptor<>& descriptor)
     {
         LOG_DEBUG_S("onNewType name=" << descriptor.name() << " flags:" << flags2String(&descriptor));
-
-        m_hostTransceiver.publish(DotsTypes{
-            DotsTypes::id_i{ M_nextTypeId++ },
-            DotsTypes::name_i{ descriptor.name() }
-        });
     }
 
     void Server::cleanUpClients()

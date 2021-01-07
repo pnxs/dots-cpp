@@ -254,9 +254,10 @@ namespace dots::io
 
             // note: transmitting the container content even when the guest has already joined the group is currently
             // necessary to retain backwards compatibility
-            if (const Container<>* container = pool().find(groupName); container != nullptr)
+            auto structDescriptor = registry().findStructType(groupName);
+            if (structDescriptor && structDescriptor->cached())
             {
-                if (container->descriptor().cached())
+                if (const Container<> *container = pool().find(*structDescriptor); container != nullptr)
                 {
                     transmitContainer(connection, *container);
                 }
@@ -276,27 +277,33 @@ namespace dots::io
 
         LOG_INFO_S("received DescriptorRequest from " << connection.peerName() << "(" << connection.peerId() << ")");
 
-        for (const auto& [descriptor, container] : pool())
-        {
-            if (descriptor->internal())
+        registry().forEach([&](const type::Descriptor<>& descriptor) {
+            if (descriptor.type() != type::Type::Struct)
             {
-                continue;
+                return;
             }
 
-            if (!whiteList.empty() && std::find(whiteList.begin(), whiteList.end(), descriptor->name()) == whiteList.end())
+            auto& structDescriptor = static_cast<const type::StructDescriptor<>&>(descriptor);
+
+            if (structDescriptor.internal())
             {
-                continue;
+                return;
             }
 
-            if (!blacklist.empty() && std::find(blacklist.begin(), blacklist.end(), descriptor->name()) != blacklist.end())
+            if (!whiteList.empty() && std::find(whiteList.begin(), whiteList.end(), structDescriptor.name()) == whiteList.end())
             {
-                continue;
+                return;
             }
 
-            LOG_DEBUG_S("sending descriptor for type '" << descriptor->name() << "' to " << connection.peerId());
+            if (!blacklist.empty() && std::find(blacklist.begin(), blacklist.end(), structDescriptor.name()) != blacklist.end())
+            {
+                return;
+            }
 
-            connection.transmit(*descriptor);
-        }
+            LOG_DEBUG_S("sending structDescriptor for type '" << structDescriptor.name() << "' to " << connection.peerId());
+
+            connection.transmit(structDescriptor);
+        });
 
         connection.transmit(DotsCacheInfo{ DotsCacheInfo::endDescriptorRequest_i{ true } });
     }

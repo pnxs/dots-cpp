@@ -1,11 +1,21 @@
 # helper variables
 find_package(Python3 3.7 REQUIRED COMPONENTS Interpreter)
+execute_process(COMMAND ${Python3_EXECUTABLE} -m site --user-site
+    OUTPUT_VARIABLE Python3_SITEUSER
+    RESULT_VARIABLE rv
+)
+if (${rv} GREATER 2)
+    message(FATAL_ERROR "Could not determine Python3 user site-package location: ${rv}")
+endif()
+string(REPLACE "\n" "" Python3_SITEUSER ${Python3_SITEUSER})
+find_program(DOTS-CG NAMES dcg.py PATHS ${Python3_SITEARCH} ${Python3_SITEUSER} PATH_SUFFIXES bin)
+if(${DOTS-CG} STREQUAL DOTS-CG-NOTFOUND)
+    message(FATAL_ERROR "Could not find DOTS code generator")
+endif()
 if(NOT DEFINED DOTS-CG-CPP_DIR)
     message(FATAL_ERROR "DOTS-CG-CPP_DIR variable is not set")
 endif()
-if(NOT DEFINED DOTS-CG)
-    message(FATAL_ERROR "DOTS-CG variable is not set")
-endif()
+
 set(DOTS-CG_CONFIG "config_cpp" CACHE INTERNAL "Internal helper variable containing the DOTS-CG config file name for C++")
 set(DOTS-CG_TEMPLATE_DIR ${DOTS-CG-CPP_DIR} CACHE INTERNAL "Internal helper variable containing the DOTS-CG template directory")
 set(DOTS-CG_TEMPLATE_LIST

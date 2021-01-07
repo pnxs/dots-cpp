@@ -1,12 +1,13 @@
-image: pnxs/dots_devenv:20.04
+image: pnxs/dots_devenv:20.04.1
 
 variables:
     GIT_SUBMODULE_STRATEGY: recursive
 
 build_ubuntu:
     stage: build
+    before_script:
+        - python3 -m pip install dots-code-generator 
     script:
-        - pwd
         - cmake -Bbuild -H. -DCMAKE_BUILD_TYPE=Release -DCPACK_PACKAGE_VERSION_PATCH=${CI_PIPELINE_ID}
         - make -Cbuild -j4
         - cd build && cpack && cd -
@@ -26,8 +27,6 @@ run_unittests:
     dependencies:
         - build_ubuntu
     script:
-        - pwd
-        - find
         - ./build/tests/dots-unittests --gtest_output="xml:report.xml"
     artifacts:
         reports:

@@ -8,6 +8,7 @@ ENV TZ=Europe/Berlin
 
 RUN apt-get update -y && apt-get install -y \
     wget \
+    curl \
     cmake \
     gcc \
     g++ \
@@ -21,7 +22,3 @@ RUN apt-get update -y && apt-get install -y \
     pkg-config \
     python3-pip
 
-RUN python3 -m pip install dots-code-generator
-
-RUN apt-get update -y && apt-get install -y \
-    curl
