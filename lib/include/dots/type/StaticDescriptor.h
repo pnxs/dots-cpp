@@ -215,6 +215,24 @@ namespace dots::type
 
                 return oss.str();
             }
+            else if constexpr (is_iteratable_v<T>)
+            {
+                std::string str = "{ ";
+
+                for (const auto& v : value)
+                {
+                    str += Descriptor<std::decay_t<decltype(v)>>::toString(v) + ", ";
+                }
+
+                if (str.size() >= 2)
+                {
+                    str.resize(str.size() - 2);
+                }
+
+                str += " }";
+
+                return str;
+            }
             else
             {
                 throw std::logic_error{ "to string conversion not available for type" };
@@ -246,6 +264,15 @@ namespace dots::type
         }
 
     private:
+
+        template<typename U, typename = void>
+        struct is_iteratable: std::false_type {};
+        template<typename U>
+        struct is_iteratable<U, std::void_t<decltype(std::declval<U>().begin())>> : std::true_type {};
+        template <typename U>
+        using is_iteratable_t = typename is_iteratable<U>::type;
+        template <typename U>
+        static constexpr bool is_iteratable_v = is_iteratable_t<U>::value;
 
         template<typename U, typename = void>
         struct is_ostreamable: std::false_type {};
