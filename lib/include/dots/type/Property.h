@@ -423,21 +423,25 @@ namespace dots::type
 
         std::string toString() const
         {
+            std::string str = "." + descriptor().name() + " = ";
+
             if (isValid())
             {
                 if constexpr (IsTypeless)
                 {
-                    return descriptor().valueDescriptor().toString(value());
+                    str += descriptor().valueDescriptor().toString(value());
                 }
                 else
                 {
-                    return Descriptor<T>::toString(value());
+                    str += Descriptor<T>::toString(value());
                 }
             }
             else
             {
-                return "<invalid>";
+                str += "<invalid>";
             }
+
+            return str;
         }
 
         constexpr const PropertyDescriptor& descriptor() const

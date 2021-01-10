@@ -63,6 +63,8 @@ namespace dots::type
         size_t dynamicMemoryUsage(const Typeless& instance) const override;
         size_t dynamicMemoryUsage(const Struct& instance) const;
 
+        std::string toString(const Struct& instance, std::optional<PropertySet> includedProperties = std::nullopt) const;
+
         virtual Struct& assign(Struct& instance, const Struct& other, const PropertySet& includedProperties) const;
         virtual Struct& assign(Struct& instance, Struct&& other, const PropertySet& includedProperties) const;
         virtual Struct& copy(Struct& instance, const Struct& other, const PropertySet& includedProperties) const;
