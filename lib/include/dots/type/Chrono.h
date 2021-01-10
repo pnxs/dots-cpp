@@ -52,6 +52,8 @@ namespace dots::type
         static Duration FromString(const std::string_view& value);
     };
 
+    std::ostream& operator << (std::ostream& os, const Duration& duration);
+
     template <typename Base>
     struct TimePointImpl : Base
     {
@@ -89,6 +91,13 @@ namespace dots::type
             return TimePointImpl{ clock_t::now() };
         }
     };
+
+    template <typename Base>
+    std::ostream& operator << (std::ostream& os, const TimePointImpl<Base>& timePoint)
+    {
+        os << timePoint.toString();
+        return os;
+    }
 
     using SystemTimePointBase = std::chrono::time_point<std::chrono::system_clock, std::chrono::duration<double>>;
     using SteadyTimePointBase = std::chrono::time_point<std::chrono::steady_clock, std::chrono::duration<double>>;
