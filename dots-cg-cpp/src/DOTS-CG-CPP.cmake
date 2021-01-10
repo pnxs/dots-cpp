@@ -28,44 +28,37 @@ set(DOTS-CG-CPP-GENERATE_CMD
     CACHE INTERNAL "Internal helper variable containing the DOTS-CG generate command"
 )
 
-# code generation
-function(GET_GENERATED_DOTS_TYPES GENERATED_TYPES MODEL)
-    execute_process(COMMAND ${DOTS-CG-CPP-GENERATE_CMD} --list-generated ${MODEL}
-        OUTPUT_VARIABLE generated_types_list
-        RESULT_VARIABLE rv
-    )
-    if (NOT ${rv} MATCHES "0")
-        message(FATAL_ERROR "Could not generate type list: ${rv}")
-    endif()
-    string(REPLACE "\n" ";" out_types ${generated_types_list})
-    set(${GENERATED_TYPES} ${out_types} PARENT_SCOPE)
-endfunction(GET_GENERATED_DOTS_TYPES)
-
-function(GENERATE_DOTS_TYPES GENERATED_SOURCES GENERATED_HEADERS)
-    foreach(MODEL ${ARGN})
-        # ensure that model path is absolute
-        if(NOT IS_ABSOLUTE "${MODEL}")
-            set(MODEL "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL}")
+function(target_dots_model TARGET_NAME)
+    foreach(MODEL_FILE ${ARGN})
+        # ensure that model file path is absolute
+        if(NOT IS_ABSOLUTE "${MODEL_FILE}")
+            set(MODEL_FILE "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_FILE}")
         endif()
 
-        # gather generated source and header files
-        get_filename_component(Basename ${MODEL} NAME)
-        GET_GENERATED_DOTS_TYPES(GENERATED_TYPES ${MODEL})
-        list(APPEND generated_sources ${GENERATED_TYPES})
-        foreach(TYPE ${GENERATED_TYPES})
-            if(TYPE MATCHES "\\.dots\\.h$" )
-                list(APPEND generated_headers ${CMAKE_CURRENT_BINARY_DIR}/${TYPE})
-            endif()
+        # determine generated model header paths
+        execute_process(COMMAND ${DOTS-CG-CPP-GENERATE_CMD} --list-generated ${MODEL_FILE} 
+            OUTPUT_VARIABLE MODEL_TYPES 
+            RESULT_VARIABLE rv
+        )
+        if (NOT ${rv} MATCHES "0")
+            message(FATAL_ERROR "Could not generate type list: ${rv}")
+        endif()
+        string(REPLACE "\n" ";" MODEL_TYPES ${MODEL_TYPES})
+        foreach(MODEL_TYPE ${MODEL_TYPES})
+            list(APPEND MODEL_HEADERS ${CMAKE_CURRENT_BINARY_DIR}/${MODEL_TYPE})
         endforeach()
 
-        # create generation target for all types in model
-        add_custom_command(OUTPUT ${GENERATED_TYPES}
-            COMMAND ${DOTS-CG-CPP-GENERATE_CMD} ${MODEL}
-            DEPENDS ${DOTS-CG_TEMPLATE_LIST} ${MODEL}
-            COMMENT "Generate DOTS C++ classes from ${MODEL}"
+        # create header generation command for all types in model
+        add_custom_command(OUTPUT ${MODEL_TYPES}
+            COMMAND ${DOTS-CG-CPP-GENERATE_CMD} ${MODEL_FILE}
+            DEPENDS ${DOTS-CG_TEMPLATE_LIST} ${MODEL_FILE}
+            COMMENT "Generating DOTS C++ types for model file: ${MODEL_FILE}"
         )
-
-        set(${GENERATED_SOURCES} ${generated_sources} PARENT_SCOPE)
-        set(${GENERATED_HEADERS} ${generated_headers} PARENT_SCOPE)
     endforeach()
-endfunction(GENERATE_DOTS_TYPES)
+    add_custom_target(${TARGET_NAME}-generate ALL
+        DEPENDS ${MODEL_HEADERS}
+        SOURCES ${MODEL_HEADERS}
+    )
+    add_dependencies(${TARGET_NAME} ${TARGET_NAME}-generate)
+    set(${TARGET_NAME}-MODEL_HEADERS ${MODEL_HEADERS} PARENT_SCOPE)
+endfunction(target_dots_model)
