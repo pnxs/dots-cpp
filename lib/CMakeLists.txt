@@ -26,7 +26,7 @@ endif()
 add_library(${EXPORT_NAME}::${EXPORT_NAME} ALIAS ${TARGET_NAME})
 
 # properties
-GENERATE_DOTS_TYPES(MODEL_SOURCES MODEL_HEADERS
+target_dots_model(${TARGET_NAME}
     ${CMAKE_CURRENT_LIST_DIR}/../external/dots/model/descriptors.dots
     ${CMAKE_CURRENT_LIST_DIR}/../external/dots/model/dotsmessages.dots
     ${CMAKE_CURRENT_LIST_DIR}/../external/dots/model/dotstypes.dots
@@ -97,8 +97,6 @@ target_sources(${TARGET_NAME}
         src/type/StructDescriptor.cpp
         src/type/Uuid.cpp
         src/type/VectorDescriptor.cpp
-
-        ${MODEL_SOURCES}
 )
 target_include_directories(${TARGET_NAME}
     PUBLIC
@@ -191,7 +189,7 @@ install(DIRECTORY
     COMPONENT dev
 )
 install(FILES
-    ${MODEL_HEADERS}
+    ${${TARGET_NAME}-MODEL_HEADERS}
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     COMPONENT dev
 )
