@@ -188,7 +188,14 @@ namespace dots::type
 
                 if (auto [last, ec] = std::to_chars(buffer, buffer + sizeof(buffer), value); ec == std::errc{})
                 {
-                    return std::string{ buffer, last };
+                    std::string str{ buffer, last };
+
+                    if constexpr (std::is_unsigned_v<T>)
+                    {
+                        str += 'u';
+                    }
+
+                    return str;
                 }
                 else
                 {
@@ -201,11 +208,20 @@ namespace dots::type
                 oss.exceptions(std::istringstream::failbit | std::istringstream::badbit);
                 oss << std::setprecision(std::numeric_limits<T>::digits10 + 1) << value;
 
+                if constexpr (std::is_same_v<T, float>)
+                {
+                    oss << 'f';
+                }
+
                 return oss.str();
             }
             else if constexpr (std::is_constructible_v<std::string, T>)
             {
-                return value;
+                std::string str{ '"' };
+                str += value;
+                str += '"';
+
+                return str;
             }
             else if constexpr (is_ostreamable_v<T>)
             {
