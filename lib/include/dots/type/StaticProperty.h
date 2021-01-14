@@ -8,6 +8,7 @@ namespace dots::type
     template <typename T, typename Derived>
     struct StaticProperty : Property<T, Derived>
     {
+        using Property<T, Derived>::Property;
         using Property<T, Derived>::operator=;
 
         static PropertyDescriptor InitDescriptor() 
