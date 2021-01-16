@@ -22,7 +22,7 @@ namespace dots::type
         template <typename... Args>
         static constexpr bool is_single_property_v = [](){ if constexpr (sizeof...(Args) == 1){ return is_property_v<Args...>; } else { return false; } }();
 
-        template <typename... Args, std::enable_if_t<!is_single_property_v<Args...>, int> = 0>
+        template <typename... Args, std::enable_if_t<sizeof...(Args) >= 1 && !is_single_property_v<Args...>, int> = 0>
         Property(Args&&... args)
         {
             Property<T, Derived>::template construct<false>(std::forward<Args>(args)...);
