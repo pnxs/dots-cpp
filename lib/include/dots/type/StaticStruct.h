@@ -22,6 +22,8 @@ namespace dots::type
             /* do nothing */
         }
 
+        ~StaticStruct() = default;
+
         bool operator == (const Derived& rhs) const
         {
             return _equal(rhs);
@@ -402,7 +404,6 @@ namespace dots::type
 
         StaticStruct(const StaticStruct& other) = default;
         StaticStruct(StaticStruct&& other) = default;
-        ~StaticStruct() = default;
 
         StaticStruct& operator = (const StaticStruct& rhs) = default;
         StaticStruct& operator = (StaticStruct&& rhs) = default;

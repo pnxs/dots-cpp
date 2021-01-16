@@ -1,14 +1,15 @@
 cmake_minimum_required(VERSION 3.12)
 project(dots-unittests LANGUAGES CXX)
 set(TARGET_NAME dots-unittests)
+set(TARGET_NAME_EXPERIMENTAL dots-unittests-experimental)
 
 # dependencies
 #find_package(DOTS REQUIRED) (uncomment when dependency is no longer part of build tree)
 
-# target
+# target [dots-unittests]
 add_executable(${TARGET_NAME} src/TestContainer.cpp)
 
-# properties
+# properties [dots-unittests]
 target_sources(${TARGET_NAME}
     PRIVATE
         src/TestDigest.cpp
@@ -42,6 +43,36 @@ target_compile_features(${TARGET_NAME}
         cxx_std_17
 )
 target_link_libraries(${TARGET_NAME}
+    PRIVATE
+        DOTS::DOTS
+        gmock
+        gtest
+        gtest_main
+        date::date
+        date::tz
+)
+
+# target [dots-unittests-experimental]
+add_executable(${TARGET_NAME_EXPERIMENTAL} src/TestStaticStructExperimental.cpp)
+
+# properties [dots-unittests-experimental]
+#target_sources(${TARGET_NAME_EXPERIMENTAL}
+#    PRIVATE
+#)
+target_include_directories(${TARGET_NAME_EXPERIMENTAL}
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+target_compile_options(${TARGET_NAME_EXPERIMENTAL}
+    PRIVATE
+        $<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-O2 -Wall -Wextra -Wpedantic -Werror -Wno-deprecated-declarations -Wno-missing-field-initializers>>
+        $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>>:/W4>
+)
+target_compile_features(${TARGET_NAME_EXPERIMENTAL}
+    PRIVATE
+        cxx_std_20
+)
+target_link_libraries(${TARGET_NAME_EXPERIMENTAL}
     PRIVATE
         DOTS::DOTS
         gmock
