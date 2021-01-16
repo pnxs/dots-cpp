@@ -3,7 +3,6 @@
 #include <date/tz.h>
 #include <dots/type/Chrono.h>
 
-using namespace dots::type;
 using namespace dots::type::literals;
 
 struct TestDuration : ::testing::Test
@@ -16,7 +15,7 @@ protected:
 TEST_F(TestDuration, toString)
 {
     {
-        Duration sut = Duration::zero();
+        dots::type::Duration sut = dots::type::Duration::zero();
         sut += date::days{ 42 };
         sut += 3h;
         sut += 42s;
@@ -25,7 +24,7 @@ TEST_F(TestDuration, toString)
     }
 
     {
-        Duration sut = Duration::zero();
+        dots::type::Duration sut = dots::type::Duration::zero();
         sut += date::days{ 41 };
         sut += 23h;
         sut += 59min;
@@ -37,7 +36,7 @@ TEST_F(TestDuration, toString)
     }
 
     {
-        Duration sut = Duration::zero();
+        dots::type::Duration sut = dots::type::Duration::zero();
         sut += 87600h;
         sut += 100ms;
 
@@ -48,7 +47,7 @@ TEST_F(TestDuration, toString)
 TEST_F(TestDuration, fromString)
 {
     {
-        Duration sut;
+        dots::type::Duration sut;
         sut.fromString("P616DT3H19M3.791078880S");
 
         EXPECT_EQ(date::floor<date::days>(sut), date::days{ 616 });
@@ -73,7 +72,7 @@ TEST_F(TestDuration, fromString)
     }
 
     {
-        Duration sut;
+        dots::type::Duration sut;
         sut.fromString("PT72H59M");
 
         EXPECT_EQ(date::floor<std::chrono::hours>(sut), 72h);
@@ -84,7 +83,7 @@ TEST_F(TestDuration, fromString)
     }
 
     {
-        Duration sut;
+        dots::type::Duration sut;
         sut.fromString("P102M3W4DT");
 
         EXPECT_EQ(date::floor<date::months>(sut), date::months{ 102 });
@@ -98,7 +97,7 @@ TEST_F(TestDuration, fromString)
     }
 
     {
-        Duration sut;
+        dots::type::Duration sut;
         sut.fromString("P100YT0.00001S");
 
         EXPECT_EQ(date::floor<date::years>(sut), date::years{ 100 });
@@ -107,12 +106,12 @@ TEST_F(TestDuration, fromString)
         EXPECT_EQ(date::floor<std::chrono::microseconds>(sut), 10us);
     }
 
-    EXPECT_THROW(Duration::FromString("100YT0.00001S"), std::runtime_error);
-    EXPECT_THROW(Duration::FromString("P100Y0.00001S"), std::runtime_error);
-    EXPECT_THROW(Duration::FromString("P100YT0.00001"), std::runtime_error);
-    EXPECT_THROW(Duration::FromString("P100XT0.00001S"), std::runtime_error);
-    EXPECT_THROW(Duration::FromString("P100Y100YT0.00001S"), std::runtime_error);
-    EXPECT_THROW(Duration::FromString("P100YT100Y0.00001S"), std::runtime_error);
+    EXPECT_THROW(dots::type::Duration::FromString("100YT0.00001S"), std::runtime_error);
+    EXPECT_THROW(dots::type::Duration::FromString("P100Y0.00001S"), std::runtime_error);
+    EXPECT_THROW(dots::type::Duration::FromString("P100YT0.00001"), std::runtime_error);
+    EXPECT_THROW(dots::type::Duration::FromString("P100XT0.00001S"), std::runtime_error);
+    EXPECT_THROW(dots::type::Duration::FromString("P100Y100YT0.00001S"), std::runtime_error);
+    EXPECT_THROW(dots::type::Duration::FromString("P100YT100Y0.00001S"), std::runtime_error);
 }
 
 struct TestTimePoint : ::testing::Test
@@ -130,16 +129,16 @@ protected:
 
 TEST_F(TestTimePoint, toString)
 {
-    EXPECT_EQ(TimePoint{ Duration{ UnixTimestampValue } }.toString({}), UnixTimestampString);
-    EXPECT_EQ(TimePoint{ Duration{ UnixTimestampValue } }.toString(TimePoint::ISO8601DateTime, true), UnixTimestampISO8601UTC);
+    EXPECT_EQ(dots::type::TimePoint{ dots::type::Duration{ UnixTimestampValue } }.toString({}), UnixTimestampString);
+    EXPECT_EQ(dots::type::TimePoint{ dots::type::Duration{ UnixTimestampValue } }.toString(dots::type::TimePoint::ISO8601DateTime, true), UnixTimestampISO8601UTC);
 }
 
 TEST_F(TestTimePoint, fromString)
 {
-    EXPECT_EQ(TimePoint::FromString(UnixTimestampString, {}).duration().toFractionalSeconds(), UnixTimestampValue);
-    EXPECT_EQ(TimePoint::FromString(UnixTimestampISO8601UTC).duration().toFractionalSeconds(), UnixTimestampValue);
-    EXPECT_EQ(TimePoint::FromString(UnixTimestampISO8601CET).duration().toFractionalSeconds(), UnixTimestampValue);
-    EXPECT_EQ(TimePoint::FromString(UnixTimestampISO8601SRET).duration().toFractionalSeconds(), UnixTimestampValue);
+    EXPECT_EQ(dots::type::TimePoint::FromString(UnixTimestampString, {}).duration().toFractionalSeconds(), UnixTimestampValue);
+    EXPECT_EQ(dots::type::TimePoint::FromString(UnixTimestampISO8601UTC).duration().toFractionalSeconds(), UnixTimestampValue);
+    EXPECT_EQ(dots::type::TimePoint::FromString(UnixTimestampISO8601CET).duration().toFractionalSeconds(), UnixTimestampValue);
+    EXPECT_EQ(dots::type::TimePoint::FromString(UnixTimestampISO8601SRET).duration().toFractionalSeconds(), UnixTimestampValue);
 }
 
 struct TestSteadyTimePoint : ::testing::Test
@@ -155,12 +154,12 @@ protected:
 
 TEST_F(TestSteadyTimePoint, toString)
 {
-    EXPECT_EQ(SteadyTimePoint{ Duration{ SteadyTimestampValue } }.toString({}), SteadyTimestampString);
-    EXPECT_EQ(SteadyTimePoint{ Duration{ SteadyTimestampValue } }.toString(), SteadyTimestampISO8601);
+    EXPECT_EQ(dots::type::SteadyTimePoint{ dots::type::Duration{ SteadyTimestampValue } }.toString({}), SteadyTimestampString);
+    EXPECT_EQ(dots::type::SteadyTimePoint{ dots::type::Duration{ SteadyTimestampValue } }.toString(), SteadyTimestampISO8601);
 }
 
 TEST_F(TestSteadyTimePoint, fromString)
 {
-    EXPECT_EQ(SteadyTimePoint::FromString(SteadyTimestampString, {}).duration().toFractionalSeconds(), SteadyTimestampValue);
-    EXPECT_EQ(SteadyTimePoint::FromString(SteadyTimestampISO8601).duration().toFractionalSeconds(), SteadyTimestampValue);
+    EXPECT_EQ(dots::type::SteadyTimePoint::FromString(SteadyTimestampString, {}).duration().toFractionalSeconds(), SteadyTimestampValue);
+    EXPECT_EQ(dots::type::SteadyTimePoint::FromString(SteadyTimestampISO8601).duration().toFractionalSeconds(), SteadyTimestampValue);
 }

@@ -16,7 +16,25 @@ namespace dots::type
         using value_t = T;
         static constexpr bool IsTypeless = std::is_same_v<T, Typeless>;
 
-        template <typename U, std::enable_if_t<!std::disjunction_v<std::is_same<std::remove_reference_t<U>, Property>, std::is_same<std::remove_reference_t<U>, Derived>>, int> = 0>
+        template <typename U>
+        static constexpr bool is_property_v = std::disjunction_v<std::is_same<std::decay_t<U>, Property>, std::is_same<std::decay_t<U>, Derived>>;
+
+        template <typename... Args>
+        static constexpr bool is_single_property_v = [](){ if constexpr (sizeof...(Args) == 1){ return is_property_v<Args...>; } else { return false; } }();
+
+        template <typename... Args, std::enable_if_t<sizeof...(Args) >= 1 && !is_single_property_v<Args...>, int> = 0>
+        Property(Args&&... args)
+        {
+            Property<T, Derived>::template construct<false>(std::forward<Args>(args)...);
+        }
+
+        template <typename U, std::enable_if_t<std::is_constructible_v<T, std::initializer_list<U>>, int> = 0>
+        Property(std::initializer_list<U> init)
+        {
+            Property<T, Derived>::template construct<false>(init);
+        }
+
+        template <typename U, std::enable_if_t<!is_property_v<U>, int> = 0>
         Derived& operator = (U&& rhs)
         {
             Property<T, Derived>::constructOrAssign(std::forward<U>(rhs));
@@ -423,21 +441,25 @@ namespace dots::type
 
         std::string toString() const
         {
+            std::string str = "." + descriptor().name() + " = ";
+
             if (isValid())
             {
                 if constexpr (IsTypeless)
                 {
-                    return descriptor().valueDescriptor().toString(value());
+                    str += descriptor().valueDescriptor().toString(value());
                 }
                 else
                 {
-                    return Descriptor<T>::toString(value());
+                    str += Descriptor<T>::toString(value());
                 }
             }
             else
             {
-                return "<invalid>";
+                str += "<invalid>";
             }
+
+            return str;
         }
 
         constexpr const PropertyDescriptor& descriptor() const

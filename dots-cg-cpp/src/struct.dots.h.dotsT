@@ -73,23 +73,36 @@ namespace dots::types
 
             {{property.name}}_t& operator = (const {{property.name}}_t& rhs) = default;
             {{property.name}}_t& operator = ({{property.name}}_t&& rhs) = default;
+
+            #if (defined DOTS_EXPERIMENTAL_DESIGNATED_STRUCT_INITIALIZATION)
+            using StaticProperty::StaticProperty;
+            {{property.name}}_t() = default;
+            ~{{property.name}}_t() = default;
+            #endif
+            
             using StaticProperty::operator=;
 
         private:
 
-            friend struct {{name}};
+            friend {{name}};
 
+            #if (!defined DOTS_EXPERIMENTAL_DESIGNATED_STRUCT_INITIALIZATION)
             {{property.name}}_t() = default;
+            ~{{property.name}}_t() = default;
+            #endif
             {{property.name}}_t(const {{property.name}}_t& other) = default;
             {{property.name}}_t({{property.name}}_t&& other) = default;
-            ~{{property.name}}_t() = default;
         };
-        using {{property.name}}_i = type::PropertyInitializer<{{property.name}}_t, types::{{property.cxx_type}}>;
         static constexpr types::property_set_t {{property.name}}_p = types::property_set_t::FromIndex({{property.tag}});
 
 {% endfor %}
         using _key_properties_t = std::tuple<{% for property in keyAttributes %}{{property.name}}_t*{% if not loop.last %}, {% endif %}{% endfor %}>;
         using _properties_t     = std::tuple<{% for property in attributes %}{{property.name}}_t*{% if not loop.last %}, {% endif %}{% endfor %}>;
+
+        #if (!defined DOTS_EXPERIMENTAL_DESIGNATED_STRUCT_INITIALIZATION)
+        {% for property in attributes %}
+        using {{property.name}}_i = type::PropertyInitializer<{{property.name}}_t, types::{{property.cxx_type}}>;
+        {% endfor %}
 
         {{name}}() = default;
         {{name}}(const {{name}}& other) = default;
@@ -104,6 +117,7 @@ namespace dots::types
         {
             (_getProperty<typename std::remove_pointer_t<std::decay_t<PropertyInitializers>>::property_t>().template construct<false>(std::forward<decltype(propertyInitializers)>(propertyInitializers).value), ...);
         }
+        #endif
 
         template <typename P>
         const P& _getProperty() const

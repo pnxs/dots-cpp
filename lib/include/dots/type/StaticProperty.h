@@ -8,6 +8,7 @@ namespace dots::type
     template <typename T, typename Derived>
     struct StaticProperty : Property<T, Derived>
     {
+        using Property<T, Derived>::Property;
         using Property<T, Derived>::operator=;
 
         static PropertyDescriptor InitDescriptor() 
@@ -49,10 +50,7 @@ namespace dots::type
 
     protected:
 
-        StaticProperty()
-        {
-            /* do nothing */
-        }
+        StaticProperty() = default;
 
         StaticProperty(const StaticProperty& other) : Property<T, Derived>()
         {
@@ -109,7 +107,7 @@ namespace dots::type
 
         T& derivedStorage()
         {
-            return m_storage;
+            return reinterpret_cast<T&>(m_storage);
         }
 
         const T& derivedStorage() const
@@ -128,11 +126,6 @@ namespace dots::type
         }
 
         inline static std::optional<type::PropertyDescriptor> M_descriptorStorage;
-
-        union
-        {
-            T m_storage;
-            std::aligned_storage_t<sizeof(T), alignof(T)> m_data;
-        };
+        std::aligned_storage_t<sizeof(T), alignof(T)> m_storage;
     };
 }

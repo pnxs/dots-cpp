@@ -128,6 +128,12 @@ namespace dots::type
         return Duration{ duration };
     }
 
+    std::ostream& operator << (std::ostream& os, const Duration& duration)
+    {
+        os << duration.toString();
+        return os;
+    }
+
     using sys_time_t = date::sys_time<std::chrono::milliseconds>;
     using sys_duration_t = sys_time_t::duration;
 

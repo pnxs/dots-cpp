@@ -188,7 +188,14 @@ namespace dots::type
 
                 if (auto [last, ec] = std::to_chars(buffer, buffer + sizeof(buffer), value); ec == std::errc{})
                 {
-                    return std::string{ buffer, last };
+                    std::string str{ buffer, last };
+
+                    if constexpr (std::is_unsigned_v<T>)
+                    {
+                        str += 'u';
+                    }
+
+                    return str;
                 }
                 else
                 {
@@ -201,11 +208,20 @@ namespace dots::type
                 oss.exceptions(std::istringstream::failbit | std::istringstream::badbit);
                 oss << std::setprecision(std::numeric_limits<T>::digits10 + 1) << value;
 
+                if constexpr (std::is_same_v<T, float>)
+                {
+                    oss << 'f';
+                }
+
                 return oss.str();
             }
             else if constexpr (std::is_constructible_v<std::string, T>)
             {
-                return value;
+                std::string str{ '"' };
+                str += value;
+                str += '"';
+
+                return str;
             }
             else if constexpr (is_ostreamable_v<T>)
             {
@@ -214,6 +230,24 @@ namespace dots::type
                 oss << value;
 
                 return oss.str();
+            }
+            else if constexpr (is_iteratable_v<T>)
+            {
+                std::string str = "{ ";
+
+                for (const auto& v : value)
+                {
+                    str += Descriptor<std::decay_t<decltype(v)>>::toString(v) + ", ";
+                }
+
+                if (str.size() >= 2)
+                {
+                    str.resize(str.size() - 2);
+                }
+
+                str += " }";
+
+                return str;
             }
             else
             {
@@ -246,6 +280,15 @@ namespace dots::type
         }
 
     private:
+
+        template<typename U, typename = void>
+        struct is_iteratable: std::false_type {};
+        template<typename U>
+        struct is_iteratable<U, std::void_t<decltype(std::declval<U>().begin())>> : std::true_type {};
+        template <typename U>
+        using is_iteratable_t = typename is_iteratable<U>::type;
+        template <typename U>
+        static constexpr bool is_iteratable_v = is_iteratable_t<U>::value;
 
         template<typename U, typename = void>
         struct is_ostreamable: std::false_type {};

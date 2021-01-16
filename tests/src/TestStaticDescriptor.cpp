@@ -232,7 +232,7 @@ TEST_F(TestStaticDescriptor, greaterEqual)
 TEST_F(TestStaticDescriptor, toString)
 {
     EXPECT_EQ(m_sutInt.toString(42), "42");
-    EXPECT_EQ(m_sutString.toString("foo"), "foo");
+    EXPECT_EQ(m_sutString.toString("foo"), "\"foo\"");
 }
 
 TEST_F(TestStaticDescriptor, fromString)

@@ -35,4 +35,6 @@ namespace dots::type
 
         value_t m_data;
     };
+
+    std::ostream& operator << (std::ostream& os, const Uuid& uuid);
 }
