@@ -52,10 +52,15 @@ jobs:
       working-directory: ${{github.workspace}}/build
       shell: bash
       run: tests/dots-unittests --gtest_output="xml:report.xml"
+
+    - name: Test (experimental features)
+      working-directory: ${{github.workspace}}/build
+      shell: bash
+      run: tests/dots-unittests-experimental --gtest_output="xml:report_experimental.xml"
     
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action@v1.6
       if: always()
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        files: build/report.xml
+        files: [build/report.xml, build/report_experimental.xml]
