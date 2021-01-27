@@ -66,6 +66,8 @@ namespace dots::types
             static constexpr auto Offset = [](){ constexpr auto proto{{name}} = details::Proto{{name}}{}; return type::StaticPropertyOffset::MakeOffset(&proto{{name}}._propertyArea, &proto{{name}}.{{property.name}}); }();
             #endif
 
+            static constexpr uint32_t Tag = {{property.tag}};
+
             static type::PropertyDescriptor MakeDescriptor() 
             {
                 return type::PropertyDescriptor{ type::Descriptor<types::{{property.cxx_type}}>::InstancePtr(), "{{property.name}}", {{property.tag}}, {% if property.key %}true{% else %}false{% endif %}, Offset };

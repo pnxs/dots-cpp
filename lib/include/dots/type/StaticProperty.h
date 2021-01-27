@@ -28,11 +28,6 @@ namespace dots::type
             return Descriptor.name();
         }
 
-        static uint32_t Tag()
-        {
-            return Descriptor.tag();
-        }
-
         static bool IsKey()
         {
             return Descriptor.isKey();
@@ -40,7 +35,7 @@ namespace dots::type
 
         static PropertySet Set()
         {
-            return Descriptor.set();
+            return PropertySet::FromIndex(Derived::Tag);
         }
 
         static bool IsPartOf(const PropertySet& propertySet)
@@ -123,6 +118,21 @@ namespace dots::type
         static const PropertyDescriptor& derivedDescriptor()
         {
             return Derived::Descriptor;
+        }
+
+        const PropertySet& derivedValidProperties() const
+        {
+            return PropertyArea::GetArea(static_cast<const Derived&>(*this)).validProperties();
+        }
+
+        PropertySet& derivedValidProperties()
+        {
+            return const_cast<PropertySet&>(std::as_const(*this).derivedValidProperties());
+        }
+
+        bool derivedIsValid() const
+        {
+            return Set() <= derivedValidProperties();
         }
 
         inline static std::optional<type::PropertyDescriptor> M_descriptorStorage;

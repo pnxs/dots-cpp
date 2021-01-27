@@ -22,18 +22,21 @@ namespace dots::types
         struct p1_t : type::StaticProperty<bool_t, p1_t>
         {
             static constexpr auto Offset = [](){ constexpr auto protoTestSubStruct = details::ProtoTestSubStruct{}; return type::StaticPropertyOffset::MakeOffset(&protoTestSubStruct._propertyArea, &protoTestSubStruct.p1); }();
+            static constexpr uint32_t Tag = 1;
             static type::PropertyDescriptor MakeDescriptor() { return type::PropertyDescriptor{ type::Descriptor<bool_t>::InstancePtr(), "p1", 1, true, Offset }; }
         };
 
         struct p2_t : type::StaticProperty<bool_t, p2_t>
         {
             static constexpr auto Offset = [](){ constexpr auto protoTestSubStruct = details::ProtoTestSubStruct{}; return type::StaticPropertyOffset::MakeOffset(&protoTestSubStruct._propertyArea, &protoTestSubStruct.p2); }();
+            static constexpr uint32_t Tag = 2;
             static type::PropertyDescriptor MakeDescriptor() { return type::PropertyDescriptor{ type::Descriptor<bool_t>::InstancePtr(), "p2", 2, false, Offset }; }
         };
 
         struct p3_t : type::StaticProperty<float64_t, p3_t>
         {
             static constexpr auto Offset = [](){ constexpr auto protoTestSubStruct = details::ProtoTestSubStruct{}; return type::StaticPropertyOffset::MakeOffset(&protoTestSubStruct._propertyArea, &protoTestSubStruct.p3); }();
+            static constexpr uint32_t Tag = 3;
             static type::PropertyDescriptor MakeDescriptor() { return type::PropertyDescriptor{ type::Descriptor<float64_t>::InstancePtr(), "p3", 3, false, Offset }; }
         };
 
@@ -124,30 +127,35 @@ namespace dots::types
         struct intProperty_t : type::StaticProperty<int32_t, intProperty_t>
         {
             static constexpr auto Offset = [](){ constexpr auto protoTestSubStruct = details::ProtoTestStruct{}; return type::StaticPropertyOffset::MakeOffset(&protoTestSubStruct._propertyArea, &protoTestSubStruct.intProperty); }();
+            static constexpr uint32_t Tag = 1;
             static type::PropertyDescriptor MakeDescriptor() { return type::PropertyDescriptor{ type::Descriptor<int32_t>::InstancePtr(), "intProperty", 1, true, Offset }; }
         };
 
         struct stringProperty_t : type::StaticProperty<string_t, stringProperty_t>
         {
             static constexpr auto Offset = [](){ constexpr auto protoTestSubStruct = details::ProtoTestStruct{}; return type::StaticPropertyOffset::MakeOffset(&protoTestSubStruct._propertyArea, &protoTestSubStruct.stringProperty); }();
+            static constexpr uint32_t Tag = 2;
             static type::PropertyDescriptor MakeDescriptor() { return type::PropertyDescriptor{ type::Descriptor<string_t>::InstancePtr(), "stringProperty", 2, false, Offset }; }
         };
 
         struct boolProperty_t : type::StaticProperty<bool_t, boolProperty_t>
         {
             static constexpr auto Offset = [](){ constexpr auto protoTestSubStruct = details::ProtoTestStruct{}; return type::StaticPropertyOffset::MakeOffset(&protoTestSubStruct._propertyArea, &protoTestSubStruct.boolProperty); }();
+            static constexpr uint32_t Tag = 3;
             static type::PropertyDescriptor MakeDescriptor() { return type::PropertyDescriptor{ type::Descriptor<bool_t>::InstancePtr(), "boolProperty", 3, false, Offset }; }
         };
 
         struct floatVectorProperty_t : type::StaticProperty<vector_t<float32_t>, floatVectorProperty_t>
         {
             static constexpr auto Offset = [](){ constexpr auto protoTestSubStruct = details::ProtoTestStruct{}; return type::StaticPropertyOffset::MakeOffset(&protoTestSubStruct._propertyArea, &protoTestSubStruct.floatVectorProperty); }();
+            static constexpr uint32_t Tag = 4;
             static type::PropertyDescriptor MakeDescriptor() { return type::PropertyDescriptor{ type::Descriptor<vector_t<float32_t>>::InstancePtr(), "floatVectorProperty", 4, false, Offset }; }
         };
 
         struct subStruct_t : type::StaticProperty<TestSubStruct, subStruct_t>
         {
             static constexpr auto Offset = [](){ constexpr auto protoTestSubStruct = details::ProtoTestStruct{}; return type::StaticPropertyOffset::MakeOffset(&protoTestSubStruct._propertyArea, &protoTestSubStruct.subStruct); }();
+            static constexpr uint32_t Tag = 5;
             static type::PropertyDescriptor MakeDescriptor() { return type::PropertyDescriptor{ type::Descriptor<TestSubStruct>::InstancePtr(), "subStruct", 5, false, Offset }; }
         };
 
@@ -260,10 +268,10 @@ TEST_F(TestStaticStruct, PropertyOffsetsMatchActualOffsets)
 
 TEST_F(TestStaticStruct, PropertiesHaveExpectedTags)
 {
-    EXPECT_EQ(TestStruct::intProperty_t::Tag(), 1);
-    EXPECT_EQ(TestStruct::stringProperty_t::Tag(), 2);
-    EXPECT_EQ(TestStruct::boolProperty_t::Tag(), 3);
-    EXPECT_EQ(TestStruct::floatVectorProperty_t::Tag(), 4);
+    EXPECT_EQ(TestStruct::intProperty_t::Tag, 1);
+    EXPECT_EQ(TestStruct::stringProperty_t::Tag, 2);
+    EXPECT_EQ(TestStruct::boolProperty_t::Tag, 3);
+    EXPECT_EQ(TestStruct::floatVectorProperty_t::Tag, 4);
 }
 
 TEST_F(TestStaticStruct, PropertiesHaveExpectedNames)
