@@ -2,6 +2,7 @@
 #include <type_traits>
 #include <optional>
 #include <dots/type/Property.h>
+#include <dots/type/StaticPropertyMetadata.h>
 
 namespace dots::type
 {
@@ -11,37 +12,47 @@ namespace dots::type
         using Property<T, Derived>::Property;
         using Property<T, Derived>::operator=;
 
+        static constexpr std::string_view Name()
+        {
+            return Derived::Metadata.name();
+        }
+
+        static constexpr uint32_t Tag()
+        {
+            return Derived::Metadata.tag();
+        }
+
+        static constexpr bool IsKey()
+        {
+            return Derived::Metadata.isKey();
+        }
+
+        static constexpr PropertyOffset Offset()
+        {
+            return Derived::Metadata.offset();
+        }
+
+        static constexpr PropertySet Set()
+        {
+            return Derived::Metadata.set();
+        }
+
+        static constexpr bool IsPartOf(const PropertySet& propertySet)
+        {
+            return Set() <= propertySet;
+        }
+
         static PropertyDescriptor InitDescriptor() 
         {
             if (M_descriptorStorage == std::nullopt)
             {
-                M_descriptorStorage.emplace(Derived::MakeDescriptor());
+                M_descriptorStorage.emplace(type::Descriptor<T>::InstancePtr(), Name().data(), Tag(), IsKey(), Offset());
             }
 
             return *M_descriptorStorage; 
         }
 
         inline static const type::PropertyDescriptor& Descriptor = InitDescriptor();
-
-        static std::string_view Name()
-        {
-            return Descriptor.name();
-        }
-
-        static bool IsKey()
-        {
-            return Descriptor.isKey();
-        }
-
-        static PropertySet Set()
-        {
-            return PropertySet::FromIndex(Derived::Tag);
-        }
-
-        static bool IsPartOf(const PropertySet& propertySet)
-        {
-            return Set() <= propertySet;
-        }
 
     protected:
 

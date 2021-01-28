@@ -54,7 +54,7 @@ namespace dots::type
         template <typename P>
         const P& getProperty() const
         {
-            constexpr size_t offset = P::Offset;
+            size_t offset = P::Offset();
             return getProperty<P>(offset);
         }
 
@@ -79,7 +79,7 @@ namespace dots::type
         template <typename P>
         static const PropertyArea& GetArea(const P& property)
         {
-            constexpr size_t offset = P::Offset;
+            size_t offset = P::Offset();
             return GetArea(property, offset);
         }
 
