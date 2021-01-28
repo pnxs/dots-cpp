@@ -18,6 +18,8 @@ namespace dots::type
         const std::shared_ptr<Descriptor<>>& valueDescriptorPtr() const;
         const Descriptor<Typeless>& valueDescriptor() const;
 
+        virtual void fill(Vector<>& vector, size_t size) const = 0;
+
     private:
 
         std::shared_ptr<Descriptor<>> m_valueDescriptor;
@@ -66,6 +68,30 @@ namespace dots::type
             }
 
             return dynMemUsage;
+        }
+
+        void fill(Vector<>& typelessVector, size_t size) const override
+        {
+            auto& vector = static_cast<Vector<T>&>(typelessVector);
+            vector.clear();
+
+            if constexpr (std::is_default_constructible_v<T>)
+            {
+                vector.resize(size);
+            }
+            else
+            {
+                const auto& valueDescriptor = Descriptor::valueDescriptor();
+                std::aligned_storage_t<sizeof(T), alignof(T)> rawStorage;
+                T& storage = reinterpret_cast<T&>(rawStorage);
+
+                for (size_t i = 0; i < size; ++i)
+                {
+                    valueDescriptor.construct(storage);
+                    vector.emplace_back(std::move(storage));
+                    valueDescriptor.destruct(storage);
+                }
+            }
         }
 
         static const std::shared_ptr<Descriptor<T>>& valueDescriptorPtr()
