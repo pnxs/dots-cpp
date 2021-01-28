@@ -4,15 +4,16 @@
 
 namespace dots::type
 {
-    struct VectorDescriptor : Descriptor<Typeless>
+    template <>
+    struct Descriptor<Vector<Typeless>> : Descriptor<Typeless>
     {
-        VectorDescriptor(std::string name, const std::shared_ptr<Descriptor<>>& valueDescriptor, size_t size, size_t alignment);
-        VectorDescriptor(const VectorDescriptor& other) = default;
-        VectorDescriptor(VectorDescriptor&& other) = default;
-        ~VectorDescriptor() = default;
+        Descriptor(std::string name, const std::shared_ptr<Descriptor<>>& valueDescriptor, size_t size, size_t alignment);
+        Descriptor(const Descriptor& other) = default;
+        Descriptor(Descriptor&& other) = default;
+        ~Descriptor() = default;
 
-        VectorDescriptor& operator = (const VectorDescriptor& rhs) = default;
-        VectorDescriptor& operator = (VectorDescriptor&& rhs) = default;
+        Descriptor& operator = (const Descriptor& rhs) = default;
+        Descriptor& operator = (Descriptor&& rhs) = default;
 
         const std::shared_ptr<Descriptor<>>& valueDescriptorPtr() const;
         const Descriptor<Typeless>& valueDescriptor() const;
@@ -23,17 +24,17 @@ namespace dots::type
     };
 
     template <typename T>
-    struct Descriptor<Vector<T>> : StaticDescriptor<Vector<T>, VectorDescriptor>
+    struct Descriptor<Vector<T>> : StaticDescriptor<Vector<T>, Descriptor<Vector<Typeless>>>
     {
         static constexpr bool IsDynamic = is_dynamic_descriptor_v<Descriptor<T>>;
 
         Descriptor() :
-            StaticDescriptor<Vector<T>, VectorDescriptor>("vector<" + valueDescriptor().name() + ">", valueDescriptorPtr(), sizeof(Vector<T>), alignof(Vector<T>))
+            StaticDescriptor<Vector<T>, Descriptor<Vector<Typeless>>>("vector<" + valueDescriptor().name() + ">", valueDescriptorPtr(), sizeof(Vector<T>), alignof(Vector<T>))
         {
             /* do nothing */
         }
         Descriptor(const std::shared_ptr<Descriptor<>>& valueDescriptorOverride, bool checkSize = true) :
-            StaticDescriptor<Vector<T>, VectorDescriptor>("vector<" + valueDescriptorOverride->name() + ">", valueDescriptorOverride, sizeof(Vector<T>), alignof(Vector<T>))
+            StaticDescriptor<Vector<T>, Descriptor<Vector<Typeless>>>("vector<" + valueDescriptorOverride->name() + ">", valueDescriptorOverride, sizeof(Vector<T>), alignof(Vector<T>))
         {
             if (checkSize && (valueDescriptorOverride->size() != sizeof(T) || valueDescriptorOverride->alignment() != alignof(T)))
             {
@@ -77,6 +78,8 @@ namespace dots::type
             return Descriptor<T>::Instance();
         }
     };
+
+    using VectorDescriptor = Descriptor<Vector<Typeless>>;
 
     [[deprecated("only available for backwards compatibility")]]
     inline const VectorDescriptor* toVectorDescriptor(const Descriptor<>* descriptor)
