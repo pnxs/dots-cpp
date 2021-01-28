@@ -11,10 +11,10 @@ namespace dots::type
         static constexpr bool EnableValueConstructors = !std::is_same_v<T, PropertyArea>;
 
         template <typename Derived>
-        static constexpr bool is_compatible_property_v = std::conjunction_v<std::negation<std::integral_constant<bool, Property<T, ProxyProperty<T>>::IsTypeless>>, std::integral_constant<bool, !std::is_same_v<T, PropertyArea>>, std::negation<std::is_same<Derived, ProxyProperty<T>>>>;
+        static constexpr bool is_compatible_property_v = std::conjunction_v<std::negation<std::integral_constant<bool, Property<T, ProxyProperty<T>>::IsTypeless>>, std::integral_constant<bool, !std::is_same_v<T, PropertyArea>>>;
 
         template <typename Derived>
-        static constexpr bool is_compatible_typeless_property_v = std::conjunction_v<std::integral_constant<bool, Property<T, ProxyProperty<T>>::IsTypeless>, std::integral_constant<bool, EnableValueConstructors>, std::negation<std::is_same<Derived, ProxyProperty<T>>>>;
+        static constexpr bool is_compatible_typeless_property_v = std::conjunction_v<std::integral_constant<bool, Property<T, ProxyProperty<T>>::IsTypeless>, std::integral_constant<bool, EnableValueConstructors>>;
 
         ProxyProperty(const PropertyPath& path) :
             ProxyProperty(nullptr, path_t{ &path })
