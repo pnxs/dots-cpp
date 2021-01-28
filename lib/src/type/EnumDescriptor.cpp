@@ -22,6 +22,11 @@ namespace dots::type
         return m_name;
     }
 
+    const Typeless& EnumeratorDescriptor<Typeless>::value() const
+    {
+        return valueTypeless();
+    }
+
     EnumDescriptor<Typeless, false, void>::EnumDescriptor(std::string name, size_t underlyingTypeSize, size_t underlyingTypeAlignment) :
         Descriptor<Typeless>(Type::Enum, std::move(name), underlyingTypeSize, underlyingTypeAlignment)
     {

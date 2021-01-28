@@ -48,6 +48,7 @@ namespace dots::type
 
         uint32_t tag() const;
         const std::string& name() const;
+        const Typeless& value() const;
 
         virtual std::shared_ptr<Descriptor<>> underlyingDescriptorPtr() const = 0;
         virtual const Descriptor<Typeless>& underlyingDescriptor() const = 0;
