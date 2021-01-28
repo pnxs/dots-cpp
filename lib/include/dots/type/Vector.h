@@ -42,6 +42,7 @@ namespace dots::type
     template <typename T>
     struct Vector<T> : Vector<Typeless, void>, std::vector<std::conditional_t<std::is_same_v<T, bool>, uint8_t, T>>
     {
+        using value_t = T;
         using vector_t = std::vector<std::conditional_t<std::is_same_v<T, bool>, uint8_t, T>>;
 
         Vector() = default;
