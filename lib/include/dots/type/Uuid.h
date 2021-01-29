@@ -8,7 +8,7 @@ namespace dots::type
     {
         using value_t = std::array<uint8_t, 16>;
 
-        Uuid() = delete;
+        Uuid() = default;
         Uuid(const uint8_t data[16]);
         Uuid(const value_t& data);
 
