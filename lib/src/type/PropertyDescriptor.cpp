@@ -4,8 +4,7 @@
 
 namespace dots::type
 {
-
-    PropertyDescriptor::PropertyDescriptor(std::shared_ptr<Descriptor<>> descriptor, std::string name, uint32_t tag, bool isKey, PropertyOffset offset) :
+    PropertyDescriptor::PropertyDescriptor(std::shared_ptr<Descriptor<>> descriptor, std::string name, uint32_t tag, bool isKey, PropertyOffset offset):
         m_descriptor{ descriptor },
         m_name{ std::move(name) },
         m_tag(tag),
@@ -17,46 +16,6 @@ namespace dots::type
         {
             m_subAreaOffset.emplace(std::in_place, static_cast<const StructDescriptor<>&>(*m_descriptor).areaOffset());
         }
-    }
-
-    const std::shared_ptr<Descriptor<>>& PropertyDescriptor::valueDescriptorPtr() const
-    {
-        return m_descriptor;
-    }
-
-    const Descriptor<>& PropertyDescriptor::valueDescriptor() const
-    {
-        return *m_descriptor;
-    }
-
-    const std::string& PropertyDescriptor::name() const
-    {
-        return m_name;
-    }
-
-    uint32_t PropertyDescriptor::tag() const
-    {
-        return m_tag;
-    }
-
-    bool PropertyDescriptor::isKey() const
-    {
-        return m_isKey;
-    }
-
-    PropertySet PropertyDescriptor::set() const
-    {
-        return m_set;
-    }
-
-    PropertyOffset PropertyDescriptor::offset() const
-    {
-        return m_offset;
-    }
-
-    std::optional<PropertyOffset> PropertyDescriptor::subAreaOffset() const
-    {
-        return m_subAreaOffset;
     }
 
     char* PropertyDescriptor::address(void* p) const

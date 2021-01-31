@@ -20,7 +20,17 @@ namespace dots::type
         using pointer              = std::conditional_t<IsConst, const value_type*, value_type*>;
         using difference_type      = std::ptrdiff_t;
 
-        PropertyIterator(area_t& area, const descriptor_container_t& descriptors, descriptor_iterator_t descriptorIt, const PropertySet& properties = PropertySet::All);
+        PropertyIterator(area_t& area, const descriptor_container_t& descriptors, descriptor_iterator_t descriptorIt, const PropertySet& properties = PropertySet::All) :
+            m_area(&area),
+            m_descriptors(&descriptors),
+            m_descriptorIt(std::move(descriptorIt)),
+            m_properties(properties)
+        {
+            if (!onEnd() && !emplaceProxy().isPartOf(m_properties))
+            {
+                ++(*this);
+            }
+        }
         PropertyIterator(const PropertyIterator& other) = default;
         PropertyIterator(PropertyIterator&& other) = default;
         ~PropertyIterator() = default;
@@ -28,29 +38,134 @@ namespace dots::type
         PropertyIterator& operator = (const PropertyIterator& rhs) = default;
         PropertyIterator& operator = (PropertyIterator&& rhs) = default;
 
-        void swap(PropertyIterator& other) noexcept;
-        void swap(PropertyIterator&& other);
+        void swap(PropertyIterator& other) noexcept
+        {
+            std::swap(m_area, other.m_area);
+            std::swap(m_descriptorIt, other.m_descriptorIt);
+        }
+        void swap(PropertyIterator&& other)
+        {
+            m_area = other.m_area;
+            other.m_area = nullptr;
+            m_descriptorIt = std::move(other.m_descriptorIt);
+        }
 
-        PropertyIterator& operator ++ ();
-        PropertyIterator& operator -- ();
+        auto operator ++ () -> PropertyIterator&
+        {
+            while (!onEnd())
+            {
+                ++m_descriptorIt;
 
-        PropertyIterator operator ++ (int);
-        PropertyIterator operator -- (int);
+                if (onEnd() || emplaceProxy().isPartOf(m_properties))
+                {
+                    break;
+                }
+            }
 
-        reference operator * ();
-        const reference operator * () const;
+            return *this;
+        }
 
-        pointer operator -> ();
-        const pointer operator -> () const;
+        auto operator -- () -> PropertyIterator&
+        {
+            while (!onBegin())
+            {
+                --m_descriptorIt;
 
-        bool operator == (const PropertyIterator& other) const;
-        bool operator != (const PropertyIterator& other) const;
+                if (emplaceProxy().isPartOf(m_properties))
+                {
+                    break;
+                }
+            }
+
+            return *this;
+        }
+
+        auto operator ++ (int) -> PropertyIterator
+        {
+            PropertyIterator copy = *this;
+            ++(*this);
+
+            return copy;
+        }
+
+        auto operator -- (int) -> PropertyIterator
+        {
+            PropertyIterator copy = *this;
+            --(*this);
+
+            return copy;
+        }
+
+        auto operator * () -> reference
+        {
+            if (onEnd())
+            {
+                throw std::logic_error{ "attempt to access past-end property" };
+            }
+
+            return *m_proxy;
+        }
+
+        auto operator * () const -> const reference
+        {
+            return *const_cast<PropertyIterator&>(*this);
+        }
+
+        auto operator -> () -> pointer
+        {
+            return &*(*this);
+        }
+
+        auto operator -> () const -> const pointer
+        {
+            return &*(*this);
+        }
+
+        bool operator == (const PropertyIterator& other) const
+        {
+            return m_descriptorIt == other.m_descriptorIt;
+        }
+
+        bool operator != (const PropertyIterator& other) const
+        {
+            return !(*this == other);
+        }
 
     private:
 
-        bool onBegin() const;
-        bool onEnd() const;
-        reference emplaceProxy();
+        bool onBegin() const
+        {
+            if constexpr (IsReverse)
+            {
+                return m_descriptorIt == m_descriptors->rbegin();
+            }
+            else
+            {
+                return m_descriptorIt == m_descriptors->begin();
+            }
+        }
+        bool onEnd() const
+        {
+            if constexpr (IsReverse)
+            {
+                return m_descriptorIt == m_descriptors->rend();
+            }
+            else
+            {
+                return m_descriptorIt == m_descriptors->end();
+            }
+        }
+        reference emplaceProxy()
+        {
+            if constexpr (IsConst)
+            {
+                return m_proxy.emplace(const_cast<std::remove_const_t<area_t>&>(*m_area), *m_descriptorIt);
+            }
+            else
+            {
+                return m_proxy.emplace(*m_area, *m_descriptorIt);
+            }
+        }
 
         area_t* m_area;
         const descriptor_container_t* m_descriptors;
@@ -58,11 +173,6 @@ namespace dots::type
         PropertySet m_properties;
         std::optional<base_value_type> m_proxy;
     };
-
-    extern template struct PropertyIterator<false, false>;
-    extern template struct PropertyIterator<false, true>;
-    extern template struct PropertyIterator<true, false>;
-    extern template struct PropertyIterator<true, true>;
 
     using property_iterator               = PropertyIterator<false, false>;
     using const_property_iterator         = PropertyIterator<false, true>;
@@ -72,7 +182,12 @@ namespace dots::type
     template <typename Iterator>
     struct PropertyRange
     {
-        PropertyRange(Iterator begin, Iterator end);
+        PropertyRange(Iterator begin, Iterator end) :
+            m_begin(std::move(begin)),
+            m_end(std::move(end))
+        {
+            /* do nothing */
+        }
         PropertyRange(const PropertyRange& other) = default;
         PropertyRange(PropertyRange&& other) = default;
         ~PropertyRange() = default;
@@ -80,8 +195,14 @@ namespace dots::type
         PropertyRange& operator = (const PropertyRange& rhs) = default;
         PropertyRange& operator = (PropertyRange&& rhs) = default;
 
-        Iterator begin() const;
-        Iterator end() const;
+        Iterator begin() const
+        {
+            return m_begin;
+        }
+        Iterator end() const
+        {
+            return m_end;
+        }
 
     private:
 
