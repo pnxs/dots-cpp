@@ -255,11 +255,19 @@ namespace dots::type
             }
         }
 
+        template <bool AssertNotDynamic = true>
         static const std::shared_ptr<Descriptor<T>>& InstancePtr()
         {
             if constexpr (is_dynamic_descriptor_v<Descriptor<T>>)
             {
-                throw std::logic_error{ "global descriptor not available because Descriptor<T> dynamic" };
+                if constexpr (AssertNotDynamic)
+                {
+                    throw std::logic_error{ "global descriptor not available because Descriptor<T> dynamic" };
+                }
+                else
+                {
+                    return M_instanceStorage;
+                }
             }
             else
             {
@@ -277,6 +285,12 @@ namespace dots::type
         static const Descriptor<T>& Instance()
         {
             return *InstancePtr();
+        }
+
+        [[deprecated("this function will be removed when instance access is refactored")]]
+        static const Descriptor<T>& InstanceRef()
+        {
+            return *M_instanceRawPtr;
         }
 
     private:
@@ -309,6 +323,7 @@ namespace dots::type
         static constexpr bool is_istreamable_v = is_istreamable_t<U>::value;
 
         inline static std::shared_ptr<Descriptor<T>> M_instanceStorage;
+        inline static const Descriptor<T>* M_instanceRawPtr = InstancePtr<false>().get();
     };
 
     template <typename T, typename Base>

@@ -92,6 +92,7 @@ target_sources(${TARGET_NAME}
         src/type/PropertyDescriptor.cpp
         src/type/Struct.cpp
         src/type/StructDescriptor.cpp
+        src/type/TypeVisitor.cpp
         src/type/Uuid.cpp
         src/type/VectorDescriptor.cpp
 )
