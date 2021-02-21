@@ -18,6 +18,7 @@ target_sources(${TARGET_NAME}
         src/io/serialization/TestAsciiSerializer.cpp
         src/io/serialization/TestCborSerializer.cpp
         src/io/serialization/TestExperimentalCborSerializer.cpp
+        src/io/serialization/TestJsonSerializer.cpp
 
         src/TestDigest.cpp
         src/TestAsciiSerialization.cpp
