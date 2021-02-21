@@ -16,6 +16,7 @@ target_dots_model(${TARGET_NAME}
 target_sources(${TARGET_NAME}
     PRIVATE
         src/io/serialization/TestCborSerializer.cpp
+        src/io/serialization/TestExperimentalCborSerializer.cpp
 
         src/TestDigest.cpp
         src/TestAsciiSerialization.cpp
