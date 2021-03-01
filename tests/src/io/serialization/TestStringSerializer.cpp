@@ -1,16 +1,16 @@
 #include <gtest/gtest.h>
-#include <dots/io/serialization/AsciiSerializer.h>
-#include <io/serialization/data/ascii_serialization_data.h>
+#include <dots/io/serialization/StringSerializer.h>
+#include <io/serialization/data/string_serialization_data.h>
 
-struct TestAsciiSerializer : ::testing::Test, TestSerializationInput
+struct TestStringSerializer : ::testing::Test, TestSerializationInput
 {
 protected:
 
-    using data_t = dots::io::AsciiSerializer<>::data_t;
-    dots::io::AsciiSerializer<> m_sut;
+    using data_t = dots::io::StringSerializer<>::data_t;
+    dots::io::StringSerializer<> m_sut;
 };
 
-TEST_F(TestAsciiSerializer, serialize_TypedArgument)
+TEST_F(TestStringSerializer, serialize_TypedArgument)
 {
     EXPECT_EQ(m_sut.serialize(BoolFalse), data_t(STRING_BOOL_FALSE));
     EXPECT_EQ(m_sut.serialize(BoolTrue), data_t(STRING_BOOL_TRUE));
@@ -71,7 +71,7 @@ TEST_F(TestAsciiSerializer, serialize_TypedArgument)
     EXPECT_EQ(m_sut.serialize(SerializationEnum1), data_t(STRING_TEST_ENUM_1));
 }
 
-TEST_F(TestAsciiSerializer, deserialize_TypedArgument)
+TEST_F(TestStringSerializer, deserialize_TypedArgument)
 {
     EXPECT_EQ(m_sut.deserialize<dots::bool_t>(data_t(STRING_BOOL_FALSE)), BoolFalse);
     EXPECT_EQ(m_sut.deserialize<dots::bool_t>(data_t(STRING_BOOL_TRUE)), BoolTrue);
@@ -132,14 +132,14 @@ TEST_F(TestAsciiSerializer, deserialize_TypedArgument)
     EXPECT_EQ(m_sut.deserialize<SerializationEnum>(data_t(STRING_TEST_ENUM_1)), SerializationEnum1);
 }
 
-TEST_F(TestAsciiSerializer, serialize_PropertyArgument)
+TEST_F(TestStringSerializer, serialize_PropertyArgument)
 {
     EXPECT_EQ(m_sut.serializeProperty(SerializationStructSimple1.int32Property), data_t(".int32Property = " STRING_INT32_POSITIVE));
     EXPECT_EQ(m_sut.serializeProperty(SerializationStructSimple1.stringProperty), data_t(".stringProperty = " STRING_STRING_1));
     EXPECT_EQ(m_sut.serializeProperty(SerializationStructSimple1.float32Property), data_t(".float32Property = " STRING_FLOAT32_POSITIVE));
 }
 
-TEST_F(TestAsciiSerializer, deserialize_PropertyArgument)
+TEST_F(TestStringSerializer, deserialize_PropertyArgument)
 {
     SerializationStructSimple serializationStructSimple;
     m_sut.deserializeProperty(data_t(STRING_INT32_POSITIVE), serializationStructSimple.int32Property);
@@ -151,14 +151,14 @@ TEST_F(TestAsciiSerializer, deserialize_PropertyArgument)
     EXPECT_EQ(serializationStructSimple.float32Property, SerializationStructSimple1.float32Property);
 }
 
-TEST_F(TestAsciiSerializer, serialize_VectorArgument)
+TEST_F(TestStringSerializer, serialize_VectorArgument)
 {
     EXPECT_EQ(m_sut.serializeVector(VectorBool), data_t("{ " STRING_BOOL_TRUE ", " STRING_BOOL_FALSE ", " STRING_BOOL_FALSE " }"));
     EXPECT_EQ(m_sut.serializeVector(VectorFloat), data_t("{ " STRING_FLOAT32_POSITIVE", " STRING_FLOAT32_NEGATIVE " }"));
     EXPECT_EQ(m_sut.serializeVector(VectorStructSimple), data_t("{ SerializationStructSimple{ .int32Property = " STRING_INT32_POSITIVE " }, SerializationStructSimple{ .boolProperty = " STRING_BOOL_FALSE " } }"));
 }
 
-TEST_F(TestAsciiSerializer, deserialize_VectorArgument)
+TEST_F(TestStringSerializer, deserialize_VectorArgument)
 {
     dots::vector_t<dots::bool_t> vectorBool;
     m_sut.deserializeVector(data_t("{ " STRING_BOOL_TRUE ", " STRING_BOOL_FALSE ", " STRING_BOOL_FALSE " }"), vectorBool);
@@ -173,7 +173,7 @@ TEST_F(TestAsciiSerializer, deserialize_VectorArgument)
     EXPECT_EQ(vectorStructSimple, VectorStructSimple);
 }
 
-TEST_F(TestAsciiSerializer, serialize_SimpleStructArgument)
+TEST_F(TestStringSerializer, serialize_SimpleStructArgument)
 {
     data_t expectedValid = "SerializationStructSimple{ .int32Property = " STRING_INT32_POSITIVE ", .stringProperty = " STRING_STRING_1 ", .float32Property = " STRING_FLOAT32_POSITIVE " }";
     EXPECT_EQ(m_sut.serializeStruct(SerializationStructSimple1, SerializationStructSimple1._validProperties()), expectedValid);
@@ -185,7 +185,7 @@ TEST_F(TestAsciiSerializer, serialize_SimpleStructArgument)
     EXPECT_EQ(m_sut.serializeStruct(SerializationStructSimple1, SerializationStructSimple::boolProperty_p + SerializationStructSimple::float32Property_p), expectedSpecific);
 }
 
-TEST_F(TestAsciiSerializer, deserialize_SimpleStructArgument)
+TEST_F(TestStringSerializer, deserialize_SimpleStructArgument)
 {
     SerializationStructSimple serializationStructSimple1;
     m_sut.deserializeStruct(data_t{ "SerializationStructSimple{ .int32Property = " STRING_INT32_POSITIVE ", .stringProperty = " STRING_STRING_1 ", .float32Property = " STRING_FLOAT32_POSITIVE " }" }, serializationStructSimple1);
@@ -200,7 +200,7 @@ TEST_F(TestAsciiSerializer, deserialize_SimpleStructArgument)
     EXPECT_TRUE(serializationStructSimple3._equal(SerializationStructSimple1, SerializationStructSimple::boolProperty_p + SerializationStructSimple::float32Property_p));
 }
 
-TEST_F(TestAsciiSerializer, serialize_ComplexStructArgument)
+TEST_F(TestStringSerializer, serialize_ComplexStructArgument)
 {
     data_t expectedValid1 = "SerializationStructComplex{ .enumProperty = " STRING_TEST_ENUM_1 ", .float64Property = " STRING_FLOAT64_NEGATIVE ", .timepointProperty = " STRING_TIME_POINT_1 ", .structSimpleProperty = SerializationStructSimple{ .boolProperty = " STRING_BOOL_FALSE " } }";
     EXPECT_EQ(m_sut.serializeStruct(SerializationStructComplex1, SerializationStructComplex1._validProperties()), expectedValid1);
@@ -215,7 +215,7 @@ TEST_F(TestAsciiSerializer, serialize_ComplexStructArgument)
     EXPECT_EQ(m_sut.serializeStruct(SerializationStructComplex2, SerializationStructComplex::enumProperty_p + SerializationStructComplex::durationVectorProperty_p), expectedSpecific2);
 }
 
-TEST_F(TestAsciiSerializer, deserialize_ComplexStructArgument)
+TEST_F(TestStringSerializer, deserialize_ComplexStructArgument)
 {
     SerializationStructComplex serializationStructComplex1;
     m_sut.deserializeStruct(data_t{ "SerializationStructComplex{ .enumProperty = " STRING_TEST_ENUM_1 ", .float64Property = " STRING_FLOAT64_NEGATIVE ", .timepointProperty = " STRING_TIME_POINT_1 ", .structSimpleProperty = SerializationStructSimple{ .boolProperty = " STRING_BOOL_FALSE " } }" }, serializationStructComplex1);

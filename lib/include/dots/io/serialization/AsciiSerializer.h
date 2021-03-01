@@ -3,23 +3,6 @@
 
 namespace dots::io
 {
-    struct AsciiSerializerTraits : StringSerializerTraits {};
-
-    template <typename Derived = void>
-    struct AsciiSerializer : StringSerializerBase<std::conditional_t<std::is_same_v<Derived, void>, AsciiSerializer<void>, Derived>, AsciiSerializerTraits>
-    {
-        using base_t = StringSerializerBase<std::conditional_t<std::is_same_v<Derived, void>, AsciiSerializer<void>, Derived>, AsciiSerializerTraits>;
-        using data_t = std::string;
-
-        using base_t::base_t;
-        AsciiSerializer(const AsciiSerializer& other) = default;
-        AsciiSerializer(AsciiSerializer&& other) = default;
-        ~AsciiSerializer() = default;
-
-        AsciiSerializer& operator = (const AsciiSerializer& rhs) = default;
-        AsciiSerializer& operator = (AsciiSerializer&& rhs) = default;
-    };
-
     struct ClassicMultiLineAsciiSerializerTraits : StringSerializerTraits
     {
         static constexpr std::string_view StructBegin = "{";
