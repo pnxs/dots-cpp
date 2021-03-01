@@ -37,6 +37,11 @@ namespace dots::io
         }
     }
 
+    const Medium& Connection::medium() const
+    {
+        return m_channel->medium();
+    }
+
     DotsConnectionState Connection::state() const
     {
         return m_connectionState;
