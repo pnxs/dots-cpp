@@ -47,16 +47,6 @@ namespace dots::type
         return 0;
     }
 
-    void Descriptor<Typeless>::fromString(Typeless&/* storage*/, const std::string_view&/* value*/) const
-    {
-        throw std::logic_error{ "from string construction not available for type: " + name() };
-    }
-
-    std::string Descriptor<Typeless>::toString(const Typeless&/* value*/) const
-    {
-        throw std::logic_error{ "to string conversion not available for type: " + name() };
-    }
-
     bool Descriptor<Typeless>::IsFundamentalType(const Descriptor& descriptor)
     {
         return IsFundamentalType(descriptor.type());

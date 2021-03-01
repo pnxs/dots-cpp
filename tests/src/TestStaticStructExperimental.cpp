@@ -762,25 +762,3 @@ TEST_F(TestStaticStructExperimental, assertProperties)
     EXPECT_THROW(sut._assertHasProperties(TestStruct::intProperty_p + TestStruct::floatVectorProperty_p), std::logic_error);
     EXPECT_THROW(sut._assertHasProperties<false>(TestStruct::intProperty_p + TestStruct::floatVectorProperty_p), std::logic_error);
 }
-
-TEST_F(TestStaticStructExperimental, toString)
-{
-    TestStruct sut{
-        .intProperty = 1,
-        .stringProperty = "foo",
-        .floatVectorProperty = { 3.1415f, 2.7183f },
-        .subStruct = TestSubStruct{
-            .p1 = false,
-            .p2 = true
-        }
-    };
-
-    std::string expectedValid = "TestStruct{ .intProperty = 1, .stringProperty = \"foo\", .floatVectorProperty = { 3.1415f, 2.7183f }, .subStruct = TestSubStruct{ .p1 = false, .p2 = true } }";
-    EXPECT_EQ(sut._toString(), expectedValid);
-
-    std::string expectedAll = "TestStruct{ .intProperty = 1, .stringProperty = \"foo\", .boolProperty = <invalid>, .floatVectorProperty = { 3.1415f, 2.7183f }, .subStruct = TestSubStruct{ .p1 = false, .p2 = true } }";
-    EXPECT_EQ(sut._toString(property_set_t::All), expectedAll);
-
-    std::string expectedSpecific = "TestStruct{ .boolProperty = <invalid>, .floatVectorProperty = { 3.1415f, 2.7183f } }";
-    EXPECT_EQ(sut._toString(TestStruct::boolProperty_p + TestStruct::floatVectorProperty_p), expectedSpecific);
-}

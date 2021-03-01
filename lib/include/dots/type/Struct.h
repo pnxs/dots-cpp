@@ -27,8 +27,6 @@ namespace dots::type
 
         const PropertySet& _keyProperties() const;
 
-        std::string _toString(std::optional<PropertySet> includedProperties = std::nullopt) const;
-
         Struct& _assign(const Struct& other, const PropertySet& includedProperties = PropertySet::All);
         Struct& _assign(Struct&& other, const PropertySet& includedProperties = PropertySet::All);
         Struct& _copy(const Struct& other, const PropertySet& includedProperties = PropertySet::All);
@@ -234,6 +232,4 @@ namespace dots::type
 
         const StructDescriptor<>* _desc;
     };
-
-    std::ostream& operator << (std::ostream& os, const Struct& instance);
 }

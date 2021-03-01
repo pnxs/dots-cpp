@@ -39,11 +39,6 @@ namespace dots::type
         return _desc->keyProperties();
     }
 
-    std::string Struct::_toString(std::optional<PropertySet> includedProperties/* = std::nullopt*/) const
-    {
-        return _desc->toString(*this, includedProperties);
-    }
-
     Struct& Struct::_assign(const Struct& other, const PropertySet& includedProperties/* = PropertySet:All*/)
     {
         return _desc->assign(*this, other, includedProperties);
@@ -107,11 +102,5 @@ namespace dots::type
     PropertySet Struct::_diffProperties(const Struct& other, const PropertySet& includedProperties/* = PropertySet::All*/) const
     {
         return _desc->diffProperties(*this, other, includedProperties);
-    }
-
-    std::ostream& operator << (std::ostream& os, const Struct& instance)
-    {
-        os << instance._toString();
-        return os;
     }
 }

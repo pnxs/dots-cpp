@@ -190,16 +190,6 @@ namespace dots::type
             return underlyingDescriptor().usesDynamicMemory();
         }
 
-        void fromString(Typeless& storage, const std::string_view& value) const override
-        {
-            underlyingDescriptor().fromString(storage, value);
-        }
-
-        std::string toString(const Typeless& value) const override
-        {
-            return underlyingDescriptor().toString(value);
-        }
-
         virtual std::shared_ptr<Descriptor<>> underlyingDescriptorPtr() const = 0;
         virtual const Descriptor<Typeless>& underlyingDescriptor() const = 0;
 
@@ -347,13 +337,6 @@ namespace dots::type
 
 namespace dots::types
 {
-    template <typename E, std::enable_if_t<dots::type::has_enum_type_v<E>, int> = 0>
-    std::ostream& operator << (std::ostream& os, const E& enumerator)
-    {
-        os << type::Descriptor<E>::Instance().enumeratorFromValue(enumerator).name();
-        return os;
-    }
-
     template <typename E, std::enable_if_t<dots::type::has_enum_type_v<E>, int> = 0>
     const std::string& to_string(const E& enumerator)
     {

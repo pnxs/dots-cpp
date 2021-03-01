@@ -70,10 +70,4 @@ namespace dots::type
     {
         return Uuid{ boost::uuids::random_generator{}().data };
     }
-
-    std::ostream& operator << (std::ostream& os, const Uuid& uuid)
-    {
-        os << uuid.toString();
-        return os;
-    }
 }

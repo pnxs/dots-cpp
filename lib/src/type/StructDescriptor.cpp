@@ -178,22 +178,6 @@ namespace dots::type
         }
     }
 
-    std::string StructDescriptor<Typeless, false, void>::toString(const Struct& instance, std::optional<PropertySet> includedProperties/* = std::nullopt*/) const
-    {
-        PropertySet toStringProperties = includedProperties == std::nullopt ? instance._validProperties() : *includedProperties;
-        std::string str = name() + "{ ";
-
-        for (const auto& property : instance._propertyRange(toStringProperties))
-        {
-            str += property.toString() + ", ";
-        }
-
-        str.resize(str.size() - 2);
-        str += " }";
-
-        return str;
-    }
-
     Struct& StructDescriptor<Typeless, false, void>::assign(Struct& instance, const Struct& other, const PropertySet& includedProperties) const
     {
         PropertySet assignProperties = other._validProperties() ^ includedProperties;

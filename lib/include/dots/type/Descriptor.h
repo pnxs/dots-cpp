@@ -60,9 +60,6 @@ namespace dots::type
         virtual bool usesDynamicMemory() const;
         virtual size_t dynamicMemoryUsage(const Typeless& value) const;
 
-        virtual void fromString(Typeless& storage, const std::string_view& value) const;
-        virtual std::string toString(const Typeless& value) const;
-
         static bool IsFundamentalType(const Descriptor& descriptor);
         static bool IsFundamentalType(Type type);
 
@@ -91,26 +88,6 @@ namespace dots::type
         std::shared_ptr<void> make_shared() const
         {
             return { New(), [this](void* obj){ Delete(obj); } };
-        }
-
-        [[deprecated("only available for backwards compatibility")]]
-        std::string to_string(const void* lhs) const
-        {
-            return toString(*Typeless::From(lhs));
-        }
-
-        [[deprecated("only available for backwards compatibility")]]
-        bool from_string(void* lhs, const std::string& str) const
-        {
-            try
-            {
-                fromString(*Typeless::From(lhs), str);
-                return true;
-            }
-            catch (...)
-            {
-                return false;
-            }
         }
 
     private:

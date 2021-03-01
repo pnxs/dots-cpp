@@ -228,27 +228,3 @@ TEST_F(TestStaticDescriptor, greaterEqual)
     EXPECT_TRUE(m_sutInt.greaterEqual(42, 21));
     EXPECT_TRUE(m_sutString.greaterEqual("foo", "bar"));
 }
-
-TEST_F(TestStaticDescriptor, toString)
-{
-    EXPECT_EQ(m_sutInt.toString(42), "42");
-    EXPECT_EQ(m_sutString.toString("foo"), "\"foo\"");
-}
-
-TEST_F(TestStaticDescriptor, fromString)
-{
-    int i;
-    std::string s;
-    uint8_t b;
-
-    m_sutInt.fromString(i, "73");
-    m_sutString.fromString(s, "meow");
-    m_sutByte.fromString(b, "1");
-
-    EXPECT_EQ(i, 73);
-    EXPECT_EQ(s, "meow");
-    EXPECT_EQ(b, 1);
-
-    EXPECT_THROW(m_sutInt.fromString(i, "foo"), std::runtime_error);
-    m_sutString.fromString(s, "");
-}
