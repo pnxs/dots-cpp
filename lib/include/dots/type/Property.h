@@ -9,20 +9,25 @@
 
 namespace dots::type
 {
+    namespace details
+    {
+        struct property_tag {};
+    }
+
     template <typename T, typename Derived>
-    struct Property
+    struct Property : details::property_tag
     {
         static_assert(std::conjunction_v<std::negation<std::is_pointer<T>>, std::negation<std::is_reference<T>>>);
         using value_t = T;
         static constexpr bool IsTypeless = std::is_same_v<T, Typeless>;
 
         template <typename U>
-        static constexpr bool is_property_v = std::disjunction_v<std::is_same<std::decay_t<U>, Property>, std::is_same<std::decay_t<U>, Derived>>;
+        static constexpr bool is_same_property_v = std::disjunction_v<std::is_same<std::decay_t<U>, Property>, std::is_same<std::decay_t<U>, Derived>>;
 
         template <typename... Args>
-        static constexpr bool is_single_property_v = [](){ if constexpr (sizeof...(Args) == 1){ return is_property_v<Args...>; } else { return false; } }();
+        static constexpr bool is_single_same_property_v = [](){ if constexpr (sizeof...(Args) == 1){ return is_same_property_v<Args...>; } else { return false; } }();
 
-        template <typename... Args, std::enable_if_t<sizeof...(Args) >= 1 && !is_single_property_v<Args...>, int> = 0>
+        template <typename... Args, std::enable_if_t<sizeof...(Args) >= 1 && !is_single_same_property_v<Args...>, int> = 0>
         Property(Args&&... args)
         {
             Property<T, Derived>::template construct<false>(std::forward<Args>(args)...);
@@ -34,7 +39,7 @@ namespace dots::type
             Property<T, Derived>::template construct<false>(init);
         }
 
-        template <typename U, std::enable_if_t<!is_property_v<U>, int> = 0>
+        template <typename U, std::enable_if_t<!is_same_property_v<U>, int> = 0>
         Derived& operator = (U&& rhs)
         {
             Property<T, Derived>::constructOrAssign(std::forward<U>(rhs));
@@ -527,4 +532,10 @@ namespace dots::type
             validProperties() -= descriptor().set();
         }
     };
+
+    template <typename T>
+    using is_property_t = std::is_base_of<details::property_tag, T>;
+
+    template <typename T>
+    constexpr bool is_property_v = is_property_t<T>::value;
 }
