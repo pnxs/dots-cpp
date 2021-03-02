@@ -233,3 +233,25 @@ TEST_F(TestStringSerializer, deserialize_ComplexStructArgument)
     m_sut.deserializeStruct(data_t{ "SerializationStructComplex{ .enumProperty = <invalid>, .durationVectorProperty = { " STRING_DURATION_1 ", " STRING_DURATION_2 " } }" }, serializationStructComplex4);
     EXPECT_TRUE(serializationStructComplex4._equal(SerializationStructComplex2, SerializationStructComplex::enumProperty_p + SerializationStructComplex::durationVectorProperty_p));
 }
+
+TEST_F(TestStringSerializer, to_string)
+{
+    EXPECT_EQ(dots::io::to_string(BoolFalse), data_t(STRING_BOOL_FALSE));
+    EXPECT_EQ(dots::io::to_string(Int32Negative), data_t(STRING_INT32_NEGATIVE));
+    EXPECT_EQ(dots::io::to_string(Float32Positive), data_t(STRING_FLOAT32_POSITIVE));
+    EXPECT_EQ(dots::io::to_string(TimePoint1), data_t(STRING_TIME_POINT_1));
+    EXPECT_EQ(dots::io::to_string(SteadyTimePoint1), data_t(STRING_STEADY_TIME_POINT_1));
+    EXPECT_EQ(dots::io::to_string(Duration1), data_t(STRING_DURATION_1));
+    EXPECT_EQ(dots::io::to_string(Uuid1), data_t(STRING_UUID_1));
+    EXPECT_EQ(dots::io::to_string(String1), data_t(STRING_STRING_1));
+    EXPECT_EQ(dots::io::to_string(SerializationEnum1), data_t(STRING_TEST_ENUM_1));
+
+    EXPECT_EQ(dots::io::to_string(VectorFloat), data_t("{ " STRING_FLOAT32_POSITIVE", " STRING_FLOAT32_NEGATIVE " }"));
+    EXPECT_EQ(dots::io::to_string(SerializationStructSimple1.int32Property), data_t(".int32Property = " STRING_INT32_POSITIVE));
+
+    data_t expectedSimple = "SerializationStructSimple{ .int32Property = " STRING_INT32_POSITIVE ", .stringProperty = " STRING_STRING_1 ", .boolProperty = <invalid>, .float32Property = " STRING_FLOAT32_POSITIVE " }";
+    EXPECT_EQ(dots::io::to_string(SerializationStructSimple1), expectedSimple);
+
+    data_t expectedComplex = "SerializationStructComplex{ .propertySetProperty = " STRING_PROPERTY_SET_MIXED_1 ", .durationVectorProperty = { " STRING_DURATION_1 ", " STRING_DURATION_2 " }, .uuidProperty = " STRING_UUID_1 " }";
+    EXPECT_EQ(dots::io::to_string(SerializationStructComplex2, SerializationStructComplex2._validProperties()), expectedComplex);
+}

@@ -334,12 +334,3 @@ namespace dots::type
     template <typename T>
     constexpr bool has_enum_type_v = has_enum_type_t<T>::value;
 }
-
-namespace dots::types
-{
-    template <typename E, std::enable_if_t<dots::type::has_enum_type_v<E>, int> = 0>
-    const std::string& to_string(const E& enumerator)
-    {
-        return type::Descriptor<E>::Instance().enumeratorFromValue(enumerator).name();
-    }
-}

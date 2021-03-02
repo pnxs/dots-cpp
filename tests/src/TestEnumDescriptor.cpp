@@ -173,9 +173,3 @@ TEST_F(TestEnumDescriptor, enumeratorFromValue)
     EXPECT_THROW(m_sutSimple.enumeratorFromValue(static_cast<TestEnumSimple>(6)), std::logic_error);
     EXPECT_THROW(m_sutGeneric.enumeratorFromValue(TestEnumGeneric({ "1", "2" })), std::logic_error);
 }
-
-TEST_F(TestEnumDescriptor, global_to_string)
-{
-    EXPECT_EQ(to_string(TestEnumSimple::enumerator2), "enumerator2");
-    EXPECT_EQ(to_string(TestEnumSimple::enumerator11), "enumerator11");
-}

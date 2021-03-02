@@ -17,4 +17,22 @@ namespace dots::io
         StringSerializer& operator = (const StringSerializer& rhs) = default;
         StringSerializer& operator = (StringSerializer&& rhs) = default;
     };
+
+    template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
+    std::string to_string(const T& instance, const property_set_t& includedProperties = property_set_t::All)
+    {
+        return StringSerializer<>{}.serializeStruct(instance, includedProperties);
+    }
+
+    template <typename T, std::enable_if_t<type::is_property_v<T>, int> = 0>
+    std::string to_string(const T& property)
+    {
+        return StringSerializer<>{}.serializeProperty(property);
+    }
+
+    template <typename T, std::enable_if_t<!std::is_base_of_v<type::Struct, T> && !type::is_property_v<T>, int> = 0>
+    std::string to_string(const T& value)
+    {
+        return StringSerializer<>{}.serialize(value);
+    } 
 }
