@@ -2,13 +2,14 @@
 #include <dots/tools/logging.h>
 #include <dots/io/serialization/AsciiSerialization.h>
 #include <DotsMember.dots.h>
+#include <DotsCacheInfo.dots.h>
 
 namespace dots::io
 {
     GuestTransceiver::GuestTransceiver(std::string selfName, boost::asio::io_context& ioContext/* = global_io_context()*/, bool staticUserTypes/* = true*/) :
         Transceiver(std::move(selfName), ioContext, staticUserTypes)
     {
-        /* do nothing */
+        type::Descriptor<DotsCacheInfo>::InstancePtr();
     }
 
     const io::Connection& GuestTransceiver::open(type::DescriptorMap preloadPublishTypes, type::DescriptorMap preloadSubscribeTypes, std::optional<std::string> authSecret, channel_ptr_t channel)
