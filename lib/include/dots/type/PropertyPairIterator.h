@@ -26,7 +26,12 @@ namespace dots::type
         using const_pointer     = const value_type*;
         using difference_type   = typename inner_lhs_iterator_t::difference_type;
 
-        PropertyPairIterator(inner_lhs_iterator_t innerIteratorLhs, inner_rhs_iterator_t innerIteratorRhs);
+        PropertyPairIterator(inner_lhs_iterator_t innerIteratorLhs, inner_rhs_iterator_t innerIteratorRhs) :
+            _innerIteratorLhs(std::move(innerIteratorLhs)),
+            _innerIteratorRhs(std::move(innerIteratorRhs))
+        {
+            /* do nothing */
+        }
         PropertyPairIterator(const PropertyPairIterator& other) = default;
         PropertyPairIterator(PropertyPairIterator&& other) = default;
         ~PropertyPairIterator() = default;
@@ -34,23 +39,73 @@ namespace dots::type
         PropertyPairIterator& operator = (const PropertyPairIterator& rhs) = default;
         PropertyPairIterator& operator = (PropertyPairIterator&& rhs) = default;
 
-        void swap(PropertyPairIterator& other) noexcept;
-        void swap(PropertyPairIterator&& other);
+        void swap(PropertyPairIterator& other) noexcept
+        {
+            std::swap(_innerIteratorLhs, other._innerIteratorLhs);
+            std::swap(_innerIteratorRhs, other._innerIteratorRhs);
+        }
 
-        PropertyPairIterator& operator ++ ();
-        PropertyPairIterator& operator -- ();
+        void swap(PropertyPairIterator&& other)
+        {
+            _innerIteratorLhs = std::move(other._innerIteratorLhs);
+            _innerIteratorRhs = std::move(other._innerIteratorRhs);
+        }
 
-        PropertyPairIterator operator ++ (int);
-        PropertyPairIterator operator -- (int);
+        auto operator ++ () -> PropertyPairIterator&
+        {
+            ++_innerIteratorLhs;
+            ++_innerIteratorRhs;
 
-        reference operator * ();
-        const_reference operator * () const;
+            return *this;
+        }
 
-        pointer operator -> ();
-        const_pointer operator -> () const;
+        auto operator -- () -> PropertyPairIterator&
+        {
+            --_innerIteratorLhs;
+            --_innerIteratorRhs;
 
-        bool operator == (const PropertyPairIterator& other) const;
-        bool operator != (const PropertyPairIterator& other) const;
+            return *this;
+        }
+
+        auto operator ++ (int) -> PropertyPairIterator
+        {
+            return PropertyPairIterator{ _innerIteratorLhs++, _innerIteratorRhs++ };
+        }
+
+        auto operator -- (int) -> PropertyPairIterator
+        {
+            return PropertyPairIterator{ _innerIteratorLhs--, _innerIteratorRhs-- };
+        }
+
+        auto operator * () -> reference
+        {
+            return _proxyPair.emplace(*_innerIteratorLhs, *_innerIteratorRhs);
+        }
+
+        auto operator * () const -> const_reference
+        {
+            return *const_cast<PropertyPairIterator&>(*this);
+        }
+
+        auto operator -> () -> pointer
+        {
+            return &*(*this);
+        }
+
+        auto operator -> () const -> const_pointer
+        {
+            return &*(*this);
+        }
+
+        bool operator == (const PropertyPairIterator& other) const
+        {
+            return _innerIteratorLhs == other._innerIteratorLhs && _innerIteratorRhs == other._innerIteratorRhs;
+        }
+
+        bool operator != (const PropertyPairIterator& other) const
+        {
+            return !(*this == other);
+        }
 
     private:
 
@@ -58,13 +113,6 @@ namespace dots::type
         inner_rhs_iterator_t _innerIteratorRhs;
         std::optional<value_type> _proxyPair;
     };
-
-    extern template struct PropertyPairIterator<property_iterator, property_iterator>;
-    extern template struct PropertyPairIterator<property_iterator, const_property_iterator>;
-    extern template struct PropertyPairIterator<const_property_iterator, const_property_iterator>;
-    extern template struct PropertyPairIterator<reverse_property_iterator, reverse_property_iterator>;
-    extern template struct PropertyPairIterator<reverse_property_iterator, const_reverse_property_iterator>;
-    extern template struct PropertyPairIterator<const_reverse_property_iterator, const_reverse_property_iterator>;
 
     using property_pair_iterator                     = PropertyPairIterator<property_iterator, property_iterator>;
     using property_pair_iterator_const               = PropertyPairIterator<property_iterator, const_property_iterator>;
@@ -76,7 +124,12 @@ namespace dots::type
     template <typename Iterator>
     struct PropertyPairRange
     {
-        PropertyPairRange(Iterator begin, Iterator end);
+        PropertyPairRange(Iterator begin, Iterator end):
+            _begin(std::move(begin)),
+            _end(std::move(end))
+        {
+            /* do nothing */
+        }
         PropertyPairRange(const PropertyPairRange& other) = default;
         PropertyPairRange(PropertyPairRange&& other) = default;
         ~PropertyPairRange() = default;
@@ -84,22 +137,21 @@ namespace dots::type
         PropertyPairRange& operator = (const PropertyPairRange& rhs) = default;
         PropertyPairRange& operator = (PropertyPairRange&& rhs) = default;
 
-        Iterator begin() const;
+        Iterator begin() const
+        {
+            return _begin;
+        }
 
-        Iterator end() const;
+        Iterator end() const
+        {
+            return _end;
+        }
 
     private:
 
         Iterator _begin;
         Iterator _end;
     };
-
-    extern template struct PropertyPairRange<property_pair_iterator>;
-    extern template struct PropertyPairRange<property_pair_iterator_const>;
-    extern template struct PropertyPairRange<const_property_pair_iterator_const>;
-    extern template struct PropertyPairRange<reverse_property_pair_iterator>;
-    extern template struct PropertyPairRange<reverse_property_pair_iterator_const>;
-    extern template struct PropertyPairRange<const_reverse_property_pair_iterator_const>;
 
     using property_pair_range                     = PropertyPairRange<property_pair_iterator>;
     using property_pair_range_const               = PropertyPairRange<property_pair_iterator_const>;

@@ -2,8 +2,8 @@
 #include <dots/io/Registry.h>
 #include <dots/io/auth/Digest.h>
 #include <dots/tools/logging.h>
+#include <dots/io/serialization/StringSerializer.h>
 #include <DotsMsgConnect.dots.h>
-#include <DotsCacheInfo.dots.h>
 #include <DotsClient.dots.h>
 #include <DotsDescriptorRequest.dots.h>
 
@@ -35,6 +35,11 @@ namespace dots::io
                 /* do nothing */
             }
         }
+    }
+
+    const Medium& Connection::medium() const
+    {
+        return m_channel->medium();
     }
 
     DotsConnectionState Connection::state() const

@@ -7,6 +7,7 @@
 #include <dots/io/GuestTransceiver.h>
 #include <dots/io/Publisher.h>
 #include <dots/io/GlobalType.h>
+#include <dots/io/serialization/StringSerializer.h>
 
 namespace dots
 {
@@ -18,6 +19,8 @@ namespace dots
     using io::Container;
     using io::ContainerPool;
     using io::Event;
+
+    using io::to_string;
 
     Timer::id_t add_timer(const type::Duration& timeout, const std::function<void()>& handler, bool periodic = false);
     void remove_timer(Timer::id_t id);

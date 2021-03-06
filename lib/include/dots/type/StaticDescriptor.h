@@ -58,8 +58,6 @@ namespace dots::type
         using Base::greater;
         using Base::greaterEqual;
         using Base::dynamicMemoryUsage;
-        using Base::fromString;
-        using Base::toString;
 
         template <typename... Args>
         static constexpr T& construct(T& value, Args&&... args)
@@ -125,141 +123,19 @@ namespace dots::type
             return 0;
         }
 
-        static void fromString(T& storage, const std::string_view& value)
-        {
-            // TODO: use std::from_chars where applicable
-
-            if constexpr (std::is_same_v<T, bool>)
-            {
-                if (value == "1" || value == "true")
-                {
-                    construct(storage, true);
-                }
-                else if (value == "0" || value == "false")
-                {
-                    construct(storage, false);
-                }
-                else
-                {
-                    throw std::runtime_error{ "cannot construct boolean from string: " + std::string{ value } };
-                }
-
-            }
-            else if constexpr (std::is_constructible_v<T, std::string_view>)
-            {
-                construct(storage, value);
-            }
-            else if constexpr (std::is_integral_v<T>)
-            {
-                T t;
-
-                if (std::from_chars_result result = std::from_chars(value.data(), value.data() + value.size(), t); result.ec != std::errc{})
-                {
-                    throw std::runtime_error{ "could not construct integer from string: " + std::string{ value } + " -> " + std::make_error_code(result.ec).message() };
-                }
-
-                construct(storage, t);
-            }
-            else if constexpr (std::disjunction_v<std::is_floating_point<T>, is_istreamable<T>>)
-            {
-                T t;
-                std::istringstream iss{ value.data() };
-                iss.exceptions(std::istringstream::failbit | std::istringstream::badbit);
-                iss >> t;
-                construct(storage, std::move(t));
-            }
-            else
-            {
-                throw std::logic_error{ "from string conversion not available for type" };
-            }
-        }
-
-        static std::string toString(const T& value)
-        {
-            // TODO: use std::to_chars where applicable
-
-            if constexpr (std::is_same_v<T, bool>)
-            {
-                return value ? "true" : "false";
-            }
-            else if constexpr (std::is_integral_v<T>)
-            {
-                char buffer[128];
-
-                if (auto [last, ec] = std::to_chars(buffer, buffer + sizeof(buffer), value); ec == std::errc{})
-                {
-                    std::string str{ buffer, last };
-
-                    if constexpr (std::is_unsigned_v<T>)
-                    {
-                        str += 'u';
-                    }
-
-                    return str;
-                }
-                else
-                {
-                    throw std::runtime_error{ "could not convert value to string: -> " + std::make_error_code(ec).message() };
-                }
-            }
-            else if constexpr (std::is_floating_point_v<T>)
-            {
-                std::ostringstream oss;
-                oss.exceptions(std::istringstream::failbit | std::istringstream::badbit);
-                oss << std::setprecision(std::numeric_limits<T>::digits10 + 1) << value;
-
-                if constexpr (std::is_same_v<T, float>)
-                {
-                    oss << 'f';
-                }
-
-                return oss.str();
-            }
-            else if constexpr (std::is_constructible_v<std::string, T>)
-            {
-                std::string str{ '"' };
-                str += value;
-                str += '"';
-
-                return str;
-            }
-            else if constexpr (is_ostreamable_v<T>)
-            {
-                std::ostringstream oss;
-                oss.exceptions(std::ostringstream::failbit | std::ostringstream::badbit);
-                oss << value;
-
-                return oss.str();
-            }
-            else if constexpr (is_iteratable_v<T>)
-            {
-                std::string str = "{ ";
-
-                for (const auto& v : value)
-                {
-                    str += Descriptor<std::decay_t<decltype(v)>>::toString(v) + ", ";
-                }
-
-                if (str.size() >= 2)
-                {
-                    str.resize(str.size() - 2);
-                }
-
-                str += " }";
-
-                return str;
-            }
-            else
-            {
-                throw std::logic_error{ "to string conversion not available for type" };
-            }
-        }
-
+        template <bool AssertNotDynamic = true>
         static const std::shared_ptr<Descriptor<T>>& InstancePtr()
         {
             if constexpr (is_dynamic_descriptor_v<Descriptor<T>>)
             {
-                throw std::logic_error{ "global descriptor not available because Descriptor<T> dynamic" };
+                if constexpr (AssertNotDynamic)
+                {
+                    throw std::logic_error{ "global descriptor not available because Descriptor<T> dynamic" };
+                }
+                else
+                {
+                    return M_instanceStorage;
+                }
             }
             else
             {
@@ -277,6 +153,12 @@ namespace dots::type
         static const Descriptor<T>& Instance()
         {
             return *InstancePtr();
+        }
+
+        [[deprecated("this function will be removed when instance access is refactored")]]
+        static const Descriptor<T>& InstanceRef()
+        {
+            return *M_instanceRawPtr;
         }
 
     private:
@@ -309,6 +191,7 @@ namespace dots::type
         static constexpr bool is_istreamable_v = is_istreamable_t<U>::value;
 
         inline static std::shared_ptr<Descriptor<T>> M_instanceStorage;
+        inline static const Descriptor<T>* M_instanceRawPtr = InstancePtr<false>().get();
     };
 
     template <typename T, typename Base>
@@ -337,8 +220,6 @@ namespace dots::type
         using StaticDescriptor<T, Base, false>::greater;
         using StaticDescriptor<T, Base, false>::greaterEqual;
         using StaticDescriptor<T, Base, false>::dynamicMemoryUsage;
-        using StaticDescriptor<T, Base, false>::fromString;
-        using StaticDescriptor<T, Base, false>::toString;
 
         Typeless& construct(Typeless& value) const override
         {
@@ -415,16 +296,6 @@ namespace dots::type
         bool usesDynamicMemory() const override
         {
             return false;
-        }
-
-        void fromString(Typeless& storage, const std::string_view& value) const override
-        {
-            fromString(storage.to<T>(), value);
-        }
-
-        std::string toString(const Typeless& value) const override
-        {
-            return toString(value.to<T>());
         }
     };
 }

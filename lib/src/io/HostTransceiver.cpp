@@ -115,6 +115,7 @@ namespace dots::io
             [this](io::Connection& connection, const std::exception_ptr& e) { handleTransition(connection, e); }
         );
         m_guestConnections.emplace(connection.get(), connection);
+        LOG_DEBUG_S("guest '" << connection->peerName() << "' emplaced")
 
         return true;
     }
@@ -175,9 +176,18 @@ namespace dots::io
 
         try
         {
-            if (connection.state() == DotsConnectionState::closed)
+            if (connection.state() == DotsConnectionState::connected)
             {
-                if (e != nullptr)
+                const Medium& medium = connection.medium();
+                LOG_NOTICE_S("guest '" << connection.peerName() << "' opened connection via channel '" << medium.category() << ";" << medium.endpoint() << "'");
+            }
+            else if (connection.state() == DotsConnectionState::closed)
+            {
+                if (e == nullptr)
+                {
+                    LOG_NOTICE_S("guest '" << connection.peerName() << "' gracefully closed connection");
+                }
+                else
                 {
                     try
                     {
@@ -185,7 +195,7 @@ namespace dots::io
                     }
                     catch (const std::exception& e)
                     {
-                        LOG_ERROR_S("connection error: " << e.what());
+                        LOG_ERROR_S("guest '" << connection.peerName() << "' closed connection with error -> " << e.what());
                     }
                 }
 
@@ -215,7 +225,7 @@ namespace dots::io
                     remove(*instance);
                 }
 
-                LOG_INFO_S("connection closed -> peerId: " << connection.peerId() << ", name: " << connection.peerName());
+                LOG_DEBUG_S("guest '" << connection.peerName() << "' erased");
                 m_guestConnections.erase(&connection);
             }
         }

@@ -22,22 +22,31 @@ namespace dots::types
         struct p1_t : type::StaticProperty<bool_t, p1_t>
         {
             using StaticProperty::StaticProperty;
-            static constexpr auto Offset = [](){ constexpr auto protoTestSubStruct = details::ProtoTestSubStruct{}; return type::StaticPropertyOffset::MakeOffset(&protoTestSubStruct._propertyArea, &protoTestSubStruct.p1); }();
-            static type::PropertyDescriptor MakeDescriptor() { return type::PropertyDescriptor{ type::Descriptor<bool_t>::InstancePtr(), "p1", 1, true, Offset }; }
+            inline static constexpr auto Metadata = []()
+            { 
+                constexpr auto protoTestSubStruct = details::ProtoTestSubStruct{};
+                return type::StaticPropertyMetadata{ "p1", 1, true, type::StaticPropertyOffset::MakeOffset(&protoTestSubStruct._propertyArea, &protoTestSubStruct.p1) };
+            }();
         };
 
         struct p2_t : type::StaticProperty<bool_t, p2_t>
         {
             using StaticProperty::StaticProperty;
-            static constexpr auto Offset = [](){ constexpr auto protoTestSubStruct = details::ProtoTestSubStruct{}; return type::StaticPropertyOffset::MakeOffset(&protoTestSubStruct._propertyArea, &protoTestSubStruct.p2); }();
-            static type::PropertyDescriptor MakeDescriptor() { return type::PropertyDescriptor{ type::Descriptor<bool_t>::InstancePtr(), "p2", 2, false, Offset }; }
+            inline static constexpr auto Metadata = []()
+            { 
+                constexpr auto protoTestSubStruct = details::ProtoTestSubStruct{};
+                return type::StaticPropertyMetadata{ "p2", 2, false, type::StaticPropertyOffset::MakeOffset(&protoTestSubStruct._propertyArea, &protoTestSubStruct.p2) };
+            }();
         };
 
         struct p3_t : type::StaticProperty<float64_t, p3_t>
         {
             using StaticProperty::StaticProperty;
-            static constexpr auto Offset = [](){ constexpr auto protoTestSubStruct = details::ProtoTestSubStruct{}; return type::StaticPropertyOffset::MakeOffset(&protoTestSubStruct._propertyArea, &protoTestSubStruct.p3); }();
-            static type::PropertyDescriptor MakeDescriptor() { return type::PropertyDescriptor{ type::Descriptor<float64_t>::InstancePtr(), "p3", 3, false, Offset }; }
+            inline static constexpr auto Metadata = []()
+            { 
+                constexpr auto protoTestSubStruct = details::ProtoTestSubStruct{};
+                return type::StaticPropertyMetadata{ "p3", 3, false, type::StaticPropertyOffset::MakeOffset(&protoTestSubStruct._propertyArea, &protoTestSubStruct.p3) };
+            }();
         };
 
         using _key_properties_t = std::tuple<p1_t*>;
@@ -109,36 +118,51 @@ namespace dots::types
         struct intProperty_t : type::StaticProperty<int32_t, intProperty_t>
         {
             using StaticProperty::StaticProperty;
-            static constexpr auto Offset = [](){ constexpr auto protoTestSubStruct = details::ProtoTestStruct{}; return type::StaticPropertyOffset::MakeOffset(&protoTestSubStruct._propertyArea, &protoTestSubStruct.intProperty); }();
-            static type::PropertyDescriptor MakeDescriptor() { return type::PropertyDescriptor{ type::Descriptor<int32_t>::InstancePtr(), "intProperty", 1, true, Offset }; }
+            inline static constexpr auto Metadata = []()
+            { 
+                constexpr auto protoTestStruct = details::ProtoTestStruct{};
+                return type::StaticPropertyMetadata{ "intProperty", 1, true, type::StaticPropertyOffset::MakeOffset(&protoTestStruct._propertyArea, &protoTestStruct.intProperty) };
+            }();
         };
 
         struct stringProperty_t : type::StaticProperty<string_t, stringProperty_t>
         {
             using StaticProperty::StaticProperty;
-            static constexpr auto Offset = [](){ constexpr auto protoTestSubStruct = details::ProtoTestStruct{}; return type::StaticPropertyOffset::MakeOffset(&protoTestSubStruct._propertyArea, &protoTestSubStruct.stringProperty); }();
-            static type::PropertyDescriptor MakeDescriptor() { return type::PropertyDescriptor{ type::Descriptor<string_t>::InstancePtr(), "stringProperty", 2, false, Offset }; }
+            inline static constexpr auto Metadata = []()
+            { 
+                constexpr auto protoTestStruct = details::ProtoTestStruct{};
+                return type::StaticPropertyMetadata{ "stringProperty", 2, false, type::StaticPropertyOffset::MakeOffset(&protoTestStruct._propertyArea, &protoTestStruct.stringProperty) };
+            }();
         };
 
         struct boolProperty_t : type::StaticProperty<bool_t, boolProperty_t>
         {
             using StaticProperty::StaticProperty;
-            static constexpr auto Offset = [](){ constexpr auto protoTestSubStruct = details::ProtoTestStruct{}; return type::StaticPropertyOffset::MakeOffset(&protoTestSubStruct._propertyArea, &protoTestSubStruct.boolProperty); }();
-            static type::PropertyDescriptor MakeDescriptor() { return type::PropertyDescriptor{ type::Descriptor<bool_t>::InstancePtr(), "boolProperty", 3, false, Offset }; }
+            inline static constexpr auto Metadata = []()
+            { 
+                constexpr auto protoTestStruct = details::ProtoTestStruct{};
+                return type::StaticPropertyMetadata{ "boolProperty", 3, false, type::StaticPropertyOffset::MakeOffset(&protoTestStruct._propertyArea, &protoTestStruct.boolProperty) };
+            }();
         };
 
         struct floatVectorProperty_t : type::StaticProperty<vector_t<float32_t>, floatVectorProperty_t>
         {
             using StaticProperty::StaticProperty;
-            static constexpr auto Offset = [](){ constexpr auto protoTestSubStruct = details::ProtoTestStruct{}; return type::StaticPropertyOffset::MakeOffset(&protoTestSubStruct._propertyArea, &protoTestSubStruct.floatVectorProperty); }();
-            static type::PropertyDescriptor MakeDescriptor() { return type::PropertyDescriptor{ type::Descriptor<vector_t<float32_t>>::InstancePtr(), "floatVectorProperty", 4, false, Offset }; }
+            inline static constexpr auto Metadata = []()
+            { 
+                constexpr auto protoTestStruct = details::ProtoTestStruct{};
+                return type::StaticPropertyMetadata{ "floatVectorProperty", 4, false, type::StaticPropertyOffset::MakeOffset(&protoTestStruct._propertyArea, &protoTestStruct.floatVectorProperty) };
+            }();
         };
 
         struct subStruct_t : type::StaticProperty<TestSubStruct, subStruct_t>
         {
             using StaticProperty::StaticProperty;
-            static constexpr auto Offset = [](){ constexpr auto protoTestSubStruct = details::ProtoTestStruct{}; return type::StaticPropertyOffset::MakeOffset(&protoTestSubStruct._propertyArea, &protoTestSubStruct.subStruct); }();
-            static type::PropertyDescriptor MakeDescriptor() { return type::PropertyDescriptor{ type::Descriptor<TestSubStruct>::InstancePtr(), "subStruct", 5, false, Offset }; }
+            inline static constexpr auto Metadata = []()
+            { 
+                constexpr auto protoTestStruct = details::ProtoTestStruct{};
+                return type::StaticPropertyMetadata{ "subStruct", 5, false, type::StaticPropertyOffset::MakeOffset(&protoTestStruct._propertyArea, &protoTestStruct.subStruct) };
+            }();
         };
 
         using _key_properties_t = std::tuple<intProperty_t*>;
@@ -215,17 +239,17 @@ TEST_F(TestStaticStructExperimental, PropertyOffsetsMatchActualOffsets)
     TestStruct sut;
 
     auto determine_offset = [&](const auto& property) { return reinterpret_cast<size_t>(&property) - reinterpret_cast<size_t>(&sut._propertyArea()); };
-    EXPECT_EQ(TestStruct::intProperty_t::Offset, determine_offset(sut.intProperty));
-    EXPECT_EQ(TestStruct::stringProperty_t::Offset, determine_offset(sut.stringProperty));
-    EXPECT_EQ(TestStruct::boolProperty_t::Offset, determine_offset(sut.boolProperty));
-    EXPECT_EQ(TestStruct::floatVectorProperty_t::Offset, determine_offset(sut.floatVectorProperty));
-    EXPECT_EQ(TestStruct::subStruct_t::Offset, determine_offset(sut.subStruct));
+    EXPECT_EQ(TestStruct::intProperty_t::Offset(), determine_offset(sut.intProperty));
+    EXPECT_EQ(TestStruct::stringProperty_t::Offset(), determine_offset(sut.stringProperty));
+    EXPECT_EQ(TestStruct::boolProperty_t::Offset(), determine_offset(sut.boolProperty));
+    EXPECT_EQ(TestStruct::floatVectorProperty_t::Offset(), determine_offset(sut.floatVectorProperty));
+    EXPECT_EQ(TestStruct::subStruct_t::Offset(), determine_offset(sut.subStruct));
 
     TestSubStruct sutSub;
     auto determine_sub_offset = [&](const auto& property) { return reinterpret_cast<size_t>(&property) - reinterpret_cast<size_t>(&sutSub._propertyArea()); };
-    EXPECT_EQ(TestSubStruct::p1_t::Offset, determine_sub_offset(sutSub.p1));
-    EXPECT_EQ(TestSubStruct::p2_t::Offset, determine_sub_offset(sutSub.p2));
-    EXPECT_EQ(TestSubStruct::p3_t::Offset, determine_sub_offset(sutSub.p3));
+    EXPECT_EQ(TestSubStruct::p1_t::Offset(), determine_sub_offset(sutSub.p1));
+    EXPECT_EQ(TestSubStruct::p2_t::Offset(), determine_sub_offset(sutSub.p2));
+    EXPECT_EQ(TestSubStruct::p3_t::Offset(), determine_sub_offset(sutSub.p3));
 }
 
 TEST_F(TestStaticStructExperimental, PropertiesHaveExpectedTags)
@@ -737,26 +761,4 @@ TEST_F(TestStaticStructExperimental, assertProperties)
 
     EXPECT_THROW(sut._assertHasProperties(TestStruct::intProperty_p + TestStruct::floatVectorProperty_p), std::logic_error);
     EXPECT_THROW(sut._assertHasProperties<false>(TestStruct::intProperty_p + TestStruct::floatVectorProperty_p), std::logic_error);
-}
-
-TEST_F(TestStaticStructExperimental, toString)
-{
-    TestStruct sut{
-        .intProperty = 1,
-        .stringProperty = "foo",
-        .floatVectorProperty = { 3.1415f, 2.7183f },
-        .subStruct = TestSubStruct{
-            .p1 = false,
-            .p2 = true
-        }
-    };
-
-    std::string expectedValid = "TestStruct{ .intProperty = 1, .stringProperty = \"foo\", .floatVectorProperty = { 3.1415f, 2.7183f }, .subStruct = TestSubStruct{ .p1 = false, .p2 = true } }";
-    EXPECT_EQ(sut._toString(), expectedValid);
-
-    std::string expectedAll = "TestStruct{ .intProperty = 1, .stringProperty = \"foo\", .boolProperty = <invalid>, .floatVectorProperty = { 3.1415f, 2.7183f }, .subStruct = TestSubStruct{ .p1 = false, .p2 = true } }";
-    EXPECT_EQ(sut._toString(property_set_t::All), expectedAll);
-
-    std::string expectedSpecific = "TestStruct{ .boolProperty = <invalid>, .floatVectorProperty = { 3.1415f, 2.7183f } }";
-    EXPECT_EQ(sut._toString(TestStruct::boolProperty_p + TestStruct::floatVectorProperty_p), expectedSpecific);
 }

@@ -61,15 +61,18 @@ namespace dots::types
         {
             using struct_t = {{name}};
             #if (defined DOTS_PROPERTIES_NO_CONSTEXPR_OFFSETS)
-            inline static auto Offset = [](){ auto proto{{name}} = details::Proto{{name}}{}; return type::StaticPropertyOffset::MakeOffset(&proto{{name}}._propertyArea, &proto{{name}}.{{property.name}}); }();
+            inline static auto Metadata = []()
+            { 
+                auto proto{{name}} = details::Proto{{name}}{};
+                return type::StaticPropertyMetadata{ "{{property.name}}", {{property.tag}}, {% if property.key %}true{% else %}false{% endif %}, type::StaticPropertyOffset::MakeOffset(&proto{{name}}._propertyArea, &proto{{name}}.{{property.name}}) };
+            }();
             #else
-            static constexpr auto Offset = [](){ constexpr auto proto{{name}} = details::Proto{{name}}{}; return type::StaticPropertyOffset::MakeOffset(&proto{{name}}._propertyArea, &proto{{name}}.{{property.name}}); }();
+            inline static constexpr auto Metadata = []()
+            { 
+                constexpr auto proto{{name}} = details::Proto{{name}}{};
+                return type::StaticPropertyMetadata{ "{{property.name}}", {{property.tag}}, {% if property.key %}true{% else %}false{% endif %}, type::StaticPropertyOffset::MakeOffset(&proto{{name}}._propertyArea, &proto{{name}}.{{property.name}}) };
+            }();
             #endif
-
-            static type::PropertyDescriptor MakeDescriptor() 
-            {
-                return type::PropertyDescriptor{ type::Descriptor<types::{{property.cxx_type}}>::InstancePtr(), "{{property.name}}", {{property.tag}}, {% if property.key %}true{% else %}false{% endif %}, Offset };
-            }
 
             {{property.name}}_t& operator = (const {{property.name}}_t& rhs) = default;
             {{property.name}}_t& operator = ({{property.name}}_t&& rhs) = default;

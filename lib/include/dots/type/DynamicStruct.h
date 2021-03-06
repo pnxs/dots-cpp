@@ -153,9 +153,14 @@ namespace dots::type
 
         using StructDescriptor<DynamicStruct>::construct;
 
+        DynamicStruct& construct(DynamicStruct& value) const
+        {
+            return construct(value, *this, reinterpret_cast<PropertyArea*>(&Typeless::From(value).to<std::byte>() + sizeof(DynamicStruct)));
+        }
+
         Typeless& construct(Typeless& value) const override
         {
-            return Typeless::From(construct(value.to<DynamicStruct>(), *this, reinterpret_cast<PropertyArea*>(&value.to<std::byte>() + sizeof(DynamicStruct))));
+            return Typeless::From(construct(value.to<DynamicStruct>()));
         }
 
         Typeless& construct(Typeless& value, const Typeless& other) const override

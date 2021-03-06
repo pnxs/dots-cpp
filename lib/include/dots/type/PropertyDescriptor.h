@@ -19,16 +19,45 @@ namespace dots::type
         PropertyDescriptor& operator = (const PropertyDescriptor& rhs) = default;
         PropertyDescriptor& operator = (PropertyDescriptor&& rhs) = default;
 
-        const std::shared_ptr<Descriptor<>>& valueDescriptorPtr() const;
-        const Descriptor<>& valueDescriptor() const;
+        const std::shared_ptr<Descriptor<>>& valueDescriptorPtr() const
+        {
+            return m_descriptor;
+        }
 
-        const std::string& name() const;
-        uint32_t tag() const;
-        bool isKey() const;
-        PropertySet set() const;
+        const Descriptor<>& valueDescriptor() const
+        {
+            return *m_descriptor;
+        }
 
-        PropertyOffset offset() const;
-        std::optional<PropertyOffset> subAreaOffset() const;
+        const std::string& name() const
+        {
+            return m_name;
+        }
+
+        uint32_t tag() const
+        {
+            return m_tag;
+        }
+
+        bool isKey() const
+        {
+            return m_isKey;
+        }
+
+        PropertySet set() const
+        {
+            return m_set;
+        }
+
+        PropertyOffset offset() const
+        {
+            return m_offset;
+        }
+
+        std::optional<PropertyOffset> subAreaOffset() const
+        {
+            return m_subAreaOffset;
+        }
 
         [[deprecated("only available for backwards compatibility and should be replaced by property iteration")]]
         char* address(void* p) const;

@@ -10,8 +10,16 @@ set(TARGET_NAME_EXPERIMENTAL dots-unittests-experimental)
 add_executable(${TARGET_NAME} src/TestContainer.cpp)
 
 # properties [dots-unittests]
+target_dots_model(${TARGET_NAME}
+    src/io/serialization/serialization.dots
+)
 target_sources(${TARGET_NAME}
     PRIVATE
+        src/io/serialization/TestCborSerializer.cpp
+        src/io/serialization/TestExperimentalCborSerializer.cpp
+        src/io/serialization/TestJsonSerializer.cpp
+        src/io/serialization/TestStringSerializer.cpp
+
         src/TestDigest.cpp
         src/TestAsciiSerialization.cpp
         src/TestCborSerialization.cpp
@@ -31,6 +39,7 @@ target_sources(${TARGET_NAME}
 )
 target_include_directories(${TARGET_NAME}
     PRIVATE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
         ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 target_compile_options(${TARGET_NAME}
