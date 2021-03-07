@@ -18,9 +18,12 @@ jobs:
     - uses: actions/checkout@v2
       with:
         submodules: 'true'
+        
+    - name: Update package repositories
+      run: sudo apt-get update -yq
       
     - name: Install ubuntu dependencies
-      run: sudo apt-get install libboost-program-options1.71.0 libboost-dev libboost-all-dev ninja-build
+      run: sudo apt-get install -yq libboost-program-options1.71.0 libboost-dev libboost-all-dev ninja-build
       
     - name: Install python dependencies
       run: |
