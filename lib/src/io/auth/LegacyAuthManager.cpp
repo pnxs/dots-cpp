@@ -28,6 +28,10 @@ namespace dots::io
                 return std::nullopt;
             }
         }
+        else if (medium.category() == "uds")
+        {
+            return std::nullopt;
+        }
         else
         {
             if (m_defaultPolicy == true)
@@ -57,6 +61,10 @@ namespace dots::io
             };
 
             return verifyResponse(boost::asio::ip::address::from_string(medium.endpoint()), nonce.value(), connect);
+        }
+        else if (medium.category() == "uds")
+        {
+            return true;
         }
         else
         {

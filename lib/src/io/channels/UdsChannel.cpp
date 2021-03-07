@@ -17,6 +17,7 @@ namespace dots::io::posix
         try
         {
             m_socket.connect(m_endpoint);
+            m_medium.emplace(UdsSocketCategory, m_socket.local_endpoint().path());
         }
         catch (const std::exception& e)
         {
@@ -31,7 +32,7 @@ namespace dots::io::posix
 
     UdsChannel::UdsChannel(Channel::key_t key, boost::asio::local::stream_protocol::socket&& socket) :
         Channel(key),
-        m_endpoint{ socket.remote_endpoint() },
+        m_endpoint{ socket.local_endpoint() },
         m_socket{ std::move(socket) },
         m_headerSize(0)
     {
@@ -39,6 +40,16 @@ namespace dots::io::posix
         m_headerBuffer.resize(1024);
 
         IgnorePipeSignals();
+
+        if (m_socket.is_open())
+        {
+            m_medium.emplace(UdsSocketCategory, m_socket.local_endpoint().path());
+        }
+    }
+
+    const Medium& UdsChannel::medium() const
+    {
+        return *m_medium;
     }
 
     void UdsChannel::asyncReceiveImpl()

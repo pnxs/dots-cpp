@@ -18,12 +18,16 @@ namespace dots::io::posix
         UdsChannel& operator = (const UdsChannel& rhs) = delete;
         UdsChannel& operator = (UdsChannel&& rhs) = delete;
 
+        const Medium& medium() const override;
+
     protected:
 
         void asyncReceiveImpl() override;
         void transmitImpl(const DotsHeader& header, const type::Struct& instance) override;
 
     private:
+
+        static constexpr char UdsSocketCategory[] = "uds";
 
         void asynReadHeaderLength();
         void asyncReadHeader();
@@ -42,6 +46,7 @@ namespace dots::io::posix
         DotsTransportHeader m_transportHeader;
         std::vector<uint8_t> m_headerBuffer;
         std::vector<uint8_t> m_instanceBuffer;
+        std::optional<Medium> m_medium;
     };
 }
 #else
