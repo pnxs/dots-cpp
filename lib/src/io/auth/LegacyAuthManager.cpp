@@ -52,7 +52,7 @@ namespace dots::io
 
     bool LegacyAuthManager::verifyAuthentication(const Medium& medium, std::string_view guest, Nonce nonce, std::string_view cnonce, const Digest& response)
     {
-        if (medium.category() == "tcp")
+        if (medium.category() == "tcp" || medium.category() == "ws")
         {
             DotsMsgConnect connect{
                 DotsMsgConnect::clientName_i{ guest },
