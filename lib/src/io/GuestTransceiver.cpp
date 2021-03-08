@@ -59,6 +59,11 @@ namespace dots::io
 
         try
         {
+            if (m_hostConnection == std::nullopt)
+            {
+                throw std::runtime_error{ "attempt to publish on closed connection" };
+            }
+
             m_hostConnection->transmit(instance, includedProperties, remove);
         }
         catch (...)
