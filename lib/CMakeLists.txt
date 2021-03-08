@@ -40,6 +40,7 @@ target_sources(${TARGET_NAME}
 
         src/tools/logging.cpp
         src/tools/IpNetwork.cpp
+        src/tools/Uri.cpp
 
         src/io/Transceiver.cpp
         src/io/GuestTransceiver.cpp

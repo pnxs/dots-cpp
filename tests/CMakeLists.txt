@@ -20,6 +20,8 @@ target_sources(${TARGET_NAME}
         src/io/serialization/TestJsonSerializer.cpp
         src/io/serialization/TestStringSerializer.cpp
 
+        src/tools/TestUri.cpp
+
         src/TestDigest.cpp
         src/TestAsciiSerialization.cpp
         src/TestCborSerialization.cpp
