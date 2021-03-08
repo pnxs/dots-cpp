@@ -142,8 +142,11 @@ namespace dots::io
                     }
                 }
 
-                LOG_INFO_S("connection closed -> selfId: " << connection.selfId() << ", name: " << connection.peerName());
-                m_hostConnection = std::nullopt;
+                if (m_hostConnection != std::nullopt)
+                {
+                    LOG_INFO_S("connection closed -> selfId: " << connection.selfId() << ", name: " << connection.peerName());
+                    m_hostConnection = std::nullopt;
+                }
             }
         }
         catch (const std::exception& e)
