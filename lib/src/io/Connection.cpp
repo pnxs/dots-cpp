@@ -37,9 +37,14 @@ namespace dots::io
         }
     }
 
-    const Medium& Connection::medium() const
+    const tools::Uri& Connection::localEndpoint() const
     {
-        return m_channel->medium();
+        return m_channel->localEndpoint();
+    }
+
+    const tools::Uri& Connection::remoteEndpoint() const
+    {
+        return m_channel->remoteEndpoint();
     }
 
     DotsConnectionState Connection::state() const
@@ -93,7 +98,7 @@ namespace dots::io
 
         if (m_selfId == HostId)
         {
-            if (m_nonce = m_authManager == nullptr ? std::nullopt : m_authManager->requiresAuthentication(m_channel->medium(), {}); m_nonce == std::nullopt)
+            if (m_nonce = m_authManager == nullptr ? std::nullopt : m_authManager->requiresAuthentication(m_channel->remoteEndpoint(), {}); m_nonce == std::nullopt)
             {
                 transmit(DotsMsgHello{
                     DotsMsgHello::serverName_i{ name },
@@ -316,7 +321,7 @@ namespace dots::io
 
     void Connection::handleConnect(const DotsMsgConnect& connect)
     {
-        if (m_authManager != nullptr && !m_authManager->verifyAuthentication(m_channel->medium(), *connect.clientName, m_nonce.value_or(0), connect.cnonce.valueOrDefault(""), Digest{ connect.authChallengeResponse.valueOrDefault("") }))
+        if (m_authManager != nullptr && !m_authManager->verifyAuthentication(m_channel->remoteEndpoint(), *connect.clientName, m_nonce.value_or(0), connect.cnonce.valueOrDefault(""), Digest{ connect.authChallengeResponse.valueOrDefault("") }))
         {
             transmit(DotsMsgConnectResponse{
                 DotsMsgConnectResponse::clientId_i{ m_peerId },

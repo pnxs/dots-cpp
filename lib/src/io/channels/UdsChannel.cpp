@@ -10,18 +10,18 @@ namespace dots::io::posix
 {
     UdsChannel::UdsChannel(Channel::key_t key, boost::asio::io_context& ioContext, const std::string_view& path) :
         Channel(key),
-        m_endpoint{ path.data() },
         m_socket{ ioContext },
+        m_endpoint{ "uds:" + std::string{ path } },
         m_headerSize(0)
     {
         try
         {
-            m_socket.connect(m_endpoint);
-            m_medium.emplace(UdsSocketCategory, m_socket.local_endpoint().path());
+            m_socket.connect(std::string{ m_endpoint.path() });
+            determineEndpoints();
         }
         catch (const std::exception& e)
         {
-            throw std::runtime_error{ "could not open UDS connection '" + m_endpoint.path() + "': " + e.what() };
+            throw std::runtime_error{ "could not open UDS connection '" + std::string{ m_endpoint.path() } + "': " + e.what() };
         }
 
         m_instanceBuffer.resize(8192);
@@ -32,8 +32,8 @@ namespace dots::io::posix
 
     UdsChannel::UdsChannel(Channel::key_t key, boost::asio::local::stream_protocol::socket&& socket) :
         Channel(key),
-        m_endpoint{ socket.local_endpoint() },
         m_socket{ std::move(socket) },
+        m_endpoint{ "uds:/" },
         m_headerSize(0)
     {
         m_instanceBuffer.resize(8192);
@@ -43,13 +43,18 @@ namespace dots::io::posix
 
         if (m_socket.is_open())
         {
-            m_medium.emplace(UdsSocketCategory, m_socket.local_endpoint().path());
+            determineEndpoints();
         }
     }
 
-    const Medium& UdsChannel::medium() const
+    const tools::Uri& UdsChannel::localEndpoint() const
     {
-        return *m_medium;
+        return m_endpoint;
+    }
+
+    const tools::Uri& UdsChannel::remoteEndpoint() const
+    {
+        return m_endpoint;
     }
 
     void UdsChannel::asyncReceiveImpl()
@@ -76,6 +81,11 @@ namespace dots::io::posix
         };
 
         m_socket.write_some(buffers);
+    }
+
+    void UdsChannel::determineEndpoints()
+    {
+        m_endpoint.setPath(m_socket.local_endpoint().path());
     }
 
     void UdsChannel::asynReadHeaderLength()

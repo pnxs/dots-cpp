@@ -15,11 +15,11 @@ namespace dots::io
         /* do nothing */
     }
 
-    std::optional<Nonce> LegacyAuthManager::requiresAuthentication(const Medium& medium, std::string_view/* guest*/)
+    std::optional<Nonce> LegacyAuthManager::requiresAuthentication(const tools::Uri& remoteEndpoint, std::string_view/* guest*/)
     {
-        if (medium.category() == "tcp" || medium.category() == "ws")
+        if (remoteEndpoint.scheme() == "tcp" || remoteEndpoint.scheme() == "ws")
         {
-            if (requiresAuthentication(boost::asio::ip::address::from_string(medium.endpoint())))
+            if (requiresAuthentication(boost::asio::ip::address::from_string(std::string{ remoteEndpoint.host() })))
             {
                 return Nonce{};
             }
@@ -28,7 +28,7 @@ namespace dots::io
                 return std::nullopt;
             }
         }
-        else if (medium.category() == "uds")
+        else if (remoteEndpoint.scheme() == "uds")
         {
             return std::nullopt;
         }
@@ -45,14 +45,14 @@ namespace dots::io
         }
     }
 
-    bool LegacyAuthManager::verifyAuthentication(const Medium& medium, std::string_view guest, Nonce nonce, Nonce cnonce, const Digest& response)
+    bool LegacyAuthManager::verifyAuthentication(const tools::Uri& remoteEndpoint, std::string_view guest, Nonce nonce, Nonce cnonce, const Digest& response)
     {
-        return verifyAuthentication(medium, guest, nonce, cnonce.toString(), response);
+        return verifyAuthentication(remoteEndpoint, guest, nonce, cnonce.toString(), response);
     }
 
-    bool LegacyAuthManager::verifyAuthentication(const Medium& medium, std::string_view guest, Nonce nonce, std::string_view cnonce, const Digest& response)
+    bool LegacyAuthManager::verifyAuthentication(const tools::Uri& remoteEndpoint, std::string_view guest, Nonce nonce, std::string_view cnonce, const Digest& response)
     {
-        if (medium.category() == "tcp" || medium.category() == "ws")
+        if (remoteEndpoint.scheme() == "tcp" || remoteEndpoint.scheme() == "ws")
         {
             DotsMsgConnect connect{
                 DotsMsgConnect::clientName_i{ guest },
@@ -60,9 +60,9 @@ namespace dots::io
                 DotsMsgConnect::cnonce_i{ cnonce }
             };
 
-            return verifyResponse(boost::asio::ip::address::from_string(medium.endpoint()), nonce.value(), connect);
+            return verifyResponse(boost::asio::ip::address::from_string(std::string{ remoteEndpoint.host() }), nonce.value(), connect);
         }
-        else if (medium.category() == "uds")
+        else if (remoteEndpoint.scheme() == "uds")
         {
             return true;
         }

@@ -7,7 +7,9 @@ namespace dots::io
 {
     WebSocketChannel::WebSocketChannel(Channel::key_t key, boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port) :
         Channel(key),
-        m_stream{ ioContext }
+        m_stream{ ioContext },
+        m_localEndpoint{ "ws://127.0.0.1" },
+        m_remoteEndpoint{ m_localEndpoint }
     {
         try
         {
@@ -15,7 +17,7 @@ namespace dots::io
             auto endpoints = resolver.resolve(boost::asio::ip::tcp::socket::protocol_type::v4(), host, port, boost::asio::ip::resolver_query_base::numeric_service);
             auto& tcpStream = m_stream.next_layer();
             tcpStream.connect(endpoints.begin(), endpoints.end());
-            m_medium.emplace(WebSocketCategory, tcpStream.socket().remote_endpoint().address().to_string());
+            determineEndpoints();
 
             m_stream.set_option(boost::beast::websocket::stream_base::timeout::suggested(boost::beast::role_type::client));
             m_stream.set_option(boost::beast::websocket::stream_base::decorator([](boost::beast::websocket::request_type& req)
@@ -46,14 +48,21 @@ namespace dots::io
 
     WebSocketChannel::WebSocketChannel(Channel::key_t key, ws_stream_t&& stream) :
         Channel(key),
-        m_stream(std::move(stream))
+        m_stream(std::move(stream)),
+        m_localEndpoint{ "ws://127.0.0.1" },
+        m_remoteEndpoint{ m_localEndpoint }
     {
-        m_medium.emplace(WebSocketCategory, m_stream.next_layer().socket().remote_endpoint().address().to_string());
+        determineEndpoints();
     }
 
-    const Medium& WebSocketChannel::medium() const
+    const tools::Uri& WebSocketChannel::localEndpoint() const
     {
-        return *m_medium;
+        return m_localEndpoint;
+    }
+
+    const tools::Uri& WebSocketChannel::remoteEndpoint() const
+    {
+        return m_remoteEndpoint;
     }
 
     void WebSocketChannel::asyncReceiveImpl()
@@ -127,5 +136,16 @@ namespace dots::io
         writer.EndObject();
 
         m_stream.write(boost::asio::buffer(std::string{ buffer.GetString() }));
+    }
+
+    void WebSocketChannel::determineEndpoints()
+    {
+        boost::asio::ip::tcp::endpoint localEndpoint = m_stream.next_layer().socket().local_endpoint();
+        m_localEndpoint.setHost(localEndpoint.address().to_string());
+        m_localEndpoint.setPort(std::to_string(localEndpoint.port()));
+
+        boost::asio::ip::tcp::endpoint remoteEndpoint = m_stream.next_layer().socket().remote_endpoint();
+        m_remoteEndpoint.setHost(remoteEndpoint.address().to_string());
+        m_remoteEndpoint.setPort(std::to_string(remoteEndpoint.port()));
     }
 }

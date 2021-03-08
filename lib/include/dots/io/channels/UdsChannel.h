@@ -18,7 +18,8 @@ namespace dots::io::posix
         UdsChannel& operator = (const UdsChannel& rhs) = delete;
         UdsChannel& operator = (UdsChannel&& rhs) = delete;
 
-        const Medium& medium() const override;
+        const tools::Uri& localEndpoint() const override;
+        const tools::Uri& remoteEndpoint() const override;
 
     protected:
 
@@ -27,7 +28,7 @@ namespace dots::io::posix
 
     private:
 
-        static constexpr char UdsSocketCategory[] = "uds";
+        void determineEndpoints();
 
         void asynReadHeaderLength();
         void asyncReadHeader();
@@ -40,13 +41,12 @@ namespace dots::io::posix
         receive_handler_t m_cb;
         error_handler_t m_ecb;
 
-        boost::asio::local::stream_protocol::endpoint m_endpoint;
         boost::asio::local::stream_protocol::socket m_socket;
+        tools::Uri m_endpoint;
         uint16_t m_headerSize;
         DotsTransportHeader m_transportHeader;
         std::vector<uint8_t> m_headerBuffer;
         std::vector<uint8_t> m_instanceBuffer;
-        std::optional<Medium> m_medium;
     };
 }
 #else

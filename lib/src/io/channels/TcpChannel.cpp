@@ -18,7 +18,7 @@ namespace dots::io
             {
                 m_socket.connect(endpoint);
                 setDefaultSocketOptions();
-                m_medium.emplace(TcpSocketCategory, m_socket.remote_endpoint().address().to_string());
+                determineEndpoints();
 
                 return;
             }
@@ -49,7 +49,7 @@ namespace dots::io
                 else
                 {
                     setDefaultSocketOptions();
-                    m_medium.emplace(TcpSocketCategory, m_socket.remote_endpoint().address().to_string());
+                    determineEndpoints();
                     onConnect(error);
                 }
             });
@@ -60,6 +60,8 @@ namespace dots::io
         Channel(key),
         m_socket{ std::move(socket) },
         m_resolver( socket.get_executor()),
+        m_localEndpoint{ "tcp://127.0.0.1" },
+        m_remoteEndpoint{ m_localEndpoint },
         m_headerSize(0)
     {
         m_instanceBuffer.resize(8192);
@@ -67,13 +69,18 @@ namespace dots::io
 
         if (m_socket.is_open())
         {
-            m_medium.emplace(TcpSocketCategory, m_socket.remote_endpoint().address().to_string());
+            determineEndpoints();
         }
     }
 
-    const Medium& TcpChannel::medium() const
+    const tools::Uri& TcpChannel::localEndpoint() const
     {
-        return *m_medium;
+        return m_localEndpoint;
+    }
+
+    const tools::Uri& TcpChannel::remoteEndpoint() const
+    {
+        return m_remoteEndpoint;
     }
 
     void TcpChannel::asyncReceiveImpl()
@@ -132,6 +139,17 @@ namespace dots::io
         m_socket.set_option(boost::asio::ip::tcp::no_delay(true));
         m_socket.set_option(boost::asio::ip::tcp::socket::keep_alive(true));
         m_socket.set_option(boost::asio::socket_base::linger(true, 10));
+    }
+
+    void TcpChannel::determineEndpoints()
+    {
+        boost::asio::ip::tcp::endpoint localEndpoint = m_socket.local_endpoint();
+        m_localEndpoint.setHost(localEndpoint.address().to_string());
+        m_localEndpoint.setPort(std::to_string(localEndpoint.port()));
+
+        boost::asio::ip::tcp::endpoint remoteEndpoint = m_socket.remote_endpoint();
+        m_remoteEndpoint.setHost(remoteEndpoint.address().to_string());
+        m_remoteEndpoint.setPort(std::to_string(remoteEndpoint.port()));
     }
 
     void TcpChannel::asyncReadHeaderLength()

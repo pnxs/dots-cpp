@@ -41,7 +41,8 @@ namespace dots::io
         TcpChannel& operator = (const TcpChannel& rhs) = delete;
         TcpChannel& operator = (TcpChannel&& rhs) = delete;
 
-        const Medium& medium() const override;
+        const tools::Uri& localEndpoint() const override;
+        const tools::Uri& remoteEndpoint() const override;
 
     protected:
 
@@ -54,6 +55,7 @@ namespace dots::io
         using resolve_handler_t = std::function<void(const boost::system::error_code& error, std::optional<boost::asio::ip::tcp::endpoint>)>;
 
 	    void setDefaultSocketOptions();
+        void determineEndpoints();
 
         void asyncReadHeaderLength();
         void asyncReadHeader();
@@ -68,10 +70,11 @@ namespace dots::io
 
         boost::asio::ip::tcp::socket m_socket;
         boost::asio::ip::tcp::resolver m_resolver;
+        tools::Uri m_localEndpoint;
+        tools::Uri m_remoteEndpoint;
         uint16_t m_headerSize;
         DotsTransportHeader m_transportHeader;
         std::vector<uint8_t> m_headerBuffer;
         std::vector<uint8_t> m_instanceBuffer;
-        std::optional<Medium> m_medium;
     };
 }

@@ -3,7 +3,7 @@
 #include <system_error>
 #include <type_traits>
 #include <set>
-#include <dots/io/Medium.h>
+#include <dots/tools/Uri.h>
 #include <dots/io/Transmission.h>
 #include <dots/tools/shared_ptr_only.h>
 #include <DotsHeader.dots.h>
@@ -37,7 +37,8 @@ namespace dots::io
         void transmit(const Transmission& transmission);
         void transmit(const type::Descriptor<>& descriptor);
 
-        virtual const Medium& medium() const;
+        virtual const tools::Uri& localEndpoint() const = 0;
+        virtual const tools::Uri& remoteEndpoint() const = 0;
 
     protected:
 
@@ -63,7 +64,6 @@ namespace dots::io
 
         void verifyInitialized() const;
 
-        static inline Medium DefaultMedium{ "default", "default" };
         std::set<std::string> m_sharedTypes;
         bool m_initialized;
         io::Registry* m_registry;

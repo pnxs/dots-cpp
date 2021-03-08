@@ -21,7 +21,8 @@ namespace dots::io
         WebSocketChannel& operator = (const WebSocketChannel& rhs) = delete;
         WebSocketChannel& operator = (WebSocketChannel&& rhs) = delete;
 
-        const Medium& medium() const override;
+        const tools::Uri& localEndpoint() const override;
+        const tools::Uri& remoteEndpoint() const override;
 
     protected:
 
@@ -30,10 +31,11 @@ namespace dots::io
 
     private:
 
-        static constexpr char WebSocketCategory[] = "ws";
+        void determineEndpoints();
 
         ws_stream_t m_stream;
-        std::optional<Medium> m_medium;
+        tools::Uri m_localEndpoint;
+        tools::Uri m_remoteEndpoint;
         boost::beast::flat_buffer m_buffer;
     };
 }
