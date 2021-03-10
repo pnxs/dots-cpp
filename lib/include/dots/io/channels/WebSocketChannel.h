@@ -21,9 +21,6 @@ namespace dots::io
         WebSocketChannel& operator = (const WebSocketChannel& rhs) = delete;
         WebSocketChannel& operator = (WebSocketChannel&& rhs) = delete;
 
-        const Endpoint& localEndpoint() const override;
-        const Endpoint& remoteEndpoint() const override;
-
     protected:
 
         void asyncReceiveImpl() override;
@@ -31,11 +28,7 @@ namespace dots::io
 
     private:
 
-        void determineEndpoints();
-
         ws_stream_t m_stream;
-        Endpoint m_localEndpoint;
-        Endpoint m_remoteEndpoint;
         boost::beast::flat_buffer m_buffer;
     };
 }
