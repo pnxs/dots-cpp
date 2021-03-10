@@ -8,6 +8,12 @@
 
 namespace dots::io::posix
 {
+    UdsChannel::UdsChannel(Channel::key_t key, boost::asio::io_context& ioContext, const Endpoint& endpoint) :
+        UdsChannel(key, ioContext, endpoint.path())
+    {
+        /* do nothing */
+    }
+
     UdsChannel::UdsChannel(Channel::key_t key, boost::asio::io_context& ioContext, const std::string_view& path) :
         Channel(key),
         m_socket{ ioContext },

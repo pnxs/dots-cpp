@@ -3,12 +3,15 @@
 #include <optional>
 #include <boost/asio.hpp>
 #include <dots/io/Channel.h>
+#include <dots/io/Endpoint.h>
 #include <DotsTransportHeader.dots.h>
 
 namespace dots::io
 {
     struct TcpChannel : Channel
     {
+        TcpChannel(Channel::key_t key, boost::asio::io_context& ioContext, const Endpoint& endpoint);
+
         /**
          * Connect channel synchronously.
          * @param key

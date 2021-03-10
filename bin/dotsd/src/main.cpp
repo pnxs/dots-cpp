@@ -71,16 +71,16 @@ int main(int argc, char* argv[])
 
             if (listenEndpoint.scheme() == "tcp")
             {
-                listeners.emplace_back(std::make_unique<dots::io::TcpListener>(io_context, std::string{ listenEndpoint.host() }, std::string{ listenEndpoint.port() })); 
+                listeners.emplace_back(std::make_unique<dots::io::TcpListener>(io_context, listenEndpoint)); 
             }
             else if (listenEndpoint.scheme() == "ws")
             {
-                listeners.emplace_back(std::make_unique<dots::io::WebSocketListener>(io_context, std::string{ listenEndpoint.host() }, std::string{ listenEndpoint.port() })); 
+                listeners.emplace_back(std::make_unique<dots::io::WebSocketListener>(io_context, listenEndpoint)); 
             }
             #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
             else if (listenEndpoint.scheme() == "uds")
             {
-                listeners.emplace_back(std::make_unique<dots::io::posix::UdsListener>(io_context, listenEndpoint.path()));
+                listeners.emplace_back(std::make_unique<dots::io::posix::UdsListener>(io_context, listenEndpoint));
             }
             #endif
             else

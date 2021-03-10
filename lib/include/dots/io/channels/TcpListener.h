@@ -9,6 +9,7 @@ namespace dots::io
 {
     struct TcpListener : Listener
     {
+        TcpListener(boost::asio::io_context& ioContext, const Endpoint& endpoint, std::optional<int> backlog = std::nullopt);
         TcpListener(boost::asio::io_context& ioContext, std::string address, std::string port, std::optional<int> backlog = std::nullopt);
         TcpListener(const TcpListener& other) = delete;
         TcpListener(TcpListener&& other) = delete;

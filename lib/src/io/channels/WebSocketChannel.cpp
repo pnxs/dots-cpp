@@ -5,6 +5,12 @@
 
 namespace dots::io
 {
+    WebSocketChannel::WebSocketChannel(Channel::key_t key, boost::asio::io_context& ioContext, const Endpoint& endpoint) :
+        WebSocketChannel(key, ioContext, endpoint.host(), endpoint.port())
+    {
+        /* do nothing */
+    }
+
     WebSocketChannel::WebSocketChannel(Channel::key_t key, boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port) :
         Channel(key),
         m_stream{ ioContext }

@@ -7,6 +7,12 @@
 
 namespace dots::io
 {
+    TcpChannel::TcpChannel(Channel::key_t key, boost::asio::io_context& ioContext, const Endpoint& endpoint) :
+        TcpChannel(key, ioContext, endpoint.host(), endpoint.port())
+    {
+        /* do nothing */
+    }
+
     TcpChannel::TcpChannel(Channel::key_t key, boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port) :
         TcpChannel(key, boost::asio::ip::tcp::socket{ ioContext })
     {

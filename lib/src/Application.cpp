@@ -46,16 +46,16 @@ namespace dots
 
                 if (openEndpoint.scheme() == "tcp")
                 {
-                    return globalGuestTransceiver.open<io::TcpChannel>(io::global_publish_types(), io::global_subscribe_types(), std::move(secret), openEndpoint.host(), port);
+                    return globalGuestTransceiver.open<io::TcpChannel>(io::global_publish_types(), io::global_subscribe_types(), std::move(secret), openEndpoint);
                 }
                 else if (openEndpoint.scheme() == "ws")
                 {
-                    return globalGuestTransceiver.open<io::WebSocketChannel>(io::global_publish_types(), io::global_subscribe_types(), std::move(secret), openEndpoint.host(), port);
+                    return globalGuestTransceiver.open<io::WebSocketChannel>(io::global_publish_types(), io::global_subscribe_types(), std::move(secret), openEndpoint);
                 }
                 #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
                 else if (openEndpoint.scheme() == "uds")
                 {
-                    return globalGuestTransceiver.open<io::posix::UdsChannel>(io::global_publish_types(), io::global_subscribe_types(), std::move(secret), openEndpoint.path());
+                    return globalGuestTransceiver.open<io::posix::UdsChannel>(io::global_publish_types(), io::global_subscribe_types(), std::move(secret), openEndpoint);
                 }
                 #endif
                 else
