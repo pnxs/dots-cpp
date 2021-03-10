@@ -123,6 +123,10 @@ namespace dots
         {
             m_openEndpoint->setPort(dotsSeverPort);
         }
+        else
+        {
+            m_openEndpoint->setPort("11234");
+        }
 
         if (auto it = vm.find("auth-secret"); it != vm.end())
         {
