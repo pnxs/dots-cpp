@@ -3,6 +3,10 @@
 #include <boost/program_options.hpp>
 #include <dots/io/Io.h>
 #include <dots/io/channels/TcpChannel.h>
+#include <dots/io/channels/WebSocketChannel.h>
+#if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
+#include <dots/io/channels/UdsChannel.h>
+#endif
 #include <dots/io/Registry.h>
 #include <dots/tools/logging.h>
 #include <DotsClient.dots.h>
@@ -18,7 +22,49 @@ namespace dots
         // Connect to dotsd
 
         GuestTransceiver& globalGuestTransceiver = dots::transceiver(name);
-        const io::Connection& connection = globalGuestTransceiver.open<io::TcpChannel>(io::global_publish_types(), io::global_subscribe_types(), m_authSecret, m_serverAddress, m_serverPort);
+        const io::Connection& connection = [&]() -> auto&
+        {
+            if (m_openEndpoint == std::nullopt)
+            {
+                return globalGuestTransceiver.open<io::TcpChannel>(io::global_publish_types(), io::global_subscribe_types(), m_authSecret, m_serverAddress, m_serverPort);
+            }
+            else
+            {
+                const io::Endpoint& openEndpoint = *m_openEndpoint;
+                std::string_view port = m_serverPort;
+                std::optional<std::string> secret = m_authSecret;
+
+                if (!openEndpoint.port().empty())
+                {
+                    port = openEndpoint.port();
+                }
+
+                if (!openEndpoint.userPassword().empty())
+                {
+                    secret.emplace(openEndpoint.userPassword());
+                }
+
+                if (openEndpoint.scheme() == "tcp")
+                {
+                    return globalGuestTransceiver.open<io::TcpChannel>(io::global_publish_types(), io::global_subscribe_types(), std::move(secret), openEndpoint.host(), port);
+                }
+                else if (openEndpoint.scheme() == "ws")
+                {
+                    return globalGuestTransceiver.open<io::WebSocketChannel>(io::global_publish_types(), io::global_subscribe_types(), std::move(secret), openEndpoint.host(), port);
+                }
+                #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
+                else if (openEndpoint.scheme() == "uds")
+                {
+                    return globalGuestTransceiver.open<io::posix::UdsChannel>(io::global_publish_types(), io::global_subscribe_types(), std::move(secret), openEndpoint.path());
+                }
+                #endif
+                else
+                {
+                    throw std::runtime_error{ "unknown or unsupported URI scheme: '" + std::string{ openEndpoint.scheme() } + "'" };
+                }
+            }
+        }();
+
 
         LOG_DEBUG_S("run until state connected...");
         while (!connection.connected())
@@ -72,6 +118,7 @@ namespace dots
             ("dots-address", po::value<std::string>()->default_value("127.0.0.1"), "address to bind to")
             ("dots-port", po::value<std::string>()->default_value("11234"), "port to bind to")
             ("auth-secret", po::value<std::string>(), "secret used during authentication")
+            ("open,o", po::value<std::string>(), "remote endpoint URI to open for host connection (e.g. tcp://127.0.0.1:11234, ws://127.0.0.1, uds:/tmp/dots_uds.socket")
             ;
 
         po::variables_map vm;
@@ -100,6 +147,11 @@ namespace dots
         if (vm.count("auth-secret") > 0)
         {
             m_authSecret = vm["auth-secret"].as<std::string>();
+        }
+
+        if (vm.count("open"))
+        {
+            m_openEndpoint.emplace(vm["open"].as<std::string>());
         }
     }
 }

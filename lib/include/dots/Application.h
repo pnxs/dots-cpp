@@ -3,6 +3,7 @@
 #include <optional>
 #include <dots/dots.h>
 #include <dots/io/GuestTransceiver.h>
+#include <dots/io/Endpoint.h>
 
 namespace dots
 {
@@ -26,5 +27,6 @@ namespace dots
         std::string m_serverAddress;
         std::string m_serverPort;
         std::optional<std::string> m_authSecret;
+        std::optional<io::Endpoint> m_openEndpoint;
     };
 }
