@@ -47,12 +47,12 @@ namespace dots::io::posix
         }
     }
 
-    const tools::Uri& UdsChannel::localEndpoint() const
+    const Endpoint& UdsChannel::localEndpoint() const
     {
         return m_endpoint;
     }
 
-    const tools::Uri& UdsChannel::remoteEndpoint() const
+    const Endpoint& UdsChannel::remoteEndpoint() const
     {
         return m_endpoint;
     }

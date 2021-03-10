@@ -53,6 +53,7 @@ target_sources(${TARGET_NAME}
         src/io/ContainerPool.cpp
         src/io/Dispatcher.cpp
         src/io/Event.cpp
+        src/io/Endpoint.cpp
 
         src/io/Channel.cpp
         src/io/Listener.cpp

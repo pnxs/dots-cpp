@@ -37,12 +37,12 @@ namespace dots::io
         }
     }
 
-    const tools::Uri& Connection::localEndpoint() const
+    const Endpoint& Connection::localEndpoint() const
     {
         return m_channel->localEndpoint();
     }
 
-    const tools::Uri& Connection::remoteEndpoint() const
+    const Endpoint& Connection::remoteEndpoint() const
     {
         return m_channel->remoteEndpoint();
     }

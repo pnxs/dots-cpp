@@ -41,8 +41,8 @@ namespace dots::io
         TcpChannel& operator = (const TcpChannel& rhs) = delete;
         TcpChannel& operator = (TcpChannel&& rhs) = delete;
 
-        const tools::Uri& localEndpoint() const override;
-        const tools::Uri& remoteEndpoint() const override;
+        const Endpoint& localEndpoint() const override;
+        const Endpoint& remoteEndpoint() const override;
 
     protected:
 
@@ -70,8 +70,8 @@ namespace dots::io
 
         boost::asio::ip::tcp::socket m_socket;
         boost::asio::ip::tcp::resolver m_resolver;
-        tools::Uri m_localEndpoint;
-        tools::Uri m_remoteEndpoint;
+        Endpoint m_localEndpoint;
+        Endpoint m_remoteEndpoint;
         uint16_t m_headerSize;
         DotsTransportHeader m_transportHeader;
         std::vector<uint8_t> m_headerBuffer;

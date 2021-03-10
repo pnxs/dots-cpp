@@ -22,9 +22,9 @@ namespace dots::io
         LegacyAuthManager& operator = (const LegacyAuthManager& rhs) = default;
         LegacyAuthManager& operator = (LegacyAuthManager&& rhs) = default;
 
-        virtual std::optional<Nonce> requiresAuthentication(const tools::Uri& remoteEndpoint, std::string_view guest) override;
-        virtual bool verifyAuthentication(const tools::Uri& remoteEndpoint, std::string_view guest, Nonce nonce, Nonce cnonce, const Digest& response) override;
-        virtual bool verifyAuthentication(const tools::Uri& remoteEndpoint, std::string_view guest, Nonce nonce, std::string_view cnonce, const Digest& response) override;
+        virtual std::optional<Nonce> requiresAuthentication(const Endpoint& remoteEndpoint, std::string_view guest) override;
+        virtual bool verifyAuthentication(const Endpoint& remoteEndpoint, std::string_view guest, Nonce nonce, Nonce cnonce, const Digest& response) override;
+        virtual bool verifyAuthentication(const Endpoint& remoteEndpoint, std::string_view guest, Nonce nonce, std::string_view cnonce, const Digest& response) override;
 
         const rules_t& rules() const;
         const std::optional<bool>& defaultPolicy() const;

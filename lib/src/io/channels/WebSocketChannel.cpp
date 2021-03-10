@@ -55,12 +55,12 @@ namespace dots::io
         determineEndpoints();
     }
 
-    const tools::Uri& WebSocketChannel::localEndpoint() const
+    const Endpoint& WebSocketChannel::localEndpoint() const
     {
         return m_localEndpoint;
     }
 
-    const tools::Uri& WebSocketChannel::remoteEndpoint() const
+    const Endpoint& WebSocketChannel::remoteEndpoint() const
     {
         return m_remoteEndpoint;
     }

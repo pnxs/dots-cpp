@@ -73,12 +73,12 @@ namespace dots::io
         }
     }
 
-    const tools::Uri& TcpChannel::localEndpoint() const
+    const Endpoint& TcpChannel::localEndpoint() const
     {
         return m_localEndpoint;
     }
 
-    const tools::Uri& TcpChannel::remoteEndpoint() const
+    const Endpoint& TcpChannel::remoteEndpoint() const
     {
         return m_remoteEndpoint;
     }

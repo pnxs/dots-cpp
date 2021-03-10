@@ -7,6 +7,9 @@ namespace dots::tools
     struct Uri
     {
         Uri(std::string uriStr);
+        Uri(const std::string& scheme, const std::string& host, const std::string& port);
+        Uri(const std::string& scheme, const std::string& host, uint16_t port);
+        Uri(const std::string& scheme, const std::string& path);
         Uri(const Uri& other);
         Uri(Uri&& other);
         ~Uri() = default;

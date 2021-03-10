@@ -15,7 +15,7 @@ namespace dots::io
         /* do nothing */
     }
 
-    std::optional<Nonce> LegacyAuthManager::requiresAuthentication(const tools::Uri& remoteEndpoint, std::string_view/* guest*/)
+    std::optional<Nonce> LegacyAuthManager::requiresAuthentication(const Endpoint& remoteEndpoint, std::string_view/* guest*/)
     {
         if (remoteEndpoint.scheme() == "tcp" || remoteEndpoint.scheme() == "ws")
         {
@@ -45,12 +45,12 @@ namespace dots::io
         }
     }
 
-    bool LegacyAuthManager::verifyAuthentication(const tools::Uri& remoteEndpoint, std::string_view guest, Nonce nonce, Nonce cnonce, const Digest& response)
+    bool LegacyAuthManager::verifyAuthentication(const Endpoint& remoteEndpoint, std::string_view guest, Nonce nonce, Nonce cnonce, const Digest& response)
     {
         return verifyAuthentication(remoteEndpoint, guest, nonce, cnonce.toString(), response);
     }
 
-    bool LegacyAuthManager::verifyAuthentication(const tools::Uri& remoteEndpoint, std::string_view guest, Nonce nonce, std::string_view cnonce, const Digest& response)
+    bool LegacyAuthManager::verifyAuthentication(const Endpoint& remoteEndpoint, std::string_view guest, Nonce nonce, std::string_view cnonce, const Digest& response)
     {
         if (remoteEndpoint.scheme() == "tcp" || remoteEndpoint.scheme() == "ws")
         {

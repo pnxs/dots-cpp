@@ -9,6 +9,24 @@ namespace dots::tools
         parse();
     }
 
+    Uri::Uri(const std::string& scheme, const std::string& host, const std::string& port) :
+        Uri(scheme + "://" + host + ":" + port)
+    {
+        /* do nothing */
+    }
+
+    Uri::Uri(const std::string& scheme, const std::string& host, uint16_t port) :
+        Uri(scheme, host, std::to_string(port))
+    {
+        /* do nothing */
+    }
+
+    Uri::Uri(const std::string& scheme, const std::string& path) :
+        Uri(scheme + ":" + path)
+    {
+        /* do nothing */
+    }
+
     Uri::Uri(const Uri& other) :
         m_uriStr{ other.uriStr() }
     {

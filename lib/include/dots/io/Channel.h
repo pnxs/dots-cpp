@@ -3,7 +3,7 @@
 #include <system_error>
 #include <type_traits>
 #include <set>
-#include <dots/tools/Uri.h>
+#include <dots/io/Endpoint.h>
 #include <dots/io/Transmission.h>
 #include <dots/tools/shared_ptr_only.h>
 #include <DotsHeader.dots.h>
@@ -37,8 +37,8 @@ namespace dots::io
         void transmit(const Transmission& transmission);
         void transmit(const type::Descriptor<>& descriptor);
 
-        virtual const tools::Uri& localEndpoint() const = 0;
-        virtual const tools::Uri& remoteEndpoint() const = 0;
+        virtual const Endpoint& localEndpoint() const = 0;
+        virtual const Endpoint& remoteEndpoint() const = 0;
 
     protected:
 

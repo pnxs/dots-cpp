@@ -18,8 +18,8 @@ namespace dots::io::posix
         UdsChannel& operator = (const UdsChannel& rhs) = delete;
         UdsChannel& operator = (UdsChannel&& rhs) = delete;
 
-        const tools::Uri& localEndpoint() const override;
-        const tools::Uri& remoteEndpoint() const override;
+        const Endpoint& localEndpoint() const override;
+        const Endpoint& remoteEndpoint() const override;
 
     protected:
 
@@ -42,7 +42,7 @@ namespace dots::io::posix
         error_handler_t m_ecb;
 
         boost::asio::local::stream_protocol::socket m_socket;
-        tools::Uri m_endpoint;
+        Endpoint m_endpoint;
         uint16_t m_headerSize;
         DotsTransportHeader m_transportHeader;
         std::vector<uint8_t> m_headerBuffer;
