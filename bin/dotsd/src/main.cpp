@@ -19,8 +19,8 @@ int main(int argc, char* argv[])
     po::options_description desc("Allowed options");
     desc.add_options()
             ("help", "display help message")
-            ("dots-address", po::value<string>()->default_value("127.0.0.1"), "address to bind to")
-            ("dots-port", po::value<string>()->default_value("11234"), "port to bind to")
+            ("dots-address", po::value<string>(), "address to bind to")
+            ("dots-port", po::value<string>(), "port to bind to")
             ("server-name,n", po::value<string>()->default_value("dotsd"), "set servername")
             ("listen,l", po::value<std::vector<string>>(), "local endpoint URI to listen on for incoming guest connections (e.g. tcp://127.0.0.1:11234, ws://127.0.0.1, uds:/tmp/dots_uds.socket")
             #ifdef __linux__
@@ -59,8 +59,7 @@ int main(int argc, char* argv[])
             return std::vector<string>{};
         }
     }();
-    listenEndpointUris.emplace_back("tcp://" + vm["dots-address"].as<string>() + ":" + vm["dots-port"].as<string>());
-
+    listenEndpointUris.emplace_back("tcp://127.0.0.1:11234");
     dots::Server::listeners_t listeners;
 
     for (const string& listenEndpointUri : listenEndpointUris)
@@ -71,6 +70,16 @@ int main(int argc, char* argv[])
 
             if (listenEndpoint.scheme() == "tcp")
             {
+                if (auto it = vm.find("dots-address"); it != vm.end())
+                {
+                    listenEndpoint.setHost(it->second.as<std::string>());
+                }
+
+                if (auto it = vm.find("dots-port"); it != vm.end())
+                {
+                    listenEndpoint.setPort(it->second.as<std::string>());
+                }
+
                 listeners.emplace_back(std::make_unique<dots::io::TcpListener>(io_context, listenEndpoint)); 
             }
             else if (listenEndpoint.scheme() == "ws")
