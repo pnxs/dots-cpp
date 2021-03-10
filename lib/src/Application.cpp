@@ -21,7 +21,7 @@ namespace dots
         // Start Transceiver
         // Connect to dotsd
 
-        GuestTransceiver& globalGuestTransceiver = dots::transceiver(name);
+        GuestTransceiver& globalGuestTransceiver = dots::transceiver(m_openEndpoint->userName().empty() ? name : m_openEndpoint->userName());
         const io::Connection& connection = [&]() -> auto&
         {
             if (m_openEndpoint->scheme() == "tcp")
