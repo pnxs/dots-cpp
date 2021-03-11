@@ -58,7 +58,7 @@ namespace dots::type
         ::new(static_cast<void*>(::std::addressof(instance))) Struct{ other };
         ::new(static_cast<void*>(::std::addressof(propertyArea(instance)))) PropertyArea{};
 
-        for (auto&[propertyInstance, propertyOther] : instance._propertyRange(other))
+        for (auto&[propertyInstance, propertyOther] : instance._propertyRange(other, other._validProperties()))
         {
             propertyInstance.construct(propertyOther);
         }
@@ -76,7 +76,7 @@ namespace dots::type
         ::new(static_cast<void*>(::std::addressof(instance))) Struct{ std::move(other) };
         ::new(static_cast<void*>(::std::addressof(propertyArea(instance)))) PropertyArea{};
 
-        for (auto&[propertyInstance, propertyOther] : instance._propertyRange(other))
+        for (auto&[propertyInstance, propertyOther] : instance._propertyRange(other, other._validProperties()))
         {
             propertyInstance.construct(std::move(propertyOther));
         }
