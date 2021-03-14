@@ -3,7 +3,7 @@
 #include <system_error>
 #include <type_traits>
 #include <set>
-#include <dots/io/Medium.h>
+#include <dots/io/Endpoint.h>
 #include <dots/io/Transmission.h>
 #include <dots/tools/shared_ptr_only.h>
 #include <DotsHeader.dots.h>
@@ -29,6 +29,9 @@ namespace dots::io
         Channel& operator = (const Channel& rhs) = delete;
         Channel& operator = (Channel&& rhs) = delete;
 
+        const Endpoint& localEndpoint();
+        const Endpoint& remoteEndpoint();
+
         void init(io::Registry& registry);
 
         void asyncReceive(receive_handler_t&& receiveHandler, error_handler_t&& errorHandler);
@@ -37,9 +40,9 @@ namespace dots::io
         void transmit(const Transmission& transmission);
         void transmit(const type::Descriptor<>& descriptor);
 
-        virtual const Medium& medium() const;
-
     protected:
+
+        void initEndpoints(Endpoint localEndpoint, Endpoint remoteEndpoint);
 
         const io::Registry& registry() const;
         io::Registry& registry();
@@ -63,10 +66,11 @@ namespace dots::io
 
         void verifyInitialized() const;
 
-        static inline Medium DefaultMedium{ "default", "default" };
         std::set<std::string> m_sharedTypes;
         bool m_initialized;
         io::Registry* m_registry;
+        std::optional<Endpoint> m_localEndpoint;
+        std::optional<Endpoint> m_remoteEndpoint;
         receive_handler_t m_receiveHandler;
         error_handler_t m_errorHandler;
     };

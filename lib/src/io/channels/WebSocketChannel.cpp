@@ -5,6 +5,12 @@
 
 namespace dots::io
 {
+    WebSocketChannel::WebSocketChannel(Channel::key_t key, boost::asio::io_context& ioContext, const Endpoint& endpoint) :
+        WebSocketChannel(key, ioContext, endpoint.host(), endpoint.port())
+    {
+        /* do nothing */
+    }
+
     WebSocketChannel::WebSocketChannel(Channel::key_t key, boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port) :
         Channel(key),
         m_stream{ ioContext }
@@ -15,7 +21,7 @@ namespace dots::io
             auto endpoints = resolver.resolve(boost::asio::ip::tcp::socket::protocol_type::v4(), host, port, boost::asio::ip::resolver_query_base::numeric_service);
             auto& tcpStream = m_stream.next_layer();
             tcpStream.connect(endpoints.begin(), endpoints.end());
-            m_medium.emplace(WebSocketCategory, tcpStream.socket().remote_endpoint().address().to_string());
+            initEndpoints(Endpoint{ "ws", m_stream.next_layer().socket().local_endpoint() }, Endpoint{ "ws", m_stream.next_layer().socket().remote_endpoint() });
 
             m_stream.set_option(boost::beast::websocket::stream_base::timeout::suggested(boost::beast::role_type::client));
             m_stream.set_option(boost::beast::websocket::stream_base::decorator([](boost::beast::websocket::request_type& req)
@@ -48,12 +54,7 @@ namespace dots::io
         Channel(key),
         m_stream(std::move(stream))
     {
-        m_medium.emplace(WebSocketCategory, m_stream.next_layer().socket().remote_endpoint().address().to_string());
-    }
-
-    const Medium& WebSocketChannel::medium() const
-    {
-        return *m_medium;
+        initEndpoints(Endpoint{ "ws", m_stream.next_layer().socket().local_endpoint() }, Endpoint{ "ws", m_stream.next_layer().socket().remote_endpoint() });
     }
 
     void WebSocketChannel::asyncReceiveImpl()

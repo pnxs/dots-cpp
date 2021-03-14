@@ -4,6 +4,12 @@
 
 namespace dots::io
 {
+    WebSocketListener::WebSocketListener(boost::asio::io_context& ioContext, const Endpoint& endpoint, std::optional<int> backlog/* = std::nullopt*/) :
+        WebSocketListener(ioContext, std::string{ endpoint.host() }, std::string{ endpoint.port() }, backlog)
+    {
+        /* do nothing */
+    }
+
     WebSocketListener::WebSocketListener(boost::asio::io_context& ioContext, std::string address, std::string port, std::optional<int> backlog/* = std::nullopt*/) :
         m_address{ std::move(address) },
         m_port{ std::move(port) },

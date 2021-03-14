@@ -38,7 +38,7 @@ namespace dots
 
     GuestTransceiver& transceiver(const std::string_view& name/* = "dots-transceiver"*/)
     {
-        static GuestTransceiver transceiver{ name.data() };
+        static GuestTransceiver transceiver{ std::string{ name } };
 
         if (Publisher*& p = publisher(); p == nullptr)
         {

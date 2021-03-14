@@ -12,6 +12,7 @@ namespace dots::io
         using ws_stream_t = boost::beast::websocket::stream<boost::beast::tcp_stream>;
         static constexpr char Subprotocol[] = "dots-json";
 
+        WebSocketChannel(Channel::key_t key, boost::asio::io_context& ioContext, const Endpoint& endpoint);
         WebSocketChannel(Channel::key_t key, boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port);
         WebSocketChannel(Channel::key_t key, ws_stream_t&& stream);
         WebSocketChannel(const WebSocketChannel& other) = delete;
@@ -21,8 +22,6 @@ namespace dots::io
         WebSocketChannel& operator = (const WebSocketChannel& rhs) = delete;
         WebSocketChannel& operator = (WebSocketChannel&& rhs) = delete;
 
-        const Medium& medium() const override;
-
     protected:
 
         void asyncReceiveImpl() override;
@@ -30,10 +29,7 @@ namespace dots::io
 
     private:
 
-        static constexpr char WebSocketCategory[] = "ws";
-
         ws_stream_t m_stream;
-        std::optional<Medium> m_medium;
         boost::beast::flat_buffer m_buffer;
     };
 }

@@ -9,6 +9,7 @@ namespace dots::io::posix
 {
     struct UdsChannel : Channel
     {
+        UdsChannel(Channel::key_t key, boost::asio::io_context& ioContext, const Endpoint& endpoint);
         UdsChannel(Channel::key_t key, boost::asio::io_context& ioContext, const std::string_view& path);
         UdsChannel(Channel::key_t key, boost::asio::local::stream_protocol::socket&& socket);
         UdsChannel(const UdsChannel& other) = delete;
@@ -36,7 +37,6 @@ namespace dots::io::posix
         receive_handler_t m_cb;
         error_handler_t m_ecb;
 
-        boost::asio::local::stream_protocol::endpoint m_endpoint;
         boost::asio::local::stream_protocol::socket m_socket;
         uint16_t m_headerSize;
         DotsTransportHeader m_transportHeader;

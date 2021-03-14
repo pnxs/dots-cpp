@@ -3,6 +3,10 @@
 #include <boost/program_options.hpp>
 #include <dots/io/Io.h>
 #include <dots/io/channels/TcpChannel.h>
+#include <dots/io/channels/WebSocketChannel.h>
+#if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
+#include <dots/io/channels/UdsChannel.h>
+#endif
 #include <dots/io/Registry.h>
 #include <dots/tools/logging.h>
 #include <DotsClient.dots.h>
@@ -17,8 +21,29 @@ namespace dots
         // Start Transceiver
         // Connect to dotsd
 
-        GuestTransceiver& globalGuestTransceiver = dots::transceiver(name);
-        const io::Connection& connection = globalGuestTransceiver.open<io::TcpChannel>(io::global_publish_types(), io::global_subscribe_types(), m_authSecret, m_serverAddress, m_serverPort);
+        GuestTransceiver& globalGuestTransceiver = dots::transceiver(m_openEndpoint->userName().empty() ? name : m_openEndpoint->userName());
+        const io::Connection& connection = [&]() -> auto&
+        {
+            if (m_openEndpoint->scheme() == "tcp")
+            {
+                return globalGuestTransceiver.open<io::TcpChannel>(io::global_publish_types(), io::global_subscribe_types(), std::move(m_authSecret), *m_openEndpoint);
+            }
+            else if (m_openEndpoint->scheme() == "ws")
+            {
+                return globalGuestTransceiver.open<io::WebSocketChannel>(io::global_publish_types(), io::global_subscribe_types(), std::move(m_authSecret), *m_openEndpoint);
+            }
+            #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
+            else if (m_openEndpoint->scheme() == "uds")
+            {
+                return globalGuestTransceiver.open<io::posix::UdsChannel>(io::global_publish_types(), io::global_subscribe_types(), std::move(m_authSecret), *m_openEndpoint);
+            }
+            #endif
+            else
+            {
+                throw std::runtime_error{ "unknown or unsupported URI scheme: '" + std::string{ m_openEndpoint->scheme() } + "'" };
+            }
+        }();
+
 
         LOG_DEBUG_S("run until state connected...");
         while (!connection.connected())
@@ -69,37 +94,47 @@ namespace dots
         // define and parse command line options
         po::options_description desc("Allowed options");
         desc.add_options()
-            ("dots-address", po::value<std::string>()->default_value("127.0.0.1"), "address to bind to")
-            ("dots-port", po::value<std::string>()->default_value("11234"), "port to bind to")
+            ("dots-address", po::value<std::string>(), "address to bind to")
+            ("dots-port", po::value<std::string>(), "port to bind to")
             ("auth-secret", po::value<std::string>(), "secret used during authentication")
+            ("open,o", po::value<std::string>()->default_value("tcp://127.0.0.1:11234"), "remote endpoint URI to open for host connection (e.g. tcp://127.0.0.1:11234, ws://127.0.0.1, uds:/tmp/dots_uds.socket")
             ;
 
         po::variables_map vm;
         po::store(po::basic_command_line_parser<char>(argc, argv).options(desc).allow_unregistered().run(), vm);
         po::notify(vm);
 
-        // parse environment options
-        if (::getenv("DOTS_SERVER_ADDRESS"))
+        m_openEndpoint.emplace(vm["open"].as<std::string>());
+
+        if (auto it = vm.find("dots-address"); it != vm.end())
         {
-            m_serverAddress = getenv("DOTS_SERVER_ADDRESS");
+            m_openEndpoint->setHost(it->second.as<std::string>());
+        }
+        else if (const char* dotsSeverAddress = ::getenv("DOTS_SERVER_ADDRESS"); dotsSeverAddress != nullptr)
+        {
+            m_openEndpoint->setHost(dotsSeverAddress);
         }
 
-        if (::getenv("DOTS_SERVER_PORT"))
+        if (auto it = vm.find("dots-port"); it != vm.end())
         {
-            m_serverPort = atoi("DOTS_SERVER_PORT");
+            m_openEndpoint->setPort(it->second.as<std::string>());
+        }
+        else if (const char* dotsSeverPort = ::getenv("DOTS_SERVER_PORT"); dotsSeverPort != nullptr)
+        {
+            m_openEndpoint->setPort(dotsSeverPort);
+        }
+        else
+        {
+            m_openEndpoint->setPort("11234");
         }
 
-        if (getenv("DOTS_AUTH_SECRET"))
+        if (auto it = vm.find("auth-secret"); it != vm.end())
         {
-            m_authSecret = getenv("DOTS_AUTH_SECRET");
+            m_authSecret = it->second.as<std::string>();
         }
-
-        m_serverAddress = vm["dots-address"].as<std::string>();
-        m_serverPort = vm["dots-port"].as<std::string>();
-
-        if (vm.count("auth-secret") > 0)
+        else if (const char* dotsAuthSecret = ::getenv("DOTS_AUTH_SECRET"); dotsAuthSecret != nullptr)
         {
-            m_authSecret = vm["auth-secret"].as<std::string>();
+            m_authSecret = dotsAuthSecret;
         }
     }
 }

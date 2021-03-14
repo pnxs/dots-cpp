@@ -8,19 +8,25 @@
 
 namespace dots::io::posix
 {
+    UdsChannel::UdsChannel(Channel::key_t key, boost::asio::io_context& ioContext, const Endpoint& endpoint) :
+        UdsChannel(key, ioContext, endpoint.path())
+    {
+        /* do nothing */
+    }
+
     UdsChannel::UdsChannel(Channel::key_t key, boost::asio::io_context& ioContext, const std::string_view& path) :
         Channel(key),
-        m_endpoint{ path.data() },
         m_socket{ ioContext },
         m_headerSize(0)
     {
         try
         {
-            m_socket.connect(m_endpoint);
+            m_socket.connect(std::string{ path });
+            initEndpoints(Endpoint{ "uds", m_socket.local_endpoint().path() }, Endpoint{ "uds", m_socket.local_endpoint().path() });
         }
         catch (const std::exception& e)
         {
-            throw std::runtime_error{ "could not open UDS connection '" + m_endpoint.path() + "': " + e.what() };
+            throw std::runtime_error{ "could not open UDS connection '" + std::string{ path } + "': " + e.what() };
         }
 
         m_instanceBuffer.resize(8192);
@@ -31,7 +37,6 @@ namespace dots::io::posix
 
     UdsChannel::UdsChannel(Channel::key_t key, boost::asio::local::stream_protocol::socket&& socket) :
         Channel(key),
-        m_endpoint{ socket.remote_endpoint() },
         m_socket{ std::move(socket) },
         m_headerSize(0)
     {
@@ -39,6 +44,11 @@ namespace dots::io::posix
         m_headerBuffer.resize(1024);
 
         IgnorePipeSignals();
+
+        if (m_socket.is_open())
+        {
+            initEndpoints(Endpoint{ "uds", m_socket.local_endpoint().path() }, Endpoint{ "uds", m_socket.local_endpoint().path() });
+        }
     }
 
     void UdsChannel::asyncReceiveImpl()

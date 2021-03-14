@@ -3,6 +3,7 @@
 #include <optional>
 #include <dots/dots.h>
 #include <dots/io/GuestTransceiver.h>
+#include <dots/io/Endpoint.h>
 
 namespace dots
 {
@@ -23,8 +24,7 @@ namespace dots
 
         inline static Application* m_instance = nullptr;
         int m_exitCode;
-        std::string m_serverAddress;
-        std::string m_serverPort;
+        std::optional<io::Endpoint> m_openEndpoint;
         std::optional<std::string> m_authSecret;
     };
 }

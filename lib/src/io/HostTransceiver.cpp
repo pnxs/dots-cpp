@@ -178,8 +178,7 @@ namespace dots::io
         {
             if (connection.state() == DotsConnectionState::connected)
             {
-                const Medium& medium = connection.medium();
-                LOG_NOTICE_S("guest '" << connection.peerName() << "' opened connection via channel '" << medium.category() << ";" << medium.endpoint() << "'");
+                LOG_NOTICE_S("guest '" << connection.peerName() << "' opened connection at '" << connection.localEndpoint().uriStr() << "' from '" << connection.remoteEndpoint().uriStr() << "'");
             }
             else if (connection.state() == DotsConnectionState::closed)
             {

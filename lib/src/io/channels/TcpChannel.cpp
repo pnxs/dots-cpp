@@ -7,6 +7,12 @@
 
 namespace dots::io
 {
+    TcpChannel::TcpChannel(Channel::key_t key, boost::asio::io_context& ioContext, const Endpoint& endpoint) :
+        TcpChannel(key, ioContext, endpoint.host(), endpoint.port())
+    {
+        /* do nothing */
+    }
+
     TcpChannel::TcpChannel(Channel::key_t key, boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port) :
         TcpChannel(key, boost::asio::ip::tcp::socket{ ioContext })
     {
@@ -18,7 +24,7 @@ namespace dots::io
             {
                 m_socket.connect(endpoint);
                 setDefaultSocketOptions();
-                m_medium.emplace(TcpSocketCategory, m_socket.remote_endpoint().address().to_string());
+                initEndpoints(Endpoint{ m_socket.local_endpoint() }, Endpoint{ m_socket.remote_endpoint() });
 
                 return;
             }
@@ -49,7 +55,7 @@ namespace dots::io
                 else
                 {
                     setDefaultSocketOptions();
-                    m_medium.emplace(TcpSocketCategory, m_socket.remote_endpoint().address().to_string());
+                    initEndpoints(Endpoint{ m_socket.local_endpoint() }, Endpoint{ m_socket.remote_endpoint() });
                     onConnect(error);
                 }
             });
@@ -67,13 +73,8 @@ namespace dots::io
 
         if (m_socket.is_open())
         {
-            m_medium.emplace(TcpSocketCategory, m_socket.remote_endpoint().address().to_string());
+            initEndpoints(Endpoint{ m_socket.local_endpoint() }, Endpoint{ m_socket.remote_endpoint() });
         }
-    }
-
-    const Medium& TcpChannel::medium() const
-    {
-        return *m_medium;
     }
 
     void TcpChannel::asyncReceiveImpl()

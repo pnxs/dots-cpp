@@ -59,6 +59,11 @@ namespace dots::io
 
         try
         {
+            if (m_hostConnection == std::nullopt)
+            {
+                throw std::runtime_error{ "attempt to publish on closed connection" };
+            }
+
             m_hostConnection->transmit(instance, includedProperties, remove);
         }
         catch (...)
@@ -137,8 +142,11 @@ namespace dots::io
                     }
                 }
 
-                LOG_INFO_S("connection closed -> selfId: " << connection.selfId() << ", name: " << connection.peerName());
-                m_hostConnection = std::nullopt;
+                if (m_hostConnection != std::nullopt)
+                {
+                    LOG_INFO_S("connection closed -> selfId: " << connection.selfId() << ", name: " << connection.peerName());
+                    m_hostConnection = std::nullopt;
+                }
             }
         }
         catch (const std::exception& e)

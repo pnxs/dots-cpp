@@ -13,6 +13,26 @@ namespace dots::io
         /* do nothing */
     }
 
+    const Endpoint& Channel::localEndpoint()
+    {
+        if (m_localEndpoint == std::nullopt)
+        {
+            throw std::runtime_error{ "endpoints have not been initialized" };
+        }
+
+        return *m_localEndpoint;
+    }
+
+    const Endpoint& Channel::remoteEndpoint()
+    {
+        if (m_remoteEndpoint == std::nullopt)
+        {
+            throw std::runtime_error{ "endpoints have not been initialized" };
+        }
+
+        return *m_remoteEndpoint;
+    }
+
     void Channel::init(io::Registry& registry)
     {
         if (m_initialized)
@@ -65,9 +85,15 @@ namespace dots::io
         exportDependencies(descriptor);
     }
 
-    const Medium& Channel::medium() const
+    void Channel::initEndpoints(Endpoint localEndpoint, Endpoint remoteEndpoint)
     {
-        return DefaultMedium;
+        if (m_localEndpoint != std::nullopt)
+        {
+            throw std::runtime_error{ "endpoints have already been initialized" };
+        }
+
+        m_localEndpoint.emplace(std::move(localEndpoint));
+        m_remoteEndpoint.emplace(std::move(remoteEndpoint));
     }
 
     const io::Registry& Channel::registry() const

@@ -3,12 +3,15 @@
 #include <optional>
 #include <boost/asio.hpp>
 #include <dots/io/Channel.h>
+#include <dots/io/Endpoint.h>
 #include <DotsTransportHeader.dots.h>
 
 namespace dots::io
 {
     struct TcpChannel : Channel
     {
+        TcpChannel(Channel::key_t key, boost::asio::io_context& ioContext, const Endpoint& endpoint);
+
         /**
          * Connect channel synchronously.
          * @param key
@@ -41,8 +44,6 @@ namespace dots::io
         TcpChannel& operator = (const TcpChannel& rhs) = delete;
         TcpChannel& operator = (TcpChannel&& rhs) = delete;
 
-        const Medium& medium() const override;
-
     protected:
 
         void asyncReceiveImpl() override;
@@ -50,7 +51,6 @@ namespace dots::io
 
     private:
 
-        static constexpr char TcpSocketCategory[] = "tcp";
         using resolve_handler_t = std::function<void(const boost::system::error_code& error, std::optional<boost::asio::ip::tcp::endpoint>)>;
 
 	    void setDefaultSocketOptions();
@@ -72,6 +72,5 @@ namespace dots::io
         DotsTransportHeader m_transportHeader;
         std::vector<uint8_t> m_headerBuffer;
         std::vector<uint8_t> m_instanceBuffer;
-        std::optional<Medium> m_medium;
     };
 }

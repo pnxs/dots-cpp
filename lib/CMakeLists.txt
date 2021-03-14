@@ -40,6 +40,7 @@ target_sources(${TARGET_NAME}
 
         src/tools/logging.cpp
         src/tools/IpNetwork.cpp
+        src/tools/Uri.cpp
 
         src/io/Transceiver.cpp
         src/io/GuestTransceiver.cpp
@@ -52,10 +53,10 @@ target_sources(${TARGET_NAME}
         src/io/ContainerPool.cpp
         src/io/Dispatcher.cpp
         src/io/Event.cpp
+        src/io/Endpoint.cpp
 
         src/io/Channel.cpp
         src/io/Listener.cpp
-        src/io/Medium.cpp
 
         src/io/serialization/JsonSerialization.cpp
         src/io/serialization/AsciiSerialization.cpp

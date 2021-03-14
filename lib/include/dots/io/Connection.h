@@ -37,7 +37,9 @@ namespace dots::io
         Connection& operator = (const Connection& rhs) = delete;
         Connection& operator = (Connection&& rhs) = default;
 
-        const Medium& medium() const;
+        const Endpoint& localEndpoint() const;
+        const Endpoint& remoteEndpoint() const;
+
         DotsConnectionState state() const;
         id_t selfId() const;
         id_t peerId() const;

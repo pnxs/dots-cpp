@@ -4,6 +4,12 @@
 
 namespace dots::io::posix
 {
+    UdsListener::UdsListener(boost::asio::io_context& ioContext, const Endpoint& endpoint, std::optional<int> backlog/* = std::nullopt*/) :
+        UdsListener(ioContext, endpoint.path(), backlog)
+    {
+        /* do nothing */
+    }
+
     UdsListener::UdsListener(boost::asio::io_context& ioContext, const std::string_view& path, std::optional<int> backlog/* = std::nullopt*/) :
         m_endpoint{ path.data() },
         m_acceptor{ ioContext },
