@@ -54,55 +54,63 @@ namespace dots::io
         }
 
         template <typename T>
-        void deserializeStruct(const value_t* data, size_t size, T& instance)
+        size_t deserializeStruct(const value_t* data, size_t size, T& instance)
         {
             initDeserialize(data, size);
             visitStruct(instance, property_set_t::None);
+
+            return static_cast<size_t>(m_inputData - data);
         }
 
         template <typename T>
-        void deserializeStruct(const data_t& data, T& instance)
+        size_t deserializeStruct(const data_t& data, T& instance)
         {
-            deserializeStruct(data.data(), data.size(), instance);
+            return deserializeStruct(data.data(), data.size(), instance);
         }
 
         template <typename T>
-        void deserializeProperty(const value_t* data, size_t size, T& property)
+        size_t deserializeProperty(const value_t* data, size_t size, T& property)
         {
             initDeserialize(data, size);
             visitProperty(property);
+
+            return static_cast<size_t>(m_inputData - data);
         }
 
         template <typename T>
-        void deserializeProperty(const data_t& data, T& property)
+        size_t deserializeProperty(const data_t& data, T& property)
         {
-            deserializeProperty(data.data(), data.size(), property);
+            return deserializeProperty(data.data(), data.size(), property);
         }
 
         template <typename T>
-        void deserializeVector(const value_t* data, size_t size, type::Vector<T>& vector)
+        size_t deserializeVector(const value_t* data, size_t size, type::Vector<T>& vector)
         {
             initDeserialize(data, size);
             visitVector(vector, type::Descriptor<type::Vector<T>>::InstanceRef());
+
+            return static_cast<size_t>(m_inputData - data);
         }
 
         template <typename T>
-        void deserializeVector(const data_t& data, type::Vector<T>& vector)
+        size_t deserializeVector(const data_t& data, type::Vector<T>& vector)
         {
-            deserializeVector(data.data(), data.size(), vector);
+            return deserializeVector(data.data(), data.size(), vector);
         }
 
         template <typename T>
-        void deserialize(const value_t* data, size_t size, T& value)
+        size_t deserialize(const value_t* data, size_t size, T& value)
         {
             initDeserialize(data, size);
             visitType(value);
+
+            return static_cast<size_t>(m_inputData - data);
         }
 
         template <typename T>
-        void deserialize(const data_t& data, T& value)
+        size_t deserialize(const data_t& data, T& value)
         {
-            deserialize(data.data(), data.size(), value);
+            return deserialize(data.data(), data.size(), value);
         }
 
         template <typename T>
