@@ -65,10 +65,7 @@ namespace dots::io
         friend visitor_base_t;
         friend serializer_base_t;
 
-        using serializer_base_t::visitStruct;
-        using serializer_base_t::visitProperty;
-        using serializer_base_t::visitVector;
-        using serializer_base_t::visitType;
+        using serializer_base_t::visit;
 
         using serializer_base_t::output;
         using serializer_base_t::inputData;
@@ -295,7 +292,7 @@ namespace dots::io
                 {
                     const type::PropertyDescriptor& propertyDescriptor = *it;
                     type::ProxyProperty<> property{ instance, propertyDescriptor };
-                    visitProperty(property);
+                    visit(property);
                 }
 
                 if (readAnyToken(std::array{ traits_t::PropertyValueEnd, traits_t::StructEnd }) == traits_t::StructEnd)
@@ -334,17 +331,17 @@ namespace dots::io
                 // TODO: avoid special case for bool
                 if constexpr (std::is_same_v<T, bool_t>)
                 {
-                    visitType(reinterpret_cast<bool_t&>(vector.back()), descriptor.valueDescriptor());
+                    visit(reinterpret_cast<bool_t&>(vector.back()), descriptor.valueDescriptor());
                 }
                 else
                 {
                     if constexpr (std::is_same_v<T, type::Typeless>)
                     {
-                        visitType(vector.typelessAt(vector.typelessSize() - 1), descriptor.valueDescriptor());
+                        visit(vector.typelessAt(vector.typelessSize() - 1), descriptor.valueDescriptor());
                     }
                     else
                     {
-                        visitType(vector.back(), descriptor.valueDescriptor());
+                        visit(vector.back(), descriptor.valueDescriptor());
                     }
                 }
 

@@ -22,56 +22,40 @@ namespace dots::type
 
     protected:
 
-        template <typename T>
-        void visitStruct(const T& instance, const PropertySet& includedProperties)
+        template <typename T, std::enable_if_t<std::is_base_of_v<Struct, T>, int> = 0>
+        void visit(const T& instance, const PropertySet& includedProperties)
         {
             derived().visitBeginDerived();
             visitStructInternal<true, T>(instance, includedProperties);
             derived().visitEndDerived();
         }
 
-        template <typename T>
-        void visitStruct(T& instance, const PropertySet& includedProperties)
+        template <typename T, std::enable_if_t<std::is_base_of_v<Struct, T>, int> = 0>
+        void visit(T& instance, const PropertySet& includedProperties)
         {
             derived().visitBeginDerived();
             visitStructInternal<false, T>(instance, includedProperties);
             derived().visitEndDerived();
         }
 
-        template <typename T, typename PropertyDerived>
-        void visitProperty(const Property<T, PropertyDerived>& property, bool first = true)
+        template <typename T, std::enable_if_t<is_property_v<T>, int> = 0>
+        void visit(const T& property, bool first = true)
         {
             derived().visitBeginDerived();
-            visitPropertyInternal<true, T, PropertyDerived>(property, first);
+            visitPropertyInternal<true, T>(property, first);
             derived().visitEndDerived();
         }
 
-        template <typename T, typename PropertyDerived>
-        void visitProperty(Property<T, PropertyDerived>& property, bool first = true)
+        template <typename T, std::enable_if_t<is_property_v<T>, int> = 0>
+        void visit(T& property, bool first = true)
         {
             derived().visitBeginDerived();
-            visitPropertyInternal<false, T, PropertyDerived>(property, first);
-            derived().visitEndDerived();
-        }
-
-        template <typename T>
-        void visitVector(const Vector<T>& vector, const Descriptor<Vector<T>>& descriptor)
-        {
-            derived().visitBeginDerived();
-            visitVectorInternal<true>(vector, descriptor);
+            visitPropertyInternal<false, T>(property, first);
             derived().visitEndDerived();
         }
 
         template <typename T>
-        void visitVector(Vector<T>& vector, const Descriptor<Vector<T>>& descriptor)
-        {
-            derived().visitBeginDerived();
-            visitVectorInternal<false>(vector, descriptor);
-            derived().visitEndDerived();
-        }
-
-        template <typename T>
-        void visitType(const T& value, const Descriptor<T>& descriptor)
+        void visit(const T& value, const Descriptor<T>& descriptor)
         {
             derived().visitBeginDerived();
             visitTypeInternal<true>(value, descriptor);
@@ -79,23 +63,23 @@ namespace dots::type
         }
 
         template <typename T>
-        void visitType(T& value, const Descriptor<T>& descriptor)
+        void visit(T& value, const Descriptor<T>& descriptor)
         {
             derived().visitBeginDerived();
             visitTypeInternal<false>(value, descriptor);
             derived().visitEndDerived();
         }
 
-        template <typename T>
-        void visitType(const T& value)
+        template <typename T, std::enable_if_t<!std::is_base_of_v<Struct, T> && !is_property_v<T>, int> = 0>
+        void visit(const T& value)
         {
             derived().visitBeginDerived();
             visitTypeInternal<true, T>(value);
             derived().visitEndDerived();
         }
 
-        template <typename T>
-        void visitType(T& value)
+        template <typename T, std::enable_if_t<!std::is_base_of_v<Struct, T> && !is_property_v<T>, int> = 0>
+        void visit(T& value)
         {
             derived().visitBeginDerived();
             visitTypeInternal<false, T>(value);
@@ -199,8 +183,7 @@ namespace dots::type
                                 if (std::decay_t<decltype(property)>::IsPartOf(includedProperties))
                                 {
                                     using property_t = std::decay_t<decltype(property)>;
-                                    using value_t = typename property_t::value_t;
-                                    visitPropertyInternal<Const, value_t, property_t>(property, first);
+                                    visitPropertyInternal<Const, property_t>(property, first);
                                     first = false;
                                 }
                             };
@@ -219,8 +202,7 @@ namespace dots::type
                             {
                                 const_t<Const, ProxyProperty<>> property{ const_cast<PropertyArea&>(instance._propertyArea()), propertyDescriptor };
                                 using property_t = std::decay_t<decltype(property)>;
-                                using value_t = typename property_t::value_t;
-                                visitPropertyInternal<Const, value_t, property_t>(property, first);
+                                visitPropertyInternal<Const, property_t>(property, first);
                                 first = false;
                             }
                         }
@@ -231,20 +213,22 @@ namespace dots::type
             }
         }
 
-        template <bool Const, typename T, typename PropertyDerived>
-        void visitPropertyInternal(const_t<Const, Property<T, PropertyDerived>>& property, bool first = true)
+        template <bool Const, typename T>
+        void visitPropertyInternal(const_t<Const, T>& property, bool first = true)
         {
+            using value_t = typename T::value_t;
+
             if (derived().visitPropertyBeginDerived(property, first))
             {
                 if (property.isValid())
                 {
-                    if constexpr (std::is_same_v<T, Typeless>)
+                    if constexpr (std::is_same_v<value_t, Typeless>)
                     {
-                        visitTypeInternal<Const, T>(property.storage(), property.descriptor().valueDescriptor());
+                        visitTypeInternal<Const, value_t>(property.storage(), property.descriptor().valueDescriptor());
                     }
                     else
                     {
-                        visitTypeInternal<Const, T>(property.storage());
+                        visitTypeInternal<Const, value_t>(property.storage());
                     }
                 }
 

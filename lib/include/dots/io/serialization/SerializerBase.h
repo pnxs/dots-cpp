@@ -21,7 +21,7 @@ namespace dots::io
         const data_t& serializeStruct(const T& instance, const property_set_t& includedProperties = property_set_t::All)
         {
             initSerialize();
-            visitStruct(instance, includedProperties);
+            visit(instance, includedProperties);
 
             return m_output;
         }
@@ -30,7 +30,7 @@ namespace dots::io
         const data_t& serializeProperty(const T& property)
         {
             initSerialize();
-            visitProperty(property);
+            visit(property);
 
             return m_output;
         }
@@ -39,7 +39,7 @@ namespace dots::io
         const data_t& serializeVector(const type::Vector<T>& vector)
         {
             initSerialize();
-            visitVector(vector, type::Descriptor<type::Vector<T>>::InstanceRef());
+            visit(vector, type::Descriptor<type::Vector<T>>::InstanceRef());
 
             return m_output;
         }
@@ -48,7 +48,7 @@ namespace dots::io
         const data_t& serialize(const T& value)
         {
             initSerialize();
-            visitType(value);
+            visit(value);
 
             return m_output;
         }
@@ -57,7 +57,7 @@ namespace dots::io
         size_t deserializeStruct(const value_t* data, size_t size, T& instance)
         {
             initDeserialize(data, size);
-            visitStruct(instance, property_set_t::None);
+            visit(instance, property_set_t::None);
 
             return static_cast<size_t>(m_inputData - data);
         }
@@ -72,7 +72,7 @@ namespace dots::io
         size_t deserializeProperty(const value_t* data, size_t size, T& property)
         {
             initDeserialize(data, size);
-            visitProperty(property);
+            visit(property);
 
             return static_cast<size_t>(m_inputData - data);
         }
@@ -87,7 +87,7 @@ namespace dots::io
         size_t deserializeVector(const value_t* data, size_t size, type::Vector<T>& vector)
         {
             initDeserialize(data, size);
-            visitVector(vector, type::Descriptor<type::Vector<T>>::InstanceRef());
+            visit(vector, type::Descriptor<type::Vector<T>>::InstanceRef());
 
             return static_cast<size_t>(m_inputData - data);
         }
@@ -102,7 +102,7 @@ namespace dots::io
         size_t deserialize(const value_t* data, size_t size, T& value)
         {
             initDeserialize(data, size);
-            visitType(value);
+            visit(value);
 
             return static_cast<size_t>(m_inputData - data);
         }
@@ -131,11 +131,7 @@ namespace dots::io
     protected:
 
         using visitor_base_t = type::TypeVisitor<std::conditional_t<Static, Derived, void>>;
-
-        using visitor_base_t::visitStruct;
-        using visitor_base_t::visitProperty;
-        using visitor_base_t::visitVector;
-        using visitor_base_t::visitType;
+        using visitor_base_t::visit;
 
         data_t& output()
         {

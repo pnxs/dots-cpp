@@ -99,7 +99,7 @@ namespace dots::io
                 {
                     const type::PropertyDescriptor& propertyDescriptor = *it;
                     type::ProxyProperty<> property{ instance, propertyDescriptor };
-                    visitProperty(property);
+                    visit(property);
                 }
             }
 
