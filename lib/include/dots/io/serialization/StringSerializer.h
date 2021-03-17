@@ -21,13 +21,13 @@ namespace dots::io
     template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
     std::string to_string(const T& instance, const property_set_t& includedProperties = property_set_t::All)
     {
-        return StringSerializer<>{}.serializeStruct(instance, includedProperties);
+        return StringSerializer<>{}.serialize(instance, includedProperties);
     }
 
     template <typename T, std::enable_if_t<type::is_property_v<T>, int> = 0>
     std::string to_string(const T& property)
     {
-        return StringSerializer<>{}.serializeProperty(property);
+        return StringSerializer<>{}.serialize(property);
     }
 
     template <typename T, std::enable_if_t<!std::is_base_of_v<type::Struct, T> && !type::is_property_v<T>, int> = 0>

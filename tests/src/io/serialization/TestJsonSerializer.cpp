@@ -134,17 +134,17 @@ TEST_F(TestJsonSerializer, deserialize_TypedArgument)
 
 TEST_F(TestJsonSerializer, serialize_PropertyArgument)
 {
-    EXPECT_EQ(m_sut.serializeProperty(SerializationStructSimple1.int32Property), data_t("\"int32Property\":" JSON_INT32_POSITIVE));
-    EXPECT_EQ(m_sut.serializeProperty(SerializationStructSimple1.stringProperty), data_t("\"stringProperty\":" JSON_JSON_1));
-    EXPECT_EQ(m_sut.serializeProperty(SerializationStructSimple1.float32Property), data_t("\"float32Property\":" JSON_FLOAT32_POSITIVE));
+    EXPECT_EQ(m_sut.serialize(SerializationStructSimple1.int32Property), data_t("\"int32Property\":" JSON_INT32_POSITIVE));
+    EXPECT_EQ(m_sut.serialize(SerializationStructSimple1.stringProperty), data_t("\"stringProperty\":" JSON_JSON_1));
+    EXPECT_EQ(m_sut.serialize(SerializationStructSimple1.float32Property), data_t("\"float32Property\":" JSON_FLOAT32_POSITIVE));
 }
 
 TEST_F(TestJsonSerializer, deserialize_PropertyArgument)
 {
     SerializationStructSimple serializationStructSimple;
-    m_sut.deserializeProperty(data_t(JSON_INT32_POSITIVE), serializationStructSimple.int32Property);
-    m_sut.deserializeProperty(data_t(JSON_JSON_1), serializationStructSimple.stringProperty);
-    m_sut.deserializeProperty(data_t(JSON_FLOAT32_POSITIVE), serializationStructSimple.float32Property);
+    m_sut.deserialize(data_t(JSON_INT32_POSITIVE), serializationStructSimple.int32Property);
+    m_sut.deserialize(data_t(JSON_JSON_1), serializationStructSimple.stringProperty);
+    m_sut.deserialize(data_t(JSON_FLOAT32_POSITIVE), serializationStructSimple.float32Property);
 
     EXPECT_EQ(serializationStructSimple.int32Property, SerializationStructSimple1.int32Property);
     EXPECT_EQ(serializationStructSimple.stringProperty, SerializationStructSimple1.stringProperty);
@@ -153,83 +153,83 @@ TEST_F(TestJsonSerializer, deserialize_PropertyArgument)
 
 TEST_F(TestJsonSerializer, serialize_VectorArgument)
 {
-    EXPECT_EQ(m_sut.serializeVector(VectorBool), data_t("[" JSON_BOOL_TRUE "," JSON_BOOL_FALSE "," JSON_BOOL_FALSE "]"));
-    EXPECT_EQ(m_sut.serializeVector(VectorFloat), data_t("[" JSON_FLOAT32_POSITIVE"," JSON_FLOAT32_NEGATIVE "]"));
-    EXPECT_EQ(m_sut.serializeVector(VectorStructSimple), data_t("[{\"int32Property\":" JSON_INT32_POSITIVE "},{\"boolProperty\":" JSON_BOOL_FALSE "}]"));
+    EXPECT_EQ(m_sut.serialize(VectorBool), data_t("[" JSON_BOOL_TRUE "," JSON_BOOL_FALSE "," JSON_BOOL_FALSE "]"));
+    EXPECT_EQ(m_sut.serialize(VectorFloat), data_t("[" JSON_FLOAT32_POSITIVE"," JSON_FLOAT32_NEGATIVE "]"));
+    EXPECT_EQ(m_sut.serialize(VectorStructSimple), data_t("[{\"int32Property\":" JSON_INT32_POSITIVE "},{\"boolProperty\":" JSON_BOOL_FALSE "}]"));
 }
 
 TEST_F(TestJsonSerializer, deserialize_VectorArgument)
 {
     dots::vector_t<dots::bool_t> vectorBool;
-    m_sut.deserializeVector(data_t("[" JSON_BOOL_TRUE "," JSON_BOOL_FALSE "," JSON_BOOL_FALSE "]"), vectorBool);
+    m_sut.deserialize(data_t("[" JSON_BOOL_TRUE "," JSON_BOOL_FALSE "," JSON_BOOL_FALSE "]"), vectorBool);
     EXPECT_EQ(vectorBool, VectorBool);
 
     dots::vector_t<dots::float32_t> vectorFloat32;
-    m_sut.deserializeVector(data_t("[" JSON_FLOAT32_POSITIVE"," JSON_FLOAT32_NEGATIVE "]"), vectorFloat32);
+    m_sut.deserialize(data_t("[" JSON_FLOAT32_POSITIVE"," JSON_FLOAT32_NEGATIVE "]"), vectorFloat32);
     EXPECT_EQ(vectorFloat32, VectorFloat);
 
     dots::vector_t<SerializationStructSimple> vectorStructSimple;
-    m_sut.deserializeVector(data_t("[{\"int32Property\":" JSON_INT32_POSITIVE "},{\"boolProperty\":" JSON_BOOL_FALSE "}]"), vectorStructSimple);
+    m_sut.deserialize(data_t("[{\"int32Property\":" JSON_INT32_POSITIVE "},{\"boolProperty\":" JSON_BOOL_FALSE "}]"), vectorStructSimple);
     EXPECT_EQ(vectorStructSimple, VectorStructSimple);
 }
 
 TEST_F(TestJsonSerializer, serialize_SimpleStructArgument)
 {
     data_t expectedValid = "{\"int32Property\":" JSON_INT32_POSITIVE ",\"stringProperty\":" JSON_JSON_1 ",\"float32Property\":" JSON_FLOAT32_POSITIVE "}";
-    EXPECT_EQ(m_sut.serializeStruct(SerializationStructSimple1, SerializationStructSimple1._validProperties()), expectedValid);
+    EXPECT_EQ(m_sut.serialize(SerializationStructSimple1, SerializationStructSimple1._validProperties()), expectedValid);
 
     data_t expectedAll = "{\"int32Property\":" JSON_INT32_POSITIVE ",\"stringProperty\":" JSON_JSON_1 ",\"boolProperty\":null,\"float32Property\":" JSON_FLOAT32_POSITIVE "}";
-    EXPECT_EQ(m_sut.serializeStruct(SerializationStructSimple1, dots::property_set_t::All), expectedAll);
+    EXPECT_EQ(m_sut.serialize(SerializationStructSimple1, dots::property_set_t::All), expectedAll);
 
     data_t expectedSpecific = "{\"boolProperty\":null,\"float32Property\":" JSON_FLOAT32_POSITIVE "}";
-    EXPECT_EQ(m_sut.serializeStruct(SerializationStructSimple1, SerializationStructSimple::boolProperty_p + SerializationStructSimple::float32Property_p), expectedSpecific);
+    EXPECT_EQ(m_sut.serialize(SerializationStructSimple1, SerializationStructSimple::boolProperty_p + SerializationStructSimple::float32Property_p), expectedSpecific);
 }
 
 TEST_F(TestJsonSerializer, deserialize_SimpleStructArgument)
 {
     SerializationStructSimple serializationStructSimple1;
-    m_sut.deserializeStruct(data_t{ "{\"int32Property\":" JSON_INT32_POSITIVE ",\"stringProperty\":" JSON_JSON_1 ",\"float32Property\":" JSON_FLOAT32_POSITIVE "}" }, serializationStructSimple1);
+    m_sut.deserialize(data_t{ "{\"int32Property\":" JSON_INT32_POSITIVE ",\"stringProperty\":" JSON_JSON_1 ",\"float32Property\":" JSON_FLOAT32_POSITIVE "}" }, serializationStructSimple1);
     EXPECT_EQ(serializationStructSimple1, SerializationStructSimple1);
 
     SerializationStructSimple serializationStructSimple2;
-    m_sut.deserializeStruct(data_t{ "{\"int32Property\":" JSON_INT32_POSITIVE ",\"stringProperty\":" JSON_JSON_1 ",\"boolProperty\":null,\"float32Property\":" JSON_FLOAT32_POSITIVE "}" }, serializationStructSimple2);
+    m_sut.deserialize(data_t{ "{\"int32Property\":" JSON_INT32_POSITIVE ",\"stringProperty\":" JSON_JSON_1 ",\"boolProperty\":null,\"float32Property\":" JSON_FLOAT32_POSITIVE "}" }, serializationStructSimple2);
     EXPECT_EQ(serializationStructSimple2, SerializationStructSimple1);
 
     SerializationStructSimple serializationStructSimple3;
-    m_sut.deserializeStruct(data_t{ "{\"boolProperty\":null,\"float32Property\":" JSON_FLOAT32_POSITIVE "}" }, serializationStructSimple3);
+    m_sut.deserialize(data_t{ "{\"boolProperty\":null,\"float32Property\":" JSON_FLOAT32_POSITIVE "}" }, serializationStructSimple3);
     EXPECT_TRUE(serializationStructSimple3._equal(SerializationStructSimple1, SerializationStructSimple::boolProperty_p + SerializationStructSimple::float32Property_p));
 }
 
 TEST_F(TestJsonSerializer, serialize_ComplexStructArgument)
 {
     data_t expectedValid1 = "{\"enumProperty\":" JSON_TEST_ENUM_1 ",\"float64Property\":" JSON_FLOAT64_NEGATIVE ",\"timepointProperty\":" JSON_TIME_POINT_1 ",\"structSimpleProperty\":{\"boolProperty\":" JSON_BOOL_FALSE "}}";
-    EXPECT_EQ(m_sut.serializeStruct(SerializationStructComplex1, SerializationStructComplex1._validProperties()), expectedValid1);
+    EXPECT_EQ(m_sut.serialize(SerializationStructComplex1, SerializationStructComplex1._validProperties()), expectedValid1);
 
     data_t expectedValid2 = "{\"propertySetProperty\":" JSON_PROPERTY_SET_MIXED_1 ",\"durationVectorProperty\":[" JSON_DURATION_1 "," JSON_DURATION_2 "],\"uuidProperty\":" JSON_UUID_1 "}";
-    EXPECT_EQ(m_sut.serializeStruct(SerializationStructComplex2, SerializationStructComplex2._validProperties()), expectedValid2);
+    EXPECT_EQ(m_sut.serialize(SerializationStructComplex2, SerializationStructComplex2._validProperties()), expectedValid2);
 
     data_t expectedSpecific1 = "{\"timepointProperty\":" JSON_TIME_POINT_1 ",\"propertySetProperty\":null}";
-    EXPECT_EQ(m_sut.serializeStruct(SerializationStructComplex1, SerializationStructComplex::timepointProperty_p + SerializationStructComplex::propertySetProperty_p), expectedSpecific1);
+    EXPECT_EQ(m_sut.serialize(SerializationStructComplex1, SerializationStructComplex::timepointProperty_p + SerializationStructComplex::propertySetProperty_p), expectedSpecific1);
 
     data_t expectedSpecific2 = "{\"enumProperty\":null,\"durationVectorProperty\":[" JSON_DURATION_1 "," JSON_DURATION_2 "]}";
-    EXPECT_EQ(m_sut.serializeStruct(SerializationStructComplex2, SerializationStructComplex::enumProperty_p + SerializationStructComplex::durationVectorProperty_p), expectedSpecific2);
+    EXPECT_EQ(m_sut.serialize(SerializationStructComplex2, SerializationStructComplex::enumProperty_p + SerializationStructComplex::durationVectorProperty_p), expectedSpecific2);
 }
 
 TEST_F(TestJsonSerializer, deserialize_ComplexStructArgument)
 {
     SerializationStructComplex serializationStructComplex1;
-    m_sut.deserializeStruct(data_t{ "{\"enumProperty\":" JSON_TEST_ENUM_1 ",\"float64Property\":" JSON_FLOAT64_NEGATIVE ",\"timepointProperty\":" JSON_TIME_POINT_1 ",\"structSimpleProperty\":{\"boolProperty\":" JSON_BOOL_FALSE "}}" }, serializationStructComplex1);
+    m_sut.deserialize(data_t{ "{\"enumProperty\":" JSON_TEST_ENUM_1 ",\"float64Property\":" JSON_FLOAT64_NEGATIVE ",\"timepointProperty\":" JSON_TIME_POINT_1 ",\"structSimpleProperty\":{\"boolProperty\":" JSON_BOOL_FALSE "}}" }, serializationStructComplex1);
     EXPECT_EQ(serializationStructComplex1, SerializationStructComplex1);
 
     SerializationStructComplex serializationStructComplex2;
-    m_sut.deserializeStruct(data_t{ "{\"propertySetProperty\":" JSON_PROPERTY_SET_MIXED_1 ",\"durationVectorProperty\":[" JSON_DURATION_1 "," JSON_DURATION_2 "],\"uuidProperty\":" JSON_UUID_1 "}" }, serializationStructComplex2);
+    m_sut.deserialize(data_t{ "{\"propertySetProperty\":" JSON_PROPERTY_SET_MIXED_1 ",\"durationVectorProperty\":[" JSON_DURATION_1 "," JSON_DURATION_2 "],\"uuidProperty\":" JSON_UUID_1 "}" }, serializationStructComplex2);
     EXPECT_EQ(serializationStructComplex2, SerializationStructComplex2);
 
     SerializationStructComplex serializationStructComplex3;
-    m_sut.deserializeStruct(data_t{ "{\"timepointProperty\":" JSON_TIME_POINT_1 ",\"propertySetProperty\":null}" }, serializationStructComplex3);
+    m_sut.deserialize(data_t{ "{\"timepointProperty\":" JSON_TIME_POINT_1 ",\"propertySetProperty\":null}" }, serializationStructComplex3);
     EXPECT_TRUE(serializationStructComplex3._equal(SerializationStructComplex1, SerializationStructComplex::timepointProperty_p + SerializationStructComplex::propertySetProperty_p));
 
     SerializationStructComplex serializationStructComplex4;
-    m_sut.deserializeStruct(data_t{ "{\"enumProperty\":null,\"durationVectorProperty\":[" JSON_DURATION_1 "," JSON_DURATION_2 "]}" }, serializationStructComplex4);
+    m_sut.deserialize(data_t{ "{\"enumProperty\":null,\"durationVectorProperty\":[" JSON_DURATION_1 "," JSON_DURATION_2 "]}" }, serializationStructComplex4);
     EXPECT_TRUE(serializationStructComplex4._equal(SerializationStructComplex2, SerializationStructComplex::enumProperty_p + SerializationStructComplex::durationVectorProperty_p));
 }

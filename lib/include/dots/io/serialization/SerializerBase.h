@@ -17,8 +17,8 @@ namespace dots::io
         SerializerBase& operator = (const SerializerBase& rhs) = default;
         SerializerBase& operator = (SerializerBase&& rhs) = default;
 
-        template <typename T>
-        const data_t& serializeStruct(const T& instance, const property_set_t& includedProperties = property_set_t::All)
+        template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
+        const data_t& serialize(const T& instance, const property_set_t& includedProperties = property_set_t::All)
         {
             initSerialize();
             visit(instance, includedProperties);
@@ -26,8 +26,8 @@ namespace dots::io
             return m_output;
         }
 
-        template <typename T>
-        const data_t& serializeProperty(const T& property)
+        template <typename T, std::enable_if_t<type::is_property_v<T>, int> = 0>
+        const data_t& serialize(const T& property)
         {
             initSerialize();
             visit(property);
@@ -35,16 +35,7 @@ namespace dots::io
             return m_output;
         }
 
-        template <typename T>
-        const data_t& serializeVector(const type::Vector<T>& vector)
-        {
-            initSerialize();
-            visit(vector, type::Descriptor<type::Vector<T>>::InstanceRef());
-
-            return m_output;
-        }
-
-        template <typename T>
+        template <typename T, std::enable_if_t<!std::is_base_of_v<type::Struct, T> && !type::is_property_v<T>, int> = 0>
         const data_t& serialize(const T& value)
         {
             initSerialize();
@@ -53,8 +44,8 @@ namespace dots::io
             return m_output;
         }
 
-        template <typename T>
-        size_t deserializeStruct(const value_t* data, size_t size, T& instance)
+        template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
+        size_t deserialize(const value_t* data, size_t size, T& instance)
         {
             initDeserialize(data, size);
             visit(instance, property_set_t::None);
@@ -62,14 +53,14 @@ namespace dots::io
             return static_cast<size_t>(m_inputData - data);
         }
 
-        template <typename T>
-        size_t deserializeStruct(const data_t& data, T& instance)
+        template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
+        size_t deserialize(const data_t& data, T& instance)
         {
-            return deserializeStruct(data.data(), data.size(), instance);
+            return deserialize(data.data(), data.size(), instance);
         }
 
-        template <typename T>
-        size_t deserializeProperty(const value_t* data, size_t size, T& property)
+        template <typename T, std::enable_if_t<type::is_property_v<T>, int> = 0>
+        size_t deserialize(const value_t* data, size_t size, T& property)
         {
             initDeserialize(data, size);
             visit(property);
@@ -77,28 +68,13 @@ namespace dots::io
             return static_cast<size_t>(m_inputData - data);
         }
 
-        template <typename T>
-        size_t deserializeProperty(const data_t& data, T& property)
+        template <typename T, std::enable_if_t<type::is_property_v<T>, int> = 0>
+        size_t deserialize(const data_t& data, T& property)
         {
-            return deserializeProperty(data.data(), data.size(), property);
+            return deserialize(data.data(), data.size(), property);
         }
 
-        template <typename T>
-        size_t deserializeVector(const value_t* data, size_t size, type::Vector<T>& vector)
-        {
-            initDeserialize(data, size);
-            visit(vector, type::Descriptor<type::Vector<T>>::InstanceRef());
-
-            return static_cast<size_t>(m_inputData - data);
-        }
-
-        template <typename T>
-        size_t deserializeVector(const data_t& data, type::Vector<T>& vector)
-        {
-            return deserializeVector(data.data(), data.size(), vector);
-        }
-
-        template <typename T>
+        template <typename T, std::enable_if_t<!std::is_base_of_v<type::Struct, T> && !type::is_property_v<T>, int> = 0>
         size_t deserialize(const value_t* data, size_t size, T& value)
         {
             initDeserialize(data, size);
@@ -107,7 +83,7 @@ namespace dots::io
             return static_cast<size_t>(m_inputData - data);
         }
 
-        template <typename T>
+        template <typename T, std::enable_if_t<!std::is_base_of_v<type::Struct, T> && !type::is_property_v<T>, int> = 0>
         size_t deserialize(const data_t& data, T& value)
         {
             return deserialize(data.data(), data.size(), value);

@@ -134,17 +134,17 @@ TEST_F(TestCborSerializer, deserialize_TypedArgument)
 
 TEST_F(TestCborSerializer, serialize_PropertyArgument)
 {
-    EXPECT_EQ(m_sut.serializeProperty(SerializationStructSimple1.int32Property), data_t({ 0x01, CBOR_INT32_POSITIVE }));
-    EXPECT_EQ(m_sut.serializeProperty(SerializationStructSimple1.stringProperty), data_t({ 0x02, CBOR_STRING_1 }));
-    EXPECT_EQ(m_sut.serializeProperty(SerializationStructSimple1.float32Property), data_t({ 0x04, CBOR_FLOAT32_POSITIVE }));
+    EXPECT_EQ(m_sut.serialize(SerializationStructSimple1.int32Property), data_t({ 0x01, CBOR_INT32_POSITIVE }));
+    EXPECT_EQ(m_sut.serialize(SerializationStructSimple1.stringProperty), data_t({ 0x02, CBOR_STRING_1 }));
+    EXPECT_EQ(m_sut.serialize(SerializationStructSimple1.float32Property), data_t({ 0x04, CBOR_FLOAT32_POSITIVE }));
 }
 
 TEST_F(TestCborSerializer, deserialize_PropertyArgument)
 {
     SerializationStructSimple serializationStructSimple;
-    m_sut.deserializeProperty(data_t({ CBOR_INT32_POSITIVE }), serializationStructSimple.int32Property);
-    m_sut.deserializeProperty(data_t({ CBOR_STRING_1 }), serializationStructSimple.stringProperty);
-    m_sut.deserializeProperty(data_t({ CBOR_FLOAT32_POSITIVE }), serializationStructSimple.float32Property);
+    m_sut.deserialize(data_t({ CBOR_INT32_POSITIVE }), serializationStructSimple.int32Property);
+    m_sut.deserialize(data_t({ CBOR_STRING_1 }), serializationStructSimple.stringProperty);
+    m_sut.deserialize(data_t({ CBOR_FLOAT32_POSITIVE }), serializationStructSimple.float32Property);
 
     EXPECT_EQ(serializationStructSimple.int32Property, SerializationStructSimple1.int32Property);
     EXPECT_EQ(serializationStructSimple.stringProperty, SerializationStructSimple1.stringProperty);
@@ -153,79 +153,79 @@ TEST_F(TestCborSerializer, deserialize_PropertyArgument)
 
 TEST_F(TestCborSerializer, serialize_VectorArgument)
 {
-    EXPECT_EQ(m_sut.serializeVector(VectorBool), data_t({ 0x83, CBOR_BOOL_TRUE, CBOR_BOOL_FALSE, CBOR_BOOL_FALSE }));
-    EXPECT_EQ(m_sut.serializeVector(VectorFloat), data_t({ 0x82, CBOR_FLOAT32_POSITIVE, CBOR_FLOAT32_NEGATIVE }));
-    EXPECT_EQ(m_sut.serializeVector(VectorStructSimple), data_t({ 0x82, 0xA1, 0x01, CBOR_INT32_POSITIVE, 0xA1, 0x03, CBOR_BOOL_FALSE }));
+    EXPECT_EQ(m_sut.serialize(VectorBool), data_t({ 0x83, CBOR_BOOL_TRUE, CBOR_BOOL_FALSE, CBOR_BOOL_FALSE }));
+    EXPECT_EQ(m_sut.serialize(VectorFloat), data_t({ 0x82, CBOR_FLOAT32_POSITIVE, CBOR_FLOAT32_NEGATIVE }));
+    EXPECT_EQ(m_sut.serialize(VectorStructSimple), data_t({ 0x82, 0xA1, 0x01, CBOR_INT32_POSITIVE, 0xA1, 0x03, CBOR_BOOL_FALSE }));
 }
 
 TEST_F(TestCborSerializer, deserialize_VectorArgument)
 {
     dots::vector_t<dots::bool_t> vectorBool;
-    m_sut.deserializeVector(data_t({ 0x83, CBOR_BOOL_TRUE, CBOR_BOOL_FALSE, CBOR_BOOL_FALSE }), vectorBool);
+    m_sut.deserialize(data_t({ 0x83, CBOR_BOOL_TRUE, CBOR_BOOL_FALSE, CBOR_BOOL_FALSE }), vectorBool);
     EXPECT_EQ(vectorBool, VectorBool);
 
     dots::vector_t<dots::float32_t> vectorFloat32;
-    m_sut.deserializeVector(data_t({ 0x82, CBOR_FLOAT32_POSITIVE, CBOR_FLOAT32_NEGATIVE }), vectorFloat32);
+    m_sut.deserialize(data_t({ 0x82, CBOR_FLOAT32_POSITIVE, CBOR_FLOAT32_NEGATIVE }), vectorFloat32);
     EXPECT_EQ(vectorFloat32, VectorFloat);
 
     dots::vector_t<SerializationStructSimple> vectorStructSimple;
-    m_sut.deserializeVector(data_t({ 0x82, 0xA1, 0x01, CBOR_INT32_POSITIVE, 0xA1, 0x03, CBOR_BOOL_FALSE }), vectorStructSimple);
+    m_sut.deserialize(data_t({ 0x82, 0xA1, 0x01, CBOR_INT32_POSITIVE, 0xA1, 0x03, CBOR_BOOL_FALSE }), vectorStructSimple);
     EXPECT_EQ(vectorStructSimple, VectorStructSimple);
 }
 
 TEST_F(TestCborSerializer, serialize_SimpleStructArgument)
 {
     data_t expectedValid = { 0xA3, 0x01, CBOR_INT32_POSITIVE, 0x02, CBOR_STRING_1, 0x04, CBOR_FLOAT32_POSITIVE };
-    EXPECT_EQ(m_sut.serializeStruct(SerializationStructSimple1, SerializationStructSimple1._validProperties()), expectedValid);
+    EXPECT_EQ(m_sut.serialize(SerializationStructSimple1, SerializationStructSimple1._validProperties()), expectedValid);
 
     data_t expectedAll = { 0xA3, 0x01, CBOR_INT32_POSITIVE, 0x02, CBOR_STRING_1, 0x04, CBOR_FLOAT32_POSITIVE };
-    EXPECT_EQ(m_sut.serializeStruct(SerializationStructSimple1, dots::property_set_t::All), expectedAll);
+    EXPECT_EQ(m_sut.serialize(SerializationStructSimple1, dots::property_set_t::All), expectedAll);
 
     data_t expectedSpecific = { 0xA1, 0x04, CBOR_FLOAT32_POSITIVE };
-    EXPECT_EQ(m_sut.serializeStruct(SerializationStructSimple1, SerializationStructSimple::boolProperty_p + SerializationStructSimple::float32Property_p), expectedSpecific);
+    EXPECT_EQ(m_sut.serialize(SerializationStructSimple1, SerializationStructSimple::boolProperty_p + SerializationStructSimple::float32Property_p), expectedSpecific);
 }
 
 TEST_F(TestCborSerializer, deserialize_SimpleStructArgument)
 {
     SerializationStructSimple serializationStructSimple1;
-    m_sut.deserializeStruct(data_t{ 0xA3, 0x01, CBOR_INT32_POSITIVE, 0x02, CBOR_STRING_1, 0x04, CBOR_FLOAT32_POSITIVE }, serializationStructSimple1);
+    m_sut.deserialize(data_t{ 0xA3, 0x01, CBOR_INT32_POSITIVE, 0x02, CBOR_STRING_1, 0x04, CBOR_FLOAT32_POSITIVE }, serializationStructSimple1);
     EXPECT_EQ(serializationStructSimple1, SerializationStructSimple1);
 
     SerializationStructSimple serializationStructSimple2;
-    m_sut.deserializeStruct(data_t{ 0xA1, 0x04, CBOR_FLOAT32_POSITIVE }, serializationStructSimple2);
+    m_sut.deserialize(data_t{ 0xA1, 0x04, CBOR_FLOAT32_POSITIVE }, serializationStructSimple2);
     EXPECT_TRUE(serializationStructSimple2._equal(SerializationStructSimple1, SerializationStructSimple::float32Property_p));
 }
 
 TEST_F(TestCborSerializer, serialize_ComplexStructArgument)
 {
     data_t expectedValid1 = { 0xA4, 0x07, CBOR_TEST_ENUM_1, 0x04, CBOR_FLOAT64_NEGATIVE, 0x18, 0x19, CBOR_TIME_POINT_1, 0x0F, 0xA1, 0x03, CBOR_BOOL_FALSE };
-    EXPECT_EQ(m_sut.serializeStruct(SerializationStructComplex1, SerializationStructComplex1._validProperties()), expectedValid1);
+    EXPECT_EQ(m_sut.serialize(SerializationStructComplex1, SerializationStructComplex1._validProperties()), expectedValid1);
 
     data_t expectedValid2 = { 0xA3, 0x03, CBOR_PROPERTY_SET_MIXED_1, 0x09, 0x82, CBOR_DURATION_1, CBOR_DURATION_2, 0x06, CBOR_UUID_1 };
-    EXPECT_EQ(m_sut.serializeStruct(SerializationStructComplex2, SerializationStructComplex2._validProperties()), expectedValid2);
+    EXPECT_EQ(m_sut.serialize(SerializationStructComplex2, SerializationStructComplex2._validProperties()), expectedValid2);
 
     data_t expectedSpecific1 = { 0xA1, 0x18, 0x19, CBOR_TIME_POINT_1 };
-    EXPECT_EQ(m_sut.serializeStruct(SerializationStructComplex1, SerializationStructComplex::timepointProperty_p + SerializationStructComplex::propertySetProperty_p), expectedSpecific1);
+    EXPECT_EQ(m_sut.serialize(SerializationStructComplex1, SerializationStructComplex::timepointProperty_p + SerializationStructComplex::propertySetProperty_p), expectedSpecific1);
 
     data_t expectedSpecific2 = { 0xA1, 0x09, 0x82, CBOR_DURATION_1, CBOR_DURATION_2 };
-    EXPECT_EQ(m_sut.serializeStruct(SerializationStructComplex2, SerializationStructComplex::enumProperty_p + SerializationStructComplex::durationVectorProperty_p), expectedSpecific2);
+    EXPECT_EQ(m_sut.serialize(SerializationStructComplex2, SerializationStructComplex::enumProperty_p + SerializationStructComplex::durationVectorProperty_p), expectedSpecific2);
 }
 
 TEST_F(TestCborSerializer, deserialize_ComplexStructArgument)
 {
     SerializationStructComplex serializationStructComplex1;
-    m_sut.deserializeStruct(data_t{ 0xA4, 0x07, CBOR_TEST_ENUM_1, 0x04, CBOR_FLOAT64_NEGATIVE, 0x18, 0x19, CBOR_TIME_POINT_1, 0x0F, 0xA1, 0x03, CBOR_BOOL_FALSE }, serializationStructComplex1);
+    m_sut.deserialize(data_t{ 0xA4, 0x07, CBOR_TEST_ENUM_1, 0x04, CBOR_FLOAT64_NEGATIVE, 0x18, 0x19, CBOR_TIME_POINT_1, 0x0F, 0xA1, 0x03, CBOR_BOOL_FALSE }, serializationStructComplex1);
     EXPECT_EQ(serializationStructComplex1, SerializationStructComplex1);
 
     SerializationStructComplex serializationStructComplex2;
-    m_sut.deserializeStruct(data_t{ 0xA3, 0x03, CBOR_PROPERTY_SET_MIXED_1, 0x09, 0x82, CBOR_DURATION_1, CBOR_DURATION_2, 0x06, CBOR_UUID_1 }, serializationStructComplex2);
+    m_sut.deserialize(data_t{ 0xA3, 0x03, CBOR_PROPERTY_SET_MIXED_1, 0x09, 0x82, CBOR_DURATION_1, CBOR_DURATION_2, 0x06, CBOR_UUID_1 }, serializationStructComplex2);
     EXPECT_EQ(serializationStructComplex2, SerializationStructComplex2);
 
     SerializationStructComplex serializationStructComplex3;
-    m_sut.deserializeStruct(data_t{ 0xA1, 0x18, 0x19, CBOR_TIME_POINT_1 }, serializationStructComplex3);
+    m_sut.deserialize(data_t{ 0xA1, 0x18, 0x19, CBOR_TIME_POINT_1 }, serializationStructComplex3);
     EXPECT_TRUE(serializationStructComplex3._equal(SerializationStructComplex1, SerializationStructComplex::timepointProperty_p + SerializationStructComplex::propertySetProperty_p));
 
     SerializationStructComplex serializationStructComplex4;
-    m_sut.deserializeStruct(data_t{ 0xA1, 0x09, 0x82, CBOR_DURATION_1, CBOR_DURATION_2 }, serializationStructComplex4);
+    m_sut.deserialize(data_t{ 0xA1, 0x09, 0x82, CBOR_DURATION_1, CBOR_DURATION_2 }, serializationStructComplex4);
     EXPECT_TRUE(serializationStructComplex4._equal(SerializationStructComplex2, SerializationStructComplex::enumProperty_p + SerializationStructComplex::durationVectorProperty_p));
 }
