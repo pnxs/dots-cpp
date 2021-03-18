@@ -24,15 +24,27 @@ namespace dots::io
         return StringSerializer<>{}.serialize(instance, includedProperties);
     }
 
-    template <typename T, std::enable_if_t<type::is_property_v<T>, int> = 0>
-    std::string to_string(const T& property)
-    {
-        return StringSerializer<>{}.serialize(property);
-    }
-
-    template <typename T, std::enable_if_t<!std::is_base_of_v<type::Struct, T> && !type::is_property_v<T>, int> = 0>
+    template <typename T, std::enable_if_t<!std::is_base_of_v<type::Struct, T>, int> = 0>
     std::string to_string(const T& value)
     {
         return StringSerializer<>{}.serialize(value);
-    } 
+    }
+
+    template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
+    size_t from_string(const std::string& data, T& instance)
+    {
+        return StringSerializer<>{}.deserialize(data, instance);
+    }
+
+    template <typename T, std::enable_if_t<!std::is_base_of_v<type::Struct, T>, int> = 0>
+    size_t from_string(const std::string& data, T& value)
+    {
+        return StringSerializer<>{}.deserialize(data, value);
+    }
+
+    template <typename T>
+    T from_string(const std::string& data)
+    {
+        return StringSerializer<>{}.deserialize<T>(data);
+    }
 }
