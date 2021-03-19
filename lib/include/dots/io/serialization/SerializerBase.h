@@ -65,6 +65,48 @@ namespace dots::io
             return deserialize<T>(data.data(), data.size());
         }
 
+        template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
+        static data_t Serialize(const T& instance, const property_set_t& includedProperties = property_set_t::All)
+        {
+            Derived serializer;
+            return serializer.serialize(instance, includedProperties);
+        }
+
+        template <typename T, std::enable_if_t<!std::is_base_of_v<type::Struct, T>, int> = 0>
+        static data_t Serialize(const T& value)
+        {
+            Derived serializer;
+            return serializer.serialize(value);
+        }
+
+        template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
+        static size_t Deserialize(const value_t* data, size_t size, T& value)
+        {
+            Derived serializer;
+            return serializer.deserialize(data, size, value);
+        }
+
+        template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
+        static size_t Deserialize(const data_t& data, T& value)
+        {
+            Derived serializer;
+            return serializer.deserialize(data, value);
+        }
+
+        template <typename T, std::enable_if_t<!std::is_const_v<T> && !std::is_reference_v<T>, int> = 0>
+        static T Deserialize(const value_t* data, size_t size)
+        {
+            Derived serializer;
+            return serializer.template deserialize<T>(data, size);
+        }
+
+        template <typename T, std::enable_if_t<!std::is_const_v<T> && !std::is_reference_v<T>, int> = 0>
+        static T Deserialize(const data_t& data)
+        {
+            Derived serializer;
+            return serializer.template deserialize<T>(data);
+        }
+
     protected:
 
         using visitor_base_t = type::TypeVisitor<std::conditional_t<Static, Derived, void>>;

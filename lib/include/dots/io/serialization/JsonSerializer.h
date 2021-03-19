@@ -49,24 +49,24 @@ namespace dots::io
     template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
     std::string to_json(const T& instance, const property_set_t& includedProperties = property_set_t::All)
     {
-        return JsonSerializer<>{}.serialize(instance, includedProperties);
+        return JsonSerializer<>::Serialize(instance, includedProperties);
     }
 
     template <typename T, std::enable_if_t<!std::is_base_of_v<type::Struct, T>, int> = 0>
     std::string to_json(const T& value)
     {
-        return JsonSerializer<>{}.serialize(value);
+        return JsonSerializer<>::Serialize(value);
     }
 
     template <typename T>
     size_t from_json(const std::string& data, T& value)
     {
-        return JsonSerializer<>{}.deserialize(data, value);
+        return JsonSerializer<>::Deserialize(data, value);
     }
 
     template <typename T>
     T from_json(const std::string& data)
     {
-        return JsonSerializer<>{}.deserialize<T>(data);
+        return JsonSerializer<>::Deserialize<T>(data);
     }
 }
