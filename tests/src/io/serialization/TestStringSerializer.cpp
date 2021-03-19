@@ -7,7 +7,6 @@ struct TestStringSerializer : ::testing::Test, TestSerializationInput
 protected:
 
     using data_t = dots::io::StringSerializer<>::data_t;
-    dots::io::StringSerializer<> m_sut;
 };
 
 TEST_F(TestStringSerializer, serialize_TypedArgument)

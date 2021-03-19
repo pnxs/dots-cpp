@@ -7,7 +7,6 @@ struct TestJsonSerializer : ::testing::Test, TestSerializationInput
 protected:
 
     using data_t = dots::io::JsonSerializer<>::data_t;
-    dots::io::JsonSerializer<> m_sut{ dots::io::StringSerializerOptions{ true } };
 };
 
 TEST_F(TestJsonSerializer, serialize_TypedArgument)

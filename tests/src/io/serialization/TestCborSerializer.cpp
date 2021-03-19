@@ -7,7 +7,6 @@ struct TestCborSerializer : ::testing::Test, TestSerializationInput
 protected:
 
     using data_t = dots::io::CborSerializer::data_t;
-    dots::io::CborSerializer m_sut;
 };
 
 TEST_F(TestCborSerializer, serialize_TypedArgument)
