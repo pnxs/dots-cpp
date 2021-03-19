@@ -23,18 +23,18 @@ namespace dots::type
     protected:
 
         template <typename T, std::enable_if_t<std::is_base_of_v<Struct, T>, int> = 0>
-        void visit(const T& instance, const PropertySet& includedProperties)
+        void visit(const T& instance, std::optional<PropertySet> includedProperties = std::nullopt)
         {
             derived().visitBeginDerived();
-            visitStructInternal<true, T>(instance, includedProperties);
+            visitStructInternal<true, T>(instance, includedProperties == std::nullopt ? instance._validProperties() : *includedProperties);
             derived().visitEndDerived();
         }
 
         template <typename T, std::enable_if_t<std::is_base_of_v<Struct, T>, int> = 0>
-        void visit(T& instance, const PropertySet& includedProperties)
+        void visit(T& instance, std::optional<PropertySet> includedProperties = std::nullopt)
         {
             derived().visitBeginDerived();
-            visitStructInternal<false, T>(instance, includedProperties);
+            visitStructInternal<false, T>(instance, includedProperties == std::nullopt ? instance._validProperties() : *includedProperties);
             derived().visitEndDerived();
         }
 
