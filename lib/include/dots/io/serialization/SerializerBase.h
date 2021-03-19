@@ -26,16 +26,7 @@ namespace dots::io
             return m_output;
         }
 
-        template <typename T, std::enable_if_t<type::is_property_v<T>, int> = 0>
-        const data_t& serialize(const T& property)
-        {
-            initSerialize();
-            visit(property);
-
-            return m_output;
-        }
-
-        template <typename T, std::enable_if_t<!std::is_base_of_v<type::Struct, T> && !type::is_property_v<T>, int> = 0>
+        template <typename T, std::enable_if_t<!std::is_base_of_v<type::Struct, T>, int> = 0>
         const data_t& serialize(const T& value)
         {
             initSerialize();
@@ -44,37 +35,7 @@ namespace dots::io
             return m_output;
         }
 
-        template <typename T, std::enable_if_t<!std::is_const_v<T> && std::is_base_of_v<type::Struct, T>, int> = 0>
-        size_t deserialize(const value_t* data, size_t size, T& instance)
-        {
-            initDeserialize(data, size);
-            visit(instance, property_set_t::None);
-
-            return static_cast<size_t>(m_inputData - data);
-        }
-
-        template <typename T, std::enable_if_t<!std::is_const_v<T> && std::is_base_of_v<type::Struct, T>, int> = 0>
-        size_t deserialize(const data_t& data, T& instance)
-        {
-            return deserialize(data.data(), data.size(), instance);
-        }
-
-        template <typename T, std::enable_if_t<!std::is_const_v<T> && type::is_property_v<T>, int> = 0>
-        size_t deserialize(const value_t* data, size_t size, T& property)
-        {
-            initDeserialize(data, size);
-            visit(property);
-
-            return static_cast<size_t>(m_inputData - data);
-        }
-
-        template <typename T, std::enable_if_t<!std::is_const_v<T> && type::is_property_v<T>, int> = 0>
-        size_t deserialize(const data_t& data, T& property)
-        {
-            return deserialize(data.data(), data.size(), property);
-        }
-
-        template <typename T, std::enable_if_t<!std::is_const_v<T> && !std::is_base_of_v<type::Struct, T> && !type::is_property_v<T>, int> = 0>
+        template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
         size_t deserialize(const value_t* data, size_t size, T& value)
         {
             initDeserialize(data, size);
@@ -83,7 +44,7 @@ namespace dots::io
             return static_cast<size_t>(m_inputData - data);
         }
 
-        template <typename T, std::enable_if_t<!std::is_const_v<T> && !std::is_base_of_v<type::Struct, T> && !type::is_property_v<T>, int> = 0>
+        template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
         size_t deserialize(const data_t& data, T& value)
         {
             return deserialize(data.data(), data.size(), value);

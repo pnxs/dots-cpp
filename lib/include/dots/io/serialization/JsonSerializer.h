@@ -58,13 +58,7 @@ namespace dots::io
         return JsonSerializer<>{}.serialize(value);
     }
 
-    template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
-    size_t from_json(const std::string& data, T& instance)
-    {
-        return JsonSerializer<>{}.deserialize(data, instance);
-    }
-
-    template <typename T, std::enable_if_t<!std::is_base_of_v<type::Struct, T>, int> = 0>
+    template <typename T>
     size_t from_json(const std::string& data, T& value)
     {
         return JsonSerializer<>{}.deserialize(data, value);

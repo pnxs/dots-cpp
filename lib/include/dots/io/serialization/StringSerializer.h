@@ -30,13 +30,7 @@ namespace dots::io
         return StringSerializer<>{}.serialize(value);
     }
 
-    template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
-    size_t from_string(const std::string& data, T& instance)
-    {
-        return StringSerializer<>{}.deserialize(data, instance);
-    }
-
-    template <typename T, std::enable_if_t<!std::is_base_of_v<type::Struct, T>, int> = 0>
+    template <typename T>
     size_t from_string(const std::string& data, T& value)
     {
         return StringSerializer<>{}.deserialize(data, value);

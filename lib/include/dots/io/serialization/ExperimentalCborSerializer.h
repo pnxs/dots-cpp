@@ -161,13 +161,7 @@ namespace dots::io
         return ExperimentalCborSerializer{}.serialize(value);
     }
 
-    template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
-    size_t from_cbor_experimental(const std::vector<uint8_t>& data, T& instance)
-    {
-        return ExperimentalCborSerializer{}.deserialize(data, instance);
-    }
-
-    template <typename T, std::enable_if_t<!std::is_base_of_v<type::Struct, T>, int> = 0>
+    template <typename T>
     size_t from_cbor_experimental(const std::vector<uint8_t>& data, T& value)
     {
         return ExperimentalCborSerializer{}.deserialize(data, value);
