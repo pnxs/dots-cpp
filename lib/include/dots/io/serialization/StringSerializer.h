@@ -19,15 +19,15 @@ namespace dots::io
     };
 
     template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
-    std::string to_string(const T& instance, const property_set_t& includedProperties = property_set_t::All)
+    std::string to_string(const T& instance, const property_set_t& includedProperties = property_set_t::All, StringSerializerOptions options = {})
     {
-        return StringSerializer<>::Serialize(instance, includedProperties);
+        return StringSerializer<>::Serialize(instance, includedProperties, options);
     }
 
     template <typename T, std::enable_if_t<!std::is_base_of_v<type::Struct, T>, int> = 0>
-    std::string to_string(const T& value)
+    std::string to_string(const T& value, StringSerializerOptions options = {})
     {
-        return StringSerializer<>::Serialize(value);
+        return StringSerializer<>::Serialize(value, options);
     }
 
     template <typename T>

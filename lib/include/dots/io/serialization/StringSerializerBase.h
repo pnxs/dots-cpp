@@ -43,6 +43,7 @@ namespace dots::io
     struct StringSerializerBase : SerializerBase<std::string, Derived>
     {
         using traits_t = Traits;
+        using data_t = typename SerializerBase<std::string, Derived>::data_t;
 
         StringSerializerBase(StringSerializerOptions options = {}) :
             m_options{ std::move(options) },
@@ -56,6 +57,20 @@ namespace dots::io
 
         StringSerializerBase& operator = (const StringSerializerBase& rhs) = default;
         StringSerializerBase& operator = (StringSerializerBase&& rhs) = default;
+
+        template <typename T, typename D = Derived, std::enable_if_t<std::is_constructible_v<D, StringSerializerOptions> && std::is_base_of_v<type::Struct, T>, int> = 0>
+        static data_t Serialize(const T& instance, const property_set_t& includedProperties = property_set_t::All, StringSerializerOptions options = {})
+        {
+            Derived serializer{ options };
+            return serializer.serialize(instance, includedProperties);
+        }
+
+        template <typename T, typename D = Derived, std::enable_if_t<std::is_constructible_v<D, StringSerializerOptions> && !std::is_base_of_v<type::Struct, T>, int> = 0>
+        static data_t Serialize(const T& value, StringSerializerOptions options = {})
+        {
+            Derived serializer{ options };
+            return serializer.serialize(value);
+        }
 
     protected:
 
