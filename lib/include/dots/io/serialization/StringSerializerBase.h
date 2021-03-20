@@ -42,8 +42,10 @@ namespace dots::io
     template <typename Derived, typename Traits>
     struct StringSerializerBase : SerializerBase<std::string, Derived>
     {
+        using serializer_base_t = SerializerBase<std::string, Derived>;
+
         using traits_t = Traits;
-        using data_t = typename SerializerBase<std::string, Derived>::data_t;
+        using data_t = typename serializer_base_t::data_t;
 
         StringSerializerBase(StringSerializerOptions options = {}) :
             m_options{ std::move(options) },
@@ -58,31 +60,35 @@ namespace dots::io
         StringSerializerBase& operator = (const StringSerializerBase& rhs) = default;
         StringSerializerBase& operator = (StringSerializerBase&& rhs) = default;
 
+        using serializer_base_t::output;
+
         template <typename T, typename D = Derived, std::enable_if_t<std::is_constructible_v<D, StringSerializerOptions> && std::is_base_of_v<type::Struct, T>, int> = 0>
         static data_t Serialize(const T& instance, const property_set_t& includedProperties = property_set_t::All, StringSerializerOptions options = {})
         {
             Derived serializer{ options };
-            return serializer.serialize(instance, includedProperties);
+            serializer.serialize(instance, includedProperties);
+
+            return std::move(serializer.output());
         }
 
         template <typename T, typename D = Derived, std::enable_if_t<std::is_constructible_v<D, StringSerializerOptions> && !std::is_base_of_v<type::Struct, T>, int> = 0>
         static data_t Serialize(const T& value, StringSerializerOptions options = {})
         {
             Derived serializer{ options };
-            return serializer.serialize(value);
+            serializer.serialize(value);
+
+            return std::move(serializer.output());
         }
 
     protected:
 
         using visitor_base_t = type::TypeVisitor<Derived>;
-        using serializer_base_t = SerializerBase<std::string, Derived>;
 
         friend visitor_base_t;
         friend serializer_base_t;
 
         using serializer_base_t::visit;
 
-        using serializer_base_t::output;
         using serializer_base_t::inputData;
         using serializer_base_t::inputDataEnd;
 

@@ -94,27 +94,68 @@ protected:
 
 TEST_F(TestSerializerBase, serialize_WriteToFreshInternalBuffer)
 {
-    EXPECT_EQ(TestSerializer{}.serialize(String1).size(), sizeof(String1));
-    EXPECT_EQ(TestSerializer{}.serialize(SerializationEnum1).size(), sizeof(SerializationEnum1));
-    EXPECT_EQ(TestSerializer{}.serialize(SerializationStructSimple1.int32Property).size(), sizeof(SerializationStructSimple1.int32Property));
-    EXPECT_EQ(TestSerializer{}.serialize(VectorBool).size(), sizeof(VectorBool));
-    EXPECT_EQ(TestSerializer{}.serialize(SerializationStructSimple1).size(), sizeof(SerializationStructSimple1));
+    EXPECT_EQ(TestSerializer::Serialize(String1).size(), sizeof(String1));
+    EXPECT_EQ(TestSerializer::Serialize(SerializationEnum1).size(), sizeof(SerializationEnum1));
+    EXPECT_EQ(TestSerializer::Serialize(SerializationStructSimple1.int32Property).size(), sizeof(SerializationStructSimple1.int32Property));
+    EXPECT_EQ(TestSerializer::Serialize(VectorBool).size(), sizeof(VectorBool));
+    EXPECT_EQ(TestSerializer::Serialize(SerializationStructSimple1).size(), sizeof(SerializationStructSimple1));
 }
 
 TEST_F(TestSerializerBase, deserialize_ReadFromFreshExternalBuffer)
 {
     std::string s;
-    EXPECT_EQ(TestSerializer{}.deserialize(data_t(sizeof(s), 0x00), s), sizeof(s));
+    EXPECT_EQ(TestSerializer::Deserialize(data_t(sizeof(s), 0x00), s), sizeof(s));
 
     SerializationEnum e;
-    EXPECT_EQ(TestSerializer{}.deserialize(data_t(sizeof(e), 0x00), e), sizeof(e));
+    EXPECT_EQ(TestSerializer::Deserialize(data_t(sizeof(e), 0x00), e), sizeof(e));
 
     SerializationStructSimple serializationStructSimple1;
-    EXPECT_EQ(TestSerializer{}.deserialize(data_t(sizeof(serializationStructSimple1.int32Property), 0x00), serializationStructSimple1.int32Property), sizeof(serializationStructSimple1.int32Property));
+    EXPECT_EQ(TestSerializer::Deserialize(data_t(sizeof(serializationStructSimple1.int32Property), 0x00), serializationStructSimple1.int32Property), sizeof(serializationStructSimple1.int32Property));
 
     dots::vector_t<dots::bool_t> v;
-    EXPECT_EQ(TestSerializer{}.deserialize(data_t(sizeof(v), 0x00), v), sizeof(v));
+    EXPECT_EQ(TestSerializer::Deserialize(data_t(sizeof(v), 0x00), v), sizeof(v));
 
     SerializationStructSimple serializationStructSimple2;
-    EXPECT_EQ(TestSerializer{}.deserialize(data_t(sizeof(serializationStructSimple2), 0x00), serializationStructSimple2), sizeof(serializationStructSimple2));
+    EXPECT_EQ(TestSerializer::Deserialize(data_t(sizeof(serializationStructSimple2), 0x00), serializationStructSimple2), sizeof(serializationStructSimple2));
+}
+
+TEST_F(TestSerializerBase, serialize_WriteToContinuousInternalBuffer)
+{
+    TestSerializer sut;
+    
+    EXPECT_EQ(sut.serialize(String1), sizeof(String1));
+    EXPECT_EQ(sut.serialize(SerializationEnum1), sizeof(SerializationEnum1));
+    EXPECT_EQ(sut.serialize(SerializationStructSimple1.int32Property), sizeof(SerializationStructSimple1.int32Property));
+    EXPECT_EQ(sut.serialize(VectorBool), sizeof(VectorBool));
+    EXPECT_EQ(sut.serialize(SerializationStructSimple1), sizeof(SerializationStructSimple1));
+    EXPECT_EQ(sut.output().size(), sizeof(String1) + sizeof(SerializationEnum1) + sizeof(SerializationStructSimple1.int32Property) + sizeof(VectorBool) + sizeof(SerializationStructSimple1));
+}
+
+TEST_F(TestSerializerBase, deserialize_ReadFromContinuousExternalBuffer)
+{
+    TestSerializer sut;
+    std::string s;
+    SerializationEnum e;
+    SerializationStructSimple serializationStructSimple1;
+    dots::vector_t<dots::bool_t> v;
+    SerializationStructSimple serializationStructSimple2;
+    data_t input(sizeof(s) + sizeof(e) + sizeof(serializationStructSimple1.int32Property) + sizeof(v) + sizeof(serializationStructSimple2), 0x00);
+    sut.setInput(input);
+
+    EXPECT_TRUE(sut.inputAvailable());
+    EXPECT_EQ(sut.deserialize(s), sizeof(s));
+
+    EXPECT_TRUE(sut.inputAvailable());
+    EXPECT_EQ(sut.deserialize(e), sizeof(e));
+
+    EXPECT_TRUE(sut.inputAvailable());
+    EXPECT_EQ(sut.deserialize(serializationStructSimple1.int32Property), sizeof(serializationStructSimple1.int32Property));
+
+    EXPECT_TRUE(sut.inputAvailable());
+    EXPECT_EQ(sut.deserialize(v), sizeof(v));
+
+    EXPECT_TRUE(sut.inputAvailable());
+    EXPECT_EQ(sut.deserialize(serializationStructSimple2), sizeof(serializationStructSimple2));
+
+    EXPECT_FALSE(sut.inputAvailable());
 }
