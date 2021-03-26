@@ -51,6 +51,32 @@ protected:
         std::fill_n(std::back_inserter(output()), sizeof(value), 0x00);
     }
 
+    template <typename... Ts>
+    bool visitTupleBeginDerived(const Ts&.../* values*/)
+    {
+        std::fill_n(std::back_inserter(output()), 1, 0x00);
+        return true;
+    }
+
+    template <typename T>
+    bool visitTupleValueBeginDerived(const T&/* value*/, size_t/* index*/, size_t/* size*/)
+    {
+        std::fill_n(std::back_inserter(output()), 1, 0x00);
+        return true;
+    }
+
+    template <typename T>
+    void visitTupleValueEndDerived(const T&/* value*/, size_t/* index*/, size_t/* size*/)
+    {
+        std::fill_n(std::back_inserter(output()), 1, 0x00);
+    }
+
+    template <typename... Ts>
+    void visitTupleEndDerived(const Ts&.../* values*/)
+    {
+        std::fill_n(std::back_inserter(output()), 1, 0x00);
+    }
+
     template <typename T>
     bool visitStructBeginDerived(T& instance, dots::property_set_t&/* includedProperties*/)
     {
@@ -82,6 +108,32 @@ protected:
     void visitFundamentalTypeDerived(T& value, const dots::type::Descriptor<T>&/* descriptor*/)
     {
         inputData() += sizeof(value);
+    }
+
+    template <typename... Ts>
+    bool visitTupleBeginDerived(Ts&.../* values*/)
+    {
+        inputData() += 1;
+        return true;
+    }
+
+    template <typename T>
+    bool visitTupleValueBeginDerived(T&/* value*/, size_t/* index*/, size_t/* size*/)
+    {
+        inputData() += 1;
+        return true;
+    }
+
+    template <typename T>
+    void visitTupleValueEndDerived(T&/* value*/, size_t/* index*/, size_t/* size*/)
+    {
+        inputData() += 1;
+    }
+
+    template <typename... Ts>
+    void visitTupleEndDerived(Ts&.../* values*/)
+    {
+        inputData() += 1;
     }
 };
 
@@ -131,6 +183,14 @@ TEST_F(TestSerializerBase, serialize_WriteToContinuousInternalBuffer)
     EXPECT_EQ(sut.output().size(), sizeof(String1) + sizeof(SerializationEnum1) + sizeof(SerializationStructSimple1.int32Property) + sizeof(VectorBool) + sizeof(SerializationStructSimple1));
 }
 
+TEST_F(TestSerializerBase, serialize_WriteToContinuousInternalBufferFromTuple)
+{
+    TestSerializer sut;
+
+    sut.serialize(String1, SerializationEnum1, VectorBool, SerializationStructSimple1);
+    EXPECT_EQ(sut.output().size(), sizeof(String1) + sizeof(SerializationEnum1) + sizeof(VectorBool) + sizeof(SerializationStructSimple1) + 2 + 8);
+}
+
 TEST_F(TestSerializerBase, deserialize_ReadFromContinuousExternalBuffer)
 {
     TestSerializer sut;
@@ -157,5 +217,31 @@ TEST_F(TestSerializerBase, deserialize_ReadFromContinuousExternalBuffer)
     EXPECT_TRUE(sut.inputAvailable());
     EXPECT_EQ(sut.deserialize(serializationStructSimple2), sizeof(serializationStructSimple2));
 
+    EXPECT_FALSE(sut.inputAvailable());
+}
+
+TEST_F(TestSerializerBase, deserialize_ReadFromContinuousExternalBufferToTuple)
+{
+    TestSerializer sut;
+    std::string s;
+    SerializationEnum e;
+    dots::vector_t<dots::bool_t> v;
+    SerializationStructSimple serializationStructSimple;
+    data_t input(sizeof(s) + sizeof(e) + sizeof(v) + sizeof(serializationStructSimple) + 2 + 8, 0x00);
+    sut.setInput(input);
+
+    sut.deserialize(s, e, v, serializationStructSimple);
+    
+    EXPECT_FALSE(sut.inputAvailable());
+}
+
+TEST_F(TestSerializerBase, deserialize_ReadFromContinuousExternalBufferToNewTuple)
+{
+    TestSerializer sut;
+    data_t input(sizeof(std::string) + sizeof(SerializationEnum) + sizeof(dots::vector_t<dots::bool_t>) + sizeof(SerializationStructSimple) + 2 + 8, 0x00);
+    sut.setInput(input);
+
+    auto [s, e, v, serializationStructSimple] = sut.deserialize<std::string, SerializationEnum, dots::vector_t<dots::bool_t>, SerializationStructSimple>();
+    
     EXPECT_FALSE(sut.inputAvailable());
 }

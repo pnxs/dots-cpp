@@ -19,6 +19,10 @@ namespace dots::io
         static constexpr std::string_view VectorValueSeparator = ",";
         static constexpr std::string_view VectorEnd = "}";
 
+        static constexpr std::string_view TupleBegin = "{";
+        static constexpr std::string_view TupleValueSeparator = ",";
+        static constexpr std::string_view TupleEnd = "}";
+
         static constexpr bool UserTypeNames = true;
 
         static constexpr bool NumericBooleans = false;
@@ -275,6 +279,45 @@ namespace dots::io
             }
         }
 
+        template <typename... Ts>
+        bool visitTupleBeginDerived(const Ts&.../* values*/)
+        {
+            incrementIndentLevel();
+
+            if (sizeof...(Ts) == 0)
+            {
+                write(traits_t::TupleBegin);
+                return false;
+            }
+            else
+            {
+                writePrefixedNewLine(traits_t::TupleBegin);
+                return true;
+            }
+        }
+
+        template <typename T>
+        bool visitTupleValueBeginDerived(const T&/* value*/, size_t/* index*/, size_t/* size*/)
+        {
+            return true;
+        }
+
+        template <typename T>
+        void visitTupleValueEndDerived(const T&/* value*/, size_t index, size_t size)
+        {
+            if (index < size - 1)
+            {
+                writePrefixedNewLine(traits_t::TupleValueSeparator);
+            }
+        }
+
+        template <typename... Ts>
+        void visitTupleEndDerived(const Ts&.../* values*/)
+        {
+            decrementIndentLevel();
+            writeSuffixedNewLine(traits_t::TupleEnd);
+        }
+
         //
         // deserialization
         //
@@ -432,6 +475,34 @@ namespace dots::io
             {
                 static_assert(!std::is_same_v<T, T>, "type not supported");
             }
+        }
+
+        template <typename... Ts>
+        bool visitTupleBeginDerived(Ts&.../* values*/)
+        {
+            readToken(traits_t::TupleBegin);
+            return true;
+        }
+
+        template <typename T>
+        bool visitTupleValueBeginDerived(T&/* value*/, size_t/* index*/, size_t/* size*/)
+        {
+            return true;
+        }
+
+        template <typename T>
+        void visitTupleValueEndDerived(T&/* value*/, size_t index, size_t size)
+        {
+            if (index < size - 1)
+            {
+                readToken(traits_t::TupleValueSeparator);
+            }
+        }
+
+        template <typename... Ts>
+        void visitTupleEndDerived(Ts&.../* values*/)
+        {
+            readToken(traits_t::TupleEnd);
         }
 
         //

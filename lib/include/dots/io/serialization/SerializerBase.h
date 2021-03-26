@@ -46,7 +46,7 @@ namespace dots::io
         }
 
         template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
-        size_t serialize(const T& instance, const property_set_t& includedProperties = property_set_t::All)
+        size_t serialize(const T& instance, const property_set_t& includedProperties)
         {
             initSerialize();
             visit(instance, includedProperties);
@@ -54,20 +54,20 @@ namespace dots::io
             return m_output.size() - m_outputSizeBegin;
         }
 
-        template <typename T, std::enable_if_t<!std::is_base_of_v<type::Struct, T>, int> = 0>
-        size_t serialize(const T& value)
+        template <typename... Ts, std::enable_if_t<std::disjunction_v<std::conjunction<std::bool_constant<sizeof...(Ts) == 1>, type::is_property_t<Ts>...>, std::conjunction<std::negation<type::is_property_t<Ts>>...>>, int> = 0>
+        size_t serialize(const Ts&... values)
         {
             initSerialize();
-            visit(value);
+            visit(values...);
 
             return m_output.size() - m_outputSizeBegin;
         }
 
-        template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
-        size_t deserialize(T& value)
+        template <typename... Ts, std::enable_if_t<std::disjunction_v<std::conjunction<std::bool_constant<sizeof...(Ts) == 1>, type::is_property_t<Ts>...>, std::conjunction<std::negation<type::is_property_t<Ts>>...>>, int> = 0>
+        size_t deserialize(Ts&... values)
         {
             initDeserialize();
-            visit(value);
+            visit(values...);
 
             return static_cast<size_t>(m_inputData - m_inputDataBegin);
         }
@@ -79,6 +79,19 @@ namespace dots::io
             deserialize(value);
 
             return value;
+        }
+
+        template <typename... Ts, std::enable_if_t<std::conjunction_v<std::bool_constant<sizeof...(Ts) >= 2>, std::negation<type::is_property_t<Ts>>...>, int> = 0>
+        std::tuple<Ts...> deserialize()
+        {
+            std::tuple<Ts...> values;
+            std::apply([this](auto&... values)
+            {
+                deserialize(values...);
+            }, values);
+            
+
+            return values;
         }
 
         template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
