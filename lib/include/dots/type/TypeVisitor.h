@@ -23,18 +23,18 @@ namespace dots::type
     protected:
 
         template <typename T, std::enable_if_t<std::is_base_of_v<Struct, T>, int> = 0>
-        void visit(const T& instance, std::optional<PropertySet> includedProperties = std::nullopt)
+        void visit(const T& instance, const PropertySet& includedProperties)
         {
             derived().visitBeginDerived();
-            visitStructInternal<true, T>(instance, includedProperties == std::nullopt ? instance._validProperties() : *includedProperties);
+            visitStructInternal<true, T>(instance, includedProperties);
             derived().visitEndDerived();
         }
 
         template <typename T, std::enable_if_t<std::is_base_of_v<Struct, T>, int> = 0>
-        void visit(T& instance, std::optional<PropertySet> includedProperties = std::nullopt)
+        void visit(T& instance, const PropertySet& includedProperties)
         {
             derived().visitBeginDerived();
-            visitStructInternal<false, T>(instance, includedProperties == std::nullopt ? instance._validProperties() : *includedProperties);
+            visitStructInternal<false, T>(instance, includedProperties);
             derived().visitEndDerived();
         }
 
@@ -70,19 +70,19 @@ namespace dots::type
             derived().visitEndDerived();
         }
 
-        template <typename T, std::enable_if_t<!std::is_base_of_v<Struct, T> && !is_property_v<T>, int> = 0>
-        void visit(const T& value)
+        template <typename... Ts, std::enable_if_t<std::conjunction_v<std::negation<is_property_t<Ts>>...>, int> = 0>
+        void visit(const Ts&... values)
         {
             derived().visitBeginDerived();
-            visitTypeInternal<true, T>(value);
+            visitTypeInternal<true, Ts...>(values...);
             derived().visitEndDerived();
         }
 
-        template <typename T, std::enable_if_t<!std::is_base_of_v<Struct, T> && !is_property_v<T>, int> = 0>
-        void visit(T& value)
+        template <typename... Ts, std::enable_if_t<std::conjunction_v<std::negation<std::is_const<Ts>>..., std::negation<is_property_t<Ts>>...>, int> = 0>
+        void visit(Ts&... values)
         {
             derived().visitBeginDerived();
-            visitTypeInternal<false, T>(value);
+            visitTypeInternal<false, Ts...>(values...);
             derived().visitEndDerived();
         }
 
@@ -152,6 +152,30 @@ namespace dots::type
 
         template <typename U>
         void visitFundamentalTypeDerived(U&/* value*/, const Descriptor<std::remove_const_t<U>>&/* descriptor*/)
+        {
+            /* do nothing */
+        }
+
+        template <typename... Us>
+        bool visitTupleBeginDerived(Us&.../* values*/)
+        {
+            return true;
+        }
+
+        template <typename U>
+        bool visitTupleValueBeginDerived(U&/* value*/, size_t/* index*/, size_t/* size*/)
+        {
+            return true;
+        }
+
+        template <typename U>
+        void visitTupleValueEndDerived(U&/* value*/, size_t/* index*/, size_t/* size*/)
+        {
+            /* do nothing */
+        }
+
+        template <typename... Us>
+        void visitTupleEndDerived(Us&.../* values*/)
         {
             /* do nothing */
         }
@@ -378,12 +402,40 @@ namespace dots::type
         template <bool Const, typename T>
         void visitTypeInternal(const_t<Const, T>& value)
         {
-            constexpr bool IsNotTypeless = !std::is_same_v<T, Typeless>;
-            static_assert(IsNotTypeless);
+            constexpr bool IsStruct = std::is_base_of_v<Struct, T>;
+            constexpr bool HasDescriptor = has_descriptor_v<T>;
+            static_assert(IsStruct || HasDescriptor);
 
-            if constexpr (IsNotTypeless)
+            if constexpr (IsStruct)
+            {
+               visitStructInternal<Const, T>(value, value._validProperties());
+            }
+            else if (HasDescriptor)
             {
                 visitTypeInternal<Const>(value, Descriptor<T>::InstanceRef());
+            }
+        }
+
+        template <bool Const, typename... Ts, std::enable_if_t<sizeof...(Ts) >= 2, int> = 0>
+        void visitTypeInternal(const_t<Const, Ts>&... values)
+        {
+            if (derived().visitTupleBeginDerived(values...))
+            {
+                auto visit_tuple_value = [this](auto& value, size_t index, size_t size)
+                {
+                    using value_t = std::decay_t<decltype(value)>;
+
+                    if (derived().visitTupleValueBeginDerived(value, index, size))
+                    {
+                        visitTypeInternal<Const, value_t>(value);
+                        derived().visitTupleValueEndDerived(value, index, size);
+                    }
+                };
+
+                size_t i = 0;
+                (visit_tuple_value(values, i++, sizeof...(Ts)), ...);
+
+                derived().visitTupleEndDerived(values...);
             }
         }
 
