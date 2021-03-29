@@ -58,23 +58,25 @@ namespace dots::io::posix
 
     void UdsChannel::transmitImpl(const DotsHeader& header, const type::Struct& instance)
     {
-        std::string serializedInstance = to_cbor(instance, header.attributes);
+        m_serializer.serialize(instance, header.attributes);
+        std::vector<uint8_t> serializedInstance = std::move(m_serializer.output());
 
         DotsTransportHeader transportHeader{
             DotsTransportHeader::dotsHeader_i{ header },
             DotsTransportHeader::payloadSize_i{ serializedInstance.size() }
         };
 
-        auto serializedHeader = to_cbor(transportHeader);
-        uint16_t headerSize = serializedHeader.size();
+        uint16_t serializedHeaderSize = static_cast<uint16_t>(m_serializer.serialize(transportHeader));
+        std::vector<uint8_t> serializedHeader = std::move(m_serializer.output());
 
         std::array<boost::asio::const_buffer, 3> buffers{
-            boost::asio::buffer(&headerSize, sizeof(headerSize)),
+            boost::asio::buffer(&serializedHeaderSize, sizeof(serializedHeaderSize)),
             boost::asio::buffer(serializedHeader.data(), serializedHeader.size()),
             boost::asio::buffer(serializedInstance.data(), serializedInstance.size())
         };
 
         m_socket.write_some(buffers);
+        m_serializer.output().clear();
     }
 
     void UdsChannel::asynReadHeaderLength()
@@ -116,9 +118,8 @@ namespace dots::io::posix
                 }
 
                 verifyErrorCode(ec);
-
-                m_transportHeader = DotsTransportHeader{};
-                from_cbor(&m_headerBuffer[0], m_headerSize, m_transportHeader);
+                m_serializer.setInput(m_headerBuffer);
+                m_transportHeader = m_serializer.deserialize<DotsTransportHeader>();
 
                 if (!m_transportHeader.payloadSize.isValid())
                 {
@@ -148,16 +149,9 @@ namespace dots::io::posix
                 }
 
                 verifyErrorCode(ec);
-
-                const type::StructDescriptor<>* descriptor = registry().findStructType(*m_transportHeader.dotsHeader->typeName).get();
-
-                if (descriptor == nullptr)
-                {
-                    throw std::runtime_error{ "encountered unknown type: " + *m_transportHeader.dotsHeader->typeName };
-                }
-
-                type::AnyStruct instance{ *descriptor };
-                from_cbor(m_instanceBuffer.data(), m_instanceBuffer.size(), instance.get());
+                m_serializer.setInput(m_instanceBuffer);
+                type::AnyStruct instance{ registry().getStructType(*m_transportHeader.dotsHeader->typeName) };
+                m_serializer.deserialize(*instance);
                 processReceive(Transmission{ std::move(m_transportHeader.dotsHeader), std::move(instance) });
             }
             catch (...)
