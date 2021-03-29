@@ -4,7 +4,6 @@
 #include <csignal>
 #include <dots/io/Io.h>
 #include <dots/io/Registry.h>
-#include <dots/io/serialization/CborNativeSerialization.h>
 
 namespace dots::io::posix
 {
