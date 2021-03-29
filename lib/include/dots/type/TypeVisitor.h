@@ -25,72 +25,74 @@ namespace dots::type
         template <typename T, std::enable_if_t<std::is_base_of_v<Struct, T>, int> = 0>
         void visit(const T& instance, const PropertySet& includedProperties)
         {
-            derived().visitBeginDerived();
+            derived().template visitBeginDerived<true>();
             visitStructInternal<true, T>(instance, includedProperties);
-            derived().visitEndDerived();
+            derived().template visitEndDerived<true>();
         }
 
         template <typename T, std::enable_if_t<std::is_base_of_v<Struct, T>, int> = 0>
         void visit(T& instance, const PropertySet& includedProperties)
         {
-            derived().visitBeginDerived();
+            derived().template visitBeginDerived<false>();
             visitStructInternal<false, T>(instance, includedProperties);
-            derived().visitEndDerived();
+            derived().template visitEndDerived<false>();
         }
 
         template <typename T, std::enable_if_t<is_property_v<T>, int> = 0>
         void visit(const T& property, bool first = true)
         {
-            derived().visitBeginDerived();
+            derived().template visitBeginDerived<true>();
             visitPropertyInternal<true, T>(property, first);
-            derived().visitEndDerived();
+            derived().template visitEndDerived<true>();
         }
 
         template <typename T, std::enable_if_t<is_property_v<T>, int> = 0>
         void visit(T& property, bool first = true)
         {
-            derived().visitBeginDerived();
+            derived().template visitBeginDerived<false>();
             visitPropertyInternal<false, T>(property, first);
-            derived().visitEndDerived();
+            derived().template visitEndDerived<false>();
         }
 
         template <typename T>
         void visit(const T& value, const Descriptor<T>& descriptor)
         {
-            derived().visitBeginDerived();
+            derived().template visitBeginDerived<true>();
             visitTypeInternal<true>(value, descriptor);
-            derived().visitEndDerived();
+            derived().template visitEndDerived<true>();
         }
 
         template <typename T>
         void visit(T& value, const Descriptor<T>& descriptor)
         {
-            derived().visitBeginDerived();
+            derived().template visitBeginDerived<false>();
             visitTypeInternal<false>(value, descriptor);
-            derived().visitEndDerived();
+            derived().template visitEndDerived<false>();
         }
 
         template <typename... Ts, std::enable_if_t<std::conjunction_v<std::negation<is_property_t<Ts>>...>, int> = 0>
         void visit(const Ts&... values)
         {
-            derived().visitBeginDerived();
+            derived().template visitBeginDerived<true>();
             visitTypeInternal<true, Ts...>(values...);
-            derived().visitEndDerived();
+            derived().template visitEndDerived<true>();
         }
 
         template <typename... Ts, std::enable_if_t<std::conjunction_v<std::negation<std::is_const<Ts>>..., std::negation<is_property_t<Ts>>...>, int> = 0>
         void visit(Ts&... values)
         {
-            derived().visitBeginDerived();
+            derived().template visitBeginDerived<false>();
             visitTypeInternal<false, Ts...>(values...);
-            derived().visitEndDerived();
+            derived().template visitEndDerived<false>();
         }
 
+        template <bool Const>
         void visitBeginDerived()
         {
             /* do nothing */
         }
 
+        template <bool Const>
         void visitEndDerived()
         {
             /* do nothing */
@@ -460,8 +462,10 @@ namespace dots::type
 
         friend TypeVisitor<TypeVisitor<void>>;
 
-        virtual void visitBegin();
-        virtual void visitEnd();
+        virtual void visitConstBegin();
+        virtual void visitConstEnd();
+        virtual void visitMutableBegin();
+        virtual void visitMutableEnd();
 
         virtual bool visitStructBegin(const Struct& instance, PropertySet& includedProperties);
         virtual bool visitStructBegin(Struct& instance, PropertySet& includedProperties);
@@ -527,6 +531,32 @@ namespace dots::type
 
         virtual void visitFundamentalTypeEnd(const Typeless& value, const Descriptor<>& descriptor);
         virtual void visitFundamentalTypeEnd(Typeless& value, const Descriptor<>& descriptor);
+
+        template <bool Const>
+        void visitBeginDerived()
+        {
+            if constexpr (Const)
+            {
+                visitConstBegin();
+            }
+            else
+            {
+                visitConstEnd();
+            }
+        }
+
+        template <bool Const>
+        void visitEndDerived()
+        {
+            if constexpr (Const)
+            {
+                visitMutableBegin();
+            }
+            else
+            {
+                visitMutableEnd();
+            }
+        }
 
         template <typename U>
         bool visitStructBeginDerived(U& instance, PropertySet& includedProperties)
