@@ -17,6 +17,7 @@ struct TestSerializer : dots::io::SerializerBase<std::vector<uint8_t>, TestSeria
 protected:
 
     friend TypeVisitor<TestSerializer>;
+    friend dots::io::SerializerBase<std::vector<uint8_t>, TestSerializer>;
 
     template <typename T>
     bool visitStructBeginDerived(const T& instance, dots::property_set_t&/* includedProperties*/)
@@ -51,28 +52,22 @@ protected:
         std::fill_n(std::back_inserter(output()), sizeof(value), 0x00);
     }
 
-    template <typename... Ts>
-    bool visitPackBeginDerived(const Ts&.../* values*/)
+    void serializePackBeginDerived()
     {
         std::fill_n(std::back_inserter(output()), 1, 0x00);
-        return true;
     }
-
-    template <typename T>
-    bool visitPackElementBeginDerived(const T&/* value*/, size_t/* index*/, size_t/* size*/)
-    {
-        std::fill_n(std::back_inserter(output()), 1, 0x00);
-        return true;
-    }
-
-    template <typename T>
-    void visitPackElementEndDerived(const T&/* value*/, size_t/* index*/, size_t/* size*/)
+    
+    void serializePackElementBeginDerived(size_t/* index*/)
     {
         std::fill_n(std::back_inserter(output()), 1, 0x00);
     }
 
-    template <typename... Ts>
-    void visitPackEndDerived(const Ts&.../* values*/)
+    void serializePackElementEndDerived(size_t/* index*/)
+    {
+        std::fill_n(std::back_inserter(output()), 1, 0x00);
+    }
+    
+    void serializePackEndDerived()
     {
         std::fill_n(std::back_inserter(output()), 1, 0x00);
     }
@@ -110,28 +105,22 @@ protected:
         inputData() += sizeof(value);
     }
 
-    template <typename... Ts>
-    bool visitPackBeginDerived(Ts&.../* values*/)
+    void deserializePackBeginDerived()
     {
         inputData() += 1;
-        return true;
     }
-
-    template <typename T>
-    bool visitPackElementBeginDerived(T&/* value*/, size_t/* index*/, size_t/* size*/)
-    {
-        inputData() += 1;
-        return true;
-    }
-
-    template <typename T>
-    void visitPackElementEndDerived(T&/* value*/, size_t/* index*/, size_t/* size*/)
+    
+    void deserializePackElementBeginDerived(size_t/* index*/)
     {
         inputData() += 1;
     }
 
-    template <typename... Ts>
-    void visitPackEndDerived(Ts&.../* values*/)
+    void deserializePackElementEndDerived(size_t/* index*/)
+    {
+        inputData() += 1;
+    }
+    
+    void deserializePackEndDerived()
     {
         inputData() += 1;
     }
@@ -187,7 +176,14 @@ TEST_F(TestSerializerBase, serialize_WriteToContinuousInternalBufferFromTuple)
 {
     TestSerializer sut;
 
-    sut.serialize(String1, SerializationEnum1, VectorBool, SerializationStructSimple1);
+    sut.serializePackBegin();
+    {
+        sut.serializePackElement(String1);
+        sut.serializePackElement(SerializationEnum1);
+        sut.serializePackElement(VectorBool);
+        sut.serializePackElement(SerializationStructSimple1);
+    }
+    sut.serializePackEnd();
     EXPECT_EQ(sut.output().size(), sizeof(String1) + sizeof(SerializationEnum1) + sizeof(VectorBool) + sizeof(SerializationStructSimple1) + 2 + 8);
 }
 
@@ -229,9 +225,16 @@ TEST_F(TestSerializerBase, deserialize_ReadFromContinuousExternalBufferToTuple)
     SerializationStructSimple serializationStructSimple;
     data_t input(sizeof(s) + sizeof(e) + sizeof(v) + sizeof(serializationStructSimple) + 2 + 8, 0x00);
     sut.setInput(input);
-
-    sut.deserialize(s, e, v, serializationStructSimple);
     
+    sut.deserializePackBegin();
+    {
+        sut.deserializePackElement(s);
+        sut.deserializePackElement(e);
+        sut.deserializePackElement(v);
+        sut.deserializePackElement(serializationStructSimple);
+    }
+    sut.deserializePackEnd();
+
     EXPECT_FALSE(sut.inputAvailable());
 }
 
@@ -241,7 +244,14 @@ TEST_F(TestSerializerBase, deserialize_ReadFromContinuousExternalBufferToNewTupl
     data_t input(sizeof(std::string) + sizeof(SerializationEnum) + sizeof(dots::vector_t<dots::bool_t>) + sizeof(SerializationStructSimple) + 2 + 8, 0x00);
     sut.setInput(input);
 
-    auto [s, e, v, serializationStructSimple] = sut.deserialize<std::string, SerializationEnum, dots::vector_t<dots::bool_t>, SerializationStructSimple>();
-    
+    sut.deserializePackBegin();
+    {
+        sut.deserializePackElement<std::string>();
+        sut.deserializePackElement<SerializationEnum>();
+        sut.deserializePackElement<dots::vector_t<dots::bool_t>>();
+        sut.deserializePackElement<SerializationStructSimple>();
+    }
+    sut.deserializePackEnd();
+
     EXPECT_FALSE(sut.inputAvailable());
 }

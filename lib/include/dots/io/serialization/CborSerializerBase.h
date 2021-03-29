@@ -13,6 +13,8 @@ namespace dots::io
     template <typename Derived, bool UseFloat16Zero = true>
     struct CborSerializerBase : SerializerBase<std::vector<uint8_t>, Derived>
     {
+        using serializer_base_t = SerializerBase<std::vector<uint8_t>, Derived>;
+
         CborSerializerBase() = default;
         CborSerializerBase(const CborSerializerBase& other) = default;
         CborSerializerBase(CborSerializerBase&& other) = default;
@@ -21,13 +23,12 @@ namespace dots::io
         CborSerializerBase& operator = (const CborSerializerBase& rhs) = default;
         CborSerializerBase& operator = (CborSerializerBase&& rhs) = default;
 
-    protected:
+        using serializer_base_t::output;
 
-        using serializer_base_t = SerializerBase<std::vector<uint8_t>, Derived>;
+    protected:
 
         friend serializer_base_t;
 
-        using serializer_base_t::output;
         using serializer_base_t::inputData;
         using serializer_base_t::inputDataEnd;
 

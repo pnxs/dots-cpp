@@ -278,41 +278,22 @@ namespace dots::io
                 static_assert(!std::is_same_v<T, T>, "type not supported");
             }
         }
-
-        template <typename... Ts>
-        bool visitPackBeginDerived(const Ts&.../* values*/)
+        
+        void serializePackBeginDerived()
         {
             incrementIndentLevel();
-
-            if (sizeof...(Ts) == 0)
-            {
-                write(traits_t::TupleBegin);
-                return false;
-            }
-            else
-            {
-                writePrefixedNewLine(traits_t::TupleBegin);
-                return true;
-            }
+            writePrefixedNewLine(traits_t::TupleBegin);
         }
-
-        template <typename T>
-        bool visitPackElementBeginDerived(const T&/* value*/, size_t/* index*/, size_t/* size*/)
+        
+        void serializePackElementBeginDerived(size_t index)
         {
-            return true;
-        }
-
-        template <typename T>
-        void visitPackElementEndDerived(const T&/* value*/, size_t index, size_t size)
-        {
-            if (index < size - 1)
+            if (index > 0)
             {
                 writePrefixedNewLine(traits_t::TupleValueSeparator);
             }
         }
-
-        template <typename... Ts>
-        void visitPackEndDerived(const Ts&.../* values*/)
+        
+        void serializePackEndDerived()
         {
             decrementIndentLevel();
             writeSuffixedNewLine(traits_t::TupleEnd);
@@ -321,11 +302,6 @@ namespace dots::io
         //
         // deserialization
         //
-
-        void initDeserializeDerived()
-        {
-            m_input = std::string_view{ inputData(), static_cast<size_t>(inputDataEnd() - inputData()) };
-        }
 
         template <typename T>
         bool visitStructBeginDerived(T& instance, property_set_t&/* includedProperties*/)
@@ -477,30 +453,25 @@ namespace dots::io
             }
         }
 
-        template <typename... Ts>
-        bool visitPackBeginDerived(Ts&.../* values*/)
+        void setInputDerived()
+        {
+            m_input = std::string_view{ inputData(), static_cast<size_t>(inputDataEnd() - inputData()) };
+        }
+
+        void deserializePackBeginDerived()
         {
             readToken(traits_t::TupleBegin);
-            return true;
         }
 
-        template <typename T>
-        bool visitPackElementBeginDerived(T&/* value*/, size_t/* index*/, size_t/* size*/)
+        void deserializePackElementBeginDerived(size_t index)
         {
-            return true;
-        }
-
-        template <typename T>
-        void visitPackElementEndDerived(T&/* value*/, size_t index, size_t size)
-        {
-            if (index < size - 1)
+            if (index > 0)
             {
                 readToken(traits_t::TupleValueSeparator);
             }
         }
 
-        template <typename... Ts>
-        void visitPackEndDerived(Ts&.../* values*/)
+        void deserializePackEndDerived()
         {
             readToken(traits_t::TupleEnd);
         }

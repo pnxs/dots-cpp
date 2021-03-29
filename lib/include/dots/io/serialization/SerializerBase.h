@@ -1,4 +1,5 @@
 #pragma once
+#include <stack>
 #include <dots/type/TypeVisitor.h>
 
 namespace dots::io
@@ -31,6 +32,7 @@ namespace dots::io
         {
             m_inputData = inputData;
             m_inputDataEnd = m_inputData + inputDataSize;
+            derived().setInputDerived();
         }
 
         void setInput(const data_t& input)
@@ -48,27 +50,53 @@ namespace dots::io
         template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
         size_t serialize(const T& instance, const property_set_t& includedProperties)
         {
-            initSerialize();
             visit(instance, includedProperties);
+            return m_output.size() - m_outputSizeBegin;
+        }
+
+        template <typename T>
+        size_t serialize(const T& value)
+        {
+            visit(value);
+            return m_output.size() - m_outputSizeBegin;
+        }
+
+        size_t serializePackBegin()
+        {
+            serializePackBeginInternal();
+            return static_cast<size_t>(m_inputData - m_inputDataBegin);
+        }
+
+        template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
+        size_t serializePackElement(const T& instance, const property_set_t& includedProperties)
+        {
+            serializePackElementBeginInternal();
+            visit(instance, includedProperties);
+            serializePackElementEndInternal();
 
             return m_output.size() - m_outputSizeBegin;
         }
 
-        template <typename... Ts, std::enable_if_t<std::disjunction_v<std::conjunction<std::bool_constant<sizeof...(Ts) == 1>, type::is_property_t<Ts>...>, std::conjunction<std::negation<type::is_property_t<Ts>>...>>, int> = 0>
-        size_t serialize(const Ts&... values)
+        template <typename T>
+        size_t serializePackElement(const T& value)
         {
-            initSerialize();
-            visit(values...);
+            serializePackElementBeginInternal();
+            visit(value);
+            serializePackElementEndInternal();
 
             return m_output.size() - m_outputSizeBegin;
         }
 
-        template <typename... Ts, std::enable_if_t<std::disjunction_v<std::conjunction<std::bool_constant<sizeof...(Ts) == 1>, type::is_property_t<Ts>...>, std::conjunction<std::negation<type::is_property_t<Ts>>...>>, int> = 0>
-        size_t deserialize(Ts&... values)
+        size_t serializePackEnd()
         {
-            initDeserialize();
-            visit(values...);
+            serializePackEndInternal();
+            return static_cast<size_t>(m_inputData - m_inputDataBegin);
+        }
 
+        template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
+        size_t deserialize(T& value)
+        {
+            visit(value);
             return static_cast<size_t>(m_inputData - m_inputDataBegin);
         }
 
@@ -81,17 +109,35 @@ namespace dots::io
             return value;
         }
 
-        template <typename... Ts, std::enable_if_t<std::conjunction_v<std::bool_constant<sizeof...(Ts) >= 2>, std::negation<type::is_property_t<Ts>>...>, int> = 0>
-        std::tuple<Ts...> deserialize()
+        size_t deserializePackBegin()
         {
-            std::tuple<Ts...> values;
-            std::apply([this](auto&... values)
-            {
-                deserialize(values...);
-            }, values);
-            
+            deserializePackBeginInternal();
+            return static_cast<size_t>(m_inputData - m_inputDataBegin);
+        }
 
-            return values;
+        template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
+        size_t deserializePackElement(T& value)
+        {
+            deserializePackElementBeginInternal();
+            visit(value);
+            deserializePackElementEndInternal();
+
+            return static_cast<size_t>(m_inputData - m_inputDataBegin);
+        }
+
+        template <typename T, std::enable_if_t<!std::is_const_v<T> && !std::is_reference_v<T>, int> = 0>
+        T deserializePackElement()
+        {
+            T value;
+            deserializePackElement(value);
+
+            return value;
+        }
+
+        size_t deserializePackEnd()
+        {
+            deserializePackEndInternal();
+            return static_cast<size_t>(m_inputData - m_inputDataBegin);
         }
 
         template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
@@ -147,6 +193,26 @@ namespace dots::io
         using visitor_base_t = type::TypeVisitor<std::conditional_t<Static, Derived, void>>;
         using visitor_base_t::visit;
 
+        friend visitor_base_t;
+
+        template <bool Const>
+        void visitBeginDerived()
+        {
+            if constexpr (Const)
+            {
+                m_outputSizeBegin = m_output.size();
+            }
+            else
+            {
+                if (m_inputData >= m_inputDataEnd)
+                {
+                    throw std::logic_error{ "attempt to deserialize from invalid or empty input buffer" };
+                }
+
+                m_inputDataBegin = m_inputData;
+            }
+        }
+
         const value_t*& inputData()
         {
             return m_inputData;
@@ -157,33 +223,95 @@ namespace dots::io
             return m_inputDataEnd;
         }
 
-        void initSerializeDerived()
+        void setInputDerived()
         {
             /* do nothing */
         }
 
-        void initDeserializeDerived()
+        void serializePackBeginDerived()
+        {
+            /* do nothing */
+        }
+
+        void serializePackElementBeginDerived(size_t/* index*/)
+        {
+            /* do nothing */
+        }
+
+        void serializePackElementEndDerived(size_t/* index*/)
+        {
+            /* do nothing */
+        }
+
+        void serializePackEndDerived()
+        {
+            /* do nothing */
+        }
+
+        void deserializePackBeginDerived()
+        {
+            /* do nothing */
+        }
+
+        void deserializePackElementBeginDerived(size_t/* index*/)
+        {
+            /* do nothing */
+        }
+
+        void deserializePackElementEndDerived(size_t/* index*/)
+        {
+            /* do nothing */
+        }
+
+        void deserializePackEndDerived()
         {
             /* do nothing */
         }
 
     private:
 
-        void initSerialize()
+        void serializePackBeginInternal()
         {
-            m_outputSizeBegin = m_output.size();
-            derived().initSerializeDerived();
+            m_outputPackIndices.emplace(0);
+            derived().serializePackBeginDerived();
         }
 
-        void initDeserialize()
+        void serializePackElementBeginInternal()
         {
-            if (m_inputData >= m_inputDataEnd)
-            {
-                throw std::logic_error{ "attempt to deserialize from invalid or empty input buffer" };
-            }
+            derived().serializePackElementBeginDerived(m_outputPackIndices.top());
+        }
 
-            m_inputDataBegin = m_inputData;
-            derived().initDeserializeDerived();
+        void serializePackElementEndInternal()
+        {
+            derived().serializePackElementEndDerived(m_outputPackIndices.top());
+        }
+
+        void serializePackEndInternal()
+        {
+            m_outputPackIndices.pop();
+            derived().serializePackEndDerived();
+        }
+
+        void deserializePackBeginInternal()
+        {
+            m_inputPackIndices.emplace(0);
+            derived().deserializePackBeginDerived();
+        }
+
+        void deserializePackElementBeginInternal()
+        {
+            derived().deserializePackElementBeginDerived(m_inputPackIndices.top());
+        }
+
+        void deserializePackElementEndInternal()
+        {
+            derived().deserializePackElementEndDerived(m_inputPackIndices.top());
+        }
+
+        void deserializePackEndInternal()
+        {
+            m_inputPackIndices.pop();
+            derived().deserializePackEndDerived();
         }
 
         Derived& derived()
@@ -196,5 +324,7 @@ namespace dots::io
         const value_t* m_inputData = nullptr;
         const value_t* m_inputDataBegin = nullptr;
         const value_t* m_inputDataEnd = nullptr;
+        std::stack<size_t> m_outputPackIndices;
+        std::stack<size_t> m_inputPackIndices;
     };
 }
