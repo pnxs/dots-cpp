@@ -280,7 +280,7 @@ namespace dots::io
         }
 
         template <typename... Ts>
-        bool visitTupleBeginDerived(const Ts&.../* values*/)
+        bool visitPackBeginDerived(const Ts&.../* values*/)
         {
             incrementIndentLevel();
 
@@ -297,13 +297,13 @@ namespace dots::io
         }
 
         template <typename T>
-        bool visitTupleValueBeginDerived(const T&/* value*/, size_t/* index*/, size_t/* size*/)
+        bool visitPackElementBeginDerived(const T&/* value*/, size_t/* index*/, size_t/* size*/)
         {
             return true;
         }
 
         template <typename T>
-        void visitTupleValueEndDerived(const T&/* value*/, size_t index, size_t size)
+        void visitPackElementEndDerived(const T&/* value*/, size_t index, size_t size)
         {
             if (index < size - 1)
             {
@@ -312,7 +312,7 @@ namespace dots::io
         }
 
         template <typename... Ts>
-        void visitTupleEndDerived(const Ts&.../* values*/)
+        void visitPackEndDerived(const Ts&.../* values*/)
         {
             decrementIndentLevel();
             writeSuffixedNewLine(traits_t::TupleEnd);
@@ -478,20 +478,20 @@ namespace dots::io
         }
 
         template <typename... Ts>
-        bool visitTupleBeginDerived(Ts&.../* values*/)
+        bool visitPackBeginDerived(Ts&.../* values*/)
         {
             readToken(traits_t::TupleBegin);
             return true;
         }
 
         template <typename T>
-        bool visitTupleValueBeginDerived(T&/* value*/, size_t/* index*/, size_t/* size*/)
+        bool visitPackElementBeginDerived(T&/* value*/, size_t/* index*/, size_t/* size*/)
         {
             return true;
         }
 
         template <typename T>
-        void visitTupleValueEndDerived(T&/* value*/, size_t index, size_t size)
+        void visitPackElementEndDerived(T&/* value*/, size_t index, size_t size)
         {
             if (index < size - 1)
             {
@@ -500,7 +500,7 @@ namespace dots::io
         }
 
         template <typename... Ts>
-        void visitTupleEndDerived(Ts&.../* values*/)
+        void visitPackEndDerived(Ts&.../* values*/)
         {
             readToken(traits_t::TupleEnd);
         }

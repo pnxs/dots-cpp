@@ -157,25 +157,25 @@ namespace dots::type
         }
 
         template <typename... Us>
-        bool visitTupleBeginDerived(Us&.../* values*/)
+        bool visitPackBeginDerived(Us&.../* values*/)
         {
             return true;
         }
 
         template <typename U>
-        bool visitTupleValueBeginDerived(U&/* value*/, size_t/* index*/, size_t/* size*/)
+        bool visitPackElementBeginDerived(U&/* value*/, size_t/* index*/, size_t/* size*/)
         {
             return true;
         }
 
         template <typename U>
-        void visitTupleValueEndDerived(U&/* value*/, size_t/* index*/, size_t/* size*/)
+        void visitPackElementEndDerived(U&/* value*/, size_t/* index*/, size_t/* size*/)
         {
             /* do nothing */
         }
 
         template <typename... Us>
-        void visitTupleEndDerived(Us&.../* values*/)
+        void visitPackEndDerived(Us&.../* values*/)
         {
             /* do nothing */
         }
@@ -419,23 +419,23 @@ namespace dots::type
         template <bool Const, typename... Ts, std::enable_if_t<sizeof...(Ts) >= 2, int> = 0>
         void visitTypeInternal(const_t<Const, Ts>&... values)
         {
-            if (derived().visitTupleBeginDerived(values...))
+            if (derived().visitPackBeginDerived(values...))
             {
                 auto visit_tuple_value = [this](auto& value, size_t index, size_t size)
                 {
                     using value_t = std::decay_t<decltype(value)>;
 
-                    if (derived().visitTupleValueBeginDerived(value, index, size))
+                    if (derived().visitPackElementBeginDerived(value, index, size))
                     {
                         visitTypeInternal<Const, value_t>(value);
-                        derived().visitTupleValueEndDerived(value, index, size);
+                        derived().visitPackElementEndDerived(value, index, size);
                     }
                 };
 
                 size_t i = 0;
                 (visit_tuple_value(values, i++, sizeof...(Ts)), ...);
 
-                derived().visitTupleEndDerived(values...);
+                derived().visitPackEndDerived(values...);
             }
         }
 

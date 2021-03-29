@@ -52,27 +52,27 @@ protected:
     }
 
     template <typename... Ts>
-    bool visitTupleBeginDerived(const Ts&.../* values*/)
+    bool visitPackBeginDerived(const Ts&.../* values*/)
     {
         std::fill_n(std::back_inserter(output()), 1, 0x00);
         return true;
     }
 
     template <typename T>
-    bool visitTupleValueBeginDerived(const T&/* value*/, size_t/* index*/, size_t/* size*/)
+    bool visitPackElementBeginDerived(const T&/* value*/, size_t/* index*/, size_t/* size*/)
     {
         std::fill_n(std::back_inserter(output()), 1, 0x00);
         return true;
     }
 
     template <typename T>
-    void visitTupleValueEndDerived(const T&/* value*/, size_t/* index*/, size_t/* size*/)
+    void visitPackElementEndDerived(const T&/* value*/, size_t/* index*/, size_t/* size*/)
     {
         std::fill_n(std::back_inserter(output()), 1, 0x00);
     }
 
     template <typename... Ts>
-    void visitTupleEndDerived(const Ts&.../* values*/)
+    void visitPackEndDerived(const Ts&.../* values*/)
     {
         std::fill_n(std::back_inserter(output()), 1, 0x00);
     }
@@ -111,27 +111,27 @@ protected:
     }
 
     template <typename... Ts>
-    bool visitTupleBeginDerived(Ts&.../* values*/)
+    bool visitPackBeginDerived(Ts&.../* values*/)
     {
         inputData() += 1;
         return true;
     }
 
     template <typename T>
-    bool visitTupleValueBeginDerived(T&/* value*/, size_t/* index*/, size_t/* size*/)
+    bool visitPackElementBeginDerived(T&/* value*/, size_t/* index*/, size_t/* size*/)
     {
         inputData() += 1;
         return true;
     }
 
     template <typename T>
-    void visitTupleValueEndDerived(T&/* value*/, size_t/* index*/, size_t/* size*/)
+    void visitPackElementEndDerived(T&/* value*/, size_t/* index*/, size_t/* size*/)
     {
         inputData() += 1;
     }
 
     template <typename... Ts>
-    void visitTupleEndDerived(Ts&.../* values*/)
+    void visitPackEndDerived(Ts&.../* values*/)
     {
         inputData() += 1;
     }
