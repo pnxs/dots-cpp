@@ -19,9 +19,9 @@ namespace dots::io
         static constexpr std::string_view VectorValueSeparator = ",";
         static constexpr std::string_view VectorEnd = "}";
 
-        static constexpr std::string_view TupleBegin = "{";
-        static constexpr std::string_view TupleValueSeparator = ",";
-        static constexpr std::string_view TupleEnd = "}";
+        static constexpr std::string_view PackBegin = "{";
+        static constexpr std::string_view PackValueSeparator = ",";
+        static constexpr std::string_view PackEnd = "}";
 
         static constexpr bool UserTypeNames = true;
 
@@ -282,21 +282,21 @@ namespace dots::io
         void serializePackBeginDerived()
         {
             incrementIndentLevel();
-            writePrefixedNewLine(traits_t::TupleBegin);
+            writePrefixedNewLine(traits_t::PackBegin);
         }
         
         void serializePackElementBeginDerived(size_t index)
         {
             if (index > 0)
             {
-                writePrefixedNewLine(traits_t::TupleValueSeparator);
+                writePrefixedNewLine(traits_t::PackValueSeparator);
             }
         }
         
         void serializePackEndDerived()
         {
             decrementIndentLevel();
-            writeSuffixedNewLine(traits_t::TupleEnd);
+            writeSuffixedNewLine(traits_t::PackEnd);
         }
 
         //
@@ -460,20 +460,20 @@ namespace dots::io
 
         void deserializePackBeginDerived()
         {
-            readToken(traits_t::TupleBegin);
+            readToken(traits_t::PackBegin);
         }
 
         void deserializePackElementBeginDerived(size_t index)
         {
             if (index > 0)
             {
-                readToken(traits_t::TupleValueSeparator);
+                readToken(traits_t::PackValueSeparator);
             }
         }
 
         void deserializePackEndDerived()
         {
-            readToken(traits_t::TupleEnd);
+            readToken(traits_t::PackEnd);
         }
 
         //

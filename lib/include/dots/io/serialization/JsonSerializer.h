@@ -19,9 +19,9 @@ namespace dots::io
         static constexpr std::string_view VectorValueSeparator = ",";
         static constexpr std::string_view VectorEnd = "]";
 
-        static constexpr std::string_view TupleBegin = "[";
-        static constexpr std::string_view TupleValueSeparator = ",";
-        static constexpr std::string_view TupleEnd = "]";
+        static constexpr std::string_view PackBegin = "[";
+        static constexpr std::string_view PackValueSeparator = ",";
+        static constexpr std::string_view PackEnd = "]";
 
         static constexpr bool UserTypeNames = false;
 
