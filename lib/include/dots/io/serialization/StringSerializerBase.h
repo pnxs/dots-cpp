@@ -67,6 +67,8 @@ namespace dots::io
         StringSerializerBase& operator = (StringSerializerBase&& rhs) = default;
 
         using serializer_base_t::output;
+        using serializer_base_t::lastSerializeSize;
+        using serializer_base_t::lastDeserializeSize;
 
         size_t serializeTupleBegin()
         {
@@ -130,8 +132,6 @@ namespace dots::io
         friend serializer_base_t;
 
         using serializer_base_t::visit;
-        using serializer_base_t::lastSerializeSize;
-        using serializer_base_t::lastDeserializeSize;
         using serializer_base_t::inputData;
         using serializer_base_t::inputDataEnd;
 
