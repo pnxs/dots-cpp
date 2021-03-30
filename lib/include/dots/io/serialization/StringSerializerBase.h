@@ -53,7 +53,9 @@ namespace dots::io
 
         StringSerializerBase(StringSerializerOptions options = {}) :
             m_options{ std::move(options) },
-            m_indentLevel(0)
+            m_indentLevel(0),
+            m_consecutiveSerialize(false),
+            m_consecutiveDeserialize(false)
         {
             /* do nothing */
         }
@@ -65,6 +67,42 @@ namespace dots::io
         StringSerializerBase& operator = (StringSerializerBase&& rhs) = default;
 
         using serializer_base_t::output;
+
+        size_t serializePackBegin()
+        {
+            serializer_base_t::template visitBeginDerived<true>();
+            incrementIndentLevel();
+            writePrefixedNewLine(traits_t::PackBegin);
+
+            return output().size() - outputSizeBegin();
+        }
+
+        size_t serializePackEnd()
+        {
+            serializer_base_t::template visitBeginDerived<true>();
+            decrementIndentLevel();
+            writeSuffixedNewLine(traits_t::PackEnd);
+
+            return output().size() - outputSizeBegin();
+        }
+
+        size_t deserializePackBegin()
+        {
+            serializer_base_t::template visitBeginDerived<false>();
+            readToken(traits_t::PackBegin);
+            inputData() = m_input.data();
+
+            return static_cast<size_t>(inputData() - inputDataBegin());
+        }
+
+        size_t deserializePackEnd()
+        {
+            serializer_base_t::template visitEndDerived<false>();
+            readToken(traits_t::PackEnd);
+            inputData() = m_input.data();
+
+            return static_cast<size_t>(inputData() - inputDataBegin());
+        }
 
         template <typename T, typename D = Derived, std::enable_if_t<std::is_constructible_v<D, StringSerializerOptions> && std::is_base_of_v<type::Struct, T>, int> = 0>
         static data_t Serialize(const T& instance, const property_set_t& includedProperties = property_set_t::All, StringSerializerOptions options = {})
@@ -92,9 +130,47 @@ namespace dots::io
         friend serializer_base_t;
 
         using serializer_base_t::visit;
-
+        using serializer_base_t::outputSizeBegin;
         using serializer_base_t::inputData;
+        using serializer_base_t::inputDataBegin;
         using serializer_base_t::inputDataEnd;
+
+        template <bool Const>
+        void visitBeginDerived()
+        {
+            serializer_base_t::template visitBeginDerived<Const>();
+
+            if constexpr (Const)
+            {
+                if (m_consecutiveSerialize)
+                {
+                    writePrefixedNewLine(traits_t::PackValueSeparator);
+                }
+            }
+            else
+            {
+                if (m_consecutiveDeserialize)
+                {
+                    readToken(traits_t::PackValueSeparator);
+                }
+            }
+        }
+
+        template <bool Const>
+        void visitEndDerived()
+        {
+            if constexpr (Const)
+            {
+                m_consecutiveSerialize = true;
+            }
+            else
+            {
+                m_consecutiveDeserialize = true;
+                inputData() = m_input.data();
+            }
+
+            serializer_base_t::template visitEndDerived<Const>();
+        }
 
         //
         // serialization
@@ -278,26 +354,6 @@ namespace dots::io
                 static_assert(!std::is_same_v<T, T>, "type not supported");
             }
         }
-        
-        void serializePackBeginDerived()
-        {
-            incrementIndentLevel();
-            writePrefixedNewLine(traits_t::PackBegin);
-        }
-        
-        void serializePackElementBeginDerived(size_t index)
-        {
-            if (index > 0)
-            {
-                writePrefixedNewLine(traits_t::PackValueSeparator);
-            }
-        }
-        
-        void serializePackEndDerived()
-        {
-            decrementIndentLevel();
-            writeSuffixedNewLine(traits_t::PackEnd);
-        }
 
         //
         // deserialization
@@ -456,24 +512,7 @@ namespace dots::io
         void setInputDerived()
         {
             m_input = std::string_view{ inputData(), static_cast<size_t>(inputDataEnd() - inputData()) };
-        }
-
-        void deserializePackBeginDerived()
-        {
-            readToken(traits_t::PackBegin);
-        }
-
-        void deserializePackElementBeginDerived(size_t index)
-        {
-            if (index > 0)
-            {
-                readToken(traits_t::PackValueSeparator);
-            }
-        }
-
-        void deserializePackEndDerived()
-        {
-            readToken(traits_t::PackEnd);
+            m_consecutiveDeserialize = false;
         }
 
         //
@@ -884,5 +923,7 @@ namespace dots::io
         StringSerializerOptions m_options;
         size_t m_indentLevel;
         std::string_view m_input;
+        bool m_consecutiveSerialize;
+        bool m_consecutiveDeserialize;
     };
 }

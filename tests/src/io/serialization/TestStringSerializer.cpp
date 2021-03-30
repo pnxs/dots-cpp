@@ -254,3 +254,52 @@ TEST_F(TestStringSerializer, to_string)
     data_t expectedComplex = "SerializationStructComplex{ .propertySetProperty = " STRING_PROPERTY_SET_MIXED_1 ", .durationVectorProperty = { " STRING_DURATION_1 ", " STRING_DURATION_2 " }, .uuidProperty = " STRING_UUID_1 " }";
     EXPECT_EQ(dots::io::to_string(SerializationStructComplex2, SerializationStructComplex2._validProperties()), expectedComplex);
 }
+
+TEST_F(TestStringSerializer, serialize_WritePackToContinuousInternalBuffer)
+{
+    dots::io::StringSerializer<> sut;
+
+    sut.serializePackBegin();
+    {
+        sut.serialize(String1);
+        sut.serialize(SerializationEnum1);
+        sut.serialize(VectorBool);
+        sut.serialize(SerializationStructSimple1);
+    }
+    sut.serializePackEnd();
+
+    data_t output{
+        "{ "
+            STRING_STRING_1 ", "
+            STRING_TEST_ENUM_1 ", "
+            "{ " STRING_BOOL_TRUE ", " STRING_BOOL_FALSE ", " STRING_BOOL_FALSE " }" ", "
+            "SerializationStructSimple{ .int32Property = " STRING_INT32_POSITIVE ", .stringProperty = " STRING_STRING_1 ", .float32Property = " STRING_FLOAT32_POSITIVE " }"
+        " }"
+    };
+    EXPECT_EQ(sut.output(), output);
+}
+
+TEST_F(TestStringSerializer, deserialize_ReadPackFromContinuousExternalBuffer)
+{
+    dots::io::StringSerializer<> sut;
+    data_t input{
+        "{ "
+            STRING_STRING_1 ", "
+            STRING_TEST_ENUM_1 ", "
+            "{ " STRING_BOOL_TRUE ", " STRING_BOOL_FALSE ", " STRING_BOOL_FALSE " }" ", "
+            "SerializationStructSimple{ .int32Property = " STRING_INT32_POSITIVE ", .stringProperty = " STRING_STRING_1 ", .float32Property = " STRING_FLOAT32_POSITIVE " }"
+        " }"
+    };
+    sut.setInput(input);
+
+    sut.deserializePackBegin();
+    {
+        sut.deserialize<std::string>();
+        sut.deserialize<SerializationEnum>();
+        sut.deserialize<dots::vector_t<dots::bool_t>>();
+        sut.deserialize<SerializationStructSimple>();
+    }
+    sut.deserializePackEnd();
+
+    EXPECT_FALSE(sut.inputAvailable());
+}

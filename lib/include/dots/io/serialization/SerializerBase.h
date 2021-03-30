@@ -32,6 +32,7 @@ namespace dots::io
         {
             m_inputData = inputData;
             m_inputDataEnd = m_inputData + inputDataSize;
+            m_inputDataBegin = nullptr;
             derived().setInputDerived();
         }
 
@@ -61,18 +62,6 @@ namespace dots::io
             return m_output.size() - m_outputSizeBegin;
         }
 
-        size_t serializePackBegin()
-        {
-            serializePackBeginInternal();
-            return static_cast<size_t>(m_inputData - m_inputDataBegin);
-        }
-
-        size_t serializePackEnd()
-        {
-            serializePackEndInternal();
-            return static_cast<size_t>(m_inputData - m_inputDataBegin);
-        }
-
         template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
         size_t deserialize(T& value)
         {
@@ -87,18 +76,6 @@ namespace dots::io
             deserialize(value);
 
             return value;
-        }
-
-        size_t deserializePackBegin()
-        {
-            deserializePackBeginInternal();
-            return static_cast<size_t>(m_inputData - m_inputDataBegin);
-        }
-
-        size_t deserializePackEnd()
-        {
-            deserializePackEndInternal();
-            return static_cast<size_t>(m_inputData - m_inputDataBegin);
         }
 
         template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
@@ -161,11 +138,6 @@ namespace dots::io
         {
             if constexpr (Const)
             {
-                if (!m_outputPackIndices.empty())
-                {
-                    derived().serializePackElementBeginDerived(m_outputPackIndices.top());
-                }
-
                 m_outputSizeBegin = m_output.size();
             }
             else
@@ -175,37 +147,23 @@ namespace dots::io
                     throw std::logic_error{ "attempt to deserialize from invalid or empty input buffer" };
                 }
 
-                if (!m_inputPackIndices.empty())
-                {
-                    derived().deserializePackElementBeginDerived(m_inputPackIndices.top());
-                }
-
                 m_inputDataBegin = m_inputData;
             }
         }
 
-        template <bool Const>
-        void visitEndDerived()
+        size_t outputSizeBegin()
         {
-            if constexpr (Const)
-            {
-                if (!m_outputPackIndices.empty())
-                {
-                    derived().serializePackElementEndDerived(m_outputPackIndices.top());
-                }
-            }
-            else
-            {
-                if (!m_inputPackIndices.empty())
-                {
-                    derived().deserializePackElementEndDerived(m_inputPackIndices.top());
-                }
-            }
+            return m_outputSizeBegin;
         }
 
         const value_t*& inputData()
         {
             return m_inputData;
+        }
+
+        const value_t*& inputDataBegin()
+        {
+            return m_inputDataBegin;
         }
 
         const value_t*& inputDataEnd()
@@ -218,78 +176,7 @@ namespace dots::io
             /* do nothing */
         }
 
-        void serializePackBeginDerived()
-        {
-            /* do nothing */
-        }
-
-        void serializePackElementBeginDerived(size_t/* index*/)
-        {
-            /* do nothing */
-        }
-
-        void serializePackElementEndDerived(size_t/* index*/)
-        {
-            /* do nothing */
-        }
-
-        void serializePackEndDerived()
-        {
-            /* do nothing */
-        }
-
-        void deserializePackBeginDerived()
-        {
-            /* do nothing */
-        }
-
-        void deserializePackElementBeginDerived(size_t/* index*/)
-        {
-            /* do nothing */
-        }
-
-        void deserializePackElementEndDerived(size_t/* index*/)
-        {
-            /* do nothing */
-        }
-
-        void deserializePackEndDerived()
-        {
-            /* do nothing */
-        }
-
     private:
-
-        void serializePackBeginInternal()
-        {
-            m_outputSizeBegin = m_output.size();
-            m_outputPackIndices.emplace(0);
-            derived().serializePackBeginDerived();
-        }
-
-        void serializePackEndInternal()
-        {
-            m_outputPackIndices.pop();
-            derived().serializePackEndDerived();
-        }
-
-        void deserializePackBeginInternal()
-        {
-            if (m_inputData >= m_inputDataEnd)
-            {
-                throw std::logic_error{ "attempt to deserialize from invalid or empty input buffer" };
-            }
-
-            m_inputDataBegin = m_inputData;
-            m_inputPackIndices.emplace(0);
-            derived().deserializePackBeginDerived();
-        }
-
-        void deserializePackEndInternal()
-        {
-            m_inputPackIndices.pop();
-            derived().deserializePackEndDerived();
-        }
 
         Derived& derived()
         {
@@ -301,7 +188,5 @@ namespace dots::io
         const value_t* m_inputData = nullptr;
         const value_t* m_inputDataBegin = nullptr;
         const value_t* m_inputDataEnd = nullptr;
-        std::stack<size_t> m_outputPackIndices;
-        std::stack<size_t> m_inputPackIndices;
     };
 }

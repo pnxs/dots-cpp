@@ -232,3 +232,52 @@ TEST_F(TestJsonSerializer, deserialize_ComplexStructArgument)
     dots::io::from_json(data_t{ "{\"enumProperty\":null,\"durationVectorProperty\":[" JSON_DURATION_1 "," JSON_DURATION_2 "]}" }, serializationStructComplex4);
     EXPECT_TRUE(serializationStructComplex4._equal(SerializationStructComplex2, SerializationStructComplex::enumProperty_p + SerializationStructComplex::durationVectorProperty_p));
 }
+
+TEST_F(TestJsonSerializer, serialize_WritePackToContinuousInternalBuffer)
+{
+    dots::io::JsonSerializer<> sut{ { true } };
+
+    sut.serializePackBegin();
+    {
+        sut.serialize(String1);
+        sut.serialize(SerializationEnum1);
+        sut.serialize(VectorBool);
+        sut.serialize(SerializationStructSimple1);
+    }
+    sut.serializePackEnd();
+
+    data_t output{
+        "["
+            JSON_JSON_1 ","
+            JSON_TEST_ENUM_1 ","
+            "[" JSON_BOOL_TRUE "," JSON_BOOL_FALSE "," JSON_BOOL_FALSE "]" ","
+            "{\"int32Property\":" JSON_INT32_POSITIVE ",\"stringProperty\":" JSON_JSON_1 ",\"float32Property\":" JSON_FLOAT32_POSITIVE "}"
+        "]"
+    };
+    EXPECT_EQ(sut.output(), output);
+}
+
+TEST_F(TestJsonSerializer, deserialize_ReadPackFromContinuousExternalBuffer)
+{
+    dots::io::JsonSerializer<> sut{ { true } };
+    data_t input{
+        "["
+            JSON_JSON_1 ","
+            JSON_TEST_ENUM_1 ","
+            "[" JSON_BOOL_TRUE "," JSON_BOOL_FALSE "," JSON_BOOL_FALSE "]" ","
+            "{\"int32Property\":" JSON_INT32_POSITIVE ",\"stringProperty\":" JSON_JSON_1 ",\"float32Property\":" JSON_FLOAT32_POSITIVE "}"
+        "]"
+    };
+    sut.setInput(input);
+
+    sut.deserializePackBegin();
+    {
+        sut.deserialize<std::string>();
+        sut.deserialize<SerializationEnum>();
+        sut.deserialize<dots::vector_t<dots::bool_t>>();
+        sut.deserialize<SerializationStructSimple>();
+    }
+    sut.deserializePackEnd();
+
+    EXPECT_FALSE(sut.inputAvailable());
+}
