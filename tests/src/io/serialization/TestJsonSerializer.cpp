@@ -233,18 +233,18 @@ TEST_F(TestJsonSerializer, deserialize_ComplexStructArgument)
     EXPECT_TRUE(serializationStructComplex4._equal(SerializationStructComplex2, SerializationStructComplex::enumProperty_p + SerializationStructComplex::durationVectorProperty_p));
 }
 
-TEST_F(TestJsonSerializer, serialize_WritePackToContinuousInternalBuffer)
+TEST_F(TestJsonSerializer, serialize_WriteTupleToContinuousInternalBuffer)
 {
     dots::io::JsonSerializer<> sut{ { true } };
 
-    sut.serializePackBegin();
+    sut.serializeTupleBegin();
     {
         sut.serialize(String1);
         sut.serialize(SerializationEnum1);
         sut.serialize(VectorBool);
         sut.serialize(SerializationStructSimple1);
     }
-    sut.serializePackEnd();
+    sut.serializeTupleEnd();
 
     data_t output{
         "["
@@ -257,7 +257,7 @@ TEST_F(TestJsonSerializer, serialize_WritePackToContinuousInternalBuffer)
     EXPECT_EQ(sut.output(), output);
 }
 
-TEST_F(TestJsonSerializer, deserialize_ReadPackFromContinuousExternalBuffer)
+TEST_F(TestJsonSerializer, deserialize_ReadTupleFromContinuousExternalBuffer)
 {
     dots::io::JsonSerializer<> sut{ { true } };
     data_t input{
@@ -270,14 +270,14 @@ TEST_F(TestJsonSerializer, deserialize_ReadPackFromContinuousExternalBuffer)
     };
     sut.setInput(input);
 
-    sut.deserializePackBegin();
+    sut.deserializeTupleBegin();
     {
         sut.deserialize<std::string>();
         sut.deserialize<SerializationEnum>();
         sut.deserialize<dots::vector_t<dots::bool_t>>();
         sut.deserialize<SerializationStructSimple>();
     }
-    sut.deserializePackEnd();
+    sut.deserializeTupleEnd();
 
     EXPECT_FALSE(sut.inputAvailable());
 }

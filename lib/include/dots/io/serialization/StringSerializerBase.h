@@ -19,9 +19,9 @@ namespace dots::io
         static constexpr std::string_view VectorValueSeparator = ",";
         static constexpr std::string_view VectorEnd = "}";
 
-        static constexpr std::string_view PackBegin = "{";
-        static constexpr std::string_view PackValueSeparator = ",";
-        static constexpr std::string_view PackEnd = "}";
+        static constexpr std::string_view TupleBegin = "{";
+        static constexpr std::string_view TupleElementSeperator = ",";
+        static constexpr std::string_view TupleEnd = "}";
 
         static constexpr bool UserTypeNames = true;
 
@@ -68,37 +68,37 @@ namespace dots::io
 
         using serializer_base_t::output;
 
-        size_t serializePackBegin()
+        size_t serializeTupleBegin()
         {
             serializer_base_t::template visitBeginDerived<true>();
             incrementIndentLevel();
-            writePrefixedNewLine(traits_t::PackBegin);
+            writePrefixedNewLine(traits_t::TupleBegin);
 
             return output().size() - outputSizeBegin();
         }
 
-        size_t serializePackEnd()
+        size_t serializeTupleEnd()
         {
             serializer_base_t::template visitBeginDerived<true>();
             decrementIndentLevel();
-            writeSuffixedNewLine(traits_t::PackEnd);
+            writeSuffixedNewLine(traits_t::TupleEnd);
 
             return output().size() - outputSizeBegin();
         }
 
-        size_t deserializePackBegin()
+        size_t deserializeTupleBegin()
         {
             serializer_base_t::template visitBeginDerived<false>();
-            readToken(traits_t::PackBegin);
+            readToken(traits_t::TupleBegin);
             inputData() = m_input.data();
 
             return static_cast<size_t>(inputData() - inputDataBegin());
         }
 
-        size_t deserializePackEnd()
+        size_t deserializeTupleEnd()
         {
             serializer_base_t::template visitEndDerived<false>();
-            readToken(traits_t::PackEnd);
+            readToken(traits_t::TupleEnd);
             inputData() = m_input.data();
 
             return static_cast<size_t>(inputData() - inputDataBegin());
@@ -144,14 +144,14 @@ namespace dots::io
             {
                 if (m_consecutiveSerialize)
                 {
-                    writePrefixedNewLine(traits_t::PackValueSeparator);
+                    writePrefixedNewLine(traits_t::TupleElementSeperator);
                 }
             }
             else
             {
                 if (m_consecutiveDeserialize)
                 {
-                    readToken(traits_t::PackValueSeparator);
+                    readToken(traits_t::TupleElementSeperator);
                 }
             }
         }

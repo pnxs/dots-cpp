@@ -255,18 +255,18 @@ TEST_F(TestStringSerializer, to_string)
     EXPECT_EQ(dots::io::to_string(SerializationStructComplex2, SerializationStructComplex2._validProperties()), expectedComplex);
 }
 
-TEST_F(TestStringSerializer, serialize_WritePackToContinuousInternalBuffer)
+TEST_F(TestStringSerializer, serialize_WriteTupleToContinuousInternalBuffer)
 {
     dots::io::StringSerializer<> sut;
 
-    sut.serializePackBegin();
+    sut.serializeTupleBegin();
     {
         sut.serialize(String1);
         sut.serialize(SerializationEnum1);
         sut.serialize(VectorBool);
         sut.serialize(SerializationStructSimple1);
     }
-    sut.serializePackEnd();
+    sut.serializeTupleEnd();
 
     data_t output{
         "{ "
@@ -279,7 +279,7 @@ TEST_F(TestStringSerializer, serialize_WritePackToContinuousInternalBuffer)
     EXPECT_EQ(sut.output(), output);
 }
 
-TEST_F(TestStringSerializer, deserialize_ReadPackFromContinuousExternalBuffer)
+TEST_F(TestStringSerializer, deserialize_ReadTupleFromContinuousExternalBuffer)
 {
     dots::io::StringSerializer<> sut;
     data_t input{
@@ -292,14 +292,14 @@ TEST_F(TestStringSerializer, deserialize_ReadPackFromContinuousExternalBuffer)
     };
     sut.setInput(input);
 
-    sut.deserializePackBegin();
+    sut.deserializeTupleBegin();
     {
         sut.deserialize<std::string>();
         sut.deserialize<SerializationEnum>();
         sut.deserialize<dots::vector_t<dots::bool_t>>();
         sut.deserialize<SerializationStructSimple>();
     }
-    sut.deserializePackEnd();
+    sut.deserializeTupleEnd();
 
     EXPECT_FALSE(sut.inputAvailable());
 }
