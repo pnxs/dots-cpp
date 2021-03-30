@@ -74,9 +74,9 @@ namespace dots::io
                 m_serializer.setInput(static_cast<const char*>(m_buffer.cdata().data()), m_buffer.size());
                 m_serializer.deserializePackBegin();
                 DotsHeader header;
-                m_serializer.deserializePackElement(header);                
+                m_serializer.deserialize(header);
                 type::AnyStruct instance{ registry().getStructType(*header.typeName) };
-                m_serializer.deserializePackElement(*instance);
+                m_serializer.deserialize(*instance);
                 m_serializer.deserializePackEnd();
 
                 processReceive(Transmission{ std::move(header), std::move(instance) });
@@ -91,8 +91,8 @@ namespace dots::io
     void WebSocketChannel::transmitImpl(const DotsHeader& header, const type::Struct& instance)
     {
         m_serializer.serializePackBegin();
-        m_serializer.serializePackElement(header);
-        m_serializer.serializePackElement(instance);
+        m_serializer.serialize(header);
+        m_serializer.serialize(instance);
         m_serializer.serializePackEnd();
 
         m_stream.write(boost::asio::buffer(m_serializer.output()));

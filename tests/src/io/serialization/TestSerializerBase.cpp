@@ -178,10 +178,10 @@ TEST_F(TestSerializerBase, serialize_WriteToContinuousInternalBufferFromTuple)
 
     sut.serializePackBegin();
     {
-        sut.serializePackElement(String1);
-        sut.serializePackElement(SerializationEnum1);
-        sut.serializePackElement(VectorBool);
-        sut.serializePackElement(SerializationStructSimple1);
+        sut.serialize(String1);
+        sut.serialize(SerializationEnum1);
+        sut.serialize(VectorBool);
+        sut.serialize(SerializationStructSimple1);
     }
     sut.serializePackEnd();
     EXPECT_EQ(sut.output().size(), sizeof(String1) + sizeof(SerializationEnum1) + sizeof(VectorBool) + sizeof(SerializationStructSimple1) + 2 + 8);
@@ -228,10 +228,10 @@ TEST_F(TestSerializerBase, deserialize_ReadFromContinuousExternalBufferToTuple)
     
     sut.deserializePackBegin();
     {
-        sut.deserializePackElement(s);
-        sut.deserializePackElement(e);
-        sut.deserializePackElement(v);
-        sut.deserializePackElement(serializationStructSimple);
+        sut.deserialize(s);
+        sut.deserialize(e);
+        sut.deserialize(v);
+        sut.deserialize(serializationStructSimple);
     }
     sut.deserializePackEnd();
 
@@ -246,10 +246,10 @@ TEST_F(TestSerializerBase, deserialize_ReadFromContinuousExternalBufferToNewTupl
 
     sut.deserializePackBegin();
     {
-        sut.deserializePackElement<std::string>();
-        sut.deserializePackElement<SerializationEnum>();
-        sut.deserializePackElement<dots::vector_t<dots::bool_t>>();
-        sut.deserializePackElement<SerializationStructSimple>();
+        sut.deserialize<std::string>();
+        sut.deserialize<SerializationEnum>();
+        sut.deserialize<dots::vector_t<dots::bool_t>>();
+        sut.deserialize<SerializationStructSimple>();
     }
     sut.deserializePackEnd();
 

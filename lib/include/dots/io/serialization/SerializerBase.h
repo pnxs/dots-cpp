@@ -67,26 +67,6 @@ namespace dots::io
             return static_cast<size_t>(m_inputData - m_inputDataBegin);
         }
 
-        template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
-        size_t serializePackElement(const T& instance, const property_set_t& includedProperties)
-        {
-            serializePackElementBeginInternal();
-            visit(instance, includedProperties);
-            serializePackElementEndInternal();
-
-            return m_output.size() - m_outputSizeBegin;
-        }
-
-        template <typename T>
-        size_t serializePackElement(const T& value)
-        {
-            serializePackElementBeginInternal();
-            visit(value);
-            serializePackElementEndInternal();
-
-            return m_output.size() - m_outputSizeBegin;
-        }
-
         size_t serializePackEnd()
         {
             serializePackEndInternal();
@@ -113,25 +93,6 @@ namespace dots::io
         {
             deserializePackBeginInternal();
             return static_cast<size_t>(m_inputData - m_inputDataBegin);
-        }
-
-        template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
-        size_t deserializePackElement(T& value)
-        {
-            deserializePackElementBeginInternal();
-            visit(value);
-            deserializePackElementEndInternal();
-
-            return static_cast<size_t>(m_inputData - m_inputDataBegin);
-        }
-
-        template <typename T, std::enable_if_t<!std::is_const_v<T> && !std::is_reference_v<T>, int> = 0>
-        T deserializePackElement()
-        {
-            T value;
-            deserializePackElement(value);
-
-            return value;
         }
 
         size_t deserializePackEnd()
@@ -200,6 +161,11 @@ namespace dots::io
         {
             if constexpr (Const)
             {
+                if (!m_outputPackIndices.empty())
+                {
+                    derived().serializePackElementBeginDerived(m_outputPackIndices.top());
+                }
+
                 m_outputSizeBegin = m_output.size();
             }
             else
@@ -209,7 +175,31 @@ namespace dots::io
                     throw std::logic_error{ "attempt to deserialize from invalid or empty input buffer" };
                 }
 
+                if (!m_inputPackIndices.empty())
+                {
+                    derived().deserializePackElementBeginDerived(m_inputPackIndices.top());
+                }
+
                 m_inputDataBegin = m_inputData;
+            }
+        }
+
+        template <bool Const>
+        void visitEndDerived()
+        {
+            if constexpr (Const)
+            {
+                if (!m_outputPackIndices.empty())
+                {
+                    derived().serializePackElementEndDerived(m_outputPackIndices.top());
+                }
+            }
+            else
+            {
+                if (!m_inputPackIndices.empty())
+                {
+                    derived().deserializePackElementEndDerived(m_inputPackIndices.top());
+                }
             }
         }
 
@@ -272,18 +262,9 @@ namespace dots::io
 
         void serializePackBeginInternal()
         {
+            m_outputSizeBegin = m_output.size();
             m_outputPackIndices.emplace(0);
             derived().serializePackBeginDerived();
-        }
-
-        void serializePackElementBeginInternal()
-        {
-            derived().serializePackElementBeginDerived(m_outputPackIndices.top());
-        }
-
-        void serializePackElementEndInternal()
-        {
-            derived().serializePackElementEndDerived(m_outputPackIndices.top());
         }
 
         void serializePackEndInternal()
@@ -294,18 +275,14 @@ namespace dots::io
 
         void deserializePackBeginInternal()
         {
+            if (m_inputData >= m_inputDataEnd)
+            {
+                throw std::logic_error{ "attempt to deserialize from invalid or empty input buffer" };
+            }
+
+            m_inputDataBegin = m_inputData;
             m_inputPackIndices.emplace(0);
             derived().deserializePackBeginDerived();
-        }
-
-        void deserializePackElementBeginInternal()
-        {
-            derived().deserializePackElementBeginDerived(m_inputPackIndices.top());
-        }
-
-        void deserializePackElementEndInternal()
-        {
-            derived().deserializePackElementEndDerived(m_inputPackIndices.top());
         }
 
         void deserializePackEndInternal()
