@@ -25,65 +25,65 @@ namespace dots::type
         template <typename T, std::enable_if_t<std::is_base_of_v<Struct, T>, int> = 0>
         void visit(const T& instance, const PropertySet& includedProperties)
         {
-            derived().template visitBeginDerived<true>();
+            visitBegin<true>();
             visitStructInternal<true, T>(instance, includedProperties);
-            derived().template visitEndDerived<true>();
+            visitEnd<true>();
         }
 
         template <typename T, std::enable_if_t<std::is_base_of_v<Struct, T>, int> = 0>
         void visit(T& instance, const PropertySet& includedProperties)
         {
-            derived().template visitBeginDerived<false>();
+            visitBegin<false>();
             visitStructInternal<false, T>(instance, includedProperties);
-            derived().template visitEndDerived<false>();
+            visitEnd<false>();
         }
 
         template <typename T, std::enable_if_t<is_property_v<T>, int> = 0>
         void visit(const T& property, bool first = true)
         {
-            derived().template visitBeginDerived<true>();
+            visitBegin<true>();
             visitPropertyInternal<true, T>(property, first);
-            derived().template visitEndDerived<true>();
+            visitEnd<true>();
         }
 
         template <typename T, std::enable_if_t<is_property_v<T>, int> = 0>
         void visit(T& property, bool first = true)
         {
-            derived().template visitBeginDerived<false>();
+            visitBegin<false>();
             visitPropertyInternal<false, T>(property, first);
-            derived().template visitEndDerived<false>();
+            visitEnd<false>();
         }
 
         template <typename T>
         void visit(const T& value, const Descriptor<T>& descriptor)
         {
-            derived().template visitBeginDerived<true>();
+            visitBegin<true>();
             visitTypeInternal<true>(value, descriptor);
-            derived().template visitEndDerived<true>();
+            visitEnd<true>();
         }
 
         template <typename T>
         void visit(T& value, const Descriptor<T>& descriptor)
         {
-            derived().template visitBeginDerived<false>();
+            visitBegin<false>();
             visitTypeInternal<false>(value, descriptor);
-            derived().template visitEndDerived<false>();
+            visitEnd<false>();
         }
 
         template <typename... Ts, std::enable_if_t<std::conjunction_v<std::negation<is_property_t<Ts>>...>, int> = 0>
         void visit(const Ts&... values)
         {
-            derived().template visitBeginDerived<true>();
+            visitBegin<true>();
             visitTypeInternal<true, Ts...>(values...);
-            derived().template visitEndDerived<true>();
+            visitEnd<true>();
         }
 
         template <typename... Ts, std::enable_if_t<std::conjunction_v<std::negation<std::is_const<Ts>>..., std::negation<is_property_t<Ts>>...>, int> = 0>
         void visit(Ts&... values)
         {
-            derived().template visitBeginDerived<false>();
+            visitBegin<false>();
             visitTypeInternal<false, Ts...>(values...);
-            derived().template visitEndDerived<false>();
+            visitEnd<false>();
         }
 
         template <bool Const>
@@ -186,6 +186,24 @@ namespace dots::type
 
         template <bool Condition, typename U>
         using const_t = std::conditional_t<Condition, std::add_const_t<U>, U>;
+
+        template <bool Const>
+        void visitBegin()
+        {
+            if (m_visitingLevel++ == 0)
+            {
+                derived().template visitBeginDerived<Const>();
+            }
+        }
+
+        template <bool Const>
+        void visitEnd()
+        {
+            if (--m_visitingLevel == 0)
+            {
+                derived().template visitEndDerived<Const>();
+            }
+        }
 
         template <bool Const, typename T>
         void visitStructInternal(const_t<Const, T>& instance, PropertySet includedProperties)
@@ -445,6 +463,8 @@ namespace dots::type
         {
             return static_cast<Derived&>(*this);
         }
+
+        size_t m_visitingLevel = 0;
     };
 
     template <>
