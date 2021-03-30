@@ -65,7 +65,7 @@ TEST_F(TestJsonSerializer, serialize_TypedArgument)
     EXPECT_EQ(dots::io::to_json(Duration2), data_t(JSON_DURATION_2));
 
     EXPECT_EQ(dots::io::to_json(Uuid1), data_t(JSON_UUID_1));
-    EXPECT_EQ(dots::io::to_json(String1), data_t(JSON_JSON_1));
+    EXPECT_EQ(dots::io::to_json(String1), data_t(JSON_STRING_1));
 
     EXPECT_EQ(dots::io::to_json(SerializationEnum1), data_t(JSON_TEST_ENUM_1));
 }
@@ -126,7 +126,7 @@ TEST_F(TestJsonSerializer, deserialize_TypedArgument)
     EXPECT_EQ(dots::io::from_json<dots::duration_t>(data_t(JSON_DURATION_2)), Duration2);
 
     EXPECT_EQ(dots::io::from_json<dots::uuid_t>(data_t(JSON_UUID_1)), Uuid1);
-    EXPECT_EQ(dots::io::from_json<dots::string_t>(data_t(JSON_JSON_1)), String1);
+    EXPECT_EQ(dots::io::from_json<dots::string_t>(data_t(JSON_STRING_1)), String1);
 
     EXPECT_EQ(dots::io::from_json<SerializationEnum>(data_t(JSON_TEST_ENUM_1)), SerializationEnum1);
 }
@@ -134,7 +134,7 @@ TEST_F(TestJsonSerializer, deserialize_TypedArgument)
 TEST_F(TestJsonSerializer, serialize_PropertyArgument)
 {
     EXPECT_EQ(dots::io::to_json(SerializationStructSimple1.int32Property), data_t("\"int32Property\":" JSON_INT32_POSITIVE));
-    EXPECT_EQ(dots::io::to_json(SerializationStructSimple1.stringProperty), data_t("\"stringProperty\":" JSON_JSON_1));
+    EXPECT_EQ(dots::io::to_json(SerializationStructSimple1.stringProperty), data_t("\"stringProperty\":" JSON_STRING_1));
     EXPECT_EQ(dots::io::to_json(SerializationStructSimple1.float32Property), data_t("\"float32Property\":" JSON_FLOAT32_POSITIVE));
 }
 
@@ -142,7 +142,7 @@ TEST_F(TestJsonSerializer, deserialize_PropertyArgument)
 {
     SerializationStructSimple serializationStructSimple;
     dots::io::from_json(data_t(JSON_INT32_POSITIVE), serializationStructSimple.int32Property);
-    dots::io::from_json(data_t(JSON_JSON_1), serializationStructSimple.stringProperty);
+    dots::io::from_json(data_t(JSON_STRING_1), serializationStructSimple.stringProperty);
     dots::io::from_json(data_t(JSON_FLOAT32_POSITIVE), serializationStructSimple.float32Property);
 
     EXPECT_EQ(serializationStructSimple.int32Property, SerializationStructSimple1.int32Property);
@@ -174,10 +174,10 @@ TEST_F(TestJsonSerializer, deserialize_VectorArgument)
 
 TEST_F(TestJsonSerializer, serialize_SimpleStructArgument)
 {
-    data_t expectedValid = "{\"int32Property\":" JSON_INT32_POSITIVE ",\"stringProperty\":" JSON_JSON_1 ",\"float32Property\":" JSON_FLOAT32_POSITIVE "}";
+    data_t expectedValid = "{\"int32Property\":" JSON_INT32_POSITIVE ",\"stringProperty\":" JSON_STRING_1 ",\"float32Property\":" JSON_FLOAT32_POSITIVE "}";
     EXPECT_EQ(dots::io::to_json(SerializationStructSimple1, SerializationStructSimple1._validProperties()), expectedValid);
 
-    data_t expectedAll = "{\"int32Property\":" JSON_INT32_POSITIVE ",\"stringProperty\":" JSON_JSON_1 ",\"boolProperty\":null,\"float32Property\":" JSON_FLOAT32_POSITIVE "}";
+    data_t expectedAll = "{\"int32Property\":" JSON_INT32_POSITIVE ",\"stringProperty\":" JSON_STRING_1 ",\"boolProperty\":null,\"float32Property\":" JSON_FLOAT32_POSITIVE "}";
     EXPECT_EQ(dots::io::to_json(SerializationStructSimple1, dots::property_set_t::All), expectedAll);
 
     data_t expectedSpecific = "{\"boolProperty\":null,\"float32Property\":" JSON_FLOAT32_POSITIVE "}";
@@ -187,11 +187,11 @@ TEST_F(TestJsonSerializer, serialize_SimpleStructArgument)
 TEST_F(TestJsonSerializer, deserialize_SimpleStructArgument)
 {
     SerializationStructSimple serializationStructSimple1;
-    dots::io::from_json(data_t{ "{\"int32Property\":" JSON_INT32_POSITIVE ",\"stringProperty\":" JSON_JSON_1 ",\"float32Property\":" JSON_FLOAT32_POSITIVE "}" }, serializationStructSimple1);
+    dots::io::from_json(data_t{ "{\"int32Property\":" JSON_INT32_POSITIVE ",\"stringProperty\":" JSON_STRING_1 ",\"float32Property\":" JSON_FLOAT32_POSITIVE "}" }, serializationStructSimple1);
     EXPECT_EQ(serializationStructSimple1, SerializationStructSimple1);
 
     SerializationStructSimple serializationStructSimple2;
-    dots::io::from_json(data_t{ "{\"int32Property\":" JSON_INT32_POSITIVE ",\"stringProperty\":" JSON_JSON_1 ",\"boolProperty\":null,\"float32Property\":" JSON_FLOAT32_POSITIVE "}" }, serializationStructSimple2);
+    dots::io::from_json(data_t{ "{\"int32Property\":" JSON_INT32_POSITIVE ",\"stringProperty\":" JSON_STRING_1 ",\"boolProperty\":null,\"float32Property\":" JSON_FLOAT32_POSITIVE "}" }, serializationStructSimple2);
     EXPECT_EQ(serializationStructSimple2, SerializationStructSimple1);
 
     SerializationStructSimple serializationStructSimple3;
@@ -248,10 +248,10 @@ TEST_F(TestJsonSerializer, serialize_WriteTupleToContinuousInternalBuffer)
 
     data_t output{
         "["
-            JSON_JSON_1 ","
+            JSON_STRING_1 ","
             JSON_TEST_ENUM_1 ","
             "[" JSON_BOOL_TRUE "," JSON_BOOL_FALSE "," JSON_BOOL_FALSE "]" ","
-            "{\"int32Property\":" JSON_INT32_POSITIVE ",\"stringProperty\":" JSON_JSON_1 ",\"float32Property\":" JSON_FLOAT32_POSITIVE "}"
+            "{\"int32Property\":" JSON_INT32_POSITIVE ",\"stringProperty\":" JSON_STRING_1 ",\"float32Property\":" JSON_FLOAT32_POSITIVE "}"
         "]"
     };
     EXPECT_EQ(sut.output(), output);
@@ -262,10 +262,10 @@ TEST_F(TestJsonSerializer, deserialize_ReadTupleFromContinuousExternalBuffer)
     dots::io::JsonSerializer<> sut{ { true } };
     data_t input{
         "["
-            JSON_JSON_1 ","
+            JSON_STRING_1 ","
             JSON_TEST_ENUM_1 ","
             "[" JSON_BOOL_TRUE "," JSON_BOOL_FALSE "," JSON_BOOL_FALSE "]" ","
-            "{\"int32Property\":" JSON_INT32_POSITIVE ",\"stringProperty\":" JSON_JSON_1 ",\"float32Property\":" JSON_FLOAT32_POSITIVE "}"
+            "{\"int32Property\":" JSON_INT32_POSITIVE ",\"stringProperty\":" JSON_STRING_1 ",\"float32Property\":" JSON_FLOAT32_POSITIVE "}"
         "]"
     };
     sut.setInput(input);
