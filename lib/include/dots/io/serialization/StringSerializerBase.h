@@ -99,7 +99,7 @@ namespace dots::io
 
         size_t deserializeTupleEnd()
         {
-            serializer_base_t::template visitEndDerived<false>();
+            serializer_base_t::template visitBeginDerived<false>();
             readToken(traits_t::TupleEnd);
             inputData() = m_input.data();
 
