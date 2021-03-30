@@ -74,7 +74,7 @@ namespace dots::io
             incrementIndentLevel();
             writePrefixedNewLine(traits_t::TupleBegin);
 
-            return output().size() - outputSizeBegin();
+            return lastSerializeSize();
         }
 
         size_t serializeTupleEnd()
@@ -83,7 +83,7 @@ namespace dots::io
             decrementIndentLevel();
             writeSuffixedNewLine(traits_t::TupleEnd);
 
-            return output().size() - outputSizeBegin();
+            return lastSerializeSize();
         }
 
         size_t deserializeTupleBegin()
@@ -92,7 +92,7 @@ namespace dots::io
             readToken(traits_t::TupleBegin);
             inputData() = m_input.data();
 
-            return static_cast<size_t>(inputData() - inputDataBegin());
+            return lastDeserializeSize();
         }
 
         size_t deserializeTupleEnd()
@@ -101,7 +101,7 @@ namespace dots::io
             readToken(traits_t::TupleEnd);
             inputData() = m_input.data();
 
-            return static_cast<size_t>(inputData() - inputDataBegin());
+            return lastDeserializeSize();
         }
 
         template <typename T, typename D = Derived, std::enable_if_t<std::is_constructible_v<D, StringSerializerOptions> && std::is_base_of_v<type::Struct, T>, int> = 0>
@@ -130,9 +130,9 @@ namespace dots::io
         friend serializer_base_t;
 
         using serializer_base_t::visit;
-        using serializer_base_t::outputSizeBegin;
+        using serializer_base_t::lastSerializeSize;
+        using serializer_base_t::lastDeserializeSize;
         using serializer_base_t::inputData;
-        using serializer_base_t::inputDataBegin;
         using serializer_base_t::inputDataEnd;
 
         template <bool Const>

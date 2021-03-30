@@ -43,6 +43,16 @@ namespace dots::io
 
         void setInput(data_t&& input) = delete;
 
+        size_t lastSerializeSize() const
+        {
+            return m_output.size() - m_outputSizeBegin;
+        }
+
+        size_t lastDeserializeSize() const
+        {
+            return static_cast<size_t>(m_inputData - m_inputDataBegin);
+        }
+
         size_t inputAvailable() const
         {
             return m_inputDataEnd - m_inputData;
@@ -52,21 +62,21 @@ namespace dots::io
         size_t serialize(const T& instance, const property_set_t& includedProperties)
         {
             visit(instance, includedProperties);
-            return m_output.size() - m_outputSizeBegin;
+            return lastSerializeSize();
         }
 
         template <typename T>
         size_t serialize(const T& value)
         {
             visit(value);
-            return m_output.size() - m_outputSizeBegin;
+            return lastSerializeSize();
         }
 
         template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
         size_t deserialize(T& value)
         {
             visit(value);
-            return static_cast<size_t>(m_inputData - m_inputDataBegin);
+            return lastDeserializeSize();
         }
 
         template <typename T, std::enable_if_t<!std::is_const_v<T> && !std::is_reference_v<T>, int> = 0>
@@ -151,19 +161,9 @@ namespace dots::io
             }
         }
 
-        size_t outputSizeBegin()
-        {
-            return m_outputSizeBegin;
-        }
-
         const value_t*& inputData()
         {
             return m_inputData;
-        }
-
-        const value_t*& inputDataBegin()
-        {
-            return m_inputDataBegin;
         }
 
         const value_t*& inputDataEnd()
