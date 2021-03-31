@@ -133,9 +133,9 @@ TEST_F(TestJsonSerializer, deserialize_TypedArgument)
 
 TEST_F(TestJsonSerializer, serialize_PropertyArgument)
 {
-    EXPECT_EQ(dots::io::to_json(SerializationStructSimple1.int32Property), data_t("\"int32Property\":" JSON_INT32_POSITIVE));
-    EXPECT_EQ(dots::io::to_json(SerializationStructSimple1.stringProperty), data_t("\"stringProperty\":" JSON_STRING_1));
-    EXPECT_EQ(dots::io::to_json(SerializationStructSimple1.float32Property), data_t("\"float32Property\":" JSON_FLOAT32_POSITIVE));
+    EXPECT_EQ(dots::io::to_json(SerializationStructSimple1.int32Property), data_t("\"int32Property\": " JSON_INT32_POSITIVE));
+    EXPECT_EQ(dots::io::to_json(SerializationStructSimple1.stringProperty), data_t("\"stringProperty\": " JSON_STRING_1));
+    EXPECT_EQ(dots::io::to_json(SerializationStructSimple1.float32Property), data_t("\"float32Property\": " JSON_FLOAT32_POSITIVE));
 }
 
 TEST_F(TestJsonSerializer, deserialize_PropertyArgument)
@@ -152,9 +152,9 @@ TEST_F(TestJsonSerializer, deserialize_PropertyArgument)
 
 TEST_F(TestJsonSerializer, serialize_VectorArgument)
 {
-    EXPECT_EQ(dots::io::to_json(VectorBool), data_t("[" JSON_BOOL_TRUE "," JSON_BOOL_FALSE "," JSON_BOOL_FALSE "]"));
-    EXPECT_EQ(dots::io::to_json(VectorFloat), data_t("[" JSON_FLOAT32_POSITIVE"," JSON_FLOAT32_NEGATIVE "]"));
-    EXPECT_EQ(dots::io::to_json(VectorStructSimple), data_t("[{\"int32Property\":" JSON_INT32_POSITIVE "},{\"boolProperty\":" JSON_BOOL_FALSE "}]"));
+    EXPECT_EQ(dots::io::to_json(VectorBool), data_t("[ " JSON_BOOL_TRUE ", " JSON_BOOL_FALSE ", " JSON_BOOL_FALSE " ]"));
+    EXPECT_EQ(dots::io::to_json(VectorFloat), data_t("[ " JSON_FLOAT32_POSITIVE", " JSON_FLOAT32_NEGATIVE " ]"));
+    EXPECT_EQ(dots::io::to_json(VectorStructSimple), data_t("[ { \"int32Property\": " JSON_INT32_POSITIVE " }, { \"boolProperty\": " JSON_BOOL_FALSE " } ]"));
 }
 
 TEST_F(TestJsonSerializer, deserialize_VectorArgument)
@@ -174,13 +174,13 @@ TEST_F(TestJsonSerializer, deserialize_VectorArgument)
 
 TEST_F(TestJsonSerializer, serialize_SimpleStructArgument)
 {
-    data_t expectedValid = "{\"int32Property\":" JSON_INT32_POSITIVE ",\"stringProperty\":" JSON_STRING_1 ",\"float32Property\":" JSON_FLOAT32_POSITIVE "}";
+    data_t expectedValid = "{ \"int32Property\": " JSON_INT32_POSITIVE ", \"stringProperty\": " JSON_STRING_1 ", \"float32Property\": " JSON_FLOAT32_POSITIVE " }";
     EXPECT_EQ(dots::io::to_json(SerializationStructSimple1), expectedValid);
 
-    data_t expectedAll = "{\"int32Property\":" JSON_INT32_POSITIVE ",\"stringProperty\":" JSON_STRING_1 ",\"boolProperty\":null,\"float32Property\":" JSON_FLOAT32_POSITIVE "}";
+    data_t expectedAll = "{ \"int32Property\": " JSON_INT32_POSITIVE ", \"stringProperty\": " JSON_STRING_1 ", \"boolProperty\": null, \"float32Property\": " JSON_FLOAT32_POSITIVE " }";
     EXPECT_EQ(dots::io::to_json(SerializationStructSimple1, dots::property_set_t::All), expectedAll);
 
-    data_t expectedSpecific = "{\"boolProperty\":null,\"float32Property\":" JSON_FLOAT32_POSITIVE "}";
+    data_t expectedSpecific = "{ \"boolProperty\": null, \"float32Property\": " JSON_FLOAT32_POSITIVE " }";
     EXPECT_EQ(dots::io::to_json(SerializationStructSimple1, SerializationStructSimple::boolProperty_p + SerializationStructSimple::float32Property_p), expectedSpecific);
 }
 
@@ -201,16 +201,16 @@ TEST_F(TestJsonSerializer, deserialize_SimpleStructArgument)
 
 TEST_F(TestJsonSerializer, serialize_ComplexStructArgument)
 {
-    data_t expectedValid1 = "{\"enumProperty\":" JSON_TEST_ENUM_1 ",\"float64Property\":" JSON_FLOAT64_NEGATIVE ",\"timepointProperty\":" JSON_TIME_POINT_1 ",\"structSimpleProperty\":{\"boolProperty\":" JSON_BOOL_FALSE "}}";
+    data_t expectedValid1 = "{ \"enumProperty\": " JSON_TEST_ENUM_1 ", \"float64Property\": " JSON_FLOAT64_NEGATIVE ", \"timepointProperty\": " JSON_TIME_POINT_1 ", \"structSimpleProperty\": { \"boolProperty\": " JSON_BOOL_FALSE " } }";
     EXPECT_EQ(dots::io::to_json(SerializationStructComplex1), expectedValid1);
 
-    data_t expectedValid2 = "{\"propertySetProperty\":" JSON_PROPERTY_SET_MIXED_1 ",\"durationVectorProperty\":[" JSON_DURATION_1 "," JSON_DURATION_2 "],\"uuidProperty\":" JSON_UUID_1 "}";
+    data_t expectedValid2 = "{ \"propertySetProperty\": " JSON_PROPERTY_SET_MIXED_1 ", \"durationVectorProperty\": [ " JSON_DURATION_1 ", " JSON_DURATION_2 " ], \"uuidProperty\": " JSON_UUID_1 " }";
     EXPECT_EQ(dots::io::to_json(SerializationStructComplex2), expectedValid2);
 
-    data_t expectedSpecific1 = "{\"timepointProperty\":" JSON_TIME_POINT_1 ",\"propertySetProperty\":null}";
+    data_t expectedSpecific1 = "{ \"timepointProperty\": " JSON_TIME_POINT_1 ", \"propertySetProperty\": null }";
     EXPECT_EQ(dots::io::to_json(SerializationStructComplex1, SerializationStructComplex::timepointProperty_p + SerializationStructComplex::propertySetProperty_p), expectedSpecific1);
 
-    data_t expectedSpecific2 = "{\"enumProperty\":null,\"durationVectorProperty\":[" JSON_DURATION_1 "," JSON_DURATION_2 "]}";
+    data_t expectedSpecific2 = "{ \"enumProperty\": null, \"durationVectorProperty\": [ " JSON_DURATION_1 ", " JSON_DURATION_2 " ] }";
     EXPECT_EQ(dots::io::to_json(SerializationStructComplex2, SerializationStructComplex::enumProperty_p + SerializationStructComplex::durationVectorProperty_p), expectedSpecific2);
 }
 
@@ -235,38 +235,38 @@ TEST_F(TestJsonSerializer, deserialize_ComplexStructArgument)
 
 TEST_F(TestJsonSerializer, serialize_WriteTupleToContinuousInternalBuffer)
 {
-    dots::io::JsonSerializer<> sut{ { true } };
+    dots::io::JsonSerializer<> sut;
     
-    EXPECT_EQ(sut.serializeTupleBegin(), sizeof("[") - 1);
+    EXPECT_EQ(sut.serializeTupleBegin(), sizeof("[ ") - 1);
     {
         EXPECT_EQ(sut.serialize(String1), sizeof(JSON_STRING_1) - 1);
-        EXPECT_EQ(sut.serialize(SerializationEnum1), sizeof(",") + sizeof(JSON_TEST_ENUM_1) - 2);
-        EXPECT_EQ(sut.serialize(VectorBool), sizeof(",") + sizeof("[") + sizeof(JSON_BOOL_TRUE) + sizeof(",") + sizeof(JSON_BOOL_FALSE) + sizeof(",") + sizeof(JSON_BOOL_FALSE) + sizeof("]") - 8);
-        EXPECT_EQ(sut.serialize(SerializationStructSimple1), sizeof(",") + sizeof("{\"int32Property\":") + sizeof(JSON_INT32_POSITIVE) + sizeof(",\"stringProperty\":") + sizeof(JSON_STRING_1) + sizeof(",\"float32Property\":") + sizeof(JSON_FLOAT32_POSITIVE) + sizeof("}") - 8);
+        EXPECT_EQ(sut.serialize(SerializationEnum1), sizeof(", ") + sizeof(JSON_TEST_ENUM_1) - 2);
+        EXPECT_EQ(sut.serialize(VectorBool), sizeof(", ") + sizeof("[ ") + sizeof(JSON_BOOL_TRUE) + sizeof(", ") + sizeof(JSON_BOOL_FALSE) + sizeof(", ") + sizeof(JSON_BOOL_FALSE) + sizeof(" ]") - 8);
+        EXPECT_EQ(sut.serialize(SerializationStructSimple1), sizeof(", ") + sizeof("{ \"int32Property\": ") + sizeof(JSON_INT32_POSITIVE) + sizeof(", \"stringProperty\": ") + sizeof(JSON_STRING_1) + sizeof(", \"float32Property\": ") + sizeof(JSON_FLOAT32_POSITIVE) + sizeof(" }") - 8);
     }
-    EXPECT_EQ(sut.serializeTupleEnd(), sizeof("]") - 1);
+    EXPECT_EQ(sut.serializeTupleEnd(), sizeof(" ]") - 1);
 
     data_t output{
-        "["
-            JSON_STRING_1 ","
-            JSON_TEST_ENUM_1 ","
-            "[" JSON_BOOL_TRUE "," JSON_BOOL_FALSE "," JSON_BOOL_FALSE "]" ","
-            "{\"int32Property\":" JSON_INT32_POSITIVE ",\"stringProperty\":" JSON_STRING_1 ",\"float32Property\":" JSON_FLOAT32_POSITIVE "}"
-        "]"
+        "[ "
+            JSON_STRING_1 ", "
+            JSON_TEST_ENUM_1 ", "
+            "[ " JSON_BOOL_TRUE ", " JSON_BOOL_FALSE ", " JSON_BOOL_FALSE " ]" ", "
+            "{ \"int32Property\": " JSON_INT32_POSITIVE ", \"stringProperty\": " JSON_STRING_1 ", \"float32Property\": " JSON_FLOAT32_POSITIVE " }"
+        " ]"
     };
     EXPECT_EQ(sut.output(), output);
 }
 
 TEST_F(TestJsonSerializer, deserialize_ReadTupleFromContinuousExternalBuffer)
 {
-    dots::io::JsonSerializer<> sut{ { true } };
+    dots::io::JsonSerializer<> sut;
     data_t input{
-        "["
-            JSON_STRING_1 ","
-            JSON_TEST_ENUM_1 ","
-            "[" JSON_BOOL_TRUE "," JSON_BOOL_FALSE "," JSON_BOOL_FALSE "]" ","
-            "{\"int32Property\":" JSON_INT32_POSITIVE ",\"stringProperty\":" JSON_STRING_1 ",\"float32Property\":" JSON_FLOAT32_POSITIVE "}"
-        "]"
+        "[ "
+            JSON_STRING_1 ", "
+            JSON_TEST_ENUM_1 ", "
+            "[ " JSON_BOOL_TRUE ", " JSON_BOOL_FALSE ", " JSON_BOOL_FALSE " ]" ", "
+            "{ \"int32Property\": " JSON_INT32_POSITIVE ", \"stringProperty\": " JSON_STRING_1 ", \"float32Property\": " JSON_FLOAT32_POSITIVE " }"
+        " ]"
     };
     sut.setInput(input);
 
@@ -275,18 +275,18 @@ TEST_F(TestJsonSerializer, deserialize_ReadTupleFromContinuousExternalBuffer)
     EXPECT_EQ(sut.deserializeTupleBegin(), sizeof("[") - 1);
     {
         EXPECT_EQ(sut.deserialize<std::string>(), String1);
-        EXPECT_EQ(sut.lastDeserializeSize(), sizeof(JSON_STRING_1) - 1);
+        EXPECT_EQ(sut.lastDeserializeSize(), sizeof(" ")+ sizeof(JSON_STRING_1) - 2);
 
         EXPECT_EQ(sut.deserialize<SerializationEnum>(), SerializationEnum1);
-        EXPECT_EQ(sut.lastDeserializeSize(), sizeof(",") + sizeof(JSON_TEST_ENUM_1) - 2);
+        EXPECT_EQ(sut.lastDeserializeSize(), sizeof(", ") + sizeof(JSON_TEST_ENUM_1) - 2);
 
         EXPECT_EQ(sut.deserialize<dots::vector_t<dots::bool_t>>(), VectorBool);
-        EXPECT_EQ(sut.lastDeserializeSize(), sizeof(",") + sizeof("[") + sizeof(JSON_BOOL_TRUE) + sizeof(",") + sizeof(JSON_BOOL_FALSE) + sizeof(",") + sizeof(JSON_BOOL_FALSE) + sizeof("]") - 8);
+        EXPECT_EQ(sut.lastDeserializeSize(), sizeof(", ") + sizeof("[ ") + sizeof(JSON_BOOL_TRUE) + sizeof(", ") + sizeof(JSON_BOOL_FALSE) + sizeof(", ") + sizeof(JSON_BOOL_FALSE) + sizeof(" ]") - 8);
 
         EXPECT_EQ(sut.deserialize<SerializationStructSimple>(), SerializationStructSimple1);
-        EXPECT_EQ(sut.lastDeserializeSize(), sizeof(",") + sizeof("{\"int32Property\":") + sizeof(JSON_INT32_POSITIVE) + sizeof(",\"stringProperty\":") + sizeof(JSON_STRING_1) + sizeof(",\"float32Property\":") + sizeof(JSON_FLOAT32_POSITIVE) + sizeof("}") - 8);
+        EXPECT_EQ(sut.lastDeserializeSize(), sizeof(", ") + sizeof("{ \"int32Property\": ") + sizeof(JSON_INT32_POSITIVE) + sizeof(", \"stringProperty\": ") + sizeof(JSON_STRING_1) + sizeof(", \"float32Property\": ") + sizeof(JSON_FLOAT32_POSITIVE) + sizeof(" }") - 8);
     }
-    EXPECT_EQ(sut.deserializeTupleEnd(), sizeof("]") - 1);
+    EXPECT_EQ(sut.deserializeTupleEnd(), sizeof("] ") - 1);
 
     EXPECT_FALSE(sut.inputAvailable());
 }
