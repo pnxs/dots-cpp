@@ -74,7 +74,8 @@ namespace dots::io
 
                 if (valueTypeDescriptor->type() == type::Type::Enum)
                 {
-                    descriptor = m_registry.get().registerType(type::Descriptor<types::vector_t<type::DynamicEnum>>{ valueTypeDescriptor });
+                    auto enumDescriptor = std::static_pointer_cast<type::Descriptor<type::DynamicEnum>>(valueTypeDescriptor);
+                    descriptor = m_registry.get().registerType(type::Descriptor<types::vector_t<type::DynamicEnum>>{ enumDescriptor });
                 }
                 else if (valueTypeDescriptor->type() == type::Type::Struct)
                 {
