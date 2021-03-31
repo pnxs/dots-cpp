@@ -14,7 +14,6 @@ list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
 find_package(Boost 1.71 REQUIRED COMPONENTS filesystem iostreams program_options)
 find_package(RapidJSON REQUIRED MODULE)
 find_package(PicoSHA2 REQUIRED)
-#find_package(cborcpp REQUIRED) (uncomment when dependency is no longer part of build tree)
 
 # target
 if (BUILD_DOTS_SHARED)
@@ -142,7 +141,6 @@ target_link_libraries(${TARGET_NAME}
         # link bcrypt which is required for certain Boost funcionality on Windows
         $<$<PLATFORM_ID:Windows>:bcrypt>
     PRIVATE
-        $<BUILD_INTERFACE:CBOR-CPP::CBOR-CPP>
         $<BUILD_INTERFACE:RapidJSON::RapidJSON>
         $<BUILD_INTERFACE:date::date>
         $<BUILD_INTERFACE:date::tz>
