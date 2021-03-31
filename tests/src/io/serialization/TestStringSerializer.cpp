@@ -237,14 +237,14 @@ TEST_F(TestStringSerializer, serialize_WriteTupleToContinuousInternalBuffer)
 {
     dots::io::StringSerializer<> sut;
 
-    sut.serializeTupleBegin();
+    EXPECT_EQ(sut.serializeTupleBegin(), sizeof("{ ") - 1);
     {
-        sut.serialize(String1);
-        sut.serialize(SerializationEnum1);
-        sut.serialize(VectorBool);
-        sut.serialize(SerializationStructSimple1);
+        EXPECT_EQ(sut.serialize(String1), sizeof(STRING_STRING_1) - 1);
+        EXPECT_EQ(sut.serialize(SerializationEnum1), sizeof(", ") + sizeof(STRING_TEST_ENUM_1) - 2);
+        EXPECT_EQ(sut.serialize(VectorBool), sizeof(", ") + sizeof("{ ") + sizeof(STRING_BOOL_TRUE) + sizeof(", ") + sizeof(STRING_BOOL_FALSE) + sizeof(", ") + sizeof(STRING_BOOL_FALSE) + sizeof(" }") - 8);
+        EXPECT_EQ(sut.serialize(SerializationStructSimple1), sizeof(", ") + sizeof("SerializationStructSimple{ .int32Property = ") + sizeof(STRING_INT32_POSITIVE) + sizeof(", .stringProperty = ") + sizeof(STRING_STRING_1) + sizeof(", .float32Property = " ) + sizeof(STRING_FLOAT32_POSITIVE) + sizeof(" }") - 8);
     }
-    sut.serializeTupleEnd();
+    EXPECT_EQ(sut.serializeTupleEnd(), sizeof(" }") - 1);
 
     data_t output{
         "{ "
@@ -270,14 +270,23 @@ TEST_F(TestStringSerializer, deserialize_ReadTupleFromContinuousExternalBuffer)
     };
     sut.setInput(input);
 
-    sut.deserializeTupleBegin();
+    EXPECT_TRUE(sut.inputAvailable());
+
+    EXPECT_EQ(sut.deserializeTupleBegin(), sizeof("{") - 1);
     {
-        sut.deserialize<std::string>();
-        sut.deserialize<SerializationEnum>();
-        sut.deserialize<dots::vector_t<dots::bool_t>>();
-        sut.deserialize<SerializationStructSimple>();
+        EXPECT_EQ(sut.deserialize<std::string>(), String1);
+        EXPECT_EQ(sut.lastDeserializeSize(), sizeof(" ") + sizeof(STRING_STRING_1) - 2);
+
+        EXPECT_EQ(sut.deserialize<SerializationEnum>(), SerializationEnum1);
+        EXPECT_EQ(sut.lastDeserializeSize(), sizeof(", ") + sizeof(STRING_TEST_ENUM_1) - 2);
+
+        EXPECT_EQ(sut.deserialize<dots::vector_t<dots::bool_t>>(), VectorBool);
+        EXPECT_EQ(sut.lastDeserializeSize(), sizeof(", ") + sizeof("{ ") + sizeof(STRING_BOOL_TRUE) + sizeof(", ") + sizeof(STRING_BOOL_FALSE) + sizeof(", ") + sizeof(STRING_BOOL_FALSE) + sizeof(" }") - 8);
+
+        EXPECT_EQ(sut.deserialize<SerializationStructSimple>(), SerializationStructSimple1);
+        EXPECT_EQ(sut.lastDeserializeSize(), sizeof(", ") + sizeof("SerializationStructSimple{ .int32Property = ") + sizeof(STRING_INT32_POSITIVE) + sizeof(", .stringProperty = ") + sizeof(STRING_STRING_1) + sizeof(", .float32Property = " ) + sizeof(STRING_FLOAT32_POSITIVE) + sizeof(" }") - 8);
     }
-    sut.deserializeTupleEnd();
+    EXPECT_EQ(sut.deserializeTupleEnd(), sizeof(" }") - 1);
 
     EXPECT_FALSE(sut.inputAvailable());
 }
