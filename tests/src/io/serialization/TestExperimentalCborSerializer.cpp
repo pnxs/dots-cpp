@@ -228,3 +228,53 @@ TEST_F(TestExperimentalCborSerializer, deserialize_ComplexStructArgument)
     dots::io::from_cbor_experimental(data_t{ 0x81, 0x19, 0x02, 0x00, 0x82, CBOR_DURATION_1, CBOR_DURATION_2 }, serializationStructComplex4);
     EXPECT_TRUE(serializationStructComplex4._equal(SerializationStructComplex2, SerializationStructComplex::enumProperty_p + SerializationStructComplex::durationVectorProperty_p));
 }
+
+TEST_F(TestExperimentalCborSerializer, serialize_WriteTupleToContinuousInternalBuffer)
+{
+    dots::io::ExperimentalCborSerializer sut;
+    
+    {
+        EXPECT_EQ(sut.serialize(String1), data_t({ CBOR_STRING_1 }).size());
+        EXPECT_EQ(sut.serialize(SerializationEnum1), data_t({ CBOR_TEST_ENUM_1 }).size());
+        EXPECT_EQ(sut.serialize(VectorBool), data_t({ 0x83, CBOR_BOOL_TRUE, CBOR_BOOL_FALSE, CBOR_BOOL_FALSE }).size());
+        EXPECT_EQ(sut.serialize(SerializationStructSimple1), data_t({ 0x83, 0x16, CBOR_INT32_POSITIVE, CBOR_STRING_1, CBOR_FLOAT32_POSITIVE }).size());
+    }
+
+    data_t output{
+        CBOR_STRING_1,
+        CBOR_TEST_ENUM_1,
+        0x83, CBOR_BOOL_TRUE, CBOR_BOOL_FALSE, CBOR_BOOL_FALSE,
+        0x83, 0x16, CBOR_INT32_POSITIVE, CBOR_STRING_1, CBOR_FLOAT32_POSITIVE
+    };
+    EXPECT_EQ(sut.output(), output);
+}
+
+TEST_F(TestExperimentalCborSerializer, deserialize_ReadTupleFromContinuousExternalBuffer)
+{
+    dots::io::ExperimentalCborSerializer sut;
+    data_t input{
+        CBOR_STRING_1,
+        CBOR_TEST_ENUM_1,
+        0x83, CBOR_BOOL_TRUE, CBOR_BOOL_FALSE, CBOR_BOOL_FALSE,
+        0x83, 0x16, CBOR_INT32_POSITIVE, CBOR_STRING_1, CBOR_FLOAT32_POSITIVE
+    };
+    sut.setInput(input);
+
+    EXPECT_TRUE(sut.inputAvailable());
+    
+    {
+        EXPECT_EQ(sut.deserialize<std::string>(), String1);
+        EXPECT_EQ(sut.lastDeserializeSize(), data_t({ CBOR_STRING_1 }).size());
+
+        EXPECT_EQ(sut.deserialize<SerializationEnum>(), SerializationEnum1);
+        EXPECT_EQ(sut.lastDeserializeSize(), data_t({ CBOR_TEST_ENUM_1 }).size());
+
+        EXPECT_EQ(sut.deserialize<dots::vector_t<dots::bool_t>>(), VectorBool);
+        EXPECT_EQ(sut.lastDeserializeSize(), data_t({ 0x83, CBOR_BOOL_TRUE, CBOR_BOOL_FALSE, CBOR_BOOL_FALSE }).size());
+
+        EXPECT_EQ(sut.deserialize<SerializationStructSimple>(), SerializationStructSimple1);
+        EXPECT_EQ(sut.lastDeserializeSize(), data_t({ 0x83, 0x16, CBOR_INT32_POSITIVE, CBOR_STRING_1, CBOR_FLOAT32_POSITIVE }).size());
+    }
+
+    EXPECT_FALSE(sut.inputAvailable());
+}
