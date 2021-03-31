@@ -60,7 +60,6 @@ target_sources(${TARGET_NAME}
 
         src/io/serialization/JsonSerialization.cpp
         src/io/serialization/AsciiSerialization.cpp
-        src/io/serialization/CborNativeSerialization.cpp
 
         src/io/channels/TcpListener.cpp
         src/io/channels/TcpChannel.cpp

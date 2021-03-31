@@ -27,7 +27,6 @@ target_sources(${TARGET_NAME}
 
         src/TestDigest.cpp
         src/TestAsciiSerialization.cpp
-        src/TestCborSerialization.cpp
         src/TestChrono.cpp
         src/TestDispatcher.cpp
         src/TestJsonSerialization.cpp
