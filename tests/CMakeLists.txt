@@ -29,7 +29,6 @@ target_sources(${TARGET_NAME}
         src/TestAsciiSerialization.cpp
         src/TestChrono.cpp
         src/TestDispatcher.cpp
-        src/TestJsonSerialization.cpp
         src/TestEnumDescriptor.cpp
         src/TestStaticDescriptor.cpp
         src/TestStaticStruct.cpp

@@ -57,7 +57,6 @@ target_sources(${TARGET_NAME}
         src/io/Channel.cpp
         src/io/Listener.cpp
 
-        src/io/serialization/JsonSerialization.cpp
         src/io/serialization/AsciiSerialization.cpp
 
         src/io/channels/TcpListener.cpp
@@ -141,7 +140,6 @@ target_link_libraries(${TARGET_NAME}
         # link bcrypt which is required for certain Boost funcionality on Windows
         $<$<PLATFORM_ID:Windows>:bcrypt>
     PRIVATE
-        $<BUILD_INTERFACE:RapidJSON::RapidJSON>
         $<BUILD_INTERFACE:date::date>
         $<BUILD_INTERFACE:date::tz>
         $<BUILD_INTERFACE:PicoSHA2::PicoSHA2>
