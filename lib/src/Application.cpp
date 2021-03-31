@@ -123,7 +123,7 @@ namespace dots
         {
             m_openEndpoint->setPort(dotsSeverPort);
         }
-        else
+        else if (m_openEndpoint->port().empty())
         {
             m_openEndpoint->setPort("11234");
         }
