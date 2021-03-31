@@ -175,7 +175,7 @@ TEST_F(TestExperimentalCborSerializer, deserialize_VectorArgument)
 TEST_F(TestExperimentalCborSerializer, serialize_SimpleStructArgument)
 {
     data_t expectedValid = { 0x83, 0x16, CBOR_INT32_POSITIVE, CBOR_STRING_1, CBOR_FLOAT32_POSITIVE };
-    EXPECT_EQ(dots::io::to_cbor_experimental(SerializationStructSimple1, SerializationStructSimple1._validProperties()), expectedValid);
+    EXPECT_EQ(dots::io::to_cbor_experimental(SerializationStructSimple1), expectedValid);
 
     data_t expectedAll = { 0x83, 0x16, CBOR_INT32_POSITIVE, CBOR_STRING_1, CBOR_FLOAT32_POSITIVE };
     EXPECT_EQ(dots::io::to_cbor_experimental(SerializationStructSimple1, dots::property_set_t::All), expectedAll);
@@ -198,10 +198,10 @@ TEST_F(TestExperimentalCborSerializer, deserialize_SimpleStructArgument)
 TEST_F(TestExperimentalCborSerializer, serialize_ComplexStructArgument)
 {
     data_t expectedValid1 = { 0x84, 0x1A, 0x02, 0x00, 0x80, 0x90, CBOR_TEST_ENUM_1, CBOR_FLOAT64_NEGATIVE, CBOR_TIME_POINT_1, 0x81, 0x08, CBOR_BOOL_FALSE };
-    EXPECT_EQ(dots::io::to_cbor_experimental(SerializationStructComplex1, SerializationStructComplex1._validProperties()), expectedValid1);
+    EXPECT_EQ(dots::io::to_cbor_experimental(SerializationStructComplex1), expectedValid1);
 
     data_t expectedValid2 = { 0x83, 0x19, 0x02, 0x48, CBOR_PROPERTY_SET_MIXED_1, 0x82, CBOR_DURATION_1, CBOR_DURATION_2, CBOR_UUID_1 };
-    EXPECT_EQ(dots::io::to_cbor_experimental(SerializationStructComplex2, SerializationStructComplex2._validProperties()), expectedValid2);
+    EXPECT_EQ(dots::io::to_cbor_experimental(SerializationStructComplex2), expectedValid2);
 
     data_t expectedSpecific1 = { 0x81, 0x1A, 0x02, 0x00, 0x00, 0x00, CBOR_TIME_POINT_1 };
     EXPECT_EQ(dots::io::to_cbor_experimental(SerializationStructComplex1, SerializationStructComplex::timepointProperty_p + SerializationStructComplex::propertySetProperty_p), expectedSpecific1);

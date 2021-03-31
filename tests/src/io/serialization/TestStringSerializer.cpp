@@ -175,7 +175,7 @@ TEST_F(TestStringSerializer, deserialize_VectorArgument)
 TEST_F(TestStringSerializer, serialize_SimpleStructArgument)
 {
     data_t expectedValid = "SerializationStructSimple{ .int32Property = " STRING_INT32_POSITIVE ", .stringProperty = " STRING_STRING_1 ", .float32Property = " STRING_FLOAT32_POSITIVE " }";
-    EXPECT_EQ(dots::io::to_string(SerializationStructSimple1, SerializationStructSimple1._validProperties()), expectedValid);
+    EXPECT_EQ(dots::io::to_string(SerializationStructSimple1), expectedValid);
 
     data_t expectedAll = "SerializationStructSimple{ .int32Property = " STRING_INT32_POSITIVE ", .stringProperty = " STRING_STRING_1 ", .boolProperty = <invalid>, .float32Property = " STRING_FLOAT32_POSITIVE " }";
     EXPECT_EQ(dots::io::to_string(SerializationStructSimple1, dots::property_set_t::All), expectedAll);
@@ -202,10 +202,10 @@ TEST_F(TestStringSerializer, deserialize_SimpleStructArgument)
 TEST_F(TestStringSerializer, serialize_ComplexStructArgument)
 {
     data_t expectedValid1 = "SerializationStructComplex{ .enumProperty = " STRING_TEST_ENUM_1 ", .float64Property = " STRING_FLOAT64_NEGATIVE ", .timepointProperty = " STRING_TIME_POINT_1 ", .structSimpleProperty = SerializationStructSimple{ .boolProperty = " STRING_BOOL_FALSE " } }";
-    EXPECT_EQ(dots::io::to_string(SerializationStructComplex1, SerializationStructComplex1._validProperties()), expectedValid1);
+    EXPECT_EQ(dots::io::to_string(SerializationStructComplex1), expectedValid1);
 
     data_t expectedValid2 = "SerializationStructComplex{ .propertySetProperty = " STRING_PROPERTY_SET_MIXED_1 ", .durationVectorProperty = { " STRING_DURATION_1 ", " STRING_DURATION_2 " }, .uuidProperty = " STRING_UUID_1 " }";
-    EXPECT_EQ(dots::io::to_string(SerializationStructComplex2, SerializationStructComplex2._validProperties()), expectedValid2);
+    EXPECT_EQ(dots::io::to_string(SerializationStructComplex2), expectedValid2);
 
     data_t expectedSpecific1 = "SerializationStructComplex{ .timepointProperty = " STRING_TIME_POINT_1 ", .propertySetProperty = <invalid> }";
     EXPECT_EQ(dots::io::to_string(SerializationStructComplex1, SerializationStructComplex::timepointProperty_p + SerializationStructComplex::propertySetProperty_p), expectedSpecific1);

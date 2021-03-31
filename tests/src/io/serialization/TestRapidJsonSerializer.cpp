@@ -23,7 +23,7 @@ protected:
         return buffer.GetString();
     }
 
-    template <typename T, std::enable_if_t<!std::is_base_of_v<dots::type::Struct, T>, int> = 0>
+    template <typename T>
     std::string serialize(const T& value)
     {
         buffer_t buffer;
@@ -196,7 +196,7 @@ TEST_F(TestRapidJsonSerializer, deserialize_VectorArgument)
 TEST_F(TestRapidJsonSerializer, serialize_SimpleStructArgument)
 {
     data_t expectedValid = "{\"int32Property\":" RAPID_JSON_INT32_POSITIVE ",\"stringProperty\":" RAPID_JSON_STRING_1 ",\"float32Property\":" RAPID_JSON_FLOAT32_POSITIVE "}";
-    EXPECT_EQ(serialize(SerializationStructSimple1, SerializationStructSimple1._validProperties()), expectedValid);
+    EXPECT_EQ(serialize(SerializationStructSimple1), expectedValid);
 
     data_t expectedAll = "{\"int32Property\":" RAPID_JSON_INT32_POSITIVE ",\"stringProperty\":" RAPID_JSON_STRING_1 ",\"boolProperty\":null,\"float32Property\":" RAPID_JSON_FLOAT32_POSITIVE "}";
     EXPECT_EQ(serialize(SerializationStructSimple1, dots::property_set_t::All), expectedAll);
@@ -223,10 +223,10 @@ TEST_F(TestRapidJsonSerializer, deserialize_SimpleStructArgument)
 TEST_F(TestRapidJsonSerializer, serialize_ComplexStructArgument)
 {
     data_t expectedValid1 = "{\"enumProperty\":" RAPID_JSON_TEST_ENUM_1 ",\"float64Property\":" RAPID_JSON_FLOAT64_NEGATIVE ",\"timepointProperty\":" RAPID_JSON_TIME_POINT_1 ",\"structSimpleProperty\":{\"boolProperty\":" RAPID_JSON_BOOL_FALSE "}}";
-    EXPECT_EQ(serialize(SerializationStructComplex1, SerializationStructComplex1._validProperties()), expectedValid1);
+    EXPECT_EQ(serialize(SerializationStructComplex1), expectedValid1);
 
     data_t expectedValid2 = "{\"propertySetProperty\":" RAPID_JSON_PROPERTY_SET_MIXED_1 ",\"durationVectorProperty\":[" RAPID_JSON_DURATION_1 "," RAPID_JSON_DURATION_2 "],\"uuidProperty\":" RAPID_JSON_UUID_1 "}";
-    EXPECT_EQ(serialize(SerializationStructComplex2, SerializationStructComplex2._validProperties()), expectedValid2);
+    EXPECT_EQ(serialize(SerializationStructComplex2), expectedValid2);
 
     data_t expectedSpecific1 = "{\"timepointProperty\":" RAPID_JSON_TIME_POINT_1 ",\"propertySetProperty\":null}";
     EXPECT_EQ(serialize(SerializationStructComplex1, SerializationStructComplex::timepointProperty_p + SerializationStructComplex::propertySetProperty_p), expectedSpecific1);

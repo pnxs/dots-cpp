@@ -175,7 +175,7 @@ TEST_F(TestJsonSerializer, deserialize_VectorArgument)
 TEST_F(TestJsonSerializer, serialize_SimpleStructArgument)
 {
     data_t expectedValid = "{\"int32Property\":" JSON_INT32_POSITIVE ",\"stringProperty\":" JSON_STRING_1 ",\"float32Property\":" JSON_FLOAT32_POSITIVE "}";
-    EXPECT_EQ(dots::io::to_json(SerializationStructSimple1, SerializationStructSimple1._validProperties()), expectedValid);
+    EXPECT_EQ(dots::io::to_json(SerializationStructSimple1), expectedValid);
 
     data_t expectedAll = "{\"int32Property\":" JSON_INT32_POSITIVE ",\"stringProperty\":" JSON_STRING_1 ",\"boolProperty\":null,\"float32Property\":" JSON_FLOAT32_POSITIVE "}";
     EXPECT_EQ(dots::io::to_json(SerializationStructSimple1, dots::property_set_t::All), expectedAll);
@@ -202,10 +202,10 @@ TEST_F(TestJsonSerializer, deserialize_SimpleStructArgument)
 TEST_F(TestJsonSerializer, serialize_ComplexStructArgument)
 {
     data_t expectedValid1 = "{\"enumProperty\":" JSON_TEST_ENUM_1 ",\"float64Property\":" JSON_FLOAT64_NEGATIVE ",\"timepointProperty\":" JSON_TIME_POINT_1 ",\"structSimpleProperty\":{\"boolProperty\":" JSON_BOOL_FALSE "}}";
-    EXPECT_EQ(dots::io::to_json(SerializationStructComplex1, SerializationStructComplex1._validProperties()), expectedValid1);
+    EXPECT_EQ(dots::io::to_json(SerializationStructComplex1), expectedValid1);
 
     data_t expectedValid2 = "{\"propertySetProperty\":" JSON_PROPERTY_SET_MIXED_1 ",\"durationVectorProperty\":[" JSON_DURATION_1 "," JSON_DURATION_2 "],\"uuidProperty\":" JSON_UUID_1 "}";
-    EXPECT_EQ(dots::io::to_json(SerializationStructComplex2, SerializationStructComplex2._validProperties()), expectedValid2);
+    EXPECT_EQ(dots::io::to_json(SerializationStructComplex2), expectedValid2);
 
     data_t expectedSpecific1 = "{\"timepointProperty\":" JSON_TIME_POINT_1 ",\"propertySetProperty\":null}";
     EXPECT_EQ(dots::io::to_json(SerializationStructComplex1, SerializationStructComplex::timepointProperty_p + SerializationStructComplex::propertySetProperty_p), expectedSpecific1);

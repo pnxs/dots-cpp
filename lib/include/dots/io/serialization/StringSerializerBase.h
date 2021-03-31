@@ -107,7 +107,7 @@ namespace dots::io
         }
 
         template <typename T, typename D = Derived, std::enable_if_t<std::is_constructible_v<D, StringSerializerOptions> && std::is_base_of_v<type::Struct, T>, int> = 0>
-        static data_t Serialize(const T& instance, const property_set_t& includedProperties = property_set_t::All, StringSerializerOptions options = {})
+        static data_t Serialize(const T& instance, const property_set_t& includedProperties, StringSerializerOptions options = {})
         {
             Derived serializer{ options };
             serializer.serialize(instance, includedProperties);
@@ -115,7 +115,7 @@ namespace dots::io
             return std::move(serializer.output());
         }
 
-        template <typename T, typename D = Derived, std::enable_if_t<std::is_constructible_v<D, StringSerializerOptions> && !std::is_base_of_v<type::Struct, T>, int> = 0>
+        template <typename T, typename D = Derived, std::enable_if_t<std::is_constructible_v<D, StringSerializerOptions>, int> = 0>
         static data_t Serialize(const T& value, StringSerializerOptions options = {})
         {
             Derived serializer{ options };

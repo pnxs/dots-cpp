@@ -51,12 +51,12 @@ namespace dots::io
     };
 
     template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
-    std::string to_json(const T& instance, const property_set_t& includedProperties = property_set_t::All, StringSerializerOptions options = { true })
+    std::string to_json(const T& instance, const property_set_t& includedProperties, StringSerializerOptions options = { true })
     {
         return JsonSerializer<>::Serialize(instance, includedProperties, options);
     }
 
-    template <typename T, std::enable_if_t<!std::is_base_of_v<type::Struct, T>, int> = 0>
+    template <typename T>
     std::string to_json(const T& value, StringSerializerOptions options = { true })
     {
         return JsonSerializer<>::Serialize(value, options);
