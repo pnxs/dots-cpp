@@ -30,7 +30,7 @@ namespace dots::io
 
             if constexpr (is_type_handler)
             {
-                for (const auto& [name, descriptor] : type::StaticDescriptorMap)
+                for (const auto& [name, descriptor] : type::static_descriptors())
                 {
                     if (m_staticUserTypes || !IsUserType(*descriptor))
                     {

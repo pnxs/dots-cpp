@@ -21,7 +21,11 @@ namespace dots::type
         static constexpr bool use_static_descriptor_operations_v = use_static_descriptor_operations_t<U>::value;
     }
 
-    inline DescriptorMap StaticDescriptorMap;
+    inline DescriptorMap& static_descriptors()
+    {
+        static DescriptorMap StaticDescriptors;
+        return StaticDescriptors;
+    }
 
     template <typename T, typename Base = Descriptor<Typeless>, bool UseStaticDescriptorOperations = details::use_static_descriptor_operations_v<T>, typename = void>
     struct StaticDescriptor;
@@ -150,7 +154,7 @@ namespace dots::type
 
                 if (M_instanceStorage == nullptr)
                 {
-                    M_instanceStorage = StaticDescriptorMap.emplace<Descriptor<T>>();
+                    M_instanceStorage = static_descriptors().emplace<Descriptor<T>>();
                 }
 
                 return M_instanceStorage;
