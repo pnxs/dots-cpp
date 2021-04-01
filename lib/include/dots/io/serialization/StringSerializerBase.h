@@ -1,5 +1,7 @@
 #pragma once
 #include <string>
+#include <stack>
+#include <vector>
 #include <dots/io/serialization/SerializerBase.h>
 
 namespace dots::io
@@ -52,10 +54,8 @@ namespace dots::io
         using data_t = typename serializer_base_t::data_t;
 
         StringSerializerBase(StringSerializerOptions options = {}) :
-            m_options{ std::move(options) },
             m_indentLevel(0),
-            m_consecutiveSerialize(false),
-            m_consecutiveDeserialize(false)
+            m_options{ std::move(options) }
         {
             /* do nothing */
         }
@@ -72,6 +72,7 @@ namespace dots::io
 
         size_t serializeTupleBegin()
         {
+            m_outputTupleInfo.push(false);
             serializer_base_t::template visitBeginDerived<true>();
             incrementIndentLevel();
             writePrefixedNewLine(traits_t::TupleBegin);
@@ -81,6 +82,13 @@ namespace dots::io
 
         size_t serializeTupleEnd()
         {
+            if (m_outputTupleInfo.empty())
+            {
+                throw std::logic_error{ "attempt to serialize tuple end without previous begin" };
+            }
+
+            m_outputTupleInfo.pop();
+
             serializer_base_t::template visitBeginDerived<true>();
             decrementIndentLevel();
             writeSuffixedNewLine(traits_t::TupleEnd);
@@ -90,6 +98,7 @@ namespace dots::io
 
         size_t deserializeTupleBegin()
         {
+            m_inputTupleInfo.push(false);
             serializer_base_t::template visitBeginDerived<false>();
             readToken(traits_t::TupleBegin);
             inputData() = m_input.data();
@@ -99,6 +108,13 @@ namespace dots::io
 
         size_t deserializeTupleEnd()
         {
+            if (m_inputTupleInfo.empty())
+            {
+                throw std::logic_error{ "attempt to deserialize tuple end without previous begin" };
+            }
+
+            m_inputTupleInfo.pop();
+
             serializer_base_t::template visitBeginDerived<false>();
             readToken(traits_t::TupleEnd);
             inputData() = m_input.data();
@@ -142,14 +158,14 @@ namespace dots::io
 
             if constexpr (Const)
             {
-                if (m_consecutiveSerialize)
+                if (!m_outputTupleInfo.empty() && m_outputTupleInfo.top())
                 {
                     writePrefixedNewLine(traits_t::TupleElementSeperator);
                 }
             }
             else
             {
-                if (m_consecutiveDeserialize)
+                if (!m_inputTupleInfo.empty() && m_inputTupleInfo.top())
                 {
                     readToken(traits_t::TupleElementSeperator);
                 }
@@ -161,11 +177,18 @@ namespace dots::io
         {
             if constexpr (Const)
             {
-                m_consecutiveSerialize = true;
+                if (!m_outputTupleInfo.empty())
+                {
+                    m_outputTupleInfo.top() = true;
+                }
             }
             else
             {
-                m_consecutiveDeserialize = true;
+                if (!m_inputTupleInfo.empty())
+                {
+                    m_inputTupleInfo.top() = true;
+                }
+
                 inputData() = m_input.data();
             }
 
@@ -512,7 +535,6 @@ namespace dots::io
         void setInputDerived()
         {
             m_input = std::string_view{ inputData(), static_cast<size_t>(inputDataEnd() - inputData()) };
-            m_consecutiveDeserialize = false;
         }
 
         //
@@ -883,6 +905,8 @@ namespace dots::io
 
     private:
 
+        using tuple_info_t = std::stack<bool, std::vector<bool>>;
+
         template <size_t N>
         std::runtime_error makeTokenError(std::array<std::string_view, N> expected)
         {
@@ -920,10 +944,10 @@ namespace dots::io
             }
         }
 
-        StringSerializerOptions m_options;
+        tuple_info_t m_outputTupleInfo;
+        tuple_info_t m_inputTupleInfo;
         size_t m_indentLevel;
+        StringSerializerOptions m_options;
         std::string_view m_input;
-        bool m_consecutiveSerialize;
-        bool m_consecutiveDeserialize;
     };
 }
