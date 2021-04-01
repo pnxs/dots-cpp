@@ -49,6 +49,7 @@ namespace dots::type
         StaticDescriptor& operator = (StaticDescriptor&& rhs) = default;
 
         using Base::construct;
+        using Base::constructInPlace;
         using Base::destruct;
         using Base::assign;
         using Base::swap;
@@ -69,6 +70,12 @@ namespace dots::type
             }
 
             return value;
+        }
+
+        template <typename... Args>
+        static constexpr T& constructInPlace(T& value, Args&&... args)
+        {
+            return construct(value, std::forward<Args>(args)...);
         }
 
         static constexpr void destruct(T& value)
@@ -211,6 +218,7 @@ namespace dots::type
         StaticDescriptor& operator = (StaticDescriptor&& rhs) = default;
 
         using StaticDescriptor<T, Base, false>::construct;
+        using StaticDescriptor<T, Base, false>::constructInPlace;
         using StaticDescriptor<T, Base, false>::destruct;
         using StaticDescriptor<T, Base, false>::assign;
         using StaticDescriptor<T, Base, false>::swap;
@@ -241,6 +249,21 @@ namespace dots::type
         Typeless& construct(Typeless& value, Typeless&& other) const override
         {
             return reinterpret_cast<Typeless&>(construct(reinterpret_cast<T&>(value), reinterpret_cast<T&&>(other)));
+        }
+
+        Typeless& constructInPlace(Typeless& value) const override
+        {
+            return construct(value);
+        }
+
+        Typeless& constructInPlace(Typeless& value, const Typeless& other) const override
+        {
+            return construct(value, other);
+        }
+
+        Typeless& constructInPlace(Typeless& value, Typeless&& other) const override
+        {
+            return construct(value, std::move(other));
         }
 
         void destruct(Typeless& value) const override

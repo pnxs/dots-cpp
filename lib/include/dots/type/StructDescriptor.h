@@ -43,6 +43,13 @@ namespace dots::type
         Typeless& construct(Typeless& value, Typeless&& other) const override;
         Struct& construct(Struct& instance, Struct&& other) const;
 
+        Typeless& constructInPlace(Typeless& value) const override;
+        Struct& constructInPlace(Struct& instance) const;
+        Typeless& constructInPlace(Typeless& value, const Typeless& other) const override;
+        Struct& constructInPlace(Struct& instance, const Struct& other) const;
+        Typeless& constructInPlace(Typeless& value, Typeless&& other) const override;
+        Struct& constructInPlace(Struct& instance, Struct&& other) const;
+
         void destruct(Typeless& value) const override;
         Struct& destruct(Struct& instance) const;
 

@@ -135,6 +135,21 @@ namespace dots::type
             return underlyingDescriptor().construct(value, std::move(other));
         }
 
+        Typeless& constructInPlace(Typeless& value) const override
+        {
+            return underlyingDescriptor().constructInPlace(value);
+        }
+
+        Typeless& constructInPlace(Typeless& value, const Typeless& other) const override
+        {
+            return underlyingDescriptor().constructInPlace(value, other);
+        }
+
+        Typeless& constructInPlace(Typeless& value, Typeless&& other) const override
+        {
+            return underlyingDescriptor().constructInPlace(value, std::move(other));
+        }
+
         void destruct(Typeless& value) const override
         {
             underlyingDescriptor().destruct(value);

@@ -152,10 +152,23 @@ namespace dots::type
         Descriptor& operator = (Descriptor&& rhs) = default;
 
         using StructDescriptor<DynamicStruct>::construct;
+        using StructDescriptor<DynamicStruct>::constructInPlace;
 
         DynamicStruct& construct(DynamicStruct& value) const
         {
-            return construct(value, *this, reinterpret_cast<PropertyArea*>(&Typeless::From(value).to<std::byte>() + sizeof(DynamicStruct)));
+            return construct(value, *this);
+        }
+
+        DynamicStruct& construct(DynamicStruct& value, const DynamicStruct& other) const
+        {
+            DynamicStruct& instance = construct(value);
+            return assign(instance, other);
+        }
+
+        DynamicStruct& construct(DynamicStruct& value, DynamicStruct&& other) const
+        {
+            DynamicStruct& instance = construct(value);
+            return assign(instance, std::move(other));
         }
 
         Typeless& construct(Typeless& value) const override
@@ -165,14 +178,44 @@ namespace dots::type
 
         Typeless& construct(Typeless& value, const Typeless& other) const override
         {
-            Typeless& instance = construct(value);
-            return assign(instance, other);
+            return Typeless::From(construct(value.to<DynamicStruct>(), other.to<DynamicStruct>()));
         }
 
         Typeless& construct(Typeless& value, Typeless&& other) const override
         {
-            Typeless& instance = construct(value);
+            return Typeless::From(construct(value.to<DynamicStruct>(), std::move(other.to<DynamicStruct>())));
+        }
+
+        DynamicStruct& constructInPlace(DynamicStruct& value) const
+        {
+            return construct(value, *this, reinterpret_cast<PropertyArea*>(&Typeless::From(value).to<std::byte>() + sizeof(DynamicStruct)));
+        }
+
+        DynamicStruct& constructInPlace(DynamicStruct& value, const DynamicStruct& other) const
+        {
+            DynamicStruct& instance = constructInPlace(value);
+            return assign(instance, other);
+        }
+
+        DynamicStruct& constructInPlace(DynamicStruct& value, DynamicStruct&& other) const
+        {
+            DynamicStruct& instance = constructInPlace(value);
             return assign(instance, std::move(other));
+        }
+
+        Typeless& constructInPlace(Typeless& value) const override
+        {
+            return Typeless::From(constructInPlace(value.to<DynamicStruct>()));
+        }
+
+        Typeless& constructInPlace(Typeless& value, const Typeless& other) const override
+        {
+            return Typeless::From(constructInPlace(value.to<DynamicStruct>(), other.to<DynamicStruct>()));
+        }
+
+        Typeless& constructInPlace(Typeless& value, Typeless&& other) const override
+        {
+            return Typeless::From(constructInPlace(value.to<DynamicStruct>(), std::move(other.to<DynamicStruct>())));
         }
     };
 }

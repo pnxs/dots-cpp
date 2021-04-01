@@ -45,6 +45,11 @@ namespace dots::type
         virtual Typeless& construct(Typeless& value) const = 0;
         virtual Typeless& construct(Typeless& value, const Typeless& other) const = 0;
         virtual Typeless& construct(Typeless& value, Typeless&& other) const = 0;
+
+        virtual Typeless& constructInPlace(Typeless& value) const = 0;
+        virtual Typeless& constructInPlace(Typeless& value, const Typeless& other) const = 0;
+        virtual Typeless& constructInPlace(Typeless& value, Typeless&& other) const = 0;
+
         virtual void destruct(Typeless& value) const = 0;
 
         virtual Typeless& assign(Typeless& lhs, const Typeless& rhs) const = 0;
