@@ -1,5 +1,7 @@
 #pragma once
 #include <string>
+#include <stack>
+#include <vector>
 #include <dots/io/serialization/SerializerBase.h>
 
 namespace dots::io
@@ -18,6 +20,10 @@ namespace dots::io
         static constexpr std::string_view VectorBegin = "{";
         static constexpr std::string_view VectorValueSeparator = ",";
         static constexpr std::string_view VectorEnd = "}";
+
+        static constexpr std::string_view TupleBegin = "{";
+        static constexpr std::string_view TupleElementSeperator = ",";
+        static constexpr std::string_view TupleEnd = "}";
 
         static constexpr bool UserTypeNames = true;
 
@@ -42,11 +48,14 @@ namespace dots::io
     template <typename Derived, typename Traits>
     struct StringSerializerBase : SerializerBase<std::string, Derived>
     {
+        using serializer_base_t = SerializerBase<std::string, Derived>;
+
         using traits_t = Traits;
+        using data_t = typename serializer_base_t::data_t;
 
         StringSerializerBase(StringSerializerOptions options = {}) :
-            m_options{ std::move(options) },
-            m_indentLevel(0)
+            m_indentLevel(0),
+            m_options{ std::move(options) }
         {
             /* do nothing */
         }
@@ -57,22 +66,134 @@ namespace dots::io
         StringSerializerBase& operator = (const StringSerializerBase& rhs) = default;
         StringSerializerBase& operator = (StringSerializerBase&& rhs) = default;
 
+        using serializer_base_t::output;
+        using serializer_base_t::lastSerializeSize;
+        using serializer_base_t::lastDeserializeSize;
+
+        size_t serializeTupleBegin()
+        {
+            m_outputTupleInfo.push(false);
+            serializer_base_t::template visitBeginDerived<true>();
+            incrementIndentLevel();
+            writePrefixedNewLine(traits_t::TupleBegin);
+
+            return lastSerializeSize();
+        }
+
+        size_t serializeTupleEnd()
+        {
+            if (m_outputTupleInfo.empty())
+            {
+                throw std::logic_error{ "attempt to serialize tuple end without previous begin" };
+            }
+
+            m_outputTupleInfo.pop();
+
+            serializer_base_t::template visitBeginDerived<true>();
+            decrementIndentLevel();
+            writeSuffixedNewLine(traits_t::TupleEnd);
+
+            return lastSerializeSize();
+        }
+
+        size_t deserializeTupleBegin()
+        {
+            m_inputTupleInfo.push(false);
+            serializer_base_t::template visitBeginDerived<false>();
+            readToken(traits_t::TupleBegin);
+            inputData() = m_input.data();
+
+            return lastDeserializeSize();
+        }
+
+        size_t deserializeTupleEnd()
+        {
+            if (m_inputTupleInfo.empty())
+            {
+                throw std::logic_error{ "attempt to deserialize tuple end without previous begin" };
+            }
+
+            m_inputTupleInfo.pop();
+
+            serializer_base_t::template visitBeginDerived<false>();
+            readToken(traits_t::TupleEnd);
+            inputData() = m_input.data();
+
+            return lastDeserializeSize();
+        }
+
+        template <typename T, typename D = Derived, std::enable_if_t<std::is_constructible_v<D, StringSerializerOptions> && std::is_base_of_v<type::Struct, T>, int> = 0>
+        static data_t Serialize(const T& instance, const property_set_t& includedProperties, StringSerializerOptions options = {})
+        {
+            Derived serializer{ options };
+            serializer.serialize(instance, includedProperties);
+
+            return std::move(serializer.output());
+        }
+
+        template <typename T, typename D = Derived, std::enable_if_t<std::is_constructible_v<D, StringSerializerOptions>, int> = 0>
+        static data_t Serialize(const T& value, StringSerializerOptions options = {})
+        {
+            Derived serializer{ options };
+            serializer.serialize(value);
+
+            return std::move(serializer.output());
+        }
+
     protected:
 
         using visitor_base_t = type::TypeVisitor<Derived>;
-        using serializer_base_t = SerializerBase<std::string, Derived>;
 
         friend visitor_base_t;
         friend serializer_base_t;
 
-        using serializer_base_t::visitStruct;
-        using serializer_base_t::visitProperty;
-        using serializer_base_t::visitVector;
-        using serializer_base_t::visitType;
-
-        using serializer_base_t::output;
+        using serializer_base_t::visit;
         using serializer_base_t::inputData;
         using serializer_base_t::inputDataEnd;
+
+        template <bool Const>
+        void visitBeginDerived()
+        {
+            serializer_base_t::template visitBeginDerived<Const>();
+
+            if constexpr (Const)
+            {
+                if (!m_outputTupleInfo.empty() && m_outputTupleInfo.top())
+                {
+                    writePrefixedNewLine(traits_t::TupleElementSeperator);
+                }
+            }
+            else
+            {
+                if (!m_inputTupleInfo.empty() && m_inputTupleInfo.top())
+                {
+                    readToken(traits_t::TupleElementSeperator);
+                }
+            }
+        }
+
+        template <bool Const>
+        void visitEndDerived()
+        {
+            if constexpr (Const)
+            {
+                if (!m_outputTupleInfo.empty())
+                {
+                    m_outputTupleInfo.top() = true;
+                }
+            }
+            else
+            {
+                if (!m_inputTupleInfo.empty())
+                {
+                    m_inputTupleInfo.top() = true;
+                }
+
+                inputData() = m_input.data();
+            }
+
+            serializer_base_t::template visitEndDerived<Const>();
+        }
 
         //
         // serialization
@@ -261,11 +382,6 @@ namespace dots::io
         // deserialization
         //
 
-        void initDeserializeDerived()
-        {
-            m_input = std::string_view{ inputData(), static_cast<size_t>(inputDataEnd() - inputData()) };
-        }
-
         template <typename T>
         bool visitStructBeginDerived(T& instance, property_set_t&/* includedProperties*/)
         {
@@ -295,7 +411,7 @@ namespace dots::io
                 {
                     const type::PropertyDescriptor& propertyDescriptor = *it;
                     type::ProxyProperty<> property{ instance, propertyDescriptor };
-                    visitProperty(property);
+                    visit(property);
                 }
 
                 if (readAnyToken(std::array{ traits_t::PropertyValueEnd, traits_t::StructEnd }) == traits_t::StructEnd)
@@ -334,17 +450,17 @@ namespace dots::io
                 // TODO: avoid special case for bool
                 if constexpr (std::is_same_v<T, bool_t>)
                 {
-                    visitType(reinterpret_cast<bool_t&>(vector.back()), descriptor.valueDescriptor());
+                    visit(reinterpret_cast<bool_t&>(vector.back()), descriptor.valueDescriptor());
                 }
                 else
                 {
                     if constexpr (std::is_same_v<T, type::Typeless>)
                     {
-                        visitType(vector.typelessAt(vector.typelessSize() - 1), descriptor.valueDescriptor());
+                        visit(vector.typelessAt(vector.typelessSize() - 1), descriptor.valueDescriptor());
                     }
                     else
                     {
-                        visitType(vector.back(), descriptor.valueDescriptor());
+                        visit(vector.back(), descriptor.valueDescriptor());
                     }
                 }
 
@@ -414,6 +530,11 @@ namespace dots::io
             {
                 static_assert(!std::is_same_v<T, T>, "type not supported");
             }
+        }
+
+        void setInputDerived()
+        {
+            m_input = std::string_view{ inputData(), static_cast<size_t>(inputDataEnd() - inputData()) };
         }
 
         //
@@ -784,6 +905,8 @@ namespace dots::io
 
     private:
 
+        using tuple_info_t = std::stack<bool, std::vector<bool>>;
+
         template <size_t N>
         std::runtime_error makeTokenError(std::array<std::string_view, N> expected)
         {
@@ -821,8 +944,10 @@ namespace dots::io
             }
         }
 
-        StringSerializerOptions m_options;
+        tuple_info_t m_outputTupleInfo;
+        tuple_info_t m_inputTupleInfo;
         size_t m_indentLevel;
+        StringSerializerOptions m_options;
         std::string_view m_input;
     };
 }

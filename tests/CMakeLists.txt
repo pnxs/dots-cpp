@@ -5,6 +5,7 @@ set(TARGET_NAME_EXPERIMENTAL dots-unittests-experimental)
 
 # dependencies
 #find_package(DOTS REQUIRED) (uncomment when dependency is no longer part of build tree)
+find_package(RapidJSON REQUIRED MODULE)
 
 # target [dots-unittests]
 add_executable(${TARGET_NAME} src/TestContainer.cpp)
@@ -18,16 +19,16 @@ target_sources(${TARGET_NAME}
         src/io/serialization/TestCborSerializer.cpp
         src/io/serialization/TestExperimentalCborSerializer.cpp
         src/io/serialization/TestJsonSerializer.cpp
+        src/io/serialization/TestRapidJsonSerializer.cpp
+        src/io/serialization/TestSerializerBase.cpp
         src/io/serialization/TestStringSerializer.cpp
 
         src/tools/TestUri.cpp
 
         src/TestDigest.cpp
         src/TestAsciiSerialization.cpp
-        src/TestCborSerialization.cpp
         src/TestChrono.cpp
         src/TestDispatcher.cpp
-        src/TestJsonSerialization.cpp
         src/TestEnumDescriptor.cpp
         src/TestStaticDescriptor.cpp
         src/TestStaticStruct.cpp
@@ -61,6 +62,7 @@ target_link_libraries(${TARGET_NAME}
         gtest_main
         date::date
         date::tz
+        RapidJSON::RapidJSON
 )
 
 # target [dots-unittests-experimental]

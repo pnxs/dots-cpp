@@ -99,7 +99,7 @@ namespace dots::io
                 {
                     const type::PropertyDescriptor& propertyDescriptor = *it;
                     type::ProxyProperty<> property{ instance, propertyDescriptor };
-                    visitProperty(property);
+                    visit(property);
                 }
             }
 
@@ -155,4 +155,40 @@ namespace dots::io
             }
         }
     };
+
+    template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
+    std::vector<uint8_t> to_cbor(const T& instance, const property_set_t& includedProperties)
+    {
+        return CborSerializer::Serialize(instance, includedProperties);
+    }
+
+    template <typename T>
+    std::vector<uint8_t> to_cbor(const T& value)
+    {
+        return CborSerializer::Serialize(value);
+    }
+
+    template <typename T>
+    size_t from_cbor(const uint8_t* data, size_t size, T& value)
+    {
+        return CborSerializer::Deserialize(data, size, value);
+    }
+
+    template <typename T>
+    size_t from_cbor(const std::vector<uint8_t>& data, T& value)
+    {
+        return CborSerializer::Deserialize(data, value);
+    }
+
+    template <typename T>
+    T from_cbor(const uint8_t* data, size_t size)
+    {
+        return CborSerializer::Deserialize<T>(data, size);
+    }
+
+    template <typename T>
+    T from_cbor(const std::vector<uint8_t>& data)
+    {
+        return CborSerializer::Deserialize<T>(data);
+    }
 }

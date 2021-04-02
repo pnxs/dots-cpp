@@ -19,6 +19,10 @@ namespace dots::io
         static constexpr std::string_view VectorValueSeparator = ",";
         static constexpr std::string_view VectorEnd = "]";
 
+        static constexpr std::string_view TupleBegin = "[";
+        static constexpr std::string_view TupleElementSeperator = ",";
+        static constexpr std::string_view TupleEnd = "]";
+
         static constexpr bool UserTypeNames = false;
 
         static constexpr bool NumericPropertySets = true;
@@ -45,4 +49,28 @@ namespace dots::io
         JsonSerializer& operator = (const JsonSerializer& rhs) = default;
         JsonSerializer& operator = (JsonSerializer&& rhs) = default;
     };
+
+    template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
+    std::string to_json(const T& instance, const property_set_t& includedProperties, StringSerializerOptions options = {})
+    {
+        return JsonSerializer<>::Serialize(instance, includedProperties, options);
+    }
+
+    template <typename T>
+    std::string to_json(const T& value, StringSerializerOptions options = {})
+    {
+        return JsonSerializer<>::Serialize(value, options);
+    }
+
+    template <typename T>
+    size_t from_json(const std::string& data, T& value)
+    {
+        return JsonSerializer<>::Deserialize(data, value);
+    }
+
+    template <typename T>
+    T from_json(const std::string& data)
+    {
+        return JsonSerializer<>::Deserialize<T>(data);
+    }
 }

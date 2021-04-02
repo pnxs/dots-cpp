@@ -31,13 +31,18 @@ namespace dots::type
     {
         static constexpr bool IsDynamic = is_dynamic_descriptor_v<Descriptor<T>>;
 
+        template <bool IsDynamic = !IsDynamic, std::enable_if_t<IsDynamic, int> = 0>
         Descriptor() :
-            StaticDescriptor<Vector<T>, Descriptor<Vector<Typeless>>>("vector<" + valueDescriptor().name() + ">", valueDescriptorPtr(), sizeof(Vector<T>), alignof(Vector<T>))
+            StaticDescriptor<Vector<T>, Descriptor<Vector<Typeless>>>("vector<" + valueDescriptor().name() + ">", valueDescriptorPtr(), sizeof(Vector<T>), alignof(Vector<T>)),
+            m_valueDescriptorOverride(nullptr)
         {
             /* do nothing */
         }
-        Descriptor(const std::shared_ptr<Descriptor<>>& valueDescriptorOverride, bool checkSize = true) :
-            StaticDescriptor<Vector<T>, Descriptor<Vector<Typeless>>>("vector<" + valueDescriptorOverride->name() + ">", valueDescriptorOverride, sizeof(Vector<T>), alignof(Vector<T>))
+
+        template <bool IsDynamic = IsDynamic, std::enable_if_t<IsDynamic, int> = 0>
+        Descriptor(const std::shared_ptr<Descriptor<T>>& valueDescriptorOverride, bool checkSize = true) :
+            StaticDescriptor<Vector<T>, Descriptor<Vector<Typeless>>>("vector<" + valueDescriptorOverride->name() + ">", valueDescriptorOverride, sizeof(Vector<T>), alignof(Vector<T>)),
+            m_valueDescriptorOverride(valueDescriptorOverride)
         {
             if (checkSize && (valueDescriptorOverride->size() != sizeof(T) || valueDescriptorOverride->alignment() != alignof(T)))
             {
@@ -101,15 +106,33 @@ namespace dots::type
             Descriptor<Vector<T>>::resize(typelessVector, size);
         }
 
-        static const std::shared_ptr<Descriptor<T>>& valueDescriptorPtr()
+        const std::shared_ptr<Descriptor<T>>& valueDescriptorPtr() const
         {
-            return Descriptor<T>::InstancePtr();
+            if constexpr (IsDynamic)
+            {
+                return m_valueDescriptorOverride;
+            }
+            else
+            {
+                return Descriptor<T>::InstancePtr();
+            }
         }
 
-        static const Descriptor<T>& valueDescriptor()
+        const Descriptor<T>& valueDescriptor() const
         {
-            return Descriptor<T>::Instance();
+            if constexpr (IsDynamic)
+            {
+                return *m_valueDescriptorOverride;
+            }
+            else
+            {
+                return Descriptor<T>::Instance();
+            }
         }
+
+    private:
+
+        std::shared_ptr<Descriptor<T>> m_valueDescriptorOverride;
     };
 
     using VectorDescriptor = Descriptor<Vector<Typeless>>;

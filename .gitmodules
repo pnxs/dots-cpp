@@ -1,6 +1,3 @@
-[submodule "import/cbor-cpp"]
-	path = external/cbor-cpp
-	url = https://github.com/pnxs/cbor-cpp.git
 [submodule "import/googletest"]
 	path = external/googletest
 	url = https://github.com/google/googletest.git

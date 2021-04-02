@@ -45,6 +45,11 @@ namespace dots::type
         virtual Typeless& construct(Typeless& value) const = 0;
         virtual Typeless& construct(Typeless& value, const Typeless& other) const = 0;
         virtual Typeless& construct(Typeless& value, Typeless&& other) const = 0;
+
+        virtual Typeless& constructInPlace(Typeless& value) const = 0;
+        virtual Typeless& constructInPlace(Typeless& value, const Typeless& other) const = 0;
+        virtual Typeless& constructInPlace(Typeless& value, Typeless&& other) const = 0;
+
         virtual void destruct(Typeless& value) const = 0;
 
         virtual Typeless& assign(Typeless& lhs, const Typeless& rhs) const = 0;
@@ -98,6 +103,15 @@ namespace dots::type
         size_t m_alignment;
     };
 
+    template<typename T, typename = void>
+    constexpr bool is_defined_v = false;
+
+    template<typename T>
+    constexpr bool is_defined_v<T, decltype(sizeof(T), void())> = true;
+
+    template<typename T>
+    using is_defined_t = std::conditional_t<is_defined_v<T>, std::true_type, std::false_type>;
+
     template <typename T>
     struct is_descriptor : std::false_type {};
 
@@ -137,6 +151,12 @@ namespace dots::type
 
     template <typename T>
     using described_type_t = typename described_type<T>::type;
+
+    template <typename T>
+    using has_descriptor_t = std::conditional_t<is_defined_v<Descriptor<T>>, std::true_type, std::false_type>;
+
+    template <typename T>
+    constexpr bool has_descriptor_v = has_descriptor_t<T>::value;
 
     [[deprecated("only available for backwards compatibility and should be replaced by fundamental type check")]]
     inline bool isDotsBaseType(Type dotsType)

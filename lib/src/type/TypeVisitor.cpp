@@ -2,14 +2,24 @@
 
 namespace dots::type
 {
-    void TypeVisitor<void, void>::visitBegin()
+    void TypeVisitor<void, void>::visitConstBegin()
     {
-        TypeVisitor<TypeVisitor<void>>::visitBeginDerived();
+        TypeVisitor<TypeVisitor<void>>::visitBeginDerived<true>();
     }
 
-    void TypeVisitor<void, void>::visitEnd()
+    void TypeVisitor<void, void>::visitConstEnd()
     {
-        TypeVisitor<TypeVisitor<void>>::visitEndDerived();
+        TypeVisitor<TypeVisitor<void>>::visitEndDerived<true>();
+    }
+
+    void TypeVisitor<void, void>::visitMutableBegin()
+    {
+        TypeVisitor<TypeVisitor<void>>::visitBeginDerived<false>();
+    }
+
+    void TypeVisitor<void, void>::visitMutableEnd()
+    {
+        TypeVisitor<TypeVisitor<void>>::visitEndDerived<false>();
     }
 
     bool TypeVisitor<void, void>::visitStructBegin(const Struct& instance, PropertySet& includedProperties)

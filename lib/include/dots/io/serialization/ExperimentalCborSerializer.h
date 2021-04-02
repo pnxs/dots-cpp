@@ -148,4 +148,40 @@ namespace dots::io
             }
         }
     };
+
+    template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
+    std::vector<uint8_t> to_cbor_experimental(const T& instance, const property_set_t& includedProperties)
+    {
+        return ExperimentalCborSerializer::Serialize(instance, includedProperties);
+    }
+
+    template <typename T>
+    std::vector<uint8_t> to_cbor_experimental(const T& value)
+    {
+        return ExperimentalCborSerializer::Serialize(value);
+    }
+
+    template <typename T>
+    size_t from_cbor_experimental(const uint8_t* data, size_t size, T& value)
+    {
+        return ExperimentalCborSerializer::Deserialize(data, size, value);
+    }
+
+    template <typename T>
+    size_t from_cbor_experimental(const std::vector<uint8_t>& data, T& value)
+    {
+        return ExperimentalCborSerializer::Deserialize(data, value);
+    }
+
+    template <typename T>
+    T from_cbor_experimental(const uint8_t* data, size_t size)
+    {
+        return ExperimentalCborSerializer::Deserialize<T>(data, size);
+    }
+
+    template <typename T>
+    T from_cbor_experimental(const std::vector<uint8_t>& data)
+    {
+        return ExperimentalCborSerializer::Deserialize<T>(data);
+    }
 }

@@ -23,7 +23,6 @@ if (MSVC)
 endif()
 
 # external projects
-add_subdirectory(external/cbor-cpp EXCLUDE_FROM_ALL)
 add_subdirectory(external/date EXCLUDE_FROM_ALL)
 add_subdirectory(external/googletest EXCLUDE_FROM_ALL)
 

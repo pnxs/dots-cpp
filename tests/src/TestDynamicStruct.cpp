@@ -452,6 +452,118 @@ TEST_F(TestDynamicStruct, ctor_Move)
     EXPECT_EQ(sutThis._get<vector_t<float32_t>>("floatVectorProperty"), vector_t<float32_t>({ 3.1415f, 2.7183f }));
 }
 
+TEST_F(TestDynamicStruct, constructViaDescriptor_Default)
+{
+    std::aligned_storage_t<sizeof(DynamicStruct), alignof(DynamicStruct)> storage;
+    DynamicStruct& sutThis = reinterpret_cast<DynamicStruct&>(storage);
+    m_testDynamicStructDescriptor->construct(sutThis);
+
+    EXPECT_FALSE(sutThis._get("intProperty").isValid());
+    EXPECT_FALSE(sutThis._get("stringProperty").isValid());
+    EXPECT_FALSE(sutThis._get("boolProperty").isValid());
+    EXPECT_FALSE(sutThis._get("floatVectorProperty").isValid());
+}
+
+TEST_F(TestDynamicStruct, constructViaDescriptor_Copy)
+{
+    DynamicStruct sutOther{ *m_testDynamicStructDescriptor,
+        DynamicStruct::property_i<int32_t>{ "intProperty", 1 },
+        DynamicStruct::property_i<string_t>{ "stringProperty", "foo" },
+        DynamicStruct::property_i<vector_t<float32_t>>{ "floatVectorProperty", vector_t<float32_t>{ 3.1415f, 2.7183f } }
+    };
+    std::aligned_storage_t<sizeof(DynamicStruct), alignof(DynamicStruct)> storage;
+    DynamicStruct& sutThis = reinterpret_cast<DynamicStruct&>(storage);
+    m_testDynamicStructDescriptor->construct(sutThis, sutOther);
+
+    EXPECT_EQ(sutThis._get("intProperty"), sutOther._get("intProperty"));
+    EXPECT_EQ(sutThis._get("stringProperty"), sutOther._get("stringProperty"));
+    EXPECT_FALSE(sutThis._get("boolProperty").isValid());
+    EXPECT_EQ(sutThis._get("floatVectorProperty"), sutOther._get("floatVectorProperty"));
+
+    EXPECT_TRUE(sutOther._get("intProperty").isValid());
+    EXPECT_TRUE(sutOther._get("stringProperty").isValid());
+    EXPECT_FALSE(sutOther._get("boolProperty").isValid());
+    EXPECT_TRUE(sutOther._get("floatVectorProperty").isValid());
+}
+
+TEST_F(TestDynamicStruct, constructViaDescriptor_Move)
+{
+    DynamicStruct sutOther{ *m_testDynamicStructDescriptor,
+        DynamicStruct::property_i<int32_t>{ "intProperty", 1 },
+        DynamicStruct::property_i<string_t>{ "stringProperty", "foo" },
+        DynamicStruct::property_i<vector_t<float32_t>>{ "floatVectorProperty", vector_t<float32_t>{ 3.1415f, 2.7183f } }
+    };
+    std::aligned_storage_t<sizeof(DynamicStruct), alignof(DynamicStruct)> storage;
+    DynamicStruct& sutThis = reinterpret_cast<DynamicStruct&>(storage);
+    m_testDynamicStructDescriptor->construct(sutThis, std::move(sutOther));
+
+    EXPECT_EQ(sutThis._get<int32_t>("intProperty"), 1);
+    EXPECT_EQ(sutThis._get<string_t>("stringProperty"), "foo");
+    EXPECT_FALSE(sutThis._get("boolProperty").isValid());
+    EXPECT_EQ(sutThis._get<vector_t<float32_t>>("floatVectorProperty"), vector_t<float32_t>({ 3.1415f, 2.7183f }));
+
+    EXPECT_FALSE(sutOther._get("intProperty").isValid());
+    EXPECT_FALSE(sutOther._get("stringProperty").isValid());
+    EXPECT_FALSE(sutOther._get("boolProperty").isValid());
+    EXPECT_FALSE(sutOther._get("floatVectorProperty").isValid());
+}
+
+TEST_F(TestDynamicStruct, constructInPlaceViaDescriptor_Default)
+{
+    auto storage = std::make_unique<std::byte[]>(m_testDynamicStructDescriptor->size());
+    DynamicStruct& sutThis = reinterpret_cast<DynamicStruct&>(*storage.get());
+    m_testDynamicStructDescriptor->construct(sutThis);
+
+    EXPECT_FALSE(sutThis._get("intProperty").isValid());
+    EXPECT_FALSE(sutThis._get("stringProperty").isValid());
+    EXPECT_FALSE(sutThis._get("boolProperty").isValid());
+    EXPECT_FALSE(sutThis._get("floatVectorProperty").isValid());
+}
+
+TEST_F(TestDynamicStruct, constructInPlaceViaDescriptor_Copy)
+{
+    DynamicStruct sutOther{ *m_testDynamicStructDescriptor,
+        DynamicStruct::property_i<int32_t>{ "intProperty", 1 },
+        DynamicStruct::property_i<string_t>{ "stringProperty", "foo" },
+        DynamicStruct::property_i<vector_t<float32_t>>{ "floatVectorProperty", vector_t<float32_t>{ 3.1415f, 2.7183f } }
+    };
+    auto storage = std::make_unique<std::byte[]>(m_testDynamicStructDescriptor->size());
+    DynamicStruct& sutThis = reinterpret_cast<DynamicStruct&>(*storage.get());
+    m_testDynamicStructDescriptor->construct(sutThis, sutOther);
+
+    EXPECT_EQ(sutThis._get("intProperty"), sutOther._get("intProperty"));
+    EXPECT_EQ(sutThis._get("stringProperty"), sutOther._get("stringProperty"));
+    EXPECT_FALSE(sutThis._get("boolProperty").isValid());
+    EXPECT_EQ(sutThis._get("floatVectorProperty"), sutOther._get("floatVectorProperty"));
+
+    EXPECT_TRUE(sutOther._get("intProperty").isValid());
+    EXPECT_TRUE(sutOther._get("stringProperty").isValid());
+    EXPECT_FALSE(sutOther._get("boolProperty").isValid());
+    EXPECT_TRUE(sutOther._get("floatVectorProperty").isValid());
+}
+
+TEST_F(TestDynamicStruct, constructInPlaceViaDescriptor_Move)
+{
+    DynamicStruct sutOther{ *m_testDynamicStructDescriptor,
+        DynamicStruct::property_i<int32_t>{ "intProperty", 1 },
+        DynamicStruct::property_i<string_t>{ "stringProperty", "foo" },
+        DynamicStruct::property_i<vector_t<float32_t>>{ "floatVectorProperty", vector_t<float32_t>{ 3.1415f, 2.7183f } }
+    };
+    auto storage = std::make_unique<std::byte[]>(m_testDynamicStructDescriptor->size());
+    DynamicStruct& sutThis = reinterpret_cast<DynamicStruct&>(*storage.get());
+    m_testDynamicStructDescriptor->construct(sutThis, std::move(sutOther));
+
+    EXPECT_EQ(sutThis._get<int32_t>("intProperty"), 1);
+    EXPECT_EQ(sutThis._get<string_t>("stringProperty"), "foo");
+    EXPECT_FALSE(sutThis._get("boolProperty").isValid());
+    EXPECT_EQ(sutThis._get<vector_t<float32_t>>("floatVectorProperty"), vector_t<float32_t>({ 3.1415f, 2.7183f }));
+
+    EXPECT_FALSE(sutOther._get("intProperty").isValid());
+    EXPECT_FALSE(sutOther._get("stringProperty").isValid());
+    EXPECT_FALSE(sutOther._get("boolProperty").isValid());
+    EXPECT_FALSE(sutOther._get("floatVectorProperty").isValid());
+}
+
 TEST_F(TestDynamicStruct, assignment_Copy)
 {
     DynamicStruct sutOther{ *m_testDynamicStructDescriptor,

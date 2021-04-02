@@ -25,7 +25,7 @@ namespace dots::type
         static constexpr bool is_same_property_v = std::disjunction_v<std::is_same<std::decay_t<U>, Property>, std::is_same<std::decay_t<U>, Derived>>;
 
         template <typename... Args>
-        static constexpr bool is_single_same_property_v = [](){ if constexpr (sizeof...(Args) == 1){ return is_same_property_v<Args...>; } else { return false; } }();
+        static constexpr bool is_single_same_property_v = std::conjunction_v<std::bool_constant<sizeof...(Args) == 1>, std::bool_constant<is_same_property_v<Args>>...>;
 
         template <typename... Args, std::enable_if_t<sizeof...(Args) >= 1 && !is_single_same_property_v<Args...>, int> = 0>
         Property(Args&&... args)
@@ -179,15 +179,15 @@ namespace dots::type
             static_assert(!IsTypeless || sizeof...(Args) <= 1, "typeless construct only supports a single argument");
             if constexpr (!IsTypeless)
             {
-                Descriptor<T>::construct(storage(), std::forward<Args>(args)...);
+                Descriptor<T>::constructInPlace(storage(), std::forward<Args>(args)...);
             }
             else if constexpr (sizeof...(Args) == 1)
             {
-                descriptor().valueDescriptor().construct(storage(), std::forward<Args>(args)...);
+                descriptor().valueDescriptor().constructInPlace(storage(), std::forward<Args>(args)...);
             }
             else if constexpr (sizeof...(Args) == 0)
             {
-                descriptor().valueDescriptor().construct(storage());
+                descriptor().valueDescriptor().constructInPlace(storage());
             }
 
             return storage();

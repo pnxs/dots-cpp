@@ -1,7 +1,6 @@
 #include <dots/io/channels/WebSocketChannel.h>
 #include <dots/io/Io.h>
 #include <dots/io/Registry.h>
-#include <dots/io/serialization/JsonSerializationRapidJson.h>
 
 namespace dots::io
 {
@@ -13,7 +12,8 @@ namespace dots::io
 
     WebSocketChannel::WebSocketChannel(Channel::key_t key, boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port) :
         Channel(key),
-        m_stream{ ioContext }
+        m_stream{ ioContext },
+        m_serializer{ { true } }
     {
         try
         {
@@ -71,36 +71,13 @@ namespace dots::io
 
                 verifyErrorCode(ec);
 
-                // TODO: optimize once JSON serializer has been reworked
-                const std::string& payload = boost::beast::buffers_to_string(m_buffer.cdata());
-                rapidjson::Document document;
-                document.Parse(payload);
-
-                if (document.HasParseError())
-                {
-                    throw std::runtime_error{ "received invalid JSON: " + payload };
-                }
-
-                auto itHeader = document.FindMember("header");
-                auto itInstance = document.FindMember("instance");
-
-                if (itHeader == document.MemberEnd() || !itHeader->value.IsObject() || itInstance == document.MemberEnd() || !itInstance->value.IsObject())
-                {
-                    throw std::runtime_error{ "received message with invalid format: " + payload };
-                }
-
+                m_serializer.setInput(static_cast<const char*>(m_buffer.cdata().data()), m_buffer.size());
+                m_serializer.deserializeTupleBegin();
                 DotsHeader header;
-                from_json(std::as_const(itHeader->value).GetObject(), header);
-
-                const type::StructDescriptor<>* descriptor = registry().findStructType(*header.typeName).get();
-
-                if (descriptor == nullptr)
-                {
-                    throw std::runtime_error{ "encountered unknown type: " + *header.typeName };
-                }
-
-                type::AnyStruct instance{ *descriptor };
-                from_json(std::as_const(itInstance->value).GetObject(), instance.get());
+                m_serializer.deserialize(header);
+                type::AnyStruct instance{ registry().getStructType(*header.typeName) };
+                m_serializer.deserialize(*instance);
+                m_serializer.deserializeTupleEnd();
 
                 processReceive(Transmission{ std::move(header), std::move(instance) });
             }
@@ -113,20 +90,12 @@ namespace dots::io
 
     void WebSocketChannel::transmitImpl(const DotsHeader& header, const type::Struct& instance)
     {
-        rapidjson::StringBuffer buffer;
-        rapidjson::PrettyWriter<rapidjson::StringBuffer> writer{ buffer };
+        m_serializer.serializeTupleBegin();
+        m_serializer.serialize(header);
+        m_serializer.serialize(instance);
+        m_serializer.serializeTupleEnd();
 
-        // TODO: optimize once JSON serializer has been reworked
-        writer.StartObject();
-        {
-            writer.String("header");
-            dots::to_json(header, writer);
-
-            writer.String("instance");
-            dots::to_json(instance, writer);
-        }
-        writer.EndObject();
-
-        m_stream.write(boost::asio::buffer(std::string{ buffer.GetString() }));
+        m_stream.write(boost::asio::buffer(m_serializer.output()));
+        m_serializer.output().clear();
     }
 }

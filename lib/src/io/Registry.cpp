@@ -60,7 +60,7 @@ namespace dots::io
     {
         if (std::shared_ptr<type::Descriptor<>> descriptor = m_types.find(name); descriptor == nullptr)
         {
-            if (descriptor = type::StaticDescriptorMap.find(name); descriptor == nullptr || (!m_staticUserTypes && IsUserType(*descriptor)))
+            if (descriptor = type::static_descriptors().find(name); descriptor == nullptr || (!m_staticUserTypes && IsUserType(*descriptor)))
             {
                 if (assertNotNull)
                 {

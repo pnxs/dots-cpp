@@ -55,6 +55,6 @@
 #define JSON_DURATION_2 "342.073"
 
 #define JSON_UUID_1 "\"8c96148e-58bd-11eb-ae93-0242ac130002\""
-#define JSON_JSON_1 "\"foobar\""
+#define JSON_STRING_1 "\"foobar\""
 
 #define JSON_TEST_ENUM_1 "5"

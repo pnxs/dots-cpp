@@ -4,6 +4,7 @@
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
 #include <dots/io/Channel.h>
+#include <dots/io/serialization/JsonSerializer.h>
 
 namespace dots::io
 {
@@ -31,5 +32,6 @@ namespace dots::io
 
         ws_stream_t m_stream;
         boost::beast::flat_buffer m_buffer;
+        JsonSerializer<> m_serializer;
     };
 }

@@ -1,4 +1,5 @@
 #pragma once
+#include <stack>
 #include <dots/type/TypeVisitor.h>
 
 namespace dots::io
@@ -17,121 +18,147 @@ namespace dots::io
         SerializerBase& operator = (const SerializerBase& rhs) = default;
         SerializerBase& operator = (SerializerBase&& rhs) = default;
 
-        template <typename T>
-        const data_t& serializeStruct(const T& instance, const property_set_t& includedProperties = property_set_t::All)
+        const data_t& output() const
         {
-            initSerialize();
-            visitStruct(instance, includedProperties);
-
             return m_output;
         }
 
-        template <typename T>
-        const data_t& serializeProperty(const T& property)
+        data_t& output()
         {
-            initSerialize();
-            visitProperty(property);
-
             return m_output;
         }
 
-        template <typename T>
-        const data_t& serializeVector(const type::Vector<T>& vector)
+        void setInput(const value_t* inputData, size_t inputDataSize)
         {
-            initSerialize();
-            visitVector(vector, type::Descriptor<type::Vector<T>>::InstanceRef());
+            m_inputData = inputData;
+            m_inputDataEnd = m_inputData + inputDataSize;
+            m_inputDataBegin = nullptr;
+            derived().setInputDerived();
+        }
 
-            return m_output;
+        void setInput(const data_t& input)
+        {
+            setInput(input.data(), input.size());
+        }
+
+        void setInput(data_t&& input) = delete;
+
+        size_t lastSerializeSize() const
+        {
+            return m_output.size() - m_outputSizeBegin;
+        }
+
+        size_t lastDeserializeSize() const
+        {
+            return static_cast<size_t>(m_inputData - m_inputDataBegin);
+        }
+
+        size_t inputAvailable() const
+        {
+            return m_inputDataEnd - m_inputData;
+        }
+
+        template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
+        size_t serialize(const T& instance, const property_set_t& includedProperties)
+        {
+            visit(instance, includedProperties);
+            return lastSerializeSize();
         }
 
         template <typename T>
-        const data_t& serialize(const T& value)
+        size_t serialize(const T& value)
         {
-            initSerialize();
-            visitType(value);
-
-            return m_output;
+            visit(value);
+            return lastSerializeSize();
         }
 
-        template <typename T>
-        void deserializeStruct(const value_t* data, size_t size, T& instance)
+        template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
+        size_t deserialize(T& value)
         {
-            initDeserialize(data, size);
-            visitStruct(instance, property_set_t::None);
+            visit(value);
+            return lastDeserializeSize();
         }
 
-        template <typename T>
-        void deserializeStruct(const data_t& data, T& instance)
-        {
-            deserializeStruct(data.data(), data.size(), instance);
-        }
-
-        template <typename T>
-        void deserializeProperty(const value_t* data, size_t size, T& property)
-        {
-            initDeserialize(data, size);
-            visitProperty(property);
-        }
-
-        template <typename T>
-        void deserializeProperty(const data_t& data, T& property)
-        {
-            deserializeProperty(data.data(), data.size(), property);
-        }
-
-        template <typename T>
-        void deserializeVector(const value_t* data, size_t size, type::Vector<T>& vector)
-        {
-            initDeserialize(data, size);
-            visitVector(vector, type::Descriptor<type::Vector<T>>::InstanceRef());
-        }
-
-        template <typename T>
-        void deserializeVector(const data_t& data, type::Vector<T>& vector)
-        {
-            deserializeVector(data.data(), data.size(), vector);
-        }
-
-        template <typename T>
-        void deserialize(const value_t* data, size_t size, T& value)
-        {
-            initDeserialize(data, size);
-            visitType(value);
-        }
-
-        template <typename T>
-        void deserialize(const data_t& data, T& value)
-        {
-            deserialize(data.data(), data.size(), value);
-        }
-
-        template <typename T>
-        T deserialize(const value_t* data, size_t size)
+        template <typename T, std::enable_if_t<!std::is_const_v<T> && !std::is_reference_v<T>, int> = 0>
+        T deserialize()
         {
             T value;
-            deserialize(data, size, value);
+            deserialize(value);
 
             return value;
         }
 
-        template <typename T>
-        T deserialize(const data_t& data)
+        template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
+        static data_t Serialize(const T& instance, const property_set_t& includedProperties)
         {
-            return deserialize<T>(data.data(), data.size());
+            Derived serializer;
+            serializer.serialize(instance, includedProperties);
+
+            return std::move(serializer.output());
+        }
+
+        template <typename T>
+        static data_t Serialize(const T& value)
+        {
+            Derived serializer;
+            serializer.serialize(value);
+
+            return std::move(serializer.output());
+        }
+
+        template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
+        static size_t Deserialize(const value_t* data, size_t size, T& value)
+        {
+            Derived serializer;
+            serializer.setInput(data, size);
+
+            return serializer.deserialize(value);
+        }
+
+        template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
+        static size_t Deserialize(const data_t& data, T& value)
+        {
+            return Deserialize(data.data(), data.size(), value);
+        }
+
+        template <typename T, std::enable_if_t<!std::is_const_v<T> && !std::is_reference_v<T>, int> = 0>
+        static T Deserialize(const value_t* data, size_t size)
+        {
+            Derived serializer;
+            serializer.setInput(data, size);
+
+            return serializer.template deserialize<T>();
+        }
+
+        template <typename T, std::enable_if_t<!std::is_const_v<T> && !std::is_reference_v<T>, int> = 0>
+        static T Deserialize(const data_t& data)
+        {
+            return Deserialize<T>(data.data(), data.size());
         }
 
     protected:
 
         using visitor_base_t = type::TypeVisitor<std::conditional_t<Static, Derived, void>>;
+        using visitor_base_t::visit;
 
-        using visitor_base_t::visitStruct;
-        using visitor_base_t::visitProperty;
-        using visitor_base_t::visitVector;
-        using visitor_base_t::visitType;
+        friend visitor_base_t;
 
-        data_t& output()
+        template <bool Const>
+        void visitBeginDerived()
         {
-            return m_output;
+            if constexpr (Const)
+            {
+                m_outputSizeBegin = m_output.size();
+            }
+            else
+            {
+                if (m_inputData >= m_inputDataEnd)
+                {
+                    throw std::logic_error{ "attempt to deserialize from invalid or empty input buffer" };
+                }
+
+                m_inputDataBegin = m_inputData;
+            }
         }
 
         const value_t*& inputData()
@@ -144,30 +171,12 @@ namespace dots::io
             return m_inputDataEnd;
         }
 
-        void initSerializeDerived()
-        {
-            /* do nothing */
-        }
-
-        void initDeserializeDerived()
+        void setInputDerived()
         {
             /* do nothing */
         }
 
     private:
-
-        void initSerialize()
-        {
-            m_output.clear();
-            derived().initSerializeDerived();
-        }
-
-        void initDeserialize(const value_t* data, size_t size)
-        {
-            m_inputData = data;
-            m_inputDataEnd = m_inputData + size;
-            derived().initDeserializeDerived();
-        }
 
         Derived& derived()
         {
@@ -175,7 +184,9 @@ namespace dots::io
         }
 
         data_t m_output;
+        size_t m_outputSizeBegin = 0;
         const value_t* m_inputData = nullptr;
+        const value_t* m_inputDataBegin = nullptr;
         const value_t* m_inputDataEnd = nullptr;
     };
 }

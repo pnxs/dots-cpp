@@ -135,6 +135,21 @@ namespace dots::type
             return underlyingDescriptor().construct(value, std::move(other));
         }
 
+        Typeless& constructInPlace(Typeless& value) const override
+        {
+            return underlyingDescriptor().constructInPlace(value);
+        }
+
+        Typeless& constructInPlace(Typeless& value, const Typeless& other) const override
+        {
+            return underlyingDescriptor().constructInPlace(value, other);
+        }
+
+        Typeless& constructInPlace(Typeless& value, Typeless&& other) const override
+        {
+            return underlyingDescriptor().constructInPlace(value, std::move(other));
+        }
+
         void destruct(Typeless& value) const override
         {
             underlyingDescriptor().destruct(value);
@@ -321,14 +336,8 @@ namespace dots::type
 
 namespace dots::type
 {
-    template<typename T, typename = void>
-    constexpr bool is_defined_v = false;
-    template<typename T>
-    constexpr bool is_defined_v<T, decltype(sizeof(T), void())> = true;
-    template<typename T>
-    using is_defined_t = std::conditional_t<is_defined_v<T>, std::true_type, std::false_type>;
     template <typename T>
-    struct has_enum_type : std::conditional_t<std::conjunction_v<std::is_enum<T>, is_defined_t<Descriptor<T>>>, std::true_type, std::false_type> {};
+    struct has_enum_type : std::conditional_t<std::conjunction_v<std::is_enum<T>, has_descriptor_t<T>>, std::true_type, std::false_type> {};
     template <typename T>
     using has_enum_type_t = typename has_enum_type<T>::type;
     template <typename T>
