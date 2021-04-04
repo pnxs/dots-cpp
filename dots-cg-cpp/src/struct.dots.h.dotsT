@@ -68,7 +68,7 @@ namespace dots::types
         static constexpr uint8_t _Local         = {% if options.local %}true{% else %}false{% endif %};
         static constexpr uint8_t _SubstructOnly = {% if options.substruct_only %}true{% else %}false{% endif %};
         
-        #if (defined DOTS_STRUCTS_USE_STATIC_DESCRIPTOR_OPERATIONS) || (defined DOTS_{{name}}_USE_STATIC_DESCRIPTOR_OPERATIONS)
+        #if (defined DOTS_STRUCTS_USE_STATIC_DESCRIPTOR_OPERATIONS) || (defined DOTS_USE_STATIC_DESCRIPTOR_OPERATIONS_FOR_{{name}})
         static constexpr bool _UseStaticDescriptorOperations = true;
         #else
         static constexpr bool _UseStaticDescriptorOperations = false;
