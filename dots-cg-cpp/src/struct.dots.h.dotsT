@@ -12,6 +12,16 @@
 #include "{{inc}}"
 {% endfor %}
 
+{% if attributes | selectattr("options", "defined") | selectattr("options.deprecated", "defined") | list | length > 0 %}
+#if (defined _MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 4996)
+#elif (defined __GNUG__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
+{% endif %}
 namespace dots::types
 {
     namespace details
@@ -162,3 +172,10 @@ namespace dots::type
 #if (!defined DOTS_TYPES_NO_USING) && (!defined {{name}}_NO_USING)
 using dots::types::{{name}};
 #endif
+{% if attributes | selectattr("options", "defined") | selectattr("options.deprecated", "defined") | list | length > 0 %}
+#if (defined _MSC_VER)
+#pragma warning(pop)
+#elif (defined __GNUG__)
+#pragma GCC diagnostic pop
+#endif
+{% endif %}
