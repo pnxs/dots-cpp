@@ -50,7 +50,11 @@ namespace dots::types
     /// }
     /// @endcode
     {% if options is defined and 'deprecated' in options %}
+    #if (!defined DOTS_ACKNOWLEDGE_DEPRECATION_OF_{{name}})
     struct [[deprecated]] {{name}} : type::StaticStruct<{{name}}>
+    #else
+    struct {{name}} : type::StaticStruct<{{name}}>
+    #endif
     {% else %}
     struct {{name}} : type::StaticStruct<{{name}}>
     {% endif %}
@@ -158,7 +162,14 @@ namespace dots::types
         }
 
 {% for property in attributes %}
-        {% if property.options is defined and 'deprecated' in property.options %}[[deprecated]] {% endif %}{{property.name}}_t {{property.name}}; // {% if property.options is defined and 'deprecated' in property.options %}[DEPRECATED] {% endif %}{{property.tag}}: {% if property.key %}[key] {% endif %}{{property.type}} {{property.name}} // {% if property.options is defined and 'deprecated' in property.options %}[DEPRECATED] {% endif %}{{property.comment}}
+        {% if property.options is defined and 'deprecated' in property.options %}
+        #if (!defined DOTS_ACKNOWLEDGE_DEPRECATION_OF_{{name}}_{{property.name}})
+        [[deprecated]]
+        #endif
+        {{property.name}}_t {{property.name}}; // [DEPRECATED] {{property.tag}}: {% if property.key %}[key] {% endif %}{{property.type}} {{property.name}} // [DEPRECATED] {{property.comment}}
+        {% else %}
+        {{property.name}}_t {{property.name}}; // {{property.tag}}: {% if property.key %}[key] {% endif %}{{property.type}} {{property.name}} // {{property.comment}}
+        {% endif %}
 {% endfor %}
     };
 }
