@@ -77,25 +77,35 @@ namespace dots::type
         [[deprecated("only available for backwards compatibility")]]
         void* New() const
         {
-            void *obj = ::operator new(size());
-            construct(*Typeless::From(obj));
-            return obj;
+            return NewInternal();
         }
 
         [[deprecated("only available for backwards compatibility")]]
         void Delete(void *obj) const
         {
-            destruct(*Typeless::From(obj));
-            ::operator delete(obj);
+            return DeleteInternal(obj);
         }
 
         [[deprecated("only available for backwards compatibility")]]
         std::shared_ptr<void> make_shared() const
         {
-            return { New(), [this](void* obj){ Delete(obj); } };
+            return { NewInternal(), [this](void* obj){ DeleteInternal(obj); } };
         }
 
     private:
+        
+        void* NewInternal() const
+        {
+            void *obj = ::operator new(size());
+            construct(*Typeless::From(obj));
+            return obj;
+        }
+        
+        void DeleteInternal(void *obj) const
+        {
+            destruct(*Typeless::From(obj));
+            ::operator delete(obj);
+        }
 
         Type m_type;
         std::string m_name;

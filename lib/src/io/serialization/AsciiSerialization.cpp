@@ -1,7 +1,7 @@
 #include <dots/io/serialization/AsciiSerialization.h>
+#include <dots/type/Struct.h>
 #include <dots/type/EnumDescriptor.h>
 #include <stack>
-#include <iostream>
 
 namespace dots {
 
@@ -293,7 +293,7 @@ static void write_atomic_types_to_ascii(const type::Descriptor<>& td, const void
 {
     //std::cout << "write atomic is_arithmetic:" << t.is_arithmetic() << " is_enum:" << t.is_enumeration() << " t:" << t.get_name() << "\n";
     //std::cout << "var ptr: " << var.get_ptr() << " type=" << var.get_type().get_name() << "\n";
-    switch (td.dotsType()) {
+    switch (td.type()) {
         case type::DotsType::int8:            writer.Int(*(const int8_t *) data); break;
         case type::DotsType::int16:           writer.Int(*(const int16_t *) data); break;
         case type::DotsType::int32:           writer.Int(*(const int32_t *) data); break;
@@ -326,15 +326,15 @@ static void write_atomic_types_to_ascii(const type::Descriptor<>& td, const void
 
 static inline void write_ascii(const type::Descriptor<>& td, const void* data, Printer& writer)
 {
-    if (td.dotsType() == type::DotsType::Vector)
+    if (td.type() == type::DotsType::Vector)
     {
         write_array_to_ascii(static_cast<const type::VectorDescriptor&>(td), *reinterpret_cast<const type::Vector<>*>(data), writer);
     }
-    else if (isDotsBaseType(td.dotsType()))
+    else if (td.isFundamentalType() || td.type() == type::Type::Enum)
     {
         write_atomic_types_to_ascii(td, data, writer);
     }
-    else if (td.dotsType() == type::DotsType::Struct) // object
+    else if (td.type() == type::DotsType::Struct) // object
     {
         to_ascii_recursive(static_cast<const type::StructDescriptor<>&>(td), data, types::property_set_t::All, writer, types::property_set_t::None);
     }
@@ -367,31 +367,22 @@ static void to_ascii_recursive(const type::StructDescriptor<>& td, const void *d
 
     writer.StartObject();
 
-    const auto& prop_list = td.propertyDescriptors();
-    for (const auto& prop : prop_list)
+    const auto& instance = type::Typeless::From(data)->to<type::Struct>();
+
+    for (const auto& property : instance._propertyRange(serializePropertySet))
     {
-        auto set = prop.set();
-
-        if (!(set <= serializePropertySet))
-            continue;
-
-        auto propertyValue = prop.address(data);
-
-        //std::cout << "cbor write property '" << prop.name() << "' tag: " << tag << ":\n";
-
-        const std::string name = prop.name().data();
-
-        if (set <= highlight) {
+        if (property.descriptor().set() <= highlight)
+        {
             writer.BeginHighlight();
-        }
-
-        writer.String(name);
-
-        if (set <= highlight) {
+            writer.String(property.descriptor().name());
             writer.EndHightlight();
         }
+        else
+        {
+            writer.String(property.descriptor().name());
+        }
 
-        write_ascii(prop.valueDescriptor(), propertyValue, writer);
+        write_ascii(property.descriptor().valueDescriptor(), &property.value(), writer);
     }
 
     writer.EndObject();
