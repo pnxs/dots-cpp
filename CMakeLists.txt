@@ -6,6 +6,11 @@ project(dots-cpp
 )
 
 # options
+add_compile_definitions(
+    # force usage of uncaught_exceptions() in the date library because the corresponding C++17 handling
+    # does not work properly for unknown reasons
+    HAS_UNCAUGHT_EXCEPTIONS
+)
 add_definitions(-DENABLE_LOG_DEBUG -DENABLE_LOG_DATA -DBOOST_ERROR_CODE_HEADER_ONLY -DBOOST_SYSTEM_NO_DEPRECATED)
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set(DOTS_TEMPLATE_PATH ${CMAKE_SOURCE_DIR}/model/template)
