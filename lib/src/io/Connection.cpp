@@ -37,7 +37,7 @@ namespace dots::io
             {
                 transmit(DotsMsgError{ DotsMsgError::errorCode_i{ 0 } });
             }
-            catch (const std::exception& e)
+            catch (const std::exception&/* e*/)
             {
                 /* do nothing */
             }
