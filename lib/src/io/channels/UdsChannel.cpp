@@ -62,7 +62,7 @@ namespace dots::io::posix
 
         DotsTransportHeader transportHeader{
             DotsTransportHeader::dotsHeader_i{ header },
-            DotsTransportHeader::payloadSize_i{ serializedInstance.size() }
+            DotsTransportHeader::payloadSize_i{ static_cast<uint32_t>(serializedInstance.size()) }
         };
 
         uint16_t serializedHeaderSize = static_cast<uint16_t>(m_serializer.serialize(transportHeader));

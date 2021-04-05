@@ -282,7 +282,7 @@ namespace dots::io
 
             if (additionalInformation <= Cbor::AdditionalInformation::MaxInplaceValue)
             {
-                return { 0, additionalInformation };
+                return { uint8_t{ 0 }, additionalInformation };
             }
             else
             {

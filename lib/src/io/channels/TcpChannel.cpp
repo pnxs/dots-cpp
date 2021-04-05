@@ -91,7 +91,7 @@ namespace dots::io
 
         DotsTransportHeader transportHeader{
             DotsTransportHeader::dotsHeader_i{ header },
-            DotsTransportHeader::payloadSize_i{ serializedInstance.size() }
+            DotsTransportHeader::payloadSize_i{ static_cast<uint32_t>(serializedInstance.size()) }
         };
 
         // adjust header for backwards compatibility to legacy implementation

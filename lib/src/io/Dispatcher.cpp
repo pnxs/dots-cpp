@@ -43,7 +43,7 @@ namespace dots::io
             DotsHeader header{
                 DotsHeader::typeName_i{ descriptor.name() },
                 DotsHeader::removeObj_i{ false },
-                DotsHeader::fromCache_i{ container.size() },
+                DotsHeader::fromCache_i{ static_cast<uint32_t>(container.size()) },
                 DotsHeader::isFromMyself_i{ false }
             };
 

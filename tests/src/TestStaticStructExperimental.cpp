@@ -254,10 +254,10 @@ TEST_F(TestStaticStructExperimental, PropertyOffsetsMatchActualOffsets)
 
 TEST_F(TestStaticStructExperimental, PropertiesHaveExpectedTags)
 {
-    EXPECT_EQ(TestStruct::intProperty_t::Tag(), 1);
-    EXPECT_EQ(TestStruct::stringProperty_t::Tag(), 2);
-    EXPECT_EQ(TestStruct::boolProperty_t::Tag(), 3);
-    EXPECT_EQ(TestStruct::floatVectorProperty_t::Tag(), 4);
+    EXPECT_EQ(TestStruct::intProperty_t::Tag(), 1u);
+    EXPECT_EQ(TestStruct::stringProperty_t::Tag(), 2u);
+    EXPECT_EQ(TestStruct::boolProperty_t::Tag(), 3u);
+    EXPECT_EQ(TestStruct::floatVectorProperty_t::Tag(), 4u);
 }
 
 TEST_F(TestStaticStructExperimental, PropertiesHaveExpectedNames)

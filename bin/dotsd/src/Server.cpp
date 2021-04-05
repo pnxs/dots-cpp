@@ -154,7 +154,7 @@ namespace dots
 
         auto& pool = m_hostTransceiver.pool();
 
-        cs.nrTypes(pool.size());
+        cs.nrTypes(static_cast<uint32_t>(pool.size()));
         cs.size(pool.totalMemoryUsage());
         return cs;
     }

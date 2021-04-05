@@ -16,7 +16,7 @@ TEST(TestDigest, stringHashValue2)
 TEST(TestDigest, nonceRoundtrip)
 {
     EXPECT_EQ(dots::io::Nonce{ 0x123456789 }.toString(), "0000000123456789");
-    EXPECT_EQ(dots::io::Nonce{ "0000000123456789" }.value(), 0x123456789);
+    EXPECT_EQ(dots::io::Nonce{ "0000000123456789" }.value(), 0x123456789u);
 }
 
 TEST(TestDigest, nonceSize)
