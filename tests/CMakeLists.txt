@@ -48,7 +48,7 @@ target_include_directories(${TARGET_NAME}
 target_compile_options(${TARGET_NAME}
     PRIVATE
         $<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-O2 -Wall -Wextra -Wpedantic -Werror>>
-        $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>>:/W4>
+        $<$<CXX_COMPILER_ID:MSVC>:/W4>
 )
 target_compile_features(${TARGET_NAME}
     PRIVATE
