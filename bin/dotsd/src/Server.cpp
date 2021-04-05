@@ -118,15 +118,15 @@ namespace dots
                 ds.resourceUsage = DotsResourceUsage{
                     DotsResourceUsage::userCpuTime_i{ type::posix::Timeval{ usage.ru_utime } },
                     DotsResourceUsage::systemCpuTime_i{ type::posix::Timeval{ usage.ru_stime } },
-                    DotsResourceUsage::maxRss_i{ usage.ru_maxrss },
-                    DotsResourceUsage::minorFaults_i{ usage.ru_minflt },
-                    DotsResourceUsage::majorFaults_i{ usage.ru_majflt },
-                    DotsResourceUsage::nrSwaps_i{ usage.ru_nswap },
-                    DotsResourceUsage::inBlock_i{ usage.ru_inblock },
-                    DotsResourceUsage::outBlock_i{ usage.ru_oublock },
-                    DotsResourceUsage::nrSignals_i{ usage.ru_nsignals },
-                    DotsResourceUsage::nrVoluntaryContextSwitches_i{ usage.ru_nvcsw },
-                    DotsResourceUsage::nrInvoluntaryContextSwitches_i{ usage.ru_nivcsw }
+                    DotsResourceUsage::maxRss_i{ static_cast<int32_t>(usage.ru_maxrss) },
+                    DotsResourceUsage::minorFaults_i{ static_cast<int32_t>(usage.ru_minflt) },
+                    DotsResourceUsage::majorFaults_i{ static_cast<int32_t>(usage.ru_majflt) },
+                    DotsResourceUsage::nrSwaps_i{ static_cast<int32_t>(usage.ru_nswap) },
+                    DotsResourceUsage::inBlock_i{ static_cast<int32_t>(usage.ru_inblock) },
+                    DotsResourceUsage::outBlock_i{ static_cast<int32_t>(usage.ru_oublock) },
+                    DotsResourceUsage::nrSignals_i{ static_cast<int32_t>(usage.ru_nsignals) },
+                    DotsResourceUsage::nrVoluntaryContextSwitches_i{ static_cast<int32_t>(usage.ru_nvcsw) },
+                    DotsResourceUsage::nrInvoluntaryContextSwitches_i{ static_cast<int32_t>(usage.ru_nivcsw) }
                 };
                 #endif
                 ds.cache = cacheStatus();
