@@ -127,6 +127,8 @@ target_compile_definitions(${TARGET_NAME}
         # note that this is currently not compatible with Clang
         $<$<NOT:$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:MSVC>>>:DOTS_PROPERTIES_NO_CONSTEXPR_OFFSETS>
     PRIVATE
+        # suppress warning for usage of unsafe C runtime functions (e.g. getenv)
+        $<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_WARNINGS>
         DOTS_NO_GLOBAL_TRANSCEIVER
 )
 target_link_libraries(${TARGET_NAME}
