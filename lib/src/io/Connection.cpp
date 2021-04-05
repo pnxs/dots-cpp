@@ -7,6 +7,13 @@
 #include <DotsClient.dots.h>
 #include <DotsDescriptorRequest.dots.h>
 
+// suppress deprecation warning for using legacy authentication interface
+#if (defined _MSC_VER)
+#pragma warning(disable: 4996)
+#elif (defined __GNUG__)
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
 namespace dots::io
 {
     Connection::Connection(channel_ptr_t channel, bool host, std::optional<std::string> authSecret/* = std::nullopt*/) :
