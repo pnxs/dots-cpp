@@ -115,7 +115,7 @@ target_compile_options(${TARGET_NAME}
         # set Windows SDK to target Windows 10
         $<$<CXX_COMPILER_ID:MSVC>:/DWINVER=0x0A00 /D_WIN32_WINNT=0x0A00>
     PRIVATE
-        $<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-O2 -Wall -Wextra -Wpedantic -Werror -Wno-deprecated-declarations>>
+        $<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-O2 -Wall -Wextra -Wpedantic -Werror>>
         $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>>:/W4>
 )
 target_compile_definitions(${TARGET_NAME}
