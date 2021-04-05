@@ -56,11 +56,11 @@ namespace dots::io
         if (insertIfNotExist)
         {
             auto [it, emplaced] = m_pool.try_emplace(&descriptor, descriptor);
-            auto& [descriptor, container] = *it;
+            auto& [descriptorPtr, container] = *it;
 
             if (emplaced)
             {
-                m_nameCache.emplace(descriptor->name(), &container);
+                m_nameCache.emplace(descriptorPtr->name(), &container);
             }
 
             return container;
