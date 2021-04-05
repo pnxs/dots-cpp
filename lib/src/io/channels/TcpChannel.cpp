@@ -1,3 +1,6 @@
+#define DOTS_ACKNOWLEDGE_DEPRECATION_OF_DotsTransportHeader_destinationGroup
+#define DOTS_ACKNOWLEDGE_DEPRECATION_OF_DotsTransportHeader_nameSpace
+#define DOTS_ACKNOWLEDGE_DEPRECATION_OF_DotsTransportHeader_destinationClientId
 #include <dots/io/channels/TcpChannel.h>
 #include <dots/io/Io.h>
 #include <dots/io/Registry.h>
