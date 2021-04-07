@@ -151,7 +151,7 @@ namespace dots::io
     {
         size_t staticMemUsage = sizeof(Container<type::Struct>);
         size_t dynElementMemUsage = m_instances.size() * sizeof(value_t);
-        size_t dynInstanceMemUsage = std::accumulate(m_instances.begin(), m_instances.end(), 0u, [](size_t size, const value_t& value)
+        size_t dynInstanceMemUsage = std::accumulate(m_instances.begin(), m_instances.end(), size_t{ 0 }, [](size_t size, const value_t& value)
         {
             return size + value.first->_totalMemoryUsage();
         });

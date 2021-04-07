@@ -1,3 +1,6 @@
+#define DOTS_ACKNOWLEDGE_DEPRECATION_OF_DotsTransportHeader_destinationGroup
+#define DOTS_ACKNOWLEDGE_DEPRECATION_OF_DotsTransportHeader_nameSpace
+#define DOTS_ACKNOWLEDGE_DEPRECATION_OF_DotsTransportHeader_destinationClientId
 #include <dots/io/channels/TcpChannel.h>
 #include <dots/io/Io.h>
 #include <dots/io/Registry.h>
@@ -88,7 +91,7 @@ namespace dots::io
 
         DotsTransportHeader transportHeader{
             DotsTransportHeader::dotsHeader_i{ header },
-            DotsTransportHeader::payloadSize_i{ serializedInstance.size() }
+            DotsTransportHeader::payloadSize_i{ static_cast<uint32_t>(serializedInstance.size()) }
         };
 
         // adjust header for backwards compatibility to legacy implementation

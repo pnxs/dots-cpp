@@ -342,12 +342,12 @@ TEST_F(TestDynamicStruct, PropertiesHaveExpectedTags)
 {
     DynamicStruct sut{ *m_testDynamicStructDescriptor };
 
-    EXPECT_EQ(sut._get("intProperty").descriptor().tag(), 1);
-    EXPECT_EQ(sut._get("stringProperty").descriptor().tag(), 2);
-    EXPECT_EQ(sut._get("boolProperty").descriptor().tag(), 3);
-    EXPECT_EQ(sut._get("floatVectorProperty").descriptor().tag(), 4);
-    EXPECT_EQ(sut._get("subStructProperty").descriptor().tag(), 5);
-    EXPECT_EQ(sut._get("structVectorProperty").descriptor().tag(), 6);
+    EXPECT_EQ(sut._get("intProperty").descriptor().tag(), 1u);
+    EXPECT_EQ(sut._get("stringProperty").descriptor().tag(), 2u);
+    EXPECT_EQ(sut._get("boolProperty").descriptor().tag(), 3u);
+    EXPECT_EQ(sut._get("floatVectorProperty").descriptor().tag(), 4u);
+    EXPECT_EQ(sut._get("subStructProperty").descriptor().tag(), 5u);
+    EXPECT_EQ(sut._get("structVectorProperty").descriptor().tag(), 6u);
 }
 
 TEST_F(TestDynamicStruct, PropertiesHaveExpectedNames)

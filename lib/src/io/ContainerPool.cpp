@@ -56,11 +56,11 @@ namespace dots::io
         if (insertIfNotExist)
         {
             auto [it, emplaced] = m_pool.try_emplace(&descriptor, descriptor);
-            auto& [descriptor, container] = *it;
+            auto& [descriptorPtr, container] = *it;
 
             if (emplaced)
             {
-                m_nameCache.emplace(descriptor->name(), &container);
+                m_nameCache.emplace(descriptorPtr->name(), &container);
             }
 
             return container;
@@ -138,7 +138,7 @@ namespace dots::io
 
     size_t ContainerPool::totalMemoryUsage() const
     {
-        return std::accumulate(m_pool.begin(), m_pool.end(), 0u, [](size_t size, const value_t& value)
+        return std::accumulate(m_pool.begin(), m_pool.end(), size_t{ 0 }, [](size_t size, const value_t& value)
         {
             return size + value.second.totalMemoryUsage();
         });

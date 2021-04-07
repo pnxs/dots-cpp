@@ -166,7 +166,6 @@ namespace dots::type
             return *InstancePtr();
         }
 
-        [[deprecated("this function will be removed when instance access is refactored")]]
         static const Descriptor<T>& InstanceRef()
         {
             return *M_instanceRawPtr;

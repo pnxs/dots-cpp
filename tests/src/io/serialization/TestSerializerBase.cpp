@@ -22,34 +22,34 @@ protected:
     template <typename T>
     bool visitStructBeginDerived(const T& instance, dots::property_set_t&/* includedProperties*/)
     {
-        std::fill_n(std::back_inserter(output()), sizeof(instance), 0x00);
+        std::fill_n(std::back_inserter(output()), sizeof(instance), uint8_t{ 0u });
         return false;
     }
 
     template <typename T>
     bool visitPropertyBeginDerived(const T&/* property*/, bool/* first*/)
     {
-        std::fill_n(std::back_inserter(output()), sizeof(typename T::value_t), 0x00);
+        std::fill_n(std::back_inserter(output()), sizeof(typename T::value_t), uint8_t{ 0u });
         return false;
     }
 
     template <typename T>
     bool visitVectorBeginDerived(const dots::vector_t<T>& vector, const dots::type::Descriptor<dots::vector_t<T>>&/* descriptor*/)
     {
-        std::fill_n(std::back_inserter(output()), sizeof(vector), 0x00);
+        std::fill_n(std::back_inserter(output()), sizeof(vector), uint8_t{ 0u });
         return false;
     }
 
     template <typename T>
     void visitEnumDerived(const T& value, const dots::type::EnumDescriptor<T>&/* descriptor*/)
     {
-        std::fill_n(std::back_inserter(output()), sizeof(value), 0x00);
+        std::fill_n(std::back_inserter(output()), sizeof(value), uint8_t{ 0u });
     }
 
     template <typename T>
     void visitFundamentalTypeDerived(const T& value, const dots::type::Descriptor<T>&/* descriptor*/)
     {
-        std::fill_n(std::back_inserter(output()), sizeof(value), 0x00);
+        std::fill_n(std::back_inserter(output()), sizeof(value), uint8_t{ 0u });
     }
 
     template <typename T>
@@ -105,19 +105,19 @@ TEST_F(TestSerializerBase, serialize_WriteToFreshInternalBuffer)
 TEST_F(TestSerializerBase, deserialize_ReadFromFreshExternalBuffer)
 {
     std::string s;
-    EXPECT_EQ(TestSerializer::Deserialize(data_t(sizeof(s), 0x00), s), sizeof(s));
+    EXPECT_EQ(TestSerializer::Deserialize(data_t(sizeof(s), uint8_t{ 0u }), s), sizeof(s));
 
     SerializationEnum e;
-    EXPECT_EQ(TestSerializer::Deserialize(data_t(sizeof(e), 0x00), e), sizeof(e));
+    EXPECT_EQ(TestSerializer::Deserialize(data_t(sizeof(e), uint8_t{ 0u }), e), sizeof(e));
 
     SerializationStructSimple serializationStructSimple1;
-    EXPECT_EQ(TestSerializer::Deserialize(data_t(sizeof(serializationStructSimple1.int32Property), 0x00), serializationStructSimple1.int32Property), sizeof(serializationStructSimple1.int32Property));
+    EXPECT_EQ(TestSerializer::Deserialize(data_t(sizeof(serializationStructSimple1.int32Property), uint8_t{ 0u }), serializationStructSimple1.int32Property), sizeof(serializationStructSimple1.int32Property));
 
     dots::vector_t<dots::bool_t> v;
-    EXPECT_EQ(TestSerializer::Deserialize(data_t(sizeof(v), 0x00), v), sizeof(v));
+    EXPECT_EQ(TestSerializer::Deserialize(data_t(sizeof(v), uint8_t{ 0u }), v), sizeof(v));
 
     SerializationStructSimple serializationStructSimple2;
-    EXPECT_EQ(TestSerializer::Deserialize(data_t(sizeof(serializationStructSimple2), 0x00), serializationStructSimple2), sizeof(serializationStructSimple2));
+    EXPECT_EQ(TestSerializer::Deserialize(data_t(sizeof(serializationStructSimple2), uint8_t{ 0u }), serializationStructSimple2), sizeof(serializationStructSimple2));
 }
 
 TEST_F(TestSerializerBase, serialize_WriteToContinuousInternalBuffer)
@@ -140,7 +140,7 @@ TEST_F(TestSerializerBase, deserialize_ReadFromContinuousExternalBuffer)
     SerializationStructSimple serializationStructSimple1;
     dots::vector_t<dots::bool_t> v;
     SerializationStructSimple serializationStructSimple2;
-    data_t input(sizeof(s) + sizeof(e) + sizeof(serializationStructSimple1.int32Property) + sizeof(v) + sizeof(serializationStructSimple2), 0x00);
+    data_t input(sizeof(s) + sizeof(e) + sizeof(serializationStructSimple1.int32Property) + sizeof(v) + sizeof(serializationStructSimple2), uint8_t{ 0u });
     sut.setInput(input);
 
     EXPECT_TRUE(sut.inputAvailable());

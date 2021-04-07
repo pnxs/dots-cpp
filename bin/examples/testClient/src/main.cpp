@@ -36,7 +36,7 @@ private:
         LOG_INFO_P("timer expired");
         DotsTestStruct ts;
         ts.indKeyfField(1);
-        ts.floatField(m_value++);
+        ts.floatField(static_cast<float>(m_value++));
         dots::publish(ts);
 
         DotsTestVectorStruct tvs;

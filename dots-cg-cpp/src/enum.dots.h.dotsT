@@ -27,7 +27,7 @@ namespace dots::types
 namespace dots::type
 {
     template <>
-    #if (defined DOTS_ENUMS_USE_STATIC_DESCRIPTOR_OPERATIONS) || (defined DOTS_{{name}}_USE_STATIC_DESCRIPTOR_OPERATIONS)
+    #if (defined DOTS_ENUMS_USE_STATIC_DESCRIPTOR_OPERATIONS) || (defined DOTS_USE_STATIC_DESCRIPTOR_OPERATIONS_FOR_{{name}})
     struct Descriptor<types::{{name}}> : EnumDescriptor<types::{{name}}, true>
     #else
     struct Descriptor<types::{{name}}> : EnumDescriptor<types::{{name}}, false>

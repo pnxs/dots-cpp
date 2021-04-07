@@ -12,6 +12,16 @@
 #include "{{inc}}"
 {% endfor %}
 
+{% if (options is defined and 'deprecated' in options) or (attributes | selectattr("options", "defined") | selectattr("options.deprecated", "defined") | list | length > 0) %}
+#if (defined _MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 4996)
+#elif (defined __GNUG__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
+{% endif %}
 namespace dots::types
 {
     namespace details
@@ -39,7 +49,15 @@ namespace dots::types
 {% endfor %}
     /// }
     /// @endcode
+    {% if options is defined and 'deprecated' in options %}
+    #if (!defined DOTS_ACKNOWLEDGE_DEPRECATION_OF_{{name}})
+    struct [[deprecated]] {{name}} : type::StaticStruct<{{name}}>
+    #else
     struct {{name}} : type::StaticStruct<{{name}}>
+    #endif
+    {% else %}
+    struct {{name}} : type::StaticStruct<{{name}}>
+    {% endif %}
     {
         static constexpr const char _Name[] = "{{name}}";
 
@@ -50,7 +68,7 @@ namespace dots::types
         static constexpr uint8_t _Local         = {% if options.local %}true{% else %}false{% endif %};
         static constexpr uint8_t _SubstructOnly = {% if options.substruct_only %}true{% else %}false{% endif %};
         
-        #if (defined DOTS_STRUCTS_USE_STATIC_DESCRIPTOR_OPERATIONS) || (defined DOTS_{{name}}_USE_STATIC_DESCRIPTOR_OPERATIONS)
+        #if (defined DOTS_STRUCTS_USE_STATIC_DESCRIPTOR_OPERATIONS) || (defined DOTS_USE_STATIC_DESCRIPTOR_OPERATIONS_FOR_{{name}})
         static constexpr bool _UseStaticDescriptorOperations = true;
         #else
         static constexpr bool _UseStaticDescriptorOperations = false;
@@ -144,7 +162,14 @@ namespace dots::types
         }
 
 {% for property in attributes %}
-        {% if property.options is defined and 'deprecated' in property.options %}[[deprecated]] {% endif %}{{property.name}}_t {{property.name}}; // {% if property.options is defined and 'deprecated' in property.options %}[DEPRECATED] {% endif %}{{property.tag}}: {% if property.key %}[key] {% endif %}{{property.type}} {{property.name}} // {% if property.options is defined and 'deprecated' in property.options %}[DEPRECATED] {% endif %}{{property.comment}}
+        {% if property.options is defined and 'deprecated' in property.options %}
+        #if (!defined DOTS_ACKNOWLEDGE_DEPRECATION_OF_{{name}}_{{property.name}})
+        [[deprecated]]
+        #endif
+        {{property.name}}_t {{property.name}}; // [DEPRECATED] {{property.tag}}: {% if property.key %}[key] {% endif %}{{property.type}} {{property.name}} // [DEPRECATED] {{property.comment}}
+        {% else %}
+        {{property.name}}_t {{property.name}}; // {{property.tag}}: {% if property.key %}[key] {% endif %}{{property.type}} {{property.name}} // {{property.comment}}
+        {% endif %}
 {% endfor %}
     };
 }
@@ -162,3 +187,10 @@ namespace dots::type
 #if (!defined DOTS_TYPES_NO_USING) && (!defined {{name}}_NO_USING)
 using dots::types::{{name}};
 #endif
+{% if (options is defined and 'deprecated' in options) or (attributes | selectattr("options", "defined") | selectattr("options.deprecated", "defined") | list | length > 0) %}
+#if (defined _MSC_VER)
+#pragma warning(pop)
+#elif (defined __GNUG__)
+#pragma GCC diagnostic pop
+#endif
+{% endif %}

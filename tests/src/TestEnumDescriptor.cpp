@@ -152,10 +152,10 @@ TEST_F(TestEnumDescriptor, enumeratorFromTag)
 
 TEST_F(TestEnumDescriptor, enumeratorFromName)
 {
-    EXPECT_EQ(m_sutSimple.enumeratorFromName("enumerator3").tag(), 3);
+    EXPECT_EQ(m_sutSimple.enumeratorFromName("enumerator3").tag(), 3u);
     EXPECT_EQ(m_sutSimple.enumeratorFromName("enumerator5").value(), TestEnumSimple::enumerator5);
 
-    EXPECT_EQ(m_sutGeneric.enumeratorFromName("enumerator4").tag(), 4);
+    EXPECT_EQ(m_sutGeneric.enumeratorFromName("enumerator4").tag(), 4u);
     EXPECT_EQ(m_sutGeneric.enumeratorFromName("enumerator9").value(), TestEnumGeneric({ "1", "3" }));
 
     EXPECT_THROW(m_sutSimple.enumeratorFromName("enumerator4"), std::logic_error);
@@ -164,10 +164,10 @@ TEST_F(TestEnumDescriptor, enumeratorFromName)
 
 TEST_F(TestEnumDescriptor, enumeratorFromValue)
 {
-    EXPECT_EQ(m_sutSimple.enumeratorFromValue(TestEnumSimple::enumerator11).tag(), 11);
+    EXPECT_EQ(m_sutSimple.enumeratorFromValue(TestEnumSimple::enumerator11).tag(), 11u);
     EXPECT_EQ(m_sutSimple.enumeratorFromValue(TestEnumSimple::enumerator13).name(), "enumerator13");
 
-    EXPECT_EQ(m_sutGeneric.enumeratorFromValue(TestEnumGeneric{ "bla", "blubb" }).tag(), 6);
+    EXPECT_EQ(m_sutGeneric.enumeratorFromValue(TestEnumGeneric{ "bla", "blubb" }).tag(), 6u);
     EXPECT_EQ(m_sutGeneric.enumeratorFromValue(TestEnumGeneric{ "a", "b" }).name(), "enumerator14");
 
     EXPECT_THROW(m_sutSimple.enumeratorFromValue(static_cast<TestEnumSimple>(6)), std::logic_error);

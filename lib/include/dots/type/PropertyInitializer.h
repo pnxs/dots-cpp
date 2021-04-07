@@ -14,7 +14,9 @@ namespace dots::type
         using property_t = P;
         using value_t = V;
 
-        template <typename... Args>
+        template <typename V_ = V, std::enable_if_t<std::is_arithmetic_v<V_>, int> = 0>
+        PropertyInitializer(V v) : value{ std::move(v) } {}
+        template <typename... Args, typename V_ = V, std::enable_if_t<!std::is_arithmetic_v<V_>, int> = 0>
         PropertyInitializer(Args&&... args) : value(std::forward<Args>(args)...) {}
         PropertyInitializer(const PropertyInitializer& other) = default;
         PropertyInitializer(PropertyInitializer&& other) = default;

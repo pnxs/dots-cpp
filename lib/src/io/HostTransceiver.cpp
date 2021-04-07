@@ -356,7 +356,7 @@ namespace dots::io
 
         DotsHeader header{
             DotsHeader::typeName_i{ container.descriptor().name() },
-            DotsHeader::fromCache_i{ container.size() },
+            DotsHeader::fromCache_i{ static_cast<uint32_t>(container.size()) },
             DotsHeader::removeObj_i{ false }
         };
 
