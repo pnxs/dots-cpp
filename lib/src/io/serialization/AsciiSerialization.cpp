@@ -294,30 +294,30 @@ static void write_atomic_types_to_ascii(const type::Descriptor<>& td, const void
     //std::cout << "write atomic is_arithmetic:" << t.is_arithmetic() << " is_enum:" << t.is_enumeration() << " t:" << t.get_name() << "\n";
     //std::cout << "var ptr: " << var.get_ptr() << " type=" << var.get_type().get_name() << "\n";
     switch (td.type()) {
-        case type::DotsType::int8:            writer.Int(*(const int8_t *) data); break;
-        case type::DotsType::int16:           writer.Int(*(const int16_t *) data); break;
-        case type::DotsType::int32:           writer.Int(*(const int32_t *) data); break;
-        case type::DotsType::int64:           writer.Int64(*(const long long *) data); break;
-        case type::DotsType::uint8:           writer.Uint(*(const uint8_t *) data); break;
-        case type::DotsType::uint16:          writer.Uint(*(const uint16_t *) data); break;
-        case type::DotsType::uint32:          writer.Uint(*(const uint32_t *) data); break;
-        case type::DotsType::uint64:          writer.Uint64(*(const unsigned long long *) data); break;
-        case type::DotsType::boolean:         writer.Bool(*(const bool *) data); break;
-        case type::DotsType::float32:         writer.Double(*(const float *) data);break;
-        case type::DotsType::float64:         writer.Double(*(const double *) data);break;
-        case type::DotsType::string:          writer.String(*(const std::string*) data);break;
-        case type::DotsType::property_set:    writer.Int(((const dots::types::property_set_t*)data)->toValue()); break;
-        case type::DotsType::timepoint:       writer.Double(((const type::TimePoint*)data)->duration().toFractionalSeconds()); break;
-        case type::DotsType::steady_timepoint:writer.Double(((const type::SteadyTimePoint*)data)->duration().toFractionalSeconds()); break;
-        case type::DotsType::duration:        writer.Double(((const type::Duration*)data)->toFractionalSeconds()); break;
-        case type::DotsType::uuid:            writer.String(((const dots::types::uuid_t*)data)->toString()); break;
-        case type::DotsType::Enum:
+        case type::Type::int8:            writer.Int(*(const int8_t *) data); break;
+        case type::Type::int16:           writer.Int(*(const int16_t *) data); break;
+        case type::Type::int32:           writer.Int(*(const int32_t *) data); break;
+        case type::Type::int64:           writer.Int64(*(const long long *) data); break;
+        case type::Type::uint8:           writer.Uint(*(const uint8_t *) data); break;
+        case type::Type::uint16:          writer.Uint(*(const uint16_t *) data); break;
+        case type::Type::uint32:          writer.Uint(*(const uint32_t *) data); break;
+        case type::Type::uint64:          writer.Uint64(*(const unsigned long long *) data); break;
+        case type::Type::boolean:         writer.Bool(*(const bool *) data); break;
+        case type::Type::float32:         writer.Double(*(const float *) data);break;
+        case type::Type::float64:         writer.Double(*(const double *) data);break;
+        case type::Type::string:          writer.String(*(const std::string*) data);break;
+        case type::Type::property_set:    writer.Int(((const dots::types::property_set_t*)data)->toValue()); break;
+        case type::Type::timepoint:       writer.Double(((const type::TimePoint*)data)->duration().toFractionalSeconds()); break;
+        case type::Type::steady_timepoint:writer.Double(((const type::SteadyTimePoint*)data)->duration().toFractionalSeconds()); break;
+        case type::Type::duration:        writer.Double(((const type::Duration*)data)->toFractionalSeconds()); break;
+        case type::Type::uuid:            writer.String(((const dots::types::uuid_t*)data)->toString()); break;
+        case type::Type::Enum:
         {
             writer.Enum(data, static_cast<const type::EnumDescriptor<>*>(&td));
         }
             break;
-        case type::DotsType::Vector:
-        case type::DotsType::Struct:
+        case type::Type::Vector:
+        case type::Type::Struct:
 
             throw std::runtime_error("unknown type: " + td.name());
     }
@@ -326,7 +326,7 @@ static void write_atomic_types_to_ascii(const type::Descriptor<>& td, const void
 
 static inline void write_ascii(const type::Descriptor<>& td, const void* data, Printer& writer)
 {
-    if (td.type() == type::DotsType::Vector)
+    if (td.type() == type::Type::Vector)
     {
         write_array_to_ascii(static_cast<const type::VectorDescriptor&>(td), *reinterpret_cast<const type::Vector<>*>(data), writer);
     }
@@ -334,7 +334,7 @@ static inline void write_ascii(const type::Descriptor<>& td, const void* data, P
     {
         write_atomic_types_to_ascii(td, data, writer);
     }
-    else if (td.type() == type::DotsType::Struct) // object
+    else if (td.type() == type::Type::Struct) // object
     {
         to_ascii_recursive(static_cast<const type::StructDescriptor<>&>(td), data, types::property_set_t::All, writer, types::property_set_t::None);
     }
