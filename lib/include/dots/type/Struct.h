@@ -10,7 +10,7 @@ namespace dots::type
 {
     struct Struct : PropertyContainer<Struct>
     {
-        Struct(const StructDescriptor<>& descriptor);
+        explicit Struct(const StructDescriptor<>& descriptor);
         Struct(const Struct& other) = default;
         Struct(Struct&& other) noexcept = default;
         ~Struct() = default;
