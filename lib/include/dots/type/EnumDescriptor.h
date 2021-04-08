@@ -327,6 +327,9 @@ namespace dots::type
         std::vector<EnumDescriptor<>::enumerator_ref_t> m_enumeratorsTypeless;
     };
 
+    template <typename TDescriptor>
+    struct type_category<TDescriptor, std::enable_if_t<std::is_same_v<EnumDescriptor<>, TDescriptor>>> : std::integral_constant<Type, Type::Enum> {};
+
     [[deprecated("only available for backwards compatibility")]]
     inline const EnumDescriptor<>* toEnumDescriptor(const Descriptor<>* descriptor)
     {

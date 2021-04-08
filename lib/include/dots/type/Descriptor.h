@@ -2,6 +2,7 @@
 #include <string>
 #include <string_view>
 #include <memory>
+#include <stdexcept>
 #include <dots/type/Typeless.h>
 
 namespace dots::type
@@ -17,6 +18,27 @@ namespace dots::type
         Vector,
         Struct, Enum
     };
+
+    template<typename TDescriptor, typename = void>
+    struct type_category
+    {
+        using value_type = void;
+    };
+
+    template <typename TDescriptor>
+    using type_category_t = typename type_category<TDescriptor>::type;
+
+    template <typename TDescriptor>
+    static constexpr Type type_category_v = type_category_t<TDescriptor>::value;
+
+    template<typename TDescriptor, typename = void>
+    struct is_category_descriptor : std::conditional_t<std::is_same_v<typename type_category<TDescriptor>::value_type, Type>, std::true_type, std::false_type> {};
+
+    template <typename T>
+    using is_category_descriptor_t = typename is_category_descriptor<T>::type;
+
+    template <typename T>
+    static constexpr bool is_category_descriptor_v = is_category_descriptor_t<T>::value;
 
     // [[deprecated("only available for backwards compatibility")]]
     using DotsType = Type;
@@ -64,6 +86,116 @@ namespace dots::type
 
         virtual bool usesDynamicMemory() const;
         virtual size_t dynamicMemoryUsage(const Typeless& value) const;
+
+        template <typename TDescriptor>
+        constexpr bool is() const
+        {
+            constexpr bool IsDescriptor = std::is_base_of_v<Descriptor<>, TDescriptor>;
+            static_assert(IsDescriptor, "TDescriptor has to be a descriptor");
+
+            if constexpr (IsDescriptor)
+            {
+                if constexpr (std::is_same_v<TDescriptor, Descriptor<>>)
+                {
+                    return true;
+                }
+                else if constexpr (is_category_descriptor_v<TDescriptor>)
+                {
+                    return type() == type_category_v<TDescriptor>;
+                }
+                else
+                {
+                    return typeid(*this) == typeid(TDescriptor);
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        template <typename... TDescriptors>
+        constexpr bool isAny() const
+        {
+            return (is<TDescriptors>() || ...);
+        }
+
+        template <typename TDescriptor>
+        void assertIs() const
+        {
+            if (!is<TDescriptor>())
+            {
+                throw std::logic_error{ "descriptor '" + name() + "' does not have expected type" };
+            }
+        }
+
+        template <typename... TDescriptors>
+        void assertIsAny() const
+        {
+            if (!isAny<TDescriptors...>())
+            {
+                throw std::logic_error{ "descriptor '" + name() + "' does not have any of expected types" };
+            }
+        }
+
+        template <typename TDescriptor>
+        constexpr const TDescriptor* as() const
+        {
+            constexpr bool IsDescriptor = std::is_base_of_v<Descriptor<>, TDescriptor>;
+            static_assert(IsDescriptor, "TDescriptor has to be a descriptor");
+
+            if constexpr (IsDescriptor)
+            {
+                if (is<TDescriptor>())
+                {
+                    return static_cast<const TDescriptor*>(this);
+                }
+                else
+                {
+                    return nullptr;
+                }
+            }
+            else
+            {
+                return nullptr;
+            }
+        }
+
+        template <typename TDescriptor>
+        constexpr TDescriptor* as()
+        {
+            return const_cast<TDescriptor*>(std::as_const(*this).as<TDescriptor>());
+        }
+
+        template <typename TDescriptor, bool Safe = false>
+        constexpr const TDescriptor& to() const
+        {
+            constexpr bool IsDescriptor = std::is_base_of_v<Descriptor<>, TDescriptor>;
+            static_assert(IsDescriptor, "TDescriptor has to be a descriptor");
+
+            if constexpr (IsDescriptor)
+            {
+                if constexpr (Safe)
+                {
+                    if (!is<TDescriptor>())
+                    {
+                        throw std::logic_error{ std::string{ "type mismatch in safe descriptor conversion" } };
+                    }
+                }
+
+                return static_cast<const TDescriptor&>(*this);
+            }
+            else
+            {
+                return std::declval<const TDescriptor>();
+            }
+        }
+
+        template <typename TDescriptor, bool Safe = false>
+        constexpr TDescriptor& to()
+        {
+            return const_cast<TDescriptor&>(std::as_const(*this).to<TDescriptor, Safe>());
+        }
 
         static bool IsFundamentalType(const Descriptor& descriptor);
         static bool IsFundamentalType(Type type);
