@@ -286,32 +286,29 @@ namespace dots::io
 
         LOG_INFO_S("received DescriptorRequest from " << connection.peerName() << "(" << connection.peerId() << ")");
 
-        registry().forEach([&](const type::Descriptor<>& descriptor) {
-            if (descriptor.type() != type::Type::Struct)
+        registry().forEach([&](const type::Descriptor<>& descriptor) 
+        {
+            if (const auto* structDescriptor = descriptor.as<type::StructDescriptor<>>(); structDescriptor != nullptr)
             {
-                return;
+                if (structDescriptor->internal())
+                {
+                    return;
+                }
+
+                if (!whiteList.empty() && std::find(whiteList.begin(), whiteList.end(), structDescriptor->name()) == whiteList.end())
+                {
+                    return;
+                }
+
+                if (!blacklist.empty() && std::find(blacklist.begin(), blacklist.end(), structDescriptor->name()) != blacklist.end())
+                {
+                    return;
+                }
+
+                LOG_DEBUG_S("sending structDescriptor for type '" << structDescriptor->name() << "' to " << connection.peerId());
+
+                connection.transmit(*structDescriptor);
             }
-
-            auto& structDescriptor = static_cast<const type::StructDescriptor<>&>(descriptor);
-
-            if (structDescriptor.internal())
-            {
-                return;
-            }
-
-            if (!whiteList.empty() && std::find(whiteList.begin(), whiteList.end(), structDescriptor.name()) == whiteList.end())
-            {
-                return;
-            }
-
-            if (!blacklist.empty() && std::find(blacklist.begin(), blacklist.end(), structDescriptor.name()) != blacklist.end())
-            {
-                return;
-            }
-
-            LOG_DEBUG_S("sending structDescriptor for type '" << structDescriptor.name() << "' to " << connection.peerId());
-
-            connection.transmit(structDescriptor);
         });
 
         connection.transmit(DotsCacheInfo{ DotsCacheInfo::endDescriptorRequest_i{ true } });

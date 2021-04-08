@@ -113,12 +113,12 @@ namespace dots::io
                 for (const auto& [name, descriptor] : m_preloadPublishTypes)
                 {
                     (void)name;
-                    connection.transmit(static_cast<const type::StructDescriptor<>&>(*descriptor));
+                    connection.transmit(descriptor->to<type::StructDescriptor<>>());
                 }
 
                 for (const auto& [name, descriptor] : m_preloadSubscribeTypes)
                 {
-                    connection.transmit(static_cast<const type::StructDescriptor<>&>(*descriptor));
+                    connection.transmit(descriptor->to<type::StructDescriptor<>>());
                     connection.transmit(DotsMember{
                         DotsMember::groupName_i{ name },
                         DotsMember::event_i{ DotsMemberEvent::join }

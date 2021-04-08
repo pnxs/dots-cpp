@@ -190,14 +190,17 @@ namespace dots::io
 
     bool Registry::IsUserType(const type::Descriptor<>& descriptor)
     {
-        switch (descriptor.type())
+        if (const auto* structDescriptor = descriptor.as<type::StructDescriptor<>>(); structDescriptor != nullptr)
         {
-            case type::Type::Struct:
-                return !static_cast<const type::StructDescriptor<>&>(descriptor).internal();
-            case type::Type::Vector:
-                return IsUserType(static_cast<const type::VectorDescriptor&>(descriptor).valueDescriptor());
-            default:
-                return false;
+            return !structDescriptor->internal();
+        }
+        else if (const auto* vectorDescriptor = descriptor.as<type::VectorDescriptor>(); vectorDescriptor != nullptr)
+        {
+            return IsUserType(vectorDescriptor->valueDescriptor());
+        }
+        else
+        {
+            return false;
         }
     }
 }

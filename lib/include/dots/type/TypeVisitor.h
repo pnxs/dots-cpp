@@ -352,41 +352,41 @@ namespace dots::type
                     {
                         switch (descriptor.type())
                         {
-                            case Type::boolean: derived().visitFundamentalTypeDerived(value.template to<bool_t>(), static_cast<const Descriptor<bool_t>&>(descriptor));
+                            case Type::boolean: derived().visitFundamentalTypeDerived(value.template to<bool_t>(), descriptor.template to<Descriptor<bool_t>>());
                                 break;
-                            case Type::int8: derived().visitFundamentalTypeDerived(value.template to<int8_t>(), static_cast<const Descriptor<int8_t>&>(descriptor));
+                            case Type::int8: derived().visitFundamentalTypeDerived(value.template to<int8_t>(), descriptor.template to<Descriptor<int8_t>>());
                                 break;
-                            case Type::uint8: derived().visitFundamentalTypeDerived(value.template to<uint8_t>(), static_cast<const Descriptor<uint8_t>&>(descriptor));
+                            case Type::uint8: derived().visitFundamentalTypeDerived(value.template to<uint8_t>(), descriptor.template to<Descriptor<uint8_t>>());
                                 break;
-                            case Type::int16: derived().visitFundamentalTypeDerived(value.template to<int16_t>(), static_cast<const Descriptor<int16_t>&>(descriptor));
+                            case Type::int16: derived().visitFundamentalTypeDerived(value.template to<int16_t>(), descriptor.template to<Descriptor<int16_t>>());
                                 break;
-                            case Type::uint16: derived().visitFundamentalTypeDerived(value.template to<uint16_t>(), static_cast<const Descriptor<uint16_t>&>(descriptor));
+                            case Type::uint16: derived().visitFundamentalTypeDerived(value.template to<uint16_t>(), descriptor.template to<Descriptor<uint16_t>>());
                                 break;
-                            case Type::int32: derived().visitFundamentalTypeDerived(value.template to<int32_t>(), static_cast<const Descriptor<int32_t>&>(descriptor));
+                            case Type::int32: derived().visitFundamentalTypeDerived(value.template to<int32_t>(), descriptor.template to<Descriptor<int32_t>>());
                                 break;
-                            case Type::uint32: derived().visitFundamentalTypeDerived(value.template to<uint32_t>(), static_cast<const Descriptor<uint32_t>&>(descriptor));
+                            case Type::uint32: derived().visitFundamentalTypeDerived(value.template to<uint32_t>(), descriptor.template to<Descriptor<uint32_t>>());
                                 break;
-                            case Type::int64: derived().visitFundamentalTypeDerived(value.template to<int64_t>(), static_cast<const Descriptor<int64_t>&>(descriptor));
+                            case Type::int64: derived().visitFundamentalTypeDerived(value.template to<int64_t>(), descriptor.template to<Descriptor<int64_t>>());
                                 break;
-                            case Type::uint64: derived().visitFundamentalTypeDerived(value.template to<uint64_t>(), static_cast<const Descriptor<uint64_t>&>(descriptor));
+                            case Type::uint64: derived().visitFundamentalTypeDerived(value.template to<uint64_t>(), descriptor.template to<Descriptor<uint64_t>>());
                                 break;
-                            case Type::float32: derived().visitFundamentalTypeDerived(value.template to<float32_t>(), static_cast<const Descriptor<float32_t>&>(descriptor));
+                            case Type::float32: derived().visitFundamentalTypeDerived(value.template to<float32_t>(), descriptor.template to<Descriptor<float32_t>>());
                                 break;
-                            case Type::float64: derived().visitFundamentalTypeDerived(value.template to<float64_t>(), static_cast<const Descriptor<float64_t>&>(descriptor));
+                            case Type::float64: derived().visitFundamentalTypeDerived(value.template to<float64_t>(), descriptor.template to<Descriptor<float64_t>>());
                                 break;
-                            case Type::property_set: derived().visitFundamentalTypeDerived(value.template to<property_set_t>(), static_cast<const Descriptor<property_set_t>&>(descriptor));
-                                break;
-
-                            case Type::timepoint: derived().visitFundamentalTypeDerived(value.template to<timepoint_t>(), static_cast<const Descriptor<timepoint_t>&>(descriptor));
-                                break;
-                            case Type::steady_timepoint: derived().visitFundamentalTypeDerived(value.template to<steady_timepoint_t>(), static_cast<const Descriptor<steady_timepoint_t>&>(descriptor));
-                                break;
-                            case Type::duration: derived().visitFundamentalTypeDerived(value.template to<duration_t>(), static_cast<const Descriptor<duration_t>&>(descriptor));
+                            case Type::property_set: derived().visitFundamentalTypeDerived(value.template to<property_set_t>(), descriptor.template to<Descriptor<property_set_t>>());
                                 break;
 
-                            case Type::uuid: derived().visitFundamentalTypeDerived(value.template to<uuid_t>(), static_cast<const Descriptor<uuid_t>&>(descriptor));
+                            case Type::timepoint: derived().visitFundamentalTypeDerived(value.template to<timepoint_t>(), descriptor.template to<Descriptor<timepoint_t>>());
                                 break;
-                            case Type::string: derived().visitFundamentalTypeDerived(value.template to<string_t>(), static_cast<const Descriptor<string_t>&>(descriptor));
+                            case Type::steady_timepoint: derived().visitFundamentalTypeDerived(value.template to<steady_timepoint_t>(), descriptor.template to<Descriptor<steady_timepoint_t>>());
+                                break;
+                            case Type::duration: derived().visitFundamentalTypeDerived(value.template to<duration_t>(), descriptor.template to<Descriptor<duration_t>>());
+                                break;
+
+                            case Type::uuid: derived().visitFundamentalTypeDerived(value.template to<uuid_t>(), descriptor.template to<Descriptor<uuid_t>>());
+                                break;
+                            case Type::string: derived().visitFundamentalTypeDerived(value.template to<string_t>(), descriptor.template to<Descriptor<string_t>>());
                                 break;
 
                             case Type::Vector:
