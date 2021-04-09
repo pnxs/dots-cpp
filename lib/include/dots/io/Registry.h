@@ -22,13 +22,13 @@ namespace dots::io
         Registry& operator = (const Registry& rhs) = default;
         Registry& operator = (Registry&& rhs) noexcept = default;
 
-        template <typename Handler>
-        void forEach(Handler&& handler)
+        template <typename TypeHandler>
+        void forEach(TypeHandler&& handler)
         {
-            constexpr bool is_type_handler = std::is_invocable_v<Handler, const type::Descriptor<>&>;
-            static_assert(is_type_handler, "Handler has to be a valid type handler type");
+            constexpr bool IsTypeHandler = std::is_invocable_v<TypeHandler, const type::Descriptor<>&>;
+            static_assert(IsTypeHandler, "Handler has to be a valid type handler");
 
-            if constexpr (is_type_handler)
+            if constexpr (IsTypeHandler)
             {
                 for (const auto& [name, descriptor] : type::static_descriptors())
                 {
@@ -44,6 +44,53 @@ namespace dots::io
                     (void)name;
                     handler(*descriptor);
                 }
+            }
+        }
+
+        template <typename... TDescriptors, typename TypeHandler, std::enable_if_t<sizeof...(TDescriptors) >= 1, int> = 0>
+        void forEach(TypeHandler&& handler)
+        {
+            constexpr bool AreDescriptors = std::conjunction_v<std::is_base_of<type::Descriptor<>, TDescriptors>...>;
+            constexpr bool IsTypeHandler = std::conjunction_v<std::is_invocable<TypeHandler, const TDescriptors&>...>;
+
+            static_assert(AreDescriptors, "TDescriptor has to be a descriptor");
+            static_assert(IsTypeHandler, "Handler has to be a valid type handler for all TDescriptors types");
+
+            if constexpr (AreDescriptors && IsTypeHandler)
+            {
+                forEach([handler{ std::forward<TypeHandler>(handler) }](const type::Descriptor<>& descriptor)
+                {
+                    auto handle_type = [](auto& handler, const type::Descriptor<>& descriptor, const auto* wantedDescriptor)
+                    {
+                        using wanted_descriptor_t = std::decay_t<std::remove_pointer_t<decltype(wantedDescriptor)>>;
+                        (void)wantedDescriptor;
+
+                        if (wantedDescriptor = descriptor.as<wanted_descriptor_t>(); wantedDescriptor != nullptr)
+                        {
+                            std::invoke(handler, *wantedDescriptor);
+                        }
+                    };
+
+                    (handle_type(handler, descriptor, static_cast<const TDescriptors*>(nullptr)), ...);
+                });
+            }
+        }
+
+        template <typename TypeHandler, typename TypeFilter>
+        void forEach(TypeHandler&& handler, TypeFilter&& filter)
+        {
+            constexpr bool IsTypeFilter = std::is_invocable_r_v<bool, TypeFilter, const type::Descriptor<>&>;
+            static_assert(IsTypeFilter, "Handler has to be a valid type filter");
+
+            if constexpr (IsTypeFilter)
+            {
+                forEach([handler{ std::forward<TypeHandler>(handler) }, filter{ std::forward<TypeFilter>(filter) }](const type::Descriptor<>& descriptor)
+                {
+                    if (std::invoke(filter, descriptor))
+                    {
+                        std::invoke(handler, descriptor);
+                    }
+                });
             }
         }
 
