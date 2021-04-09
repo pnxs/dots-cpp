@@ -53,33 +53,35 @@ namespace dots::io
         template<typename T, typename EventHandler, typename... Args>
         id_t addEventHandler(EventHandler&& handler, Args&&... args)
         {
-            constexpr bool is_top_level_struct = std::conjunction_v<std::is_base_of<type::Struct, T>, std::negation<std::bool_constant<T::_SubstructOnly>>>;
-            constexpr bool is_event_handler = std::is_invocable_v<EventHandler, Args&..., const Event<T>&>;
+            constexpr bool IsTopLevelStruct = std::conjunction_v<std::is_base_of<type::Struct, T>, std::negation<std::bool_constant<T::_SubstructOnly>>>;
+            constexpr bool IsEventHandler = std::is_invocable_v<EventHandler, Args&..., const Event<T>&>;
 
-            static_assert(is_top_level_struct, "T has to be a top-level DOTS struct type");
-            static_assert(is_event_handler, "Handler has to be a valid DOTS event handler type and be invocable with args");
+            static_assert(IsTopLevelStruct, "T has to be a top-level DOTS struct type");
+            static_assert(IsEventHandler, "EventHandler has to be a valid DOTS event handler type and be invocable with Args");
 
-            if constexpr (is_top_level_struct && is_event_handler)
+            if constexpr (IsTopLevelStruct && IsEventHandler)
             {
+                auto handle_event = [](auto& handler, auto& argsTuple, const Event<>& e)
+                {
+                    std::apply([&](auto&... args)
+                    {
+                        std::invoke(handler, args..., e.as<T>());
+                    }, argsTuple);
+                };
+
                 // note that the two branches are intentionally identical except for the mutability of the outer lambda
                 if constexpr (std::is_const_v<EventHandler>)
                 {
-                    return addEventHandler(T::_Descriptor(), [handler_{ std::forward<EventHandler>(handler) }, args = std::make_tuple(std::forward<Args>(args)...)](const Event<>& e)
+                    return addEventHandler(T::_Descriptor(), [handler{ std::forward<EventHandler>(handler) }, argsTuple = std::make_tuple(std::forward<Args>(args)...), &handle_event](const Event<>& e)
                     {
-                        std::apply([&](auto&... args)
-                        {
-                            std::invoke(handler_, args..., e.as<T>());
-                        }, args);
+                        handle_event(handler, argsTuple, e);
                     });
                 }
                 else
                 {
-                    return addEventHandler(T::_Descriptor(), [handler_{ std::forward<EventHandler>(handler) }, args = std::make_tuple(std::forward<Args>(args)...)](const Event<>& e) mutable
+                    return addEventHandler(T::_Descriptor(), [handler{ std::forward<EventHandler>(handler) }, argsTuple = std::make_tuple(std::forward<Args>(args)...), &handle_event](const Event<>& e) mutable
                     {
-                        std::apply([&](auto&... args)
-                        {
-                            std::invoke(handler_, args..., e.as<T>());
-                        }, args);
+                        handle_event(handler, argsTuple, e);
                     });
                 }
             }
