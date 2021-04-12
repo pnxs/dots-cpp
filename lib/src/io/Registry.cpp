@@ -84,14 +84,36 @@ namespace dots::io
 
     std::shared_ptr<type::EnumDescriptor<>> Registry::findEnumType(const std::string_view& name, bool assertNotNull/* = false*/) const
     {
-        const auto& descriptor = std::static_pointer_cast<type::EnumDescriptor<>>(findType(name, assertNotNull));
-        return descriptor == nullptr ? nullptr : (descriptor->type() == type::Type::Enum ? descriptor : nullptr);
+        auto descriptor = std::static_pointer_cast<type::EnumDescriptor<>>(findType(name, assertNotNull));
+
+        if (descriptor != nullptr && descriptor->type() != type::Type::Enum)
+        {
+            descriptor = nullptr;
+        }
+
+        if (assertNotNull && descriptor == nullptr)
+        {
+            throw std::logic_error{ std::string{ "registered type with name '" } + name.data() + "' is not an enum type" };
+        }
+
+        return descriptor;
     }
 
     std::shared_ptr<type::StructDescriptor<>> Registry::findStructType(const std::string_view& name, bool assertNotNull/* = false*/) const
     {
-        const auto& descriptor = std::static_pointer_cast<type::StructDescriptor<>>(findType(name, assertNotNull));
-        return descriptor == nullptr ? nullptr : (descriptor->type() == type::Type::Struct ? descriptor : nullptr);
+        auto descriptor = std::static_pointer_cast<type::StructDescriptor<>>(findType(name, assertNotNull));
+
+        if (descriptor != nullptr && descriptor->type() != type::Type::Struct)
+        {
+            descriptor = nullptr;
+        }
+
+        if (assertNotNull && descriptor == nullptr)
+        {
+            throw std::logic_error{ std::string{ "registered type with name '" } + name.data() + "' is not a struct type" };
+        }
+
+        return descriptor;
     }
 
     const type::Descriptor<>& Registry::getType(const std::string_view& name) const
