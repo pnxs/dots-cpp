@@ -138,9 +138,7 @@ namespace dots::io
 
     std::shared_ptr<type::Descriptor<>> Registry::registerType(std::shared_ptr<type::Descriptor<>> descriptor, bool assertNewType/* = true*/)
     {
-        auto [descriptor_, emplaced] = m_types.tryEmplace(descriptor);
-
-        if (!emplaced)
+        if (auto descriptor_ = findType(descriptor->name()); descriptor_ != nullptr)
         {
             if (assertNewType)
             {
@@ -151,6 +149,8 @@ namespace dots::io
                 return descriptor_;
             }
         }
+
+        m_types.emplace(descriptor);
 
         if (descriptor->type() == type::Type::Vector)
         {
@@ -174,10 +174,10 @@ namespace dots::io
 
         if (m_newTypeHandler != nullptr)
         {
-            m_newTypeHandler(*descriptor_);
+            m_newTypeHandler(*descriptor);
         }
 
-        return descriptor_;
+        return descriptor;
     }
 
     void Registry::deregisterType(const std::shared_ptr<type::Descriptor<>>& descriptor, bool assertRegisteredType/* = true*/)
