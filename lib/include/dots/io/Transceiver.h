@@ -56,7 +56,7 @@ namespace dots::io
             return m_dispatcher.container<T>();
         }
 
-        template<typename T, typename EventHandler, typename... Args>
+        template<typename T, typename EventHandler, typename... Args, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
         Subscription subscribe(EventHandler&& handler, Args&&... args)
         {
             static_assert(!T::_SubstructOnly, "it is not allowed to subscribe to a struct that is marked with 'substruct_only'!");
@@ -67,38 +67,45 @@ namespace dots::io
             return makeSubscription([&, id]{ m_dispatcher.removeEventHandler(T::_Descriptor(), id); });
         }
 
-        template <type::Type TType, typename NewTypeHandler>
-        Subscription subscribe(NewTypeHandler&& handler)
+        template <typename... TDescriptors, typename TypeHandler, typename... Args, std::enable_if_t<sizeof...(TDescriptors) >= 1 && std::conjunction_v<std::is_base_of<type::Descriptor<>, TDescriptors>...>, int> = 0>
+        Subscription subscribe(TypeHandler&& handler, Args&&... args)
         {
-            return subscribe([handler_ = std::move(handler)](const type::Descriptor<>& descriptor)
+            constexpr bool IsTypeHandler = std::conjunction_v<std::is_invocable<TypeHandler, const TDescriptors&>...>;
+            static_assert(IsTypeHandler, "Handler has to be a valid type handler for all TDescriptors types and be invocable by args");
+
+            if constexpr (IsTypeHandler)
             {
-                // TODO: shorten once descriptor traits were added
-                if constexpr (TType == type::Type::Vector)
+                auto handle_type = [](auto& handler, auto& argsTuple, const type::Descriptor<>& descriptor, const auto* wantedDescriptor)
                 {
-                    if (descriptor.type() == type::Type::Vector)
+                    using wanted_descriptor_t = std::decay_t<std::remove_pointer_t<decltype(wantedDescriptor)>>;
+                    (void)wantedDescriptor;
+
+                    if (wantedDescriptor = descriptor.as<wanted_descriptor_t>(); wantedDescriptor != nullptr)
                     {
-                        handler_(static_cast<const type::VectorDescriptor&>(descriptor));
+                        std::apply([&](auto&... args){ std::invoke(handler, args..., *wantedDescriptor); }, argsTuple);
                     }
-                }
-                else if constexpr (TType == type::Type::Enum)
+                };
+
+                // note that the two branches are intentionally identical except for the mutability of the outer lambda
+                if constexpr (std::is_const_v<TypeHandler>)
                 {
-                    if (descriptor.type() == type::Type::Enum)
+                    return subscribe([handler{ std::forward<TypeHandler>(handler) }, argsTuple = std::make_tuple(std::forward<Args>(args)...), &handle_type](const type::Descriptor<>& descriptor)
                     {
-                        handler_(static_cast<const type::EnumDescriptor<>&>(descriptor));
-                    }
-                }
-                else if constexpr (TType == type::Type::Struct)
-                {
-                    if (descriptor.type() == type::Type::Struct)
-                    {
-                        handler_(static_cast<const type::StructDescriptor<>&>(descriptor));
-                    }
+                        (handle_type(handler, argsTuple, descriptor, static_cast<const TDescriptors*>(nullptr)), ...);
+                    });
                 }
                 else
                 {
-                    static_assert(!std::is_same_v<NewTypeHandler, NewTypeHandler>, "TType has to to be one of the supported complex descriptor types");
+                    return subscribe([handler{ std::forward<TypeHandler>(handler) }, argsTuple = std::make_tuple(std::forward<Args>(args)...), &handle_type](const type::Descriptor<>& descriptor) mutable
+                    {
+                        (handle_type(handler, argsTuple, descriptor, static_cast<const TDescriptors*>(nullptr)), ...);
+                    });
                 }
-            });
+            }
+            else
+            {
+                return std::declval<Subscription>();
+            }
         }
 
         [[deprecated("only available for backwards compatibility")]]

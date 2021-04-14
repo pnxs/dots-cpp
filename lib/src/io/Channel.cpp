@@ -182,27 +182,25 @@ namespace dots::io
     {
         if (bool isNewSharedType = m_sharedTypes.emplace(descriptor.name()).second; isNewSharedType)
         {
-            if (descriptor.type() == type::Type::Vector)
+            if (const auto* vectorDescriptor = descriptor.as<type::VectorDescriptor>(); vectorDescriptor != nullptr)
             {
-                auto& vectorDescriptor = static_cast<const type::VectorDescriptor&>(descriptor);
-                exportDependencies(vectorDescriptor.valueDescriptor());
+                exportDependencies(vectorDescriptor->valueDescriptor());
             }
-            else if (descriptor.type() == type::Type::Enum)
+            else if (const auto* enumDescriptor = descriptor.as<type::EnumDescriptor<>>(); enumDescriptor != nullptr)
             {
-                auto& enumDescriptor = static_cast<const type::EnumDescriptor<>&>(descriptor);
-                exportDependencies(enumDescriptor.underlyingDescriptor());
-                transmit(io::DescriptorConverter{ registry() }(enumDescriptor));
+                exportDependencies(enumDescriptor->underlyingDescriptor());
+                transmit(io::DescriptorConverter{ registry() }(*enumDescriptor));
             }
-            else if (descriptor.type() == type::Type::Struct)
+            else if (const auto* structDescriptor = descriptor.as<type::StructDescriptor<>>(); structDescriptor != nullptr)
             {
-                if (auto& structDescriptor = static_cast<const type::StructDescriptor<>&>(descriptor); !structDescriptor.internal())
+                if (!structDescriptor->internal())
                 {
-                    for (const type::PropertyDescriptor& propertyDescriptor : structDescriptor.propertyDescriptors())
+                    for (const type::PropertyDescriptor& propertyDescriptor : structDescriptor->propertyDescriptors())
                     {
                         exportDependencies(propertyDescriptor.valueDescriptor());
                     }
 
-                    transmit(io::DescriptorConverter{ registry() }(structDescriptor));
+                    transmit(io::DescriptorConverter{ registry() }(*structDescriptor));
                 }
             }
         }

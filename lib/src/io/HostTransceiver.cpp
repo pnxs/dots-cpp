@@ -286,32 +286,26 @@ namespace dots::io
 
         LOG_INFO_S("received DescriptorRequest from " << connection.peerName() << "(" << connection.peerId() << ")");
 
-        registry().forEach([&](const type::Descriptor<>& descriptor) {
-            if (descriptor.type() != type::Type::Struct)
+        registry().forEach<type::StructDescriptor<>>([&](const auto& descriptor) 
+        {
+            if (descriptor.internal())
             {
                 return;
             }
 
-            auto& structDescriptor = static_cast<const type::StructDescriptor<>&>(descriptor);
-
-            if (structDescriptor.internal())
+            if (!whiteList.empty() && std::find(whiteList.begin(), whiteList.end(), descriptor.name()) == whiteList.end())
             {
                 return;
             }
 
-            if (!whiteList.empty() && std::find(whiteList.begin(), whiteList.end(), structDescriptor.name()) == whiteList.end())
+            if (!blacklist.empty() && std::find(blacklist.begin(), blacklist.end(), descriptor.name()) != blacklist.end())
             {
                 return;
             }
 
-            if (!blacklist.empty() && std::find(blacklist.begin(), blacklist.end(), structDescriptor.name()) != blacklist.end())
-            {
-                return;
-            }
+            LOG_DEBUG_S("sending structDescriptor for type '" << descriptor.name() << "' to " << connection.peerId());
 
-            LOG_DEBUG_S("sending structDescriptor for type '" << structDescriptor.name() << "' to " << connection.peerId());
-
-            connection.transmit(structDescriptor);
+            connection.transmit(descriptor);
         });
 
         connection.transmit(DotsCacheInfo{ DotsCacheInfo::endDescriptorRequest_i{ true } });

@@ -84,14 +84,36 @@ namespace dots::io
 
     std::shared_ptr<type::EnumDescriptor<>> Registry::findEnumType(const std::string_view& name, bool assertNotNull/* = false*/) const
     {
-        const auto& descriptor = std::static_pointer_cast<type::EnumDescriptor<>>(findType(name, assertNotNull));
-        return descriptor == nullptr ? nullptr : (descriptor->type() == type::Type::Enum ? descriptor : nullptr);
+        auto descriptor = std::static_pointer_cast<type::EnumDescriptor<>>(findType(name, assertNotNull));
+
+        if (descriptor != nullptr && descriptor->type() != type::Type::Enum)
+        {
+            descriptor = nullptr;
+        }
+
+        if (assertNotNull && descriptor == nullptr)
+        {
+            throw std::logic_error{ std::string{ "registered type with name '" } + name.data() + "' is not an enum type" };
+        }
+
+        return descriptor;
     }
 
     std::shared_ptr<type::StructDescriptor<>> Registry::findStructType(const std::string_view& name, bool assertNotNull/* = false*/) const
     {
-        const auto& descriptor = std::static_pointer_cast<type::StructDescriptor<>>(findType(name, assertNotNull));
-        return descriptor == nullptr ? nullptr : (descriptor->type() == type::Type::Struct ? descriptor : nullptr);
+        auto descriptor = std::static_pointer_cast<type::StructDescriptor<>>(findType(name, assertNotNull));
+
+        if (descriptor != nullptr && descriptor->type() != type::Type::Struct)
+        {
+            descriptor = nullptr;
+        }
+
+        if (assertNotNull && descriptor == nullptr)
+        {
+            throw std::logic_error{ std::string{ "registered type with name '" } + name.data() + "' is not a struct type" };
+        }
+
+        return descriptor;
     }
 
     const type::Descriptor<>& Registry::getType(const std::string_view& name) const
@@ -116,9 +138,7 @@ namespace dots::io
 
     std::shared_ptr<type::Descriptor<>> Registry::registerType(std::shared_ptr<type::Descriptor<>> descriptor, bool assertNewType/* = true*/)
     {
-        auto [descriptor_, emplaced] = m_types.tryEmplace(descriptor);
-
-        if (!emplaced)
+        if (auto descriptor_ = findType(descriptor->name()); descriptor_ != nullptr)
         {
             if (assertNewType)
             {
@@ -129,6 +149,8 @@ namespace dots::io
                 return descriptor_;
             }
         }
+
+        m_types.emplace(descriptor);
 
         if (descriptor->type() == type::Type::Vector)
         {
@@ -152,10 +174,10 @@ namespace dots::io
 
         if (m_newTypeHandler != nullptr)
         {
-            m_newTypeHandler(*descriptor_);
+            m_newTypeHandler(*descriptor);
         }
 
-        return descriptor_;
+        return descriptor;
     }
 
     void Registry::deregisterType(const std::shared_ptr<type::Descriptor<>>& descriptor, bool assertRegisteredType/* = true*/)
@@ -190,14 +212,17 @@ namespace dots::io
 
     bool Registry::IsUserType(const type::Descriptor<>& descriptor)
     {
-        switch (descriptor.type())
+        if (const auto* structDescriptor = descriptor.as<type::StructDescriptor<>>(); structDescriptor != nullptr)
         {
-            case type::Type::Struct:
-                return !static_cast<const type::StructDescriptor<>&>(descriptor).internal();
-            case type::Type::Vector:
-                return IsUserType(static_cast<const type::VectorDescriptor&>(descriptor).valueDescriptor());
-            default:
-                return false;
+            return !structDescriptor->internal();
+        }
+        else if (const auto* vectorDescriptor = descriptor.as<type::VectorDescriptor>(); vectorDescriptor != nullptr)
+        {
+            return IsUserType(vectorDescriptor->valueDescriptor());
+        }
+        else
+        {
+            return false;
         }
     }
 }

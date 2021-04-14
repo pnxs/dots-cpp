@@ -23,6 +23,8 @@ target_sources(${TARGET_NAME}
         src/io/serialization/TestSerializerBase.cpp
         src/io/serialization/TestStringSerializer.cpp
 
+        src/io/TestRegistry.cpp
+
         src/tools/TestUri.cpp
 
         src/TestDigest.cpp

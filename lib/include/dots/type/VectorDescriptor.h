@@ -135,6 +135,9 @@ namespace dots::type
         std::shared_ptr<Descriptor<T>> m_valueDescriptorOverride;
     };
 
+    template <typename TDescriptor>
+    struct type_category<TDescriptor, std::enable_if_t<std::is_same_v<Descriptor<Vector<>>, TDescriptor>>> : std::integral_constant<Type, Type::Vector> {};
+
     using VectorDescriptor = Descriptor<Vector<Typeless>>;
 
     [[deprecated("only available for backwards compatibility")]]

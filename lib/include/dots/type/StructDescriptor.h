@@ -357,6 +357,9 @@ namespace dots::type
         }
     };
 
+    template <typename TDescriptor>
+    struct type_category<TDescriptor, std::enable_if_t<std::is_same_v<StructDescriptor<>, TDescriptor>>> : std::integral_constant<Type, Type::Struct> {};
+
     [[deprecated("only available for backwards compatibility")]]
     inline const StructDescriptor<>* toStructDescriptor(const Descriptor<>* descriptor)
     {

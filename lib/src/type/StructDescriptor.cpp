@@ -439,9 +439,9 @@ namespace dots::type
             {
                 m_propertyPaths.emplace_back(propertyDescriptor);
 
-                if (propertyDescriptor.valueDescriptor().type() == Type::Struct)
+                if (const auto* structDescriptor = propertyDescriptor.valueDescriptor().as<StructDescriptor<>>(); structDescriptor != nullptr)
                 {
-                    for (const PropertyPath& subPropertyPath : static_cast<const StructDescriptor<>&>(propertyDescriptor.valueDescriptor()).propertyPaths())
+                    for (const PropertyPath& subPropertyPath : structDescriptor->propertyPaths())
                     {
                         PropertyPath::elements_t elements;
                         elements.emplace_back(propertyDescriptor);

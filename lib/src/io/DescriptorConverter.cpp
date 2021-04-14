@@ -83,7 +83,7 @@ namespace dots::io
 
                     if (dynStructDescriptor == nullptr)
                     {
-                        const auto& staticStructDescriptor = static_cast<const type::StructDescriptor<>&>(*valueTypeDescriptor);
+                        const auto& staticStructDescriptor = valueTypeDescriptor->to<type::StructDescriptor<>>();
                         dynStructDescriptor = std::make_shared<type::Descriptor<type::DynamicStruct>>(staticStructDescriptor.name(), staticStructDescriptor.flags(), staticStructDescriptor.propertyDescriptors(), staticStructDescriptor.size());
                     }
 

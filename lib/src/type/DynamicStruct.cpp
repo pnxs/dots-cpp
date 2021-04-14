@@ -19,13 +19,13 @@ namespace dots::type
     }
 
     DynamicStruct::DynamicStruct(const DynamicStruct& other) :
-        DynamicStruct(static_cast<const Descriptor<DynamicStruct>&>(other._descriptor()))
+        DynamicStruct(other._descriptor().to<Descriptor<DynamicStruct>, true>())
     {
         *this = other;
     }
 
     DynamicStruct::DynamicStruct(DynamicStruct&& other) :
-        DynamicStruct(static_cast<const Descriptor<DynamicStruct>&>(other._descriptor()))
+        DynamicStruct(other._descriptor().to<Descriptor<DynamicStruct>, true>())
     {
         *this = std::move(other);
     }
