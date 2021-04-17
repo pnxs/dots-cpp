@@ -7,8 +7,8 @@
 
 namespace dots::type
 {
-    StructDescriptor<Typeless, false, void>::StructDescriptor(std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptors, size_t areaOffset, size_t size, size_t alignment) :
-        Descriptor<Typeless>(Type::Struct, std::move(name), size, alignment),
+    StructDescriptor<Typeless, false, void>::StructDescriptor(key_t key, std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptors, size_t areaOffset, size_t size, size_t alignment) :
+        Descriptor<Typeless>(key, Type::Struct, std::move(name), size, alignment),
         m_flags(flags),
         m_propertyDescriptors(propertyDescriptors),
         m_areaOffset(areaOffset),

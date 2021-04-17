@@ -45,7 +45,7 @@ namespace dots::type
         template <typename T, typename... Args, std::enable_if_t<std::is_base_of_v<Descriptor<>, T>, int> = 0>
         std::shared_ptr<T> emplace(Args&&... args)
         {
-            return std::static_pointer_cast<T>(emplace(std::make_shared<T>(std::forward<Args>(args)...)));
+            return std::static_pointer_cast<T>(emplace(make_descriptor<T>(std::forward<Args>(args)...)));
         }
 
         void erase(const std::string_view& name, bool assertContainedType = true);

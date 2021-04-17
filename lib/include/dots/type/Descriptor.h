@@ -3,6 +3,7 @@
 #include <string_view>
 #include <memory>
 #include <stdexcept>
+#include <dots/tools/shared_ptr_only.h>
 #include <dots/type/Typeless.h>
 
 namespace dots::type
@@ -47,15 +48,15 @@ namespace dots::type
     struct Descriptor;
 
     template <>
-    struct Descriptor<Typeless>
+    struct Descriptor<Typeless> : tools::shared_ptr_only
     {
-        Descriptor(Type type, std::string name, size_t size, size_t alignment);
-        Descriptor(const Descriptor& other) = default;
-        Descriptor(Descriptor&& other) = default;
+        Descriptor(key_t key, Type type, std::string name, size_t size, size_t alignment);
+        Descriptor(const Descriptor& other) = delete;
+        Descriptor(Descriptor&& other) = delete;
         virtual ~Descriptor() = default;
 
-        Descriptor& operator = (const Descriptor& rhs) = default;
-        Descriptor& operator = (Descriptor&& rhs) = default;
+        Descriptor& operator = (const Descriptor& rhs) = delete;
+        Descriptor& operator = (Descriptor&& rhs) = delete;
 
         Type type() const;
         bool isFundamentalType() const;
@@ -244,6 +245,15 @@ namespace dots::type
         size_t m_size;
         size_t m_alignment;
     };
+
+    template <typename TDescriptor, typename... Args>
+    std::shared_ptr<TDescriptor> make_descriptor(Args&&... args)
+    {
+        static_assert(std::is_base_of_v<Descriptor<>, TDescriptor>, "TDescriptor must be derived from Descriptor<>");
+        static_assert(std::is_constructible_v<TDescriptor, tools::shared_ptr_only::key_t, Args...>, "TDescriptor is not constructible from Args");
+
+        return tools::make_shared_ptr_only<TDescriptor>(std::forward<Args>(args)...);
+    }
 
     template<typename T, typename = void>
     constexpr bool is_defined_v = false;

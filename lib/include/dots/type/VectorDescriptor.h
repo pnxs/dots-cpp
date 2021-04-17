@@ -7,13 +7,13 @@ namespace dots::type
     template <>
     struct Descriptor<Vector<Typeless>> : Descriptor<Typeless>
     {
-        Descriptor(std::string name, const std::shared_ptr<Descriptor<>>& valueDescriptor, size_t size, size_t alignment);
-        Descriptor(const Descriptor& other) = default;
-        Descriptor(Descriptor&& other) = default;
+        Descriptor(key_t key, std::string name, const std::shared_ptr<Descriptor<>>& valueDescriptor, size_t size, size_t alignment);
+        Descriptor(const Descriptor& other) = delete;
+        Descriptor(Descriptor&& other) = delete;
         ~Descriptor() = default;
 
-        Descriptor& operator = (const Descriptor& rhs) = default;
-        Descriptor& operator = (Descriptor&& rhs) = default;
+        Descriptor& operator = (const Descriptor& rhs) = delete;
+        Descriptor& operator = (Descriptor&& rhs) = delete;
 
         const std::shared_ptr<Descriptor<>>& valueDescriptorPtr() const;
         const Descriptor<Typeless>& valueDescriptor() const;
@@ -29,19 +29,20 @@ namespace dots::type
     template <typename T>
     struct Descriptor<Vector<T>> : StaticDescriptor<Vector<T>, Descriptor<Vector<Typeless>>>
     {
+        using key_t = typename StaticDescriptor<Vector<T>, Descriptor<Vector<Typeless>>>::key_t;
         static constexpr bool IsDynamic = is_dynamic_descriptor_v<Descriptor<T>>;
 
         template <bool IsDynamic = !IsDynamic, std::enable_if_t<IsDynamic, int> = 0>
-        Descriptor() :
-            StaticDescriptor<Vector<T>, Descriptor<Vector<Typeless>>>("vector<" + valueDescriptor().name() + ">", valueDescriptorPtr(), sizeof(Vector<T>), alignof(Vector<T>)),
+        Descriptor(key_t key) :
+            StaticDescriptor<Vector<T>, Descriptor<Vector<Typeless>>>(key, "vector<" + valueDescriptor().name() + ">", valueDescriptorPtr(), sizeof(Vector<T>), alignof(Vector<T>)),
             m_valueDescriptorOverride(nullptr)
         {
             /* do nothing */
         }
 
         template <bool IsDynamic = IsDynamic, std::enable_if_t<IsDynamic, int> = 0>
-        Descriptor(const std::shared_ptr<Descriptor<T>>& valueDescriptorOverride, bool checkSize = true) :
-            StaticDescriptor<Vector<T>, Descriptor<Vector<Typeless>>>("vector<" + valueDescriptorOverride->name() + ">", valueDescriptorOverride, sizeof(Vector<T>), alignof(Vector<T>)),
+        Descriptor(key_t key, const std::shared_ptr<Descriptor<T>>& valueDescriptorOverride, bool checkSize = true) :
+            StaticDescriptor<Vector<T>, Descriptor<Vector<Typeless>>>(key, "vector<" + valueDescriptorOverride->name() + ">", valueDescriptorOverride, sizeof(Vector<T>), alignof(Vector<T>)),
             m_valueDescriptorOverride(valueDescriptorOverride)
         {
             if (checkSize && (valueDescriptorOverride->size() != sizeof(T) || valueDescriptorOverride->alignment() != alignof(T)))

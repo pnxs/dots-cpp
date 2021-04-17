@@ -139,17 +139,17 @@ namespace dots::type
     {
         static constexpr bool IsDynamic = true;
 
-        Descriptor(std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptors, size_t size) :
-            StructDescriptor<DynamicStruct>(std::move(name), flags, propertyDescriptors, sizeof(DynamicStruct), size, alignof(DynamicStruct))
+        Descriptor(key_t key, std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptors, size_t size) :
+            StructDescriptor<DynamicStruct>(key, std::move(name), flags, propertyDescriptors, sizeof(DynamicStruct), size, alignof(DynamicStruct))
         {
             /* do nothing */
         }
-        Descriptor(const Descriptor& other) = default;
-        Descriptor(Descriptor&& other) = default;
+        Descriptor(const Descriptor& other) = delete;
+        Descriptor(Descriptor&& other) = delete;
         ~Descriptor() = default;
 
-        Descriptor& operator = (const Descriptor& rhs) = default;
-        Descriptor& operator = (Descriptor&& rhs) = default;
+        Descriptor& operator = (const Descriptor& rhs) = delete;
+        Descriptor& operator = (Descriptor&& rhs) = delete;
 
         using StructDescriptor<DynamicStruct>::construct;
         using StructDescriptor<DynamicStruct>::constructInPlace;

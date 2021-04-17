@@ -2,8 +2,8 @@
 
 namespace dots::type
 {
-    Descriptor<Vector<Typeless>>::Descriptor(std::string name, const std::shared_ptr<Descriptor<>>& valueDescriptor, size_t size, size_t alignment):
-        Descriptor<Typeless>(Type::Vector, std::move(name), size, alignment),
+    Descriptor<Vector<Typeless>>::Descriptor(key_t key, std::string name, const std::shared_ptr<Descriptor<>>& valueDescriptor, size_t size, size_t alignment):
+        Descriptor<Typeless>(key, Type::Vector, std::move(name), size, alignment),
         m_valueDescriptor(valueDescriptor)
     {
         /* do nothing */

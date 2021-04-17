@@ -106,10 +106,10 @@ namespace dots::io
 
         std::shared_ptr<type::Descriptor<>> registerType(std::shared_ptr<type::Descriptor<>> descriptor, bool assertNewType = true);
 
-        template <typename D, std::enable_if_t<std::is_base_of_v<type::Descriptor<>, D>, int> = 0>
-        std::shared_ptr<D> registerType(D&& descriptor)
+        template <typename TDescriptor, typename... Args, std::enable_if_t<std::is_base_of_v<type::Descriptor<>, TDescriptor>, int> = 0>
+        std::shared_ptr<TDescriptor> registerType(Args&&... args)
         {
-            return std::static_pointer_cast<D>(registerType(std::make_shared<D>(std::forward<D>(descriptor))));
+            return std::static_pointer_cast<TDescriptor>(registerType(type::make_descriptor<TDescriptor>(std::forward<Args>(args)...)));
         }
 
         void deregisterType(const std::shared_ptr<type::Descriptor<>>& descriptor, bool assertRegisteredType = true);

@@ -112,13 +112,13 @@ namespace dots::type
     {
         using enumerator_ref_t = std::reference_wrapper<EnumeratorDescriptor<>>;
 
-        EnumDescriptor(std::string name, size_t underlyingTypeSize, size_t underlyingTypeAlignment);
-        EnumDescriptor(const EnumDescriptor& other) = default;
-        EnumDescriptor(EnumDescriptor&& other) = default;
+        EnumDescriptor(key_t key, std::string name, size_t underlyingTypeSize, size_t underlyingTypeAlignment);
+        EnumDescriptor(const EnumDescriptor& other) = delete;
+        EnumDescriptor(EnumDescriptor&& other) = delete;
         ~EnumDescriptor() = default;
 
-        EnumDescriptor& operator = (const EnumDescriptor& rhs) = default;
-        EnumDescriptor& operator = (EnumDescriptor&& rhs) = default;
+        EnumDescriptor& operator = (const EnumDescriptor& rhs) = delete;
+        EnumDescriptor& operator = (EnumDescriptor&& rhs) = delete;
 
         Typeless& construct(Typeless& value) const override
         {
@@ -232,11 +232,12 @@ namespace dots::type
     template <typename E, bool UseStaticDescriptorOperations>
     struct EnumDescriptor<E, UseStaticDescriptorOperations> : StaticDescriptor<E, EnumDescriptor<Typeless>, UseStaticDescriptorOperations>
     {
+        using key_t = typename StaticDescriptor<E, EnumDescriptor<Typeless>, UseStaticDescriptorOperations>::key_t;
         using enum_t = E;
         using underlying_type_t = details::underlying_type_t<E>;
 
-        EnumDescriptor(std::string name, std::vector<EnumeratorDescriptor<E>> enumeratorDescriptors) :
-            StaticDescriptor<E, EnumDescriptor<Typeless>, UseStaticDescriptorOperations>(std::move(name), sizeof(underlying_type_t), alignof(underlying_type_t)),
+        EnumDescriptor(key_t key, std::string name, std::vector<EnumeratorDescriptor<E>> enumeratorDescriptors) :
+            StaticDescriptor<E, EnumDescriptor<Typeless>, UseStaticDescriptorOperations>(key, std::move(name), sizeof(underlying_type_t), alignof(underlying_type_t)),
             m_enumerators{ std::move(enumeratorDescriptors) }
         {
             for (EnumeratorDescriptor<>& enumerator : m_enumerators)
@@ -245,11 +246,11 @@ namespace dots::type
             }
         }
         EnumDescriptor(const EnumDescriptor& other) = delete;
-        EnumDescriptor(EnumDescriptor&& other) = default;
+        EnumDescriptor(EnumDescriptor&& other) = delete;
         ~EnumDescriptor() = default;
 
         EnumDescriptor& operator = (const EnumDescriptor& rhs) = delete;
-        EnumDescriptor& operator = (EnumDescriptor&& rhs) = default;
+        EnumDescriptor& operator = (EnumDescriptor&& rhs) = delete;
 
         std::shared_ptr<Descriptor<>> underlyingDescriptorPtr() const override
         {

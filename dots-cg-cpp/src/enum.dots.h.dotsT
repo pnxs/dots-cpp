@@ -35,7 +35,7 @@ namespace dots::type
     {
         using value_t = types::{{name}};
 
-        Descriptor() : EnumDescriptor("{{name}}", {
+        Descriptor(key_t key) : EnumDescriptor(key, "{{name}}", {
             {% for elem in items %}
                 EnumeratorDescriptor{ {{elem.tag}}, "{{elem.name}}", types::{{name}}::{{elem.name}} }{% if not loop.last %},{% endif %}
 

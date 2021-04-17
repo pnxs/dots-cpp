@@ -19,12 +19,12 @@ namespace dots::type
 
         static constexpr bool IsDynamic = true;
 
-        Descriptor(std::string name, std::vector<EnumeratorDescriptor<DynamicEnum>> enumeratorDescriptors);
+        Descriptor(key_t key, std::string name, std::vector<EnumeratorDescriptor<DynamicEnum>> enumeratorDescriptors);
         Descriptor(const Descriptor& other) = delete;
-        Descriptor(Descriptor&& other) = default;
+        Descriptor(Descriptor&& other) = delete;
         ~Descriptor() = default;
 
         Descriptor& operator = (const Descriptor& rhs) = delete;
-        Descriptor& operator = (Descriptor&& rhs) = default;
+        Descriptor& operator = (Descriptor&& rhs) = delete;
     };
 }

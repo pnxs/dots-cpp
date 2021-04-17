@@ -94,8 +94,8 @@ namespace dots::type
     template <>
     struct Descriptor<types::TestSubStruct> : StructDescriptor<types::TestSubStruct>
     {
-        Descriptor() :
-            StructDescriptor("TestSubStruct", Cached, types::TestSubStruct::_MakePropertyDescriptors()){}
+        Descriptor(key_t key) :
+            StructDescriptor(key, "TestSubStruct", Cached, types::TestSubStruct::_MakePropertyDescriptors()){}
     };
 }
 
@@ -222,8 +222,8 @@ namespace dots::type
     template <>
     struct Descriptor<types::TestStruct> : StructDescriptor<types::TestStruct>
     {
-        Descriptor() :
-            StructDescriptor("TestStruct", Cached, types::TestStruct::_MakePropertyDescriptors()){}
+        Descriptor(key_t key) :
+            StructDescriptor(key, "TestStruct", Cached, types::TestStruct::_MakePropertyDescriptors()){}
     };
 }
 

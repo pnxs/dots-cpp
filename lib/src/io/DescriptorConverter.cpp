@@ -24,7 +24,7 @@ namespace dots::io
             enumerators.emplace_back(enumeratorData.tag, enumeratorData.name, static_cast<type::DynamicEnum>(*enumeratorData.enum_value));
         }
 
-        std::shared_ptr<type::EnumDescriptor<>> descriptor = m_registry.get().registerType(type::Descriptor<type::DynamicEnum>{ enumData.name, std::move(enumerators) });
+        std::shared_ptr<type::EnumDescriptor<>> descriptor = m_registry.get().registerType<type::Descriptor<type::DynamicEnum>>(enumData.name, std::move(enumerators));
         return descriptor;
     }
 
@@ -75,7 +75,7 @@ namespace dots::io
                 if (valueTypeDescriptor->type() == type::Type::Enum)
                 {
                     auto enumDescriptor = std::static_pointer_cast<type::Descriptor<type::DynamicEnum>>(valueTypeDescriptor);
-                    descriptor = m_registry.get().registerType(type::Descriptor<types::vector_t<type::DynamicEnum>>{ enumDescriptor });
+                    descriptor = m_registry.get().registerType<type::Descriptor<types::vector_t<type::DynamicEnum>>>(enumDescriptor);
                 }
                 else if (valueTypeDescriptor->type() == type::Type::Struct)
                 {
@@ -84,10 +84,10 @@ namespace dots::io
                     if (dynStructDescriptor == nullptr)
                     {
                         const auto& staticStructDescriptor = valueTypeDescriptor->to<type::StructDescriptor<>>();
-                        dynStructDescriptor = std::make_shared<type::Descriptor<type::DynamicStruct>>(staticStructDescriptor.name(), staticStructDescriptor.flags(), staticStructDescriptor.propertyDescriptors(), staticStructDescriptor.size());
+                        dynStructDescriptor = type::make_descriptor<type::Descriptor<type::DynamicStruct>>(staticStructDescriptor.name(), staticStructDescriptor.flags(), staticStructDescriptor.propertyDescriptors(), staticStructDescriptor.size());
                     }
 
-                    descriptor = m_registry.get().registerType(type::Descriptor<types::vector_t<type::DynamicStruct>>{ dynStructDescriptor, false });
+                    descriptor = m_registry.get().registerType<type::Descriptor<types::vector_t<type::DynamicStruct>>>(dynStructDescriptor, false);
                 }
                 else
                 {
@@ -108,7 +108,7 @@ namespace dots::io
         }
 
         size_t size = type::PropertyOffset::Next(alignment, last->offset(), last->valueDescriptor().size());
-        std::shared_ptr<type::StructDescriptor<>> descriptor = m_registry.get().registerType(type::Descriptor<type::DynamicStruct>{ structData.name, flags, propertyDescriptors, sizeof(type::DynamicStruct) + size });
+        std::shared_ptr<type::StructDescriptor<>> descriptor = m_registry.get().registerType<type::Descriptor<type::DynamicStruct>>(structData.name, flags, propertyDescriptors, sizeof(type::DynamicStruct) + size);
 
         return descriptor;
     }

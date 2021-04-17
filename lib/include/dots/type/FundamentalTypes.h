@@ -51,103 +51,103 @@ namespace dots::type
     template <>
     struct Descriptor<types::bool_t> : StaticDescriptor<types::bool_t>
     {
-        Descriptor() : StaticDescriptor(Type::boolean, "bool") {}
+        Descriptor(key_t key) : StaticDescriptor(key, Type::boolean, "bool") {}
     };
 
     template <>
     struct Descriptor<types::int8_t> : StaticDescriptor<types::int8_t>
     {
-        Descriptor() : StaticDescriptor(Type::int8, "int8") {}
+        Descriptor(key_t key) : StaticDescriptor(key, Type::int8, "int8") {}
     };
 
     template <>
     struct Descriptor<types::uint8_t> : StaticDescriptor<types::uint8_t>
     {
-        Descriptor() : StaticDescriptor(Type::uint8, "uint8") {}
+        Descriptor(key_t key) : StaticDescriptor(key, Type::uint8, "uint8") {}
     };
 
     template <>
     struct Descriptor<types::int16_t> : StaticDescriptor<types::int16_t>
     {
-        Descriptor() : StaticDescriptor(Type::int16, "int16") {}
+        Descriptor(key_t key) : StaticDescriptor(key, Type::int16, "int16") {}
     };
 
     template <>
     struct Descriptor<types::uint16_t> : StaticDescriptor<types::uint16_t>
     {
-        Descriptor() : StaticDescriptor(Type::uint16, "uint16") {}
+        Descriptor(key_t key) : StaticDescriptor(key, Type::uint16, "uint16") {}
     };
 
     template <>
     struct Descriptor<types::int32_t> : StaticDescriptor<types::int32_t>
     {
-        Descriptor() : StaticDescriptor(Type::int32, "int32") {}
+        Descriptor(key_t key) : StaticDescriptor(key, Type::int32, "int32") {}
     };
 
     template <>
     struct Descriptor<types::uint32_t> : StaticDescriptor<types::uint32_t>
     {
-        Descriptor() : StaticDescriptor(Type::uint32, "uint32") {}
+        Descriptor(key_t key) : StaticDescriptor(key, Type::uint32, "uint32") {}
     };
 
     template <>
     struct Descriptor<types::int64_t> : StaticDescriptor<types::int64_t>
     {
-        Descriptor() : StaticDescriptor(Type::int64, "int64") {}
+        Descriptor(key_t key) : StaticDescriptor(key, Type::int64, "int64") {}
     };
 
     template <>
     struct Descriptor<types::uint64_t> : StaticDescriptor<types::uint64_t>
     {
-        Descriptor() : StaticDescriptor(Type::uint64, "uint64") {}
+        Descriptor(key_t key) : StaticDescriptor(key, Type::uint64, "uint64") {}
     };
 
     template <>
     struct Descriptor<types::float32_t> : StaticDescriptor<types::float32_t>
     {
-        Descriptor() : StaticDescriptor(Type::float32, "float32") {}
+        Descriptor(key_t key) : StaticDescriptor(key, Type::float32, "float32") {}
     };
 
     template <>
     struct Descriptor<types::float64_t> : StaticDescriptor<types::float64_t>
     {
-        Descriptor() : StaticDescriptor(Type::float64, "float64") {}
+        Descriptor(key_t key) : StaticDescriptor(key, Type::float64, "float64") {}
     };
 
     template <>
     struct Descriptor<types::property_set_t> : StaticDescriptor<types::property_set_t>
     {
-        Descriptor() : StaticDescriptor(Type::property_set, "property_set") {}
+        Descriptor(key_t key) : StaticDescriptor(key, Type::property_set, "property_set") {}
     };
 
     template <>
     struct Descriptor<types::timepoint_t> : StaticDescriptor<types::timepoint_t>
     {
-        Descriptor() : StaticDescriptor(Type::timepoint, "timepoint") {}
+        Descriptor(key_t key) : StaticDescriptor(key, Type::timepoint, "timepoint") {}
     };
 
     template <>
     struct Descriptor<types::steady_timepoint_t> : StaticDescriptor<types::steady_timepoint_t>
     {
-        Descriptor() : StaticDescriptor(Type::steady_timepoint, "steady_timepoint") {}
+        Descriptor(key_t key) : StaticDescriptor(key, Type::steady_timepoint, "steady_timepoint") {}
     };
 
     template <>
     struct Descriptor<types::duration_t> : StaticDescriptor<types::duration_t>
     {
-        Descriptor() : StaticDescriptor(Type::duration, "duration") {}
+        Descriptor(key_t key) : StaticDescriptor(key, Type::duration, "duration") {}
     };
 
     template <>
     struct Descriptor<types::uuid_t> : StaticDescriptor<types::uuid_t>
     {
-        Descriptor() : StaticDescriptor(Type::uuid, "uuid") {}
+        Descriptor(key_t key) : StaticDescriptor(key, Type::uuid, "uuid") {}
     };
 
     template <>
     struct Descriptor<types::string_t> : StaticDescriptor<types::string_t>
     {
-        Descriptor() : StaticDescriptor(Type::string, "string") {}
+        Descriptor(key_t key) : StaticDescriptor(key, Type::string, "string") {}
 
         bool usesDynamicMemory() const override
         {

@@ -33,8 +33,10 @@ namespace dots::type
     template <typename T, typename Base>
     struct StaticDescriptor<T, Base, false> : Base
     {
+        using key_t = typename Base::key_t;
+
         template <typename Base_ = Base, std::enable_if_t<std::is_same_v<Base_, Descriptor<Typeless>>, int> = 0>
-        StaticDescriptor(Type type, std::string name) : Base(type, std::move(name), sizeof(T), alignof(T))
+        StaticDescriptor(key_t key, Type type, std::string name) : Base(key, type, std::move(name), sizeof(T), alignof(T))
         {
             /* do nothing */
         }
@@ -45,12 +47,12 @@ namespace dots::type
             /* do nothing */
         }
 
-        StaticDescriptor(const StaticDescriptor& other) = default;
-        StaticDescriptor(StaticDescriptor&& other) = default;
+        StaticDescriptor(const StaticDescriptor& other) = delete;
+        StaticDescriptor(StaticDescriptor&& other) = delete;
         ~StaticDescriptor() = default;
 
-        StaticDescriptor& operator = (const StaticDescriptor& rhs) = default;
-        StaticDescriptor& operator = (StaticDescriptor&& rhs) = default;
+        StaticDescriptor& operator = (const StaticDescriptor& rhs) = delete;
+        StaticDescriptor& operator = (StaticDescriptor&& rhs) = delete;
 
         using Base::construct;
         using Base::constructInPlace;
@@ -150,8 +152,6 @@ namespace dots::type
             }
             else
             {
-                static_assert(std::is_default_constructible_v<Descriptor<T>>);
-
                 if (M_instanceStorage == nullptr)
                 {
                     M_instanceStorage = static_descriptors().emplace<Descriptor<T>>();
@@ -213,12 +213,12 @@ namespace dots::type
             /* do nothing */
         }
 
-        StaticDescriptor(const StaticDescriptor& other) = default;
-        StaticDescriptor(StaticDescriptor&& other) = default;
+        StaticDescriptor(const StaticDescriptor& other) = delete;
+        StaticDescriptor(StaticDescriptor&& other) = delete;
         ~StaticDescriptor() = default;
 
-        StaticDescriptor& operator = (const StaticDescriptor& rhs) = default;
-        StaticDescriptor& operator = (StaticDescriptor&& rhs) = default;
+        StaticDescriptor& operator = (const StaticDescriptor& rhs) = delete;
+        StaticDescriptor& operator = (StaticDescriptor&& rhs) = delete;
 
         using StaticDescriptor<T, Base, false>::construct;
         using StaticDescriptor<T, Base, false>::constructInPlace;
