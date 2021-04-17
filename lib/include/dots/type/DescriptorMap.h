@@ -26,8 +26,11 @@ namespace dots::type
 
         const underlying_map_t& data() const;
 
-        std::shared_ptr<Descriptor<>> find(const std::string_view& name, bool assertNotNull = false) const;
+        std::shared_ptr<const Descriptor<>> find(const std::string_view& name, bool assertNotNull = false) const;
+        std::shared_ptr<Descriptor<>> find(const std::string_view& name, bool assertNotNull = false);
+
         const Descriptor<>& get(const std::string_view& name) const;
+        Descriptor<>& get(const std::string_view& name);
 
         bool contains(const std::string_view& name) const;
 
@@ -49,7 +52,7 @@ namespace dots::type
         }
 
         void erase(const std::string_view& name, bool assertContainedType = true);
-        void erase(const std::shared_ptr<Descriptor<>>& descriptor, bool assertContainedType = true);
+        void erase(std::shared_ptr<const Descriptor<>> descriptor, bool assertContainedType = true);
         void erase(const Descriptor<>& descriptor, bool assertContainedType = true);
 
         void clear();

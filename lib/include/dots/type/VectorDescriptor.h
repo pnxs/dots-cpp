@@ -41,7 +41,7 @@ namespace dots::type
         }
 
         template <bool IsDynamic = IsDynamic, std::enable_if_t<IsDynamic, int> = 0>
-        Descriptor(key_t key, const std::shared_ptr<Descriptor<T>>& valueDescriptorOverride, bool checkSize = true) :
+        Descriptor(key_t key, std::shared_ptr<Descriptor<T>> valueDescriptorOverride, bool checkSize = true) :
             StaticDescriptor<Vector<T>, Descriptor<Vector<Typeless>>>(key, "vector<" + valueDescriptorOverride->name() + ">", valueDescriptorOverride, sizeof(Vector<T>), alignof(Vector<T>)),
             m_valueDescriptorOverride(valueDescriptorOverride)
         {
@@ -107,7 +107,7 @@ namespace dots::type
             Descriptor<Vector<T>>::resize(typelessVector, size);
         }
 
-        const std::shared_ptr<Descriptor<T>>& valueDescriptorPtr() const
+        std::shared_ptr<const Descriptor<T>> valueDescriptorPtr() const
         {
             if constexpr (IsDynamic)
             {
@@ -117,6 +117,11 @@ namespace dots::type
             {
                 return Descriptor<T>::InstancePtr();
             }
+        }
+
+        std::shared_ptr<Descriptor<T>> valueDescriptorPtr() 
+        {
+            return std::const_pointer_cast<Descriptor<T>>(std::as_const(*this).valueDescriptorPtr());
         }
 
         const Descriptor<T>& valueDescriptor() const
@@ -129,6 +134,11 @@ namespace dots::type
             {
                 return Descriptor<T>::Instance();
             }
+        }
+
+        Descriptor<T>& valueDescriptor()
+        {
+            return const_cast<Descriptor<T>&>(std::as_const(*this).valueDescriptor());
         }
 
     private:

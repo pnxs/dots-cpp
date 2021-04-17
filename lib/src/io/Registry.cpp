@@ -56,9 +56,9 @@ namespace dots::io
         type::Descriptor<types::vector_t<types::string_t>>::InstancePtr();
     }
 
-    std::shared_ptr<type::Descriptor<>> Registry::findType(const std::string_view& name, bool assertNotNull/* = false*/) const
+    std::shared_ptr<const type::Descriptor<>> Registry::findType(const std::string_view& name, bool assertNotNull/* = false*/) const
     {
-        if (std::shared_ptr<type::Descriptor<>> descriptor = m_types.find(name); descriptor == nullptr)
+        if (std::shared_ptr<const type::Descriptor<>> descriptor = m_types.find(name); descriptor == nullptr)
         {
             if (descriptor = type::static_descriptors().find(name); descriptor == nullptr || (!m_staticUserTypes && IsUserType(*descriptor)))
             {
@@ -82,9 +82,9 @@ namespace dots::io
         }
     }
 
-    std::shared_ptr<type::EnumDescriptor<>> Registry::findEnumType(const std::string_view& name, bool assertNotNull/* = false*/) const
+    std::shared_ptr<const type::EnumDescriptor<>> Registry::findEnumType(const std::string_view& name, bool assertNotNull/* = false*/) const
     {
-        auto descriptor = std::static_pointer_cast<type::EnumDescriptor<>>(findType(name, assertNotNull));
+        auto descriptor = std::static_pointer_cast<const type::EnumDescriptor<>>(findType(name, assertNotNull));
 
         if (descriptor != nullptr && descriptor->type() != type::Type::Enum)
         {
@@ -99,9 +99,9 @@ namespace dots::io
         return descriptor;
     }
 
-    std::shared_ptr<type::StructDescriptor<>> Registry::findStructType(const std::string_view& name, bool assertNotNull/* = false*/) const
+    std::shared_ptr<const type::StructDescriptor<>> Registry::findStructType(const std::string_view& name, bool assertNotNull/* = false*/) const
     {
-        auto descriptor = std::static_pointer_cast<type::StructDescriptor<>>(findType(name, assertNotNull));
+        auto descriptor = std::static_pointer_cast<const type::StructDescriptor<>>(findType(name, assertNotNull));
 
         if (descriptor != nullptr && descriptor->type() != type::Type::Struct)
         {
@@ -114,6 +114,21 @@ namespace dots::io
         }
 
         return descriptor;
+    }
+
+    std::shared_ptr<type::Descriptor<>> Registry::findType(const std::string_view& name, bool assertNotNull)
+    {
+        return std::const_pointer_cast<type::Descriptor<>>(std::as_const(*this).findType(name, assertNotNull));
+    }
+
+    std::shared_ptr<type::EnumDescriptor<>> Registry::findEnumType(const std::string_view& name, bool assertNotNull)
+    {
+        return std::const_pointer_cast<type::EnumDescriptor<>>(std::as_const(*this).findEnumType(name, assertNotNull));
+    }
+
+    std::shared_ptr<type::StructDescriptor<>> Registry::findStructType(const std::string_view& name, bool assertNotNull)
+    {
+        return std::const_pointer_cast<type::StructDescriptor<>>(std::as_const(*this).findStructType(name, assertNotNull));
     }
 
     const type::Descriptor<>& Registry::getType(const std::string_view& name) const
@@ -129,6 +144,21 @@ namespace dots::io
     const type:: StructDescriptor<>& Registry::getStructType(const std::string_view& name) const
     {
         return *findStructType(name, true);
+    }
+
+    type::Descriptor<>& Registry::getType(const std::string_view& name)
+    {
+        return const_cast<type::Descriptor<>&>(std::as_const(*this).getType(name));
+    }
+
+    type::EnumDescriptor<>& Registry::getEnumType(const std::string_view& name)
+    {
+        return const_cast<type::EnumDescriptor<>&>(std::as_const(*this).getEnumType(name));
+    }
+
+    type::StructDescriptor<>& Registry::getStructType(const std::string_view& name)
+    {
+        return const_cast<type::StructDescriptor<>&>(std::as_const(*this).getStructType(name));
     }
 
     bool Registry::hasType(const std::string_view& name) const
@@ -180,7 +210,7 @@ namespace dots::io
         return descriptor;
     }
 
-    void Registry::deregisterType(const std::shared_ptr<type::Descriptor<>>& descriptor, bool assertRegisteredType/* = true*/)
+    void Registry::deregisterType(std::shared_ptr<const type::Descriptor<>> descriptor, bool assertRegisteredType/* = true*/)
     {
         m_types.erase(descriptor->name(), assertRegisteredType);
     }

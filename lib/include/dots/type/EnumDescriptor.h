@@ -50,8 +50,12 @@ namespace dots::type
         const std::string& name() const;
         const Typeless& value() const;
 
-        virtual std::shared_ptr<Descriptor<>> underlyingDescriptorPtr() const = 0;
+        virtual std::shared_ptr<const Descriptor<>> underlyingDescriptorPtr() const = 0;
+        virtual std::shared_ptr<Descriptor<>> underlyingDescriptorPtr() = 0;
+
         virtual const Descriptor<Typeless>& underlyingDescriptor() const = 0;
+        virtual Descriptor<Typeless>& underlyingDescriptor() = 0;
+
         virtual const Typeless& valueTypeless() const = 0;
 
     private:
@@ -79,12 +83,22 @@ namespace dots::type
         EnumeratorDescriptor& operator = (const EnumeratorDescriptor& rhs) = default;
         EnumeratorDescriptor& operator = (EnumeratorDescriptor&& rhs) = default;
 
-        std::shared_ptr<Descriptor<>> underlyingDescriptorPtr() const override
+        std::shared_ptr<const Descriptor<>> underlyingDescriptorPtr() const override
+        {
+            return Descriptor<underlying_type_t>::InstancePtr();
+        }
+
+        std::shared_ptr<Descriptor<>> underlyingDescriptorPtr() override
         {
             return Descriptor<underlying_type_t>::InstancePtr();
         }
 
         const Descriptor<underlying_type_t>& underlyingDescriptor() const override
+        {
+            return Descriptor<underlying_type_t>::Instance();
+        }
+
+        Descriptor<underlying_type_t>& underlyingDescriptor() override
         {
             return Descriptor<underlying_type_t>::Instance();
         }
@@ -205,8 +219,11 @@ namespace dots::type
             return underlyingDescriptor().usesDynamicMemory();
         }
 
-        virtual std::shared_ptr<Descriptor<>> underlyingDescriptorPtr() const = 0;
+        virtual std::shared_ptr<const Descriptor<>> underlyingDescriptorPtr() const = 0;
+        virtual std::shared_ptr<Descriptor<>> underlyingDescriptorPtr() = 0;
+
         virtual const Descriptor<Typeless>& underlyingDescriptor() const = 0;
+        virtual Descriptor<Typeless>& underlyingDescriptor() = 0;
 
         virtual const std::vector<enumerator_ref_t>& enumeratorsTypeless() const = 0;
 
@@ -252,12 +269,22 @@ namespace dots::type
         EnumDescriptor& operator = (const EnumDescriptor& rhs) = delete;
         EnumDescriptor& operator = (EnumDescriptor&& rhs) = delete;
 
-        std::shared_ptr<Descriptor<>> underlyingDescriptorPtr() const override
+        std::shared_ptr<const Descriptor<>> underlyingDescriptorPtr() const override
+        {
+            return Descriptor<underlying_type_t>::InstancePtr();
+        }
+
+        std::shared_ptr<Descriptor<>> underlyingDescriptorPtr() override
         {
             return Descriptor<underlying_type_t>::InstancePtr();
         }
 
         const Descriptor<underlying_type_t>& underlyingDescriptor() const override
+        {
+            return Descriptor<underlying_type_t>::Instance();
+        }
+
+        Descriptor<underlying_type_t>& underlyingDescriptor() override
         {
             return Descriptor<underlying_type_t>::Instance();
         }

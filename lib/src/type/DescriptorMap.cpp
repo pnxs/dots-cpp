@@ -28,7 +28,7 @@ namespace dots::type
         return m_underlyingMap;
     }
 
-    std::shared_ptr<Descriptor<>> DescriptorMap::find(const std::string_view& name, bool assertNotNull/* = false*/) const
+    std::shared_ptr<const Descriptor<>> DescriptorMap::find(const std::string_view& name, bool assertNotNull/* = false*/) const
     {
         if (auto it = m_underlyingMap.find(name); it == m_underlyingMap.end())
         {
@@ -47,9 +47,19 @@ namespace dots::type
         }
     }
 
+    std::shared_ptr<Descriptor<>> DescriptorMap::find(const std::string_view& name, bool assertNotNull)
+    {
+        return std::const_pointer_cast<Descriptor<>>(std::as_const(*this).find(name, assertNotNull));
+    }
+
     const Descriptor<>& DescriptorMap::get(const std::string_view& name) const
     {
         return *find(name, true);
+    }
+
+    Descriptor<>& DescriptorMap::get(const std::string_view& name)
+    {
+        return const_cast<Descriptor<>&>(std::as_const(*this).get(name));
     }
 
     bool DescriptorMap::contains(const std::string_view& name) const
@@ -90,7 +100,7 @@ namespace dots::type
         }
     }
 
-    void DescriptorMap::erase(const std::shared_ptr<Descriptor<>>& descriptor, bool assertContainedType)
+    void DescriptorMap::erase(std::shared_ptr<const Descriptor<>> descriptor, bool assertContainedType)
     {
         erase(descriptor->name(), assertContainedType);
     }
