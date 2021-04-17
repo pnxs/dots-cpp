@@ -13,7 +13,7 @@ protected:
     struct TestProperty : Property<T, TestProperty<T>>
     {
         TestProperty(const dots::type::PropertyArea& area, std::string name, uint32_t tag) :
-            m_descriptor{ dots::type::PropertyDescriptor{ Descriptor<T>::InstancePtr(), std::move(name), tag, false, PropertyOffset{ std::in_place, static_cast<uint32_t>(reinterpret_cast<char*>(this) - reinterpret_cast<const char*>(&area)) } } } {}
+            m_descriptor{ dots::type::PropertyDescriptor{ Descriptor<T>::Instance(), std::move(name), tag, false, PropertyOffset{ std::in_place, static_cast<uint32_t>(reinterpret_cast<char*>(this) - reinterpret_cast<const char*>(&area)) } } } {}
         TestProperty(const TestProperty& other) = delete;
         TestProperty(TestProperty&& other) = delete;
         ~TestProperty() { Property<T, TestProperty<T>>::destroy(); }

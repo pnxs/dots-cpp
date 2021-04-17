@@ -4,8 +4,8 @@
 
 namespace dots::type
 {
-    PropertyDescriptor::PropertyDescriptor(std::shared_ptr<Descriptor<>> descriptor, std::string name, uint32_t tag, bool isKey, PropertyOffset offset):
-        m_descriptor{ descriptor },
+    PropertyDescriptor::PropertyDescriptor(Descriptor<>& descriptor, std::string name, uint32_t tag, bool isKey, PropertyOffset offset):
+        m_descriptor{ descriptor.shared_from_this() },
         m_name{ std::move(name) },
         m_tag(tag),
         m_isKey(isKey),

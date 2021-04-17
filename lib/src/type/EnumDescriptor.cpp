@@ -45,6 +45,6 @@ namespace dots::type
 
     const EnumDescriptor<>* EnumDescriptor<Typeless, false, void>::createFromEnumDescriptorData(const types::EnumDescriptorData& sd)
     {
-        return io::DescriptorConverter{ dots::transceiver().registry() }(sd).get();
+        return &io::DescriptorConverter{ dots::transceiver().registry() }(sd);
     }
 }

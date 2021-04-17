@@ -46,7 +46,7 @@ namespace dots::type
         {
             if (M_descriptorStorage == std::nullopt)
             {
-                M_descriptorStorage.emplace(type::Descriptor<T>::InstancePtr(), Name().data(), Tag(), IsKey(), Offset());
+                M_descriptorStorage.emplace(type::Descriptor<T>::Instance(), Name().data(), Tag(), IsKey(), Offset());
             }
 
             return *M_descriptorStorage; 

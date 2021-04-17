@@ -136,29 +136,24 @@ namespace dots::type
             return 0;
         }
 
-        template <bool AssertNotDynamic = true>
-        static std::shared_ptr<Descriptor<T>>& InstancePtr()
+        std::shared_ptr<const Descriptor<T>> shared_from_this() const
         {
-            if constexpr (is_dynamic_descriptor_v<Descriptor<T>>)
-            {
-                if constexpr (AssertNotDynamic)
-                {
-                    throw std::logic_error{ "global descriptor not available because Descriptor<T> dynamic" };
-                }
-                else
-                {
-                    return M_instanceStorage;
-                }
-            }
-            else
-            {
-                if (M_instanceStorage == nullptr)
-                {
-                    M_instanceStorage = static_descriptors().emplace<Descriptor<T>>();
-                }
+            return std::static_pointer_cast<const Descriptor<T>>(std::enable_shared_from_this<Descriptor<>>::shared_from_this());
+        }
 
-                return M_instanceStorage;
-            }
+        std::shared_ptr<Descriptor<T>> shared_from_this()
+        {
+            return std::static_pointer_cast<Descriptor<T>>(std::enable_shared_from_this<Descriptor<>>::shared_from_this());
+        }
+
+        std::weak_ptr<const Descriptor<T>> weak_from_this() const noexcept
+        {
+            return std::enable_shared_from_this<Descriptor<>>::weak_from_this();
+        }
+
+        std::weak_ptr<Descriptor<T>> weak_from_this() noexcept
+        {
+            return std::enable_shared_from_this<Descriptor<>>::weak_from_this();
         }
 
         static Descriptor<T>& Instance()
@@ -199,6 +194,31 @@ namespace dots::type
         using is_istreamable_t = typename is_istreamable<U>::type;
         template <typename U>
         static constexpr bool is_istreamable_v = is_istreamable_t<U>::value;
+
+        template <bool AssertNotDynamic = true>
+        static std::shared_ptr<Descriptor<T>>& InstancePtr()
+        {
+            if constexpr (is_dynamic_descriptor_v<Descriptor<T>>)
+            {
+                if constexpr (AssertNotDynamic)
+                {
+                    throw std::logic_error{ "global descriptor not available because Descriptor<T> dynamic" };
+                }
+                else
+                {
+                    return M_instanceStorage;
+                }
+            }
+            else
+            {
+                if (M_instanceStorage == nullptr)
+                {
+                    M_instanceStorage = static_descriptors().emplace<Descriptor<T>>().shared_from_this();
+                }
+
+                return M_instanceStorage;
+            }
+        }
 
         inline static std::shared_ptr<Descriptor<T>> M_instanceStorage;
         inline static Descriptor<T>* M_instanceRawPtr = InstancePtr<false>().get();

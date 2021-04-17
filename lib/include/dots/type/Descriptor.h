@@ -48,7 +48,7 @@ namespace dots::type
     struct Descriptor;
 
     template <>
-    struct Descriptor<Typeless> : tools::shared_ptr_only
+    struct Descriptor<Typeless> : tools::shared_ptr_only, std::enable_shared_from_this<Descriptor<>>
     {
         Descriptor(key_t key, Type type, std::string name, size_t size, size_t alignment);
         Descriptor(const Descriptor& other) = delete;

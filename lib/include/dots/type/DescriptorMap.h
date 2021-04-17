@@ -26,33 +26,33 @@ namespace dots::type
 
         const underlying_map_t& data() const;
 
-        std::shared_ptr<const Descriptor<>> find(const std::string_view& name, bool assertNotNull = false) const;
-        std::shared_ptr<Descriptor<>> find(const std::string_view& name, bool assertNotNull = false);
+        const Descriptor<>* find(const std::string_view& name, bool assertNotNull = false) const;
+        Descriptor<>* find(const std::string_view& name, bool assertNotNull = false);
 
         const Descriptor<>& get(const std::string_view& name) const;
         Descriptor<>& get(const std::string_view& name);
 
         bool contains(const std::string_view& name) const;
 
-        std::pair<std::shared_ptr<Descriptor<>>, bool> tryEmplace(std::shared_ptr<Descriptor<>> descriptor);
+        std::pair<Descriptor<>*, bool> tryEmplace(Descriptor<>& descriptor);
 
-        template <typename T, typename... Args, std::enable_if_t<std::is_base_of_v<Descriptor<>, T>, int> = 0>
-        std::shared_ptr<T> tryEmplace(Args&&... args)
+        template <typename TDescriptor, typename... Args, std::enable_if_t<std::is_base_of_v<Descriptor<>, TDescriptor>, int> = 0>
+        TDescriptor& tryEmplace(Args&&... args)
         {
-            auto [descriptor, emplaced] = tryEmplace(std::make_shared<T>(std::forward<Args>(args)...));
-            return std::make_pair(std::static_pointer_cast<T>(descriptor), emplaced);
+            auto [descriptor, emplaced] = tryEmplace(std::make_shared<TDescriptor>(std::forward<Args>(args)...));
+            return std::make_pair(std::static_pointer_cast<TDescriptor>(descriptor), emplaced);
         }
 
-        std::shared_ptr<Descriptor<>> emplace(std::shared_ptr<Descriptor<>> descriptor);
+        Descriptor<>& emplace(Descriptor<>& descriptor);
+        Descriptor<>& emplace(std::shared_ptr<Descriptor<>> descriptor);
 
-        template <typename T, typename... Args, std::enable_if_t<std::is_base_of_v<Descriptor<>, T>, int> = 0>
-        std::shared_ptr<T> emplace(Args&&... args)
+        template <typename TDescriptor, typename... Args, std::enable_if_t<std::is_base_of_v<Descriptor<>, TDescriptor>, int> = 0>
+        TDescriptor& emplace(Args&&... args)
         {
-            return std::static_pointer_cast<T>(emplace(make_descriptor<T>(std::forward<Args>(args)...)));
+            return static_cast<TDescriptor&>(emplace(make_descriptor<TDescriptor>(std::forward<Args>(args)...)));
         }
 
         void erase(const std::string_view& name, bool assertContainedType = true);
-        void erase(std::shared_ptr<const Descriptor<>> descriptor, bool assertContainedType = true);
         void erase(const Descriptor<>& descriptor, bool assertContainedType = true);
 
         void clear();

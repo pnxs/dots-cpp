@@ -37,7 +37,7 @@ protected:
                 }
             } }
         };
-        m_testDynamicSubSubStructDescriptor = std::static_pointer_cast<Descriptor<DynamicStruct>>(m_descriptorConverter(testDynamicSubSubStructData));
+        m_testDynamicSubSubStructDescriptor = static_cast<Descriptor<DynamicStruct>*>(&m_descriptorConverter(testDynamicSubSubStructData));
 
         StructDescriptorData testDynamicSubStructData{
             StructDescriptorData::name_i{ "TestDynamicSubStruct" },
@@ -66,7 +66,7 @@ protected:
                 }
             } }
         };
-        m_testDynamicSubStructDescriptor = std::static_pointer_cast<Descriptor<DynamicStruct>>(m_descriptorConverter(testDynamicSubStructData));
+        m_testDynamicSubStructDescriptor = static_cast<Descriptor<DynamicStruct>*>(&m_descriptorConverter(testDynamicSubStructData));
 
         StructDescriptorData testDynamicStructData{
             StructDescriptorData::name_i{ "TestDynamicStruct" },
@@ -112,14 +112,14 @@ protected:
                 },
             } },
         };
-        m_testDynamicStructDescriptor = std::static_pointer_cast<Descriptor<DynamicStruct>>(m_descriptorConverter(testDynamicStructData));
+        m_testDynamicStructDescriptor = static_cast<Descriptor<DynamicStruct>*>(&m_descriptorConverter(testDynamicStructData));
     }
 
     dots::io::Registry m_registry;
     dots::io::DescriptorConverter m_descriptorConverter;
-    std::shared_ptr<Descriptor<DynamicStruct>> m_testDynamicSubSubStructDescriptor;
-    std::shared_ptr<Descriptor<DynamicStruct>> m_testDynamicSubStructDescriptor;
-    std::shared_ptr<Descriptor<DynamicStruct>> m_testDynamicStructDescriptor;
+    Descriptor<DynamicStruct>* m_testDynamicSubSubStructDescriptor;
+    Descriptor<DynamicStruct>* m_testDynamicSubStructDescriptor;
+    Descriptor<DynamicStruct>* m_testDynamicStructDescriptor;
 };
 
 TEST_F(TestDynamicStruct, PropertyOffsetsMatchExpectedOffsets)

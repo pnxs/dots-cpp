@@ -50,9 +50,6 @@ namespace dots::type
         const std::string& name() const;
         const Typeless& value() const;
 
-        virtual std::shared_ptr<const Descriptor<>> underlyingDescriptorPtr() const = 0;
-        virtual std::shared_ptr<Descriptor<>> underlyingDescriptorPtr() = 0;
-
         virtual const Descriptor<Typeless>& underlyingDescriptor() const = 0;
         virtual Descriptor<Typeless>& underlyingDescriptor() = 0;
 
@@ -82,16 +79,6 @@ namespace dots::type
 
         EnumeratorDescriptor& operator = (const EnumeratorDescriptor& rhs) = default;
         EnumeratorDescriptor& operator = (EnumeratorDescriptor&& rhs) = default;
-
-        std::shared_ptr<const Descriptor<>> underlyingDescriptorPtr() const override
-        {
-            return Descriptor<underlying_type_t>::InstancePtr();
-        }
-
-        std::shared_ptr<Descriptor<>> underlyingDescriptorPtr() override
-        {
-            return Descriptor<underlying_type_t>::InstancePtr();
-        }
 
         const Descriptor<underlying_type_t>& underlyingDescriptor() const override
         {
@@ -219,9 +206,6 @@ namespace dots::type
             return underlyingDescriptor().usesDynamicMemory();
         }
 
-        virtual std::shared_ptr<const Descriptor<>> underlyingDescriptorPtr() const = 0;
-        virtual std::shared_ptr<Descriptor<>> underlyingDescriptorPtr() = 0;
-
         virtual const Descriptor<Typeless>& underlyingDescriptor() const = 0;
         virtual Descriptor<Typeless>& underlyingDescriptor() = 0;
 
@@ -268,16 +252,6 @@ namespace dots::type
 
         EnumDescriptor& operator = (const EnumDescriptor& rhs) = delete;
         EnumDescriptor& operator = (EnumDescriptor&& rhs) = delete;
-
-        std::shared_ptr<const Descriptor<>> underlyingDescriptorPtr() const override
-        {
-            return Descriptor<underlying_type_t>::InstancePtr();
-        }
-
-        std::shared_ptr<Descriptor<>> underlyingDescriptorPtr() override
-        {
-            return Descriptor<underlying_type_t>::InstancePtr();
-        }
 
         const Descriptor<underlying_type_t>& underlyingDescriptor() const override
         {

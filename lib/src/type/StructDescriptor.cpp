@@ -431,6 +431,11 @@ namespace dots::type
         return partialPropertyDescriptors;
     }
 
+    property_descriptor_container_t& StructDescriptor<Typeless, false, void>::propertyDescriptors()
+    {
+        return const_cast<property_descriptor_container_t&>(std::as_const(*this).propertyDescriptors());
+    }
+
     const std::vector<PropertyPath>& StructDescriptor<Typeless, false, void>::propertyPaths() const
     {
         if (m_propertyPaths.empty())
@@ -492,6 +497,6 @@ namespace dots::type
 
     const StructDescriptor<>* StructDescriptor<Typeless, false, void>::createFromStructDescriptorData(const types::StructDescriptorData& sd)
     {
-        return io::DescriptorConverter{ dots::transceiver().registry() }(sd).get();
+        return &io::DescriptorConverter{ dots::transceiver().registry() }(sd);
     }
 }
