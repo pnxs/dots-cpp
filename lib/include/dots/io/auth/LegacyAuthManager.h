@@ -42,6 +42,6 @@ namespace dots::io
         Subscription m_dotsAuthenticationSubscription;
         Subscription m_dotsAuthenticationPolicySubscription;
         rules_t m_rules;
-        std::optional<bool> m_defaultPolicy;
+        std::optional<bool> m_defaultAcceptPolicy;
     };
 }

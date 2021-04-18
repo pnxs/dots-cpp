@@ -33,7 +33,7 @@ namespace dots::io
         }
         else
         {
-            if (m_defaultPolicy == true)
+            if (m_defaultAcceptPolicy == true)
             {
                 return std::nullopt;
             }
@@ -67,7 +67,7 @@ namespace dots::io
         }
         else
         {
-            return m_defaultPolicy.value_or(false);
+            return m_defaultAcceptPolicy.value_or(false);
         }
     }
 
@@ -78,7 +78,7 @@ namespace dots::io
 
     const std::optional<bool>& LegacyAuthManager::defaultPolicy() const
     {
-        return m_defaultPolicy;
+        return m_defaultAcceptPolicy;
     }
 
     bool LegacyAuthManager::verifyResponse(const boost::asio::ip::address& address, uint64_t authNonce, const DotsMsgConnect& msgConnect)
@@ -122,7 +122,7 @@ namespace dots::io
 
         if (!accept.has_value())
         {
-            accept = m_defaultPolicy;
+            accept = m_defaultAcceptPolicy;
         }
 
         return accept.value_or(true);
@@ -138,7 +138,7 @@ namespace dots::io
             }
         }
 
-        return m_defaultPolicy.has_value() ? !*m_defaultPolicy : false;
+        return m_defaultAcceptPolicy.has_value() ? !*m_defaultAcceptPolicy : false;
     }
 
     std::vector<DotsAuthentication> LegacyAuthManager::findMatchingRules(const boost::asio::ip::address& address, const std::string& clientName)
@@ -201,13 +201,13 @@ namespace dots::io
     {
         if (const DotsAuthenticationPolicy& policy = e(); e.isRemove())
         {
-            m_defaultPolicy.reset();
+            m_defaultAcceptPolicy.reset();
         }
         else
         {
             if (policy.accept.isValid())
             {
-                m_defaultPolicy = policy.accept;
+                m_defaultAcceptPolicy = policy.accept;
             }
         }
     }
