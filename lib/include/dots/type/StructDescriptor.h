@@ -28,13 +28,13 @@ namespace dots::type
         static const uint8_t Local         = 0b0001'0000;
         static const uint8_t SubstructOnly = 0b0010'0000;
 
-        StructDescriptor(std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptors, size_t areaOffset, size_t size, size_t alignment);
-        StructDescriptor(const StructDescriptor& other) = default;
-        StructDescriptor(StructDescriptor&& other) = default;
+        StructDescriptor(key_t key, std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptors, size_t areaOffset, size_t size, size_t alignment);
+        StructDescriptor(const StructDescriptor& other) = delete;
+        StructDescriptor(StructDescriptor&& other) = delete;
         ~StructDescriptor() = default;
 
-        StructDescriptor& operator = (const StructDescriptor& rhs) = default;
-        StructDescriptor& operator = (StructDescriptor&& rhs) = default;
+        StructDescriptor& operator = (const StructDescriptor& rhs) = delete;
+        StructDescriptor& operator = (StructDescriptor&& rhs) = delete;
 
         Typeless& construct(Typeless& value) const override;
         Struct& construct(Struct& instance) const;
@@ -101,6 +101,8 @@ namespace dots::type
         const property_descriptor_container_t& propertyDescriptors() const;
         partial_property_descriptor_container_t propertyDescriptors(const PropertySet& properties) const;
 
+        property_descriptor_container_t& propertyDescriptors();
+
         const std::vector<PropertyPath>& propertyPaths() const;
 
         const PropertySet& properties() const;
@@ -143,24 +145,25 @@ namespace dots::type
     template <typename T>
     struct StructDescriptor<T, false> : StaticDescriptor<T, StructDescriptor<Typeless>>
     {
+        using key_t = typename StaticDescriptor<T, StructDescriptor<Typeless>>::key_t;
         static_assert(std::is_base_of_v<Struct, T>);
 
-        StructDescriptor(std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptor) :
-            StaticDescriptor<T, StructDescriptor<Typeless>>(std::move(name), flags, propertyDescriptor, sizeof(const StructDescriptor<>*), sizeof(T), alignof(T))
+        StructDescriptor(key_t key, std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptor) :
+            StaticDescriptor<T, StructDescriptor<Typeless>>(key, std::move(name), flags, propertyDescriptor, sizeof(const StructDescriptor<>*), sizeof(T), alignof(T))
         {
             /* do nothing */
         }
-        StructDescriptor(std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptor, size_t areaOffset, size_t size, size_t alignment) :
-            StaticDescriptor<T, StructDescriptor<Typeless>>(std::move(name), flags, propertyDescriptor, areaOffset, size, alignment)
+        StructDescriptor(key_t key, std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptor, size_t areaOffset, size_t size, size_t alignment) :
+            StaticDescriptor<T, StructDescriptor<Typeless>>(key, std::move(name), flags, propertyDescriptor, areaOffset, size, alignment)
         {
             /* do nothing */
         }
-        StructDescriptor(const StructDescriptor& other) = default;
-        StructDescriptor(StructDescriptor&& other) = default;
+        StructDescriptor(const StructDescriptor& other) = delete;
+        StructDescriptor(StructDescriptor&& other) = delete;
         ~StructDescriptor() = default;
 
-        StructDescriptor& operator = (const StructDescriptor& rhs) = default;
-        StructDescriptor& operator = (StructDescriptor&& rhs) = default;
+        StructDescriptor& operator = (const StructDescriptor& rhs) = delete;
+        StructDescriptor& operator = (StructDescriptor&& rhs) = delete;
 
         using StaticDescriptor<T, StructDescriptor<Typeless>>::assign;
         using StaticDescriptor<T, StructDescriptor<Typeless>>::swap;
@@ -259,24 +262,25 @@ namespace dots::type
     template <typename T>
     struct StructDescriptor<T, true> : StructDescriptor<T, false>
     {
+        using key_t = typename StructDescriptor<T, false>::key_t;
         static_assert(std::is_base_of_v<Struct, T>);
 
-        StructDescriptor(std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptor) :
-            StructDescriptor<T, false>(std::move(name), flags, propertyDescriptor, sizeof(const StructDescriptor<>*), sizeof(T), alignof(T))
+        StructDescriptor(key_t key, std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptor) :
+            StructDescriptor<T, false>(key, std::move(name), flags, propertyDescriptor, sizeof(const StructDescriptor<>*), sizeof(T), alignof(T))
         {
             /* do nothing */
         }
-        StructDescriptor(std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptor, size_t areaOffset, size_t size, size_t alignment) :
-            StructDescriptor<T, false>(std::move(name), flags, propertyDescriptor, areaOffset, size, alignment)
+        StructDescriptor(key_t key, std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptor, size_t areaOffset, size_t size, size_t alignment) :
+            StructDescriptor<T, false>(key, std::move(name), flags, propertyDescriptor, areaOffset, size, alignment)
         {
             /* do nothing */
         }
-        StructDescriptor(const StructDescriptor& other) = default;
-        StructDescriptor(StructDescriptor&& other) = default;
+        StructDescriptor(const StructDescriptor& other) = delete;
+        StructDescriptor(StructDescriptor&& other) = delete;
         ~StructDescriptor() = default;
 
-        StructDescriptor& operator = (const StructDescriptor& rhs) = default;
-        StructDescriptor& operator = (StructDescriptor&& rhs) = default;
+        StructDescriptor& operator = (const StructDescriptor& rhs) = delete;
+        StructDescriptor& operator = (StructDescriptor&& rhs) = delete;
 
         using StructDescriptor<T, false>::assign;
         using StructDescriptor<T, false>::copy;

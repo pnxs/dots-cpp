@@ -3,7 +3,8 @@
 
 namespace dots::type
 {
-    Descriptor<Typeless>::Descriptor(Type type, std::string name, size_t size, size_t alignment):
+    Descriptor<Typeless>::Descriptor(key_t key, Type type, std::string name, size_t size, size_t alignment) :
+        shared_ptr_only(key),
         m_type(type),
         m_name(std::move(name)),
         m_size(size),

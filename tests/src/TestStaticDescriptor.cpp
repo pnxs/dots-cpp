@@ -9,13 +9,13 @@ namespace dots::type
     template <>
     struct Descriptor<int> : StaticDescriptor<int>
     {
-        Descriptor() : StaticDescriptor(Type::int32, "int32") {}
+        Descriptor(key_t key) : StaticDescriptor(key, Type::int32, "int32") {}
     };
 
     template <>
     struct Descriptor<std::string> : StaticDescriptor<std::string>
     {
-        Descriptor() : StaticDescriptor(Type::string, "string") {}
+        Descriptor(key_t key) : StaticDescriptor(key, Type::string, "string") {}
 
         bool usesDynamicMemory() const override
         {
@@ -36,7 +36,7 @@ namespace dots::type
     template <>
     struct Descriptor<uint8_t> : StaticDescriptor<uint8_t>
     {
-        Descriptor() : StaticDescriptor(Type::uint8, "uint8") {}
+        Descriptor(key_t key) : StaticDescriptor(key, Type::uint8, "uint8") {}
     };
 }
 
@@ -51,27 +51,27 @@ protected:
     using int_storage_t = storage_t<int>;
     using string_storage_t = storage_t<std::string>;
 
-    Descriptor<int> m_sutInt;
-    Descriptor<std::string> m_sutString;
-    Descriptor<uint8_t> m_sutByte;
+    std::shared_ptr<Descriptor<int>> m_sutInt = make_descriptor<Descriptor<int>>();
+    std::shared_ptr<Descriptor<std::string>> m_sutString = make_descriptor<Descriptor<std::string>>();
+    std::shared_ptr<Descriptor<uint8_t>> m_sutByte = make_descriptor<Descriptor<uint8_t>>();
 };
 
 TEST_F(TestStaticDescriptor, size)
 {
-    EXPECT_EQ(m_sutInt.size(), sizeof(int));
-    EXPECT_EQ(m_sutString.size(), sizeof(std::string));
+    EXPECT_EQ(m_sutInt->size(), sizeof(int));
+    EXPECT_EQ(m_sutString->size(), sizeof(std::string));
 }
 
 TEST_F(TestStaticDescriptor, alignment)
 {
-    EXPECT_EQ(m_sutInt.alignment(), alignof(int));
-    EXPECT_EQ(m_sutString.alignment(), alignof(std::string));
+    EXPECT_EQ(m_sutInt->alignment(), alignof(int));
+    EXPECT_EQ(m_sutString->alignment(), alignof(std::string));
 }
 
 TEST_F(TestStaticDescriptor, name)
 {
-    EXPECT_EQ(m_sutInt.name(), "int32");
-    EXPECT_EQ(m_sutString.name(), "string");
+    EXPECT_EQ(m_sutInt->name(), "int32");
+    EXPECT_EQ(m_sutString->name(), "string");
 }
 
 TEST_F(TestStaticDescriptor, construct_default)
@@ -79,8 +79,8 @@ TEST_F(TestStaticDescriptor, construct_default)
     int_storage_t i;
     string_storage_t s;
 
-    m_sutInt.construct(Typeless::From(i));
-    m_sutString.construct(Typeless::From(s));
+    m_sutInt->construct(Typeless::From(i));
+    m_sutString->construct(Typeless::From(s));
 
     EXPECT_EQ(reinterpret_cast<int&>(i), int{});
     EXPECT_EQ(reinterpret_cast<std::string&>(s), std::string{});
@@ -94,8 +94,8 @@ TEST_F(TestStaticDescriptor, construct_copy)
     int iOther = 42;
     std::string sOther = "foo";
 
-    m_sutInt.construct(Typeless::From(i), Typeless::From(iOther));
-    m_sutString.construct(Typeless::From(s), Typeless::From(sOther));
+    m_sutInt->construct(Typeless::From(i), Typeless::From(iOther));
+    m_sutString->construct(Typeless::From(s), Typeless::From(sOther));
 
     EXPECT_EQ(reinterpret_cast<int&>(i), 42);
     EXPECT_EQ(reinterpret_cast<std::string&>(s), "foo");
@@ -109,8 +109,8 @@ TEST_F(TestStaticDescriptor, construct_move)
     int iOther = 42;
     std::string sOther = "foo";
 
-    m_sutInt.construct(Typeless::From(i), Typeless::From(iOther));
-    m_sutString.construct(Typeless::From(s), Typeless::From(sOther));
+    m_sutInt->construct(Typeless::From(i), Typeless::From(iOther));
+    m_sutString->construct(Typeless::From(s), Typeless::From(sOther));
 
     EXPECT_EQ(reinterpret_cast<int&>(i), 42);
     EXPECT_EQ(reinterpret_cast<std::string&>(s), "foo");
@@ -124,8 +124,8 @@ TEST_F(TestStaticDescriptor, assign_copy)
     int iRhs = 73;
     std::string sRhs = "baz";
 
-    m_sutInt.assign(Typeless::From(i), Typeless::From(iRhs));
-    m_sutString.construct(Typeless::From(s), Typeless::From(sRhs));
+    m_sutInt->assign(Typeless::From(i), Typeless::From(iRhs));
+    m_sutString->construct(Typeless::From(s), Typeless::From(sRhs));
 
     EXPECT_EQ(i, 73);
     EXPECT_EQ(s, "baz");
@@ -139,8 +139,8 @@ TEST_F(TestStaticDescriptor, assign_move)
     int iRhs = 73;
     std::string sRhs = "baz";
 
-    m_sutInt.assign(Typeless::From(i), Typeless::From(iRhs));
-    m_sutString.construct(Typeless::From(s), Typeless::From(sRhs));
+    m_sutInt->assign(Typeless::From(i), Typeless::From(iRhs));
+    m_sutString->construct(Typeless::From(s), Typeless::From(sRhs));
 
     EXPECT_EQ(i, 73);
     EXPECT_EQ(s, "baz");
@@ -154,8 +154,8 @@ TEST_F(TestStaticDescriptor, swap)
     int iRhs = 73;
     std::string sRhs = "baz";
 
-    m_sutInt.swap(Typeless::From(iLhs), Typeless::From(iRhs));
-    m_sutString.swap(Typeless::From(sLhs), Typeless::From(sRhs));
+    m_sutInt->swap(Typeless::From(iLhs), Typeless::From(iRhs));
+    m_sutString->swap(Typeless::From(sLhs), Typeless::From(sRhs));
 
     EXPECT_EQ(iLhs, 73);
     EXPECT_EQ(sLhs, "baz");
@@ -174,57 +174,57 @@ TEST_F(TestStaticDescriptor, equal)
     std::string s2 = "foo";
     std::string s3 = "bar";
 
-    EXPECT_TRUE(m_sutInt.equal(Typeless::From(i1), Typeless::From(i2)));
-    EXPECT_TRUE(m_sutString.equal(Typeless::From(s1), Typeless::From(s2)));
+    EXPECT_TRUE(m_sutInt->equal(Typeless::From(i1), Typeless::From(i2)));
+    EXPECT_TRUE(m_sutString->equal(Typeless::From(s1), Typeless::From(s2)));
 
-    EXPECT_FALSE(m_sutInt.equal(Typeless::From(i1), Typeless::From(i3)));
-    EXPECT_FALSE(m_sutString.equal(Typeless::From(s1), Typeless::From(s3)));
+    EXPECT_FALSE(m_sutInt->equal(Typeless::From(i1), Typeless::From(i3)));
+    EXPECT_FALSE(m_sutString->equal(Typeless::From(s1), Typeless::From(s3)));
 }
 
 TEST_F(TestStaticDescriptor, less)
 {
-    EXPECT_TRUE(m_sutInt.less(21, 42));
-    EXPECT_TRUE(m_sutString.less("bar", "foo"));
+    EXPECT_TRUE(m_sutInt->less(21, 42));
+    EXPECT_TRUE(m_sutString->less("bar", "foo"));
 
-    EXPECT_FALSE(m_sutInt.less(21, 21));
-    EXPECT_FALSE(m_sutString.less("bar", "bar"));
+    EXPECT_FALSE(m_sutInt->less(21, 21));
+    EXPECT_FALSE(m_sutString->less("bar", "bar"));
 
-    EXPECT_FALSE(m_sutInt.less(42, 21));
-    EXPECT_FALSE(m_sutString.less("foo", "bar"));
+    EXPECT_FALSE(m_sutInt->less(42, 21));
+    EXPECT_FALSE(m_sutString->less("foo", "bar"));
 }
 
 TEST_F(TestStaticDescriptor, lessEqual)
 {
-    EXPECT_TRUE(m_sutInt.lessEqual(21, 42));
-    EXPECT_TRUE(m_sutString.lessEqual("bar", "foo"));
+    EXPECT_TRUE(m_sutInt->lessEqual(21, 42));
+    EXPECT_TRUE(m_sutString->lessEqual("bar", "foo"));
 
-    EXPECT_TRUE(m_sutInt.lessEqual(21, 21));
-    EXPECT_TRUE(m_sutString.lessEqual("bar", "bar"));
+    EXPECT_TRUE(m_sutInt->lessEqual(21, 21));
+    EXPECT_TRUE(m_sutString->lessEqual("bar", "bar"));
 
-    EXPECT_FALSE(m_sutInt.lessEqual(42, 21));
-    EXPECT_FALSE(m_sutString.lessEqual("foo", "bar"));
+    EXPECT_FALSE(m_sutInt->lessEqual(42, 21));
+    EXPECT_FALSE(m_sutString->lessEqual("foo", "bar"));
 }
 
 TEST_F(TestStaticDescriptor, greater)
 {
-    EXPECT_FALSE(m_sutInt.greater(21, 42));
-    EXPECT_FALSE(m_sutString.greater("bar", "foo"));
+    EXPECT_FALSE(m_sutInt->greater(21, 42));
+    EXPECT_FALSE(m_sutString->greater("bar", "foo"));
 
-    EXPECT_FALSE(m_sutInt.greater(21, 21));
-    EXPECT_FALSE(m_sutString.greater("bar", "bar"));
+    EXPECT_FALSE(m_sutInt->greater(21, 21));
+    EXPECT_FALSE(m_sutString->greater("bar", "bar"));
 
-    EXPECT_TRUE(m_sutInt.greater(42, 21));
-    EXPECT_TRUE(m_sutString.greater("foo", "bar"));
+    EXPECT_TRUE(m_sutInt->greater(42, 21));
+    EXPECT_TRUE(m_sutString->greater("foo", "bar"));
 }
 
 TEST_F(TestStaticDescriptor, greaterEqual)
 {
-    EXPECT_FALSE(m_sutInt.greaterEqual(21, 42));
-    EXPECT_FALSE(m_sutString.greaterEqual("bar", "foo"));
+    EXPECT_FALSE(m_sutInt->greaterEqual(21, 42));
+    EXPECT_FALSE(m_sutString->greaterEqual("bar", "foo"));
 
-    EXPECT_TRUE(m_sutInt.greaterEqual(21, 21));
-    EXPECT_TRUE(m_sutString.greaterEqual("bar", "bar"));
+    EXPECT_TRUE(m_sutInt->greaterEqual(21, 21));
+    EXPECT_TRUE(m_sutString->greaterEqual("bar", "bar"));
 
-    EXPECT_TRUE(m_sutInt.greaterEqual(42, 21));
-    EXPECT_TRUE(m_sutString.greaterEqual("foo", "bar"));
+    EXPECT_TRUE(m_sutInt->greaterEqual(42, 21));
+    EXPECT_TRUE(m_sutString->greaterEqual("foo", "bar"));
 }

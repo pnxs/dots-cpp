@@ -27,8 +27,8 @@ namespace dots::type
         return valueTypeless();
     }
 
-    EnumDescriptor<Typeless, false, void>::EnumDescriptor(std::string name, size_t underlyingTypeSize, size_t underlyingTypeAlignment) :
-        Descriptor<Typeless>(Type::Enum, std::move(name), underlyingTypeSize, underlyingTypeAlignment)
+    EnumDescriptor<Typeless, false, void>::EnumDescriptor(key_t key, std::string name, size_t underlyingTypeSize, size_t underlyingTypeAlignment) :
+        Descriptor<Typeless>(key, Type::Enum, std::move(name), underlyingTypeSize, underlyingTypeAlignment)
     {
         /* do nothing */
     }
@@ -45,6 +45,6 @@ namespace dots::type
 
     const EnumDescriptor<>* EnumDescriptor<Typeless, false, void>::createFromEnumDescriptorData(const types::EnumDescriptorData& sd)
     {
-        return io::DescriptorConverter{ dots::transceiver().registry() }(sd).get();
+        return &io::DescriptorConverter{ dots::transceiver().registry() }(sd);
     }
 }

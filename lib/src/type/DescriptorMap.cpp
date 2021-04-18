@@ -28,7 +28,7 @@ namespace dots::type
         return m_underlyingMap;
     }
 
-    std::shared_ptr<Descriptor<>> DescriptorMap::find(const std::string_view& name, bool assertNotNull/* = false*/) const
+    const Descriptor<>* DescriptorMap::find(const std::string_view& name, bool assertNotNull/* = false*/) const
     {
         if (auto it = m_underlyingMap.find(name); it == m_underlyingMap.end())
         {
@@ -43,8 +43,13 @@ namespace dots::type
         }
         else
         {
-            return it->second;
+            return it->second.get();
         }
+    }
+
+    Descriptor<>* DescriptorMap::find(const std::string_view& name, bool assertNotNull)
+    {
+        return const_cast<Descriptor<>*>(std::as_const(*this).find(name, assertNotNull));
     }
 
     const Descriptor<>& DescriptorMap::get(const std::string_view& name) const
@@ -52,27 +57,37 @@ namespace dots::type
         return *find(name, true);
     }
 
+    Descriptor<>& DescriptorMap::get(const std::string_view& name)
+    {
+        return const_cast<Descriptor<>&>(std::as_const(*this).get(name));
+    }
+
     bool DescriptorMap::contains(const std::string_view& name) const
     {
         return find(name) == nullptr;
     }
 
-    std::pair<std::shared_ptr<Descriptor<>>, bool> DescriptorMap::tryEmplace(std::shared_ptr<Descriptor<>> descriptor)
+    std::pair<Descriptor<>*, bool> DescriptorMap::tryEmplace(Descriptor<>& descriptor)
     {
-        auto [it, emplaced] = m_underlyingMap.try_emplace(descriptor->name(), descriptor);
-        return std::make_pair(it->second, emplaced);
+        auto [it, emplaced] = m_underlyingMap.try_emplace(descriptor.name(), descriptor.shared_from_this());
+        return std::make_pair(it->second.get(), emplaced);
     }
 
-    std::shared_ptr<Descriptor<>> DescriptorMap::emplace(std::shared_ptr<Descriptor<>> descriptor)
+    Descriptor<>& DescriptorMap::emplace(Descriptor<>& descriptor)
     {
-        auto [descriptor_, emplaced] = tryEmplace(std::move(descriptor));
+        auto [descriptor_, emplaced] = tryEmplace(descriptor);
 
         if (!emplaced)
         {
             throw std::logic_error{ "there already is a type with name: " + descriptor_->name() };
         }
 
-        return descriptor_;
+        return *descriptor_;
+    }
+
+    Descriptor<>& DescriptorMap::emplace(std::shared_ptr<Descriptor<>> descriptor)
+    {
+        return emplace(*descriptor);
     }
 
     void DescriptorMap::erase(const std::string_view& name, bool assertContainedType)
@@ -88,11 +103,6 @@ namespace dots::type
         {
             m_underlyingMap.erase(it);
         }
-    }
-
-    void DescriptorMap::erase(const std::shared_ptr<Descriptor<>>& descriptor, bool assertContainedType)
-    {
-        erase(descriptor->name(), assertContainedType);
     }
 
     void DescriptorMap::erase(const Descriptor<>& descriptor, bool assertContainedType)

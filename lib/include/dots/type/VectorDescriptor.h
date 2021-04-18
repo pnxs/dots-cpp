@@ -7,16 +7,16 @@ namespace dots::type
     template <>
     struct Descriptor<Vector<Typeless>> : Descriptor<Typeless>
     {
-        Descriptor(std::string name, const std::shared_ptr<Descriptor<>>& valueDescriptor, size_t size, size_t alignment);
-        Descriptor(const Descriptor& other) = default;
-        Descriptor(Descriptor&& other) = default;
+        Descriptor(key_t key, std::string name, Descriptor<>& valueDescriptor, size_t size, size_t alignment);
+        Descriptor(const Descriptor& other) = delete;
+        Descriptor(Descriptor&& other) = delete;
         ~Descriptor() = default;
 
-        Descriptor& operator = (const Descriptor& rhs) = default;
-        Descriptor& operator = (Descriptor&& rhs) = default;
+        Descriptor& operator = (const Descriptor& rhs) = delete;
+        Descriptor& operator = (Descriptor&& rhs) = delete;
 
-        const std::shared_ptr<Descriptor<>>& valueDescriptorPtr() const;
         const Descriptor<Typeless>& valueDescriptor() const;
+        Descriptor<Typeless>& valueDescriptor();
 
         virtual void resize(Vector<>& vector, size_t size) const = 0;
         virtual void fill(Vector<>& vector, size_t size) const = 0;
@@ -29,22 +29,23 @@ namespace dots::type
     template <typename T>
     struct Descriptor<Vector<T>> : StaticDescriptor<Vector<T>, Descriptor<Vector<Typeless>>>
     {
+        using key_t = typename StaticDescriptor<Vector<T>, Descriptor<Vector<Typeless>>>::key_t;
         static constexpr bool IsDynamic = is_dynamic_descriptor_v<Descriptor<T>>;
 
         template <bool IsDynamic = !IsDynamic, std::enable_if_t<IsDynamic, int> = 0>
-        Descriptor() :
-            StaticDescriptor<Vector<T>, Descriptor<Vector<Typeless>>>("vector<" + valueDescriptor().name() + ">", valueDescriptorPtr(), sizeof(Vector<T>), alignof(Vector<T>)),
-            m_valueDescriptorOverride(nullptr)
+        Descriptor(key_t key) :
+            StaticDescriptor<Vector<T>, Descriptor<Vector<Typeless>>>(key, "vector<" + Descriptor<T>::InitInstance().name() + ">", Descriptor<T>::InitInstance(), sizeof(Vector<T>), alignof(Vector<T>)),
+            m_valueDescriptor(Descriptor<T>::InitInstance().shared_from_this())
         {
             /* do nothing */
         }
 
         template <bool IsDynamic = IsDynamic, std::enable_if_t<IsDynamic, int> = 0>
-        Descriptor(const std::shared_ptr<Descriptor<T>>& valueDescriptorOverride, bool checkSize = true) :
-            StaticDescriptor<Vector<T>, Descriptor<Vector<Typeless>>>("vector<" + valueDescriptorOverride->name() + ">", valueDescriptorOverride, sizeof(Vector<T>), alignof(Vector<T>)),
-            m_valueDescriptorOverride(valueDescriptorOverride)
+        Descriptor(key_t key, Descriptor<T>& valueDescriptorOverride, bool checkSize = true) :
+            StaticDescriptor<Vector<T>, Descriptor<Vector<Typeless>>>(key, "vector<" + valueDescriptorOverride.name() + ">", valueDescriptorOverride, sizeof(Vector<T>), alignof(Vector<T>)),
+            m_valueDescriptor(valueDescriptorOverride.shared_from_this())
         {
-            if (checkSize && (valueDescriptorOverride->size() != sizeof(T) || valueDescriptorOverride->alignment() != alignof(T)))
+            if (checkSize && (valueDescriptorOverride.size() != sizeof(T) || valueDescriptorOverride.alignment() != alignof(T)))
             {
                 throw std::logic_error{ "attempt to create vector descriptor with incompatible value type" };
             }
@@ -106,33 +107,19 @@ namespace dots::type
             Descriptor<Vector<T>>::resize(typelessVector, size);
         }
 
-        const std::shared_ptr<Descriptor<T>>& valueDescriptorPtr() const
-        {
-            if constexpr (IsDynamic)
-            {
-                return m_valueDescriptorOverride;
-            }
-            else
-            {
-                return Descriptor<T>::InstancePtr();
-            }
-        }
-
         const Descriptor<T>& valueDescriptor() const
         {
-            if constexpr (IsDynamic)
-            {
-                return *m_valueDescriptorOverride;
-            }
-            else
-            {
-                return Descriptor<T>::Instance();
-            }
+            return *m_valueDescriptor;
+        }
+
+        Descriptor<T>& valueDescriptor()
+        {
+            return const_cast<Descriptor<T>&>(std::as_const(*this).valueDescriptor());
         }
 
     private:
 
-        std::shared_ptr<Descriptor<T>> m_valueDescriptorOverride;
+        std::shared_ptr<Descriptor<T>> m_valueDescriptor;
     };
 
     template <typename TDescriptor>

@@ -11,7 +11,7 @@ namespace dots::type
 {
     struct PropertyDescriptor
     {
-        PropertyDescriptor(std::shared_ptr<Descriptor<>> descriptor, std::string name, uint32_t tag, bool isKey, PropertyOffset offset);
+        PropertyDescriptor(Descriptor<>& descriptor, std::string name, uint32_t tag, bool isKey, PropertyOffset offset);
         PropertyDescriptor(const PropertyDescriptor& other) = default;
         PropertyDescriptor(PropertyDescriptor&& other) = default;
         ~PropertyDescriptor() = default;
@@ -19,12 +19,12 @@ namespace dots::type
         PropertyDescriptor& operator = (const PropertyDescriptor& rhs) = default;
         PropertyDescriptor& operator = (PropertyDescriptor&& rhs) = default;
 
-        const std::shared_ptr<Descriptor<>>& valueDescriptorPtr() const
+        const Descriptor<>& valueDescriptor() const
         {
-            return m_descriptor;
+            return *m_descriptor;
         }
 
-        const Descriptor<>& valueDescriptor() const
+        Descriptor<>& valueDescriptor()
         {
             return *m_descriptor;
         }

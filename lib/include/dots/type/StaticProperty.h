@@ -42,11 +42,11 @@ namespace dots::type
             return Set() <= propertySet;
         }
 
-        static PropertyDescriptor InitDescriptor() 
+        static const PropertyDescriptor& InitDescriptor() 
         {
             if (M_descriptorStorage == std::nullopt)
             {
-                M_descriptorStorage.emplace(type::Descriptor<T>::InstancePtr(), Name().data(), Tag(), IsKey(), Offset());
+                M_descriptorStorage.emplace(type::Descriptor<T>::InitInstance(), Name().data(), Tag(), IsKey(), Offset());
             }
 
             return *M_descriptorStorage; 

@@ -33,8 +33,10 @@ namespace dots::type
     template <typename T, typename Base>
     struct StaticDescriptor<T, Base, false> : Base
     {
+        using key_t = typename Base::key_t;
+
         template <typename Base_ = Base, std::enable_if_t<std::is_same_v<Base_, Descriptor<Typeless>>, int> = 0>
-        StaticDescriptor(Type type, std::string name) : Base(type, std::move(name), sizeof(T), alignof(T))
+        StaticDescriptor(key_t key, Type type, std::string name) : Base(key, type, std::move(name), sizeof(T), alignof(T))
         {
             /* do nothing */
         }
@@ -45,12 +47,12 @@ namespace dots::type
             /* do nothing */
         }
 
-        StaticDescriptor(const StaticDescriptor& other) = default;
-        StaticDescriptor(StaticDescriptor&& other) = default;
+        StaticDescriptor(const StaticDescriptor& other) = delete;
+        StaticDescriptor(StaticDescriptor&& other) = delete;
         ~StaticDescriptor() = default;
 
-        StaticDescriptor& operator = (const StaticDescriptor& rhs) = default;
-        StaticDescriptor& operator = (StaticDescriptor&& rhs) = default;
+        StaticDescriptor& operator = (const StaticDescriptor& rhs) = delete;
+        StaticDescriptor& operator = (StaticDescriptor&& rhs) = delete;
 
         using Base::construct;
         using Base::constructInPlace;
@@ -134,8 +136,40 @@ namespace dots::type
             return 0;
         }
 
+        std::shared_ptr<const Descriptor<T>> shared_from_this() const
+        {
+            return std::static_pointer_cast<const Descriptor<T>>(std::enable_shared_from_this<Descriptor<>>::shared_from_this());
+        }
+
+        std::shared_ptr<Descriptor<T>> shared_from_this()
+        {
+            return std::static_pointer_cast<Descriptor<T>>(std::enable_shared_from_this<Descriptor<>>::shared_from_this());
+        }
+
+        std::weak_ptr<const Descriptor<T>> weak_from_this() const noexcept
+        {
+            return std::enable_shared_from_this<Descriptor<>>::weak_from_this();
+        }
+
+        std::weak_ptr<Descriptor<T>> weak_from_this() noexcept
+        {
+            return std::enable_shared_from_this<Descriptor<>>::weak_from_this();
+        }
+
+        static Descriptor<T>& InitInstance()
+        {
+            return *InitInstancePtr();
+        }
+
+        static Descriptor<T>& Instance()
+        {
+            return *M_instanceRawPtr;
+        }
+
+    private:
+
         template <bool AssertNotDynamic = true>
-        static const std::shared_ptr<Descriptor<T>>& InstancePtr()
+        static std::shared_ptr<Descriptor<T>>& InitInstancePtr()
         {
             if constexpr (is_dynamic_descriptor_v<Descriptor<T>>)
             {
@@ -150,58 +184,17 @@ namespace dots::type
             }
             else
             {
-                static_assert(std::is_default_constructible_v<Descriptor<T>>);
-
                 if (M_instanceStorage == nullptr)
                 {
-                    M_instanceStorage = static_descriptors().emplace<Descriptor<T>>();
+                    M_instanceStorage = static_descriptors().emplace<Descriptor<T>>().shared_from_this();
                 }
 
                 return M_instanceStorage;
             }
         }
 
-        static const Descriptor<T>& Instance()
-        {
-            return *InstancePtr();
-        }
-
-        static const Descriptor<T>& InstanceRef()
-        {
-            return *M_instanceRawPtr;
-        }
-
-    private:
-
-        template<typename U, typename = void>
-        struct is_iteratable: std::false_type {};
-        template<typename U>
-        struct is_iteratable<U, std::void_t<decltype(std::declval<U>().begin())>> : std::true_type {};
-        template <typename U>
-        using is_iteratable_t = typename is_iteratable<U>::type;
-        template <typename U>
-        static constexpr bool is_iteratable_v = is_iteratable_t<U>::value;
-
-        template<typename U, typename = void>
-        struct is_ostreamable: std::false_type {};
-        template<typename U>
-        struct is_ostreamable<U, std::void_t<decltype(std::declval<std::ostream&>()<<std::declval<const U&>())>> : std::true_type {};
-        template <typename U>
-        using is_ostreamable_t = typename is_ostreamable<U>::type;
-        template <typename U>
-        static constexpr bool is_ostreamable_v = is_ostreamable_t<U>::value;
-
-        template<typename U, typename = void>
-        struct is_istreamable: std::false_type {};
-        template<typename U>
-        struct is_istreamable<U, std::void_t<decltype(std::declval<std::istream&>()>>std::declval<U&>())>> : std::true_type {};
-        template <typename U>
-        using is_istreamable_t = typename is_istreamable<U>::type;
-        template <typename U>
-        static constexpr bool is_istreamable_v = is_istreamable_t<U>::value;
-
         inline static std::shared_ptr<Descriptor<T>> M_instanceStorage;
-        inline static const Descriptor<T>* M_instanceRawPtr = InstancePtr<false>().get();
+        inline static Descriptor<T>* M_instanceRawPtr = InitInstancePtr<false>().get();
     };
 
     template <typename T, typename Base>
@@ -213,12 +206,12 @@ namespace dots::type
             /* do nothing */
         }
 
-        StaticDescriptor(const StaticDescriptor& other) = default;
-        StaticDescriptor(StaticDescriptor&& other) = default;
+        StaticDescriptor(const StaticDescriptor& other) = delete;
+        StaticDescriptor(StaticDescriptor&& other) = delete;
         ~StaticDescriptor() = default;
 
-        StaticDescriptor& operator = (const StaticDescriptor& rhs) = default;
-        StaticDescriptor& operator = (StaticDescriptor&& rhs) = default;
+        StaticDescriptor& operator = (const StaticDescriptor& rhs) = delete;
+        StaticDescriptor& operator = (StaticDescriptor&& rhs) = delete;
 
         using StaticDescriptor<T, Base, false>::construct;
         using StaticDescriptor<T, Base, false>::constructInPlace;

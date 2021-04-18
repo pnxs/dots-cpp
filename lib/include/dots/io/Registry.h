@@ -94,25 +94,33 @@ namespace dots::io
             }
         }
 
-        std::shared_ptr<type::Descriptor<>> findType(const std::string_view& name, bool assertNotNull = false) const;
-        std::shared_ptr<type::EnumDescriptor<>> findEnumType(const std::string_view& name, bool assertNotNull = false) const;
-        std::shared_ptr<type::StructDescriptor<>> findStructType(const std::string_view& name, bool assertNotNull = false) const;
+        const type::Descriptor<>* findType(const std::string_view& name, bool assertNotNull = false) const;
+        const type::EnumDescriptor<>* findEnumType(const std::string_view& name, bool assertNotNull = false) const;
+        const type::StructDescriptor<>* findStructType(const std::string_view& name, bool assertNotNull = false) const;
+
+        type::Descriptor<>* findType(const std::string_view& name, bool assertNotNull = false);
+        type::EnumDescriptor<>* findEnumType(const std::string_view& name, bool assertNotNull = false);
+        type::StructDescriptor<>* findStructType(const std::string_view& name, bool assertNotNull = false);
 
         const type::Descriptor<>& getType(const std::string_view& name) const;
         const type::EnumDescriptor<>& getEnumType(const std::string_view& name) const;
         const type::StructDescriptor<>& getStructType(const std::string_view& name) const;
 
+        type::Descriptor<>& getType(const std::string_view& name);
+        type::EnumDescriptor<>& getEnumType(const std::string_view& name);
+        type::StructDescriptor<>& getStructType(const std::string_view& name);
+
         bool hasType(const std::string_view& name) const;
 
-        std::shared_ptr<type::Descriptor<>> registerType(std::shared_ptr<type::Descriptor<>> descriptor, bool assertNewType = true);
+        type::Descriptor<>& registerType(type::Descriptor<>& descriptor, bool assertNewType = true);
+        type::Descriptor<>& registerType(std::shared_ptr<type::Descriptor<>> descriptor, bool assertNewType = true);
 
-        template <typename D, std::enable_if_t<std::is_base_of_v<type::Descriptor<>, D>, int> = 0>
-        std::shared_ptr<D> registerType(D&& descriptor)
+        template <typename TDescriptor, typename... Args, std::enable_if_t<std::is_base_of_v<type::Descriptor<>, TDescriptor>, int> = 0>
+        TDescriptor& registerType(Args&&... args)
         {
-            return std::static_pointer_cast<D>(registerType(std::make_shared<D>(std::forward<D>(descriptor))));
+            return static_cast<TDescriptor&>(registerType(type::make_descriptor<TDescriptor>(std::forward<Args>(args)...)));
         }
 
-        void deregisterType(const std::shared_ptr<type::Descriptor<>>& descriptor, bool assertRegisteredType = true);
         void deregisterType(const type::Descriptor<>& descriptor, bool assertRegisteredType = true);
         void deregisterType(const std::string_view& name, bool assertRegisteredType = true);
 
