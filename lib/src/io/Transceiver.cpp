@@ -77,7 +77,7 @@ namespace dots::io
         return m_dispatcher.pool();
     }
 
-    const Container<>& Transceiver::container(const type::StructDescriptor<>& descriptor)
+    const Container<>& Transceiver::container(const type::StructDescriptor<>& descriptor) const
     {
         return m_dispatcher.container(descriptor);
     }
