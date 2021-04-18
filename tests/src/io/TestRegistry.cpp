@@ -56,7 +56,7 @@ TEST_F(TestRegistry, ctor_NoUserTypesWhenStaticTypesAreDisabled)
 
 TEST_F(TestRegistry, registerType)
 {
-    auto& descriptor = dots::type::Descriptor<DotsTestStruct>::Instance();
+    auto& descriptor = dots::type::Descriptor<DotsTestStruct>::InitInstance();
     ::testing::MockFunction<void(const dots::type::Descriptor<>&)> mockNewTypeHandler;
     dots::io::Registry sut{ mockNewTypeHandler.AsStdFunction(), false };
 
@@ -65,7 +65,7 @@ TEST_F(TestRegistry, registerType)
     EXPECT_CALL(mockNewTypeHandler, Call(::testing::Ref(descriptor))).Times(1);
 
     auto& registeredDescriptor = sut.registerType(descriptor);
-    EXPECT_THROW(sut.registerType(dots::type::Descriptor<DotsTestSubStruct>::Instance()), std::logic_error);
+    EXPECT_THROW(sut.registerType(dots::type::Descriptor<DotsTestSubStruct>::InitInstance()), std::logic_error);
 
     EXPECT_EQ(&registeredDescriptor, &descriptor);
     EXPECT_STRUCT_TYPE_IN_REGISTRY(descriptor.name());
@@ -73,7 +73,7 @@ TEST_F(TestRegistry, registerType)
 
 TEST_F(TestRegistry, deregisterType)
 {
-    auto& descriptor = dots::type::Descriptor<DotsTestStruct>::Instance();
+    auto& descriptor = dots::type::Descriptor<DotsTestStruct>::InitInstance();
     dots::io::Registry sut{ nullptr, false };
 
     sut.registerType(descriptor);
@@ -89,17 +89,17 @@ TEST_F(TestRegistry, forEach)
     using namespace dots::type;
     
     dots::io::Registry sut{ nullptr, false };
-    sut.registerType(Descriptor<DotsTestStruct>::Instance());
-    sut.registerType(Descriptor<dots::vector_t<DotsTestStruct>>::Instance());
+    sut.registerType(Descriptor<DotsTestStruct>::InitInstance());
+    sut.registerType(Descriptor<dots::vector_t<DotsTestStruct>>::InitInstance());
 
     {
         ::testing::MockFunction<void(const Descriptor<>&)> mockTypeHandler;
         EXPECT_CALL(mockTypeHandler, Call(::testing::_)).Times(::testing::AnyNumber());
-        EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<DotsHeader>::Instance()))).Times(1);
-        EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<DotsTestSubStruct>::Instance()))).Times(1);
-        EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<DotsTestEnum>::Instance()))).Times(1);
-        EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<DotsTestStruct>::Instance()))).Times(1);
-        EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<dots::vector_t<DotsTestStruct>>::Instance()))).Times(1);
+        EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<DotsHeader>::InitInstance()))).Times(1);
+        EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<DotsTestSubStruct>::InitInstance()))).Times(1);
+        EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<DotsTestEnum>::InitInstance()))).Times(1);
+        EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<DotsTestStruct>::InitInstance()))).Times(1);
+        EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<dots::vector_t<DotsTestStruct>>::InitInstance()))).Times(1);
 
         sut.forEach(mockTypeHandler.AsStdFunction());
     }
@@ -107,9 +107,9 @@ TEST_F(TestRegistry, forEach)
     {
         ::testing::MockFunction<void(const StructDescriptor<>&)> mockTypeHandler;
         EXPECT_CALL(mockTypeHandler, Call(::testing::Property(&Descriptor<>::type, Type::Struct))).Times(::testing::AnyNumber());
-        EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<DotsHeader>::Instance()))).Times(1);
-        EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<DotsTestSubStruct>::Instance()))).Times(1);
-        EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<DotsTestStruct>::Instance()))).Times(1);
+        EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<DotsHeader>::InitInstance()))).Times(1);
+        EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<DotsTestSubStruct>::InitInstance()))).Times(1);
+        EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<DotsTestStruct>::InitInstance()))).Times(1);
 
         sut.forEach<StructDescriptor<>>(mockTypeHandler.AsStdFunction());
     }
@@ -118,10 +118,10 @@ TEST_F(TestRegistry, forEach)
         ::testing::MockFunction<void(const Descriptor<>&)> mockTypeHandler;
         EXPECT_CALL(mockTypeHandler, Call(::testing::Property(&Descriptor<>::type, Type::Struct))).Times(::testing::AnyNumber());
         EXPECT_CALL(mockTypeHandler, Call(::testing::Property(&Descriptor<>::type, Type::Enum))).Times(::testing::AnyNumber());
-        EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<DotsHeader>::Instance()))).Times(1);
-        EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<DotsTestSubStruct>::Instance()))).Times(1);
-        EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<DotsTestEnum>::Instance()))).Times(1);
-        EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<DotsTestStruct>::Instance()))).Times(1);
+        EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<DotsHeader>::InitInstance()))).Times(1);
+        EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<DotsTestSubStruct>::InitInstance()))).Times(1);
+        EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<DotsTestEnum>::InitInstance()))).Times(1);
+        EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<DotsTestStruct>::InitInstance()))).Times(1);
 
         sut.forEach<StructDescriptor<>, EnumDescriptor<>>(mockTypeHandler.AsStdFunction());
     }
@@ -129,8 +129,8 @@ TEST_F(TestRegistry, forEach)
     {
         ::testing::MockFunction<void(const Descriptor<>&)> mockTypeHandler;
         EXPECT_CALL(mockTypeHandler, Call(::testing::Property(&Descriptor<>::type, Type::Vector))).Times(::testing::AnyNumber());
-        EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<DotsTestStruct>::Instance()))).Times(1);
-        EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<dots::vector_t<DotsTestStruct>>::Instance()))).Times(1);
+        EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<DotsTestStruct>::InitInstance()))).Times(1);
+        EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<dots::vector_t<DotsTestStruct>>::InitInstance()))).Times(1);
 
         sut.forEach<VectorDescriptor, Descriptor<DotsTestStruct>>(mockTypeHandler.AsStdFunction());
     }

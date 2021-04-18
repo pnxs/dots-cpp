@@ -82,12 +82,12 @@ namespace dots::type
 
         const Descriptor<underlying_type_t>& underlyingDescriptor() const override
         {
-            return Descriptor<underlying_type_t>::Instance();
+            return Descriptor<underlying_type_t>::InitInstance();
         }
 
         Descriptor<underlying_type_t>& underlyingDescriptor() override
         {
-            return Descriptor<underlying_type_t>::Instance();
+            return Descriptor<underlying_type_t>::InitInstance();
         }
 
         const Typeless& valueTypeless() const override
@@ -255,12 +255,12 @@ namespace dots::type
 
         const Descriptor<underlying_type_t>& underlyingDescriptor() const override
         {
-            return Descriptor<underlying_type_t>::Instance();
+            return Descriptor<underlying_type_t>::InitInstance();
         }
 
         Descriptor<underlying_type_t>& underlyingDescriptor() override
         {
-            return Descriptor<underlying_type_t>::Instance();
+            return Descriptor<underlying_type_t>::InitInstance();
         }
 
         const std::vector<EnumDescriptor<>::enumerator_ref_t>& enumeratorsTypeless() const override

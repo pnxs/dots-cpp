@@ -156,12 +156,12 @@ namespace dots::type
             return std::enable_shared_from_this<Descriptor<>>::weak_from_this();
         }
 
-        static Descriptor<T>& Instance()
+        static Descriptor<T>& InitInstance()
         {
-            return *InstancePtr();
+            return *InitInstancePtr();
         }
 
-        static Descriptor<T>& InstanceRef()
+        static Descriptor<T>& Instance()
         {
             return *M_instanceRawPtr;
         }
@@ -196,7 +196,7 @@ namespace dots::type
         static constexpr bool is_istreamable_v = is_istreamable_t<U>::value;
 
         template <bool AssertNotDynamic = true>
-        static std::shared_ptr<Descriptor<T>>& InstancePtr()
+        static std::shared_ptr<Descriptor<T>>& InitInstancePtr()
         {
             if constexpr (is_dynamic_descriptor_v<Descriptor<T>>)
             {
@@ -221,7 +221,7 @@ namespace dots::type
         }
 
         inline static std::shared_ptr<Descriptor<T>> M_instanceStorage;
-        inline static Descriptor<T>* M_instanceRawPtr = InstancePtr<false>().get();
+        inline static Descriptor<T>* M_instanceRawPtr = InitInstancePtr<false>().get();
     };
 
     template <typename T, typename Base>

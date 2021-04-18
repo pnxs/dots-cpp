@@ -19,7 +19,7 @@ namespace dots::io
         template <typename Tag, typename T>
         struct global_type<Tag, T> : global_type<Tag, void>
         {
-            inline static const type::StructDescriptor<T>& Descriptor = static_cast<const type::StructDescriptor<T>&>(global_type<Tag, void>::Descriptors.emplace(type::Descriptor<T>::Instance()));
+            inline static const type::StructDescriptor<T>& Descriptor = static_cast<const type::StructDescriptor<T>&>(global_type<Tag, void>::Descriptors.emplace(type::Descriptor<T>::InitInstance()));
         };
 
         template <typename Tag, typename T>

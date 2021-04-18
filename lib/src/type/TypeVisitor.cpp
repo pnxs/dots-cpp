@@ -124,172 +124,172 @@ namespace dots::type
 
     void TypeVisitor<void, void>::visitFundamentalType(const bool_t& value)
     {
-        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<bool_t>::Instance());
+        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<bool_t>::InitInstance());
     }
 
     void TypeVisitor<void, void>::visitFundamentalType(bool_t& value)
     {
-        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<bool_t>::Instance());
+        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<bool_t>::InitInstance());
     }
 
     void TypeVisitor<void, void>::visitFundamentalType(const int8_t& value)
     {
-        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<int8_t>::Instance());
+        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<int8_t>::InitInstance());
     }
 
     void TypeVisitor<void, void>::visitFundamentalType(int8_t& value)
     {
-        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<int8_t>::Instance());
+        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<int8_t>::InitInstance());
     }
 
     void TypeVisitor<void, void>::visitFundamentalType(const uint8_t& value)
     {
-        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<uint8_t>::Instance());
+        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<uint8_t>::InitInstance());
     }
 
     void TypeVisitor<void, void>::visitFundamentalType(uint8_t& value)
     {
-        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<uint8_t>::Instance());
+        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<uint8_t>::InitInstance());
     }
 
     void TypeVisitor<void, void>::visitFundamentalType(const int16_t& value)
     {
-        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<int16_t>::Instance());
+        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<int16_t>::InitInstance());
     }
 
     void TypeVisitor<void, void>::visitFundamentalType(int16_t& value)
     {
-        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<int16_t>::Instance());
+        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<int16_t>::InitInstance());
     }
 
     void TypeVisitor<void, void>::visitFundamentalType(const uint16_t& value)
     {
-        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<uint16_t>::Instance());
+        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<uint16_t>::InitInstance());
     }
 
     void TypeVisitor<void, void>::visitFundamentalType(uint16_t& value)
     {
-        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<uint16_t>::Instance());
+        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<uint16_t>::InitInstance());
     }
 
     void TypeVisitor<void, void>::visitFundamentalType(const int32_t& value)
     {
-        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<int32_t>::Instance());
+        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<int32_t>::InitInstance());
     }
 
     void TypeVisitor<void, void>::visitFundamentalType(int32_t& value)
     {
-        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<int32_t>::Instance());
+        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<int32_t>::InitInstance());
     }
 
     void TypeVisitor<void, void>::visitFundamentalType(const uint32_t& value)
     {
-        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<uint32_t>::Instance());
+        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<uint32_t>::InitInstance());
     }
 
     void TypeVisitor<void, void>::visitFundamentalType(uint32_t& value)
     {
-        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<uint32_t>::Instance());
+        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<uint32_t>::InitInstance());
     }
 
     void TypeVisitor<void, void>::visitFundamentalType(const int64_t& value)
     {
-        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<int64_t>::Instance());
+        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<int64_t>::InitInstance());
     }
 
     void TypeVisitor<void, void>::visitFundamentalType(int64_t& value)
     {
-        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<int64_t>::Instance());
+        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<int64_t>::InitInstance());
     }
 
     void TypeVisitor<void, void>::visitFundamentalType(const uint64_t& value)
     {
-        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<uint64_t>::Instance());
+        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<uint64_t>::InitInstance());
     }
 
     void TypeVisitor<void, void>::visitFundamentalType(uint64_t& value)
     {
-        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<uint64_t>::Instance());
+        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<uint64_t>::InitInstance());
     }
 
     void TypeVisitor<void, void>::visitFundamentalType(const float32_t& value)
     {
-        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<float32_t>::Instance());
+        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<float32_t>::InitInstance());
     }
 
     void TypeVisitor<void, void>::visitFundamentalType(float32_t& value)
     {
-        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<float32_t>::Instance());
+        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<float32_t>::InitInstance());
     }
 
     void TypeVisitor<void, void>::visitFundamentalType(const float64_t& value)
     {
-        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<float64_t>::Instance());
+        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<float64_t>::InitInstance());
     }
 
     void TypeVisitor<void, void>::visitFundamentalType(float64_t& value)
     {
-        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<float64_t>::Instance());
+        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<float64_t>::InitInstance());
     }
 
     void TypeVisitor<void, void>::visitFundamentalType(const property_set_t& value)
     {
-        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<property_set_t>::Instance());
+        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<property_set_t>::InitInstance());
     }
 
     void TypeVisitor<void, void>::visitFundamentalType(property_set_t& value)
     {
-        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<property_set_t>::Instance());
+        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<property_set_t>::InitInstance());
     }
 
     void TypeVisitor<void, void>::visitFundamentalType(const timepoint_t& value)
     {
-        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<timepoint_t>::Instance());
+        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<timepoint_t>::InitInstance());
     }
 
     void TypeVisitor<void, void>::visitFundamentalType(timepoint_t& value)
     {
-        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<timepoint_t>::Instance());
+        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<timepoint_t>::InitInstance());
     }
 
     void TypeVisitor<void, void>::visitFundamentalType(const steady_timepoint_t& value)
     {
-        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<steady_timepoint_t>::Instance());
+        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<steady_timepoint_t>::InitInstance());
     }
 
     void TypeVisitor<void, void>::visitFundamentalType(steady_timepoint_t& value)
     {
-        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<steady_timepoint_t>::Instance());
+        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<steady_timepoint_t>::InitInstance());
     }
 
     void TypeVisitor<void, void>::visitFundamentalType(const duration_t& value)
     {
-        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<duration_t>::Instance());
+        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<duration_t>::InitInstance());
     }
 
     void TypeVisitor<void, void>::visitFundamentalType(duration_t& value)
     {
-        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<duration_t>::Instance());
+        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<duration_t>::InitInstance());
     }
 
     void TypeVisitor<void, void>::visitFundamentalType(const uuid_t& value)
     {
-        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<uuid_t>::Instance());
+        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<uuid_t>::InitInstance());
     }
 
     void TypeVisitor<void, void>::visitFundamentalType(uuid_t& value)
     {
-        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<uuid_t>::Instance());
+        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<uuid_t>::InitInstance());
     }
 
     void TypeVisitor<void, void>::visitFundamentalType(const string_t& value)
     {
-        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<string_t>::Instance());
+        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<string_t>::InitInstance());
     }
 
     void TypeVisitor<void, void>::visitFundamentalType(string_t& value)
     {
-        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<string_t>::Instance());
+        TypeVisitor<TypeVisitor<void>>::visitFundamentalTypeDerived(value, Descriptor<string_t>::InitInstance());
     }
 
     void TypeVisitor<void, void>::visitFundamentalTypeEnd(const Typeless&/* value*/, const Descriptor<>&/* descriptor*/)

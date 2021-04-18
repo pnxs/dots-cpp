@@ -510,7 +510,7 @@ namespace dots::type
 
         static const Descriptor<Derived>& DescriptorInstance()
         {
-            return Descriptor<Derived>::Instance();
+            return Descriptor<Derived>::InitInstance();
         }
 
         inline static const Descriptor<Derived>& M_descriptor = DescriptorInstance();

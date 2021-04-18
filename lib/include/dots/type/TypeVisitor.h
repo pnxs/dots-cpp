@@ -432,7 +432,7 @@ namespace dots::type
             }
             else if (HasDescriptor)
             {
-                visitTypeInternal<Const>(value, Descriptor<T>::InstanceRef());
+                visitTypeInternal<Const>(value, Descriptor<T>::Instance());
             }
         }
 

@@ -115,7 +115,7 @@ namespace dots::type
             }
             else
             {
-                return Descriptor<T>::Instance();
+                return Descriptor<T>::InitInstance();
             }
         }
 

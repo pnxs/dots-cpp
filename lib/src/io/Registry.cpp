@@ -8,52 +8,52 @@ namespace dots::io
         m_staticUserTypes(staticUserTypes)
     {
         // ensure fundamental types are instantiated and added to static descriptor map
-        type::Descriptor<types::bool_t>::Instance();
+        type::Descriptor<types::bool_t>::InitInstance();
 
-        type::Descriptor<types::int8_t>::Instance();
-        type::Descriptor<types::uint8_t>::Instance();
-        type::Descriptor<types::int16_t>::Instance();
-        type::Descriptor<types::uint16_t>::Instance();
-        type::Descriptor<types::int32_t>::Instance();
-        type::Descriptor<types::uint32_t>::Instance();
-        type::Descriptor<types::int64_t>::Instance();
-        type::Descriptor<types::uint64_t>::Instance();
+        type::Descriptor<types::int8_t>::InitInstance();
+        type::Descriptor<types::uint8_t>::InitInstance();
+        type::Descriptor<types::int16_t>::InitInstance();
+        type::Descriptor<types::uint16_t>::InitInstance();
+        type::Descriptor<types::int32_t>::InitInstance();
+        type::Descriptor<types::uint32_t>::InitInstance();
+        type::Descriptor<types::int64_t>::InitInstance();
+        type::Descriptor<types::uint64_t>::InitInstance();
 
-        type::Descriptor<types::float32_t>::Instance();
-        type::Descriptor<types::float64_t>::Instance();
+        type::Descriptor<types::float32_t>::InitInstance();
+        type::Descriptor<types::float64_t>::InitInstance();
 
-        type::Descriptor<types::property_set_t>::Instance();
+        type::Descriptor<types::property_set_t>::InitInstance();
 
-        type::Descriptor<types::timepoint_t>::Instance();
-        type::Descriptor<types::steady_timepoint_t>::Instance();
-        type::Descriptor<types::duration_t>::Instance();
+        type::Descriptor<types::timepoint_t>::InitInstance();
+        type::Descriptor<types::steady_timepoint_t>::InitInstance();
+        type::Descriptor<types::duration_t>::InitInstance();
 
-        type::Descriptor<types::uuid_t>::Instance();
-        type::Descriptor<types::string_t>::Instance();
+        type::Descriptor<types::uuid_t>::InitInstance();
+        type::Descriptor<types::string_t>::InitInstance();
 
         // ensure fundamental vector types are instantiated and added to static descriptor map
-        type::Descriptor<types::vector_t<types::bool_t>>::Instance();
+        type::Descriptor<types::vector_t<types::bool_t>>::InitInstance();
 
-        type::Descriptor<types::vector_t<types::int8_t>>::Instance();
-        type::Descriptor<types::vector_t<types::uint8_t>>::Instance();
-        type::Descriptor<types::vector_t<types::int16_t>>::Instance();
-        type::Descriptor<types::vector_t<types::uint16_t>>::Instance();
-        type::Descriptor<types::vector_t<types::int32_t>>::Instance();
-        type::Descriptor<types::vector_t<types::uint32_t>>::Instance();
-        type::Descriptor<types::vector_t<types::int64_t>>::Instance();
-        type::Descriptor<types::vector_t<types::uint64_t>>::Instance();
+        type::Descriptor<types::vector_t<types::int8_t>>::InitInstance();
+        type::Descriptor<types::vector_t<types::uint8_t>>::InitInstance();
+        type::Descriptor<types::vector_t<types::int16_t>>::InitInstance();
+        type::Descriptor<types::vector_t<types::uint16_t>>::InitInstance();
+        type::Descriptor<types::vector_t<types::int32_t>>::InitInstance();
+        type::Descriptor<types::vector_t<types::uint32_t>>::InitInstance();
+        type::Descriptor<types::vector_t<types::int64_t>>::InitInstance();
+        type::Descriptor<types::vector_t<types::uint64_t>>::InitInstance();
 
-        type::Descriptor<types::vector_t<types::float32_t>>::Instance();
-        type::Descriptor<types::vector_t<types::float64_t>>::Instance();
+        type::Descriptor<types::vector_t<types::float32_t>>::InitInstance();
+        type::Descriptor<types::vector_t<types::float64_t>>::InitInstance();
 
-        type::Descriptor<types::vector_t<types::property_set_t>>::Instance();
+        type::Descriptor<types::vector_t<types::property_set_t>>::InitInstance();
 
-        type::Descriptor<types::vector_t<types::timepoint_t>>::Instance();
-        type::Descriptor<types::vector_t<types::steady_timepoint_t>>::Instance();
-        type::Descriptor<types::vector_t<types::duration_t>>::Instance();
+        type::Descriptor<types::vector_t<types::timepoint_t>>::InitInstance();
+        type::Descriptor<types::vector_t<types::steady_timepoint_t>>::InitInstance();
+        type::Descriptor<types::vector_t<types::duration_t>>::InitInstance();
 
-        type::Descriptor<types::vector_t<types::uuid_t>>::Instance();
-        type::Descriptor<types::vector_t<types::string_t>>::Instance();
+        type::Descriptor<types::vector_t<types::uuid_t>>::InitInstance();
+        type::Descriptor<types::vector_t<types::string_t>>::InitInstance();
     }
 
     const type::Descriptor<>* Registry::findType(const std::string_view& name, bool assertNotNull/* = false*/) const
