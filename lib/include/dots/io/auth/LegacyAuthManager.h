@@ -15,16 +15,16 @@ namespace dots::io
         using rules_t = std::multimap<uint16_t, DotsAuthentication>;
 
         LegacyAuthManager(HostTransceiver& transceiver);
-        LegacyAuthManager(const LegacyAuthManager& other) = default;
+        LegacyAuthManager(const LegacyAuthManager& other) = delete;
         LegacyAuthManager(LegacyAuthManager&& other) = default;
         ~LegacyAuthManager() = default;
 
-        LegacyAuthManager& operator = (const LegacyAuthManager& rhs) = default;
+        LegacyAuthManager& operator = (const LegacyAuthManager& rhs) = delete;
         LegacyAuthManager& operator = (LegacyAuthManager&& rhs) = default;
 
-        virtual std::optional<Nonce> requiresAuthentication(const Endpoint& remoteEndpoint, std::string_view guest) override;
-        virtual bool verifyAuthentication(const Endpoint& remoteEndpoint, std::string_view guest, Nonce nonce, Nonce cnonce, const Digest& response) override;
-        virtual bool verifyAuthentication(const Endpoint& remoteEndpoint, std::string_view guest, Nonce nonce, std::string_view cnonce, const Digest& response) override;
+        std::optional<Nonce> requiresAuthentication(const Endpoint& remoteEndpoint, std::string_view guest) override;
+        bool verifyAuthentication(const Endpoint& remoteEndpoint, std::string_view guest, Nonce nonce, Nonce cnonce, const Digest& response) override;
+        bool verifyAuthentication(const Endpoint& remoteEndpoint, std::string_view guest, Nonce nonce, std::string_view cnonce, const Digest& response) override;
 
         const rules_t& rules() const;
         const std::optional<bool>& defaultPolicy() const;
