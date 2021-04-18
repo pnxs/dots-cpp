@@ -33,13 +33,24 @@ namespace
 
 TEST(TestContainer, ctor_EmptyAfterDefaultConstruction)
 {
-    dots::Container<DotsTestStruct> sut;
-    DotsTestStruct dts{ DotsTestStruct::indKeyfField_i{ 1 } };
+    {
+        dots::Container<DotsTestStruct> sut;
+        DotsTestStruct dts{ DotsTestStruct::indKeyfField_i{ 1 } };
 
-    ASSERT_TRUE(sut.empty());
-    ASSERT_EQ(sut.size(), 0);
-    ASSERT_EQ(sut.find(dts), nullptr);
-    ASSERT_THROW(sut.get(dts), std::logic_error);
+        ASSERT_TRUE(sut.empty());
+        ASSERT_EQ(sut.size(), 0);
+        ASSERT_EQ(sut.find(dts), nullptr);
+        ASSERT_THROW(sut.get(dts), std::logic_error);
+    }
+
+    {
+        dots::Container<DotsTestSubStruct> sut;
+
+        ASSERT_TRUE(sut.empty());
+        ASSERT_EQ(sut.size(), 0);
+        ASSERT_EQ(sut.find(), nullptr);
+        ASSERT_THROW(sut.get(), std::logic_error);
+    }
 }
 
 TEST(TestContainer, insert_CreateInstanceWhenEmpty)
@@ -281,7 +292,7 @@ TEST(TestContainer, forEach_IterationYieldsExpectedInstances)
 
     auto itExpected = expected.begin();
 
-    sut.forEach([&](const DotsTestStruct& instance)
+    sut.forEach([&](auto& instance)
     {
         EXPECT_EQ(instance, *itExpected++);
     });

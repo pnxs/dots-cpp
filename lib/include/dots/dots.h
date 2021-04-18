@@ -38,10 +38,10 @@ namespace dots
     void publish(const type::Struct& instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false);
     void remove(const type::Struct& instance);
 
-    template<typename T>
+    template<typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int>>
     void publish(const T& instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false);
 
-    template<typename  T>
+    template<typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int>>
     void remove(const T& instance);
 
     Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::transmission_handler_t&& handler);
@@ -56,7 +56,7 @@ namespace dots
     template <typename T>
     const Container<T>& container();
 
-    template<typename T>
+    template<typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
     void publish(const T& instance, std::optional<types::property_set_t> includedProperties/* = std::nullopt*/, bool remove/* = false*/)
     {
         static_assert(!T::_SubstructOnly, "it is not allowed to publish to a struct that is marked with 'substruct_only'!");
@@ -64,7 +64,7 @@ namespace dots
         publish(static_cast<const type::Struct&>(instance), includedProperties, remove);
     }
 
-    template<typename T>
+    template<typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
     void remove(const T& instance)
     {
         static_assert(!T::_SubstructOnly, "it is not allowed to remove to a struct that is marked with 'substruct_only'!");

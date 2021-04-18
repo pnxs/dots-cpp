@@ -57,13 +57,13 @@ namespace dots::io
 
         LOG_DATA_S("data:" << to_ascii(&descriptor, &instance, *includedProperties));
 
+        if (m_hostConnection == std::nullopt)
+        {
+            throw std::runtime_error{ "attempt to publish on closed connection" };
+        }
+
         try
         {
-            if (m_hostConnection == std::nullopt)
-            {
-                throw std::runtime_error{ "attempt to publish on closed connection" };
-            }
-
             m_hostConnection->transmit(instance, includedProperties, remove);
         }
         catch (...)

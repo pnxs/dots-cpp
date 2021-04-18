@@ -37,7 +37,7 @@ namespace dots::io
         io::Registry& registry();
 
         const ContainerPool& pool() const;
-        const Container<>& container(const type::StructDescriptor<>& descriptor);
+        const Container<>& container(const type::StructDescriptor<>& descriptor) const;
 
         Subscription subscribe(const type::StructDescriptor<>& descriptor, transmission_handler_t&& handler);
         Subscription subscribe(const type::StructDescriptor<>& descriptor, event_handler_t<>&& handler);
