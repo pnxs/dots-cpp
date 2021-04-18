@@ -138,7 +138,7 @@ namespace dots::io
             }
         }
 
-        return m_defaultAcceptPolicy.has_value() ? !*m_defaultAcceptPolicy : false;
+        return false;
     }
 
     std::vector<DotsAuthentication> LegacyAuthManager::findMatchingRules(const boost::asio::ip::address& address, const std::string& clientName)
