@@ -42,7 +42,7 @@ namespace dots::type
             return Set() <= propertySet;
         }
 
-        static PropertyDescriptor InitDescriptor() 
+        static const PropertyDescriptor& InitDescriptor() 
         {
             if (M_descriptorStorage == std::nullopt)
             {
