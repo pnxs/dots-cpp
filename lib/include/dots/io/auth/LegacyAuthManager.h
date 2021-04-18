@@ -39,7 +39,6 @@ namespace dots::io
         void handleDotsAuthentication(const Event<DotsAuthentication>& e);
         void handleDotsAuthenticationPolicy(const Event<DotsAuthenticationPolicy>& e);
 
-        bool m_acceptLoopback;
         Subscription m_dotsAuthenticationSubscription;
         Subscription m_dotsAuthenticationPolicySubscription;
         rules_t m_rules;

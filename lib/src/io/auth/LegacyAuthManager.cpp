@@ -8,7 +8,6 @@ namespace dots::io
 {
     LegacyAuthManager::LegacyAuthManager(HostTransceiver& transceiver) :
         AuthManager(transceiver),
-        m_acceptLoopback(false),
         m_dotsAuthenticationSubscription{ transceiver.subscribe<DotsAuthentication>([this](const Event<DotsAuthentication>& e){ handleDotsAuthentication(e); }) },
         m_dotsAuthenticationPolicySubscription{ transceiver.subscribe<DotsAuthenticationPolicy>([this](const Event<DotsAuthenticationPolicy>& e){ handleDotsAuthenticationPolicy(e); }) }
     {
@@ -126,12 +125,6 @@ namespace dots::io
             accept = m_defaultPolicy;
         }
 
-        if (m_acceptLoopback && address.is_loopback())
-        {
-            LOG_DEBUG_S("Accept loopback");
-            accept = true;
-        }
-
         return accept.value_or(true);
     }
 
@@ -150,11 +143,6 @@ namespace dots::io
                     requiresAuthentication = true;
                 }
             }
-        }
-
-        if (m_acceptLoopback && address.is_loopback())
-        {
-            requiresAuthentication = false;
         }
 
         if (m_defaultPolicy.has_value() && !requiresAuthentication.has_value())
