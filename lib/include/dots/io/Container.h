@@ -105,6 +105,18 @@ namespace dots::io
         Container& operator = (const Container& rhs) = default;
         Container& operator = (Container&& rhs) = default;
 
+        template <typename T_ = T, std::enable_if_t<std::tuple_size_v<typename T_::_key_properties_t> == 0, int> = 0>
+        const T* find() const
+        {
+            return static_cast<const T*>(Container<>::find(T{}));
+        }
+
+        template <typename T_ = T, std::enable_if_t<std::tuple_size_v<typename T_::_key_properties_t> == 0, int> = 0>
+        const T& get() const
+        {
+            return static_cast<const T&>(Container<>::get(T{}));
+        }
+        
         const T* find(const T& instance) const
         {
             return static_cast<const T*>(Container<>::find(instance));
