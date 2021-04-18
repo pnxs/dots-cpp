@@ -168,33 +168,6 @@ namespace dots::type
 
     private:
 
-        template<typename U, typename = void>
-        struct is_iteratable: std::false_type {};
-        template<typename U>
-        struct is_iteratable<U, std::void_t<decltype(std::declval<U>().begin())>> : std::true_type {};
-        template <typename U>
-        using is_iteratable_t = typename is_iteratable<U>::type;
-        template <typename U>
-        static constexpr bool is_iteratable_v = is_iteratable_t<U>::value;
-
-        template<typename U, typename = void>
-        struct is_ostreamable: std::false_type {};
-        template<typename U>
-        struct is_ostreamable<U, std::void_t<decltype(std::declval<std::ostream&>()<<std::declval<const U&>())>> : std::true_type {};
-        template <typename U>
-        using is_ostreamable_t = typename is_ostreamable<U>::type;
-        template <typename U>
-        static constexpr bool is_ostreamable_v = is_ostreamable_t<U>::value;
-
-        template<typename U, typename = void>
-        struct is_istreamable: std::false_type {};
-        template<typename U>
-        struct is_istreamable<U, std::void_t<decltype(std::declval<std::istream&>()>>std::declval<U&>())>> : std::true_type {};
-        template <typename U>
-        using is_istreamable_t = typename is_istreamable<U>::type;
-        template <typename U>
-        static constexpr bool is_istreamable_v = is_istreamable_t<U>::value;
-
         template <bool AssertNotDynamic = true>
         static std::shared_ptr<Descriptor<T>>& InitInstancePtr()
         {
