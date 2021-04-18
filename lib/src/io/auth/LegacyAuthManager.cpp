@@ -8,7 +8,6 @@ namespace dots::io
 {
     LegacyAuthManager::LegacyAuthManager(HostTransceiver& transceiver) :
         AuthManager(transceiver),
-        m_acceptLoopback(false),
         m_dotsAuthenticationSubscription{ transceiver.subscribe<DotsAuthentication>([this](const Event<DotsAuthentication>& e){ handleDotsAuthentication(e); }) },
         m_dotsAuthenticationPolicySubscription{ transceiver.subscribe<DotsAuthenticationPolicy>([this](const Event<DotsAuthenticationPolicy>& e){ handleDotsAuthenticationPolicy(e); }) }
     {
@@ -34,7 +33,7 @@ namespace dots::io
         }
         else
         {
-            if (m_defaultPolicy == true)
+            if (m_defaultAcceptPolicy == true)
             {
                 return std::nullopt;
             }
@@ -68,7 +67,7 @@ namespace dots::io
         }
         else
         {
-            return m_defaultPolicy.value_or(false);
+            return m_defaultAcceptPolicy.value_or(false);
         }
     }
 
@@ -79,7 +78,7 @@ namespace dots::io
 
     const std::optional<bool>& LegacyAuthManager::defaultPolicy() const
     {
-        return m_defaultPolicy;
+        return m_defaultAcceptPolicy;
     }
 
     bool LegacyAuthManager::verifyResponse(const boost::asio::ip::address& address, uint64_t authNonce, const DotsMsgConnect& msgConnect)
@@ -123,13 +122,7 @@ namespace dots::io
 
         if (!accept.has_value())
         {
-            accept = m_defaultPolicy;
-        }
-
-        if (m_acceptLoopback && address.is_loopback())
-        {
-            LOG_DEBUG_S("Accept loopback");
-            accept = true;
+            accept = m_defaultAcceptPolicy;
         }
 
         return accept.value_or(true);
@@ -137,32 +130,15 @@ namespace dots::io
 
     bool LegacyAuthManager::requiresAuthentication(const boost::asio::ip::address& address)
     {
-        auto authList = findMatchingRules(address, {});
-
-        std::optional<bool> requiresAuthentication;
-
-        if (!authList.empty())
+        for (const DotsAuthentication& authentication : findMatchingRules(address, {}))
         {
-            for (auto& auth : authList)
+            if (authentication.accept == true)
             {
-                if (auth.secret.isValid() && auth.accept.isValid())
-                {
-                    requiresAuthentication = true;
-                }
+                return authentication.secret.isValid();
             }
         }
 
-        if (m_acceptLoopback && address.is_loopback())
-        {
-            requiresAuthentication = false;
-        }
-
-        if (m_defaultPolicy.has_value() && !requiresAuthentication.has_value())
-        {
-            requiresAuthentication = m_defaultPolicy;
-        }
-
-        return requiresAuthentication.value_or(false);
+        return false;
     }
 
     std::vector<DotsAuthentication> LegacyAuthManager::findMatchingRules(const boost::asio::ip::address& address, const std::string& clientName)
@@ -225,13 +201,13 @@ namespace dots::io
     {
         if (const DotsAuthenticationPolicy& policy = e(); e.isRemove())
         {
-            m_defaultPolicy.reset();
+            m_defaultAcceptPolicy.reset();
         }
         else
         {
             if (policy.accept.isValid())
             {
-                m_defaultPolicy = policy.accept;
+                m_defaultAcceptPolicy = policy.accept;
             }
         }
     }

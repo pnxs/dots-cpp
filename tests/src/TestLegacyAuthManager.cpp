@@ -294,25 +294,66 @@ TEST_F(TestLegacyAuthManager, testCheckAuthenticationDefault)
     }
 }
 
-TEST_F(TestLegacyAuthManager, testNeedAuthentication)
+TEST_F(TestLegacyAuthManager, requiresAuthentication)
 {
     EXPECT_FALSE(m_sut.requiresAuthentication(boost::asio::ip::address::from_string("127.0.0.1")));
+    EXPECT_FALSE(m_sut.requiresAuthentication(boost::asio::ip::address::from_string("10.60.61.3")));
+    EXPECT_FALSE(m_sut.requiresAuthentication(boost::asio::ip::address::from_string("10.60.61.4")));
+    EXPECT_FALSE(m_sut.requiresAuthentication(boost::asio::ip::address::from_string("192.168.0.42")));
 
-    {
-        DotsAuthentication a{ DotsAuthentication::nameSpace_i{ "" }, DotsAuthentication::network_i{ DotsNetwork::network_i{ "192.168.1.2" }, DotsNetwork::prefix_i{ 24 } }, DotsAuthentication::clientName_i{ "" }, DotsAuthentication::priority_i{ 20 } };
-        a.accept(true);
-        a.secret("lan");
-        m_transceiver.publish(a);
-    }
+    m_transceiver.publish(DotsAuthentication{
+        DotsAuthentication::nameSpace_i{ "" },
+        DotsAuthentication::network_i{
+            DotsNetwork::network_i{ "127.0.0.1" },
+            DotsNetwork::prefix_i{ 8 }
+        },
+        DotsAuthentication::clientName_i{ "" },
+        DotsAuthentication::priority_i{ 10 },
+        DotsAuthentication::accept_i{ true }
+    });
+
+    m_transceiver.publish(DotsAuthentication{
+        DotsAuthentication::nameSpace_i{ "" },
+        DotsAuthentication::network_i{
+            DotsNetwork::network_i{ "10.60.61.0" },
+            DotsNetwork::prefix_i{ 30 }
+        },
+        DotsAuthentication::clientName_i{ "" },
+        DotsAuthentication::priority_i{ 20 },
+        DotsAuthentication::accept_i{ true }
+    });
+
+    m_transceiver.publish(DotsAuthentication{
+        DotsAuthentication::nameSpace_i{ "" },
+        DotsAuthentication::network_i{
+            DotsNetwork::network_i{ "0.0.0.0" },
+            DotsNetwork::prefix_i{ 0 }
+        },
+        DotsAuthentication::clientName_i{ "" },
+        DotsAuthentication::priority_i{ 50 },
+        DotsAuthentication::secret_i{ "foo:bar" },
+        DotsAuthentication::accept_i{ true }
+    });
+
+    m_transceiver.publish(DotsAuthentication{
+        DotsAuthentication::nameSpace_i{ "" },
+        DotsAuthentication::network_i{
+            DotsNetwork::network_i{ "0.0.0.0" },
+            DotsNetwork::prefix_i{ 0 }
+        },
+        DotsAuthentication::clientName_i{ "" },
+        DotsAuthentication::priority_i{ 51 },
+        DotsAuthentication::secret_i{ "baz:qux" },
+        DotsAuthentication::accept_i{ true }
+    });
+
+    m_transceiver.publish(DotsAuthenticationPolicy{
+        DotsAuthenticationPolicy::nameSpace_i{ "" },
+        DotsAuthenticationPolicy::accept_i{ false }
+    });
 
     EXPECT_FALSE(m_sut.requiresAuthentication(boost::asio::ip::address::from_string("127.0.0.1")));
-
-    {
-        DotsAuthentication a{ DotsAuthentication::nameSpace_i{ "" }, DotsAuthentication::network_i{ DotsNetwork::network_i{ "127.0.0.1" }, DotsNetwork::prefix_i{ 8 } }, DotsAuthentication::clientName_i{ "" }, DotsAuthentication::priority_i{ 10 } };
-        a.accept(true);
-        a.secret("localhost");
-        m_transceiver.publish(a);
-    }
-
-    EXPECT_TRUE(m_sut.requiresAuthentication(boost::asio::ip::address::from_string("127.0.0.1")));
+    EXPECT_FALSE(m_sut.requiresAuthentication(boost::asio::ip::address::from_string("10.60.61.3")));
+    EXPECT_TRUE(m_sut.requiresAuthentication(boost::asio::ip::address::from_string("10.60.61.4")));
+    EXPECT_TRUE(m_sut.requiresAuthentication(boost::asio::ip::address::from_string("192.168.0.42")));
 }
