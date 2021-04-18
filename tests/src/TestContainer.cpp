@@ -281,7 +281,7 @@ TEST(TestContainer, forEach_IterationYieldsExpectedInstances)
 
     auto itExpected = expected.begin();
 
-    sut.forEach([&](const DotsTestStruct& instance)
+    sut.forEach([&](auto& instance)
     {
         EXPECT_EQ(instance, *itExpected++);
     });
