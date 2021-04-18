@@ -69,7 +69,8 @@ namespace dots::type
 
         EnumeratorDescriptor(uint32_t tag, std::string name, enum_t value) :
             EnumeratorDescriptor<Typeless>(tag, std::move(name)),
-            m_value(std::move(value))
+            m_value(std::move(value)),
+            m_underlyingDescriptor(Descriptor<underlying_type_t>::InitInstance())
         {
             /* do nothing */
         }
@@ -82,12 +83,12 @@ namespace dots::type
 
         const Descriptor<underlying_type_t>& underlyingDescriptor() const override
         {
-            return Descriptor<underlying_type_t>::InitInstance();
+            return m_underlyingDescriptor;
         }
 
         Descriptor<underlying_type_t>& underlyingDescriptor() override
         {
-            return Descriptor<underlying_type_t>::InitInstance();
+            return m_underlyingDescriptor;;
         }
 
         const Typeless& valueTypeless() const override
@@ -103,6 +104,7 @@ namespace dots::type
     private:
 
         enum_t m_value;
+        std::reference_wrapper<Descriptor<underlying_type_t>> m_underlyingDescriptor;
     };
 
     template <typename E = Typeless, bool UseStaticDescriptorOperations = false, typename = void>
@@ -239,7 +241,8 @@ namespace dots::type
 
         EnumDescriptor(key_t key, std::string name, std::vector<EnumeratorDescriptor<E>> enumeratorDescriptors) :
             StaticDescriptor<E, EnumDescriptor<Typeless>, UseStaticDescriptorOperations>(key, std::move(name), sizeof(underlying_type_t), alignof(underlying_type_t)),
-            m_enumerators{ std::move(enumeratorDescriptors) }
+            m_enumerators{ std::move(enumeratorDescriptors) },
+            m_underlyingDescriptor(Descriptor<underlying_type_t>::InitInstance())
         {
             for (EnumeratorDescriptor<>& enumerator : m_enumerators)
             {
@@ -255,12 +258,12 @@ namespace dots::type
 
         const Descriptor<underlying_type_t>& underlyingDescriptor() const override
         {
-            return Descriptor<underlying_type_t>::InitInstance();
+            return m_underlyingDescriptor;
         }
 
         Descriptor<underlying_type_t>& underlyingDescriptor() override
         {
-            return Descriptor<underlying_type_t>::InitInstance();
+            return m_underlyingDescriptor;
         }
 
         const std::vector<EnumDescriptor<>::enumerator_ref_t>& enumeratorsTypeless() const override
@@ -327,6 +330,7 @@ namespace dots::type
 
         std::vector<EnumeratorDescriptor<E>> m_enumerators;
         std::vector<EnumDescriptor<>::enumerator_ref_t> m_enumeratorsTypeless;
+        std::reference_wrapper<Descriptor<underlying_type_t>> m_underlyingDescriptor;
     };
 
     template <typename TDescriptor>

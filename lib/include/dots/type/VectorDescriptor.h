@@ -34,8 +34,8 @@ namespace dots::type
 
         template <bool IsDynamic = !IsDynamic, std::enable_if_t<IsDynamic, int> = 0>
         Descriptor(key_t key) :
-            StaticDescriptor<Vector<T>, Descriptor<Vector<Typeless>>>(key, "vector<" + valueDescriptor().name() + ">", valueDescriptor(), sizeof(Vector<T>), alignof(Vector<T>)),
-            m_valueDescriptorOverride(nullptr)
+            StaticDescriptor<Vector<T>, Descriptor<Vector<Typeless>>>(key, "vector<" + Descriptor<T>::InitInstance().name() + ">", Descriptor<T>::InitInstance(), sizeof(Vector<T>), alignof(Vector<T>)),
+            m_valueDescriptor(Descriptor<T>::InitInstance().shared_from_this())
         {
             /* do nothing */
         }
@@ -43,7 +43,7 @@ namespace dots::type
         template <bool IsDynamic = IsDynamic, std::enable_if_t<IsDynamic, int> = 0>
         Descriptor(key_t key, Descriptor<T>& valueDescriptorOverride, bool checkSize = true) :
             StaticDescriptor<Vector<T>, Descriptor<Vector<Typeless>>>(key, "vector<" + valueDescriptorOverride.name() + ">", valueDescriptorOverride, sizeof(Vector<T>), alignof(Vector<T>)),
-            m_valueDescriptorOverride(valueDescriptorOverride.shared_from_this())
+            m_valueDescriptor(valueDescriptorOverride.shared_from_this())
         {
             if (checkSize && (valueDescriptorOverride.size() != sizeof(T) || valueDescriptorOverride.alignment() != alignof(T)))
             {
@@ -109,14 +109,7 @@ namespace dots::type
 
         const Descriptor<T>& valueDescriptor() const
         {
-            if constexpr (IsDynamic)
-            {
-                return *m_valueDescriptorOverride;
-            }
-            else
-            {
-                return Descriptor<T>::InitInstance();
-            }
+            return *m_valueDescriptor;
         }
 
         Descriptor<T>& valueDescriptor()
@@ -126,7 +119,7 @@ namespace dots::type
 
     private:
 
-        std::shared_ptr<Descriptor<T>> m_valueDescriptorOverride;
+        std::shared_ptr<Descriptor<T>> m_valueDescriptor;
     };
 
     template <typename TDescriptor>

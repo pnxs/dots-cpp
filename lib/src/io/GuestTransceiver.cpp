@@ -9,7 +9,7 @@ namespace dots::io
     GuestTransceiver::GuestTransceiver(std::string selfName, boost::asio::io_context& ioContext/* = global_io_context()*/, bool staticUserTypes/* = true*/) :
         Transceiver(std::move(selfName), ioContext, staticUserTypes)
     {
-        type::Descriptor<DotsCacheInfo>::InitInstance();
+        type::Descriptor<DotsCacheInfo>::Instance();
     }
 
     const io::Connection& GuestTransceiver::open(type::DescriptorMap preloadPublishTypes, type::DescriptorMap preloadSubscribeTypes, std::optional<std::string> authSecret, channel_ptr_t channel)

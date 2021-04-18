@@ -67,7 +67,7 @@ namespace dots::type
             using descriptor_t = Descriptor<U>;
             static_assert(!is_dynamic_descriptor_v<descriptor_t>);
 
-            return &descriptor_t::InitInstance() == &derivedDescriptor().valueDescriptor();
+            return &descriptor_t::Instance() == &derivedDescriptor().valueDescriptor();
         }
 
         template <typename U>
@@ -92,7 +92,7 @@ namespace dots::type
             {
                 if (!is<U>())
                 {
-                    throw std::logic_error{ std::string{ "type mismatch in safe ProxyProperty conversion: expected '" } + derivedDescriptor().valueDescriptor().name() + "' but got '" + descriptor_t::InitInstance().name() + "'" };
+                    throw std::logic_error{ std::string{ "type mismatch in safe ProxyProperty conversion: expected '" } + derivedDescriptor().valueDescriptor().name() + "' but got '" + descriptor_t::Instance().name() + "'" };
                 }
             }
 
