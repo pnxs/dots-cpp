@@ -130,27 +130,15 @@ namespace dots::io
 
     bool LegacyAuthManager::requiresAuthentication(const boost::asio::ip::address& address)
     {
-        auto authList = findMatchingRules(address, {});
-
-        std::optional<bool> requiresAuthentication;
-
-        if (!authList.empty())
+        for (const DotsAuthentication& authentication : findMatchingRules(address, {}))
         {
-            for (auto& auth : authList)
+            if (authentication.accept == true)
             {
-                if (auth.secret.isValid() && auth.accept.isValid())
-                {
-                    requiresAuthentication = true;
-                }
+                return authentication.secret.isValid();
             }
         }
 
-        if (m_defaultPolicy.has_value() && !requiresAuthentication.has_value())
-        {
-            requiresAuthentication = m_defaultPolicy;
-        }
-
-        return requiresAuthentication.value_or(false);
+        return m_defaultPolicy.has_value() ? !*m_defaultPolicy : false;
     }
 
     std::vector<DotsAuthentication> LegacyAuthManager::findMatchingRules(const boost::asio::ip::address& address, const std::string& clientName)
