@@ -120,7 +120,6 @@ target_compile_options(${TARGET_NAME}
 )
 target_compile_definitions(${TARGET_NAME}
     PUBLIC
-        BOOST_ASIO_DISABLE_EPOLL
         # suppress warning for usage of deprecated Win32 socket functions in Boost
         $<$<PLATFORM_ID:Windows>:_WINSOCK_DEPRECATED_NO_WARNINGS>
         # use constexpr property offsets on supported compilers
