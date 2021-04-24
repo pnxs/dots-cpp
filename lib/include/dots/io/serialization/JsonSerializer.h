@@ -23,6 +23,20 @@ namespace dots::io
         static constexpr std::string_view TupleElementSeperator = ",";
         static constexpr std::string_view TupleEnd = "]";
 
+        static constexpr std::string_view StringDelimiter = "\"";
+        static constexpr std::string_view StringEscape = "\\";
+
+        static constexpr std::array<string_escape_mapping, 8> StringEscapeMapping{
+            string_escape_mapping{ "\"", "\\\"" },
+            string_escape_mapping{ "\\", "\\\\" },
+            string_escape_mapping{ "/", "\\/" },
+            string_escape_mapping{ "\b", "\\b" },
+            string_escape_mapping{ "\f", "\\f" },
+            string_escape_mapping{ "\n", "\\n" },
+            string_escape_mapping{ "\r", "\\r" },
+            string_escape_mapping{ "\t", "\\t" }
+        };
+
         static constexpr bool UserTypeNames = false;
 
         static constexpr bool NumericPropertySets = true;

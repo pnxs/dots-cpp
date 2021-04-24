@@ -65,7 +65,12 @@ TEST_F(TestJsonSerializer, serialize_TypedArgument)
     EXPECT_EQ(dots::io::to_json(Duration2), data_t(JSON_DURATION_2));
 
     EXPECT_EQ(dots::io::to_json(Uuid1), data_t(JSON_UUID_1));
+
     EXPECT_EQ(dots::io::to_json(String1), data_t(JSON_STRING_1));
+    EXPECT_EQ(dots::io::to_json(String2), data_t(JSON_STRING_2));
+    EXPECT_EQ(dots::io::to_json(String3), data_t(JSON_STRING_3));
+    EXPECT_EQ(dots::io::to_json(String4), data_t(JSON_STRING_4));
+    EXPECT_EQ(dots::io::to_json(String5), data_t(JSON_STRING_5));
 
     EXPECT_EQ(dots::io::to_json(SerializationEnum1), data_t(JSON_TEST_ENUM_1));
 }
@@ -126,7 +131,12 @@ TEST_F(TestJsonSerializer, deserialize_TypedArgument)
     EXPECT_EQ(dots::io::from_json<dots::duration_t>(data_t(JSON_DURATION_2)), Duration2);
 
     EXPECT_EQ(dots::io::from_json<dots::uuid_t>(data_t(JSON_UUID_1)), Uuid1);
+
     EXPECT_EQ(dots::io::from_json<dots::string_t>(data_t(JSON_STRING_1)), String1);
+    EXPECT_EQ(dots::io::from_json<dots::string_t>(data_t(JSON_STRING_2)), String2);
+    EXPECT_EQ(dots::io::from_json<dots::string_t>(data_t(JSON_STRING_3)), String3);
+    EXPECT_EQ(dots::io::from_json<dots::string_t>(data_t(JSON_STRING_4)), String4);
+    EXPECT_EQ(dots::io::from_json<dots::string_t>(data_t(JSON_STRING_5)), String5);
 
     EXPECT_EQ(dots::io::from_json<SerializationEnum>(data_t(JSON_TEST_ENUM_1)), SerializationEnum1);
 }

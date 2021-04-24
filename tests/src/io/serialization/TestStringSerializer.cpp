@@ -65,7 +65,12 @@ TEST_F(TestStringSerializer, serialize_TypedArgument)
     EXPECT_EQ(dots::io::to_string(Duration2), data_t(STRING_DURATION_2));
 
     EXPECT_EQ(dots::io::to_string(Uuid1), data_t(STRING_UUID_1));
+
     EXPECT_EQ(dots::io::to_string(String1), data_t(STRING_STRING_1));
+    EXPECT_EQ(dots::io::to_string(String2), data_t(STRING_STRING_2));
+    EXPECT_EQ(dots::io::to_string(String3), data_t(STRING_STRING_3));
+    EXPECT_EQ(dots::io::to_string(String4), data_t(STRING_STRING_4));
+    EXPECT_EQ(dots::io::to_string(String5), data_t(STRING_STRING_5));
 
     EXPECT_EQ(dots::io::to_string(SerializationEnum1), data_t(STRING_TEST_ENUM_1));
 }
@@ -126,7 +131,12 @@ TEST_F(TestStringSerializer, deserialize_TypedArgument)
     EXPECT_EQ(dots::io::from_string<dots::duration_t>(data_t(STRING_DURATION_2)), Duration2);
 
     EXPECT_EQ(dots::io::from_string<dots::uuid_t>(data_t(STRING_UUID_1)), Uuid1);
+
     EXPECT_EQ(dots::io::from_string<dots::string_t>(data_t(STRING_STRING_1)), String1);
+    EXPECT_EQ(dots::io::from_string<dots::string_t>(data_t(STRING_STRING_2)), String2);
+    EXPECT_EQ(dots::io::from_string<dots::string_t>(data_t(STRING_STRING_3)), String3);
+    EXPECT_EQ(dots::io::from_string<dots::string_t>(data_t(STRING_STRING_4)), String4);
+    EXPECT_EQ(dots::io::from_string<dots::string_t>(data_t(STRING_STRING_5)), String5);
 
     EXPECT_EQ(dots::io::from_string<SerializationEnum>(data_t(STRING_TEST_ENUM_1)), SerializationEnum1);
 }

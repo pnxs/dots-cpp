@@ -25,6 +25,25 @@ namespace dots::io
         static constexpr std::string_view TupleElementSeperator = ",";
         static constexpr std::string_view TupleEnd = "}";
 
+        static constexpr std::string_view StringDelimiter = "\"";
+        static constexpr std::string_view StringEscape = "\\";
+
+        struct string_escape_mapping
+        {
+            std::string_view from;
+            std::string_view to;
+        };
+        static constexpr std::array<string_escape_mapping, 8> StringEscapeMapping{
+            string_escape_mapping{ "\"", "\\\"" },
+            string_escape_mapping{ "\\", "\\\\" },
+            string_escape_mapping{ "/", "\\/" },
+            string_escape_mapping{ "\b", "\\b" },
+            string_escape_mapping{ "\f", "\\f" },
+            string_escape_mapping{ "\n", "\\n" },
+            string_escape_mapping{ "\r", "\\r" },
+            string_escape_mapping{ "\t", "\\t" }
+        };
+
         static constexpr bool UserTypeNames = true;
 
         static constexpr bool NumericBooleans = false;
@@ -353,7 +372,7 @@ namespace dots::io
                 }
                 else
                 {
-                    writeEnclosed(value.toString(), "\"");
+                    writeEnclosed(value.toString(), traits_t::StringDelimiter);
                 }
             }
             else if constexpr (std::is_same_v<T, steady_timepoint_t>)
@@ -366,11 +385,11 @@ namespace dots::io
             }
             else if constexpr (std::is_same_v<T, uuid_t>)
             {
-                writeEnclosed(value.toString(), "\"");
+                writeEnclosed(value.toString(), traits_t::StringDelimiter);
             }
             else if constexpr (std::is_same_v<T, string_t>)
             {
-                writeEnclosed(value, "\"");
+                writeEscaped(value);
             }
             else
             {
@@ -524,7 +543,7 @@ namespace dots::io
             }
             else if constexpr (std::is_same_v<T, string_t>)
             {
-                value = read<string_t>();
+                value = readEscapedToken();
             }
             else
             {
@@ -600,6 +619,37 @@ namespace dots::io
         void writeEnclosed(const std::string& str, std::string_view outfix)
         {
             write(outfix, str, outfix);
+        }
+
+        void writeEscaped(const std::string& str)
+        {
+            write(traits_t::StringDelimiter);
+
+            {
+                std::string_view strRemaining = str;
+
+                while (!strRemaining.empty())
+                {
+                    auto it = std::find_if(traits_t::StringEscapeMapping.begin(), traits_t::StringEscapeMapping.end(), [&strRemaining](const auto& escapeMapping)
+                    {
+                        return StartsWith(strRemaining, escapeMapping.from);
+                    });
+
+                    if (it == traits_t::StringEscapeMapping.end())
+                    {
+                        output() += strRemaining.front();
+                        strRemaining.remove_prefix(1);
+                    }
+                    else
+                    {
+                        const auto& [from, to] = *it;
+                        output() += to;
+                        strRemaining.remove_prefix(from.size());
+                    }
+                }
+            }
+
+            write(traits_t::StringDelimiter);
         }
 
         template <typename... Ts, std::enable_if_t<std::is_constructible_v<std::string>, int> = 0>
@@ -764,6 +814,41 @@ namespace dots::io
             return readDelimitedToken(endDelimiter == std::nullopt ? beginDelimiter : *endDelimiter);
         }
 
+        std::string readEscapedToken()
+        {
+            readToken(traits_t::StringDelimiter);
+            std::string token;
+
+            while (!m_input.empty())
+            {
+                if (tryReadToken(traits_t::StringDelimiter))
+                {
+                    return token;
+                }
+                else if (StartsWith(m_input, traits_t::StringEscape))
+                {
+                    auto it = std::find_if(traits_t::StringEscapeMapping.begin(), traits_t::StringEscapeMapping.end(), [this](const auto& escapeMapping)
+                    {
+                        return StartsWith(m_input, escapeMapping.to);
+                    });
+
+                    if (it != traits_t::StringEscapeMapping.end())
+                    {
+                        const auto& [from, to] = *it;
+                        token += from;
+                        m_input.remove_prefix(to.size());
+                    }
+                }
+                else
+                {
+                    token += m_input.front();
+                    m_input.remove_prefix(1);
+                }
+            }
+
+            throw makeTokenError(traits_t::StringDelimiter);
+        }
+
         std::string_view readIdentifier()
         {
             static /*constexpr */std::vector<bool> IdentifierSymbols = []()
@@ -903,7 +988,7 @@ namespace dots::io
 
         void read(std::string& value)
         {
-            value = readEnclosedToken("\"");
+            value = readEnclosedToken(traits_t::StringDelimiter);
         }
 
 
