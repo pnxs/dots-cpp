@@ -3,6 +3,7 @@
 #include <stack>
 #include <vector>
 #include <dots/io/serialization/SerializerBase.h>
+#include <dots/tools/string_tools.h>
 
 namespace dots::io
 {
@@ -632,7 +633,7 @@ namespace dots::io
                 {
                     auto it = std::find_if(traits_t::StringEscapeMapping.begin(), traits_t::StringEscapeMapping.end(), [&strRemaining](const auto& escapeMapping)
                     {
-                        return StartsWith(strRemaining, escapeMapping.from);
+                        return tools::starts_with(strRemaining, escapeMapping.from);
                     });
 
                     if (it == traits_t::StringEscapeMapping.end())
@@ -736,7 +737,7 @@ namespace dots::io
 
         bool tryReadToken(std::string_view token)
         {
-            if (StartsWith(m_input, token))
+            if (tools::starts_with(m_input, token))
             {
                 m_input.remove_prefix(token.size());
                 return true;
@@ -785,7 +786,7 @@ namespace dots::io
             {
                 for (std::string_view delimiter : delimiters)
                 {
-                    if (StartsWith(tokenInput, delimiter))
+                    if (tools::starts_with(tokenInput, delimiter))
                     {
                         std::string_view token = m_input.substr(0, static_cast<size_t>(tokenInput.data() - m_input.data()));
                         tokenInput.remove_prefix(delimiter.size());
@@ -825,11 +826,11 @@ namespace dots::io
                 {
                     return token;
                 }
-                else if (StartsWith(m_input, traits_t::StringEscape))
+                else if (tools::starts_with(m_input, traits_t::StringEscape))
                 {
                     auto it = std::find_if(traits_t::StringEscapeMapping.begin(), traits_t::StringEscapeMapping.end(), [this](const auto& escapeMapping)
                     {
-                        return StartsWith(m_input, escapeMapping.to);
+                        return tools::starts_with(m_input, escapeMapping.to);
                     });
 
                     if (it != traits_t::StringEscapeMapping.end())
@@ -1019,18 +1020,6 @@ namespace dots::io
         std::runtime_error makeTokenError(std::string_view expected)
         {
             return makeTokenError(std::array{ expected });
-        }
-
-        static bool StartsWith(std::string_view str, std::string_view prefix)
-        {
-            if (str.size() < prefix.size())
-            {
-                return false;
-            }
-            else
-            {
-                return std::mismatch(std::begin(prefix), std::end(prefix), std::begin(str)).first == std::end(prefix);
-            }
         }
 
         tuple_info_t m_outputTupleInfo;
