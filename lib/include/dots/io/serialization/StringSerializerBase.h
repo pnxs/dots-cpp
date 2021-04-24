@@ -120,7 +120,7 @@ namespace dots::io
         {
             m_inputTupleInfo.push(false);
             serializer_base_t::template visitBeginDerived<false>();
-            readToken(traits_t::TupleBegin);
+            readTokenAfterWhitespace(traits_t::TupleBegin);
             inputData() = m_input.data();
 
             return lastDeserializeSize();
@@ -136,7 +136,7 @@ namespace dots::io
             m_inputTupleInfo.pop();
 
             serializer_base_t::template visitBeginDerived<false>();
-            readToken(traits_t::TupleEnd);
+            readTokenAfterWhitespace(traits_t::TupleEnd);
             inputData() = m_input.data();
 
             return lastDeserializeSize();
@@ -187,7 +187,7 @@ namespace dots::io
             {
                 if (!m_inputTupleInfo.empty() && m_inputTupleInfo.top())
                 {
-                    readToken(traits_t::TupleElementSeperator);
+                    readTokenAfterWhitespace(traits_t::TupleElementSeperator);
                 }
             }
         }
@@ -410,22 +410,22 @@ namespace dots::io
 
             if constexpr (traits_t::UserTypeNames)
             {
-                readToken(descriptor.name());
+                readTokenAfterWhitespace(descriptor.name());
             }
 
-            readToken(traits_t::StructBegin);
+            readTokenAfterWhitespace(traits_t::StructBegin);
 
             for (;;)
             {
-                readToken(traits_t::PropertyNameBegin);
+                readTokenAfterWhitespace(traits_t::PropertyNameBegin);
                 std::string_view propertyName = readIdentifier();
 
                 if constexpr (!traits_t::PropertyNameEnd.empty())
                 {
-                    readToken(traits_t::PropertyNameEnd);
+                    readTokenAfterWhitespace(traits_t::PropertyNameEnd);
                 }
 
-                readToken(traits_t::PropertyValueBegin);
+                readTokenAfterWhitespace(traits_t::PropertyValueBegin);
 
                 if (auto it = std::find_if(propertyDescriptors.begin(), propertyDescriptors.end(), [propertyName](const auto& p) { return p.name() == propertyName; }); it != propertyDescriptors.end())
                 {
@@ -434,7 +434,7 @@ namespace dots::io
                     visit(property);
                 }
 
-                if (readAnyToken(std::array{ traits_t::PropertyValueEnd, traits_t::StructEnd }) == traits_t::StructEnd)
+                if (readAnyTokenAfterWhitespace(std::array{ traits_t::PropertyValueEnd, traits_t::StructEnd }) == traits_t::StructEnd)
                 {
                     break;
                 }
@@ -461,7 +461,7 @@ namespace dots::io
         template <typename T>
         bool visitVectorBeginDerived(vector_t<T>& vector, const type::Descriptor<vector_t<T>>& descriptor)
         {
-            readToken(traits_t::VectorBegin);
+            readTokenAfterWhitespace(traits_t::VectorBegin);
 
             for (;;)
             {
@@ -484,7 +484,7 @@ namespace dots::io
                     }
                 }
 
-                if (readAnyToken(std::array{ traits_t::VectorValueSeparator, traits_t::VectorEnd }) == traits_t::VectorEnd)
+                if (readAnyTokenAfterWhitespace(std::array{ traits_t::VectorValueSeparator, traits_t::VectorEnd }) == traits_t::VectorEnd)
                 {
                     break;
                 }
@@ -504,8 +504,8 @@ namespace dots::io
             {
                 if constexpr (traits_t::UserTypeNames)
                 {
-                    readToken(descriptor.name());
-                    readToken("::");
+                    readTokenAfterWhitespace(descriptor.name());
+                    readTokenAfterWhitespace("::");
                 }
 
                 descriptor.construct(value, descriptor.enumeratorFromName(readIdentifier()).value());
@@ -756,10 +756,16 @@ namespace dots::io
 
         void readToken(std::string_view token)
         {
-            if (!tryReadTokenAfterWhitespace(token))
+            if (!tryReadToken(token))
             {
                 throw makeTokenError(token);
             }
+        }
+
+        void readTokenAfterWhitespace(std::string_view token)
+        {
+            readWhitespace();
+            readToken(token);
         }
 
         template <size_t N>
@@ -767,13 +773,20 @@ namespace dots::io
         {
             for (std::string_view token : tokens)
             {
-                if (tryReadTokenAfterWhitespace(token))
+                if (tryReadToken(token))
                 {
                     return token;
                 }
             }
 
             throw makeTokenError(tokens);
+        }
+
+        template <size_t N>
+        std::string_view readAnyTokenAfterWhitespace(std::array<std::string_view, N> tokens)
+        {
+            readWhitespace();
+            return readAnyToken(tokens);
         }
 
         template <size_t N>
@@ -810,14 +823,14 @@ namespace dots::io
         std::string_view readEnclosedToken(std::string_view beginDelimiter, std::optional<std::string_view> endDelimiter = std::nullopt)
         {
             readWhitespace();
-            readToken(beginDelimiter);
+            readTokenAfterWhitespace(beginDelimiter);
 
             return readDelimitedToken(endDelimiter == std::nullopt ? beginDelimiter : *endDelimiter);
         }
 
         std::string readEscapedToken()
         {
-            readToken(traits_t::StringDelimiter);
+            readTokenAfterWhitespace(traits_t::StringDelimiter);
             std::string token;
 
             while (!m_input.empty())
