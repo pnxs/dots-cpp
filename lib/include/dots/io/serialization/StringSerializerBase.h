@@ -428,7 +428,7 @@ namespace dots::io
         {
             if constexpr (!traits_t::PropertyInvalidValue.empty())
             {
-                if (tryReadToken(traits_t::PropertyInvalidValue))
+                if (tryReadTokenAfterWhitespace(traits_t::PropertyInvalidValue))
                 {
                     return false;
                 }
@@ -686,8 +686,6 @@ namespace dots::io
 
         bool tryReadToken(std::string_view token)
         {
-            readWhitespace();
-
             if (StartsWith(m_input, token))
             {
                 m_input.remove_prefix(token.size());
@@ -699,9 +697,15 @@ namespace dots::io
             }
         }
 
+        bool tryReadTokenAfterWhitespace(std::string_view token)
+        {
+            readWhitespace();
+            return tryReadToken(token);
+        }
+
         void readToken(std::string_view token)
         {
-            if (!tryReadToken(token))
+            if (!tryReadTokenAfterWhitespace(token))
             {
                 throw makeTokenError(token);
             }
@@ -712,7 +716,7 @@ namespace dots::io
         {
             for (std::string_view token : tokens)
             {
-                if (tryReadToken(token))
+                if (tryReadTokenAfterWhitespace(token))
                 {
                     return token;
                 }
@@ -794,12 +798,12 @@ namespace dots::io
         {
             if constexpr (traits_t::NumericBooleans)
             {
-                if (tryReadToken("1"))
+                if (tryReadTokenAfterWhitespace("1"))
                 {
                     value = true;
                     return;
                 }
-                else if (tryReadToken("0"))
+                else if (tryReadTokenAfterWhitespace("0"))
                 {
                     value = false;
                     return;
@@ -807,12 +811,12 @@ namespace dots::io
             }
             else
             {
-                if (tryReadToken("true"))
+                if (tryReadTokenAfterWhitespace("true"))
                 {
                     value = true;
                     return;
                 }
-                else if (tryReadToken("false"))
+                else if (tryReadTokenAfterWhitespace("false"))
                 {
                     value = false;
                     return;
@@ -829,11 +833,11 @@ namespace dots::io
 
             if constexpr (traits_t::IntegerBasePrefixes)
             {
-                if (tryReadToken("0b"))
+                if (tryReadTokenAfterWhitespace("0b"))
                 {
                     base = 2;
                 }
-                else if (tryReadToken("0x"))
+                else if (tryReadTokenAfterWhitespace("0x"))
                 {
                     base = 16;
                 }
@@ -893,7 +897,7 @@ namespace dots::io
 
             if constexpr (traits_t::FloatSizeSuffix && std::is_same_v<T, float>)
             {
-                tryReadToken("f");
+                tryReadTokenAfterWhitespace("f");
             }
         }
 
