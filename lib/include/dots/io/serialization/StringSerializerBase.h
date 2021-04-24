@@ -617,9 +617,9 @@ namespace dots::io
             write(suffix);
         }
 
-        void writeEnclosed(const std::string& str, std::string_view outfix)
+        void writeEnclosed(const std::string& str, std::string_view delimiter)
         {
-            write(outfix, str, outfix);
+            write(delimiter, str, delimiter);
         }
 
         void writeEscaped(const std::string& str)
