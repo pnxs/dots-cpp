@@ -505,7 +505,7 @@ namespace dots::io
                 if constexpr (traits_t::UserTypeNames)
                 {
                     readTokenAfterWhitespace(descriptor.name());
-                    readTokenAfterWhitespace("::");
+                    readToken("::");
                 }
 
                 descriptor.construct(value, descriptor.enumeratorFromName(readIdentifier()).value());
@@ -997,7 +997,7 @@ namespace dots::io
 
             if constexpr (traits_t::FloatSizeSuffix && std::is_same_v<T, float>)
             {
-                tryReadTokenAfterWhitespace("f");
+                tryReadToken("f");
             }
         }
 
