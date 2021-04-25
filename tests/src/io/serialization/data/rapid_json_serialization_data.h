@@ -55,6 +55,11 @@
 #define RAPID_JSON_DURATION_2 "342.073"
 
 #define RAPID_JSON_UUID_1 "\"8c96148e-58bd-11eb-ae93-0242ac130002\""
+
 #define RAPID_JSON_STRING_1 "\"foobar\""
+#define RAPID_JSON_STRING_2 "\"\\\"foo\\\" bar baz\""
+#define RAPID_JSON_STRING_3 "\"foo \\\"bar\\\" baz\""
+#define RAPID_JSON_STRING_4 "\"foo bar \\\"baz\\\"\""
+#define RAPID_JSON_STRING_5 u8"\"foo\\\\ \u0062\u0061\u0072\u00A9\\n b\\\\az\""
 
 #define RAPID_JSON_TEST_ENUM_1 "5"

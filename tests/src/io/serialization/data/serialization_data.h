@@ -60,7 +60,12 @@ struct TestSerializationInput
     static constexpr dots::duration_t Duration2{ 5min + 42s + 73ms };
 
     inline static dots::uuid_t Uuid1{ dots::uuid_t::FromString("8c96148e-58bd-11eb-ae93-0242ac130002") };
+
     inline static dots::string_t String1{ "foobar" };
+    inline static dots::string_t String2{ "\"foo\" bar baz" };
+    inline static dots::string_t String3{ "foo \"bar\" baz" };
+    inline static dots::string_t String4{ "foo bar \"baz\"" };
+    inline static dots::string_t String5{ u8"foo\\ \u0062\u0061\u0072\u00A9\n b\\az" };
 
     inline static SerializationEnum SerializationEnum1{ SerializationEnum::baz };
 

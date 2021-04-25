@@ -55,6 +55,11 @@
 #define STRING_DURATION_2 "342.073"
 
 #define STRING_UUID_1 "\"8c96148e-58bd-11eb-ae93-0242ac130002\""
+
 #define STRING_STRING_1 "\"foobar\""
+#define STRING_STRING_2 "\"\\\"foo\\\" bar baz\""
+#define STRING_STRING_3 "\"foo \\\"bar\\\" baz\""
+#define STRING_STRING_4 "\"foo bar \\\"baz\\\"\""
+#define STRING_STRING_5 u8"\"foo\\\\ \u0062\u0061\u0072\u00A9\\n b\\\\az\""
 
 #define STRING_TEST_ENUM_1 "SerializationEnum::baz"
