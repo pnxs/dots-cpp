@@ -822,9 +822,7 @@ namespace dots::io
 
         std::string_view readEnclosedToken(std::string_view beginDelimiter, std::optional<std::string_view> endDelimiter = std::nullopt)
         {
-            readWhitespace();
             readTokenAfterWhitespace(beginDelimiter);
-
             return readDelimitedToken(endDelimiter == std::nullopt ? beginDelimiter : *endDelimiter);
         }
 
@@ -895,14 +893,16 @@ namespace dots::io
 
         void read(bool& value)
         {
+            readWhitespace();
+
             if constexpr (traits_t::NumericBooleans)
             {
-                if (tryReadTokenAfterWhitespace("1"))
+                if (tryReadToken("1"))
                 {
                     value = true;
                     return;
                 }
-                else if (tryReadTokenAfterWhitespace("0"))
+                else if (tryReadToken("0"))
                 {
                     value = false;
                     return;
@@ -910,12 +910,12 @@ namespace dots::io
             }
             else
             {
-                if (tryReadTokenAfterWhitespace("true"))
+                if (tryReadToken("true"))
                 {
                     value = true;
                     return;
                 }
-                else if (tryReadTokenAfterWhitespace("false"))
+                else if (tryReadToken("false"))
                 {
                     value = false;
                     return;
@@ -929,14 +929,15 @@ namespace dots::io
         void read(T& value)
         {
             int base = 10;
+            readWhitespace();
 
             if constexpr (traits_t::IntegerBasePrefixes)
             {
-                if (tryReadTokenAfterWhitespace("0b"))
+                if (tryReadToken("0b"))
                 {
                     base = 2;
                 }
-                else if (tryReadTokenAfterWhitespace("0x"))
+                else if (tryReadToken("0x"))
                 {
                     base = 16;
                 }
