@@ -21,6 +21,8 @@ namespace dots::io
 
     Subscription& Subscription::operator = (Subscription&& rhs) noexcept
     {
+        unsubscribe();
+
         m_handler = std::move(rhs.m_handler);
         rhs.m_handler = nullptr;
 
