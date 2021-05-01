@@ -1,7 +1,7 @@
 #include <sstream>
 #include <dots/type/EnumDescriptor.h>
 #include <dots/type/FundamentalTypes.h>
-#include <gtest/gtest.h>
+#include <dots/testing/gtest/gtest.h>
 
 namespace dots::types
 {

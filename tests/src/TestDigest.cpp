@@ -1,4 +1,4 @@
-#include <gtest/gtest.h>
+#include <dots/testing/gtest/gtest.h>
 #include <dots/io/auth/Digest.h>
 
 TEST(TestDigest, stringHashValue1)

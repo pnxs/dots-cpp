@@ -1,4 +1,4 @@
-#include <gtest/gtest.h>
+#include <dots/testing/gtest/gtest.h>
 #include <dots/io/serialization/JsonSerializer.h>
 #include <io/serialization/data/json_serialization_data.h>
 

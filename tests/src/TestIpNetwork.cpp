@@ -1,4 +1,4 @@
-#include <gtest/gtest.h>
+#include <dots/testing/gtest/gtest.h>
 #include <vector>
 #include <dots/tools/IpNetwork.h>
 

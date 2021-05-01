@@ -5,7 +5,7 @@
 #include <dots/type/FundamentalTypes.h>
 #include <dots/type/PropertyInitializer.h>
 #include <StructDescriptorData.dots.h>
-#include <gtest/gtest.h>
+#include <dots/testing/gtest/gtest.h>
 
 using namespace dots::type;
 using namespace dots::types;
