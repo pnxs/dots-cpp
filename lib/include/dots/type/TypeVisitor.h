@@ -70,7 +70,7 @@ namespace dots::type
             visitEnd<false>();
         }
 
-        template <typename... Ts, std::enable_if_t<std::conjunction_v<std::negation<is_property_t<Ts>>...>, int> = 0>
+        template <typename... Ts, std::enable_if_t<std::conjunction_v<std::negation<is_property<Ts>>...>, int> = 0>
         void visit(const Ts&... values)
         {
             visitBegin<true>();
@@ -78,7 +78,7 @@ namespace dots::type
             visitEnd<true>();
         }
 
-        template <typename... Ts, std::enable_if_t<std::conjunction_v<std::negation<std::is_const<Ts>>..., std::negation<is_property_t<Ts>>...>, int> = 0>
+        template <typename... Ts, std::enable_if_t<std::conjunction_v<std::negation<std::is_const<Ts>>..., std::negation<is_property<Ts>>...>, int> = 0>
         void visit(Ts&... values)
         {
             visitBegin<false>();
