@@ -56,12 +56,12 @@ namespace dots::testing
 
         void DescribeTo(std::ostream* os) const
         {
-            *os << io::to_string(m_expected, m_expected._validProperties());
+            *os << io::to_string(m_expected, m_includedProperties);
         }
 
         void DescribeNegationTo(std::ostream* os) const
         {
-            *os << io::to_string(m_expected, ~m_expected._validProperties());
+            *os << io::to_string(m_expected, ~m_includedProperties);
         }
 
     private:
