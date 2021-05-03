@@ -361,9 +361,9 @@ namespace dots::type
             return M_descriptor;
         }
 
-        static PropertySet _KeyProperties()
+        static constexpr PropertySet _KeyProperties()
         {
-            static PropertySet KeyProperties = std::apply([](auto&&... args)
+            constexpr PropertySet KeyProperties = std::apply([](auto&&... args)
             {
                 if constexpr (sizeof...(args) == 0)
                 {
@@ -378,9 +378,9 @@ namespace dots::type
             return KeyProperties;
         }
 
-        static PropertySet _Properties()
+        static constexpr PropertySet _Properties()
         {
-            static PropertySet Properties = std::apply([](auto&&... args)
+            constexpr PropertySet Properties = std::apply([](auto&&... args)
             {
                 if constexpr (sizeof...(args) == 0)
                 {
