@@ -1,4 +1,5 @@
 #undef DOTS_NO_GLOBAL_TRANSCEIVER
+#include <optional>
 #include <dots/dots.h>
 #include <dots/io/Io.h>
 #include <dots/io/services/TimerService.h>
@@ -8,6 +9,8 @@
 
 namespace dots
 {
+    inline std::optional<GuestTransceiver> GlobalTransceiver;
+
     Timer::id_t add_timer(const type::Duration& timeout, const std::function<void()>& handler, bool periodic/* = false*/)
     {
         return io::global_service<io::TimerService>().addTimer(timeout, handler, periodic);
@@ -30,10 +33,14 @@ namespace dots
     }
     #endif
 
-    GuestTransceiver& transceiver(const std::string_view& name/* = "dots-transceiver"*/)
+    GuestTransceiver& transceiver(const std::string_view& name/* = "dots-transceiver"*/, bool reset/* = false*/)
     {
-        static GuestTransceiver transceiver{ std::string{ name } };
-        return transceiver;
+        if (GlobalTransceiver == std::nullopt || reset)
+        {
+            GlobalTransceiver.emplace(std::string{ name });
+        }
+
+        return *GlobalTransceiver;
     }
 
     void publish(const type::Struct& instance, std::optional<types::property_set_t> includedProperties/* = std::nullopt*/, bool remove/* = false*/)

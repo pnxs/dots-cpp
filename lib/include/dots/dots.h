@@ -30,7 +30,7 @@ namespace dots
 
     #ifndef DOTS_NO_GLOBAL_TRANSCEIVER
 
-    GuestTransceiver& transceiver(const std::string_view& name = "dots-transceiver");
+    GuestTransceiver& transceiver(const std::string_view& name = "dots-transceiver", bool reset = false);
 
     void publish(const type::Struct& instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false);
     void remove(const type::Struct& instance);
