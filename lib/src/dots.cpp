@@ -1,4 +1,4 @@
-#undef DOTS_NO_GLOBAL_TRANSCEIVER 
+#undef DOTS_NO_GLOBAL_TRANSCEIVER
 #include <dots/dots.h>
 #include <dots/io/Io.h>
 #include <dots/io/services/TimerService.h>
@@ -30,27 +30,15 @@ namespace dots
     }
     #endif
 
-    Publisher*& publisher()
-    {
-        static Publisher* publisher = nullptr;
-        return publisher;
-    }
-
     GuestTransceiver& transceiver(const std::string_view& name/* = "dots-transceiver"*/)
     {
         static GuestTransceiver transceiver{ std::string{ name } };
-
-        if (Publisher*& p = publisher(); p == nullptr)
-        {
-            p = &transceiver;
-        }
-
         return transceiver;
     }
 
     void publish(const type::Struct& instance, std::optional<types::property_set_t> includedProperties/* = std::nullopt*/, bool remove/* = false*/)
     {
-        publisher()->publish(&instance._descriptor(), instance, includedProperties == std::nullopt ? instance._validProperties() : *includedProperties, remove);
+        transceiver().publish(instance, includedProperties == std::nullopt ? instance._validProperties() : *includedProperties, remove);
     }
 
     void remove(const type::Struct& instance)

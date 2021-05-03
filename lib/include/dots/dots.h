@@ -5,14 +5,12 @@
 #include <dots/type/Chrono.h>
 #include <dots/io/Timer.h>
 #include <dots/io/GuestTransceiver.h>
-#include <dots/io/Publisher.h>
 #include <dots/io/GlobalType.h>
 #include <dots/io/serialization/StringSerializer.h>
 
 namespace dots
 {
     using io::Timer;
-    using io::Publisher;
     using io::Transceiver;
     using io::GuestTransceiver;
     using io::Subscription;
@@ -32,7 +30,6 @@ namespace dots
 
     #ifndef DOTS_NO_GLOBAL_TRANSCEIVER
 
-    Publisher*& publisher();
     GuestTransceiver& transceiver(const std::string_view& name = "dots-transceiver");
 
     void publish(const type::Struct& instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false);
