@@ -12,7 +12,7 @@ namespace dots::type
             std::is_same<std::decay_t<T>, steady_timepoint_t>,
             std::is_same<std::decay_t<T>, duration_t>,
             is_property<std::decay_t<T>>,
-            has_enum_type<std::decay_t<T>>,
+            is_enum<std::decay_t<T>>,
             std::is_base_of<Struct, std::decay_t<T>>
         >;
     }
@@ -26,7 +26,7 @@ namespace dots::type
 
 namespace dots::types
 {
-    template <typename T, std::enable_if_t<type::has_enum_type_v<std::decay_t<T>>, int> = 0>
+    template <typename T, std::enable_if_t<type::is_enum_v<std::decay_t<T>>, int> = 0>
     std::ostream& operator << (std::ostream& os, T&& value)
     {
         return os << io::to_string(std::forward<T>(value));
