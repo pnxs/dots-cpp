@@ -346,7 +346,7 @@ namespace dots::type
 namespace dots::type
 {
     template <typename T>
-    struct is_enum : std::conditional_t<std::conjunction_v<std::is_enum<T>, has_descriptor_t<T>>, std::true_type, std::false_type> {};
+    struct is_enum : std::conjunction<std::is_enum<T>, has_descriptor_t<T>> {};
     template <typename T>
     using is_enum_t = typename is_enum<T>::type;
     template <typename T>
