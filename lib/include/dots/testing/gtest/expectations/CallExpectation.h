@@ -18,7 +18,7 @@ namespace dots::testing::details
     template <typename ExpectCallSignature, typename ExpectCall, typename ArgHead, typename... ArgTail>
     auto& expect_consecutive_call_sequence_recursive(ExpectCall expectCall, ArgHead&& argHead, ArgTail&&... argTail)
     {
-        auto& callExpectation = expectCall(std::forward<decltype(argHead)>(argHead)).RetiresOnSaturation();
+        auto& callExpectation = expectCall(std::forward<decltype(argHead)>(argHead));
 
         if constexpr (sizeof...(argTail) > 0)
         {
