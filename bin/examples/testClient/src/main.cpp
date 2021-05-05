@@ -40,9 +40,9 @@ private:
         dots::publish(ts);
 
         DotsTestVectorStruct tvs;
-        auto& intList = tvs.intList();
-        auto& stringList = tvs.stringList();
-        auto& ssList = tvs.subStructList();
+        auto& intList = tvs.intList.construct();
+        auto& stringList = tvs.stringList.construct();
+        auto& ssList = tvs.subStructList.construct();
 
         intList.push_back(1);
         stringList.push_back("Hallo");

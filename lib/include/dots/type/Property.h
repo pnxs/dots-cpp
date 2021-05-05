@@ -46,7 +46,7 @@ namespace dots::type
             return static_cast<Derived&>(*this);
         }
 
-        template <typename... Args>
+        template <typename... Args, std::enable_if_t<sizeof...(Args) >= 1, int> = 0>
         T& operator () (Args&&... args)
         {
             return construct(std::forward<Args>(args)...);
