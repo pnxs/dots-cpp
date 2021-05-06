@@ -79,7 +79,7 @@ namespace dots::testing
             if (m_globalGuest == nullptr)
             {
                 m_globalGuest = &transceiver("dots-global-guest", true);
-                m_globalGuest->open<io::LocalChannel>(m_localListener);
+                m_globalGuest->open<io::LocalChannel>(io::global_publish_types(), io::global_subscribe_types(), std::optional<std::string>{ std::nullopt }, m_localListener);
                 processEvents();
             }
 
