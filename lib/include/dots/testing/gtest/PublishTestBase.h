@@ -7,6 +7,7 @@
 #include <dots/io/HostTransceiver.h>
 #include <dots/io/channels/LocalListener.h>
 #include <dots/testing/gtest/expectations/PublishExpectation.h>
+#include <dots/tools/logging.h>
 
 namespace dots::testing
 {
@@ -21,6 +22,12 @@ namespace dots::testing
             m_localListener{ m_host.listen<dots::io::LocalListener>() }
         {
             PublishTestBase::ioContext().restart();
+
+            // disable verbose logging unless overriden by the user
+            if (::getenv("LOGGING_LEVEL") == nullptr)
+            {
+                tools::loggingFrontend().setLogLevel(tools::Level::warn);
+            }
 
             // note: global guest currently has to be always connected
             globalGuest();
