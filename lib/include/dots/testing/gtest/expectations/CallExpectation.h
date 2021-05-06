@@ -28,7 +28,6 @@ namespace dots::testing::details
             if constexpr (is_compatible_gtest_action_v<arg_tail_head_t, ExpectCallSignature>)
             {
                 return callExpectation.WillOnce(::testing::DoAll(
-                    std::forward<arg_tail_head_t>(std::get<0>(argTailTuple)),
                     [expectCall{ std::move(expectCall) }, argTailTuple{ std::move(argTailTuple) }](auto&&...)
                     {
                         if constexpr (sizeof...(argTail) > 1)
@@ -38,7 +37,8 @@ namespace dots::testing::details
                                 return expect_consecutive_call_sequence_recursive<ExpectCallSignature>(expectCall, std::forward<decltype(argTailTail)>(argTailTail)...);
                             }, argTailTuple);
                         }
-                    }
+                    },
+                    std::forward<arg_tail_head_t>(std::get<0>(argTailTuple))
                 ));
             }
             else
