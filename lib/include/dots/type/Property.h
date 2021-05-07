@@ -46,7 +46,7 @@ namespace dots::type
             return static_cast<Derived&>(*this);
         }
 
-        template <typename... Args>
+        template <typename... Args, std::enable_if_t<sizeof...(Args) >= 1, int> = 0>
         T& operator () (Args&&... args)
         {
             return construct(std::forward<Args>(args)...);
@@ -534,7 +534,10 @@ namespace dots::type
     };
 
     template <typename T>
-    using is_property_t = std::is_base_of<details::property_tag, T>;
+    using is_property = std::is_base_of<details::property_tag, T>;
+
+    template <typename T>
+    using is_property_t = typename is_property<T>::type;
 
     template <typename T>
     constexpr bool is_property_v = is_property_t<T>::value;

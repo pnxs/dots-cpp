@@ -1,4 +1,4 @@
-#include <gtest/gtest.h>
+#include <dots/testing/gtest/gtest.h>
 #include <dots/io/serialization/StringSerializer.h>
 #include <io/serialization/data/string_serialization_data.h>
 

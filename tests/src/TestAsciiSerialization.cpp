@@ -2,7 +2,7 @@
 #include "StructDescriptorData.dots.h"
 #include "DotsTestStruct.dots.h"
 #include "dots/io/Registry.h"
-#include <gtest/gtest.h>
+#include <dots/testing/gtest/gtest.h>
 
 #include <iostream>
 
@@ -14,8 +14,8 @@ TEST(TestAsciiSerialization, serialize)
     StructDescriptorData sd;
     sd.name("aName");
 
-    auto& properties = sd.properties();
-    auto& documentation = sd.documentation();
+    auto& properties = sd.properties.construct();
+    auto& documentation = sd.documentation.construct();
 
     StructPropertyData pd;
     pd.name("aProperty");
@@ -61,8 +61,8 @@ TEST(TestAsciiSerialization, serializeSingleLine)
     StructDescriptorData sd;
     sd.name("aName");
 
-    auto& properties = sd.properties();
-    auto& documentation = sd.documentation();
+    auto& properties = sd.properties.construct();
+    auto& documentation = sd.documentation.construct();
 
     StructPropertyData pd;
     pd.name("aProperty");
@@ -126,8 +126,8 @@ TEST(TestAsciiSerialization, serializeSingleLineColored)
     StructDescriptorData sd;
     sd.name("aName");
 
-    auto& properties = sd.properties();
-    auto& documentation = sd.documentation();
+    auto& properties = sd.properties.construct();
+    auto& documentation = sd.documentation.construct();
 
     StructPropertyData pd;
     pd.name("aProperty");

@@ -1,5 +1,5 @@
 #include <optional>
-#include <gtest/gtest.h>
+#include <dots/testing/gtest/gtest.h>
 #include <boost/algorithm/hex.hpp>
 #include <dots/io/HostTransceiver.h>
 #include <dots/type/FundamentalTypes.h>

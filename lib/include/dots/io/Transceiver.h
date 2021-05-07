@@ -7,12 +7,11 @@
 #include <dots/io/Connection.h>
 #include <dots/io/Dispatcher.h>
 #include <dots/io/Subscription.h>
-#include <dots/io/Publisher.h>
 #include <dots/io/Registry.h>
 
 namespace dots::io
 {
-    struct Transceiver : Publisher
+    struct Transceiver
     {
         using transmission_handler_t = Dispatcher::transmission_handler_t;
         template <typename T = type::Struct>
@@ -107,9 +106,6 @@ namespace dots::io
                 return std::declval<Subscription>();
             }
         }
-
-        [[deprecated("only available for backwards compatibility")]]
-        void publish(const type::StructDescriptor<>* td, const type::Struct& instance, types::property_set_t includedProperties, bool remove) override;
 
     protected:
 

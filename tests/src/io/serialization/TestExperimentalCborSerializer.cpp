@@ -1,4 +1,4 @@
-#include <gtest/gtest.h>
+#include <dots/testing/gtest/gtest.h>
 #include <dots/io/serialization/ExperimentalCborSerializer.h>
 #include <io/serialization/data/cbor_serialization_data.h>
 

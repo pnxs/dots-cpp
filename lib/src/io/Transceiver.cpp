@@ -131,11 +131,6 @@ namespace dots::io
         publish(instance, instance._keyProperties(), true);
     }
 
-    void Transceiver::publish(const type::StructDescriptor<>*/* td*/, const type::Struct& instance, types::property_set_t what, bool remove)
-    {
-        publish(instance, what, remove);
-    }
-
     void Transceiver::handleNewType(const type::Descriptor<>& descriptor) noexcept
     {
         for (const auto& [id, handler] : m_newTypeHandlers)

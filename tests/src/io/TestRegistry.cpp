@@ -1,5 +1,4 @@
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
+#include <dots/testing/gtest/gtest.h>
 #include <dots/io/Registry.h>
 #include <DotsHeader.dots.h>
 #include <DotsTestStruct.dots.h>

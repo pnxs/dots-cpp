@@ -66,6 +66,8 @@ target_sources(${TARGET_NAME}
         src/io/channels/VirtualChannel.cpp
         src/io/channels/WebSocketChannel.cpp
         src/io/channels/WebSocketListener.cpp
+        src/io/channels/LocalChannel.cpp
+        src/io/channels/LocalListener.cpp
 
         src/io/services/FdHandlerService.cpp
         src/io/Timer.cpp

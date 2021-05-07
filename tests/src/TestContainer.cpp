@@ -1,4 +1,4 @@
-#include <gtest/gtest.h>
+#include <dots/testing/gtest/gtest.h>
 #include <dots/io/Container.h>
 #include <DotsHeader.dots.h>
 #include <DotsTestStruct.dots.h>

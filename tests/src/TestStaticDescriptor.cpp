@@ -1,44 +1,8 @@
 #include <string>
 #include <type_traits>
-#include <gtest/gtest.h>
+#include <dots/testing/gtest/gtest.h>
 #include <dots/type/Descriptor.h>
 #include <dots/type/StaticDescriptor.h>
-
-namespace dots::type
-{
-    template <>
-    struct Descriptor<int> : StaticDescriptor<int>
-    {
-        Descriptor(key_t key) : StaticDescriptor(key, Type::int32, "int32") {}
-    };
-
-    template <>
-    struct Descriptor<std::string> : StaticDescriptor<std::string>
-    {
-        Descriptor(key_t key) : StaticDescriptor(key, Type::string, "string") {}
-
-        bool usesDynamicMemory() const override
-        {
-            return true;
-        }
-
-        size_t dynamicMemoryUsage(const Typeless& value) const override
-        {
-            return dynamicMemoryUsage(value.to<std::string>());
-        }
-
-        size_t dynamicMemoryUsage(const std::string& value) const
-        {
-            return value.empty() ? 0 : value.size() + 1;
-        }
-    };
-
-    template <>
-    struct Descriptor<uint8_t> : StaticDescriptor<uint8_t>
-    {
-        Descriptor(key_t key) : StaticDescriptor(key, Type::uint8, "uint8") {}
-    };
-}
 
 using namespace dots::type;
 

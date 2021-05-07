@@ -115,7 +115,7 @@ namespace dots::io
     types::EnumDescriptorData DescriptorConverter::operator () (const type::EnumDescriptor<>& enumDescriptor)
     {
         EnumDescriptorData enumData{ EnumDescriptorData::name_i{ enumDescriptor.name() } };
-        types::vector_t<types::EnumElementDescriptor>& enumeratorData = enumData.elements();
+        types::vector_t<types::EnumElementDescriptor>& enumeratorData = enumData.elements.construct();
 
         for (const type::EnumeratorDescriptor<>& enumeratorDescriptor : enumDescriptor.enumeratorsTypeless())
         {
@@ -133,7 +133,7 @@ namespace dots::io
         StructDescriptorData structData;
         structData.name(structDescriptor.name());
 
-        auto& flags = structData.flags();
+        auto& flags = structData.flags.construct();
         flags.cached(structDescriptor.cached());
         flags.internal(structDescriptor.internal());
         flags.persistent(structDescriptor.persistent());
@@ -141,7 +141,7 @@ namespace dots::io
         flags.local(structDescriptor.local());
         flags.substructOnly(structDescriptor.substructOnly());
 
-        auto& properties = structData.properties();
+        auto& properties = structData.properties.construct();
 
         for (const type::PropertyDescriptor& propertyDescriptor : structDescriptor.propertyDescriptors())
         {

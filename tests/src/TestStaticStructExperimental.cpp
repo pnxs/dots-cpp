@@ -3,7 +3,7 @@
 #include <dots/type/StaticPropertyOffset.h>
 #include <dots/type/FundamentalTypes.h>
 #include <dots/type/PropertyInitializer.h>
-#include <gtest/gtest.h>
+#include <dots/testing/gtest/gtest.h>
 
 namespace dots::types
 {

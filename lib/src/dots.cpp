@@ -1,4 +1,5 @@
-#undef DOTS_NO_GLOBAL_TRANSCEIVER 
+#undef DOTS_NO_GLOBAL_TRANSCEIVER
+#include <optional>
 #include <dots/dots.h>
 #include <dots/io/Io.h>
 #include <dots/io/services/TimerService.h>
@@ -8,6 +9,8 @@
 
 namespace dots
 {
+    inline std::optional<GuestTransceiver> GlobalTransceiver;
+
     Timer::id_t add_timer(const type::Duration& timeout, const std::function<void()>& handler, bool periodic/* = false*/)
     {
         return io::global_service<io::TimerService>().addTimer(timeout, handler, periodic);
@@ -30,27 +33,19 @@ namespace dots
     }
     #endif
 
-    Publisher*& publisher()
+    GuestTransceiver& transceiver(const std::string_view& name/* = "dots-transceiver"*/, bool reset/* = false*/)
     {
-        static Publisher* publisher = nullptr;
-        return publisher;
-    }
-
-    GuestTransceiver& transceiver(const std::string_view& name/* = "dots-transceiver"*/)
-    {
-        static GuestTransceiver transceiver{ std::string{ name } };
-
-        if (Publisher*& p = publisher(); p == nullptr)
+        if (GlobalTransceiver == std::nullopt || reset)
         {
-            p = &transceiver;
+            GlobalTransceiver.emplace(std::string{ name });
         }
 
-        return transceiver;
+        return *GlobalTransceiver;
     }
 
     void publish(const type::Struct& instance, std::optional<types::property_set_t> includedProperties/* = std::nullopt*/, bool remove/* = false*/)
     {
-        publisher()->publish(&instance._descriptor(), instance, includedProperties == std::nullopt ? instance._validProperties() : *includedProperties, remove);
+        transceiver().publish(instance, includedProperties == std::nullopt ? instance._validProperties() : *includedProperties, remove);
     }
 
     void remove(const type::Struct& instance)

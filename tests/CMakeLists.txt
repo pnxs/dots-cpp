@@ -52,6 +52,11 @@ target_compile_options(${TARGET_NAME}
         $<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-O2 -Wall -Wextra -Wpedantic -Werror>>
         $<$<CXX_COMPILER_ID:MSVC>:/W4>
 )
+target_compile_definitions(${TARGET_NAME}
+    PRIVATE
+        # suppress warning for usage of unsafe C runtime functions (e.g. getenv)
+        $<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_WARNINGS>
+)
 target_compile_features(${TARGET_NAME}
     PRIVATE
         cxx_std_17
@@ -82,6 +87,11 @@ target_compile_options(${TARGET_NAME_EXPERIMENTAL}
     PRIVATE
         $<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-O2 -Wall -Wextra -Wpedantic -Werror -Wno-deprecated-declarations -Wno-missing-field-initializers>>
         $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>>:/W4>
+)
+target_compile_definitions(${TARGET_NAME_EXPERIMENTAL}
+    PRIVATE
+        # suppress warning for usage of unsafe C runtime functions (e.g. getenv)
+        $<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_WARNINGS>
 )
 target_compile_features(${TARGET_NAME_EXPERIMENTAL}
     PRIVATE

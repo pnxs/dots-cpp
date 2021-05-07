@@ -1,4 +1,4 @@
-#include <gtest/gtest.h>
+#include <dots/testing/gtest/gtest.h>
 #include <dots/type/PropertySet.h>
 
 using dots::type::PropertySet;
