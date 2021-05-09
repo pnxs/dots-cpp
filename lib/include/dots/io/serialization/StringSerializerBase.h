@@ -62,6 +62,7 @@ namespace dots::io
     {
         bool compact = false;
         bool multiLine = false;
+        bool strict = false;
         size_t indentSize = 4;
     };
 
@@ -392,7 +393,14 @@ namespace dots::io
 
             if constexpr (traits_t::UserTypeNames)
             {
-                readTokenAfterWhitespace(descriptor.name());
+                if (m_options.strict)
+                {
+                    readTokenAfterWhitespace(descriptor.name());
+                }
+                else
+                {
+                    tryReadTokenAfterWhitespace(descriptor.name());
+                }
             }
 
             readTokenAfterWhitespace(traits_t::StructBegin);
@@ -486,8 +494,18 @@ namespace dots::io
             {
                 if constexpr (traits_t::UserTypeNames)
                 {
-                    readTokenAfterWhitespace(descriptor.name());
-                    readToken("::");
+                    if (m_options.strict)
+                    {
+                        readTokenAfterWhitespace(descriptor.name());
+                        readToken("::");
+                    }
+                    else
+                    {
+                        if (tryReadTokenAfterWhitespace(descriptor.name()))
+                        {
+                            readToken("::");
+                        }
+                    }
                 }
 
                 descriptor.construct(value, descriptor.enumeratorFromName(readIdentifier()).value());

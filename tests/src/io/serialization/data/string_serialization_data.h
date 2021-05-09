@@ -63,3 +63,4 @@
 #define STRING_STRING_5 u8"\"foo\\\\ \u0062\u0061\u0072\u00A9\\n b\\\\az\""
 
 #define STRING_TEST_ENUM_1 "SerializationEnum::baz"
+#define STRING_TEST_ENUM_1_COMPACT "baz"
