@@ -25,9 +25,21 @@ namespace dots::io
     }
 
     template <typename T>
+    std::string to_string(const T& value, const type::Descriptor<T>& descriptor, StringSerializerOptions options = {})
+    {
+        return StringSerializer<>::Serialize(value, descriptor, options);
+    }
+
+    template <typename T>
     std::string to_string(const T& value, StringSerializerOptions options = {})
     {
         return StringSerializer<>::Serialize(value, options);
+    }
+
+    template <typename T>
+    size_t from_string(const std::string& data, T& value, const type::Descriptor<T>& descriptor)
+    {
+        return StringSerializer<>::Deserialize(data, value, descriptor);
     }
 
     template <typename T>

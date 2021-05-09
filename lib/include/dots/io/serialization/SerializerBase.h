@@ -66,10 +66,24 @@ namespace dots::io
         }
 
         template <typename T>
+        size_t serialize(const T& value, const type::Descriptor<T>& descriptor)
+        {
+            visit(value, descriptor);
+            return lastSerializeSize();
+        }
+
+        template <typename T>
         size_t serialize(const T& value)
         {
             visit(value);
             return lastSerializeSize();
+        }
+
+        template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
+        size_t deserialize(T& value, const type::Descriptor<T>& descriptor)
+        {
+            visit(value, descriptor);
+            return lastDeserializeSize();
         }
 
         template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
@@ -98,6 +112,15 @@ namespace dots::io
         }
 
         template <typename T>
+        static data_t Serialize(const T& value, const type::Descriptor<T>& descriptor)
+        {
+            Derived serializer;
+            serializer.serialize(value, descriptor);
+
+            return std::move(serializer.output());
+        }
+
+        template <typename T>
         static data_t Serialize(const T& value)
         {
             Derived serializer;
@@ -107,12 +130,27 @@ namespace dots::io
         }
 
         template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
+        static size_t Deserialize(const value_t* data, size_t size, T& value, const type::Descriptor<T>& descriptor)
+        {
+            Derived serializer;
+            serializer.setInput(data, size);
+
+            return serializer.deserialize(value, descriptor);
+        }
+
+        template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
         static size_t Deserialize(const value_t* data, size_t size, T& value)
         {
             Derived serializer;
             serializer.setInput(data, size);
 
             return serializer.deserialize(value);
+        }
+
+        template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
+        static size_t Deserialize(const data_t& data, T& value, const type::Descriptor<T>& descriptor)
+        {
+            return Deserialize(data.data(), data.size(), value, descriptor);
         }
 
         template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
