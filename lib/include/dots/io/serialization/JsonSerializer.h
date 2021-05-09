@@ -20,7 +20,7 @@ namespace dots::io
         static constexpr std::string_view VectorEnd = "]";
 
         static constexpr std::string_view TupleBegin = "[";
-        static constexpr std::string_view TupleElementSeperator = ",";
+        static constexpr std::string_view TupleElementSeparator = ",";
         static constexpr std::string_view TupleEnd = "]";
 
         static constexpr std::string_view StringDelimiter = "\"";

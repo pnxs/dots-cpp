@@ -23,7 +23,7 @@ namespace dots::io
         static constexpr std::string_view VectorEnd = "}";
 
         static constexpr std::string_view TupleBegin = "{";
-        static constexpr std::string_view TupleElementSeperator = ",";
+        static constexpr std::string_view TupleElementSeparator = ",";
         static constexpr std::string_view TupleEnd = "}";
 
         static constexpr std::string_view StringDelimiter = "\"";
@@ -189,14 +189,14 @@ namespace dots::io
             {
                 if (!m_outputTupleInfo.empty() && m_outputTupleInfo.top())
                 {
-                    writePrefixedNewLine(traits_t::TupleElementSeperator);
+                    writePrefixedNewLine(traits_t::TupleElementSeparator);
                 }
             }
             else
             {
                 if (!m_inputTupleInfo.empty() && m_inputTupleInfo.top())
                 {
-                    readTokenAfterWhitespace(traits_t::TupleElementSeperator);
+                    readTokenAfterWhitespace(traits_t::TupleElementSeparator);
                 }
             }
         }
