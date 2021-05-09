@@ -223,6 +223,12 @@ TEST_F(TestStringSerializer, serialize_ComplexStructArgument)
 
     data_t expectedSpecific2 = "SerializationStructComplex{ .enumProperty = <invalid>, .durationVectorProperty = { " STRING_DURATION_1 ", " STRING_DURATION_2 " } }";
     EXPECT_EQ(dots::io::to_string(SerializationStructComplex2, SerializationStructComplex::enumProperty_p + SerializationStructComplex::durationVectorProperty_p), expectedSpecific2);
+
+    data_t expectedValid1Compact = "SerializationStructComplex{ .enumProperty = " STRING_TEST_ENUM_1_COMPACT ", .float64Property = " STRING_FLOAT64_NEGATIVE ", .timepointProperty = " STRING_TIME_POINT_1 ", .structSimpleProperty = SerializationStructSimple{ .boolProperty = " STRING_BOOL_FALSE " } }";
+    EXPECT_EQ(dots::io::to_string(SerializationStructComplex1, { dots::io::StringSerializerOptions::Compact }), expectedValid1Compact);
+
+    data_t expectedValid1Minimal = "{.enumProperty=" STRING_TEST_ENUM_1_COMPACT ",.float64Property=" STRING_FLOAT64_NEGATIVE ",.timepointProperty=" STRING_TIME_POINT_1 ",.structSimpleProperty={.boolProperty=" STRING_BOOL_FALSE "}}";
+    EXPECT_EQ(dots::io::to_string(SerializationStructComplex1, { dots::io::StringSerializerOptions::Minimal }), expectedValid1Minimal);
 }
 
 TEST_F(TestStringSerializer, deserialize_ComplexStructArgument)

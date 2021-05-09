@@ -222,6 +222,12 @@ TEST_F(TestJsonSerializer, serialize_ComplexStructArgument)
 
     data_t expectedSpecific2 = "{ \"enumProperty\": null, \"durationVectorProperty\": [ " JSON_DURATION_1 ", " JSON_DURATION_2 " ] }";
     EXPECT_EQ(dots::io::to_json(SerializationStructComplex2, SerializationStructComplex::enumProperty_p + SerializationStructComplex::durationVectorProperty_p), expectedSpecific2);
+
+    data_t expectedValid1Compact = "{ \"enumProperty\": " JSON_TEST_ENUM_1 ", \"float64Property\": " JSON_FLOAT64_NEGATIVE ", \"timepointProperty\": " JSON_TIME_POINT_1 ", \"structSimpleProperty\": { \"boolProperty\": " JSON_BOOL_FALSE " } }";
+    EXPECT_EQ(dots::io::to_json(SerializationStructComplex1, { dots::io::StringSerializerOptions::Compact }), expectedValid1Compact);
+
+    data_t expectedValid1Minimal = "{\"enumProperty\":" JSON_TEST_ENUM_1 ",\"float64Property\":" JSON_FLOAT64_NEGATIVE ",\"timepointProperty\":" JSON_TIME_POINT_1 ",\"structSimpleProperty\":{\"boolProperty\":" JSON_BOOL_FALSE "}}";
+    EXPECT_EQ(dots::io::to_json(SerializationStructComplex1, { dots::io::StringSerializerOptions::Minimal }), expectedValid1Minimal);
 }
 
 TEST_F(TestJsonSerializer, deserialize_ComplexStructArgument)

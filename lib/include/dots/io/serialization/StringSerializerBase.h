@@ -62,6 +62,7 @@ namespace dots::io
     {
         enum OutputStyle
         {
+            Minimal,
             Compact,
             SingleLine,
             MultiLine
@@ -219,7 +220,10 @@ namespace dots::io
         {
             if constexpr (traits_t::UserTypeNames)
             {
-                write(instance._descriptor().name());
+                if (m_options.style >= StringSerializerOptions::Compact)
+                {
+                    write(instance._descriptor().name());
+                }
             }
 
             incrementIndentLevel();
@@ -255,7 +259,7 @@ namespace dots::io
             {
                 writeSeparator(traits_t::PropertyValueBegin);
             }
-            else if (m_options.style != StringSerializerOptions::Compact)
+            else if (m_options.style >= StringSerializerOptions::Compact)
             {
                 write(" ");
             }
@@ -322,8 +326,11 @@ namespace dots::io
             {
                 if constexpr (traits_t::UserTypeNames)
                 {
-                    write(descriptor.name());
-                    write("::");
+                    if (m_options.style >= StringSerializerOptions::SingleLine)
+                    {
+                        write(descriptor.name());
+                        write("::");
+                    }
                 }
 
                 write(descriptor.enumeratorFromValue(value).name());
@@ -594,7 +601,7 @@ namespace dots::io
 
         void writeSeparator(std::string_view infix)
         {
-            if (m_options.style == StringSerializerOptions::Compact)
+            if (m_options.style == StringSerializerOptions::Minimal)
             {
                 write(infix);
             }
@@ -611,7 +618,7 @@ namespace dots::io
                 write("\n");
                 output().resize(output().size() + m_indentLevel * m_options.indentSize, ' ');
             }
-            else if (m_options.style == StringSerializerOptions::SingleLine)
+            else if (m_options.style >= StringSerializerOptions::Compact)
             {
                 write(" ");
             }
