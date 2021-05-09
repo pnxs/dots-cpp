@@ -14,6 +14,18 @@
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
+#define LOG_TRANSMISSION(header_, instance_) [](const DotsHeader& header, const type::Struct& instance) \
+{                                                                                                       \
+    if (instance._descriptor().internal())                                                              \
+    {                                                                                                   \
+        LOG_DATA_S("\n" << ToString(header) << ",\n" << ToString(instance) << "\n");                    \
+    }                                                                                                   \
+    else                                                                                                \
+    {                                                                                                   \
+        LOG_DEBUG_S("\n" << ToString(header) << ",\n" << ToString(instance) << "\n");                   \
+    }                                                                                                   \
+}(header_, instance_)
+
 namespace dots::io
 {
     Connection::Connection(channel_ptr_t channel, bool host, std::optional<std::string> authSecret/* = std::nullopt*/) :
@@ -153,11 +165,13 @@ namespace dots::io
 
     void Connection::transmit(const DotsHeader& header, const type::Struct& instance)
     {
+        LOG_TRANSMISSION(header, instance);
         m_channel->transmit(header, instance);
     }
 
     void Connection::transmit(const Transmission& transmission)
     {
+        LOG_TRANSMISSION(transmission.header(), *transmission.instance());
         m_channel->transmit(transmission);
     }
 
@@ -196,6 +210,8 @@ namespace dots::io
 
     bool Connection::handleReceive(Transmission transmission)
     {
+        LOG_TRANSMISSION(transmission.header(), *transmission.instance());
+
         if (m_connectionState == DotsConnectionState::closed)
         {
             return false;
@@ -414,5 +430,10 @@ namespace dots::io
     void Connection::expectSystemType(const types::property_set_t& expectedAttributes, void(Connection::* handler)(const T&))
     {
         m_expectedSystemType = { &T::_Descriptor(), expectedAttributes, [this, handler](const type::Struct& instance){ (this->*handler)(instance._to<T>()); } };
+    }
+
+    std::string Connection::ToString(const type::Struct& instance)
+    {
+        return dots::io::to_string(instance, { StringSerializerOptions::MultiLine });
     }
 }

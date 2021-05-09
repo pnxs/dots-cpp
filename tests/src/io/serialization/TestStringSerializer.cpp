@@ -246,7 +246,7 @@ TEST_F(TestStringSerializer, deserialize_ComplexStructArgument)
     SerializationStructComplex serializationStructComplex5;
     dots::io::from_string(data_t{ "{ .enumProperty = " STRING_TEST_ENUM_1_COMPACT " }" }, serializationStructComplex5);
     EXPECT_TRUE(serializationStructComplex5._equal(SerializationStructComplex1, SerializationStructComplex::enumProperty_p));
-    EXPECT_THROW(dots::io::from_string(data_t{ "{ .enumProperty = " STRING_TEST_ENUM_1_COMPACT " }" }, serializationStructComplex5, { false, false, true }), std::runtime_error);
+    EXPECT_THROW(dots::io::from_string(data_t{ "{ .enumProperty = " STRING_TEST_ENUM_1_COMPACT " }" }, serializationStructComplex5, { dots::io::StringSerializerOptions::SingleLine, dots::io::StringSerializerOptions::Strict }), std::runtime_error);
 }
 
 TEST_F(TestStringSerializer, serialize_WriteTupleToContinuousInternalBuffer)

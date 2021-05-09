@@ -60,9 +60,21 @@ namespace dots::io
 
     struct StringSerializerOptions
     {
-        bool compact = false;
-        bool multiLine = false;
-        bool strict = false;
+        enum OutputStyle
+        {
+            Compact,
+            SingleLine,
+            MultiLine
+        };
+
+        enum InputPolicy
+        {
+            Relaxed,
+            Strict
+        };
+
+        OutputStyle style = SingleLine;
+        InputPolicy policy = Relaxed;
         size_t indentSize = 4;
     };
 
@@ -243,7 +255,7 @@ namespace dots::io
             {
                 writeSeparator(traits_t::PropertyValueBegin);
             }
-            else if (!m_options.compact)
+            else if (m_options.style != StringSerializerOptions::Compact)
             {
                 write(" ");
             }
@@ -393,7 +405,7 @@ namespace dots::io
 
             if constexpr (traits_t::UserTypeNames)
             {
-                if (m_options.strict)
+                if (m_options.policy == StringSerializerOptions::Strict)
                 {
                     readTokenAfterWhitespace(descriptor.name());
                 }
@@ -494,7 +506,7 @@ namespace dots::io
             {
                 if constexpr (traits_t::UserTypeNames)
                 {
-                    if (m_options.strict)
+                    if (m_options.policy == StringSerializerOptions::Strict)
                     {
                         readTokenAfterWhitespace(descriptor.name());
                         readToken("::");
@@ -582,7 +594,7 @@ namespace dots::io
 
         void writeSeparator(std::string_view infix)
         {
-            if (m_options.compact)
+            if (m_options.style == StringSerializerOptions::Compact)
             {
                 write(infix);
             }
@@ -594,12 +606,12 @@ namespace dots::io
 
         void writeNewLine()
         {
-            if (m_options.multiLine)
+            if (m_options.style == StringSerializerOptions::MultiLine)
             {
                 write("\n");
                 output().resize(output().size() + m_indentLevel * m_options.indentSize, ' ');
             }
-            else if (!m_options.compact)
+            else if (m_options.style == StringSerializerOptions::SingleLine)
             {
                 write(" ");
             }
