@@ -142,33 +142,6 @@ namespace dots::io
             return lastDeserializeSize();
         }
 
-        template <typename T, typename D = Derived, std::enable_if_t<std::is_constructible_v<D, StringSerializerOptions> && std::is_base_of_v<type::Struct, T>, int> = 0>
-        static data_t Serialize(const T& instance, const property_set_t& includedProperties, StringSerializerOptions options = {})
-        {
-            Derived serializer{ options };
-            serializer.serialize(instance, includedProperties);
-
-            return std::move(serializer.output());
-        }
-
-        template <typename T, typename D = Derived, std::enable_if_t<std::is_constructible_v<D, StringSerializerOptions>, int> = 0>
-        static data_t Serialize(const T& value, const type::Descriptor<>& descriptor, StringSerializerOptions options = {})
-        {
-            Derived serializer{ options };
-            serializer.serialize(value, descriptor);
-
-            return std::move(serializer.output());
-        }
-
-        template <typename T, typename D = Derived, std::enable_if_t<std::is_constructible_v<D, StringSerializerOptions>, int> = 0>
-        static data_t Serialize(const T& value, StringSerializerOptions options = {})
-        {
-            Derived serializer{ options };
-            serializer.serialize(value);
-
-            return std::move(serializer.output());
-        }
-
     protected:
 
         using visitor_base_t = type::TypeVisitor<Derived>;

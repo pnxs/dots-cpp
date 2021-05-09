@@ -102,76 +102,76 @@ namespace dots::io
             return value;
         }
 
-        template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
-        static data_t Serialize(const T& instance, const property_set_t& includedProperties)
+        template <typename T, typename... Args, typename D = Derived, std::enable_if_t<std::is_constructible_v<D, Args...> && std::is_base_of_v<type::Struct, T>, int> = 0>
+        static data_t Serialize(const T& instance, const property_set_t& includedProperties, Args&&... args)
         {
-            Derived serializer;
+            Derived serializer{ std::forward<Args>(args)... };
             serializer.serialize(instance, includedProperties);
 
             return std::move(serializer.output());
         }
 
-        template <typename T>
-        static data_t Serialize(const T& value, const type::Descriptor<T>& descriptor)
+        template <typename T, typename... Args, typename D = Derived, std::enable_if_t<std::is_constructible_v<D, Args...>, int> = 0>
+        static data_t Serialize(const T& value, const type::Descriptor<T>& descriptor, Args&&... args)
         {
-            Derived serializer;
+            Derived serializer{ std::forward<Args>(args)... };
             serializer.serialize(value, descriptor);
 
             return std::move(serializer.output());
         }
 
-        template <typename T>
-        static data_t Serialize(const T& value)
+        template <typename T, typename... Args, typename D = Derived, std::enable_if_t<std::is_constructible_v<D, Args...>, int> = 0>
+        static data_t Serialize(const T& value, Args&&... args)
         {
-            Derived serializer;
+            Derived serializer{ std::forward<Args>(args)... };
             serializer.serialize(value);
 
             return std::move(serializer.output());
         }
 
-        template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
-        static size_t Deserialize(const value_t* data, size_t size, T& value, const type::Descriptor<T>& descriptor)
+        template <typename T, typename... Args, typename D = Derived, std::enable_if_t<std::is_constructible_v<D, Args...> && !std::is_const_v<T>, int> = 0>
+        static size_t Deserialize(const value_t* data, size_t size, T& value, const type::Descriptor<T>& descriptor, Args&&... args)
         {
-            Derived serializer;
+            Derived serializer{ std::forward<Args>(args)... };
             serializer.setInput(data, size);
 
             return serializer.deserialize(value, descriptor);
         }
 
-        template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
-        static size_t Deserialize(const value_t* data, size_t size, T& value)
+        template <typename T, typename... Args, typename D = Derived, std::enable_if_t<std::is_constructible_v<D, Args...> && !std::is_const_v<T>, int> = 0>
+        static size_t Deserialize(const value_t* data, size_t size, T& value, Args&&... args)
         {
-            Derived serializer;
+            Derived serializer{ std::forward<Args>(args)... };
             serializer.setInput(data, size);
 
             return serializer.deserialize(value);
         }
 
-        template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
-        static size_t Deserialize(const data_t& data, T& value, const type::Descriptor<T>& descriptor)
+        template <typename T, typename... Args, typename D = Derived, std::enable_if_t<std::is_constructible_v<D, Args...> && !std::is_const_v<T>, int> = 0>
+        static size_t Deserialize(const data_t& data, T& value, const type::Descriptor<T>& descriptor, Args&&... args)
         {
-            return Deserialize(data.data(), data.size(), value, descriptor);
+            return Deserialize(data.data(), data.size(), value, descriptor, std::forward<Args>(args)...);
         }
 
-        template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
-        static size_t Deserialize(const data_t& data, T& value)
+        template <typename T, typename... Args, typename D = Derived, std::enable_if_t<std::is_constructible_v<D, Args...> && !std::is_const_v<T>, int> = 0>
+        static size_t Deserialize(const data_t& data, T& value, Args&&... args)
         {
-            return Deserialize(data.data(), data.size(), value);
+            return Deserialize(data.data(), data.size(), value, std::forward<Args>(args)...);
         }
 
-        template <typename T, std::enable_if_t<!std::is_const_v<T> && !std::is_reference_v<T>, int> = 0>
-        static T Deserialize(const value_t* data, size_t size)
+        template <typename T, typename... Args, typename D = Derived, std::enable_if_t<std::is_constructible_v<D, Args...> && !std::is_const_v<T> && !std::is_reference_v<T>, int> = 0>
+        static T Deserialize(const value_t* data, size_t size, Args&&... args)
         {
-            Derived serializer;
+            Derived serializer{ std::forward<Args>(args)... };
             serializer.setInput(data, size);
 
             return serializer.template deserialize<T>();
         }
 
-        template <typename T, std::enable_if_t<!std::is_const_v<T> && !std::is_reference_v<T>, int> = 0>
-        static T Deserialize(const data_t& data)
+        template <typename T, typename... Args, typename D = Derived, std::enable_if_t<std::is_constructible_v<D, Args...> && !std::is_const_v<T> && !std::is_reference_v<T>, int> = 0>
+        static T Deserialize(const data_t& data, Args&&... args)
         {
-            return Deserialize<T>(data.data(), data.size());
+            return Deserialize<T>(data.data(), data.size(), std::forward<Args>(args)...);
         }
 
     protected:
