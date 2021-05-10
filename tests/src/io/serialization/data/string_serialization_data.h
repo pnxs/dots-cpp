@@ -61,6 +61,7 @@
 #define STRING_STRING_3 "\"foo \\\"bar\\\" baz\""
 #define STRING_STRING_4 "\"foo bar \\\"baz\\\"\""
 #define STRING_STRING_5 u8"\"foo\\\\ \u0062\u0061\u0072\u00A9\\n b\\\\az\""
+#define STRING_STRING_5_NO_OUTER_QUOTES u8"foo\\ \u0062\u0061\u0072\u00A9\n b\\az"
 
 #define STRING_TEST_ENUM_1 "SerializationEnum::baz"
 #define STRING_TEST_ENUM_1_COMPACT "baz"

@@ -137,6 +137,7 @@ TEST_F(TestJsonSerializer, deserialize_TypedArgument)
     EXPECT_EQ(dots::io::from_json<dots::string_t>(data_t(JSON_STRING_3)), String3);
     EXPECT_EQ(dots::io::from_json<dots::string_t>(data_t(JSON_STRING_4)), String4);
     EXPECT_EQ(dots::io::from_json<dots::string_t>(data_t(JSON_STRING_5)), String5);
+    EXPECT_EQ(dots::io::from_json<dots::string_t>(data_t(JSON_STRING_5_NO_OUTER_QUOTES)), String5);
 
     EXPECT_EQ(dots::io::from_json<SerializationEnum>(data_t(JSON_TEST_ENUM_1)), SerializationEnum1);
 }
@@ -150,14 +151,18 @@ TEST_F(TestJsonSerializer, serialize_PropertyArgument)
 
 TEST_F(TestJsonSerializer, deserialize_PropertyArgument)
 {
-    SerializationStructSimple serializationStructSimple;
-    dots::io::from_json(data_t(JSON_INT32_POSITIVE), serializationStructSimple.int32Property);
-    dots::io::from_json(data_t(JSON_STRING_1), serializationStructSimple.stringProperty);
-    dots::io::from_json(data_t(JSON_FLOAT32_POSITIVE), serializationStructSimple.float32Property);
+    SerializationStructSimple serializationStructSimple1;
+    dots::io::from_json(data_t(JSON_INT32_POSITIVE), serializationStructSimple1.int32Property);
+    dots::io::from_json(data_t(JSON_STRING_1), serializationStructSimple1.stringProperty);
+    dots::io::from_json(data_t(JSON_FLOAT32_POSITIVE), serializationStructSimple1.float32Property);
 
-    EXPECT_EQ(serializationStructSimple.int32Property, SerializationStructSimple1.int32Property);
-    EXPECT_EQ(serializationStructSimple.stringProperty, SerializationStructSimple1.stringProperty);
-    EXPECT_EQ(serializationStructSimple.float32Property, SerializationStructSimple1.float32Property);
+    EXPECT_EQ(serializationStructSimple1.int32Property, SerializationStructSimple1.int32Property);
+    EXPECT_EQ(serializationStructSimple1.stringProperty, SerializationStructSimple1.stringProperty);
+    EXPECT_EQ(serializationStructSimple1.float32Property, SerializationStructSimple1.float32Property);
+
+    SerializationStructSimple serializationStructSimple2;
+    dots::io::from_json(data_t(JSON_STRING_5_NO_OUTER_QUOTES), serializationStructSimple2.stringProperty);
+    EXPECT_EQ(*serializationStructSimple2.stringProperty, String5);
 }
 
 TEST_F(TestJsonSerializer, serialize_VectorArgument)
@@ -207,6 +212,9 @@ TEST_F(TestJsonSerializer, deserialize_SimpleStructArgument)
     SerializationStructSimple serializationStructSimple3;
     dots::io::from_json(data_t{ "{\"boolProperty\":null,\"float32Property\":" JSON_FLOAT32_POSITIVE "}" }, serializationStructSimple3);
     EXPECT_TRUE(serializationStructSimple3._equal(SerializationStructSimple1, SerializationStructSimple::boolProperty_p + SerializationStructSimple::float32Property_p));
+
+    SerializationStructSimple serializationStructSimple4;
+    EXPECT_THROW(dots::io::from_json(data_t{ "{\"stringProperty\":" JSON_STRING_5_NO_OUTER_QUOTES "}" }, serializationStructSimple4), std::runtime_error);
 }
 
 TEST_F(TestJsonSerializer, serialize_ComplexStructArgument)

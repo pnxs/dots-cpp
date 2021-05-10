@@ -854,37 +854,49 @@ namespace dots::io
 
         std::string readEscapedToken()
         {
-            readTokenAfterWhitespace(traits_t::StringDelimiter);
-            std::string token;
+            readWhitespace();
+            bool stringDelimited = tryReadToken(traits_t::StringDelimiter);
 
-            while (!m_input.empty())
+            if (indentLevel() == 0 && !stringDelimited)
             {
-                if (tryReadToken(traits_t::StringDelimiter))
-                {
-                    return token;
-                }
-                else if (tools::starts_with(m_input, traits_t::StringEscape))
-                {
-                    auto it = std::find_if(traits_t::StringEscapeMapping.begin(), traits_t::StringEscapeMapping.end(), [this](const auto& escapeMapping)
-                    {
-                        return tools::starts_with(m_input, escapeMapping.to);
-                    });
+                std::string token = std::string{ m_input };
+                m_input.remove_prefix(m_input.size());
 
-                    if (it != traits_t::StringEscapeMapping.end())
+                return token;
+            }
+            else
+            {
+                std::string token;
+
+                while (!m_input.empty())
+                {
+                    if (tryReadToken(traits_t::StringDelimiter))
                     {
-                        const auto& [from, to] = *it;
-                        token += from;
-                        m_input.remove_prefix(to.size());
+                        return token;
+                    }
+                    else if (tools::starts_with(m_input, traits_t::StringEscape))
+                    {
+                        auto it = std::find_if(traits_t::StringEscapeMapping.begin(), traits_t::StringEscapeMapping.end(), [this](const auto& escapeMapping)
+                        {
+                            return tools::starts_with(m_input, escapeMapping.to);
+                        });
+
+                        if (it != traits_t::StringEscapeMapping.end())
+                        {
+                            const auto& [from, to] = *it;
+                            token += from;
+                            m_input.remove_prefix(to.size());
+                        }
+                    }
+                    else
+                    {
+                        token += m_input.front();
+                        m_input.remove_prefix(1);
                     }
                 }
-                else
-                {
-                    token += m_input.front();
-                    m_input.remove_prefix(1);
-                }
-            }
 
-            throw makeTokenError(traits_t::StringDelimiter);
+                throw makeTokenError(traits_t::StringDelimiter);
+            }
         }
 
         std::string_view readIdentifier()
