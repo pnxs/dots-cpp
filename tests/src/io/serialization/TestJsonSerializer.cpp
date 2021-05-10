@@ -312,14 +312,15 @@ TEST_F(TestJsonSerializer, serialize_Style)
     data_t expectedSingleLine = "{ \"enumProperty\": " JSON_TEST_ENUM_1 ", \"float64Property\": " JSON_FLOAT64_NEGATIVE ", \"timepointProperty\": " JSON_TIME_POINT_1 ", \"structSimpleProperty\": { \"boolProperty\": " JSON_BOOL_FALSE " } }";
     EXPECT_EQ(dots::io::to_json(SerializationStructComplex1, { dots::io::StringSerializerOptions::SingleLine }), expectedSingleLine);
 
-    data_t expectedMultiLine = 
-    "{\n"
-    "    \"enumProperty\": " JSON_TEST_ENUM_1 ",\n"
-    "    \"float64Property\": " JSON_FLOAT64_NEGATIVE ",\n"
-    "    \"timepointProperty\": " JSON_TIME_POINT_1 ",\n"
-    "    \"structSimpleProperty\": {\n"
-    "        \"boolProperty\": " JSON_BOOL_FALSE "\n"
-    "    }\n"
-    "}";
+    data_t expectedMultiLine{
+        "{\n"
+        "    \"enumProperty\": " JSON_TEST_ENUM_1 ",\n"
+        "    \"float64Property\": " JSON_FLOAT64_NEGATIVE ",\n"
+        "    \"timepointProperty\": " JSON_TIME_POINT_1 ",\n"
+        "    \"structSimpleProperty\": {\n"
+        "        \"boolProperty\": " JSON_BOOL_FALSE "\n"
+        "    }\n"
+        "}"
+    };
     EXPECT_EQ(dots::io::to_json(SerializationStructComplex1, { dots::io::StringSerializerOptions::MultiLine }), expectedMultiLine);
 }
