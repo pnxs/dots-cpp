@@ -22,6 +22,10 @@ namespace dots::io
         Timer::id_t addTimer(const type::Duration& timeout, const callback_t& cb, bool periodic);
         void removeTimer(Timer::id_t id);
 
+        const auto& timers() const {
+            return m_timers;
+        }
+
     private:
 
         void shutdown() noexcept override;
