@@ -20,6 +20,8 @@ namespace dots::io
 
         id_t id() { return m_id; }
 
+        type::Duration interval() const { return m_interval; }
+
     private:
 
         using timer_t = boost::asio::steady_timer;
