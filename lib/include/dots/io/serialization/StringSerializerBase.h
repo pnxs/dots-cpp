@@ -220,7 +220,14 @@ namespace dots::io
         {
             if constexpr (traits_t::UserTypeNames)
             {
-                if (m_options.style >= StringSerializerOptions::Compact)
+                if (m_options.style == StringSerializerOptions::Compact)
+                {
+                    if (indentLevel() == 0)
+                    {
+                        write(instance._descriptor().name());
+                    }
+                }
+                else if (m_options.style >= StringSerializerOptions::SingleLine)
                 {
                     write(instance._descriptor().name());
                 }
