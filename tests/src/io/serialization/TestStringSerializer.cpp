@@ -313,13 +313,13 @@ TEST_F(TestStringSerializer, deserialize_ReadTupleFromContinuousExternalBuffer)
 TEST_F(TestStringSerializer, serialize_Style)
 {
     data_t expectedMinimal = "{.enumProperty=" STRING_TEST_ENUM_1_COMPACT ",.float64Property=" STRING_FLOAT64_NEGATIVE ",.timepointProperty=" STRING_TIME_POINT_1 ",.structSimpleProperty={.boolProperty=" STRING_BOOL_FALSE "}}";
-    EXPECT_EQ(dots::io::to_string(SerializationStructComplex1, { dots::io::StringSerializerOptions::Minimal }), expectedMinimal);
+    EXPECT_EQ(dots::io::to_string(SerializationStructComplex1, dots::io::StringSerializerOptions{ dots::io::StringSerializerOptions::Minimal }), expectedMinimal);
 
     data_t expectedCompact = "SerializationStructComplex{ .enumProperty = " STRING_TEST_ENUM_1_COMPACT ", .float64Property = " STRING_FLOAT64_NEGATIVE ", .timepointProperty = " STRING_TIME_POINT_1 ", .structSimpleProperty = { .boolProperty = " STRING_BOOL_FALSE " } }";
-    EXPECT_EQ(dots::io::to_string(SerializationStructComplex1, { dots::io::StringSerializerOptions::Compact }), expectedCompact);
+    EXPECT_EQ(dots::io::to_string(SerializationStructComplex1, dots::io::StringSerializerOptions{ dots::io::StringSerializerOptions::Compact }), expectedCompact);
 
     data_t expectedSingleLine = "SerializationStructComplex{ .enumProperty = " STRING_TEST_ENUM_1 ", .float64Property = " STRING_FLOAT64_NEGATIVE ", .timepointProperty = " STRING_TIME_POINT_1 ", .structSimpleProperty = SerializationStructSimple{ .boolProperty = " STRING_BOOL_FALSE " } }";
-    EXPECT_EQ(dots::io::to_string(SerializationStructComplex1, { dots::io::StringSerializerOptions::SingleLine }), expectedSingleLine);
+    EXPECT_EQ(dots::io::to_string(SerializationStructComplex1, dots::io::StringSerializerOptions{ dots::io::StringSerializerOptions::SingleLine }), expectedSingleLine);
 
     data_t expectedMultiLine{
         "SerializationStructComplex{\n"
@@ -331,7 +331,7 @@ TEST_F(TestStringSerializer, serialize_Style)
         "    }\n"
         "}"
     };
-    EXPECT_EQ(dots::io::to_string(SerializationStructComplex1, { dots::io::StringSerializerOptions::MultiLine }), expectedMultiLine);
+    EXPECT_EQ(dots::io::to_string(SerializationStructComplex1, dots::io::StringSerializerOptions{ dots::io::StringSerializerOptions::MultiLine }), expectedMultiLine);
 }
 
 TEST_F(TestStringSerializer, deserialize_Policy)

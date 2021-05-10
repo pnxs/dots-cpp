@@ -312,13 +312,13 @@ TEST_F(TestJsonSerializer, deserialize_ReadTupleFromContinuousExternalBuffer)
 TEST_F(TestJsonSerializer, serialize_Style)
 {
     data_t expectedMinimal = "{\"enumProperty\":" JSON_TEST_ENUM_1 ",\"float64Property\":" JSON_FLOAT64_NEGATIVE ",\"timepointProperty\":" JSON_TIME_POINT_1 ",\"structSimpleProperty\":{\"boolProperty\":" JSON_BOOL_FALSE "}}";
-    EXPECT_EQ(dots::io::to_json(SerializationStructComplex1, { dots::io::StringSerializerOptions::Minimal }), expectedMinimal);
+    EXPECT_EQ(dots::io::to_json(SerializationStructComplex1, dots::io::StringSerializerOptions{ dots::io::StringSerializerOptions::Minimal }), expectedMinimal);
 
     data_t expectedCompact = "{ \"enumProperty\": " JSON_TEST_ENUM_1 ", \"float64Property\": " JSON_FLOAT64_NEGATIVE ", \"timepointProperty\": " JSON_TIME_POINT_1 ", \"structSimpleProperty\": { \"boolProperty\": " JSON_BOOL_FALSE " } }";
-    EXPECT_EQ(dots::io::to_json(SerializationStructComplex1, { dots::io::StringSerializerOptions::Compact }), expectedCompact);
+    EXPECT_EQ(dots::io::to_json(SerializationStructComplex1, dots::io::StringSerializerOptions{ dots::io::StringSerializerOptions::Compact }), expectedCompact);
 
     data_t expectedSingleLine = "{ \"enumProperty\": " JSON_TEST_ENUM_1 ", \"float64Property\": " JSON_FLOAT64_NEGATIVE ", \"timepointProperty\": " JSON_TIME_POINT_1 ", \"structSimpleProperty\": { \"boolProperty\": " JSON_BOOL_FALSE " } }";
-    EXPECT_EQ(dots::io::to_json(SerializationStructComplex1, { dots::io::StringSerializerOptions::SingleLine }), expectedSingleLine);
+    EXPECT_EQ(dots::io::to_json(SerializationStructComplex1, dots::io::StringSerializerOptions{ dots::io::StringSerializerOptions::SingleLine }), expectedSingleLine);
 
     data_t expectedMultiLine{
         "{\n"
@@ -330,5 +330,5 @@ TEST_F(TestJsonSerializer, serialize_Style)
         "    }\n"
         "}"
     };
-    EXPECT_EQ(dots::io::to_json(SerializationStructComplex1, { dots::io::StringSerializerOptions::MultiLine }), expectedMultiLine);
+    EXPECT_EQ(dots::io::to_json(SerializationStructComplex1, dots::io::StringSerializerOptions{ dots::io::StringSerializerOptions::MultiLine }), expectedMultiLine);
 }
