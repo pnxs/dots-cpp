@@ -72,7 +72,7 @@ TEST_F(TestStringSerializer, serialize_TypedArgument)
     EXPECT_EQ(dots::io::to_string(String4), data_t(STRING_STRING_4));
     EXPECT_EQ(dots::io::to_string(String5), data_t(STRING_STRING_5));
 
-    EXPECT_EQ(dots::io::to_string(SerializationEnum1), data_t(STRING_TEST_ENUM_1));
+    EXPECT_EQ(dots::io::to_string(SerializationEnum1), data_t(STRING_TEST_ENUM_1_COMPACT));
 }
 
 TEST_F(TestStringSerializer, deserialize_TypedArgument)
@@ -212,7 +212,7 @@ TEST_F(TestStringSerializer, deserialize_SimpleStructArgument)
 
 TEST_F(TestStringSerializer, serialize_ComplexStructArgument)
 {
-    data_t expectedValid1 = "SerializationStructComplex{ .enumProperty = " STRING_TEST_ENUM_1 ", .float64Property = " STRING_FLOAT64_NEGATIVE ", .timepointProperty = " STRING_TIME_POINT_1 ", .structSimpleProperty = SerializationStructSimple{ .boolProperty = " STRING_BOOL_FALSE " } }";
+    data_t expectedValid1 = "SerializationStructComplex{ .enumProperty = " STRING_TEST_ENUM_1_COMPACT ", .float64Property = " STRING_FLOAT64_NEGATIVE ", .timepointProperty = " STRING_TIME_POINT_1 ", .structSimpleProperty = SerializationStructSimple{ .boolProperty = " STRING_BOOL_FALSE " } }";
     EXPECT_EQ(dots::io::to_string(SerializationStructComplex1), expectedValid1);
 
     data_t expectedValid2 = "SerializationStructComplex{ .propertySetProperty = " STRING_PROPERTY_SET_MIXED_1 ", .durationVectorProperty = { " STRING_DURATION_1 ", " STRING_DURATION_2 " }, .uuidProperty = " STRING_UUID_1 " }";
@@ -228,7 +228,7 @@ TEST_F(TestStringSerializer, serialize_ComplexStructArgument)
 TEST_F(TestStringSerializer, deserialize_ComplexStructArgument)
 {
     SerializationStructComplex serializationStructComplex1;
-    dots::io::from_string(data_t{ "SerializationStructComplex{ .enumProperty = " STRING_TEST_ENUM_1 ", .float64Property = " STRING_FLOAT64_NEGATIVE ", .timepointProperty = " STRING_TIME_POINT_1 ", .structSimpleProperty = SerializationStructSimple{ .boolProperty = " STRING_BOOL_FALSE " } }" }, serializationStructComplex1);
+    dots::io::from_string(data_t{ "SerializationStructComplex{ .enumProperty = " STRING_TEST_ENUM_1_COMPACT ", .float64Property = " STRING_FLOAT64_NEGATIVE ", .timepointProperty = " STRING_TIME_POINT_1 ", .structSimpleProperty = SerializationStructSimple{ .boolProperty = " STRING_BOOL_FALSE " } }" }, serializationStructComplex1);
     EXPECT_EQ(serializationStructComplex1, SerializationStructComplex1);
 
     SerializationStructComplex serializationStructComplex2;
@@ -251,7 +251,7 @@ TEST_F(TestStringSerializer, serialize_WriteTupleToContinuousInternalBuffer)
     EXPECT_EQ(sut.serializeTupleBegin(), sizeof("{ ") - 1);
     {
         EXPECT_EQ(sut.serialize(String1), sizeof(STRING_STRING_1) - 1);
-        EXPECT_EQ(sut.serialize(SerializationEnum1), sizeof(", ") + sizeof(STRING_TEST_ENUM_1) - 2);
+        EXPECT_EQ(sut.serialize(SerializationEnum1), sizeof(", ") + sizeof(STRING_TEST_ENUM_1_COMPACT) - 2);
         EXPECT_EQ(sut.serialize(VectorBool), sizeof(", ") + sizeof("{ ") + sizeof(STRING_BOOL_TRUE) + sizeof(", ") + sizeof(STRING_BOOL_FALSE) + sizeof(", ") + sizeof(STRING_BOOL_FALSE) + sizeof(" }") - 8);
         EXPECT_EQ(sut.serialize(SerializationStructSimple1), sizeof(", ") + sizeof("SerializationStructSimple{ .int32Property = ") + sizeof(STRING_INT32_POSITIVE) + sizeof(", .stringProperty = ") + sizeof(STRING_STRING_1) + sizeof(", .float32Property = " ) + sizeof(STRING_FLOAT32_POSITIVE) + sizeof(" }") - 8);
     }
@@ -260,7 +260,7 @@ TEST_F(TestStringSerializer, serialize_WriteTupleToContinuousInternalBuffer)
     data_t output{
         "{ "
             STRING_STRING_1 ", "
-            STRING_TEST_ENUM_1 ", "
+            STRING_TEST_ENUM_1_COMPACT ", "
             "{ " STRING_BOOL_TRUE ", " STRING_BOOL_FALSE ", " STRING_BOOL_FALSE " }" ", "
             "SerializationStructSimple{ .int32Property = " STRING_INT32_POSITIVE ", .stringProperty = " STRING_STRING_1 ", .float32Property = " STRING_FLOAT32_POSITIVE " }"
         " }"
@@ -274,7 +274,7 @@ TEST_F(TestStringSerializer, deserialize_ReadTupleFromContinuousExternalBuffer)
     data_t input{
         "{ "
             STRING_STRING_1 ", "
-            STRING_TEST_ENUM_1 ", "
+            STRING_TEST_ENUM_1_COMPACT ", "
             "{ " STRING_BOOL_TRUE ", " STRING_BOOL_FALSE ", " STRING_BOOL_FALSE " }" ", "
             "SerializationStructSimple{ .int32Property = " STRING_INT32_POSITIVE ", .stringProperty = " STRING_STRING_1 ", .float32Property = " STRING_FLOAT32_POSITIVE " }"
         " }"
@@ -289,7 +289,7 @@ TEST_F(TestStringSerializer, deserialize_ReadTupleFromContinuousExternalBuffer)
         EXPECT_EQ(sut.lastDeserializeSize(), sizeof(" ") + sizeof(STRING_STRING_1) - 2);
 
         EXPECT_EQ(sut.deserialize<SerializationEnum>(), SerializationEnum1);
-        EXPECT_EQ(sut.lastDeserializeSize(), sizeof(", ") + sizeof(STRING_TEST_ENUM_1) - 2);
+        EXPECT_EQ(sut.lastDeserializeSize(), sizeof(", ") + sizeof(STRING_TEST_ENUM_1_COMPACT) - 2);
 
         EXPECT_EQ(sut.deserialize<dots::vector_t<dots::bool_t>>(), VectorBool);
         EXPECT_EQ(sut.lastDeserializeSize(), sizeof(", ") + sizeof("{ ") + sizeof(STRING_BOOL_TRUE) + sizeof(", ") + sizeof(STRING_BOOL_FALSE) + sizeof(", ") + sizeof(STRING_BOOL_FALSE) + sizeof(" }") - 8);
@@ -332,9 +332,10 @@ TEST_F(TestStringSerializer, deserialize_Policy)
     EXPECT_TRUE(serializationStruct1._equal(SerializationStructComplex1, SerializationStructComplex::enumProperty_p));
 
     SerializationStructComplex serializationStruct2;
-    dots::io::from_string(data_t{ "{ .enumProperty = " STRING_TEST_ENUM_1 " }" }, serializationStruct2);
+    dots::io::from_string(data_t{ "{ .enumProperty = " STRING_TEST_ENUM_1_COMPACT " }" }, serializationStruct2);
     EXPECT_TRUE(serializationStruct2._equal(SerializationStructComplex1, SerializationStructComplex::enumProperty_p));
 
     SerializationStructComplex serializationStruct3;
-    EXPECT_THROW(dots::io::from_string(data_t{ "{ .enumProperty = " STRING_TEST_ENUM_1_COMPACT " }" }, serializationStruct3, { dots::io::StringSerializerOptions::SingleLine, dots::io::StringSerializerOptions::Strict }), std::runtime_error);
+    EXPECT_THROW(dots::io::from_string(data_t{ "{ .enumProperty = " STRING_TEST_ENUM_1 " }" }, serializationStruct3, { dots::io::StringSerializerOptions::SingleLine, dots::io::StringSerializerOptions::Strict }), std::runtime_error);
+    EXPECT_THROW(dots::io::from_string(data_t{ "SerializationStructComplex{ .enumProperty = " STRING_TEST_ENUM_1_COMPACT " }" }, serializationStruct3, { dots::io::StringSerializerOptions::SingleLine, dots::io::StringSerializerOptions::Strict }), std::runtime_error);
 }

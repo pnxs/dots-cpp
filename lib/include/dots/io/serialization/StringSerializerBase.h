@@ -74,7 +74,7 @@ namespace dots::io
             Strict
         };
 
-        OutputStyle style = SingleLine;
+        OutputStyle style = Compact;
         InputPolicy policy = Relaxed;
         size_t indentSize = 4;
     };
