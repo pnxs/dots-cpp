@@ -127,6 +127,33 @@ namespace dots
                 m_openEndpoint->setPort(dotsSeverPort);
             }
         }
+        else
+        {
+            auto warn_about_argument_ignore = [](std::string argName, std::string argValue)
+            {
+                LOG_WARN_S("ignoring legacy argument '" << argName << "=" << argValue << "' because an endpoint argument was specified");
+            };
+
+            if (auto it = vm.find("dots-address"); it != vm.end())
+            {
+                warn_about_argument_ignore("dots-address", it->second.as<std::string>());
+            }
+
+            if (const char* dotsSeverAddress = ::getenv("DOTS_SERVER_ADDRESS"); dotsSeverAddress != nullptr)
+            {
+                warn_about_argument_ignore("DOTS_SERVER_ADDRESS", dotsSeverAddress);
+            }
+
+            if (auto it = vm.find("dots-port"); it != vm.end())
+            {
+                warn_about_argument_ignore("dots-port", it->second.as<std::string>());
+            }
+
+            if (const char* dotsSeverPort = ::getenv("DOTS_SERVER_PORT"); dotsSeverPort != nullptr)
+            {
+                warn_about_argument_ignore("DOTS_SERVER_PORT", dotsSeverPort);
+            }
+        }
 
         if (m_openEndpoint->scheme() == "tcp" && m_openEndpoint->port().empty())
         {
