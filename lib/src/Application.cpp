@@ -104,26 +104,58 @@ namespace dots
         po::store(po::basic_command_line_parser<char>(argc, argv).options(desc).allow_unregistered().run(), vm);
         po::notify(vm);
 
-        m_openEndpoint.emplace(vm["open"].as<std::string>());
+        const po::variable_value& openEndpoint = vm["open"];
+        m_openEndpoint.emplace(openEndpoint.as<std::string>());
 
-        if (auto it = vm.find("dots-address"); it != vm.end())
+        if (openEndpoint.defaulted())
         {
-            m_openEndpoint->setHost(it->second.as<std::string>());
+            if (auto it = vm.find("dots-address"); it != vm.end())
+            {
+                m_openEndpoint->setHost(it->second.as<std::string>());
+            }
+            else if (const char* dotsServerAddress = ::getenv("DOTS_SERVER_ADDRESS"); dotsServerAddress != nullptr)
+            {
+                m_openEndpoint->setHost(dotsServerAddress);
+            }
+
+            if (auto it = vm.find("dots-port"); it != vm.end())
+            {
+                m_openEndpoint->setPort(it->second.as<std::string>());
+            }
+            else if (const char* dotsServerPort = ::getenv("DOTS_SERVER_PORT"); dotsServerPort != nullptr)
+            {
+                m_openEndpoint->setPort(dotsServerPort);
+            }
         }
-        else if (const char* dotsSeverAddress = ::getenv("DOTS_SERVER_ADDRESS"); dotsSeverAddress != nullptr)
+        else
         {
-            m_openEndpoint->setHost(dotsSeverAddress);
+            auto warn_about_argument_ignore = [](std::string argName, std::string argValue)
+            {
+                LOG_WARN_S("ignoring legacy argument '" << argName << "=" << argValue << "' because an endpoint argument was specified");
+            };
+
+            if (auto it = vm.find("dots-address"); it != vm.end())
+            {
+                warn_about_argument_ignore("dots-address", it->second.as<std::string>());
+            }
+
+            if (const char* dotsServerAddress = ::getenv("DOTS_SERVER_ADDRESS"); dotsServerAddress != nullptr)
+            {
+                warn_about_argument_ignore("DOTS_SERVER_ADDRESS", dotsServerAddress);
+            }
+
+            if (auto it = vm.find("dots-port"); it != vm.end())
+            {
+                warn_about_argument_ignore("dots-port", it->second.as<std::string>());
+            }
+
+            if (const char* dotsServerPort = ::getenv("DOTS_SERVER_PORT"); dotsServerPort != nullptr)
+            {
+                warn_about_argument_ignore("DOTS_SERVER_PORT", dotsServerPort);
+            }
         }
 
-        if (auto it = vm.find("dots-port"); it != vm.end())
-        {
-            m_openEndpoint->setPort(it->second.as<std::string>());
-        }
-        else if (const char* dotsSeverPort = ::getenv("DOTS_SERVER_PORT"); dotsSeverPort != nullptr)
-        {
-            m_openEndpoint->setPort(dotsSeverPort);
-        }
-        else if (m_openEndpoint->port().empty())
+        if (m_openEndpoint->scheme() == "tcp" && m_openEndpoint->port().empty())
         {
             m_openEndpoint->setPort("11234");
         }
