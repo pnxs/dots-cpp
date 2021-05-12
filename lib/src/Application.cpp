@@ -104,26 +104,31 @@ namespace dots
         po::store(po::basic_command_line_parser<char>(argc, argv).options(desc).allow_unregistered().run(), vm);
         po::notify(vm);
 
-        m_openEndpoint.emplace(vm["open"].as<std::string>());
+        const po::variable_value& openEndpoint = vm["open"];
+        m_openEndpoint.emplace(openEndpoint.as<std::string>());
 
-        if (auto it = vm.find("dots-address"); it != vm.end())
+        if (openEndpoint.defaulted())
         {
-            m_openEndpoint->setHost(it->second.as<std::string>());
-        }
-        else if (const char* dotsSeverAddress = ::getenv("DOTS_SERVER_ADDRESS"); dotsSeverAddress != nullptr)
-        {
-            m_openEndpoint->setHost(dotsSeverAddress);
+            if (auto it = vm.find("dots-address"); it != vm.end())
+            {
+                m_openEndpoint->setHost(it->second.as<std::string>());
+            }
+            else if (const char* dotsSeverAddress = ::getenv("DOTS_SERVER_ADDRESS"); dotsSeverAddress != nullptr)
+            {
+                m_openEndpoint->setHost(dotsSeverAddress);
+            }
+
+            if (auto it = vm.find("dots-port"); it != vm.end())
+            {
+                m_openEndpoint->setPort(it->second.as<std::string>());
+            }
+            else if (const char* dotsSeverPort = ::getenv("DOTS_SERVER_PORT"); dotsSeverPort != nullptr)
+            {
+                m_openEndpoint->setPort(dotsSeverPort);
+            }
         }
 
-        if (auto it = vm.find("dots-port"); it != vm.end())
-        {
-            m_openEndpoint->setPort(it->second.as<std::string>());
-        }
-        else if (const char* dotsSeverPort = ::getenv("DOTS_SERVER_PORT"); dotsSeverPort != nullptr)
-        {
-            m_openEndpoint->setPort(dotsSeverPort);
-        }
-        else if (m_openEndpoint->scheme() == "tcp" && m_openEndpoint->port().empty())
+        if (m_openEndpoint->scheme() == "tcp" && m_openEndpoint->port().empty())
         {
             m_openEndpoint->setPort("11234");
         }
