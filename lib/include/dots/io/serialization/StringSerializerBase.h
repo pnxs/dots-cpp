@@ -23,7 +23,7 @@ namespace dots::io
         static constexpr std::string_view VectorEnd = "}";
 
         static constexpr std::string_view TupleBegin = "{";
-        static constexpr std::string_view TupleElementSeperator = ",";
+        static constexpr std::string_view TupleElementSeparator = ",";
         static constexpr std::string_view TupleEnd = "}";
 
         static constexpr std::string_view StringDelimiter = "\"";
@@ -60,8 +60,22 @@ namespace dots::io
 
     struct StringSerializerOptions
     {
-        bool compact = false;
-        bool multiLine = false;
+        enum OutputStyle
+        {
+            Minimal,
+            Compact,
+            SingleLine,
+            MultiLine
+        };
+
+        enum InputPolicy
+        {
+            Relaxed,
+            Strict
+        };
+
+        OutputStyle style = Compact;
+        InputPolicy policy = Relaxed;
         size_t indentSize = 4;
     };
 
@@ -142,24 +156,6 @@ namespace dots::io
             return lastDeserializeSize();
         }
 
-        template <typename T, typename D = Derived, std::enable_if_t<std::is_constructible_v<D, StringSerializerOptions> && std::is_base_of_v<type::Struct, T>, int> = 0>
-        static data_t Serialize(const T& instance, const property_set_t& includedProperties, StringSerializerOptions options = {})
-        {
-            Derived serializer{ options };
-            serializer.serialize(instance, includedProperties);
-
-            return std::move(serializer.output());
-        }
-
-        template <typename T, typename D = Derived, std::enable_if_t<std::is_constructible_v<D, StringSerializerOptions>, int> = 0>
-        static data_t Serialize(const T& value, StringSerializerOptions options = {})
-        {
-            Derived serializer{ options };
-            serializer.serialize(value);
-
-            return std::move(serializer.output());
-        }
-
     protected:
 
         using visitor_base_t = type::TypeVisitor<Derived>;
@@ -180,14 +176,14 @@ namespace dots::io
             {
                 if (!m_outputTupleInfo.empty() && m_outputTupleInfo.top())
                 {
-                    writePrefixedNewLine(traits_t::TupleElementSeperator);
+                    writePrefixedNewLine(traits_t::TupleElementSeparator);
                 }
             }
             else
             {
                 if (!m_inputTupleInfo.empty() && m_inputTupleInfo.top())
                 {
-                    readTokenAfterWhitespace(traits_t::TupleElementSeperator);
+                    readTokenAfterWhitespace(traits_t::TupleElementSeparator);
                 }
             }
         }
@@ -224,7 +220,17 @@ namespace dots::io
         {
             if constexpr (traits_t::UserTypeNames)
             {
-                write(instance._descriptor().name());
+                if (m_options.style == StringSerializerOptions::Compact)
+                {
+                    if (indentLevel() == 0)
+                    {
+                        write(instance._descriptor().name());
+                    }
+                }
+                else if (m_options.style >= StringSerializerOptions::SingleLine)
+                {
+                    write(instance._descriptor().name());
+                }
             }
 
             incrementIndentLevel();
@@ -260,7 +266,7 @@ namespace dots::io
             {
                 writeSeparator(traits_t::PropertyValueBegin);
             }
-            else if (!m_options.compact)
+            else if (m_options.style >= StringSerializerOptions::Compact)
             {
                 write(" ");
             }
@@ -327,8 +333,11 @@ namespace dots::io
             {
                 if constexpr (traits_t::UserTypeNames)
                 {
-                    write(descriptor.name());
-                    write("::");
+                    if (m_options.style >= StringSerializerOptions::SingleLine)
+                    {
+                        write(descriptor.name());
+                        write("::");
+                    }
                 }
 
                 write(descriptor.enumeratorFromValue(value).name());
@@ -410,7 +419,14 @@ namespace dots::io
 
             if constexpr (traits_t::UserTypeNames)
             {
-                readTokenAfterWhitespace(descriptor.name());
+                if (m_options.policy == StringSerializerOptions::Strict)
+                {
+                    readTokenAfterWhitespace(descriptor.name());
+                }
+                else
+                {
+                    tryReadTokenAfterWhitespace(descriptor.name());
+                }
             }
 
             readTokenAfterWhitespace(traits_t::StructBegin);
@@ -504,8 +520,18 @@ namespace dots::io
             {
                 if constexpr (traits_t::UserTypeNames)
                 {
-                    readTokenAfterWhitespace(descriptor.name());
-                    readToken("::");
+                    if (m_options.policy == StringSerializerOptions::Strict)
+                    {
+                        readTokenAfterWhitespace(descriptor.name());
+                        readToken("::");
+                    }
+                    else
+                    {
+                        if (tryReadTokenAfterWhitespace(descriptor.name()))
+                        {
+                            readToken("::");
+                        }
+                    }
                 }
 
                 descriptor.construct(value, descriptor.enumeratorFromName(readIdentifier()).value());
@@ -582,7 +608,7 @@ namespace dots::io
 
         void writeSeparator(std::string_view infix)
         {
-            if (m_options.compact)
+            if (m_options.style == StringSerializerOptions::Minimal)
             {
                 write(infix);
             }
@@ -594,12 +620,12 @@ namespace dots::io
 
         void writeNewLine()
         {
-            if (m_options.multiLine)
+            if (m_options.style == StringSerializerOptions::MultiLine)
             {
                 write("\n");
                 output().resize(output().size() + m_indentLevel * m_options.indentSize, ' ');
             }
-            else if (!m_options.compact)
+            else if (m_options.style >= StringSerializerOptions::Compact)
             {
                 write(" ");
             }
@@ -828,37 +854,49 @@ namespace dots::io
 
         std::string readEscapedToken()
         {
-            readTokenAfterWhitespace(traits_t::StringDelimiter);
-            std::string token;
+            readWhitespace();
+            bool stringDelimited = tryReadToken(traits_t::StringDelimiter);
 
-            while (!m_input.empty())
+            if (indentLevel() == 0 && !stringDelimited)
             {
-                if (tryReadToken(traits_t::StringDelimiter))
-                {
-                    return token;
-                }
-                else if (tools::starts_with(m_input, traits_t::StringEscape))
-                {
-                    auto it = std::find_if(traits_t::StringEscapeMapping.begin(), traits_t::StringEscapeMapping.end(), [this](const auto& escapeMapping)
-                    {
-                        return tools::starts_with(m_input, escapeMapping.to);
-                    });
+                std::string token = std::string{ m_input };
+                m_input.remove_prefix(m_input.size());
 
-                    if (it != traits_t::StringEscapeMapping.end())
+                return token;
+            }
+            else
+            {
+                std::string token;
+
+                while (!m_input.empty())
+                {
+                    if (tryReadToken(traits_t::StringDelimiter))
                     {
-                        const auto& [from, to] = *it;
-                        token += from;
-                        m_input.remove_prefix(to.size());
+                        return token;
+                    }
+                    else if (tools::starts_with(m_input, traits_t::StringEscape))
+                    {
+                        auto it = std::find_if(traits_t::StringEscapeMapping.begin(), traits_t::StringEscapeMapping.end(), [this](const auto& escapeMapping)
+                        {
+                            return tools::starts_with(m_input, escapeMapping.to);
+                        });
+
+                        if (it != traits_t::StringEscapeMapping.end())
+                        {
+                            const auto& [from, to] = *it;
+                            token += from;
+                            m_input.remove_prefix(to.size());
+                        }
+                    }
+                    else
+                    {
+                        token += m_input.front();
+                        m_input.remove_prefix(1);
                     }
                 }
-                else
-                {
-                    token += m_input.front();
-                    m_input.remove_prefix(1);
-                }
-            }
 
-            throw makeTokenError(traits_t::StringDelimiter);
+                throw makeTokenError(traits_t::StringDelimiter);
+            }
         }
 
         std::string_view readIdentifier()

@@ -61,5 +61,6 @@
 #define JSON_STRING_3 "\"foo \\\"bar\\\" baz\""
 #define JSON_STRING_4 "\"foo bar \\\"baz\\\"\""
 #define JSON_STRING_5 u8"\"foo\\\\ \u0062\u0061\u0072\u00A9\\n b\\\\az\""
+#define JSON_STRING_5_NO_OUTER_QUOTES u8"foo\\ \u0062\u0061\u0072\u00A9\n b\\az"
 
 #define JSON_TEST_ENUM_1 "5"
