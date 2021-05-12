@@ -113,18 +113,18 @@ namespace dots
             {
                 m_openEndpoint->setHost(it->second.as<std::string>());
             }
-            else if (const char* dotsSeverAddress = ::getenv("DOTS_SERVER_ADDRESS"); dotsSeverAddress != nullptr)
+            else if (const char* dotsServerAddress = ::getenv("DOTS_SERVER_ADDRESS"); dotsServerAddress != nullptr)
             {
-                m_openEndpoint->setHost(dotsSeverAddress);
+                m_openEndpoint->setHost(dotsServerAddress);
             }
 
             if (auto it = vm.find("dots-port"); it != vm.end())
             {
                 m_openEndpoint->setPort(it->second.as<std::string>());
             }
-            else if (const char* dotsSeverPort = ::getenv("DOTS_SERVER_PORT"); dotsSeverPort != nullptr)
+            else if (const char* dotsServerPort = ::getenv("DOTS_SERVER_PORT"); dotsServerPort != nullptr)
             {
-                m_openEndpoint->setPort(dotsSeverPort);
+                m_openEndpoint->setPort(dotsServerPort);
             }
         }
         else
@@ -139,9 +139,9 @@ namespace dots
                 warn_about_argument_ignore("dots-address", it->second.as<std::string>());
             }
 
-            if (const char* dotsSeverAddress = ::getenv("DOTS_SERVER_ADDRESS"); dotsSeverAddress != nullptr)
+            if (const char* dotsServerAddress = ::getenv("DOTS_SERVER_ADDRESS"); dotsServerAddress != nullptr)
             {
-                warn_about_argument_ignore("DOTS_SERVER_ADDRESS", dotsSeverAddress);
+                warn_about_argument_ignore("DOTS_SERVER_ADDRESS", dotsServerAddress);
             }
 
             if (auto it = vm.find("dots-port"); it != vm.end())
@@ -149,9 +149,9 @@ namespace dots
                 warn_about_argument_ignore("dots-port", it->second.as<std::string>());
             }
 
-            if (const char* dotsSeverPort = ::getenv("DOTS_SERVER_PORT"); dotsSeverPort != nullptr)
+            if (const char* dotsServerPort = ::getenv("DOTS_SERVER_PORT"); dotsServerPort != nullptr)
             {
-                warn_about_argument_ignore("DOTS_SERVER_PORT", dotsSeverPort);
+                warn_about_argument_ignore("DOTS_SERVER_PORT", dotsServerPort);
             }
         }
 
