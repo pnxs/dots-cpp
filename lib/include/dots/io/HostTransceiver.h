@@ -56,7 +56,7 @@ namespace dots::io
         bool handleListenAccept(Listener& listener, channel_ptr_t channel);
         void handleListenError(Listener& listener, const std::exception_ptr& e);
 
-        bool handleTransmission(io::Connection& connection, Transmission transmission);
+        void handleTransmission(io::Connection& connection, Transmission transmission);
         void handleTransition(io::Connection& connection, const std::exception_ptr& e) noexcept;
 
         void handleMemberMessage(io::Connection& connection, const DotsMember& member);

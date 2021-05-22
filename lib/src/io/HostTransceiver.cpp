@@ -111,7 +111,7 @@ namespace dots::io
     {
         auto connection = std::make_shared<io::Connection>(std::move(channel), true);
         connection->asyncReceive(registry(), m_authManager.get(), selfName(),
-            [this](io::Connection& connection, Transmission transmission) { return handleTransmission(connection, std::move(transmission)); },
+            [this](io::Connection& connection, Transmission transmission) { handleTransmission(connection, std::move(transmission)); },
             [this](io::Connection& connection, const std::exception_ptr& e) { handleTransition(connection, e); }
         );
         m_guestConnections.emplace(connection.get(), connection);
@@ -134,7 +134,7 @@ namespace dots::io
         m_listeners.erase(&listener);
     }
 
-    bool HostTransceiver::handleTransmission(io::Connection& connection, Transmission transmission)
+    void HostTransceiver::handleTransmission(io::Connection& connection, Transmission transmission)
     {
         const auto& [header, instance] = transmission;
 
@@ -156,8 +156,6 @@ namespace dots::io
 
         dispatcher().dispatch(transmission);
         transmit(&connection, std::move(transmission));
-
-        return true;
     }
 
     void HostTransceiver::handleTransition(io::Connection& connection, const std::exception_ptr& e) noexcept
