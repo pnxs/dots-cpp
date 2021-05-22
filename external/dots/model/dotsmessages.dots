@@ -56,6 +56,19 @@ struct DotsMsgHello [internal,cached=false] {
     3: bool authenticationRequired;
 }
 
+// Used for echo/ping function of host-transceiver:
+// The DOTS guest may send a DotsEcho to the host, the host just returns the sent
+// data back to the client.
+// A guest can use this to implement a keep-alive, a connection-check or to measure
+// the latency between the guest and the host.
+// The usage of 'identifier', 'sequenceNumber' is defined by the guest.
+struct DotsEcho [internal,cached=false] {
+    1: bool request; //< Need to be set to 'true' when requesting, 'false' when host replies.
+    2: uint32 identifier;
+    3: uint32 sequenceNumber;
+    4: string data;
+}
+
 struct DotsTransportHeader [internal,cached=false] {
     1: [deprecated] string nameSpace;
     2: [deprecated] string destinationGroup;

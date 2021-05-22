@@ -41,6 +41,7 @@ target_sources(${TARGET_NAME}
         src/TestProxyProperty.cpp
         src/TestIpNetwork.cpp
         src/TestLegacyAuthManager.cpp
+        src/TestHostTransceiver.cpp
 )
 target_include_directories(${TARGET_NAME}
     PRIVATE
@@ -49,7 +50,7 @@ target_include_directories(${TARGET_NAME}
 )
 target_compile_options(${TARGET_NAME}
     PRIVATE
-        $<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-O2 -Wall -Wextra -Wpedantic -Werror>>
+        $<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-O2 -Wall -Wextra -Wpedantic -Werror -Wno-missing-field-initializers>>
         $<$<CXX_COMPILER_ID:MSVC>:/W4>
 )
 target_compile_definitions(${TARGET_NAME}

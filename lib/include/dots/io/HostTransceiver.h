@@ -9,6 +9,7 @@
 #include <DotsClearCache.dots.h>
 #include <DotsDescriptorRequest.dots.h>
 #include <DotsMember.dots.h>
+#include <DotsEcho.dots.h>
 
 namespace dots::io
 {
@@ -56,12 +57,13 @@ namespace dots::io
         bool handleListenAccept(Listener& listener, channel_ptr_t channel);
         void handleListenError(Listener& listener, const std::exception_ptr& e);
 
-        bool handleTransmission(io::Connection& connection, Transmission transmission);
+        void handleTransmission(io::Connection& connection, Transmission transmission);
         void handleTransition(io::Connection& connection, const std::exception_ptr& e) noexcept;
 
         void handleMemberMessage(io::Connection& connection, const DotsMember& member);
         void handleDescriptorRequest(io::Connection& connection, const DotsDescriptorRequest& descriptorRequest);
         void handleClearCache(io::Connection& connection, const DotsClearCache& clearCache);
+        void handleEchoRequest(io::Connection& connection, const DotsEcho& echoRequest);
 
         void transmitContainer(io::Connection& connection, const Container<>& container);
 
