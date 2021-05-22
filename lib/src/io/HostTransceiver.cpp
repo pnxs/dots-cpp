@@ -350,7 +350,6 @@ namespace dots::io
             echoReply.request = false;
             connection.transmit(echoReply);
         }
-
     }
 
     void HostTransceiver::transmitContainer(io::Connection& connection, const Container<>& container)
