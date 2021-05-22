@@ -56,6 +56,13 @@ struct DotsMsgHello [internal,cached=false] {
     3: bool authenticationRequired;
 }
 
+struct DotsEcho [internal,cached=false] {
+    1: bool request;
+    2: uint32 identifier;
+    3: uint32 sequenceNr;
+    4: string data;
+}
+
 struct DotsTransportHeader [internal,cached=false] {
     1: [deprecated] string nameSpace;
     2: [deprecated] string destinationGroup;
