@@ -143,10 +143,12 @@ namespace dots::io
             if (auto* member = instance.as<DotsMember>())
             {
                 handleMemberMessage(connection, *member);
+                return;
             }
             else if (auto* descriptorRequest = instance.as<DotsDescriptorRequest>())
             {
                 handleDescriptorRequest(connection, *descriptorRequest);
+                return;
             }
             else if (auto* clearCache = instance.as<DotsClearCache>())
             {
