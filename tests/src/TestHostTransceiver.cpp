@@ -26,14 +26,14 @@ TEST_F(TestHostTransceiver, testDotsEcho)
     dots::publish(DotsEcho{
         DotsEcho::request_i(true),
         DotsEcho::identifier_i(0),
-        DotsEcho::sequenceNr_i(1)
+        DotsEcho::sequenceNumber_i(1)
     });
 
     processEvents();
 
     ASSERT_TRUE(reply.has_value());
     EXPECT_EQ(false, reply->request);
-    EXPECT_EQ(0, reply->identifier);
-    EXPECT_EQ(1, reply->sequenceNr);
+    EXPECT_EQ(0u, reply->identifier);
+    EXPECT_EQ(1u, reply->sequenceNumber);
 
 }

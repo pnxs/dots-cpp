@@ -59,7 +59,7 @@ struct DotsMsgHello [internal,cached=false] {
 struct DotsEcho [internal,cached=false] {
     1: bool request;
     2: uint32 identifier;
-    3: uint32 sequenceNr;
+    3: uint32 sequenceNumber;
     4: string data;
 }
 
