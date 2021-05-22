@@ -9,6 +9,7 @@
 #include <DotsClearCache.dots.h>
 #include <DotsDescriptorRequest.dots.h>
 #include <DotsMember.dots.h>
+#include <DotsEcho.dots.h>
 
 namespace dots::io
 {
@@ -62,6 +63,7 @@ namespace dots::io
         void handleMemberMessage(io::Connection& connection, const DotsMember& member);
         void handleDescriptorRequest(io::Connection& connection, const DotsDescriptorRequest& descriptorRequest);
         void handleClearCache(io::Connection& connection, const DotsClearCache& clearCache);
+        void handleEchoRequest(io::Connection& connection, const DotsEcho& clearCache);
 
         void transmitContainer(io::Connection& connection, const Container<>& container);
 

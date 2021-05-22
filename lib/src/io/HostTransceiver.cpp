@@ -154,6 +154,11 @@ namespace dots::io
             {
                 handleClearCache(connection, *clearCache);
             }
+            else if (auto* echoRequest = instance.as<DotsEcho>())
+            {
+                handleEchoRequest(connection, *echoRequest);
+                return;
+            }
         }
 
         dispatcher().dispatch(transmission);
@@ -335,6 +340,17 @@ namespace dots::io
                 }
             }
         }
+    }
+
+    void HostTransceiver::handleEchoRequest(io::Connection& connection, const DotsEcho& echoRequest)
+    {
+        if  (echoRequest.request == true)
+        {
+            DotsEcho echoReply(echoRequest);
+            echoReply.request = false;
+            connection.transmit(echoReply);
+        }
+
     }
 
     void HostTransceiver::transmitContainer(io::Connection& connection, const Container<>& container)
