@@ -63,7 +63,7 @@ namespace dots::io
         void handleMemberMessage(io::Connection& connection, const DotsMember& member);
         void handleDescriptorRequest(io::Connection& connection, const DotsDescriptorRequest& descriptorRequest);
         void handleClearCache(io::Connection& connection, const DotsClearCache& clearCache);
-        void handleEchoRequest(io::Connection& connection, const DotsEcho& clearCache);
+        void handleEchoRequest(io::Connection& connection, const DotsEcho& echoRequest);
 
         void transmitContainer(io::Connection& connection, const Container<>& container);
 
