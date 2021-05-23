@@ -20,7 +20,6 @@ target_sources(${TARGET_NAME}
         src/io/serialization/TestExperimentalCborSerializer.cpp
         src/io/serialization/TestJsonSerializer.cpp
         src/io/serialization/TestRapidJsonSerializer.cpp
-        src/io/serialization/TestSerializerBase.cpp
         src/io/serialization/TestStringSerializer.cpp
 
         src/io/TestRegistry.cpp
