@@ -69,7 +69,7 @@ target_link_libraries(${TARGET_NAME}
         gtest
         gtest_main
         date::date
-        date::tz
+        date::date-tz
         RapidJSON::RapidJSON
 )
 
@@ -105,5 +105,5 @@ target_link_libraries(${TARGET_NAME_EXPERIMENTAL}
         gtest
         gtest_main
         date::date
-        date::tz
+        date::date-tz
 )

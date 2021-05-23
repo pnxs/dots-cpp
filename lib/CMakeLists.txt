@@ -144,7 +144,7 @@ target_link_libraries(${TARGET_NAME}
         $<$<PLATFORM_ID:Windows>:bcrypt>
     PRIVATE
         $<BUILD_INTERFACE:date::date>
-        $<BUILD_INTERFACE:date::tz>
+        $<BUILD_INTERFACE:date::date-tz>
         $<BUILD_INTERFACE:PicoSHA2::PicoSHA2>
 )
 set_target_properties(${TARGET_NAME} PROPERTIES
