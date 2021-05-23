@@ -220,13 +220,13 @@ TEST_F(TestStringSerializer, deserialize_SimpleStructArgument)
 
 TEST_F(TestStringSerializer, serialize_ComplexStructArgument)
 {
-    data_t expectedValid1 = "SerializationStructComplex{ .enumProperty = " STRING_TEST_ENUM_1_COMPACT ", .float64Property = " STRING_FLOAT64_NEGATIVE ", .timepointProperty = " STRING_TIME_POINT_1 ", .structSimpleProperty = { .boolProperty = " STRING_BOOL_FALSE " } }";
+    data_t expectedValid1 = "SerializationStructComplex{ .enumProperty = " STRING_TEST_ENUM_1_COMPACT ", .float64Property = " STRING_FLOAT64_NEGATIVE ", .timepointProperty = " + STRING_TIME_POINT_1 + ", .structSimpleProperty = { .boolProperty = " STRING_BOOL_FALSE " } }";
     EXPECT_EQ(dots::io::to_string(SerializationStructComplex1), expectedValid1);
 
     data_t expectedValid2 = "SerializationStructComplex{ .propertySetProperty = " STRING_PROPERTY_SET_MIXED_1 ", .durationVectorProperty = { " STRING_DURATION_1 ", " STRING_DURATION_2 " }, .uuidProperty = " STRING_UUID_1 " }";
     EXPECT_EQ(dots::io::to_string(SerializationStructComplex2), expectedValid2);
 
-    data_t expectedSpecific1 = "SerializationStructComplex{ .timepointProperty = " STRING_TIME_POINT_1 ", .propertySetProperty = <invalid> }";
+    data_t expectedSpecific1 = "SerializationStructComplex{ .timepointProperty = " + STRING_TIME_POINT_1 + ", .propertySetProperty = <invalid> }";
     EXPECT_EQ(dots::io::to_string(SerializationStructComplex1, SerializationStructComplex::timepointProperty_p + SerializationStructComplex::propertySetProperty_p), expectedSpecific1);
 
     data_t expectedSpecific2 = "SerializationStructComplex{ .enumProperty = <invalid>, .durationVectorProperty = { " STRING_DURATION_1 ", " STRING_DURATION_2 " } }";
@@ -236,7 +236,7 @@ TEST_F(TestStringSerializer, serialize_ComplexStructArgument)
 TEST_F(TestStringSerializer, deserialize_ComplexStructArgument)
 {
     SerializationStructComplex serializationStructComplex1;
-    dots::io::from_string(data_t{ "SerializationStructComplex{ .enumProperty = " STRING_TEST_ENUM_1_COMPACT ", .float64Property = " STRING_FLOAT64_NEGATIVE ", .timepointProperty = " STRING_TIME_POINT_1 ", .structSimpleProperty = SerializationStructSimple{ .boolProperty = " STRING_BOOL_FALSE " } }" }, serializationStructComplex1);
+    dots::io::from_string(data_t{ "SerializationStructComplex{ .enumProperty = " STRING_TEST_ENUM_1_COMPACT ", .float64Property = " STRING_FLOAT64_NEGATIVE ", .timepointProperty = " + STRING_TIME_POINT_1 + ", .structSimpleProperty = SerializationStructSimple{ .boolProperty = " STRING_BOOL_FALSE " } }" }, serializationStructComplex1);
     EXPECT_EQ(serializationStructComplex1, SerializationStructComplex1);
 
     SerializationStructComplex serializationStructComplex2;
@@ -244,7 +244,7 @@ TEST_F(TestStringSerializer, deserialize_ComplexStructArgument)
     EXPECT_EQ(serializationStructComplex2, SerializationStructComplex2);
 
     SerializationStructComplex serializationStructComplex3;
-    dots::io::from_string(data_t{ "SerializationStructComplex{ .timepointProperty = " STRING_TIME_POINT_1 ", .propertySetProperty = <invalid> }" }, serializationStructComplex3);
+    dots::io::from_string(data_t{ "SerializationStructComplex{ .timepointProperty = " + STRING_TIME_POINT_1 + ", .propertySetProperty = <invalid> }" }, serializationStructComplex3);
     EXPECT_TRUE(serializationStructComplex3._equal(SerializationStructComplex1, SerializationStructComplex::timepointProperty_p + SerializationStructComplex::propertySetProperty_p));
 
     SerializationStructComplex serializationStructComplex4;
@@ -312,20 +312,20 @@ TEST_F(TestStringSerializer, deserialize_ReadTupleFromContinuousExternalBuffer)
 
 TEST_F(TestStringSerializer, serialize_Style)
 {
-    data_t expectedMinimal = "{.enumProperty=" STRING_TEST_ENUM_1_COMPACT ",.float64Property=" STRING_FLOAT64_NEGATIVE ",.timepointProperty=" STRING_TIME_POINT_1 ",.structSimpleProperty={.boolProperty=" STRING_BOOL_FALSE "}}";
+    data_t expectedMinimal = "{.enumProperty=" STRING_TEST_ENUM_1_COMPACT ",.float64Property=" STRING_FLOAT64_NEGATIVE ",.timepointProperty=" + STRING_TIME_POINT_1 + ",.structSimpleProperty={.boolProperty=" STRING_BOOL_FALSE "}}";
     EXPECT_EQ(dots::io::to_string(SerializationStructComplex1, dots::io::StringSerializerOptions{ dots::io::StringSerializerOptions::Minimal }), expectedMinimal);
 
-    data_t expectedCompact = "SerializationStructComplex{ .enumProperty = " STRING_TEST_ENUM_1_COMPACT ", .float64Property = " STRING_FLOAT64_NEGATIVE ", .timepointProperty = " STRING_TIME_POINT_1 ", .structSimpleProperty = { .boolProperty = " STRING_BOOL_FALSE " } }";
+    data_t expectedCompact = "SerializationStructComplex{ .enumProperty = " STRING_TEST_ENUM_1_COMPACT ", .float64Property = " STRING_FLOAT64_NEGATIVE ", .timepointProperty = " + STRING_TIME_POINT_1 + ", .structSimpleProperty = { .boolProperty = " STRING_BOOL_FALSE " } }";
     EXPECT_EQ(dots::io::to_string(SerializationStructComplex1, dots::io::StringSerializerOptions{ dots::io::StringSerializerOptions::Compact }), expectedCompact);
 
-    data_t expectedSingleLine = "SerializationStructComplex{ .enumProperty = " STRING_TEST_ENUM_1 ", .float64Property = " STRING_FLOAT64_NEGATIVE ", .timepointProperty = " STRING_TIME_POINT_1 ", .structSimpleProperty = SerializationStructSimple{ .boolProperty = " STRING_BOOL_FALSE " } }";
+    data_t expectedSingleLine = "SerializationStructComplex{ .enumProperty = " STRING_TEST_ENUM_1 ", .float64Property = " STRING_FLOAT64_NEGATIVE ", .timepointProperty = " + STRING_TIME_POINT_1 + ", .structSimpleProperty = SerializationStructSimple{ .boolProperty = " STRING_BOOL_FALSE " } }";
     EXPECT_EQ(dots::io::to_string(SerializationStructComplex1, dots::io::StringSerializerOptions{ dots::io::StringSerializerOptions::SingleLine }), expectedSingleLine);
 
     data_t expectedMultiLine{
         "SerializationStructComplex{\n"
         "    .enumProperty = " STRING_TEST_ENUM_1 ",\n"
         "    .float64Property = " STRING_FLOAT64_NEGATIVE ",\n"
-        "    .timepointProperty = " STRING_TIME_POINT_1 ",\n"
+        "    .timepointProperty = " + STRING_TIME_POINT_1 + ",\n"
         "    .structSimpleProperty = SerializationStructSimple{\n"
         "        .boolProperty = " STRING_BOOL_FALSE "\n"
         "    }\n"
