@@ -172,7 +172,7 @@ struct SerializerTestBaseDataEncoded
             }
             else/* if constexpr (std::is_same_v<decayed_t, value_t>)*/
             {
-                data.emplace_back(static_cast<value_t>(partialData));
+                data.push_back(static_cast<value_t>(partialData));
             }
         };
 
