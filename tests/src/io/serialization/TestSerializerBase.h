@@ -145,7 +145,11 @@ struct SerializerTestBaseDataEncoded
     using value_t = typename data_t::value_type;
 
     template <typename T>
-    using is_partial_data = std::disjunction<std::is_same<std::decay_t<T>, data_t>, std::is_convertible<std::decay_t<T>, value_t>>;
+    using is_partial_data = std::disjunction<
+        std::is_same<std::decay_t<T>, data_t>,
+        std::is_constructible<data_t, T>,
+        std::is_convertible<std::decay_t<T>, value_t>
+    >;
 
     template <typename... Ts, std::enable_if_t<std::conjunction_v<is_partial_data<Ts>...>, int> = 0>
     static data_t Concat(Ts&&... ts)
@@ -154,11 +158,17 @@ struct SerializerTestBaseDataEncoded
 
         auto append = [&data](auto&& partialData)
         {
-            using decayed_t = std::decay_t<decltype(partialData)>;
+            using partial_data_t = decltype(partialData);
+            using decayed_t = std::decay_t<partial_data_t>;
 
             if constexpr (std::is_same_v<decayed_t, data_t>)
             {
                 std::copy(partialData.begin(), partialData.end(), std::back_inserter(data));
+            }
+            else if constexpr (std::is_constructible_v<data_t, partial_data_t>)
+            {
+                data_t partialData_(std::forward<partial_data_t>(partialData));
+                std::copy(partialData_.begin(), partialData_.end(), std::back_inserter(data));
             }
             else/* if constexpr (std::is_same_v<decayed_t, value_t>)*/
             {
