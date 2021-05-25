@@ -166,14 +166,14 @@ struct SerializerTestBaseDataEncoded
             {
                 std::copy(partialData.begin(), partialData.end(), std::back_inserter(data));
             }
-            else if constexpr (std::is_constructible_v<data_t, partial_data_t>)
+            else if constexpr (std::is_convertible_v<decayed_t, value_t>)
+            {
+                data.push_back(static_cast<value_t>(partialData));
+            }
+            else/* if constexpr (std::is_constructible_v<data_t, partial_data_t>)*/
             {
                 data_t partialData_(std::forward<partial_data_t>(partialData));
                 std::copy(partialData_.begin(), partialData_.end(), std::back_inserter(data));
-            }
-            else/* if constexpr (std::is_same_v<decayed_t, value_t>)*/
-            {
-                data.push_back(static_cast<value_t>(partialData));
             }
         };
 
