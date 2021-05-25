@@ -168,25 +168,25 @@ namespace dots::io
         return CborSerializer::Serialize(value);
     }
 
-    template <typename T>
+    template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
     size_t from_cbor(const uint8_t* data, size_t size, T& value)
     {
         return CborSerializer::Deserialize(data, size, value);
     }
 
-    template <typename T>
+    template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
     size_t from_cbor(const std::vector<uint8_t>& data, T& value)
     {
         return CborSerializer::Deserialize(data, value);
     }
 
-    template <typename T>
+    template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
     T from_cbor(const uint8_t* data, size_t size)
     {
         return CborSerializer::Deserialize<T>(data, size);
     }
 
-    template <typename T>
+    template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
     T from_cbor(const std::vector<uint8_t>& data)
     {
         return CborSerializer::Deserialize<T>(data);
