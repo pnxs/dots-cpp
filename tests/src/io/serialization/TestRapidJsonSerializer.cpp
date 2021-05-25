@@ -414,7 +414,7 @@ TEST_F(TestRapidJsonSerializer, deserialize_ComplexStructArgument)
     }
 }
 
-TEST_F(TestRapidJsonSerializer, serialize_WriteTupleToContinuousInternalBuffer)
+TEST_F(TestRapidJsonSerializer, serialize_TupleToContinuousInternalBuffer)
 {
     buffer_t buffer;
     writer_t writer{ buffer };
@@ -432,7 +432,7 @@ TEST_F(TestRapidJsonSerializer, serialize_WriteTupleToContinuousInternalBuffer)
     EXPECT_EQ(buffer.GetString(), Encoded().serializationTuple1);
 }
 
-TEST_F(TestRapidJsonSerializer, deserialize_ReadTupleFromContinuousExternalBuffer)
+TEST_F(TestRapidJsonSerializer, deserialize_TupleFromContinuousExternalBuffer)
 {
     serializer_t sut{ Encoded().serializationTuple1 };
 
