@@ -458,7 +458,7 @@ TYPED_TEST_P(SerializerTestBase, deserialize_ComplexStructArgument)
     }
 }
 
-TYPED_TEST_P(SerializerTestBase, serialize_WriteTupleToContinuousInternalBuffer)
+TYPED_TEST_P(SerializerTestBase, serialize_ConsecutiveArgumentsToContinuousInternalBuffer)
 {
     using base_t = SerializerTestBase<TypeParam>;
 
@@ -471,15 +471,15 @@ TYPED_TEST_P(SerializerTestBase, serialize_WriteTupleToContinuousInternalBuffer)
         EXPECT_EQ(sut.serialize(base_t::Decoded().structSimple1), base_t::Encoded().structSimple1_Valid.size());
     }
 
-    EXPECT_EQ(sut.output(), base_t::Encoded().serializationTuple1);
+    EXPECT_EQ(sut.output(), base_t::Encoded().consecutiveTypes1);
 }
 
-TYPED_TEST_P(SerializerTestBase, deserialize_ReadTupleFromContinuousExternalBuffer)
+TYPED_TEST_P(SerializerTestBase, deserialize_ConsecutiveArgumentsFromContinuousExternalBuffer)
 {
     using base_t = SerializerTestBase<TypeParam>;
 
     typename base_t::serializer_t sut;
-    sut.setInput(base_t::Encoded().serializationTuple1);
+    sut.setInput(base_t::Encoded().consecutiveTypes1);
 
     EXPECT_TRUE(sut.inputAvailable());
     
@@ -511,6 +511,6 @@ REGISTER_TYPED_TEST_SUITE_P(SerializerTestBase,
     deserialize_SimpleStructArgument,
     serialize_ComplexStructArgument,
     deserialize_ComplexStructArgument,
-    serialize_WriteTupleToContinuousInternalBuffer,
-    deserialize_ReadTupleFromContinuousExternalBuffer
+    serialize_ConsecutiveArgumentsToContinuousInternalBuffer,
+    deserialize_ConsecutiveArgumentsFromContinuousExternalBuffer
 );

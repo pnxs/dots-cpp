@@ -162,10 +162,10 @@ struct StringSerializerTestDataEncoded : SerializerTestBaseDataEncoded<dots::io:
     );
 
     //
-    // tuple types
+    // consecutive types
     //
 
-    data_t serializationTuple1 = Concat(
+    data_t consecutiveTypes1 = Concat(
         string1,
         enum1,
         vectorBool,
@@ -179,7 +179,7 @@ struct StringSerializerTestDataEncoded : SerializerTestBaseDataEncoded<dots::io:
     data_t string5Unescaped = u8"foo\\ \u0062\u0061\u0072\u00A9\n b\\az";
     data_t structSimple_String5Unescaped = Concat("SerializationStructSimple{ .stringProperty = ", string5Unescaped, " }");
 
-    data_t serializationTuple1WithBeginEnd = Concat(
+    data_t serializationTuple1 = Concat(
         "{ ",
         string1, ", ",
         enum1, ", ",

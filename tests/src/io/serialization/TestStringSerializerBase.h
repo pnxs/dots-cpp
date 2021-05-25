@@ -36,7 +36,7 @@ TYPED_TEST_P(StringSerializerTestBase, serialize_TupleToContinuousInternalBuffer
     }
     sut.serializeTupleEnd();
 
-    EXPECT_EQ(sut.output(), base_t::Encoded().serializationTuple1WithBeginEnd);
+    EXPECT_EQ(sut.output(), base_t::Encoded().serializationTuple1);
 }
 
 TYPED_TEST_P(StringSerializerTestBase, deserialize_TupleFromContinuousExternalBuffer)
@@ -44,7 +44,7 @@ TYPED_TEST_P(StringSerializerTestBase, deserialize_TupleFromContinuousExternalBu
     using base_t = StringSerializerTestBase<TypeParam>;
     typename base_t::serializer_t sut;
 
-    sut.setInput(base_t::Encoded().serializationTuple1WithBeginEnd);
+    sut.setInput(base_t::Encoded().serializationTuple1);
     EXPECT_TRUE(sut.inputAvailable());
 
     sut.deserializeTupleBegin();

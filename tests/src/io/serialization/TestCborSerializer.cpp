@@ -146,10 +146,10 @@ struct CborSerializerTestDataEncoded : SerializerTestBaseDataEncoded<dots::io::C
     );
 
     //
-    // tuple types
+    // consecutive types
     //
 
-    data_t serializationTuple1 = Concat(
+    data_t consecutiveTypes1 = Concat(
         string1,
         enum1,
         vectorBool,
