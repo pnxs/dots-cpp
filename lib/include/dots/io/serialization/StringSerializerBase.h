@@ -430,8 +430,9 @@ namespace dots::io
             }
 
             readTokenAfterWhitespace(traits_t::StructBegin);
+            std::array endToken{ traits_t::PropertyValueEnd, traits_t::StructEnd };
 
-            for (;;)
+            for (bool structEnd = tryReadTokenAfterWhitespace(traits_t::StructEnd); !structEnd; structEnd = readAnyTokenAfterWhitespace(endToken) == traits_t::StructEnd)
             {
                 readTokenAfterWhitespace(traits_t::PropertyNameBegin);
                 std::string_view propertyName = readIdentifier();
@@ -448,11 +449,6 @@ namespace dots::io
                     const type::PropertyDescriptor& propertyDescriptor = *it;
                     type::ProxyProperty<> property{ instance, propertyDescriptor };
                     visit(property);
-                }
-
-                if (readAnyTokenAfterWhitespace(std::array{ traits_t::PropertyValueEnd, traits_t::StructEnd }) == traits_t::StructEnd)
-                {
-                    break;
                 }
             }
 
