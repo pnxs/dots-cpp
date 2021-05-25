@@ -1,3 +1,4 @@
+#pragma once
 #include <dots/testing/gtest/gtest.h>
 
 #include <SerializationStructSimple.dots.h>
