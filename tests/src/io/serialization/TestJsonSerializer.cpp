@@ -1,334 +1,217 @@
 #include <dots/testing/gtest/gtest.h>
 #include <dots/io/serialization/JsonSerializer.h>
-#include <io/serialization/data/json_serialization_data.h>
+#include <io/serialization/TestSerializerBase.h>
+#include <io/serialization/TestStringSerializerBase.h>
 
-struct TestJsonSerializer : ::testing::Test, TestSerializationInput
+struct JsonSerializerTestDataEncoded : SerializerTestBaseDataEncoded<dots::io::JsonSerializer<>>
 {
-protected:
+    //
+    // fundamental types
+    //
 
-    using data_t = dots::io::JsonSerializer<>::data_t;
+    data_t boolFalse{ "false" };
+    data_t boolTrue{ "true" };
+
+    data_t int8Zero{ "0" };
+    data_t int8Positive{ "42" };
+    data_t int8Negative{ "-42" };
+
+    data_t uint8Zero{ "0" };
+    data_t uint8Positive1{ "42" };
+    data_t uint8Positive2{ "170" };
+
+    data_t int16Zero{ "0" };
+    data_t int16Positive{ "12345" };
+    data_t int16Negative{ "-12345" };
+
+    data_t uint16Zero{ "0" };
+    data_t uint16Positive1{ "12345" };
+    data_t uint16Positive2{ "45113" };
+
+    data_t int32Zero{ "0" };
+    data_t int32Positive{ "12345789" };
+    data_t int32Negative{ "-12345789" };
+
+    data_t uint32Zero{ "0" };
+    data_t uint32Positive1{ "12345789" };
+    data_t uint32Positive2{ "2159829437" };
+
+    data_t int64Zero{ "0" };
+    data_t int64Positive{ "12345678910111213" };
+    data_t int64Negative{ "-12345678910111213" };
+
+    data_t uint64Zero{ "0" };
+    data_t uint64Positive1{ "12345678910111213" };
+    data_t uint64Positive2{ "18434398394799440403" };
+
+    data_t float32Zero{ "0.0" };
+    data_t float32Positive{ "3.1415" };
+    data_t float32Negative{ "-2.7183" };
+
+    data_t float64Zero{ "0.0" };
+    data_t float64Positive{ "3.14159265359" };
+    data_t float64Negative{ "-2.71828182846" };
+
+    data_t propertySetNone{ "0" };
+    data_t propertySetAll{ "4294967295" };
+    data_t propertySetMixed1{ "2868838485" };
+
+    data_t timePoint1{ "1583960877.5" };
+    data_t steadyTimePoint1{ "324702.125" };
+
+    data_t duration1{ "123.456" };
+    data_t duration2{ "342.073" };
+
+    data_t uuid1{ "\"8c96148e-58bd-11eb-ae93-0242ac130002\"" };
+
+    data_t string1{ "\"foobar\"" };
+    data_t string2{ "\"\\\"foo\\\" bar baz\"" };
+    data_t string3{ "\"foo \\\"bar\\\" baz\"" };
+    data_t string4{ "\"foo bar \\\"baz\\\"\"" };
+    data_t string5{ u8"\"foo\\\\ \u0062\u0061\u0072\u00A9\\n b\\\\az\"" };
+
+    //
+    // enum types
+    //
+
+    data_t serializationEnum1{ "5" };
+
+    //
+    // property types
+    //
+
+    data_t serializationStructSimple1_int32Property = Concat("\"int32Property\": ", int32Positive);
+    data_t serializationStructSimple1_stringProperty = Concat("\"stringProperty\": ", string1);
+    data_t serializationStructSimple1_boolProperty = Concat("\"boolProperty\": null");
+    data_t serializationStructSimple1_float32Property = Concat("\"float32Property\": ", float32Positive);
+
+    data_t serializationStructComplex1_enumProperty = Concat("\"enumProperty\": ", serializationEnum1);
+    data_t serializationStructComplex1_float64Property = Concat("\"float64Property\": ", float64Negative);
+    data_t serializationStructComplex1_timepointProperty = Concat("\"timepointProperty\": ", timePoint1);
+    data_t serializationStructComplex1_structSimpleProperty = Concat("\"structSimpleProperty\": { \"boolProperty\": ", boolFalse, " }");
+
+    data_t serializationStructComplex2_propertySetProperty = Concat("\"propertySetProperty\": ", propertySetMixed1);
+    data_t serializationStructComplex2_durationVectorProperty = Concat("\"durationVectorProperty\": [ ", duration1, ", ", duration2, " ]");
+    data_t serializationStructComplex2_uuidProperty = Concat("\"uuidProperty\": ", uuid1);
+
+    //
+    // vector types
+    //
+
+    data_t vectorBool = Concat("[ ", boolTrue, ", ", boolFalse, ", ", boolFalse, " ]");
+    data_t vectorFloat = Concat("[ ", float32Positive, ", ", float32Negative, " ]");
+    data_t vectorStructSimple = Concat("[ { \"int32Property\": ", int32Positive, " }, { \"boolProperty\": ",  boolFalse, " } ]");
+
+    //
+    // struct types
+    //
+
+    data_t serializationStructSimple1_Valid = Concat(
+        "{ ",
+        serializationStructSimple1_int32Property, ", ",
+        serializationStructSimple1_stringProperty, ", ",
+        serializationStructSimple1_float32Property,
+        " }"
+    );
+
+    data_t serializationStructSimple1_All = Concat(
+        "{ ",
+        serializationStructSimple1_int32Property, ", ",
+        serializationStructSimple1_stringProperty, ", ",
+        serializationStructSimple1_boolProperty, ", ",
+        serializationStructSimple1_float32Property,
+        " }"
+    );
+
+    data_t serializationStructSimple1_Specific = Concat(
+        "{ ",
+        serializationStructSimple1_boolProperty, ", ",
+        serializationStructSimple1_float32Property,
+        " }"
+    );
+    
+    data_t serializationStructComplex1_Valid = Concat(
+        "{ ",
+        serializationStructComplex1_enumProperty, ", ",
+        serializationStructComplex1_float64Property, ", ",
+        serializationStructComplex1_timepointProperty, ", ",
+        serializationStructComplex1_structSimpleProperty,
+        " }"
+    );
+
+    data_t serializationStructComplex1_Specific = Concat(
+        "{ ",
+        serializationStructComplex1_timepointProperty, ", ",
+        "\"propertySetProperty\": null",
+        " }"
+    );
+
+    data_t serializationStructComplex2_Valid = Concat(
+        "{ ",
+        serializationStructComplex2_propertySetProperty, ", ",
+        serializationStructComplex2_durationVectorProperty, ", ",
+        serializationStructComplex2_uuidProperty,
+        " }"
+    );
+
+    data_t serializationStructComplex2_Specific = Concat(
+        "{ ",
+        "\"enumProperty\": null, ",
+        serializationStructComplex2_durationVectorProperty,
+        " }"
+    );
+
+    //
+    // tuple types
+    //
+
+    data_t serializationTuple1 = Concat(
+        string1,
+        serializationEnum1,
+        vectorBool,
+        serializationStructSimple1_Valid
+    );
+
+    //
+    // string serializer types
+    //
+
+    data_t string5Unescaped = u8"foo\\ \u0062\u0061\u0072\u00A9\n b\\az";
+    data_t serializationStructSimple_String5Unescaped = Concat("{ \"stringProperty\": ", string5Unescaped, " }");
+
+    data_t serializationTuple1WithBeginEnd = Concat(
+        "[ ",
+        string1, ", ",
+        serializationEnum1, ", ",
+        vectorBool, ", ",
+        "{ ",
+        serializationStructSimple1_int32Property, ", ",
+        serializationStructSimple1_stringProperty, ", ",
+        serializationStructSimple1_float32Property,
+        " }",
+        " ]"
+    );
+
+    data_t serializationStructComplex_MinimalStyle = Concat("{\"enumProperty\":", serializationEnum1, ",\"float64Property\":", float64Negative, ",\"timepointProperty\":", timePoint1, ",\"structSimpleProperty\":{\"boolProperty\":", boolFalse, "}}");
+    data_t serializationStructComplex_CompactStyle = Concat("{ \"enumProperty\": ", serializationEnum1, ", \"float64Property\": ", float64Negative, ", \"timepointProperty\": " + timePoint1, ", \"structSimpleProperty\": { \"boolProperty\": ", boolFalse, " } }");
+    data_t serializationStructComplex_SingleLineStyle = Concat("{ \"enumProperty\": ", serializationEnum1, ", \"float64Property\": ", float64Negative, ", \"timepointProperty\": ", timePoint1, ", \"structSimpleProperty\": { \"boolProperty\": ", boolFalse, " } }");
+
+    data_t serializationStructComplex_MultiLineStyle = Concat(
+        "{\n",
+        "    \"enumProperty\": ", serializationEnum1, ",\n",
+        "    \"float64Property\": ", float64Negative, ",\n",
+        "    \"timepointProperty\": ", timePoint1, ",\n",
+        "    \"structSimpleProperty\": {\n",
+        "        \"boolProperty\": ", boolFalse, "\n",
+        "    }\n",
+        "}"
+    );
+
+    data_t serializationStructComplex_RelaxedPolicy1 = Concat("{ \"enumProperty\": ", serializationEnum1," }");
+    data_t serializationStructComplex_RelaxedPolicy2 = Concat("{ \"enumProperty\": ", serializationEnum1, " }");
+    data_t serializationStructComplex_StrictPolicy1 = Concat("{ \"enumProperty\": ", serializationEnum1, " }");
+    data_t serializationStructComplex_StrictPolicy2 = Concat("{ \"enumProperty\": ", serializationEnum1, " }");
 };
 
-TEST_F(TestJsonSerializer, serialize_TypedArgument)
-{
-    EXPECT_EQ(dots::io::to_json(BoolFalse), data_t(JSON_BOOL_FALSE));
-    EXPECT_EQ(dots::io::to_json(BoolTrue), data_t(JSON_BOOL_TRUE));
-
-    EXPECT_EQ(dots::io::to_json(Int8Zero), data_t(JSON_INT8_ZERO));
-    EXPECT_EQ(dots::io::to_json(Int8Positive),  data_t(JSON_INT8_POSITIVE));
-    EXPECT_EQ(dots::io::to_json(Int8Negative), data_t(JSON_INT8_NEGATIVE));
-
-    EXPECT_EQ(dots::io::to_json(Uint8Zero), data_t(JSON_UINT8_ZERO));
-    EXPECT_EQ(dots::io::to_json(Uint8Positive1), data_t(JSON_UINT8_POSITIVE_1));
-    EXPECT_EQ(dots::io::to_json(Uint8Positive2), data_t(JSON_UINT8_POSITIVE_2));
-
-    EXPECT_EQ(dots::io::to_json(Int16Zero), data_t(JSON_INT16_ZERO));
-    EXPECT_EQ(dots::io::to_json(Int16Positive), data_t(JSON_INT16_POSITIVE));
-    EXPECT_EQ(dots::io::to_json(Int16Negative), data_t(JSON_INT16_NEGATIVE));
-
-    EXPECT_EQ(dots::io::to_json(Uint16Zero), data_t(JSON_UINT16_ZERO));
-    EXPECT_EQ(dots::io::to_json(Uint16Positive1), data_t(JSON_UINT16_POSITIVE_1));
-    EXPECT_EQ(dots::io::to_json(Uint16Positive2), data_t(JSON_UINT16_POSITIVE_2));
-
-    EXPECT_EQ(dots::io::to_json(Int32Zero), data_t(JSON_INT32_ZERO));
-    EXPECT_EQ(dots::io::to_json(Int32Positive), data_t(JSON_INT32_POSITIVE));
-    EXPECT_EQ(dots::io::to_json(Int32Negative), data_t(JSON_INT32_NEGATIVE));
-
-    EXPECT_EQ(dots::io::to_json(Uint32Zero), data_t(JSON_UINT32_ZERO));
-    EXPECT_EQ(dots::io::to_json(Uint32Positive1), data_t(JSON_UINT32_POSITIVE_1));
-    EXPECT_EQ(dots::io::to_json(Uint32Positive2), data_t(JSON_UINT32_POSITIVE_2));
-
-    EXPECT_EQ(dots::io::to_json(Int64Zero), data_t(JSON_INT64_ZERO));
-    EXPECT_EQ(dots::io::to_json(Int64Positive), data_t(JSON_INT64_POSITIVE));
-    EXPECT_EQ(dots::io::to_json(Int64Negative), data_t(JSON_INT64_NEGATIVE));
-
-    EXPECT_EQ(dots::io::to_json(Uint64Zero), data_t(JSON_UINT64_ZERO));
-    EXPECT_EQ(dots::io::to_json(Uint64Positive1), data_t(JSON_UINT64_POSITIVE_1));
-    EXPECT_EQ(dots::io::to_json(Uint64Positive2), data_t(JSON_UINT64_POSITIVE_2));
-
-    EXPECT_EQ(dots::io::to_json(Float32Zero), data_t(JSON_FLOAT32_ZERO));
-    EXPECT_EQ(dots::io::to_json(Float32Positive), data_t(JSON_FLOAT32_POSITIVE));
-    EXPECT_EQ(dots::io::to_json(Float32Negative), data_t(JSON_FLOAT32_NEGATIVE));
-
-    EXPECT_EQ(dots::io::to_json(Float64Zero), data_t(JSON_FLOAT64_ZERO));
-    EXPECT_EQ(dots::io::to_json(Float64Positive), data_t(JSON_FLOAT64_POSITIVE));
-    EXPECT_EQ(dots::io::to_json(Float64Negative), data_t(JSON_FLOAT64_NEGATIVE));
-
-    EXPECT_EQ(dots::io::to_json(PropertySetNone), data_t(JSON_PROPERTY_SET_NONE));
-    EXPECT_EQ(dots::io::to_json(PropertySetAll), data_t(JSON_PROPERTY_SET_ALL));
-    EXPECT_EQ(dots::io::to_json(PropertySetMixed1), data_t(JSON_PROPERTY_SET_MIXED_1));
-
-    EXPECT_EQ(dots::io::to_json(TimePoint1), data_t(JSON_TIME_POINT_1));
-    EXPECT_EQ(dots::io::to_json(SteadyTimePoint1), data_t(JSON_STEADY_TIME_POINT_1));
-
-    EXPECT_EQ(dots::io::to_json(Duration1), data_t(JSON_DURATION_1));
-    EXPECT_EQ(dots::io::to_json(Duration2), data_t(JSON_DURATION_2));
-
-    EXPECT_EQ(dots::io::to_json(Uuid1), data_t(JSON_UUID_1));
-
-    EXPECT_EQ(dots::io::to_json(String1), data_t(JSON_STRING_1));
-    EXPECT_EQ(dots::io::to_json(String2), data_t(JSON_STRING_2));
-    EXPECT_EQ(dots::io::to_json(String3), data_t(JSON_STRING_3));
-    EXPECT_EQ(dots::io::to_json(String4), data_t(JSON_STRING_4));
-    EXPECT_EQ(dots::io::to_json(String5), data_t(JSON_STRING_5));
-
-    EXPECT_EQ(dots::io::to_json(SerializationEnum1), data_t(JSON_TEST_ENUM_1));
-}
-
-TEST_F(TestJsonSerializer, deserialize_TypedArgument)
-{
-    EXPECT_EQ(dots::io::from_json<dots::bool_t>(data_t(JSON_BOOL_FALSE)), BoolFalse);
-    EXPECT_EQ(dots::io::from_json<dots::bool_t>(data_t(JSON_BOOL_TRUE)), BoolTrue);
-
-    EXPECT_EQ(dots::io::from_json<dots::int8_t>(data_t(JSON_INT8_ZERO)), Int8Zero);
-    EXPECT_EQ(dots::io::from_json<dots::int8_t>(data_t(JSON_INT8_POSITIVE)), Int8Positive);
-    EXPECT_EQ(dots::io::from_json<dots::int8_t>(data_t(JSON_INT8_NEGATIVE)), Int8Negative);
-
-    EXPECT_EQ(dots::io::from_json<dots::uint8_t>(data_t(JSON_UINT8_ZERO)), Uint8Zero);
-    EXPECT_EQ(dots::io::from_json<dots::uint8_t>(data_t(JSON_UINT8_POSITIVE_1)), Uint8Positive1);
-    EXPECT_EQ(dots::io::from_json<dots::uint8_t>(data_t(JSON_UINT8_POSITIVE_2)), Uint8Positive2);
-
-    EXPECT_EQ(dots::io::from_json<dots::int16_t>(data_t(JSON_INT16_ZERO)), Int16Zero);
-    EXPECT_EQ(dots::io::from_json<dots::int16_t>(data_t(JSON_INT16_POSITIVE)), Int16Positive);
-    EXPECT_EQ(dots::io::from_json<dots::int16_t>(data_t(JSON_INT16_NEGATIVE)), Int16Negative);
-
-    EXPECT_EQ(dots::io::from_json<dots::uint16_t>(data_t(JSON_UINT16_ZERO)), Uint16Zero);
-    EXPECT_EQ(dots::io::from_json<dots::uint16_t>(data_t(JSON_UINT16_POSITIVE_1)), Uint16Positive1);
-    EXPECT_EQ(dots::io::from_json<dots::uint16_t>(data_t(JSON_UINT16_POSITIVE_2)), Uint16Positive2);
-
-    EXPECT_EQ(dots::io::from_json<dots::int32_t>(data_t(JSON_INT32_ZERO)), Int32Zero);
-    EXPECT_EQ(dots::io::from_json<dots::int32_t>(data_t(JSON_INT32_POSITIVE)), Int32Positive);
-    EXPECT_EQ(dots::io::from_json<dots::int32_t>(data_t(JSON_INT32_NEGATIVE)), Int32Negative);
-
-    EXPECT_EQ(dots::io::from_json<dots::uint32_t>(data_t(JSON_UINT32_ZERO)), Uint32Zero);
-    EXPECT_EQ(dots::io::from_json<dots::uint32_t>(data_t(JSON_UINT32_POSITIVE_1)), Uint32Positive1);
-    EXPECT_EQ(dots::io::from_json<dots::uint32_t>(data_t(JSON_UINT32_POSITIVE_2)), Uint32Positive2);
-
-    EXPECT_EQ(dots::io::from_json<dots::int64_t>(data_t(JSON_INT64_ZERO)), Int64Zero);
-    EXPECT_EQ(dots::io::from_json<dots::int64_t>(data_t(JSON_INT64_POSITIVE)), Int64Positive);
-    EXPECT_EQ(dots::io::from_json<dots::int64_t>(data_t(JSON_INT64_NEGATIVE)), Int64Negative);
-
-    EXPECT_EQ(dots::io::from_json<dots::uint64_t>(data_t(JSON_UINT64_ZERO)), Uint64Zero);
-    EXPECT_EQ(dots::io::from_json<dots::uint64_t>(data_t(JSON_UINT64_POSITIVE_1)), Uint64Positive1);
-    EXPECT_EQ(dots::io::from_json<dots::uint64_t>(data_t(JSON_UINT64_POSITIVE_2)), Uint64Positive2);
-
-    EXPECT_EQ(dots::io::from_json<dots::float32_t>(data_t(JSON_FLOAT32_ZERO)), Float32Zero);
-    EXPECT_EQ(dots::io::from_json<dots::float32_t>(data_t(JSON_FLOAT32_POSITIVE)), Float32Positive);
-    EXPECT_EQ(dots::io::from_json<dots::float32_t>(data_t(JSON_FLOAT32_NEGATIVE)), Float32Negative);
-
-    EXPECT_EQ(dots::io::from_json<dots::float64_t>(data_t(JSON_FLOAT64_ZERO)), Float64Zero);
-    EXPECT_EQ(dots::io::from_json<dots::float64_t>(data_t(JSON_FLOAT64_POSITIVE)), Float64Positive);
-    EXPECT_EQ(dots::io::from_json<dots::float64_t>(data_t(JSON_FLOAT64_NEGATIVE)), Float64Negative);
-
-    EXPECT_EQ(dots::io::from_json<dots::property_set_t>(data_t(JSON_PROPERTY_SET_NONE)), PropertySetNone);
-    EXPECT_EQ(dots::io::from_json<dots::property_set_t>(data_t(JSON_PROPERTY_SET_ALL)), PropertySetAll);
-    EXPECT_EQ(dots::io::from_json<dots::property_set_t>(data_t(JSON_PROPERTY_SET_MIXED_1)), PropertySetMixed1);
-
-    EXPECT_EQ(dots::io::from_json<dots::timepoint_t>(data_t(JSON_TIME_POINT_1)), TimePoint1);
-    EXPECT_EQ(dots::io::from_json<dots::steady_timepoint_t>(data_t(JSON_STEADY_TIME_POINT_1)), SteadyTimePoint1);
-
-    EXPECT_EQ(dots::io::from_json<dots::duration_t>(data_t(JSON_DURATION_1)), Duration1);
-    EXPECT_EQ(dots::io::from_json<dots::duration_t>(data_t(JSON_DURATION_2)), Duration2);
-
-    EXPECT_EQ(dots::io::from_json<dots::uuid_t>(data_t(JSON_UUID_1)), Uuid1);
-
-    EXPECT_EQ(dots::io::from_json<dots::string_t>(data_t(JSON_STRING_1)), String1);
-    EXPECT_EQ(dots::io::from_json<dots::string_t>(data_t(JSON_STRING_2)), String2);
-    EXPECT_EQ(dots::io::from_json<dots::string_t>(data_t(JSON_STRING_3)), String3);
-    EXPECT_EQ(dots::io::from_json<dots::string_t>(data_t(JSON_STRING_4)), String4);
-    EXPECT_EQ(dots::io::from_json<dots::string_t>(data_t(JSON_STRING_5)), String5);
-    EXPECT_EQ(dots::io::from_json<dots::string_t>(data_t(JSON_STRING_5_NO_OUTER_QUOTES)), String5);
-
-    EXPECT_EQ(dots::io::from_json<SerializationEnum>(data_t(JSON_TEST_ENUM_1)), SerializationEnum1);
-}
-
-TEST_F(TestJsonSerializer, serialize_PropertyArgument)
-{
-    EXPECT_EQ(dots::io::to_json(SerializationStructSimple1.int32Property), data_t("\"int32Property\": " JSON_INT32_POSITIVE));
-    EXPECT_EQ(dots::io::to_json(SerializationStructSimple1.stringProperty), data_t("\"stringProperty\": " JSON_STRING_1));
-    EXPECT_EQ(dots::io::to_json(SerializationStructSimple1.float32Property), data_t("\"float32Property\": " JSON_FLOAT32_POSITIVE));
-}
-
-TEST_F(TestJsonSerializer, deserialize_PropertyArgument)
-{
-    SerializationStructSimple serializationStructSimple1;
-    dots::io::from_json(data_t(JSON_INT32_POSITIVE), serializationStructSimple1.int32Property);
-    dots::io::from_json(data_t(JSON_STRING_1), serializationStructSimple1.stringProperty);
-    dots::io::from_json(data_t(JSON_FLOAT32_POSITIVE), serializationStructSimple1.float32Property);
-
-    EXPECT_EQ(serializationStructSimple1.int32Property, SerializationStructSimple1.int32Property);
-    EXPECT_EQ(serializationStructSimple1.stringProperty, SerializationStructSimple1.stringProperty);
-    EXPECT_EQ(serializationStructSimple1.float32Property, SerializationStructSimple1.float32Property);
-
-    SerializationStructSimple serializationStructSimple2;
-    dots::io::from_json(data_t(JSON_STRING_5_NO_OUTER_QUOTES), serializationStructSimple2.stringProperty);
-    EXPECT_EQ(*serializationStructSimple2.stringProperty, String5);
-}
-
-TEST_F(TestJsonSerializer, serialize_VectorArgument)
-{
-    EXPECT_EQ(dots::io::to_json(VectorBool), data_t("[ " JSON_BOOL_TRUE ", " JSON_BOOL_FALSE ", " JSON_BOOL_FALSE " ]"));
-    EXPECT_EQ(dots::io::to_json(VectorFloat), data_t("[ " JSON_FLOAT32_POSITIVE", " JSON_FLOAT32_NEGATIVE " ]"));
-    EXPECT_EQ(dots::io::to_json(VectorStructSimple), data_t("[ { \"int32Property\": " JSON_INT32_POSITIVE " }, { \"boolProperty\": " JSON_BOOL_FALSE " } ]"));
-}
-
-TEST_F(TestJsonSerializer, deserialize_VectorArgument)
-{
-    dots::vector_t<dots::bool_t> vectorBool;
-    dots::io::from_json(data_t("[" JSON_BOOL_TRUE "," JSON_BOOL_FALSE "," JSON_BOOL_FALSE "]"), vectorBool);
-    EXPECT_EQ(vectorBool, VectorBool);
-
-    dots::vector_t<dots::float32_t> vectorFloat32;
-    dots::io::from_json(data_t("[" JSON_FLOAT32_POSITIVE"," JSON_FLOAT32_NEGATIVE "]"), vectorFloat32);
-    EXPECT_EQ(vectorFloat32, VectorFloat);
-
-    dots::vector_t<SerializationStructSimple> vectorStructSimple;
-    dots::io::from_json(data_t("[{\"int32Property\":" JSON_INT32_POSITIVE "},{\"boolProperty\":" JSON_BOOL_FALSE "}]"), vectorStructSimple);
-    EXPECT_EQ(vectorStructSimple, VectorStructSimple);
-}
-
-TEST_F(TestJsonSerializer, serialize_SimpleStructArgument)
-{
-    data_t expectedValid = "{ \"int32Property\": " JSON_INT32_POSITIVE ", \"stringProperty\": " JSON_STRING_1 ", \"float32Property\": " JSON_FLOAT32_POSITIVE " }";
-    EXPECT_EQ(dots::io::to_json(SerializationStructSimple1), expectedValid);
-
-    data_t expectedAll = "{ \"int32Property\": " JSON_INT32_POSITIVE ", \"stringProperty\": " JSON_STRING_1 ", \"boolProperty\": null, \"float32Property\": " JSON_FLOAT32_POSITIVE " }";
-    EXPECT_EQ(dots::io::to_json(SerializationStructSimple1, dots::property_set_t::All), expectedAll);
-
-    data_t expectedSpecific = "{ \"boolProperty\": null, \"float32Property\": " JSON_FLOAT32_POSITIVE " }";
-    EXPECT_EQ(dots::io::to_json(SerializationStructSimple1, SerializationStructSimple::boolProperty_p + SerializationStructSimple::float32Property_p), expectedSpecific);
-}
-
-TEST_F(TestJsonSerializer, deserialize_SimpleStructArgument)
-{
-    SerializationStructSimple serializationStructSimple1;
-    dots::io::from_json(data_t{ "{\"int32Property\":" JSON_INT32_POSITIVE ",\"stringProperty\":" JSON_STRING_1 ",\"float32Property\":" JSON_FLOAT32_POSITIVE "}" }, serializationStructSimple1);
-    EXPECT_EQ(serializationStructSimple1, SerializationStructSimple1);
-
-    SerializationStructSimple serializationStructSimple2;
-    dots::io::from_json(data_t{ "{\"int32Property\":" JSON_INT32_POSITIVE ",\"stringProperty\":" JSON_STRING_1 ",\"boolProperty\":null,\"float32Property\":" JSON_FLOAT32_POSITIVE "}" }, serializationStructSimple2);
-    EXPECT_EQ(serializationStructSimple2, SerializationStructSimple1);
-
-    SerializationStructSimple serializationStructSimple3;
-    dots::io::from_json(data_t{ "{\"boolProperty\":null,\"float32Property\":" JSON_FLOAT32_POSITIVE "}" }, serializationStructSimple3);
-    EXPECT_TRUE(serializationStructSimple3._equal(SerializationStructSimple1, SerializationStructSimple::boolProperty_p + SerializationStructSimple::float32Property_p));
-
-    SerializationStructSimple serializationStructSimple4;
-    EXPECT_THROW(dots::io::from_json(data_t{ "{\"stringProperty\":" JSON_STRING_5_NO_OUTER_QUOTES "}" }, serializationStructSimple4), std::runtime_error);
-}
-
-TEST_F(TestJsonSerializer, serialize_ComplexStructArgument)
-{
-    data_t expectedValid1 = "{ \"enumProperty\": " JSON_TEST_ENUM_1 ", \"float64Property\": " JSON_FLOAT64_NEGATIVE ", \"timepointProperty\": " JSON_TIME_POINT_1 ", \"structSimpleProperty\": { \"boolProperty\": " JSON_BOOL_FALSE " } }";
-    EXPECT_EQ(dots::io::to_json(SerializationStructComplex1), expectedValid1);
-
-    data_t expectedValid2 = "{ \"propertySetProperty\": " JSON_PROPERTY_SET_MIXED_1 ", \"durationVectorProperty\": [ " JSON_DURATION_1 ", " JSON_DURATION_2 " ], \"uuidProperty\": " JSON_UUID_1 " }";
-    EXPECT_EQ(dots::io::to_json(SerializationStructComplex2), expectedValid2);
-
-    data_t expectedSpecific1 = "{ \"timepointProperty\": " JSON_TIME_POINT_1 ", \"propertySetProperty\": null }";
-    EXPECT_EQ(dots::io::to_json(SerializationStructComplex1, SerializationStructComplex::timepointProperty_p + SerializationStructComplex::propertySetProperty_p), expectedSpecific1);
-
-    data_t expectedSpecific2 = "{ \"enumProperty\": null, \"durationVectorProperty\": [ " JSON_DURATION_1 ", " JSON_DURATION_2 " ] }";
-    EXPECT_EQ(dots::io::to_json(SerializationStructComplex2, SerializationStructComplex::enumProperty_p + SerializationStructComplex::durationVectorProperty_p), expectedSpecific2);
-}
-
-TEST_F(TestJsonSerializer, deserialize_ComplexStructArgument)
-{
-    SerializationStructComplex serializationStructComplex1;
-    dots::io::from_json(data_t{ "{\"enumProperty\":" JSON_TEST_ENUM_1 ",\"float64Property\":" JSON_FLOAT64_NEGATIVE ",\"timepointProperty\":" JSON_TIME_POINT_1 ",\"structSimpleProperty\":{\"boolProperty\":" JSON_BOOL_FALSE "}}" }, serializationStructComplex1);
-    EXPECT_EQ(serializationStructComplex1, SerializationStructComplex1);
-
-    SerializationStructComplex serializationStructComplex2;
-    dots::io::from_json(data_t{ "{\"propertySetProperty\":" JSON_PROPERTY_SET_MIXED_1 ",\"durationVectorProperty\":[" JSON_DURATION_1 "," JSON_DURATION_2 "],\"uuidProperty\":" JSON_UUID_1 "}" }, serializationStructComplex2);
-    EXPECT_EQ(serializationStructComplex2, SerializationStructComplex2);
-
-    SerializationStructComplex serializationStructComplex3;
-    dots::io::from_json(data_t{ "{\"timepointProperty\":" JSON_TIME_POINT_1 ",\"propertySetProperty\":null}" }, serializationStructComplex3);
-    EXPECT_TRUE(serializationStructComplex3._equal(SerializationStructComplex1, SerializationStructComplex::timepointProperty_p + SerializationStructComplex::propertySetProperty_p));
-
-    SerializationStructComplex serializationStructComplex4;
-    dots::io::from_json(data_t{ "{\"enumProperty\":null,\"durationVectorProperty\":[" JSON_DURATION_1 "," JSON_DURATION_2 "]}" }, serializationStructComplex4);
-    EXPECT_TRUE(serializationStructComplex4._equal(SerializationStructComplex2, SerializationStructComplex::enumProperty_p + SerializationStructComplex::durationVectorProperty_p));
-}
-
-TEST_F(TestJsonSerializer, serialize_WriteTupleToContinuousInternalBuffer)
-{
-    dots::io::JsonSerializer<> sut;
-    
-    EXPECT_EQ(sut.serializeTupleBegin(), sizeof("[ ") - 1);
-    {
-        EXPECT_EQ(sut.serialize(String1), sizeof(JSON_STRING_1) - 1);
-        EXPECT_EQ(sut.serialize(SerializationEnum1), sizeof(", ") + sizeof(JSON_TEST_ENUM_1) - 2);
-        EXPECT_EQ(sut.serialize(VectorBool), sizeof(", ") + sizeof("[ ") + sizeof(JSON_BOOL_TRUE) + sizeof(", ") + sizeof(JSON_BOOL_FALSE) + sizeof(", ") + sizeof(JSON_BOOL_FALSE) + sizeof(" ]") - 8);
-        EXPECT_EQ(sut.serialize(SerializationStructSimple1), sizeof(", ") + sizeof("{ \"int32Property\": ") + sizeof(JSON_INT32_POSITIVE) + sizeof(", \"stringProperty\": ") + sizeof(JSON_STRING_1) + sizeof(", \"float32Property\": ") + sizeof(JSON_FLOAT32_POSITIVE) + sizeof(" }") - 8);
-    }
-    EXPECT_EQ(sut.serializeTupleEnd(), sizeof(" ]") - 1);
-
-    data_t output{
-        "[ "
-            JSON_STRING_1 ", "
-            JSON_TEST_ENUM_1 ", "
-            "[ " JSON_BOOL_TRUE ", " JSON_BOOL_FALSE ", " JSON_BOOL_FALSE " ]" ", "
-            "{ \"int32Property\": " JSON_INT32_POSITIVE ", \"stringProperty\": " JSON_STRING_1 ", \"float32Property\": " JSON_FLOAT32_POSITIVE " }"
-        " ]"
-    };
-    EXPECT_EQ(sut.output(), output);
-}
-
-TEST_F(TestJsonSerializer, deserialize_ReadTupleFromContinuousExternalBuffer)
-{
-    dots::io::JsonSerializer<> sut;
-    data_t input{
-        "[ "
-            JSON_STRING_1 ", "
-            JSON_TEST_ENUM_1 ", "
-            "[ " JSON_BOOL_TRUE ", " JSON_BOOL_FALSE ", " JSON_BOOL_FALSE " ]" ", "
-            "{ \"int32Property\": " JSON_INT32_POSITIVE ", \"stringProperty\": " JSON_STRING_1 ", \"float32Property\": " JSON_FLOAT32_POSITIVE " }"
-        " ]"
-    };
-    sut.setInput(input);
-
-    EXPECT_TRUE(sut.inputAvailable());
-
-    EXPECT_EQ(sut.deserializeTupleBegin(), sizeof("[") - 1);
-    {
-        EXPECT_EQ(sut.deserialize<std::string>(), String1);
-        EXPECT_EQ(sut.lastDeserializeSize(), sizeof(" ")+ sizeof(JSON_STRING_1) - 2);
-
-        EXPECT_EQ(sut.deserialize<SerializationEnum>(), SerializationEnum1);
-        EXPECT_EQ(sut.lastDeserializeSize(), sizeof(", ") + sizeof(JSON_TEST_ENUM_1) - 2);
-
-        EXPECT_EQ(sut.deserialize<dots::vector_t<dots::bool_t>>(), VectorBool);
-        EXPECT_EQ(sut.lastDeserializeSize(), sizeof(", ") + sizeof("[ ") + sizeof(JSON_BOOL_TRUE) + sizeof(", ") + sizeof(JSON_BOOL_FALSE) + sizeof(", ") + sizeof(JSON_BOOL_FALSE) + sizeof(" ]") - 8);
-
-        EXPECT_EQ(sut.deserialize<SerializationStructSimple>(), SerializationStructSimple1);
-        EXPECT_EQ(sut.lastDeserializeSize(), sizeof(", ") + sizeof("{ \"int32Property\": ") + sizeof(JSON_INT32_POSITIVE) + sizeof(", \"stringProperty\": ") + sizeof(JSON_STRING_1) + sizeof(", \"float32Property\": ") + sizeof(JSON_FLOAT32_POSITIVE) + sizeof(" }") - 8);
-    }
-    EXPECT_EQ(sut.deserializeTupleEnd(), sizeof("] ") - 1);
-
-    EXPECT_FALSE(sut.inputAvailable());
-}
-
-TEST_F(TestJsonSerializer, serialize_Style)
-{
-    data_t expectedMinimal = "{\"enumProperty\":" JSON_TEST_ENUM_1 ",\"float64Property\":" JSON_FLOAT64_NEGATIVE ",\"timepointProperty\":" JSON_TIME_POINT_1 ",\"structSimpleProperty\":{\"boolProperty\":" JSON_BOOL_FALSE "}}";
-    EXPECT_EQ(dots::io::to_json(SerializationStructComplex1, dots::io::StringSerializerOptions{ dots::io::StringSerializerOptions::Minimal }), expectedMinimal);
-
-    data_t expectedCompact = "{ \"enumProperty\": " JSON_TEST_ENUM_1 ", \"float64Property\": " JSON_FLOAT64_NEGATIVE ", \"timepointProperty\": " JSON_TIME_POINT_1 ", \"structSimpleProperty\": { \"boolProperty\": " JSON_BOOL_FALSE " } }";
-    EXPECT_EQ(dots::io::to_json(SerializationStructComplex1, dots::io::StringSerializerOptions{ dots::io::StringSerializerOptions::Compact }), expectedCompact);
-
-    data_t expectedSingleLine = "{ \"enumProperty\": " JSON_TEST_ENUM_1 ", \"float64Property\": " JSON_FLOAT64_NEGATIVE ", \"timepointProperty\": " JSON_TIME_POINT_1 ", \"structSimpleProperty\": { \"boolProperty\": " JSON_BOOL_FALSE " } }";
-    EXPECT_EQ(dots::io::to_json(SerializationStructComplex1, dots::io::StringSerializerOptions{ dots::io::StringSerializerOptions::SingleLine }), expectedSingleLine);
-
-    data_t expectedMultiLine{
-        "{\n"
-        "    \"enumProperty\": " JSON_TEST_ENUM_1 ",\n"
-        "    \"float64Property\": " JSON_FLOAT64_NEGATIVE ",\n"
-        "    \"timepointProperty\": " JSON_TIME_POINT_1 ",\n"
-        "    \"structSimpleProperty\": {\n"
-        "        \"boolProperty\": " JSON_BOOL_FALSE "\n"
-        "    }\n"
-        "}"
-    };
-    EXPECT_EQ(dots::io::to_json(SerializationStructComplex1, dots::io::StringSerializerOptions{ dots::io::StringSerializerOptions::MultiLine }), expectedMultiLine);
-}
+INSTANTIATE_TYPED_TEST_SUITE_P(TestJsonSerializer, SerializerTestBase, JsonSerializerTestDataEncoded);
+INSTANTIATE_TYPED_TEST_SUITE_P(TestJsonSerializer, StringSerializerTestBase, JsonSerializerTestDataEncoded);
