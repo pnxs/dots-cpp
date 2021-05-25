@@ -73,24 +73,24 @@ struct ExperimentalCborSerializerTestDataEncoded : SerializerTestBaseDataEncoded
     // enum types
     //
 
-    data_t serializationEnum1{ 0x05 };
+    data_t enum1{ 0x05 };
 
     //
     // property types
     //
 
-    data_t serializationStructSimple1_int32Property = Concat(int32Positive);
-    data_t serializationStructSimple1_stringProperty = Concat(string1);
-    data_t serializationStructSimple1_float32Property = Concat(float32Positive);
+    data_t structSimple1_int32Property = Concat(int32Positive);
+    data_t structSimple1_stringProperty = Concat(string1);
+    data_t structSimple1_float32Property = Concat(float32Positive);
 
-    data_t serializationStructComplex1_enumProperty = Concat(serializationEnum1);
-    data_t serializationStructComplex1_float64Property = Concat(float64Negative);
-    data_t serializationStructComplex1_timepointProperty = Concat(timePoint1);
-    data_t serializationStructComplex1_structSimpleProperty = Concat(0x81, 0x08, boolFalse);
+    data_t structComplex1_enumProperty = Concat(enum1);
+    data_t structComplex1_float64Property = Concat(float64Negative);
+    data_t structComplex1_timepointProperty = Concat(timePoint1);
+    data_t structComplex1_structSimpleProperty = Concat(0x81, 0x08, boolFalse);
 
-    data_t serializationStructComplex2_propertySetProperty = Concat(propertySetMixed1);
-    data_t serializationStructComplex2_durationVectorProperty = Concat(0x82, duration1, duration2);
-    data_t serializationStructComplex2_uuidProperty = Concat(uuid1);
+    data_t structComplex2_propertySetProperty = Concat(propertySetMixed1);
+    data_t structComplex2_durationVectorProperty = Concat(0x82, duration1, duration2);
+    data_t structComplex2_uuidProperty = Concat(uuid1);
 
     //
     // vector types
@@ -104,45 +104,45 @@ struct ExperimentalCborSerializerTestDataEncoded : SerializerTestBaseDataEncoded
     // struct types
     //
 
-    data_t serializationStructSimple1_Valid = Concat(
+    data_t structSimple1_Valid = Concat(
         0x83, 0x16,
-        serializationStructSimple1_int32Property,
-        serializationStructSimple1_stringProperty,
-        serializationStructSimple1_float32Property
+        structSimple1_int32Property,
+        structSimple1_stringProperty,
+        structSimple1_float32Property
     );
 
-    data_t serializationStructSimple1_All = Concat(
-        serializationStructSimple1_Valid
+    data_t structSimple1_All = Concat(
+        structSimple1_Valid
     );
 
-    data_t serializationStructSimple1_Specific = Concat(
+    data_t structSimple1_Specific = Concat(
         0x81, 0x10,
-        serializationStructSimple1_float32Property
+        structSimple1_float32Property
     );
 
-    data_t serializationStructComplex1_Valid = Concat(
+    data_t structComplex1_Valid = Concat(
         0x84, 0x1A, 0x02, 0x00, 0x80, 0x90,
-        serializationStructComplex1_enumProperty,
-        serializationStructComplex1_float64Property,
-        serializationStructComplex1_timepointProperty,
-        serializationStructComplex1_structSimpleProperty
+        structComplex1_enumProperty,
+        structComplex1_float64Property,
+        structComplex1_timepointProperty,
+        structComplex1_structSimpleProperty
     );
 
-    data_t serializationStructComplex1_Specific = Concat(
+    data_t structComplex1_Specific = Concat(
         0x81, 0x1A, 0x02, 0x00, 0x00, 0x00,
-        serializationStructComplex1_timepointProperty
+        structComplex1_timepointProperty
     );
 
-    data_t serializationStructComplex2_Valid = Concat(
+    data_t structComplex2_Valid = Concat(
         0x83, 0x19, 0x02, 0x48,
-        serializationStructComplex2_propertySetProperty,
-        serializationStructComplex2_durationVectorProperty,
-        serializationStructComplex2_uuidProperty
+        structComplex2_propertySetProperty,
+        structComplex2_durationVectorProperty,
+        structComplex2_uuidProperty
     );
 
-    data_t serializationStructComplex2_Specific = Concat(
+    data_t structComplex2_Specific = Concat(
         0x81, 0x19, 0x02, 0x00,
-        serializationStructComplex2_durationVectorProperty
+        structComplex2_durationVectorProperty
     );
 
     //
@@ -151,9 +151,9 @@ struct ExperimentalCborSerializerTestDataEncoded : SerializerTestBaseDataEncoded
 
     data_t serializationTuple1 = Concat(
         string1,
-        serializationEnum1,
+        enum1,
         vectorBool,
-        serializationStructSimple1_Valid
+        structSimple1_Valid
     );
 };
 

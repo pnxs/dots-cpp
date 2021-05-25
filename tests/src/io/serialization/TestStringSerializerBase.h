@@ -14,12 +14,12 @@ TYPED_TEST_P(StringSerializerTestBase, deserialize_FromUnescapedStringArgument)
     using base_t = StringSerializerTestBase<TypeParam>;
     EXPECT_EQ(base_t::serializer_t::template Deserialize<dots::string_t>(base_t::Encoded().string5Unescaped), base_t::Decoded().string5);
 
-    SerializationStructSimple serializationStructSimple1;
-    base_t::serializer_t::template Deserialize(base_t::Encoded().string5Unescaped, serializationStructSimple1.stringProperty);
-    EXPECT_EQ(*serializationStructSimple1.stringProperty, base_t::Decoded().string5);
+    SerializationStructSimple structSimple1;
+    base_t::serializer_t::template Deserialize(base_t::Encoded().string5Unescaped, structSimple1.stringProperty);
+    EXPECT_EQ(*structSimple1.stringProperty, base_t::Decoded().string5);
 
-    SerializationStructSimple serializationStructSimple2;
-    EXPECT_THROW(base_t::serializer_t::template Deserialize(base_t::Encoded().serializationStructSimple_String5Unescaped, serializationStructSimple2), std::runtime_error);
+    SerializationStructSimple structSimple2;
+    EXPECT_THROW(base_t::serializer_t::template Deserialize(base_t::Encoded().structSimple_String5Unescaped, structSimple2), std::runtime_error);
 }
 
 TYPED_TEST_P(StringSerializerTestBase, serialize_TupleToContinuousInternalBuffer)
@@ -30,9 +30,9 @@ TYPED_TEST_P(StringSerializerTestBase, serialize_TupleToContinuousInternalBuffer
     sut.serializeTupleBegin();
     {
         sut.serialize(base_t::Decoded().string1);
-        sut.serialize(base_t::Decoded().serializationEnum1);
+        sut.serialize(base_t::Decoded().enum1);
         sut.serialize(base_t::Decoded().vectorBool);
-        sut.serialize(base_t::Decoded().serializationStructSimple1);
+        sut.serialize(base_t::Decoded().structSimple1);
     }
     sut.serializeTupleEnd();
 
@@ -50,9 +50,9 @@ TYPED_TEST_P(StringSerializerTestBase, deserialize_TupleFromContinuousExternalBu
     sut.deserializeTupleBegin();
     {
         EXPECT_EQ(sut.template deserialize<std::string>(), base_t::Decoded().string1);
-        EXPECT_EQ(sut.template deserialize<SerializationEnum>(), base_t::Decoded().serializationEnum1);
+        EXPECT_EQ(sut.template deserialize<SerializationEnum>(), base_t::Decoded().enum1);
         EXPECT_EQ(sut.template deserialize<dots::vector_t<dots::bool_t>>(), base_t::Decoded().vectorBool);
-        EXPECT_EQ(sut.template deserialize<SerializationStructSimple>(), base_t::Decoded().serializationStructSimple1);
+        EXPECT_EQ(sut.template deserialize<SerializationStructSimple>(), base_t::Decoded().structSimple1);
     }
     sut.deserializeTupleEnd();
 
@@ -63,10 +63,10 @@ TYPED_TEST_P(StringSerializerTestBase, serialize_WithOutputStyle)
 {
     using base_t = StringSerializerTestBase<TypeParam>;
 
-    EXPECT_EQ(base_t::serializer_t::template Serialize(base_t::Decoded().serializationStructComplex1, dots::io::StringSerializerOptions{ dots::io::StringSerializerOptions::Minimal }), base_t::Encoded().serializationStructComplex_MinimalStyle);
-    EXPECT_EQ(base_t::serializer_t::template Serialize(base_t::Decoded().serializationStructComplex1, dots::io::StringSerializerOptions{ dots::io::StringSerializerOptions::Compact }), base_t::Encoded().serializationStructComplex_CompactStyle);
-    EXPECT_EQ(base_t::serializer_t::template Serialize(base_t::Decoded().serializationStructComplex1, dots::io::StringSerializerOptions{ dots::io::StringSerializerOptions::SingleLine }), base_t::Encoded().serializationStructComplex_SingleLineStyle);
-    EXPECT_EQ(base_t::serializer_t::template Serialize(base_t::Decoded().serializationStructComplex1, dots::io::StringSerializerOptions{ dots::io::StringSerializerOptions::MultiLine }), base_t::Encoded().serializationStructComplex_MultiLineStyle);
+    EXPECT_EQ(base_t::serializer_t::template Serialize(base_t::Decoded().structComplex1, dots::io::StringSerializerOptions{ dots::io::StringSerializerOptions::Minimal }), base_t::Encoded().structComplex_MinimalStyle);
+    EXPECT_EQ(base_t::serializer_t::template Serialize(base_t::Decoded().structComplex1, dots::io::StringSerializerOptions{ dots::io::StringSerializerOptions::Compact }), base_t::Encoded().structComplex_CompactStyle);
+    EXPECT_EQ(base_t::serializer_t::template Serialize(base_t::Decoded().structComplex1, dots::io::StringSerializerOptions{ dots::io::StringSerializerOptions::SingleLine }), base_t::Encoded().structComplex_SingleLineStyle);
+    EXPECT_EQ(base_t::serializer_t::template Serialize(base_t::Decoded().structComplex1, dots::io::StringSerializerOptions{ dots::io::StringSerializerOptions::MultiLine }), base_t::Encoded().structComplex_MultiLineStyle);
 }
 
 TYPED_TEST_P(StringSerializerTestBase, deserialize_WithInputPolicy)
@@ -77,16 +77,16 @@ TYPED_TEST_P(StringSerializerTestBase, deserialize_WithInputPolicy)
     if constexpr (serializer_traits_t::UserTypeNames)
     {
         SerializationStructComplex serializationStruct1;
-        base_t::serializer_t::template Deserialize(base_t::Encoded().serializationStructComplex_RelaxedPolicy1, serializationStruct1);
-        EXPECT_TRUE(serializationStruct1._equal(base_t::Decoded().serializationStructComplex1, SerializationStructComplex::enumProperty_p));
+        base_t::serializer_t::template Deserialize(base_t::Encoded().structComplex_RelaxedPolicy1, serializationStruct1);
+        EXPECT_TRUE(serializationStruct1._equal(base_t::Decoded().structComplex1, SerializationStructComplex::enumProperty_p));
 
         SerializationStructComplex serializationStruct2;
-        base_t::serializer_t::template Deserialize(base_t::Encoded().serializationStructComplex_RelaxedPolicy2, serializationStruct2);
-        EXPECT_TRUE(serializationStruct2._equal(base_t::Decoded().serializationStructComplex1, SerializationStructComplex::enumProperty_p));
+        base_t::serializer_t::template Deserialize(base_t::Encoded().structComplex_RelaxedPolicy2, serializationStruct2);
+        EXPECT_TRUE(serializationStruct2._equal(base_t::Decoded().structComplex1, SerializationStructComplex::enumProperty_p));
 
         SerializationStructComplex serializationStruct3;
-        EXPECT_THROW(base_t::serializer_t::template Deserialize(base_t::Encoded().serializationStructComplex_StrictPolicy1, serializationStruct3, dots::io::StringSerializerOptions{ dots::io::StringSerializerOptions::SingleLine, dots::io::StringSerializerOptions::Strict }), std::runtime_error);
-        EXPECT_THROW(base_t::serializer_t::template Deserialize(base_t::Encoded().serializationStructComplex_StrictPolicy2, serializationStruct3, dots::io::StringSerializerOptions{ dots::io::StringSerializerOptions::SingleLine, dots::io::StringSerializerOptions::Strict }), std::runtime_error);
+        EXPECT_THROW(base_t::serializer_t::template Deserialize(base_t::Encoded().structComplex_StrictPolicy1, serializationStruct3, dots::io::StringSerializerOptions{ dots::io::StringSerializerOptions::SingleLine, dots::io::StringSerializerOptions::Strict }), std::runtime_error);
+        EXPECT_THROW(base_t::serializer_t::template Deserialize(base_t::Encoded().structComplex_StrictPolicy2, serializationStruct3, dots::io::StringSerializerOptions{ dots::io::StringSerializerOptions::SingleLine, dots::io::StringSerializerOptions::Strict }), std::runtime_error);
     }
 }
 

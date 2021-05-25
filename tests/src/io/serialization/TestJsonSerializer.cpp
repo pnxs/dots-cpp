@@ -74,25 +74,25 @@ struct JsonSerializerTestDataEncoded : SerializerTestBaseDataEncoded<dots::io::J
     // enum types
     //
 
-    data_t serializationEnum1{ "5" };
+    data_t enum1{ "5" };
 
     //
     // property types
     //
 
-    data_t serializationStructSimple1_int32Property = Concat("\"int32Property\": ", int32Positive);
-    data_t serializationStructSimple1_stringProperty = Concat("\"stringProperty\": ", string1);
-    data_t serializationStructSimple1_boolProperty = Concat("\"boolProperty\": null");
-    data_t serializationStructSimple1_float32Property = Concat("\"float32Property\": ", float32Positive);
+    data_t structSimple1_int32Property = Concat("\"int32Property\": ", int32Positive);
+    data_t structSimple1_stringProperty = Concat("\"stringProperty\": ", string1);
+    data_t structSimple1_boolProperty = Concat("\"boolProperty\": null");
+    data_t structSimple1_float32Property = Concat("\"float32Property\": ", float32Positive);
 
-    data_t serializationStructComplex1_enumProperty = Concat("\"enumProperty\": ", serializationEnum1);
-    data_t serializationStructComplex1_float64Property = Concat("\"float64Property\": ", float64Negative);
-    data_t serializationStructComplex1_timepointProperty = Concat("\"timepointProperty\": ", timePoint1);
-    data_t serializationStructComplex1_structSimpleProperty = Concat("\"structSimpleProperty\": { \"boolProperty\": ", boolFalse, " }");
+    data_t structComplex1_enumProperty = Concat("\"enumProperty\": ", enum1);
+    data_t structComplex1_float64Property = Concat("\"float64Property\": ", float64Negative);
+    data_t structComplex1_timepointProperty = Concat("\"timepointProperty\": ", timePoint1);
+    data_t structComplex1_structSimpleProperty = Concat("\"structSimpleProperty\": { \"boolProperty\": ", boolFalse, " }");
 
-    data_t serializationStructComplex2_propertySetProperty = Concat("\"propertySetProperty\": ", propertySetMixed1);
-    data_t serializationStructComplex2_durationVectorProperty = Concat("\"durationVectorProperty\": [ ", duration1, ", ", duration2, " ]");
-    data_t serializationStructComplex2_uuidProperty = Concat("\"uuidProperty\": ", uuid1);
+    data_t structComplex2_propertySetProperty = Concat("\"propertySetProperty\": ", propertySetMixed1);
+    data_t structComplex2_durationVectorProperty = Concat("\"durationVectorProperty\": [ ", duration1, ", ", duration2, " ]");
+    data_t structComplex2_uuidProperty = Concat("\"uuidProperty\": ", uuid1);
 
     //
     // vector types
@@ -106,58 +106,58 @@ struct JsonSerializerTestDataEncoded : SerializerTestBaseDataEncoded<dots::io::J
     // struct types
     //
 
-    data_t serializationStructSimple1_Valid = Concat(
+    data_t structSimple1_Valid = Concat(
         "{ ",
-        serializationStructSimple1_int32Property, ", ",
-        serializationStructSimple1_stringProperty, ", ",
-        serializationStructSimple1_float32Property,
+        structSimple1_int32Property, ", ",
+        structSimple1_stringProperty, ", ",
+        structSimple1_float32Property,
         " }"
     );
 
-    data_t serializationStructSimple1_All = Concat(
+    data_t structSimple1_All = Concat(
         "{ ",
-        serializationStructSimple1_int32Property, ", ",
-        serializationStructSimple1_stringProperty, ", ",
-        serializationStructSimple1_boolProperty, ", ",
-        serializationStructSimple1_float32Property,
+        structSimple1_int32Property, ", ",
+        structSimple1_stringProperty, ", ",
+        structSimple1_boolProperty, ", ",
+        structSimple1_float32Property,
         " }"
     );
 
-    data_t serializationStructSimple1_Specific = Concat(
+    data_t structSimple1_Specific = Concat(
         "{ ",
-        serializationStructSimple1_boolProperty, ", ",
-        serializationStructSimple1_float32Property,
+        structSimple1_boolProperty, ", ",
+        structSimple1_float32Property,
         " }"
     );
     
-    data_t serializationStructComplex1_Valid = Concat(
+    data_t structComplex1_Valid = Concat(
         "{ ",
-        serializationStructComplex1_enumProperty, ", ",
-        serializationStructComplex1_float64Property, ", ",
-        serializationStructComplex1_timepointProperty, ", ",
-        serializationStructComplex1_structSimpleProperty,
+        structComplex1_enumProperty, ", ",
+        structComplex1_float64Property, ", ",
+        structComplex1_timepointProperty, ", ",
+        structComplex1_structSimpleProperty,
         " }"
     );
 
-    data_t serializationStructComplex1_Specific = Concat(
+    data_t structComplex1_Specific = Concat(
         "{ ",
-        serializationStructComplex1_timepointProperty, ", ",
+        structComplex1_timepointProperty, ", ",
         "\"propertySetProperty\": null",
         " }"
     );
 
-    data_t serializationStructComplex2_Valid = Concat(
+    data_t structComplex2_Valid = Concat(
         "{ ",
-        serializationStructComplex2_propertySetProperty, ", ",
-        serializationStructComplex2_durationVectorProperty, ", ",
-        serializationStructComplex2_uuidProperty,
+        structComplex2_propertySetProperty, ", ",
+        structComplex2_durationVectorProperty, ", ",
+        structComplex2_uuidProperty,
         " }"
     );
 
-    data_t serializationStructComplex2_Specific = Concat(
+    data_t structComplex2_Specific = Concat(
         "{ ",
         "\"enumProperty\": null, ",
-        serializationStructComplex2_durationVectorProperty,
+        structComplex2_durationVectorProperty,
         " }"
     );
 
@@ -167,9 +167,9 @@ struct JsonSerializerTestDataEncoded : SerializerTestBaseDataEncoded<dots::io::J
 
     data_t serializationTuple1 = Concat(
         string1,
-        serializationEnum1,
+        enum1,
         vectorBool,
-        serializationStructSimple1_Valid
+        structSimple1_Valid
     );
 
     //
@@ -177,28 +177,28 @@ struct JsonSerializerTestDataEncoded : SerializerTestBaseDataEncoded<dots::io::J
     //
 
     data_t string5Unescaped = u8"foo\\ \u0062\u0061\u0072\u00A9\n b\\az";
-    data_t serializationStructSimple_String5Unescaped = Concat("{ \"stringProperty\": ", string5Unescaped, " }");
+    data_t structSimple_String5Unescaped = Concat("{ \"stringProperty\": ", string5Unescaped, " }");
 
     data_t serializationTuple1WithBeginEnd = Concat(
         "[ ",
         string1, ", ",
-        serializationEnum1, ", ",
+        enum1, ", ",
         vectorBool, ", ",
         "{ ",
-        serializationStructSimple1_int32Property, ", ",
-        serializationStructSimple1_stringProperty, ", ",
-        serializationStructSimple1_float32Property,
+        structSimple1_int32Property, ", ",
+        structSimple1_stringProperty, ", ",
+        structSimple1_float32Property,
         " }",
         " ]"
     );
 
-    data_t serializationStructComplex_MinimalStyle = Concat("{\"enumProperty\":", serializationEnum1, ",\"float64Property\":", float64Negative, ",\"timepointProperty\":", timePoint1, ",\"structSimpleProperty\":{\"boolProperty\":", boolFalse, "}}");
-    data_t serializationStructComplex_CompactStyle = Concat("{ \"enumProperty\": ", serializationEnum1, ", \"float64Property\": ", float64Negative, ", \"timepointProperty\": " + timePoint1, ", \"structSimpleProperty\": { \"boolProperty\": ", boolFalse, " } }");
-    data_t serializationStructComplex_SingleLineStyle = Concat("{ \"enumProperty\": ", serializationEnum1, ", \"float64Property\": ", float64Negative, ", \"timepointProperty\": ", timePoint1, ", \"structSimpleProperty\": { \"boolProperty\": ", boolFalse, " } }");
+    data_t structComplex_MinimalStyle = Concat("{\"enumProperty\":", enum1, ",\"float64Property\":", float64Negative, ",\"timepointProperty\":", timePoint1, ",\"structSimpleProperty\":{\"boolProperty\":", boolFalse, "}}");
+    data_t structComplex_CompactStyle = Concat("{ \"enumProperty\": ", enum1, ", \"float64Property\": ", float64Negative, ", \"timepointProperty\": " + timePoint1, ", \"structSimpleProperty\": { \"boolProperty\": ", boolFalse, " } }");
+    data_t structComplex_SingleLineStyle = Concat("{ \"enumProperty\": ", enum1, ", \"float64Property\": ", float64Negative, ", \"timepointProperty\": ", timePoint1, ", \"structSimpleProperty\": { \"boolProperty\": ", boolFalse, " } }");
 
-    data_t serializationStructComplex_MultiLineStyle = Concat(
+    data_t structComplex_MultiLineStyle = Concat(
         "{\n",
-        "    \"enumProperty\": ", serializationEnum1, ",\n",
+        "    \"enumProperty\": ", enum1, ",\n",
         "    \"float64Property\": ", float64Negative, ",\n",
         "    \"timepointProperty\": ", timePoint1, ",\n",
         "    \"structSimpleProperty\": {\n",
@@ -207,10 +207,10 @@ struct JsonSerializerTestDataEncoded : SerializerTestBaseDataEncoded<dots::io::J
         "}"
     );
 
-    data_t serializationStructComplex_RelaxedPolicy1 = Concat("{ \"enumProperty\": ", serializationEnum1," }");
-    data_t serializationStructComplex_RelaxedPolicy2 = Concat("{ \"enumProperty\": ", serializationEnum1, " }");
-    data_t serializationStructComplex_StrictPolicy1 = Concat("{ \"enumProperty\": ", serializationEnum1, " }");
-    data_t serializationStructComplex_StrictPolicy2 = Concat("{ \"enumProperty\": ", serializationEnum1, " }");
+    data_t structComplex_RelaxedPolicy1 = Concat("{ \"enumProperty\": ", enum1," }");
+    data_t structComplex_RelaxedPolicy2 = Concat("{ \"enumProperty\": ", enum1, " }");
+    data_t structComplex_StrictPolicy1 = Concat("{ \"enumProperty\": ", enum1, " }");
+    data_t structComplex_StrictPolicy2 = Concat("{ \"enumProperty\": ", enum1, " }");
 };
 
 INSTANTIATE_TYPED_TEST_SUITE_P(TestJsonSerializer, SerializerTestBase, JsonSerializerTestDataEncoded);
