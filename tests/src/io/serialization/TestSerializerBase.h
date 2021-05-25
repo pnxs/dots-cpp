@@ -373,17 +373,23 @@ TYPED_TEST_P(SerializerTestBase, deserialize_VectorArgument)
 {
     using base_t = SerializerTestBase<TypeParam>;
 
-    dots::vector_t<dots::bool_t> vectorBool;
-    base_t::serializer_t::Deserialize(base_t::Encoded().vectorBool, vectorBool);
-    EXPECT_EQ(vectorBool, base_t::Decoded().vectorBool);
+    {
+        dots::vector_t<dots::bool_t> vectorBool;
+        base_t::serializer_t::Deserialize(base_t::Encoded().vectorBool, vectorBool);
+        EXPECT_EQ(vectorBool, base_t::Decoded().vectorBool);
+    }
 
-    dots::vector_t<dots::float32_t> vectorFloat32;
-    base_t::serializer_t::Deserialize(base_t::Encoded().vectorFloat, vectorFloat32);
-    EXPECT_EQ(vectorFloat32, base_t::Decoded().vectorFloat);
+    {
+        dots::vector_t<dots::float32_t> vectorFloat32;
+        base_t::serializer_t::Deserialize(base_t::Encoded().vectorFloat, vectorFloat32);
+        EXPECT_EQ(vectorFloat32, base_t::Decoded().vectorFloat);
+    }
 
-    dots::vector_t<SerializationStructSimple> vectorStructSimple;
-    base_t::serializer_t::Deserialize(base_t::Encoded().vectorStructSimple, vectorStructSimple);
-    EXPECT_EQ(vectorStructSimple, base_t::Decoded().vectorStructSimple);
+    {
+        dots::vector_t<SerializationStructSimple> vectorStructSimple;
+        base_t::serializer_t::Deserialize(base_t::Encoded().vectorStructSimple, vectorStructSimple);
+        EXPECT_EQ(vectorStructSimple, base_t::Decoded().vectorStructSimple);
+    }
 }
 
 TYPED_TEST_P(SerializerTestBase, serialize_SimpleStructArgument)
@@ -399,13 +405,17 @@ TYPED_TEST_P(SerializerTestBase, deserialize_SimpleStructArgument)
 {
     using base_t = SerializerTestBase<TypeParam>;
 
-    SerializationStructSimple structSimple1;
-    base_t::serializer_t::Deserialize(base_t::Encoded().structSimple1_Valid, structSimple1);
-    EXPECT_EQ(structSimple1, base_t::Decoded().structSimple1);
+    {
+        SerializationStructSimple structSimple;
+        base_t::serializer_t::Deserialize(base_t::Encoded().structSimple1_Valid, structSimple);
+        EXPECT_EQ(structSimple, base_t::Decoded().structSimple1);
+    }
 
-    SerializationStructSimple structSimple2;
-    base_t::serializer_t::Deserialize(base_t::Encoded().structSimple1_Specific, structSimple2);
-    EXPECT_TRUE(structSimple2._equal(base_t::Decoded().structSimple1, SerializationStructSimple::float32Property_p));
+    {
+        SerializationStructSimple structSimple;
+        base_t::serializer_t::Deserialize(base_t::Encoded().structSimple1_Specific, structSimple);
+        EXPECT_TRUE(structSimple._equal(base_t::Decoded().structSimple1, SerializationStructSimple::float32Property_p));
+    }
 }
 
 TYPED_TEST_P(SerializerTestBase, serialize_ComplexStructArgument)
@@ -423,21 +433,29 @@ TYPED_TEST_P(SerializerTestBase, deserialize_ComplexStructArgument)
 {
     using base_t = SerializerTestBase<TypeParam>;
 
-    SerializationStructComplex structComplex1_Valid;
-    base_t::serializer_t::Deserialize(base_t::Encoded().structComplex1_Valid, structComplex1_Valid);
-    EXPECT_EQ(structComplex1_Valid, base_t::Decoded().structComplex1);
+    {
+        SerializationStructComplex structComplex;
+        base_t::serializer_t::Deserialize(base_t::Encoded().structComplex1_Valid, structComplex);
+        EXPECT_EQ(structComplex, base_t::Decoded().structComplex1);
+    }
 
-    SerializationStructComplex structComplex1_Specific;
-    base_t::serializer_t::Deserialize(base_t::Encoded().structComplex1_Specific, structComplex1_Specific);
-    EXPECT_TRUE(structComplex1_Specific._equal(base_t::Decoded().structComplex1, SerializationStructComplex::timepointProperty_p + SerializationStructComplex::propertySetProperty_p));
+    {
+        SerializationStructComplex structComplex;
+        base_t::serializer_t::Deserialize(base_t::Encoded().structComplex1_Specific, structComplex);
+        EXPECT_TRUE(structComplex._equal(base_t::Decoded().structComplex1, SerializationStructComplex::timepointProperty_p + SerializationStructComplex::propertySetProperty_p));
+    }
 
-    SerializationStructComplex structComplex2_Valid;
-    base_t::serializer_t::Deserialize(base_t::Encoded().structComplex2_Valid, structComplex2_Valid);
-    EXPECT_EQ(structComplex2_Valid, base_t::Decoded().structComplex2);
+    {
+        SerializationStructComplex structComplex;
+        base_t::serializer_t::Deserialize(base_t::Encoded().structComplex2_Valid, structComplex);
+        EXPECT_EQ(structComplex, base_t::Decoded().structComplex2);
+    }
 
-    SerializationStructComplex structComplex_Specific;
-    base_t::serializer_t::Deserialize(base_t::Encoded().structComplex2_Specific, structComplex_Specific);
-    EXPECT_TRUE(structComplex_Specific._equal(base_t::Decoded().structComplex2, SerializationStructComplex::enumProperty_p + SerializationStructComplex::durationVectorProperty_p));
+    {
+        SerializationStructComplex structComplex;
+        base_t::serializer_t::Deserialize(base_t::Encoded().structComplex2_Specific, structComplex);
+        EXPECT_TRUE(structComplex._equal(base_t::Decoded().structComplex2, SerializationStructComplex::enumProperty_p + SerializationStructComplex::durationVectorProperty_p));
+    }
 }
 
 TYPED_TEST_P(SerializerTestBase, serialize_WriteTupleToContinuousInternalBuffer)
