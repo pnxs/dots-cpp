@@ -2,7 +2,7 @@
 #include <dots/io/serialization/RapidJsonSerializer.h>
 #include <io/serialization/TestSerializerBase.h>
 
-struct RapidJsonSerializerTestDataEncoded : SerializerTestBaseDataEncoded<dots::io::RapidJsonSerializer<>>
+struct RapidJsonSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::io::RapidJsonSerializer<>>
 {
     //
     // fundamental
@@ -185,11 +185,11 @@ struct RapidJsonSerializerTestDataEncoded : SerializerTestBaseDataEncoded<dots::
     );
 };
 
-struct TestRapidJsonSerializer : SerializerTestBase<RapidJsonSerializerTestDataEncoded>
+struct TestRapidJsonSerializer : TestSerializerBase<RapidJsonSerializerTestDataEncoded>
 {
 protected:
 
-    using base_t = SerializerTestBase<RapidJsonSerializerTestDataEncoded>;
+    using base_t = TestSerializerBase<RapidJsonSerializerTestDataEncoded>;
     using data_t = std::string;
     using buffer_t = rapidjson::StringBuffer;
     using writer_t = rapidjson::Writer<buffer_t>;

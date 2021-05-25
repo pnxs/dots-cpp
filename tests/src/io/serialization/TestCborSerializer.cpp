@@ -2,7 +2,7 @@
 #include <dots/io/serialization/CborSerializer.h>
 #include <io/serialization/TestSerializerBase.h>
 
-struct CborSerializerTestDataEncoded : SerializerTestBaseDataEncoded<dots::io::CborSerializer>
+struct CborSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::io::CborSerializer>
 {
     //
     // fundamental
@@ -157,4 +157,4 @@ struct CborSerializerTestDataEncoded : SerializerTestBaseDataEncoded<dots::io::C
     );
 };
 
-INSTANTIATE_TYPED_TEST_SUITE_P(TestCborSerializer, SerializerTestBase, CborSerializerTestDataEncoded);
+INSTANTIATE_TYPED_TEST_SUITE_P(TestCborSerializer, TestSerializerBase, CborSerializerTestDataEncoded);

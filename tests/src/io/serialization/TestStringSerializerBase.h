@@ -3,15 +3,15 @@
 #include <io/serialization/TestSerializerBase.h>
 
 template <typename TEncoded>
-struct StringSerializerTestBase : SerializerTestBase<TEncoded>
+struct TestStringSerializerBase : TestSerializerBase<TEncoded>
 {
 };
 
-TYPED_TEST_SUITE_P(StringSerializerTestBase);
+TYPED_TEST_SUITE_P(TestStringSerializerBase);
 
-TYPED_TEST_P(StringSerializerTestBase, deserialize_FromUnescapedStringArgument)
+TYPED_TEST_P(TestStringSerializerBase, deserialize_FromUnescapedStringArgument)
 {
-    using base_t = StringSerializerTestBase<TypeParam>;
+    using base_t = TestStringSerializerBase<TypeParam>;
     EXPECT_EQ(base_t::serializer_t::template Deserialize<dots::string_t>(base_t::Encoded().string5Unescaped), base_t::Decoded().string5);
 
     SerializationStructSimple structSimple1;
@@ -22,9 +22,9 @@ TYPED_TEST_P(StringSerializerTestBase, deserialize_FromUnescapedStringArgument)
     EXPECT_THROW(base_t::serializer_t::template Deserialize(base_t::Encoded().structSimple_String5Unescaped, structSimple2), std::runtime_error);
 }
 
-TYPED_TEST_P(StringSerializerTestBase, serialize_TupleToContinuousInternalBuffer)
+TYPED_TEST_P(TestStringSerializerBase, serialize_TupleToContinuousInternalBuffer)
 {
-    using base_t = StringSerializerTestBase<TypeParam>;
+    using base_t = TestStringSerializerBase<TypeParam>;
     typename base_t::serializer_t sut;
 
     sut.serializeTupleBegin();
@@ -39,9 +39,9 @@ TYPED_TEST_P(StringSerializerTestBase, serialize_TupleToContinuousInternalBuffer
     EXPECT_EQ(sut.output(), base_t::Encoded().serializationTuple1);
 }
 
-TYPED_TEST_P(StringSerializerTestBase, deserialize_TupleFromContinuousExternalBuffer)
+TYPED_TEST_P(TestStringSerializerBase, deserialize_TupleFromContinuousExternalBuffer)
 {
-    using base_t = StringSerializerTestBase<TypeParam>;
+    using base_t = TestStringSerializerBase<TypeParam>;
     typename base_t::serializer_t sut;
 
     sut.setInput(base_t::Encoded().serializationTuple1);
@@ -59,9 +59,9 @@ TYPED_TEST_P(StringSerializerTestBase, deserialize_TupleFromContinuousExternalBu
     EXPECT_FALSE(sut.inputAvailable());
 }
 
-TYPED_TEST_P(StringSerializerTestBase, serialize_WithOutputStyle)
+TYPED_TEST_P(TestStringSerializerBase, serialize_WithOutputStyle)
 {
-    using base_t = StringSerializerTestBase<TypeParam>;
+    using base_t = TestStringSerializerBase<TypeParam>;
 
     EXPECT_EQ(base_t::serializer_t::template Serialize(base_t::Decoded().structComplex1, dots::io::StringSerializerOptions{ dots::io::StringSerializerOptions::Minimal }), base_t::Encoded().structComplex_MinimalStyle);
     EXPECT_EQ(base_t::serializer_t::template Serialize(base_t::Decoded().structComplex1, dots::io::StringSerializerOptions{ dots::io::StringSerializerOptions::Compact }), base_t::Encoded().structComplex_CompactStyle);
@@ -69,9 +69,9 @@ TYPED_TEST_P(StringSerializerTestBase, serialize_WithOutputStyle)
     EXPECT_EQ(base_t::serializer_t::template Serialize(base_t::Decoded().structComplex1, dots::io::StringSerializerOptions{ dots::io::StringSerializerOptions::MultiLine }), base_t::Encoded().structComplex_MultiLineStyle);
 }
 
-TYPED_TEST_P(StringSerializerTestBase, deserialize_WithInputPolicy)
+TYPED_TEST_P(TestStringSerializerBase, deserialize_WithInputPolicy)
 {
-    using base_t = StringSerializerTestBase<TypeParam>;
+    using base_t = TestStringSerializerBase<TypeParam>;
     using serializer_traits_t = typename base_t::serializer_t::traits_t;
 
     if constexpr (serializer_traits_t::UserTypeNames)
@@ -96,7 +96,7 @@ TYPED_TEST_P(StringSerializerTestBase, deserialize_WithInputPolicy)
     }
 }
 
-REGISTER_TYPED_TEST_SUITE_P(StringSerializerTestBase,
+REGISTER_TYPED_TEST_SUITE_P(TestStringSerializerBase,
     deserialize_FromUnescapedStringArgument,
     serialize_TupleToContinuousInternalBuffer,
     deserialize_TupleFromContinuousExternalBuffer,

@@ -3,7 +3,7 @@
 #include <io/serialization/TestSerializerBase.h>
 #include <io/serialization/TestStringSerializerBase.h>
 
-struct StringSerializerTestDataEncoded : SerializerTestBaseDataEncoded<dots::io::StringSerializer<>>
+struct StringSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::io::StringSerializer<>>
 {
     //
     // fundamental
@@ -225,5 +225,5 @@ struct StringSerializerTestDataEncoded : SerializerTestBaseDataEncoded<dots::io:
     data_t structComplex_StrictPolicy2 = Concat("SerializationStructComplex{ .enumProperty = ", enum1, " }");
 };
 
-INSTANTIATE_TYPED_TEST_SUITE_P(TestStringSerializer, SerializerTestBase, StringSerializerTestDataEncoded);
-INSTANTIATE_TYPED_TEST_SUITE_P(TestStringSerializer, StringSerializerTestBase, StringSerializerTestDataEncoded);
+INSTANTIATE_TYPED_TEST_SUITE_P(TestStringSerializer, TestSerializerBase, StringSerializerTestDataEncoded);
+INSTANTIATE_TYPED_TEST_SUITE_P(TestStringSerializer, TestStringSerializerBase, StringSerializerTestDataEncoded);
