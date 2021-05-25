@@ -269,7 +269,12 @@ TYPED_TEST_P(SerializerTestBase, serialize_TypedArgument)
     EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().duration2), base_t::Encoded().duration2);
 
     EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().uuid1), base_t::Encoded().uuid1);
+
     EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().string1), base_t::Encoded().string1);
+    EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().string2), base_t::Encoded().string2);
+    EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().string3), base_t::Encoded().string3);
+    EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().string4), base_t::Encoded().string4);
+    EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().string5), base_t::Encoded().string5);
 
     EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().enum1), base_t::Encoded().enum1);
 }
@@ -332,7 +337,12 @@ TYPED_TEST_P(SerializerTestBase, deserialize_TypedArgument)
     EXPECT_EQ(base_t::serializer_t::template Deserialize<dots::duration_t>(base_t::Encoded().duration2), base_t::Decoded().duration2);
 
     EXPECT_EQ(base_t::serializer_t::template Deserialize<dots::uuid_t>(base_t::Encoded().uuid1), base_t::Decoded().uuid1);
+
     EXPECT_EQ(base_t::serializer_t::template Deserialize<dots::string_t>(base_t::Encoded().string1), base_t::Decoded().string1);
+    EXPECT_EQ(base_t::serializer_t::template Deserialize<dots::string_t>(base_t::Encoded().string2), base_t::Decoded().string2);
+    EXPECT_EQ(base_t::serializer_t::template Deserialize<dots::string_t>(base_t::Encoded().string3), base_t::Decoded().string3);
+    EXPECT_EQ(base_t::serializer_t::template Deserialize<dots::string_t>(base_t::Encoded().string4), base_t::Decoded().string4);
+    EXPECT_EQ(base_t::serializer_t::template Deserialize<dots::string_t>(base_t::Encoded().string5), base_t::Decoded().string5);
 
     EXPECT_EQ(base_t::serializer_t::template Deserialize<SerializationEnum>(base_t::Encoded().enum1), base_t::Decoded().enum1);
 }
