@@ -106,6 +106,12 @@ namespace dots::io
         }
 
         template <typename T>
+        void serialize(const T& value, const type::Descriptor<T>& descriptor)
+        {
+            visit(value, descriptor);
+        }
+
+        template <typename T>
         void serialize(const T& value)
         {
             constexpr bool IsProperty = type::is_property_v<T>;
@@ -114,6 +120,18 @@ namespace dots::io
             if constexpr (!IsProperty)
             {
                 visit(value);
+            }
+        }
+
+        template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
+        void deserialize(T& value, const type::Descriptor<T>& descriptor)
+        {
+            constexpr bool IsProperty = type::is_property_v<T>;
+            static_assert(!IsProperty, "direct deserialization of properties is not available for this serializer");
+
+            if constexpr (!IsProperty)
+            {
+                visit(value, descriptor);
             }
         }
 
