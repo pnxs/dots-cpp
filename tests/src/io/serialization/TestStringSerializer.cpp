@@ -6,7 +6,7 @@
 struct StringSerializerTestDataEncoded : SerializerTestBaseDataEncoded<dots::io::StringSerializer<>>
 {
     //
-    // fundamental types
+    // fundamental
     //
 
     data_t boolFalse{ "false" };
@@ -71,13 +71,13 @@ struct StringSerializerTestDataEncoded : SerializerTestBaseDataEncoded<dots::io:
     data_t string5{ u8"\"foo\\\\ \u0062\u0061\u0072\u00A9\\n b\\\\az\"" };
 
     //
-    // enum types
+    // enum
     //
 
     data_t enum1{ "baz" };
 
     //
-    // property types
+    // property
     //
 
     data_t structSimple1_int32Property = Concat(".int32Property = ", int32Positive);
@@ -95,7 +95,7 @@ struct StringSerializerTestDataEncoded : SerializerTestBaseDataEncoded<dots::io:
     data_t structComplex2_uuidProperty = Concat(".uuidProperty = ", uuid1);
 
     //
-    // vector types
+    // vector
     //
 
     data_t vectorBool = Concat("{ ", boolTrue, ", ", boolFalse, ", ", boolFalse, " }");
@@ -103,7 +103,7 @@ struct StringSerializerTestDataEncoded : SerializerTestBaseDataEncoded<dots::io:
     data_t vectorStructSimple = Concat("{ { .int32Property = ", int32Positive, " }, { .boolProperty = ",  boolFalse, " } }");
 
     //
-    // struct types
+    // struct
     //
 
     data_t structSimple1_Valid = Concat(
@@ -162,7 +162,7 @@ struct StringSerializerTestDataEncoded : SerializerTestBaseDataEncoded<dots::io:
     );
 
     //
-    // consecutive types
+    // consecutive
     //
 
     data_t consecutiveTypes1 = Concat(
@@ -173,11 +173,15 @@ struct StringSerializerTestDataEncoded : SerializerTestBaseDataEncoded<dots::io:
     );
 
     //
-    // string serializer types
+    // unescaped string
     //
 
     data_t string5Unescaped = u8"foo\\ \u0062\u0061\u0072\u00A9\n b\\az";
     data_t structSimple_String5Unescaped = Concat("SerializationStructSimple{ .stringProperty = ", string5Unescaped, " }");
+
+    //
+    // tuple
+    //
 
     data_t serializationTuple1 = Concat(
         "{ ",
@@ -191,6 +195,10 @@ struct StringSerializerTestDataEncoded : SerializerTestBaseDataEncoded<dots::io:
         " }",
         " }"
     );
+
+    //
+    // output style
+    //
 
     data_t structComplex_MinimalStyle = Concat("{.enumProperty=", enum1, ",.float64Property=", float64Negative, ",.timepointProperty=", timePoint1, ",.structSimpleProperty={.boolProperty=", boolFalse, "}}");
     data_t structComplex_CompactStyle = Concat("SerializationStructComplex{ .enumProperty = ", enum1, ", .float64Property = ", float64Negative, ", .timepointProperty = " + timePoint1, ", .structSimpleProperty = { .boolProperty = ", boolFalse, " } }");
@@ -206,6 +214,10 @@ struct StringSerializerTestDataEncoded : SerializerTestBaseDataEncoded<dots::io:
         "    }\n",
         "}"
     );
+
+    //
+    // input policy
+    //
 
     data_t structComplex_RelaxedPolicy1 = Concat("{ .enumProperty = SerializationEnum::", enum1," }");
     data_t structComplex_RelaxedPolicy2 = Concat("{ .enumProperty = ", enum1, " }");

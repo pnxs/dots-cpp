@@ -9,7 +9,7 @@ using namespace dots::type::literals;
 struct SerializerTestBaseDataDecoded
 {
     //
-    // fundamental types
+    // fundamental
     //
 
     dots::bool_t boolFalse{ false };
@@ -74,13 +74,13 @@ struct SerializerTestBaseDataDecoded
     dots::string_t string5{ u8"foo\\ \u0062\u0061\u0072\u00A9\n b\\az" };
 
     //
-    // enum types
+    // enum
     //
 
     SerializationEnum enum1{ SerializationEnum::baz };
 
     //
-    // struct types
+    // struct
     //
 
     SerializationStructSimple structSimple1{
@@ -105,7 +105,7 @@ struct SerializerTestBaseDataDecoded
     };
 
     //
-    // property types
+    // property
     //
 
     const SerializationStructSimple::int32Property_t& structSimple1_int32Property = structSimple1.int32Property;
@@ -122,7 +122,7 @@ struct SerializerTestBaseDataDecoded
     const SerializationStructComplex::uuidProperty_t& structComplex2_uuidProperty = structComplex2.uuidProperty;
 
     //
-    // vector types
+    // vector
     //
 
     dots::vector_t<dots::bool_t> vectorBool{ boolTrue, boolFalse, boolFalse };

@@ -5,7 +5,7 @@
 struct ExperimentalCborSerializerTestDataEncoded : SerializerTestBaseDataEncoded<dots::io::ExperimentalCborSerializer>
 {
     //
-    // fundamental types
+    // fundamental
     //
 
     data_t boolFalse{ 0xF4 };
@@ -70,13 +70,13 @@ struct ExperimentalCborSerializerTestDataEncoded : SerializerTestBaseDataEncoded
     data_t string5 = string1;
 
     //
-    // enum types
+    // enum
     //
 
     data_t enum1{ 0x05 };
 
     //
-    // property types
+    // property
     //
 
     data_t structSimple1_int32Property = Concat(int32Positive);
@@ -93,7 +93,7 @@ struct ExperimentalCborSerializerTestDataEncoded : SerializerTestBaseDataEncoded
     data_t structComplex2_uuidProperty = Concat(uuid1);
 
     //
-    // vector types
+    // vector
     //
 
     data_t vectorBool = Concat(0x83, boolTrue, boolFalse, boolFalse);
@@ -101,7 +101,7 @@ struct ExperimentalCborSerializerTestDataEncoded : SerializerTestBaseDataEncoded
     data_t vectorStructSimple = Concat(0x82, 0x81, 0x02, int32Positive, 0x81, 0x08, boolFalse);
 
     //
-    // struct types
+    // struct
     //
 
     data_t structSimple1_Valid = Concat(
@@ -146,7 +146,7 @@ struct ExperimentalCborSerializerTestDataEncoded : SerializerTestBaseDataEncoded
     );
 
     //
-    // consecutive types
+    // consecutive
     //
 
     data_t consecutiveTypes1 = Concat(
