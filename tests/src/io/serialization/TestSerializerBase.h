@@ -409,6 +409,7 @@ TYPED_TEST_P(TestSerializerBase, serialize_SimpleStructArgument)
     EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().structSimple1), base_t::Encoded().structSimple1_Valid);
     EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().structSimple1, dots::property_set_t::All), base_t::Encoded().structSimple1_All);
     EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().structSimple1, SerializationStructSimple::boolProperty_p + SerializationStructSimple::float32Property_p), base_t::Encoded().structSimple1_Specific);
+    EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().structSimple1, dots::property_set_t::None), base_t::Encoded().structSimple1_None);
 }
 
 TYPED_TEST_P(TestSerializerBase, deserialize_SimpleStructArgument)
@@ -425,6 +426,12 @@ TYPED_TEST_P(TestSerializerBase, deserialize_SimpleStructArgument)
         SerializationStructSimple structSimple;
         base_t::serializer_t::Deserialize(base_t::Encoded().structSimple1_Specific, structSimple);
         EXPECT_TRUE(structSimple._equal(base_t::Decoded().structSimple1, SerializationStructSimple::float32Property_p));
+    }
+
+    {
+        SerializationStructSimple structSimple;
+        base_t::serializer_t::Deserialize(base_t::Encoded().structSimple1_None, structSimple);
+        EXPECT_TRUE(structSimple._validProperties().empty());
     }
 }
 

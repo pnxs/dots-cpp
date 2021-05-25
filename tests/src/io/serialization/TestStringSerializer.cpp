@@ -129,6 +129,11 @@ struct StringSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::io:
         structSimple1_float32Property,
         " }"
     );
+
+    data_t structSimple1_None = Concat(
+        "SerializationStructSimple{ ",
+        " }"
+    );
     
     data_t structComplex1_Valid = Concat(
         "SerializationStructComplex{ ",

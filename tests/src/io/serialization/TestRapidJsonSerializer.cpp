@@ -128,6 +128,10 @@ struct RapidJsonSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::
         structSimple1_float32Property,
         "}"
     );
+
+    data_t structSimple1_None = Concat(
+        "{}"
+    );
     
     data_t structComplex1_Valid = Concat(
         "{",
@@ -361,6 +365,7 @@ TEST_F(TestRapidJsonSerializer, serialize_SimpleStructArgument)
     EXPECT_EQ(serializer_t::Serialize(Decoded().structSimple1), Encoded().structSimple1_Valid);
     EXPECT_EQ(serializer_t::Serialize(Decoded().structSimple1, dots::property_set_t::All), Encoded().structSimple1_All);
     EXPECT_EQ(serializer_t::Serialize(Decoded().structSimple1, SerializationStructSimple::boolProperty_p + SerializationStructSimple::float32Property_p), Encoded().structSimple1_Specific);
+    EXPECT_EQ(serializer_t::Serialize(Decoded().structSimple1, dots::property_set_t::None), base_t::Encoded().structSimple1_None);
 }
 
 TEST_F(TestRapidJsonSerializer, deserialize_SimpleStructArgument)
@@ -375,6 +380,12 @@ TEST_F(TestRapidJsonSerializer, deserialize_SimpleStructArgument)
         SerializationStructSimple structSimple;
         serializer_t::Deserialize(Encoded().structSimple1_Specific, structSimple);
         EXPECT_TRUE(structSimple._equal(Decoded().structSimple1, SerializationStructSimple::float32Property_p));
+    }
+
+    {
+        SerializationStructSimple structSimple;
+        base_t::serializer_t::Deserialize(Encoded().structSimple1_None, structSimple);
+        EXPECT_TRUE(structSimple._validProperties().empty());
     }
 }
 

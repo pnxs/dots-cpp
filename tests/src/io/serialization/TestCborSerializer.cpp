@@ -119,6 +119,10 @@ struct CborSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::io::C
         0xA1,
         structSimple1_float32Property
     );
+
+    data_t structSimple1_None = Concat(
+        0xA0
+    );
     
     data_t structComplex1_Valid = Concat(
         0xA4,

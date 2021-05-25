@@ -120,6 +120,10 @@ struct ExperimentalCborSerializerTestDataEncoded : SerializerBaseTestDataEncoded
         structSimple1_float32Property
     );
 
+    data_t structSimple1_None = Concat(
+        0x80, 0x00
+    );
+
     data_t structComplex1_Valid = Concat(
         0x84, 0x1A, 0x02, 0x00, 0x80, 0x90,
         structComplex1_enumProperty,
