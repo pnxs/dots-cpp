@@ -308,15 +308,15 @@ namespace dots::io
         bool visitPropertyBeginDerived(const T& property, bool/* first*/)
         {
             write(property.descriptor().name());
-            return true;
-        }
 
-        template <typename T>
-        void visitPropertyEndDerived(const T& property, bool/* first*/)
-        {
-            if (!property.isValid())
+            if (property.isValid())
+            {
+                return true;
+            }
+            else
             {
                 m_writer->Null();
+                return false;
             }
         }
 

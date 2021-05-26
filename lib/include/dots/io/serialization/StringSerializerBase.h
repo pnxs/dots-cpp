@@ -271,15 +271,14 @@ namespace dots::io
                 write(" ");
             }
 
-            return true;
-        }
-
-        template <typename T>
-        void visitPropertyEndDerived(const T& property, bool/* first*/)
-        {
-            if (!property.isValid())
+            if (property.isValid())
+            {
+                return true;
+            }
+            else
             {
                 write(traits_t::PropertyInvalidValue);
+                return false;
             }
         }
 
@@ -298,12 +297,6 @@ namespace dots::io
                 writePrefixedNewLine(traits_t::VectorBegin);
                 return true;
             }
-        }
-
-        template <typename T>
-        bool visitVectorValueBeginDerived(const vector_t<T>&/* vector*/, const type::Descriptor<vector_t<T>>&/* descriptor*/, size_t/* index*/)
-        {
-            return true;
         }
 
         template <typename T>
