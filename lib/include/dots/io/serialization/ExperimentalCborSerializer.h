@@ -22,6 +22,7 @@ namespace dots::io
     protected:
 
         friend TypeVisitor<ExperimentalCborSerializer>;
+        friend serializer_base_t;
 
         template <typename T>
         bool visitStructBeginDerived(const T& instance, property_set_t& includedProperties)
@@ -85,6 +86,16 @@ namespace dots::io
             }
         }
 
+        void serializeTupleBeginDerived()
+        {
+            writeHead(Cbor::MajorType::IndefiniteArray);
+        }
+
+        void serializeTupleEndDerived()
+        {
+            writeHead(Cbor::MajorType::IndefiniteArrayBreak);
+        }
+
         template <typename T>
         bool visitStructBeginDerived(T&/* instance*/, property_set_t& includedProperties)
         {
@@ -146,6 +157,16 @@ namespace dots::io
             {
                 static_assert(!std::is_same_v<T, T>, "type not supported");
             }
+        }
+
+        void deserializeTupleBeginDerived()
+        {
+            readHead(Cbor::MajorType::IndefiniteArray);
+        }
+
+        void deserializeTupleEndDerived()
+        {
+            readHead(Cbor::MajorType::IndefiniteArrayBreak);
         }
     };
 

@@ -102,6 +102,56 @@ namespace dots::io
             return value;
         }
 
+        size_t serializeTupleBegin()
+        {
+            derived().template visitBeginDerived<true, false>();
+            m_outputTupleInfo.push(true);
+            derived().serializeTupleBeginDerived();
+            derived().template visitEndDerived<true, false>();
+
+            return lastSerializeSize();
+        }
+
+        size_t serializeTupleEnd()
+        {
+            if (m_outputTupleInfo.empty())
+            {
+                throw std::logic_error{ "attempt to serialize tuple end without previous begin" };
+            }
+
+            derived().template visitBeginDerived<true, false>();
+            derived().serializeTupleEndDerived();
+            derived().template visitEndDerived<true, false>();
+            m_outputTupleInfo.pop();
+
+            return lastSerializeSize();
+        }
+
+        size_t deserializeTupleBegin()
+        {
+            derived().template visitBeginDerived<false, false>();
+            m_inputTupleInfo.push(true);
+            derived().deserializeTupleBeginDerived();
+            derived().template visitEndDerived<false, false>();
+
+            return lastDeserializeSize();
+        }
+
+        size_t deserializeTupleEnd()
+        {
+            if (m_inputTupleInfo.empty())
+            {
+                throw std::logic_error{ "attempt to deserialize tuple end without previous begin" };
+            }
+
+            derived().template visitBeginDerived<false, false>();
+            derived().deserializeTupleEndDerived();
+            m_inputTupleInfo.pop();
+            derived().template visitEndDerived<false, false>();
+
+            return lastDeserializeSize();
+        }
+
         template <typename T, typename... Args, typename D = Derived, std::enable_if_t<std::is_constructible_v<D, Args...> && std::is_base_of_v<type::Struct, T>, int> = 0>
         static data_t Serialize(const T& instance, const property_set_t& includedProperties, Args&&... args)
         {
@@ -181,12 +231,20 @@ namespace dots::io
 
         friend visitor_base_t;
 
-        template <bool Const>
+        template <bool Const, bool ConsiderTupleValue = true>
         void visitBeginDerived()
         {
             if constexpr (Const)
             {
                 m_outputSizeBegin = m_output.size();
+
+                if constexpr (ConsiderTupleValue)
+                {
+                    if (!m_outputTupleInfo.empty())
+                    {
+                        derived().serializeTupleValueBeginDerived(m_outputTupleInfo.top());
+                    }
+                }
             }
             else
             {
@@ -196,6 +254,41 @@ namespace dots::io
                 }
 
                 m_inputDataBegin = m_inputData;
+
+                if constexpr (ConsiderTupleValue)
+                {
+                    if (!m_inputTupleInfo.empty())
+                    {
+                        derived().deserializeTupleValueBeginDerived(m_inputTupleInfo.top());
+                    }
+                }
+            }
+        }
+
+        template <bool Const, bool ConsiderTupleValue = true>
+        void visitEndDerived()
+        {
+            if constexpr (Const)
+            {
+                if constexpr (ConsiderTupleValue)
+                {
+                    if (!m_outputTupleInfo.empty())
+                    {
+                        m_outputTupleInfo.top() = false;
+                        derived().serializeTupleValueEndDerived();
+                    }
+                }
+            }
+            else
+            {
+                if constexpr (ConsiderTupleValue)
+                {
+                    if (!m_inputTupleInfo.empty())
+                    {
+                        m_inputTupleInfo.top() = false;
+                        derived().deserializeTupleValueEndDerived();
+                    }
+                }
             }
         }
 
@@ -209,12 +302,54 @@ namespace dots::io
             return m_inputDataEnd;
         }
 
+        void serializeTupleBeginDerived()
+        {
+            /* do nothing */
+        }
+
+        void serializeTupleValueBeginDerived(bool/* first*/)
+        {
+            /* do nothing */
+        }
+
+        void serializeTupleValueEndDerived()
+        {
+            /* do nothing */
+        }
+
+        void serializeTupleEndDerived()
+        {
+            /* do nothing */
+        }
+
+        void deserializeTupleBeginDerived()
+        {
+            /* do nothing */
+        }
+
+        void deserializeTupleValueBeginDerived(bool/* first*/)
+        {
+            /* do nothing */
+        }
+
+        void deserializeTupleValueEndDerived()
+        {
+            /* do nothing */
+        }
+
+        void deserializeTupleEndDerived()
+        {
+            /* do nothing */
+        }
+
         void setInputDerived()
         {
             /* do nothing */
         }
 
     private:
+
+        using tuple_info_t = std::stack<bool, std::vector<bool>>;
 
         Derived& derived()
         {
@@ -226,5 +361,7 @@ namespace dots::io
         const value_t* m_inputData = nullptr;
         const value_t* m_inputDataBegin = nullptr;
         const value_t* m_inputDataEnd = nullptr;
+        tuple_info_t m_outputTupleInfo;
+        tuple_info_t m_inputTupleInfo;
     };
 }

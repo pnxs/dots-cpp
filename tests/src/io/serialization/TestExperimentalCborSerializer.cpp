@@ -159,6 +159,19 @@ struct ExperimentalCborSerializerTestDataEncoded : SerializerBaseTestDataEncoded
         vectorBool,
         structSimple1_Valid
     );
+
+    //
+    // tuple
+    //
+
+    data_t serializationTuple1 = Concat(
+        0x9F,
+        string1,
+        enum1,
+        vectorBool,
+        structSimple1_Valid,
+        0xFF
+    );
 };
 
 INSTANTIATE_TYPED_TEST_SUITE_P(TestExperimentalCborSerializer, TestSerializerBase, ExperimentalCborSerializerTestDataEncoded);

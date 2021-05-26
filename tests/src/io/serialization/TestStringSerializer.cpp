@@ -178,13 +178,6 @@ struct StringSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::io:
     );
 
     //
-    // unescaped string
-    //
-
-    data_t string5Unescaped = u8"foo\\ \u0062\u0061\u0072\u00A9\n b\\az";
-    data_t structSimple_String5Unescaped = Concat("SerializationStructSimple{ .stringProperty = ", string5Unescaped, " }");
-
-    //
     // tuple
     //
 
@@ -200,6 +193,13 @@ struct StringSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::io:
         " }",
         " }"
     );
+
+    //
+    // unescaped string
+    //
+
+    data_t string5Unescaped = u8"foo\\ \u0062\u0061\u0072\u00A9\n b\\az";
+    data_t structSimple_String5Unescaped = Concat("SerializationStructSimple{ .stringProperty = ", string5Unescaped, " }");
 
     //
     // output style

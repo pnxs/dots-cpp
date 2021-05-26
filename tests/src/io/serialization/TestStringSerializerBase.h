@@ -22,43 +22,6 @@ TYPED_TEST_P(TestStringSerializerBase, deserialize_FromUnescapedStringArgument)
     EXPECT_THROW(base_t::serializer_t::template Deserialize(base_t::Encoded().structSimple_String5Unescaped, structSimple2), std::runtime_error);
 }
 
-TYPED_TEST_P(TestStringSerializerBase, serialize_TupleToContinuousInternalBuffer)
-{
-    using base_t = TestStringSerializerBase<TypeParam>;
-    typename base_t::serializer_t sut;
-
-    sut.serializeTupleBegin();
-    {
-        sut.serialize(base_t::Decoded().string1);
-        sut.serialize(base_t::Decoded().enum1);
-        sut.serialize(base_t::Decoded().vectorBool);
-        sut.serialize(base_t::Decoded().structSimple1);
-    }
-    sut.serializeTupleEnd();
-
-    EXPECT_EQ(sut.output(), base_t::Encoded().serializationTuple1);
-}
-
-TYPED_TEST_P(TestStringSerializerBase, deserialize_TupleFromContinuousExternalBuffer)
-{
-    using base_t = TestStringSerializerBase<TypeParam>;
-    typename base_t::serializer_t sut;
-
-    sut.setInput(base_t::Encoded().serializationTuple1);
-    EXPECT_TRUE(sut.inputAvailable());
-
-    sut.deserializeTupleBegin();
-    {
-        EXPECT_EQ(sut.template deserialize<std::string>(), base_t::Decoded().string1);
-        EXPECT_EQ(sut.template deserialize<SerializationEnum>(), base_t::Decoded().enum1);
-        EXPECT_EQ(sut.template deserialize<dots::vector_t<dots::bool_t>>(), base_t::Decoded().vectorBool);
-        EXPECT_EQ(sut.template deserialize<SerializationStructSimple>(), base_t::Decoded().structSimple1);
-    }
-    sut.deserializeTupleEnd();
-
-    EXPECT_FALSE(sut.inputAvailable());
-}
-
 TYPED_TEST_P(TestStringSerializerBase, serialize_WithOutputStyle)
 {
     using base_t = TestStringSerializerBase<TypeParam>;
@@ -98,8 +61,6 @@ TYPED_TEST_P(TestStringSerializerBase, deserialize_WithInputPolicy)
 
 REGISTER_TYPED_TEST_SUITE_P(TestStringSerializerBase,
     deserialize_FromUnescapedStringArgument,
-    serialize_TupleToContinuousInternalBuffer,
-    deserialize_TupleFromContinuousExternalBuffer,
     serialize_WithOutputStyle,
     deserialize_WithInputPolicy
 );

@@ -104,58 +104,6 @@ namespace dots::io
         using serializer_base_t::lastSerializeSize;
         using serializer_base_t::lastDeserializeSize;
 
-        size_t serializeTupleBegin()
-        {
-            m_outputTupleInfo.push(false);
-            serializer_base_t::template visitBeginDerived<true>();
-            incrementIndentLevel();
-            writePrefixedNewLine(traits_t::TupleBegin);
-
-            return lastSerializeSize();
-        }
-
-        size_t serializeTupleEnd()
-        {
-            if (m_outputTupleInfo.empty())
-            {
-                throw std::logic_error{ "attempt to serialize tuple end without previous begin" };
-            }
-
-            m_outputTupleInfo.pop();
-
-            serializer_base_t::template visitBeginDerived<true>();
-            decrementIndentLevel();
-            writeSuffixedNewLine(traits_t::TupleEnd);
-
-            return lastSerializeSize();
-        }
-
-        size_t deserializeTupleBegin()
-        {
-            m_inputTupleInfo.push(false);
-            serializer_base_t::template visitBeginDerived<false>();
-            readTokenAfterWhitespace(traits_t::TupleBegin);
-            inputData() = m_input.data();
-
-            return lastDeserializeSize();
-        }
-
-        size_t deserializeTupleEnd()
-        {
-            if (m_inputTupleInfo.empty())
-            {
-                throw std::logic_error{ "attempt to deserialize tuple end without previous begin" };
-            }
-
-            m_inputTupleInfo.pop();
-
-            serializer_base_t::template visitBeginDerived<false>();
-            readTokenAfterWhitespace(traits_t::TupleEnd);
-            inputData() = m_input.data();
-
-            return lastDeserializeSize();
-        }
-
     protected:
 
         using visitor_base_t = type::TypeVisitor<Derived>;
@@ -167,48 +115,15 @@ namespace dots::io
         using serializer_base_t::inputData;
         using serializer_base_t::inputDataEnd;
 
-        template <bool Const>
-        void visitBeginDerived()
-        {
-            serializer_base_t::template visitBeginDerived<Const>();
-
-            if constexpr (Const)
-            {
-                if (!m_outputTupleInfo.empty() && m_outputTupleInfo.top())
-                {
-                    writePrefixedNewLine(traits_t::TupleElementSeparator);
-                }
-            }
-            else
-            {
-                if (!m_inputTupleInfo.empty() && m_inputTupleInfo.top())
-                {
-                    readTokenAfterWhitespace(traits_t::TupleElementSeparator);
-                }
-            }
-        }
-
-        template <bool Const>
+        template <bool Const, bool ConsiderTupleValue = true>
         void visitEndDerived()
         {
-            if constexpr (Const)
+            if constexpr (!Const)
             {
-                if (!m_outputTupleInfo.empty())
-                {
-                    m_outputTupleInfo.top() = true;
-                }
-            }
-            else
-            {
-                if (!m_inputTupleInfo.empty())
-                {
-                    m_inputTupleInfo.top() = true;
-                }
-
                 inputData() = m_input.data();
             }
 
-            serializer_base_t::template visitEndDerived<Const>();
+            serializer_base_t::template visitEndDerived<Const, ConsiderTupleValue>();
         }
 
         //
@@ -400,6 +315,26 @@ namespace dots::io
             }
         }
 
+        void serializeTupleBeginDerived()
+        {
+            incrementIndentLevel();
+            writePrefixedNewLine(traits_t::TupleBegin);
+        }
+
+        void serializeTupleValueBeginDerived(bool first)
+        {
+            if (!first)
+            {
+                writePrefixedNewLine(traits_t::TupleElementSeparator);
+            }
+        }
+
+        void serializeTupleEndDerived()
+        {
+            decrementIndentLevel();
+            writeSuffixedNewLine(traits_t::TupleEnd);
+        }
+
         //
         // deserialization
         //
@@ -565,6 +500,24 @@ namespace dots::io
             {
                 static_assert(!std::is_same_v<T, T>, "type not supported");
             }
+        }
+
+        void deserializeTupleBeginDerived()
+        {
+            readTokenAfterWhitespace(traits_t::TupleBegin);
+        }
+
+        void deserializeTupleValueBeginDerived(bool first)
+        {
+            if (!first)
+            {
+                readTokenAfterWhitespace(traits_t::TupleElementSeparator);
+            }
+        }
+
+        void deserializeTupleEndDerived()
+        {
+            readTokenAfterWhitespace(traits_t::TupleEnd);
         }
 
         void setInputDerived()
@@ -1036,8 +989,6 @@ namespace dots::io
 
     private:
 
-        using tuple_info_t = std::stack<bool, std::vector<bool>>;
-
         template <size_t N>
         std::runtime_error makeTokenError(std::array<std::string_view, N> expected)
         {
@@ -1063,8 +1014,6 @@ namespace dots::io
             return makeTokenError(std::array{ expected });
         }
 
-        tuple_info_t m_outputTupleInfo;
-        tuple_info_t m_inputTupleInfo;
         size_t m_indentLevel;
         StringSerializerOptions m_options;
         std::string_view m_input;

@@ -517,6 +517,43 @@ TYPED_TEST_P(TestSerializerBase, deserialize_ConsecutiveArgumentsFromContinuousE
     EXPECT_FALSE(sut.inputAvailable());
 }
 
+TYPED_TEST_P(TestSerializerBase, serialize_TupleToContinuousInternalBuffer)
+{
+    using base_t = TestSerializerBase<TypeParam>;
+    typename base_t::serializer_t sut;
+
+    sut.serializeTupleBegin();
+    {
+        sut.serialize(base_t::Decoded().string1);
+        sut.serialize(base_t::Decoded().enum1);
+        sut.serialize(base_t::Decoded().vectorBool);
+        sut.serialize(base_t::Decoded().structSimple1);
+    }
+    sut.serializeTupleEnd();
+
+    EXPECT_EQ(sut.output(), base_t::Encoded().serializationTuple1);
+}
+
+TYPED_TEST_P(TestSerializerBase, deserialize_TupleFromContinuousExternalBuffer)
+{
+    using base_t = TestSerializerBase<TypeParam>;
+    typename base_t::serializer_t sut;
+
+    sut.setInput(base_t::Encoded().serializationTuple1);
+    EXPECT_TRUE(sut.inputAvailable());
+
+    sut.deserializeTupleBegin();
+    {
+        EXPECT_EQ(sut.template deserialize<std::string>(), base_t::Decoded().string1);
+        EXPECT_EQ(sut.template deserialize<SerializationEnum>(), base_t::Decoded().enum1);
+        EXPECT_EQ(sut.template deserialize<dots::vector_t<dots::bool_t>>(), base_t::Decoded().vectorBool);
+        EXPECT_EQ(sut.template deserialize<SerializationStructSimple>(), base_t::Decoded().structSimple1);
+    }
+    sut.deserializeTupleEnd();
+
+    EXPECT_FALSE(sut.inputAvailable());
+}
+
 REGISTER_TYPED_TEST_SUITE_P(TestSerializerBase, 
     serialize_TypedArgument,
     deserialize_TypedArgument,
@@ -529,5 +566,7 @@ REGISTER_TYPED_TEST_SUITE_P(TestSerializerBase,
     serialize_ComplexStructArgument,
     deserialize_ComplexStructArgument,
     serialize_ConsecutiveArgumentsToContinuousInternalBuffer,
-    deserialize_ConsecutiveArgumentsFromContinuousExternalBuffer
+    deserialize_ConsecutiveArgumentsFromContinuousExternalBuffer,
+    serialize_TupleToContinuousInternalBuffer,
+    deserialize_TupleFromContinuousExternalBuffer
 );
