@@ -100,6 +100,7 @@ struct RapidJsonSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::
     data_t vectorBool = Concat("[", boolTrue, ",", boolFalse, ",", boolFalse, "]");
     data_t vectorFloat = Concat("[", float32Positive, ",", float32Negative, "]");
     data_t vectorStructSimple = Concat("[{\"int32Property\":", int32Positive, "},{\"boolProperty\":", boolFalse, "}]");
+    data_t vectorEmpty = Concat("[]");
 
     //
     // struct
@@ -356,6 +357,7 @@ TEST_F(TestRapidJsonSerializer, serialize_VectorArgument)
     EXPECT_EQ(serializer_t::Serialize(Decoded().vectorBool), Encoded().vectorBool);
     EXPECT_EQ(serializer_t::Serialize(Decoded().vectorFloat), Encoded().vectorFloat);
     EXPECT_EQ(serializer_t::Serialize(Decoded().vectorStructSimple), Encoded().vectorStructSimple);
+    EXPECT_EQ(serializer_t::Serialize(Decoded().vectorEmpty), Encoded().vectorEmpty);
 }
 
 TEST_F(TestRapidJsonSerializer, deserialize_VectorArgument)
@@ -376,6 +378,12 @@ TEST_F(TestRapidJsonSerializer, deserialize_VectorArgument)
         dots::vector_t<SerializationStructSimple> vectorStructSimple;
         serializer_t::Deserialize(Encoded().vectorStructSimple, vectorStructSimple);
         EXPECT_EQ(vectorStructSimple, Decoded().vectorStructSimple);
+    }
+
+    {
+        dots::vector_t<dots::bool_t> vectorBool;
+        serializer_t::Deserialize(Encoded().vectorEmpty, vectorBool);
+        EXPECT_TRUE(vectorBool.empty());
     }
 }
 

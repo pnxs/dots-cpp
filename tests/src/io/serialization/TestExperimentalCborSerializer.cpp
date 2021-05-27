@@ -99,6 +99,7 @@ struct ExperimentalCborSerializerTestDataEncoded : SerializerBaseTestDataEncoded
     data_t vectorBool = Concat(0x83, boolTrue, boolFalse, boolFalse);
     data_t vectorFloat = Concat(0x82, float32Positive, float32Negative);
     data_t vectorStructSimple = Concat(0x82, 0x81, 0x02, int32Positive, 0x81, 0x08, boolFalse);
+    data_t vectorEmpty = Concat(0x80);
 
     //
     // struct

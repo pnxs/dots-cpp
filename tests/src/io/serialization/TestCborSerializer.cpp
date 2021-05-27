@@ -99,6 +99,7 @@ struct CborSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::io::C
     data_t vectorBool = Concat(0x83, boolTrue, boolFalse, boolFalse);
     data_t vectorFloat = Concat(0x82, float32Positive, float32Negative);
     data_t vectorStructSimple = Concat(0x82, 0xA1, 0x01, int32Positive, 0xA1, 0x03, boolFalse);
+    data_t vectorEmpty = Concat(0x80);
 
     //
     // struct

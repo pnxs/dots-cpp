@@ -101,6 +101,7 @@ struct JsonSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::io::J
     data_t vectorBool = Concat("[ ", boolTrue, ", ", boolFalse, ", ", boolFalse, " ]");
     data_t vectorFloat = Concat("[ ", float32Positive, ", ", float32Negative, " ]");
     data_t vectorStructSimple = Concat("[ { \"int32Property\": ", int32Positive, " }, { \"boolProperty\": ",  boolFalse, " } ]");
+    data_t vectorEmpty = Concat("[ ]");
 
     //
     // struct

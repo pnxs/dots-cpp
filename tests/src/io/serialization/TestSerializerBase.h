@@ -136,6 +136,8 @@ struct TestSerializerBaseDataDecoded
             SerializationStructSimple::boolProperty_i{ boolFalse }
         }
     };
+
+    dots::vector_t<dots::bool_t> vectorEmpty;
 };
 
 template <typename Serializer>
@@ -377,6 +379,7 @@ TYPED_TEST_P(TestSerializerBase, serialize_VectorArgument)
     EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().vectorBool), base_t::Encoded().vectorBool);
     EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().vectorFloat), base_t::Encoded().vectorFloat);
     EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().vectorStructSimple), base_t::Encoded().vectorStructSimple);
+    EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().vectorEmpty), base_t::Encoded().vectorEmpty);
 }
 
 TYPED_TEST_P(TestSerializerBase, deserialize_VectorArgument)
@@ -399,6 +402,12 @@ TYPED_TEST_P(TestSerializerBase, deserialize_VectorArgument)
         dots::vector_t<SerializationStructSimple> vectorStructSimple;
         base_t::serializer_t::Deserialize(base_t::Encoded().vectorStructSimple, vectorStructSimple);
         EXPECT_EQ(vectorStructSimple, base_t::Decoded().vectorStructSimple);
+    }
+
+    {
+        dots::vector_t<dots::bool_t> vectorBool;
+        base_t::serializer_t::Deserialize(base_t::Encoded().vectorEmpty, vectorBool);
+        EXPECT_TRUE(vectorBool.empty());
     }
 }
 
