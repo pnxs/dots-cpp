@@ -22,6 +22,24 @@ namespace dots::type
 
     protected:
 
+        template <bool Const>
+        size_t visitingLevel() const
+        {
+            size_t visitingLevel = [this]()
+            {
+                if constexpr (Const)
+                {
+                    return m_constVisitingLevel;
+                }
+                else
+                {
+                    return m_nonConstVisitingLevel;
+                }
+            }();
+
+            return visitingLevel == 0 ? 0 : visitingLevel - 1;
+        }
+
         template <typename T, std::enable_if_t<std::is_base_of_v<Struct, T>, int> = 0>
         void visit(const T& instance, const PropertySet& includedProperties)
         {
@@ -188,9 +206,35 @@ namespace dots::type
         using const_t = std::conditional_t<Condition, std::add_const_t<U>, U>;
 
         template <bool Const>
+        size_t incrementVisitingLevel()
+        {
+            if constexpr (Const)
+            {
+                return ++m_constVisitingLevel;
+            }
+            else
+            {
+                return ++m_nonConstVisitingLevel;
+            }
+        }
+
+        template <bool Const>
+        size_t decrementVisitingLevel()
+        {
+            if constexpr (Const)
+            {
+                return --m_constVisitingLevel;
+            }
+            else
+            {
+                return --m_nonConstVisitingLevel;
+            }
+        }
+
+        template <bool Const>
         void visitBegin()
         {
-            if (m_visitingLevel++ == 0)
+            if (incrementVisitingLevel<Const>() == 1)
             {
                 derived().template visitBeginDerived<Const>();
             }
@@ -199,7 +243,7 @@ namespace dots::type
         template <bool Const>
         void visitEnd()
         {
-            if (--m_visitingLevel == 0)
+            if (decrementVisitingLevel<Const>() == 0)
             {
                 derived().template visitEndDerived<Const>();
             }
@@ -215,6 +259,8 @@ namespace dots::type
             {
                 if (derived().visitStructBeginDerived(instance, includedProperties))
                 {
+                    incrementVisitingLevel<Const>();
+
                     if constexpr (std::is_base_of_v<StaticStruct<T>, T>)
                     {
                         instance._applyProperties([&](auto&... properties)
@@ -252,6 +298,7 @@ namespace dots::type
                         }
                     }
 
+                    decrementVisitingLevel<Const>();
                     derived().visitStructEndDerived(instance, includedProperties);
                 }
             }
@@ -285,6 +332,8 @@ namespace dots::type
         {
             if (derived().visitVectorBeginDerived(vector, descriptor))
             {
+                incrementVisitingLevel<Const>();
+
                 if constexpr (std::is_same_v<T, Typeless>)
                 {
                     for (size_t i = 0; i < vector.typelessSize(); ++i)
@@ -320,6 +369,7 @@ namespace dots::type
                     }
                 }
 
+                decrementVisitingLevel<Const>();
                 derived().visitVectorEndDerived(vector, descriptor);
             }
         }
@@ -464,7 +514,8 @@ namespace dots::type
             return static_cast<Derived&>(*this);
         }
 
-        size_t m_visitingLevel = 0;
+        size_t m_constVisitingLevel = 0;
+        size_t m_nonConstVisitingLevel = 0;
     };
 
     template <>
