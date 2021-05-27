@@ -810,12 +810,14 @@ namespace dots::io
                             return tools::starts_with(m_input, escapeMapping.to);
                         });
 
-                        if (it != traits_t::StringEscapeMapping.end())
+                        if (it == traits_t::StringEscapeMapping.end())
                         {
-                            const auto& [from, to] = *it;
-                            token += from;
-                            m_input.remove_prefix(to.size());
+                            throw makeTokenError("<valid-escape-sequence>");
                         }
+
+                        const auto& [from, to] = *it;
+                        token += from;
+                        m_input.remove_prefix(to.size());
                     }
                     else
                     {
