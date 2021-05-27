@@ -105,9 +105,9 @@ namespace dots::io
         size_t serializeTupleBegin()
         {
             derived().template visitBeginDerived<true, false>();
-            m_outputTupleInfo.push(true);
             derived().serializeTupleBeginDerived();
             derived().template visitEndDerived<true, false>();
+            m_outputTupleInfo.push(true);
 
             return lastSerializeSize();
         }
@@ -119,10 +119,10 @@ namespace dots::io
                 throw std::logic_error{ "attempt to serialize tuple end without previous begin" };
             }
 
+            m_outputTupleInfo.pop();
             derived().template visitBeginDerived<true, false>();
             derived().serializeTupleEndDerived();
             derived().template visitEndDerived<true, false>();
-            m_outputTupleInfo.pop();
 
             return lastSerializeSize();
         }
@@ -130,9 +130,9 @@ namespace dots::io
         size_t deserializeTupleBegin()
         {
             derived().template visitBeginDerived<false, false>();
-            m_inputTupleInfo.push(true);
             derived().deserializeTupleBeginDerived();
             derived().template visitEndDerived<false, false>();
+            m_inputTupleInfo.push(true);
 
             return lastDeserializeSize();
         }
@@ -144,9 +144,9 @@ namespace dots::io
                 throw std::logic_error{ "attempt to deserialize tuple end without previous begin" };
             }
 
+            m_inputTupleInfo.pop();
             derived().template visitBeginDerived<false, false>();
             derived().deserializeTupleEndDerived();
-            m_inputTupleInfo.pop();
             derived().template visitEndDerived<false, false>();
 
             return lastDeserializeSize();
@@ -300,6 +300,16 @@ namespace dots::io
         const value_t*& inputDataEnd()
         {
             return m_inputDataEnd;
+        }
+
+        size_t serializeLevel() const
+        {
+            return visitor_base_t::template visitingLevel<true>() + m_outputTupleInfo.size();
+        }
+
+        size_t deserializeLevel() const
+        {
+            return visitor_base_t::template visitingLevel<false>() + m_inputTupleInfo.size();
         }
 
         void serializeTupleBeginDerived()
