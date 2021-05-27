@@ -132,7 +132,7 @@ struct JsonSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::io::J
 
     data_t structSimple1_None = Concat(
         "{ ",
-        " }"
+        "}"
     );
     
     data_t structComplex1_Valid = Concat(

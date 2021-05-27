@@ -88,7 +88,6 @@ namespace dots::io
         using data_t = typename serializer_base_t::data_t;
 
         StringSerializerBase(StringSerializerOptions options = {}) :
-            m_indentLevel(0),
             m_options{ std::move(options) }
         {
             /* do nothing */
@@ -137,7 +136,7 @@ namespace dots::io
             {
                 if (m_options.style == StringSerializerOptions::Compact)
                 {
-                    if (indentLevel() == 0)
+                    if (serializer_base_t::serializeLevel() == 0)
                     {
                         write(instance._descriptor().name());
                     }
@@ -148,8 +147,7 @@ namespace dots::io
                 }
             }
 
-            incrementIndentLevel();
-            writePrefixedNewLine(traits_t::StructBegin);
+            write(traits_t::StructBegin);
 
             return true;
         }
@@ -157,14 +155,17 @@ namespace dots::io
         template <typename T>
         void visitStructEndDerived(const T&/* instance*/, const property_set_t&/* includedProperties*/)
         {
-            decrementIndentLevel();
             writeSuffixedNewLine(traits_t::StructEnd);
         }
 
         template <typename T>
         bool visitPropertyBeginDerived(const T& property, bool first)
         {
-            if (!first)
+            if (first)
+            {
+                writeNewLine();
+            }
+            else
             {
                 writePrefixedNewLine(traits_t::PropertyValueEnd);
             }
@@ -200,8 +201,6 @@ namespace dots::io
         template <typename T>
         bool visitVectorBeginDerived(const vector_t<T>& vector, const type::Descriptor<vector_t<T>>&/* descriptor*/)
         {
-            incrementIndentLevel();
-
             if (vector.typelessSize() == 0)
             {
                 write(traits_t::VectorBegin);
@@ -209,24 +208,29 @@ namespace dots::io
             }
             else
             {
-                writePrefixedNewLine(traits_t::VectorBegin);
+                write(traits_t::VectorBegin);
                 return true;
             }
         }
 
         template <typename T>
-        void visitVectorValueEndDerived(const vector_t<T>& vector, const type::Descriptor<vector_t<T>>&/* descriptor*/, size_t index)
+        bool visitVectorValueBeginDerived(const vector_t<T>&/* vector*/, const type::Descriptor<vector_t<T>>&/* descriptor*/, size_t index)
         {
-            if (index < vector.typelessSize() - 1)
+            if (index == 0)
+            {
+                writeNewLine();
+            }
+            else
             {
                 writePrefixedNewLine(traits_t::VectorValueSeparator);
             }
+
+            return true;
         }
 
         template <typename T>
         void visitVectorEndDerived(const vector_t<T>&/* vector*/, const type::Descriptor<vector_t<T>>&/* descriptor*/)
         {
-            decrementIndentLevel();
             writeSuffixedNewLine(traits_t::VectorEnd);
         }
 
@@ -317,13 +321,16 @@ namespace dots::io
 
         void serializeTupleBeginDerived()
         {
-            incrementIndentLevel();
-            writePrefixedNewLine(traits_t::TupleBegin);
+            write(traits_t::TupleBegin);
         }
 
         void serializeTupleValueBeginDerived(bool first)
         {
-            if (!first)
+            if (first)
+            {
+                writeNewLine();
+            }
+            else
             {
                 writePrefixedNewLine(traits_t::TupleElementSeparator);
             }
@@ -331,7 +338,6 @@ namespace dots::io
 
         void serializeTupleEndDerived()
         {
-            decrementIndentLevel();
             writeSuffixedNewLine(traits_t::TupleEnd);
         }
 
@@ -526,25 +532,6 @@ namespace dots::io
         }
 
         //
-        // indentation
-        //
-
-        size_t& indentLevel()
-        {
-            return m_indentLevel;
-        }
-
-        void incrementIndentLevel()
-        {
-            ++m_indentLevel;
-        }
-
-        void decrementIndentLevel()
-        {
-            --m_indentLevel;
-        }
-
-        //
         // writing
         //
 
@@ -565,7 +552,7 @@ namespace dots::io
             if (m_options.style == StringSerializerOptions::MultiLine)
             {
                 write("\n");
-                output().resize(output().size() + m_indentLevel * m_options.indentSize, ' ');
+                output().resize(output().size() + serializer_base_t::serializeLevel() * m_options.indentSize, ' ');
             }
             else if (m_options.style >= StringSerializerOptions::Compact)
             {
@@ -799,7 +786,7 @@ namespace dots::io
             readWhitespace();
             bool stringDelimited = tryReadToken(traits_t::StringDelimiter);
 
-            if (indentLevel() == 0 && !stringDelimited)
+            if (serializer_base_t::deserializeLevel() == 0 && !stringDelimited)
             {
                 std::string token = std::string{ m_input };
                 m_input.remove_prefix(m_input.size());
@@ -1014,7 +1001,6 @@ namespace dots::io
             return makeTokenError(std::array{ expected });
         }
 
-        size_t m_indentLevel;
         StringSerializerOptions m_options;
         std::string_view m_input;
     };
