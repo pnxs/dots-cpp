@@ -345,6 +345,7 @@ TYPED_TEST_P(TestSerializerBase, deserialize_TypedArgument)
     EXPECT_EQ(base_t::serializer_t::template Deserialize<dots::string_t>(base_t::Encoded().string3), base_t::Decoded().string3);
     EXPECT_EQ(base_t::serializer_t::template Deserialize<dots::string_t>(base_t::Encoded().string4), base_t::Decoded().string4);
     EXPECT_EQ(base_t::serializer_t::template Deserialize<dots::string_t>(base_t::Encoded().string5), base_t::Decoded().string5);
+    EXPECT_ANY_THROW(base_t::serializer_t::template Deserialize<dots::string_t>(base_t::Encoded().stringInvalid));
 
     EXPECT_EQ(base_t::serializer_t::template Deserialize<SerializationEnum>(base_t::Encoded().enum1), base_t::Decoded().enum1);
 }

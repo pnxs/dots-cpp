@@ -68,6 +68,7 @@ struct RapidJsonSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::
     data_t string3{ "\"foo \\\"bar\\\" baz\"" };
     data_t string4{ "\"foo bar \\\"baz\\\"\"" };
     data_t string5{ u8"\"foo\\\\ \u0062\u0061\u0072\u00A9\\n b\\\\az\"" };
+    data_t stringInvalid{ "\"fo\\obar\"" };
 
     //
     // enum
@@ -329,6 +330,7 @@ TEST_F(TestRapidJsonSerializer, deserialize_TypedArgument)
     EXPECT_EQ(serializer_t::Deserialize<dots::string_t>(Encoded().string3), Decoded().string3);
     EXPECT_EQ(serializer_t::Deserialize<dots::string_t>(Encoded().string4), Decoded().string4);
     EXPECT_EQ(serializer_t::Deserialize<dots::string_t>(Encoded().string5), Decoded().string5);
+    EXPECT_ANY_THROW(serializer_t::Deserialize<dots::string_t>(Encoded().stringInvalid));
 
     EXPECT_EQ(serializer_t::Deserialize<SerializationEnum>(Encoded().enum1), Decoded().enum1);
 }

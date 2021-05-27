@@ -69,6 +69,7 @@ struct StringSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::io:
     data_t string3{ "\"foo \\\"bar\\\" baz\"" };
     data_t string4{ "\"foo bar \\\"baz\\\"\"" };
     data_t string5{ u8"\"foo\\\\ \u0062\u0061\u0072\u00A9\\n b\\\\az\"" };
+    data_t stringInvalid{ "\"fo\\obar\"" };
 
     //
     // enum
