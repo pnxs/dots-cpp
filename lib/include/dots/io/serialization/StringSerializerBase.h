@@ -202,18 +202,10 @@ namespace dots::io
         }
 
         template <typename T>
-        bool visitVectorBeginDerived(const vector_t<T>& vector, const type::Descriptor<vector_t<T>>&/* descriptor*/)
+        bool visitVectorBeginDerived(const vector_t<T>&/* vector*/, const type::Descriptor<vector_t<T>>&/* descriptor*/)
         {
-            if (vector.typelessSize() == 0)
-            {
-                write(traits_t::VectorBegin);
-                return false;
-            }
-            else
-            {
-                write(traits_t::VectorBegin);
-                return true;
-            }
+            write(traits_t::VectorBegin);
+            return true;
         }
 
         template <typename T>
@@ -411,8 +403,9 @@ namespace dots::io
         bool visitVectorBeginDerived(vector_t<T>& vector, const type::Descriptor<vector_t<T>>& descriptor)
         {
             readTokenAfterWhitespace(traits_t::VectorBegin);
+            std::array endToken{ traits_t::VectorValueSeparator, traits_t::VectorEnd };
 
-            for (;;)
+            for (bool vectorEnd = tryReadTokenAfterWhitespace(traits_t::VectorEnd); !vectorEnd; vectorEnd = readAnyTokenAfterWhitespace(endToken) == traits_t::VectorEnd)
             {
                 descriptor.resize(vector, vector.typelessSize() + 1);
 
@@ -431,11 +424,6 @@ namespace dots::io
                     {
                         visit(vector.back(), descriptor.valueDescriptor());
                     }
-                }
-
-                if (readAnyTokenAfterWhitespace(std::array{ traits_t::VectorValueSeparator, traits_t::VectorEnd }) == traits_t::VectorEnd)
-                {
-                    break;
                 }
             }
 
