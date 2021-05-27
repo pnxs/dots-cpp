@@ -332,6 +332,25 @@ TEST_F(TestRapidJsonSerializer, deserialize_TypedArgument)
     EXPECT_EQ(serializer_t::Deserialize<SerializationEnum>(Encoded().enum1), Decoded().enum1);
 }
 
+TEST_F(TestRapidJsonSerializer, serialize_PropertyArgument)
+{
+    EXPECT_EQ(serializer_t::Serialize(Decoded().structSimple1_int32Property), Encoded().int32Positive);
+    EXPECT_EQ(serializer_t::Serialize(Decoded().structSimple1_stringProperty), Encoded().string1);
+    EXPECT_EQ(serializer_t::Serialize(Decoded().structSimple1_float32Property), Encoded().float32Positive);
+}
+
+TEST_F(TestRapidJsonSerializer, deserialize_PropertyArgument)
+{
+    SerializationStructSimple serializationProperties;
+    serializer_t::Deserialize(Encoded().int32Positive, serializationProperties.int32Property);
+    serializer_t::Deserialize(Encoded().string1, serializationProperties.stringProperty);
+    serializer_t::Deserialize(Encoded().float32Positive, serializationProperties.float32Property);
+
+    EXPECT_EQ(serializationProperties.int32Property, Decoded().structSimple1_int32Property);
+    EXPECT_EQ(serializationProperties.stringProperty, Decoded().structSimple1_stringProperty);
+    EXPECT_EQ(serializationProperties.float32Property, Decoded().structSimple1_float32Property);
+}
+
 TEST_F(TestRapidJsonSerializer, serialize_VectorArgument)
 {
     EXPECT_EQ(serializer_t::Serialize(Decoded().vectorBool), Encoded().vectorBool);

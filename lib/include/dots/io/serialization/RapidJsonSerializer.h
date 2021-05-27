@@ -117,41 +117,23 @@ namespace dots::io
         template <typename T>
         void serialize(const T& value)
         {
-            constexpr bool IsProperty = type::is_property_v<T>;
-            static_assert(!IsProperty, "direct serialization of properties is not available for this serializer");
-
-            if constexpr (!IsProperty)
-            {
-                visit(value);
-            }
+            visit(value);
         }
 
         template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
         void deserialize(T& value, const type::Descriptor<T>& descriptor)
         {
-            constexpr bool IsProperty = type::is_property_v<T>;
-            static_assert(!IsProperty, "direct deserialization of properties is not available for this serializer");
-
-            if constexpr (!IsProperty)
-            {
-                visit(value, descriptor);
-            }
+            visit(value, descriptor);
         }
 
         template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
         void deserialize(T& value)
         {
-            constexpr bool IsProperty = type::is_property_v<T>;
-            static_assert(!IsProperty, "direct deserialization of properties is not available for this serializer");
+            visit(value);
 
-            if constexpr (!IsProperty)
+            if (m_tupleEnd != nullptr)
             {
-                visit(value);
-
-                if (m_tupleEnd != nullptr)
-                {
-                    ++m_inputValue;
-                }
+                ++m_inputValue;
             }
         }
 
@@ -307,7 +289,10 @@ namespace dots::io
         template <typename T>
         bool visitPropertyBeginDerived(const T& property, bool/* first*/)
         {
-            write(property.descriptor().name());
+            if (visitor_base_t::template visitingLevel<true>() > 0)
+            {
+                write(property.descriptor().name());
+            }
 
             if (property.isValid())
             {

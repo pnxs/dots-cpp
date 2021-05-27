@@ -351,9 +351,9 @@ TYPED_TEST_P(TestSerializerBase, serialize_PropertyArgument)
 {
     using base_t = TestSerializerBase<TypeParam>;
 
-    EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().structSimple1_int32Property), base_t::Encoded().structSimple1_int32Property);
-    EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().structSimple1_stringProperty), base_t::Encoded().structSimple1_stringProperty);
-    EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().structSimple1_float32Property), base_t::Encoded().structSimple1_float32Property);
+    EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().structSimple1_int32Property), base_t::Encoded().int32Positive);
+    EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().structSimple1_stringProperty), base_t::Encoded().string1);
+    EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().structSimple1_float32Property), base_t::Encoded().float32Positive);
 }
 
 TYPED_TEST_P(TestSerializerBase, deserialize_PropertyArgument)

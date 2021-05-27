@@ -161,30 +161,33 @@ namespace dots::io
         template <typename T>
         bool visitPropertyBeginDerived(const T& property, bool first)
         {
-            if (first)
+            if (serializer_base_t::serializeLevel() > 0)
             {
-                writeNewLine();
-            }
-            else
-            {
-                writePrefixedNewLine(traits_t::PropertyValueEnd);
-            }
+                if (first)
+                {
+                    writeNewLine();
+                }
+                else
+                {
+                    writePrefixedNewLine(traits_t::PropertyValueEnd);
+                }
 
-            write(traits_t::PropertyNameBegin);
-            write(property.descriptor().name());
+                write(traits_t::PropertyNameBegin);
+                write(property.descriptor().name());
 
-            if (!traits_t::PropertyNameEnd.empty())
-            {
-                write(traits_t::PropertyNameEnd);
-            }
+                if (!traits_t::PropertyNameEnd.empty())
+                {
+                    write(traits_t::PropertyNameEnd);
+                }
 
-            if constexpr (!traits_t::PropertyValueBegin.empty())
-            {
-                writeSeparator(traits_t::PropertyValueBegin);
-            }
-            else if (m_options.style >= StringSerializerOptions::Compact)
-            {
-                write(" ");
+                if constexpr (!traits_t::PropertyValueBegin.empty())
+                {
+                    writeSeparator(traits_t::PropertyValueBegin);
+                }
+                else if (m_options.style >= StringSerializerOptions::Compact)
+                {
+                    write(" ");
+                }
             }
 
             if (property.isValid())

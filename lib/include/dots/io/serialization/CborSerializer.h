@@ -34,7 +34,11 @@ namespace dots::io
         template <typename T>
         bool visitPropertyBeginDerived(const T& property, bool/* first*/)
         {
-            write(property.descriptor().tag());
+            if (serializeLevel() > 0)
+            {
+                write(property.descriptor().tag());
+            }
+
             return true;
         }
 
