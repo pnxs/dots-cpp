@@ -583,6 +583,120 @@ TEST(TestDispatcher, dispatch_NoEventAfterExplicitRemoveHandlerForType)
     ASSERT_EQ(i, 1);
 }
 
+TEST(TestDispatcher, dispatch_AddEventHandlerDuringDispatch)
+{
+    dots::Dispatcher sut;
+    DotsTestStruct dts{ DotsTestStruct::indKeyfField_i{ 1 } };
+    DotsHeader header = test_helpers::make_header(dts, 42);
+
+    size_t i = 0;
+
+    for (size_t j = 0; j < 10; ++j)
+    {
+        sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
+        {
+            ++i;
+        });
+    }
+
+    sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
+    {
+        sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
+        {
+            ++i;
+        });
+    });
+
+    for (size_t j = 0; j < 10; ++j)
+    {
+        sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
+        {
+            ++i;
+        });
+    }
+
+    sut.dispatch(dots::Transmission{ header, dts });
+
+    ASSERT_EQ(i, 21);
+}
+
+TEST(TestDispatcher, dispatch_RemoveCurrentEventHandlerDuringDispatch)
+{
+    dots::Dispatcher sut;
+    DotsTestStruct dts{ DotsTestStruct::indKeyfField_i{ 1 } };
+    DotsHeader header = test_helpers::make_header(dts, 42);
+
+    size_t i = 0;
+    dots::Dispatcher::id_t id;
+
+    for (size_t j = 0; j < 10; ++j)
+    {
+        sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
+        {
+            ++i;
+        });
+    }
+
+    id = sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
+    {
+        sut.removeEventHandler(DotsTestStruct::_Descriptor(), id);
+    });
+
+    for (size_t j = 0; j < 10; ++j)
+    {
+        sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
+        {
+            ++i;
+        });
+    }
+
+    sut.dispatch(dots::Transmission{ header, dts });
+
+    ASSERT_EQ(i, 20);
+}
+
+TEST(TestDispatcher, dispatch_RemoveOtherEventHandlerDuringDispatch)
+{
+    dots::Dispatcher sut;
+    DotsTestStruct dts{ DotsTestStruct::indKeyfField_i{ 1 } };
+    DotsHeader header = test_helpers::make_header(dts, 42);
+
+    size_t i = 0;
+    dots::Dispatcher::id_t id1;
+    dots::Dispatcher::id_t id5;
+
+    id1 = sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
+    {
+        ++i;
+    });
+
+    sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
+    {
+        ++i;
+        sut.removeEventHandler(DotsTestStruct::_Descriptor(), id1);
+    });
+
+    sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
+    {
+        ++i;
+    });
+
+    sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
+    {
+        ++i;
+        sut.removeEventHandler(DotsTestStruct::_Descriptor(), id5);
+    });
+
+    id5 = sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
+    {
+        ++i;
+    });
+
+    sut.dispatch(dots::Transmission{ header, dts });
+
+    ASSERT_EQ(i, 4);
+}
+
 TEST(TestDispatcher, moveCtor_CreateEventAfterMoveContructWhenAddedHandlerForCachedType)
 {
     dots::Dispatcher dispatcher;
