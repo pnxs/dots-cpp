@@ -66,7 +66,15 @@ namespace dots::io
 
             if (auto itHandler = handlers.find(id); itHandler != handlers.end())
             {
-                handlers.erase(itHandler);
+                if (id == m_currentlyDispatchingId)
+                {
+                    m_removeIds.emplace_back(id);
+                }
+                else
+                {
+                    handlers.erase(itHandler);
+                }
+
                 return;
             }
         }
@@ -82,7 +90,15 @@ namespace dots::io
 
             if (auto itHandler = handlers.find(id); itHandler != handlers.end())
             {
-                handlers.erase(itHandler);
+                if (id == m_currentlyDispatchingId)
+                {
+                    m_removeIds.emplace_back(id);
+                }
+                else
+                {
+                    handlers.erase(itHandler);
+                }
+
                 return;
             }
         }
@@ -98,21 +114,31 @@ namespace dots::io
 
     void Dispatcher::dispatchTransmission(const Transmission& transmission)
     {
-        auto dispatchTransmissionToHandlers = [](const transmission_handlers_t& transmissionHandlers, const Transmission& transmission)
+        auto dispatchTransmissionToHandlers = [this](transmission_handlers_t& transmissionHandlers, const Transmission& transmission)
         {
             for (const auto& [id, handler] : transmissionHandlers)
             {
                 try
                 {
-                    (void)id;
+                    m_currentlyDispatchingId = id;
                     handler(transmission);
                 }
                 catch (...)
                 {
                     // TODO: logging?
                 }
+
+                m_currentlyDispatchingId = std::nullopt;
             }
+
+            for (id_t id : m_removeIds)
+            {
+                transmissionHandlers.erase(id);
+            }
+
+            m_removeIds.clear();
         };
+
         const type::StructDescriptor<>& descriptor = transmission.instance()->_descriptor();
 
         auto itHandlers = m_transmissionHandlerPool.find(&descriptor);
@@ -122,29 +148,38 @@ namespace dots::io
             return;
         }
 
-        const transmission_handlers_t& handlers = itHandlers->second;
+        transmission_handlers_t& handlers = itHandlers->second;
         dispatchTransmissionToHandlers(handlers, transmission);
     }
 
     void Dispatcher::dispatchEvent(const DotsHeader& header, const type::AnyStruct& instance)
     {
         const type::StructDescriptor<>& descriptor = instance->_descriptor();
-        const event_handlers_t& handlers = m_eventHandlerPool[&descriptor];
+        event_handlers_t& handlers = m_eventHandlerPool[&descriptor];
 
-        auto dispatchEventToHandlers = [&](const Event<>& e)
+        auto dispatchEventToHandlers = [this](event_handlers_t& handlers, const Event<>& e)
         {
             for (const auto& [id, handler] : handlers)
             {
                 try
                 {
-                    (void)id;
+                    m_currentlyDispatchingId = id;
                     handler(e);
                 }
                 catch (...)
                 {
                     // TODO: logging?
                 }
+
+                m_currentlyDispatchingId = std::nullopt;
             }
+
+            for (id_t id : m_removeIds)
+            {
+                handlers.erase(id);
+            }
+
+            m_removeIds.clear();
         };
 
         if (descriptor.cached())
@@ -155,13 +190,13 @@ namespace dots::io
             {
                 if (Container<>::node_t removed = container.remove(header, instance); !removed.empty())
                 {
-                    dispatchEventToHandlers(Event<>{ header, instance, removed.key(), removed.mapped() });
+                    dispatchEventToHandlers(handlers, Event<>{ header, instance, removed.key(), removed.mapped() });
                 }
             }
             else
             {
                 const auto& [updated, cloneInfo] = container.insert(header, instance);
-                dispatchEventToHandlers(Event<>{ header, instance, updated, cloneInfo });
+                dispatchEventToHandlers(handlers, Event<>{ header, instance, updated, cloneInfo });
             }
         }
         else
@@ -171,7 +206,7 @@ namespace dots::io
                 throw std::logic_error{ "cannot remove uncached instance for type: " + descriptor.name() };
             }
 
-            dispatchEventToHandlers(Event<>{ header, instance, instance,
+            dispatchEventToHandlers(handlers, Event<>{ header, instance, instance,
                 DotsCloneInformation{
                     DotsCloneInformation::lastOperation_i{ DotsMt::create },
                     DotsCloneInformation::createdFrom_i{ header.sender },

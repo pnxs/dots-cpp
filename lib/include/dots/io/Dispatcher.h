@@ -93,16 +93,18 @@ namespace dots::io
 
     private:
 
-        using transmission_handlers_t = std::map<id_t, transmission_handler_t>;
+        using transmission_handlers_t = std::map<id_t, transmission_handler_t, std::greater<>>;
         using transmission_handler_pool_t = std::unordered_map<const type::StructDescriptor<>*, transmission_handlers_t>;
 
-        using event_handlers_t = std::map<id_t, event_handler_t<>>;
+        using event_handlers_t = std::map<id_t, event_handler_t<>, std::greater<>>;
         using event_handler_pool_t = std::unordered_map<const type::StructDescriptor<>*, event_handlers_t>;
 
         void dispatchTransmission(const Transmission& transmission);
         void dispatchEvent(const DotsHeader& header, const type::AnyStruct& instance);
 
         id_t m_nextId = 0;
+        std::optional<id_t> m_currentlyDispatchingId;
+        std::vector<id_t> m_removeIds;
         ContainerPool m_containerPool;
         transmission_handler_pool_t m_transmissionHandlerPool;
         event_handler_pool_t m_eventHandlerPool;

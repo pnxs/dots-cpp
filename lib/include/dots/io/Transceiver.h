@@ -114,7 +114,7 @@ namespace dots::io
     private:
 
         using id_t = uint64_t;
-        using new_type_handlers_t = std::map<id_t, new_type_handler_t>;
+        using new_type_handlers_t = std::map<id_t, new_type_handler_t, std::greater<>>;
 
         virtual void joinGroup(const std::string_view& name) = 0;
         virtual void leaveGroup(const std::string_view& name) = 0;
@@ -125,6 +125,8 @@ namespace dots::io
         void handleNewType(const type::Descriptor<>& descriptor) noexcept;
 
         id_t m_nextId;
+        std::optional<id_t> m_currentlyDispatchingId;
+        std::vector<id_t> m_removeIds;
         std::shared_ptr<Transceiver*> m_this;
         io::Registry m_registry;
         Dispatcher m_dispatcher;
