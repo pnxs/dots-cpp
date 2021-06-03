@@ -17,6 +17,8 @@ namespace dots::io
 
     Transceiver::Transceiver(Transceiver&& other) noexcept :
         m_nextId(other.m_nextId),
+        m_currentlyDispatchingId{ std::move(other.m_currentlyDispatchingId) },
+        m_removeIds{ std::move(other.m_removeIds) },
         m_this{ std::move(other.m_this) },
         m_registry{ std::move(other.m_registry) },
         m_dispatcher{ std::move(other.m_dispatcher) },
@@ -30,6 +32,8 @@ namespace dots::io
     Transceiver& Transceiver::operator = (Transceiver&& rhs) noexcept
     {
         m_nextId = rhs.m_nextId;
+        m_currentlyDispatchingId = std::move(rhs.m_currentlyDispatchingId);
+        m_removeIds = std::move(rhs.m_removeIds);
         m_this = std::move(rhs.m_this);
         m_registry = std::move(rhs.m_registry);
         m_dispatcher = std::move(rhs.m_dispatcher);
@@ -123,7 +127,17 @@ namespace dots::io
         const auto& [id, handler_] = *m_newTypeHandlers.try_emplace(m_nextId++, std::move(handler)).first;
         m_registry.forEach(handler_);
 
-        return makeSubscription([&, id(id)]{ m_newTypeHandlers.extract(id); });
+        return makeSubscription([&, id(id)]
+        {
+            if (id == m_currentlyDispatchingId)
+            {
+                m_removeIds.emplace_back(id);
+            }
+            else
+            {
+                m_newTypeHandlers.extract(id);
+            }
+        });
     }
 
     void Transceiver::remove(const type::Struct& instance)
@@ -137,12 +151,22 @@ namespace dots::io
         {
             try
             {
+                m_currentlyDispatchingId = id;
                 handler(descriptor);
             }
             catch (const std::exception& e)
             {
                 LOG_ERROR_S("error in new type handler -> " << e.what());
             }
+
+            m_currentlyDispatchingId = std::nullopt;
         }
+
+        for (id_t id : m_removeIds)
+        {
+            m_newTypeHandlers.extract(id);
+        }
+
+        m_removeIds.clear();
     }
 }
