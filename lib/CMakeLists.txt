@@ -8,6 +8,7 @@ include(LibraryUtils)
 
 # options
 option(BUILD_DOTS_SHARED "Build DOTS as a shared instead of a static library" OFF)
+option(BUILD_WEBSOCKET "Build DOTS with websocket support" OFF)
 
 # dependencies
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
@@ -64,8 +65,6 @@ target_sources(${TARGET_NAME}
         src/io/channels/UdsChannel.cpp
         src/io/channels/UdsListener.cpp
         src/io/channels/VirtualChannel.cpp
-        src/io/channels/WebSocketChannel.cpp
-        src/io/channels/WebSocketListener.cpp
         src/io/channels/LocalChannel.cpp
         src/io/channels/LocalListener.cpp
 
@@ -96,6 +95,15 @@ target_sources(${TARGET_NAME}
         src/type/Uuid.cpp
         src/type/VectorDescriptor.cpp
 )
+if (BUILD_WEBSOCKET)
+target_sources(${TARGET_NAME}
+    PRIVATE
+        src/io/channels/WebSocketChannel.cpp
+        src/io/channels/WebSocketListener.cpp
+)
+endif()
+
+
 target_include_directories(${TARGET_NAME}
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

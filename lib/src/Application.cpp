@@ -28,10 +28,12 @@ namespace dots
             {
                 return globalGuestTransceiver.open<io::TcpChannel>(io::global_publish_types(), io::global_subscribe_types(), std::move(m_authSecret), *m_openEndpoint);
             }
+            #if defined(BUILD_WEBSOCKET)
             else if (m_openEndpoint->scheme() == "ws")
             {
                 return globalGuestTransceiver.open<io::WebSocketChannel>(io::global_publish_types(), io::global_subscribe_types(), std::move(m_authSecret), *m_openEndpoint);
             }
+            #endif
             #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
             else if (m_openEndpoint->scheme() == "uds")
             {

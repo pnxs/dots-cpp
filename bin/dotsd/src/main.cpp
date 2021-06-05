@@ -82,10 +82,12 @@ int main(int argc, char* argv[])
 
                 listeners.emplace_back(std::make_unique<dots::io::TcpListener>(io_context, listenEndpoint)); 
             }
+            #if defined(BUILD_WEBSOCKET)
             else if (listenEndpoint.scheme() == "ws")
             {
                 listeners.emplace_back(std::make_unique<dots::io::WebSocketListener>(io_context, listenEndpoint)); 
             }
+            #endif
             #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
             else if (listenEndpoint.scheme() == "uds")
             {
