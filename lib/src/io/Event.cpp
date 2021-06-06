@@ -69,9 +69,4 @@ namespace dots::io
     {
         return m_header.isFromMyself == true;
     }
-
-    bool Event<type::Struct>::isOwnUpdate() const
-    {
-        return m_header.isFromMyself == true;
-    }
 }

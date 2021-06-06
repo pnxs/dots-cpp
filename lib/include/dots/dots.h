@@ -83,8 +83,5 @@ namespace dots
         return transceiver().container<T>();
     }
 
-    [[deprecated("only available for backwards compatibility")]]
-    void publish(const type::StructDescriptor<>* td, const type::Struct& instance, types::property_set_t what, bool remove);
-
     #endif
 }

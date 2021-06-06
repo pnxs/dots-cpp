@@ -1,14 +1,8 @@
 #pragma once
-#include <deque>
 #include <dots/type/Descriptor.h>
 #include <dots/type/StaticDescriptor.h>
 #include <dots/type/Property.h>
 #include <dots/type/PropertyPath.h>
-
-namespace dots::types
-{
-    struct StructDescriptorData;
-}
 
 namespace dots::type
 {
@@ -108,25 +102,6 @@ namespace dots::type
         const PropertySet& properties() const;
         const PropertySet& keyProperties() const;
 
-        [[deprecated("only available for backwards compatibility")]]
-        const PropertySet& keys() const;
-
-        [[deprecated("only available for backwards compatibility")]]
-        const PropertySet& validProperties(const void* instance) const;
-
-        [[deprecated("only available for backwards compatibility")]]
-        PropertySet& validProperties(void* instance) const;
-
-        #ifndef DOTS_NO_GLOBAL_TRANSCEIVER
-
-        [[deprecated("only available for backwards compatibility")]]
-        const types::StructDescriptorData& descriptorData() const;
-
-        [[deprecated("only available for backwards compatibility")]]
-        static const StructDescriptor<>* createFromStructDescriptorData(const types::StructDescriptorData& sd);
-
-        #endif
-
     private:
 
         uint8_t m_flags;
@@ -136,10 +111,7 @@ namespace dots::type
         PropertySet m_keyProperties;
         size_t m_numSubStructs;
         PropertySet m_dynamicMemoryProperties;
-        mutable property_descriptor_container_t m_flatPropertyDescriptors;
-        mutable std::deque<PropertyDescriptor> m_subAreaPropertyDescriptors;
         mutable std::vector<PropertyPath> m_propertyPaths;
-        mutable const types::StructDescriptorData* m_descriptorData = nullptr;
     };
 
     template <typename T>
@@ -363,10 +335,4 @@ namespace dots::type
 
     template <typename TDescriptor>
     struct type_category<TDescriptor, std::enable_if_t<std::is_same_v<StructDescriptor<>, TDescriptor>>> : std::integral_constant<Type, Type::Struct> {};
-
-    [[deprecated("only available for backwards compatibility")]]
-    inline const StructDescriptor<>* toStructDescriptor(const Descriptor<>* descriptor)
-    {
-        return descriptor->type() == Type::Struct ? static_cast<const StructDescriptor<>*>(descriptor) : nullptr;
-    }
 }

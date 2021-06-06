@@ -1,6 +1,5 @@
 #include <dots/type/PropertyDescriptor.h>
-#include <dots/type/Struct.h>
-#include <dots/type/PropertyArea.h>
+#include <dots/type/StructDescriptor.h>
 
 namespace dots::type
 {
@@ -16,15 +15,5 @@ namespace dots::type
         {
             m_subAreaOffset.emplace(std::in_place, structDescriptor->areaOffset());
         }
-    }
-
-    char* PropertyDescriptor::address(void* p) const
-    {
-        return reinterpret_cast<char*>(&reinterpret_cast<Struct*>(p)->_propertyArea()) + offset();
-    }
-
-    const char* PropertyDescriptor::address(const void* p) const
-    {
-        return reinterpret_cast<const char*>(&reinterpret_cast<const Struct*>(p)->_propertyArea()) + offset();
     }
 }

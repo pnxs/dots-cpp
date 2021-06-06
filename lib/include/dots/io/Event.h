@@ -57,9 +57,6 @@ namespace dots::io
             return const_cast<Event<T>&>(std::as_const(*this).as<T>());
         }
 
-        [[deprecated("only available for backwards compatibility")]]
-        bool isOwnUpdate() const;
-
     private:
 
         const DotsHeader& m_header;

@@ -1,9 +1,7 @@
-#undef DOTS_NO_GLOBAL_TRANSCEIVER 
 #include <dots/type/StructDescriptor.h>
 #include <dots/type/Struct.h>
 #include <dots/io/DescriptorConverter.h>
 #include <dots/type/DynamicStruct.h>
-#include <dots/dots.h>
 
 namespace dots::type
 {
@@ -468,35 +466,5 @@ namespace dots::type
     const PropertySet& StructDescriptor<Typeless, false, void>::keyProperties() const
     {
         return m_keyProperties;
-    }
-
-    const PropertySet& StructDescriptor<Typeless, false, void>::keys() const
-    {
-        return m_keyProperties;
-    }
-
-    const PropertySet& StructDescriptor<Typeless, false, void>::validProperties(const void* instance) const
-    {
-        return propertyArea(*reinterpret_cast<const Struct*>(instance)).validProperties();
-    }
-
-    PropertySet& StructDescriptor<Typeless, false, void>::validProperties(void* instance) const
-    {
-        return propertyArea(*reinterpret_cast<Struct*>(instance)).validProperties();
-    }
-
-    const types::StructDescriptorData& StructDescriptor<Typeless, false, void>::descriptorData() const
-    {
-        if (m_descriptorData == nullptr)
-        {
-            m_descriptorData = new types::StructDescriptorData{ io::DescriptorConverter{ dots::transceiver().registry() }(*this) };
-        }
-
-        return *m_descriptorData;
-    }
-
-    const StructDescriptor<>* StructDescriptor<Typeless, false, void>::createFromStructDescriptorData(const types::StructDescriptorData& sd)
-    {
-        return &io::DescriptorConverter{ dots::transceiver().registry() }(sd);
     }
 }

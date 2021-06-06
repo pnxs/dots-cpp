@@ -230,12 +230,6 @@ namespace dots::type
             return PropertySet{ 0x1u << index };
         }
 
-        [[deprecated("only available for backwards compatibility")]]
-        std::string to_string() const
-        {
-            return toString();
-        }
-
     private:
 
         using set_t = std::bitset<8 * sizeof(value_t)>;

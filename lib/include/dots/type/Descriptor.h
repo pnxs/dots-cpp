@@ -41,9 +41,6 @@ namespace dots::type
     template <typename T>
     static constexpr bool is_category_descriptor_v = is_category_descriptor_t<T>::value;
 
-    // [[deprecated("only available for backwards compatibility")]]
-    using DotsType = Type;
-
     template <typename = Typeless>
     struct Descriptor;
 
@@ -201,44 +198,7 @@ namespace dots::type
         static bool IsFundamentalType(const Descriptor& descriptor);
         static bool IsFundamentalType(Type type);
 
-        [[deprecated("only available for backwards compatibility")]]
-        DotsType dotsType() const
-        {
-            return type();
-        }
-
-        [[deprecated("only available for backwards compatibility")]]
-        void* New() const
-        {
-            return NewInternal();
-        }
-
-        [[deprecated("only available for backwards compatibility")]]
-        void Delete(void *obj) const
-        {
-            return DeleteInternal(obj);
-        }
-
-        [[deprecated("only available for backwards compatibility")]]
-        std::shared_ptr<void> make_shared() const
-        {
-            return { NewInternal(), [this](void* obj){ DeleteInternal(obj); } };
-        }
-
     private:
-        
-        void* NewInternal() const
-        {
-            void *obj = ::operator new(size());
-            construct(*Typeless::From(obj));
-            return obj;
-        }
-        
-        void DeleteInternal(void *obj) const
-        {
-            destruct(*Typeless::From(obj));
-            ::operator delete(obj);
-        }
 
         Type m_type;
         std::string m_name;
@@ -309,37 +269,4 @@ namespace dots::type
 
     template <typename T>
     constexpr bool has_descriptor_v = has_descriptor_t<T>::value;
-
-    [[deprecated("only available for backwards compatibility and should be replaced by fundamental type check")]]
-    inline bool isDotsBaseType(Type dotsType)
-    {
-        switch (dotsType)
-        {
-            case Type::int8:
-            case Type::int16:
-            case Type::int32:
-            case Type::int64:
-            case Type::uint8:
-            case Type::uint16:
-            case Type::uint32:
-            case Type::uint64:
-            case Type::boolean:
-            case Type::float32:
-            case Type::float64:
-            case Type::string:
-            case Type::property_set:
-            case Type::timepoint:
-            case Type::steady_timepoint:
-            case Type::duration:
-            case Type::uuid:
-            case Type::Enum:
-                return true;
-
-            case Type::Vector:
-            case Type::Struct:
-                return false;
-        }
-
-        return false;
-    }
 }

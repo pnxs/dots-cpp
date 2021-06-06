@@ -221,21 +221,6 @@ namespace dots::io
         m_types.erase(name, assertRegisteredType);
     }
 
-    const type::Descriptor<>* Registry::findDescriptor(const std::string& name) const
-    {
-        return findType(name);
-    }
-
-    const type::StructDescriptor<>* Registry::findStructDescriptor(const std::string& name) const
-    {
-        return findStructType(name);
-    }
-
-    const std::map<std::string_view, std::shared_ptr<type::Descriptor<>>>& Registry::getTypes()
-    {
-        return m_types.data();
-    }
-
     bool Registry::IsUserType(const type::Descriptor<>& descriptor)
     {
         if (const auto* structDescriptor = descriptor.as<type::StructDescriptor<>>(); structDescriptor != nullptr)
