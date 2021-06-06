@@ -34,24 +34,25 @@ target_dots_model(${TARGET_NAME}
 )
 target_sources(${TARGET_NAME}
     PRIVATE
-        src/dots.cpp
         src/Application.cpp
+        src/Connection.cpp
+        src/Container.cpp
+        src/ContainerPool.cpp
+        src/Dispatcher.cpp
+        src/Event.cpp
+        src/GuestTransceiver.cpp
+        src/HostTransceiver.cpp
+        src/Registry.cpp
+        src/Subscription.cpp
+        src/Timer.cpp
+        src/Transceiver.cpp
+        src/dots.cpp
 
         src/tools/logging.cpp
         src/tools/IpNetwork.cpp
         src/tools/Uri.cpp
 
-        src/io/Transceiver.cpp
-        src/io/GuestTransceiver.cpp
-        src/io/HostTransceiver.cpp
-        src/io/Connection.cpp
-        src/io/Subscription.cpp
-
         src/io/Io.cpp
-        src/io/Container.cpp
-        src/io/ContainerPool.cpp
-        src/io/Dispatcher.cpp
-        src/io/Event.cpp
         src/io/Endpoint.cpp
 
         src/io/Channel.cpp
@@ -70,11 +71,9 @@ target_sources(${TARGET_NAME}
         src/io/channels/LocalListener.cpp
 
         src/io/services/FdHandlerService.cpp
-        src/io/Timer.cpp
         src/io/services/TimerService.cpp
         src/io/Transmission.cpp
 
-        src/io/Registry.cpp
         src/io/DescriptorConverter.cpp
 
         src/io/auth/Nonce.cpp

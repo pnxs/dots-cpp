@@ -1,10 +1,10 @@
-#include <dots/io/GuestTransceiver.h>
+#include <dots/GuestTransceiver.h>
 #include <dots/tools/logging.h>
 #include <dots/io/serialization/AsciiSerialization.h>
 #include <DotsMember.dots.h>
 #include <DotsCacheInfo.dots.h>
 
-namespace dots::io
+namespace dots
 {
     GuestTransceiver::GuestTransceiver(std::string selfName, boost::asio::io_context& ioContext/* = global_io_context()*/, bool staticUserTypes/* = true*/) :
         Transceiver(std::move(selfName), ioContext, staticUserTypes)
@@ -12,7 +12,7 @@ namespace dots::io
         type::Descriptor<DotsCacheInfo>::Instance();
     }
 
-    const io::Connection& GuestTransceiver::open(type::DescriptorMap preloadPublishTypes, type::DescriptorMap preloadSubscribeTypes, std::optional<std::string> authSecret, channel_ptr_t channel)
+    const Connection& GuestTransceiver::open(type::DescriptorMap preloadPublishTypes, type::DescriptorMap preloadSubscribeTypes, std::optional<std::string> authSecret, io::channel_ptr_t channel)
     {
         if (m_hostConnection != std::nullopt)
         {
@@ -24,14 +24,14 @@ namespace dots::io
 
         m_hostConnection.emplace(std::move(channel), false, std::move(authSecret));
         m_hostConnection->asyncReceive(registry(), nullptr, selfName(),
-            [this](io::Connection& connection, Transmission transmission){ return handleTransmission(connection, std::move(transmission)); },
-            [this](io::Connection& connection, const std::exception_ptr& e){ handleTransition(connection, e); }
+            [this](Connection& connection, io::Transmission transmission){ return handleTransmission(connection, std::move(transmission)); },
+            [this](Connection& connection, const std::exception_ptr& e){ handleTransition(connection, e); }
         );
 
         return *m_hostConnection;
     }
 
-    const io::Connection& GuestTransceiver::open(channel_ptr_t channel)
+    const Connection& GuestTransceiver::open(io::channel_ptr_t channel)
     {
         return open({}, {}, std::nullopt, std::move(channel));
     }
@@ -98,13 +98,13 @@ namespace dots::io
         }
     }
 
-    bool GuestTransceiver::handleTransmission(io::Connection&/* connection*/, Transmission transmission)
+    bool GuestTransceiver::handleTransmission(Connection&/* connection*/, io::Transmission transmission)
     {
         dispatcher().dispatch(transmission);
         return true;
     }
 
-    void GuestTransceiver::handleTransition(io::Connection& connection, const std::exception_ptr& e) noexcept
+    void GuestTransceiver::handleTransition(Connection& connection, const std::exception_ptr& e) noexcept
     {
         try
         {

@@ -1,8 +1,8 @@
-#include <dots/io/Container.h>
+#include <dots/Container.h>
 #include <algorithm>
 #include <numeric>
 
-namespace dots::io
+namespace dots
 {
     Container<type::Struct>::Container(const type::StructDescriptor<>& descriptor) :
         m_descriptor(&descriptor)

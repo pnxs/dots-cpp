@@ -1,10 +1,10 @@
-#include <dots/io/HostTransceiver.h>
+#include <dots/HostTransceiver.h>
 #include <vector>
 #include <dots/tools/logging.h>
 #include <DotsCacheInfo.dots.h>
 #include <DotsClient.dots.h>
 
-namespace dots::io
+namespace dots
 {
     HostTransceiver::HostTransceiver(std::string selfName/* = "DotsHostTransceiver"*/, boost::asio::io_context& ioContext/* = global_io_context()*/, bool staticUserTypes/* = true*/, transition_handler_t transitionHandler/* = nullpt*/) :
         Transceiver(std::move(selfName), ioContext, staticUserTypes),
@@ -13,14 +13,14 @@ namespace dots::io
         /* do nothing */
     }
 
-    Listener& HostTransceiver::listen(listener_ptr_t&& listener)
+    io::Listener& HostTransceiver::listen(io::listener_ptr_t&& listener)
     {
-        Listener* listenerPtr = listener.get();
+        io::Listener* listenerPtr = listener.get();
         m_listeners.emplace(listenerPtr, std::move(listener));
 
         listenerPtr->asyncAccept(
-            [this](Listener& listener, channel_ptr_t channel){ return handleListenAccept(listener, std::move(channel)); },
-            [this](Listener& listener, const std::exception_ptr& e){ handleListenError(listener, e); }
+            [this](io::Listener& listener, io::channel_ptr_t channel){ return handleListenAccept(listener, std::move(channel)); },
+            [this](io::Listener& listener, const std::exception_ptr& e){ handleListenError(listener, e); }
         );
 
         return *listenerPtr;
@@ -42,12 +42,12 @@ namespace dots::io
             DotsHeader::sentTime_i{ types::timepoint_t::Now() },
             DotsHeader::serverSentTime_i{ types::timepoint_t::Now() },
             DotsHeader::attributes_i{ *includedProperties },
-            DotsHeader::sender_i{ io::Connection::HostId },
+            DotsHeader::sender_i{ Connection::HostId },
             DotsHeader::removeObj_i{ remove },
             DotsHeader::isFromMyself_i{ true }
         };
 
-        Transmission transmission{ std::move(header), instance };
+        io::Transmission transmission{ std::move(header), instance };
         dispatcher().dispatch(transmission);
         transmit(nullptr, std::move(transmission));
     }
@@ -62,12 +62,12 @@ namespace dots::io
         /* do nothing */
     }
 
-    void HostTransceiver::transmit(io::Connection* origin, const Transmission& transmission)
+    void HostTransceiver::transmit(Connection* origin, const io::Transmission& transmission)
     {
-        using dirty_connection_t = std::pair<io::Connection*, std::exception_ptr>;
+        using dirty_connection_t = std::pair<Connection*, std::exception_ptr>;
         std::vector<dirty_connection_t> dirtyConnections;
 
-        for (io::Connection* destinationConnection : m_groups[transmission.header().typeName])
+        for (Connection* destinationConnection : m_groups[transmission.header().typeName])
         {
             LOG_DEBUG_S("deliver message group:" << this << "(" << *transmission.header().typeName << ")");
 
@@ -107,12 +107,12 @@ namespace dots::io
         }
     }
 
-    bool HostTransceiver::handleListenAccept(Listener&/* listener*/, channel_ptr_t channel)
+    bool HostTransceiver::handleListenAccept(io::Listener&/* listener*/, io::channel_ptr_t channel)
     {
-        auto connection = std::make_shared<io::Connection>(std::move(channel), true);
+        auto connection = std::make_shared<Connection>(std::move(channel), true);
         connection->asyncReceive(registry(), m_authManager.get(), selfName(),
-            [this](io::Connection& connection, Transmission transmission) { handleTransmission(connection, std::move(transmission)); },
-            [this](io::Connection& connection, const std::exception_ptr& e) { handleTransition(connection, e); }
+            [this](Connection& connection, io::Transmission transmission) { handleTransmission(connection, std::move(transmission)); },
+            [this](Connection& connection, const std::exception_ptr& e) { handleTransition(connection, e); }
         );
         m_guestConnections.emplace(connection.get(), connection);
         LOG_DEBUG_S("guest '" << connection->peerName() << "' emplaced")
@@ -120,7 +120,7 @@ namespace dots::io
         return true;
     }
 
-    void HostTransceiver::handleListenError(Listener& listener, const std::exception_ptr& e)
+    void HostTransceiver::handleListenError(io::Listener& listener, const std::exception_ptr& e)
     {
         try
         {
@@ -134,7 +134,7 @@ namespace dots::io
         m_listeners.erase(&listener);
     }
 
-    void HostTransceiver::handleTransmission(io::Connection& connection, Transmission transmission)
+    void HostTransceiver::handleTransmission(Connection& connection, io::Transmission transmission)
     {
         const auto& [header, instance] = transmission;
 
@@ -165,7 +165,7 @@ namespace dots::io
         transmit(&connection, std::move(transmission));
     }
 
-    void HostTransceiver::handleTransition(io::Connection& connection, const std::exception_ptr& e) noexcept
+    void HostTransceiver::handleTransition(Connection& connection, const std::exception_ptr& e) noexcept
     {
         if (m_transitionHandler)
         {
@@ -239,7 +239,7 @@ namespace dots::io
         }
     }
 
-    void HostTransceiver::handleMemberMessage(io::Connection& connection, const DotsMember& member)
+    void HostTransceiver::handleMemberMessage(Connection& connection, const DotsMember& member)
     {
         member._assertHasProperties(DotsMember::groupName_p + DotsMember::event_p);
         const std::string& groupName = member.groupName;
@@ -284,7 +284,7 @@ namespace dots::io
         }
     }
 
-    void HostTransceiver::handleDescriptorRequest(io::Connection& connection, const DotsDescriptorRequest& descriptorRequest)
+    void HostTransceiver::handleDescriptorRequest(Connection& connection, const DotsDescriptorRequest& descriptorRequest)
     {
         const types::vector_t<types::string_t>& whiteList = descriptorRequest.whitelist.isValid() ? *descriptorRequest.whitelist : types::vector_t<types::string_t>{};
         const types::vector_t<types::string_t>& blacklist = descriptorRequest.blacklist.isValid() ? *descriptorRequest.blacklist : types::vector_t<types::string_t>{};
@@ -316,7 +316,7 @@ namespace dots::io
         connection.transmit(DotsCacheInfo{ DotsCacheInfo::endDescriptorRequest_i{ true } });
     }
 
-    void HostTransceiver::handleClearCache(io::Connection&/* connection*/, const DotsClearCache& clearCache)
+    void HostTransceiver::handleClearCache(Connection&/* connection*/, const DotsClearCache& clearCache)
     {
         clearCache._assertHasProperties(DotsClearCache::typeNames_p);
         const types::vector_t<types::string_t>& typeNames = clearCache.typeNames;
@@ -342,7 +342,7 @@ namespace dots::io
         }
     }
 
-    void HostTransceiver::handleEchoRequest(io::Connection& connection, const DotsEcho& echoRequest)
+    void HostTransceiver::handleEchoRequest(Connection& connection, const DotsEcho& echoRequest)
     {
         if  (echoRequest.request == true)
         {
@@ -352,7 +352,7 @@ namespace dots::io
         }
     }
 
-    void HostTransceiver::transmitContainer(io::Connection& connection, const Container<>& container)
+    void HostTransceiver::transmitContainer(Connection& connection, const Container<>& container)
     {
         const auto& td = container.descriptor();
 

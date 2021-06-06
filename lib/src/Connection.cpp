@@ -1,5 +1,5 @@
-#include <dots/io/Connection.h>
-#include <dots/io/Registry.h>
+#include <dots/Connection.h>
+#include <dots/Registry.h>
 #include <dots/io/auth/Digest.h>
 #include <dots/tools/logging.h>
 #include <dots/io/serialization/StringSerializer.h>
@@ -14,9 +14,9 @@
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
-namespace dots::io
+namespace dots
 {
-    Connection::Connection(channel_ptr_t channel, bool host, std::optional<std::string> authSecret/* = std::nullopt*/) :
+    Connection::Connection(io::channel_ptr_t channel, bool host, std::optional<std::string> authSecret/* = std::nullopt*/) :
         m_expectedSystemType{ &DotsMsgError::_Descriptor(), types::property_set_t::None, nullptr },
         m_connectionState(DotsConnectionState::suspended),
         m_selfId(host ? HostId : UninitializedId),
@@ -44,12 +44,12 @@ namespace dots::io
         }
     }
 
-    const Endpoint& Connection::localEndpoint() const
+    const io::Endpoint& Connection::localEndpoint() const
     {
         return m_channel->localEndpoint();
     }
 
-    const Endpoint& Connection::remoteEndpoint() const
+    const io::Endpoint& Connection::remoteEndpoint() const
     {
         return m_channel->remoteEndpoint();
     }
@@ -79,7 +79,7 @@ namespace dots::io
         return m_connectionState == DotsConnectionState::connected;
     }
 
-    void Connection::asyncReceive(Registry& registry, AuthManager* authManager, const std::string_view& name, receive_handler_t&& receiveHandler, transition_handler_t&& transitionHandler)
+    void Connection::asyncReceive(Registry& registry, io::AuthManager* authManager, const std::string_view& name, receive_handler_t&& receiveHandler, transition_handler_t&& transitionHandler)
     {
         if (m_connectionState != DotsConnectionState::suspended)
         {
@@ -99,7 +99,7 @@ namespace dots::io
         setConnectionState(DotsConnectionState::connecting);
         m_channel->init(*m_registry);
         m_channel->asyncReceive(
-            [this](Transmission transmission){ return handleReceive(std::move(transmission)); },
+            [this](io::Transmission transmission){ return handleReceive(std::move(transmission)); },
             [this](const std::exception_ptr& e){ handleError(e); }
         );
 
@@ -156,7 +156,7 @@ namespace dots::io
         m_channel->transmit(header, instance);
     }
 
-    void Connection::transmit(const Transmission& transmission)
+    void Connection::transmit(const io::Transmission& transmission)
     {
         m_channel->transmit(transmission);
     }
@@ -194,7 +194,7 @@ namespace dots::io
         handleClose(e);
     }
 
-    bool Connection::handleReceive(Transmission transmission)
+    bool Connection::handleReceive(io::Transmission transmission)
     {
         if (m_connectionState == DotsConnectionState::closed)
         {
@@ -261,7 +261,7 @@ namespace dots::io
             }
             else
             {
-                throw std::logic_error{ "received instance of non-system type " + instance._descriptor().name() + " while not in early_subscribe or connected state " + to_string(m_connectionState) };
+                throw std::logic_error{ "received instance of non-system type " + instance._descriptor().name() + " while not in early_subscribe or connected state " + io::to_string(m_connectionState) };
             }
         }
 
@@ -293,8 +293,8 @@ namespace dots::io
                 throw std::runtime_error{ "host requested authentication but no secret was specified" };
             }
 
-            connect.cnonce = Nonce{}.toString();
-            connect.authChallengeResponse = Digest{ *hello.authChallenge, *connect.cnonce, m_selfName, *m_authSecret }.toString();
+            connect.cnonce = io::Nonce{}.toString();
+            connect.authChallengeResponse = io::Digest{ *hello.authChallenge, *connect.cnonce, m_selfName, *m_authSecret }.toString();
         }
 
         transmit(connect);
@@ -328,7 +328,7 @@ namespace dots::io
 
     void Connection::handleConnect(const DotsMsgConnect& connect)
     {
-        if (m_authManager != nullptr && !m_authManager->verifyAuthentication(m_channel->remoteEndpoint(), *connect.clientName, m_nonce.value_or(0), connect.cnonce.valueOrDefault(""), Digest{ connect.authChallengeResponse.valueOrDefault("") }))
+        if (m_authManager != nullptr && !m_authManager->verifyAuthentication(m_channel->remoteEndpoint(), *connect.clientName, m_nonce.value_or(0), connect.cnonce.valueOrDefault(""), io::Digest{ connect.authChallengeResponse.valueOrDefault("") }))
         {
             transmit(DotsMsgConnectResponse{
                 DotsMsgConnectResponse::clientId_i{ m_peerId },
@@ -397,7 +397,7 @@ namespace dots::io
 
     void Connection::setConnectionState(DotsConnectionState state, const std::exception_ptr& e/* = nullptr*/)
     {
-        LOG_DEBUG_S("change connection state to " << to_string(state));
+        LOG_DEBUG_S("change connection state to " << io::to_string(state));
         m_connectionState = state;
 
         try

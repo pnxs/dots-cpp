@@ -2,9 +2,9 @@
 #include <map>
 #include <unordered_map>
 #include <string_view>
-#include <dots/io/Container.h>
+#include <dots/Container.h>
 
-namespace dots::io
+namespace dots
 {
     struct ContainerPool
     {

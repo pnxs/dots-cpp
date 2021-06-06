@@ -1,7 +1,7 @@
 #pragma once
 #include <functional>
 
-namespace dots::io
+namespace dots
 {
     struct [[nodiscard]] Subscription
     {

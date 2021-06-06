@@ -1,7 +1,7 @@
 #include <optional>
 #include <dots/testing/gtest/gtest.h>
 #include <boost/algorithm/hex.hpp>
-#include <dots/io/HostTransceiver.h>
+#include <dots/HostTransceiver.h>
 #include <dots/type/FundamentalTypes.h>
 #include <dots/io/auth/LegacyAuthManager.h>
 #include <dots/io/auth/Digest.h>
@@ -16,7 +16,7 @@ protected:
         /* do nothing */
     }
 
-    dots::io::HostTransceiver m_transceiver;
+    dots::HostTransceiver m_transceiver;
     dots::io::LegacyAuthManager m_sut;
 };
 

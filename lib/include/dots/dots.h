@@ -3,21 +3,13 @@
 #include <string_view>
 #include <boost/asio.hpp>
 #include <dots/type/Chrono.h>
-#include <dots/io/Timer.h>
-#include <dots/io/GuestTransceiver.h>
+#include <dots/Timer.h>
+#include <dots/GuestTransceiver.h>
 #include <dots/io/GlobalType.h>
 #include <dots/io/serialization/StringSerializer.h>
 
 namespace dots
 {
-    using io::Timer;
-    using io::Transceiver;
-    using io::GuestTransceiver;
-    using io::Subscription;
-    using io::Container;
-    using io::ContainerPool;
-    using io::Event;
-
     using io::to_string;
 
     Timer::id_t add_timer(const type::Duration& timeout, const std::function<void()>& handler, bool periodic = false);

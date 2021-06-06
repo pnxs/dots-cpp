@@ -12,12 +12,12 @@
 #include <DotsMsgConnect.dots.h>
 #include <DotsMsgError.dots.h>
 
-namespace dots::io
+namespace dots
 {
     struct Registry;
 }
 
-namespace dots::io
+namespace dots
 {
     struct Connection
     {
@@ -26,10 +26,10 @@ namespace dots::io
         static constexpr id_t HostId = 1;
         static constexpr id_t FirstGuestId = 2;
 
-        using receive_handler_t = std::function<void(Connection&, Transmission)>;
+        using receive_handler_t = std::function<void(Connection&, io::Transmission)>;
         using transition_handler_t = std::function<void(Connection&, const std::exception_ptr&)>;
 
-        Connection(channel_ptr_t channel, bool host, std::optional<std::string> authSecret = std::nullopt);
+        Connection(io::channel_ptr_t channel, bool host, std::optional<std::string> authSecret = std::nullopt);
         Connection(const Connection& other) = delete;
         Connection(Connection&& other) = default;
         ~Connection() noexcept;
@@ -37,8 +37,8 @@ namespace dots::io
         Connection& operator = (const Connection& rhs) = delete;
         Connection& operator = (Connection&& rhs) = default;
 
-        const Endpoint& localEndpoint() const;
-        const Endpoint& remoteEndpoint() const;
+        const io::Endpoint& localEndpoint() const;
+        const io::Endpoint& remoteEndpoint() const;
 
         DotsConnectionState state() const;
         id_t selfId() const;
@@ -46,10 +46,10 @@ namespace dots::io
         const std::string& peerName() const;
         bool connected() const;
 
-        void asyncReceive(Registry& registry, AuthManager* authManager, const std::string_view& name, receive_handler_t&& receiveHandler, transition_handler_t&& transitionHandler);
+        void asyncReceive(Registry& registry, io::AuthManager* authManager, const std::string_view& name, receive_handler_t&& receiveHandler, transition_handler_t&& transitionHandler);
         void transmit(const type::Struct& instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false);
         void transmit(const DotsHeader& header, const type::Struct& instance);
-        void transmit(const Transmission& transmission);
+        void transmit(const io::Transmission& transmission);
         void transmit(const type::StructDescriptor<>& descriptor);
 
         void handleError(const std::exception_ptr& e);
@@ -58,7 +58,7 @@ namespace dots::io
 
         using system_type_t = std::tuple<const type::StructDescriptor<>*, types::property_set_t, std::function<void(const type::Struct&)>>;
 
-        bool handleReceive(Transmission transmission);
+        bool handleReceive(io::Transmission transmission);
         void handleClose(const std::exception_ptr& e);
 
         void handleHello(const DotsMsgHello& hello);
@@ -84,12 +84,12 @@ namespace dots::io
         std::string m_selfName;
         std::string m_peerName;
 
-        channel_ptr_t m_channel;
+        io::channel_ptr_t m_channel;
         std::optional<std::string> m_authSecret;
-        std::optional<Nonce> m_nonce;
+        std::optional<io::Nonce> m_nonce;
 
         Registry* m_registry;
-        AuthManager* m_authManager;
+        io::AuthManager* m_authManager;
         receive_handler_t m_receiveHandler;
         transition_handler_t m_transitionHandler;
     };

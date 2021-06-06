@@ -4,12 +4,12 @@
 #include <deque>
 #include <functional>
 #include <dots/io/Io.h>
-#include <dots/io/Connection.h>
-#include <dots/io/Dispatcher.h>
-#include <dots/io/Subscription.h>
-#include <dots/io/Registry.h>
+#include <dots/Connection.h>
+#include <dots/Dispatcher.h>
+#include <dots/Subscription.h>
+#include <dots/Registry.h>
 
-namespace dots::io
+namespace dots
 {
     struct Transceiver
     {
@@ -19,7 +19,7 @@ namespace dots::io
 
         using new_type_handler_t = Registry::new_type_handler_t;
 
-        Transceiver(std::string selfName, boost::asio::io_context& ioContext = global_io_context(), bool staticUserTypes = true);
+        Transceiver(std::string selfName, boost::asio::io_context& ioContext = io::global_io_context(), bool staticUserTypes = true);
         Transceiver(const Transceiver& other) = delete;
         Transceiver(Transceiver&& other) noexcept;
         virtual ~Transceiver() = default;
@@ -32,8 +32,8 @@ namespace dots::io
         const boost::asio::io_context& ioContext() const;
         boost::asio::io_context& ioContext();
 
-        const io::Registry& registry() const;
-        io::Registry& registry();
+        const Registry& registry() const;
+        Registry& registry();
 
         const ContainerPool& pool() const;
         const Container<>& container(const type::StructDescriptor<>& descriptor) const;
@@ -128,7 +128,7 @@ namespace dots::io
         std::optional<id_t> m_currentlyDispatchingId;
         std::vector<id_t> m_removeIds;
         std::shared_ptr<Transceiver*> m_this;
-        io::Registry m_registry;
+        Registry m_registry;
         Dispatcher m_dispatcher;
         std::string m_selfName;
         std::reference_wrapper<boost::asio::io_context> m_ioContext;

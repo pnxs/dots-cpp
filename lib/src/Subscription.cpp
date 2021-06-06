@@ -1,6 +1,6 @@
-#include <dots/io/Subscription.h>
+#include <dots/Subscription.h>
 
-namespace dots::io
+namespace dots
 {
     Subscription::Subscription(unsubscribe_handler_t&& handler) :
         m_handler{ std::move(handler) }

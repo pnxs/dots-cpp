@@ -1,6 +1,6 @@
-#include <dots/io/Dispatcher.h>
+#include <dots/Dispatcher.h>
 
-namespace dots::io
+namespace dots
 {
     const ContainerPool& Dispatcher::pool() const
     {
@@ -106,15 +106,15 @@ namespace dots::io
         throw std::logic_error{ "cannot remove unknown event handler for type: " + descriptor.name() };
     }
 
-    void Dispatcher::dispatch(const Transmission& transmission)
+    void Dispatcher::dispatch(const io::Transmission& transmission)
     {
         dispatchTransmission(transmission);
         dispatchEvent(transmission.header(), transmission.instance());
     }
 
-    void Dispatcher::dispatchTransmission(const Transmission& transmission)
+    void Dispatcher::dispatchTransmission(const io::Transmission& transmission)
     {
-        auto dispatchTransmissionToHandlers = [this](transmission_handlers_t& transmissionHandlers, const Transmission& transmission)
+        auto dispatchTransmissionToHandlers = [this](transmission_handlers_t& transmissionHandlers, const io::Transmission& transmission)
         {
             for (const auto& [id, handler] : transmissionHandlers)
             {

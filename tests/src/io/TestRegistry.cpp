@@ -1,5 +1,5 @@
 #include <dots/testing/gtest/gtest.h>
-#include <dots/io/Registry.h>
+#include <dots/Registry.h>
 #include <DotsHeader.dots.h>
 #include <DotsTestStruct.dots.h>
 
@@ -39,7 +39,7 @@ struct TestRegistry : ::testing::Test
 
 TEST_F(TestRegistry, ctor_UserTypesWhenStaticTypesAreEnabled)
 {
-    dots::io::Registry sut;
+    dots::Registry sut;
     EXPECT_STRUCT_TYPE_IN_REGISTRY(DotsHeader::_Descriptor().name());
     EXPECT_STRUCT_TYPE_IN_REGISTRY(DotsTestStruct::_Descriptor().name());
     EXPECT_STRUCT_TYPE_NOT_IN_REGISTRY("Foobar");
@@ -47,7 +47,7 @@ TEST_F(TestRegistry, ctor_UserTypesWhenStaticTypesAreEnabled)
 
 TEST_F(TestRegistry, ctor_NoUserTypesWhenStaticTypesAreDisabled)
 {
-    dots::io::Registry sut{ nullptr, false };
+    dots::Registry sut{ nullptr, false };
     EXPECT_STRUCT_TYPE_IN_REGISTRY(DotsHeader::_Descriptor().name());
     EXPECT_STRUCT_TYPE_NOT_IN_REGISTRY(DotsTestStruct::_Descriptor().name());
     EXPECT_STRUCT_TYPE_NOT_IN_REGISTRY("Foobar");
@@ -57,7 +57,7 @@ TEST_F(TestRegistry, registerType)
 {
     auto& descriptor = dots::type::Descriptor<DotsTestStruct>::Instance();
     ::testing::MockFunction<void(const dots::type::Descriptor<>&)> mockNewTypeHandler;
-    dots::io::Registry sut{ mockNewTypeHandler.AsStdFunction(), false };
+    dots::Registry sut{ mockNewTypeHandler.AsStdFunction(), false };
 
     EXPECT_STRUCT_TYPE_NOT_IN_REGISTRY(descriptor.name());
     EXPECT_CALL(mockNewTypeHandler, Call(::testing::_)).Times(::testing::AnyNumber());
@@ -73,7 +73,7 @@ TEST_F(TestRegistry, registerType)
 TEST_F(TestRegistry, deregisterType)
 {
     auto& descriptor = dots::type::Descriptor<DotsTestStruct>::Instance();
-    dots::io::Registry sut{ nullptr, false };
+    dots::Registry sut{ nullptr, false };
 
     sut.registerType(descriptor);
     EXPECT_STRUCT_TYPE_IN_REGISTRY(descriptor.name());
@@ -87,7 +87,7 @@ TEST_F(TestRegistry, forEach)
 {
     using namespace dots::type;
     
-    dots::io::Registry sut{ nullptr, false };
+    dots::Registry sut{ nullptr, false };
     sut.registerType(Descriptor<DotsTestStruct>::Instance());
     sut.registerType(Descriptor<dots::vector_t<DotsTestStruct>>::Instance());
 

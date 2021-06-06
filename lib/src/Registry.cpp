@@ -1,7 +1,7 @@
-#include <dots/io/Registry.h>
+#include <dots/Registry.h>
 #include <dots/io/DescriptorConverter.h>
 
-namespace dots::io
+namespace dots
 {
     Registry::Registry(new_type_handler_t newTypeHandler/* = nullptr*/, bool staticUserTypes/* = true*/) :
         m_newTypeHandler(std::move(newTypeHandler)),

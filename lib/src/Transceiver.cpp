@@ -1,9 +1,9 @@
-#include <dots/io/Transceiver.h>
+#include <dots/Transceiver.h>
 #include <dots/tools/logging.h>
 #include <dots/io/serialization/AsciiSerialization.h>
 #include <DotsMember.dots.h>
 
-namespace dots::io
+namespace dots
 {
     Transceiver::Transceiver(std::string selfName, boost::asio::io_context& ioContext/* = global_io_context()*/, bool staticUserTypes/* = true*/) :
         m_nextId(0),
@@ -61,12 +61,12 @@ namespace dots::io
         return m_ioContext;
     }
 
-    const io::Registry& Transceiver::registry() const
+    const Registry& Transceiver::registry() const
     {
         return m_registry;
     }
 
-    io::Registry& Transceiver::registry()
+    Registry& Transceiver::registry()
     {
         return m_registry;
     }

@@ -1,8 +1,8 @@
-#include <dots/io/Timer.h>
+#include <dots/Timer.h>
 #include <dots/tools/fun.h>
 #include <dots/io/services/TimerService.h>
 
-namespace dots::io
+namespace dots
 {
     Timer::Timer(boost::asio::io_context& ioContext, id_t id, const type::Duration& interval, const callback_t& cb, bool periodic) :
         m_this{ std::make_shared<Timer*>(this) },
@@ -64,7 +64,7 @@ namespace dots::io
             }
             else
             {
-                boost::asio::use_service<TimerService>(static_cast<boost::asio::execution_context&>(m_timer.get_executor().context())).removeTimer(m_id);
+                boost::asio::use_service<io::TimerService>(static_cast<boost::asio::execution_context&>(m_timer.get_executor().context())).removeTimer(m_id);
             }
         });
     }

@@ -1,7 +1,7 @@
 #include <optional>
 #include <dots/testing/gtest/gtest.h>
 #include <dots/testing/gtest/PublishTestBase.h>
-#include <dots/io/HostTransceiver.h>
+#include <dots/HostTransceiver.h>
 #include <dots/tools/fun.h>
 
 struct TestHostTransceiver : dots::testing::PublishTestBase
@@ -19,7 +19,7 @@ TEST_F(TestHostTransceiver, testDotsEcho)
 {
     std::optional<DotsEcho> reply;
 
-    dots::io::Subscription subscription = dots::subscribe<DotsEcho>([&](const DotsEcho::Cbd& event) {
+    dots::Subscription subscription = dots::subscribe<DotsEcho>([&](const DotsEcho::Cbd& event) {
         reply = event();
     });
 

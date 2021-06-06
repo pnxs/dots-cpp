@@ -1,12 +1,7 @@
 #include <dots/testing/gtest/gtest.h>
-#include <dots/io/Container.h>
+#include <dots/Container.h>
 #include <DotsHeader.dots.h>
 #include <DotsTestStruct.dots.h>
-
-namespace dots
-{
-    using io::Container;
-}
 
 namespace
 {

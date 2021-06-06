@@ -3,7 +3,7 @@
 #include <dots/io/channels/UdsChannel.h>
 #include <csignal>
 #include <dots/io/Io.h>
-#include <dots/io/Registry.h>
+#include <dots/Registry.h>
 
 namespace dots::io::posix
 {

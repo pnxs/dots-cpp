@@ -1,5 +1,5 @@
 #pragma once
-#include <dots/io/Registry.h>
+#include <dots/Registry.h>
 #include <EnumDescriptorData.dots.h>
 #include <StructDescriptorData.dots.h>
 

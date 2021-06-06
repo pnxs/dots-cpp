@@ -3,16 +3,16 @@
 #include <unordered_map>
 #include <functional>
 #include <dots/type/AnyStruct.h>
-#include <dots/io/Event.h>
-#include <dots/io/ContainerPool.h>
+#include <dots/Event.h>
+#include <dots/ContainerPool.h>
 #include <dots/io/Transmission.h>
 
-namespace dots::io
+namespace dots
 {
     struct Dispatcher
     {
         using id_t = uint64_t;
-        using transmission_handler_t = std::function<void(const Transmission&)>;
+        using transmission_handler_t = std::function<void(const io::Transmission&)>;
         template <typename T = type::Struct>
         using event_handler_t = std::function<void(const Event<T>&)>;
 
@@ -36,7 +36,7 @@ namespace dots::io
         void removeTransmissionHandler(const type::StructDescriptor<>& descriptor, id_t id);
         void removeEventHandler(const type::StructDescriptor<>& descriptor, id_t id);
 
-        void dispatch(const Transmission& transmission);
+        void dispatch(const io::Transmission& transmission);
 
         template <typename T>
         const Container<T>& container() const
@@ -99,7 +99,7 @@ namespace dots::io
         using event_handlers_t = std::map<id_t, event_handler_t<>, std::greater<>>;
         using event_handler_pool_t = std::unordered_map<const type::StructDescriptor<>*, event_handlers_t>;
 
-        void dispatchTransmission(const Transmission& transmission);
+        void dispatchTransmission(const io::Transmission& transmission);
         void dispatchEvent(const DotsHeader& header, const type::AnyStruct& instance);
 
         id_t m_nextId = 0;

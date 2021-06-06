@@ -8,7 +8,7 @@
 #include <dots/type/EnumDescriptor.h>
 #include <dots/type/StructDescriptor.h>
 
-namespace dots::io
+namespace dots
 {
     struct Registry
     {

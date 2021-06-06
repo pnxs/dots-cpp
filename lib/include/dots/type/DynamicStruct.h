@@ -3,7 +3,7 @@
 #include <variant>
 #include <dots/type/Struct.h>
 
-namespace dots::io
+namespace dots
 {
     template<typename T>
     struct Event;
@@ -46,7 +46,7 @@ namespace dots::type
 
     struct DynamicStruct : Struct
     {
-        using Cbd = io::Event<DynamicStruct>;
+        using Cbd = Event<DynamicStruct>;
         template <typename T>
         using property_i = DynamicPropertyInitializer<T>;
 

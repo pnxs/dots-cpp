@@ -2,7 +2,7 @@
 #include <chrono>
 #include <optional>
 #include <dots/dots.h>
-#include <dots/io/GuestTransceiver.h>
+#include <dots/GuestTransceiver.h>
 #include <dots/io/Endpoint.h>
 
 namespace dots

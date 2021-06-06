@@ -1,6 +1,6 @@
 #pragma once
 #include <iostream>
-#include <dots/io/Event.h>
+#include <dots/Event.h>
 #include <dots/io/serialization/StringSerializer.h>
 
 namespace dots::io

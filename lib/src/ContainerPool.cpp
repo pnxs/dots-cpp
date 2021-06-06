@@ -1,9 +1,9 @@
-#include <dots/io/ContainerPool.h>
+#include <dots/ContainerPool.h>
 #include <algorithm>
 #include <utility>
 #include <numeric>
 
-namespace dots::io
+namespace dots
 {
     auto ContainerPool::begin() const -> const_iterator_t
     {

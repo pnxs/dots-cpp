@@ -1,6 +1,6 @@
-#include <dots/io/Event.h>
+#include <dots/Event.h>
 
-namespace dots::io
+namespace dots
 {
     Event<type::Struct>::Event(const DotsHeader& header, const type::Struct& transmitted, const type::Struct& updated, const DotsCloneInformation& cloneInfo, std::optional<DotsMt> mt/* = std::nullopt*/) :
         m_header(header),

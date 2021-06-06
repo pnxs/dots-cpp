@@ -1,6 +1,6 @@
 #include <dots/io/channels/WebSocketChannel.h>
 #include <dots/io/Io.h>
-#include <dots/io/Registry.h>
+#include <dots/Registry.h>
 
 namespace dots::io
 {
