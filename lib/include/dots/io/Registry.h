@@ -124,15 +124,6 @@ namespace dots::io
         void deregisterType(const type::Descriptor<>& descriptor, bool assertRegisteredType = true);
         void deregisterType(const std::string_view& name, bool assertRegisteredType = true);
 
-        [[deprecated("only available for backwards compatibility")]]
-        const type::Descriptor<>* findDescriptor(const std::string& name) const;
-
-        [[deprecated("only available for backwards compatibility")]]
-        const type::StructDescriptor<>* findStructDescriptor(const std::string& name) const;
-
-        [[deprecated("only available for backwards compatibility")]]
-        const std::map<std::string_view, std::shared_ptr<type::Descriptor<>>>& getTypes();
-
     private:
 
         static bool IsUserType(const type::Descriptor<>& descriptor);

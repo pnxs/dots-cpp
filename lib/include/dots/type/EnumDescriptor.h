@@ -7,11 +7,6 @@
 #include <dots/type/Descriptor.h>
 #include <dots/type/StaticDescriptor.h>
 
-namespace dots::types
-{
-    struct EnumDescriptorData;
-}
-
 namespace dots::type
 {
     namespace details
@@ -216,20 +211,6 @@ namespace dots::type
         virtual const EnumeratorDescriptor<>& enumeratorFromTag(uint32_t tag) const = 0;
         virtual const EnumeratorDescriptor<>& enumeratorFromName(const std::string_view& name) const = 0;
         virtual const EnumeratorDescriptor<>& enumeratorFromValue(const Typeless& value) const = 0;
-
-        #ifndef DOTS_NO_GLOBAL_TRANSCEIVER
-
-        [[deprecated("only available for backwards compatibility")]]
-        const types::EnumDescriptorData& descriptorData() const;
-
-        [[deprecated("only available for backwards compatibility")]]
-        static const EnumDescriptor<>* createFromEnumDescriptorData(const types::EnumDescriptorData& sd);
-
-        #endif
-
-    private:
-
-        mutable const types::EnumDescriptorData* m_descriptorData = nullptr;
     };
 
     template <typename E, bool UseStaticDescriptorOperations>
@@ -335,12 +316,6 @@ namespace dots::type
 
     template <typename TDescriptor>
     struct type_category<TDescriptor, std::enable_if_t<std::is_same_v<EnumDescriptor<>, TDescriptor>>> : std::integral_constant<Type, Type::Enum> {};
-
-    [[deprecated("only available for backwards compatibility")]]
-    inline const EnumDescriptor<>* toEnumDescriptor(const Descriptor<>* descriptor)
-    {
-        return descriptor->type() == Type::Enum ? static_cast<const EnumDescriptor<>*>(descriptor) : nullptr;
-    }
 }
 
 namespace dots::type

@@ -86,7 +86,7 @@ target_include_directories(${TARGET_NAME_EXPERIMENTAL}
 )
 target_compile_options(${TARGET_NAME_EXPERIMENTAL}
     PRIVATE
-        $<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-O2 -Wall -Wextra -Wpedantic -Werror -Wno-deprecated-declarations -Wno-missing-field-initializers>>
+        $<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-O2 -Wall -Wextra -Wpedantic -Werror -Wno-missing-field-initializers>>
         $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>>:/W4>
 )
 target_compile_definitions(${TARGET_NAME_EXPERIMENTAL}

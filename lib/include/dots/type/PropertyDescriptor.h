@@ -59,12 +59,6 @@ namespace dots::type
             return m_subAreaOffset;
         }
 
-        [[deprecated("only available for backwards compatibility and should be replaced by property iteration")]]
-        char* address(void* p) const;
-
-        [[deprecated("only available for backwards compatibility and should be replaced by property iteration")]]
-        const char* address(const void* p) const;
-
     private:
 
         std::shared_ptr<Descriptor<>> m_descriptor;

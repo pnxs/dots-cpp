@@ -126,10 +126,4 @@ namespace dots::type
     struct type_category<TDescriptor, std::enable_if_t<std::is_same_v<Descriptor<Vector<>>, TDescriptor>>> : std::integral_constant<Type, Type::Vector> {};
 
     using VectorDescriptor = Descriptor<Vector<Typeless>>;
-
-    [[deprecated("only available for backwards compatibility")]]
-    inline const VectorDescriptor* toVectorDescriptor(const Descriptor<>* descriptor)
-    {
-        return descriptor->type() == Type::Vector ? static_cast<const VectorDescriptor*>(descriptor) : nullptr;
-    }
 }
