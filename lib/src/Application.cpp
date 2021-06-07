@@ -7,7 +7,7 @@
 #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
 #include <dots/io/channels/UdsChannel.h>
 #endif
-#include <dots/Registry.h>
+#include <dots/type/Registry.h>
 #include <dots/tools/logging.h>
 #include <DotsClient.dots.h>
 

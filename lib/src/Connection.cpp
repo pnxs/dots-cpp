@@ -1,5 +1,5 @@
 #include <dots/Connection.h>
-#include <dots/Registry.h>
+#include <dots/type/Registry.h>
 #include <dots/io/auth/Digest.h>
 #include <dots/tools/logging.h>
 #include <dots/io/serialization/StringSerializer.h>
@@ -79,7 +79,7 @@ namespace dots
         return m_connectionState == DotsConnectionState::connected;
     }
 
-    void Connection::asyncReceive(Registry& registry, io::AuthManager* authManager, const std::string_view& name, receive_handler_t&& receiveHandler, transition_handler_t&& transitionHandler)
+    void Connection::asyncReceive(type::Registry& registry, io::AuthManager* authManager, const std::string_view& name, receive_handler_t&& receiveHandler, transition_handler_t&& transitionHandler)
     {
         if (m_connectionState != DotsConnectionState::suspended)
         {

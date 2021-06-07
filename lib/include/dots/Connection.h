@@ -12,7 +12,7 @@
 #include <DotsMsgConnect.dots.h>
 #include <DotsMsgError.dots.h>
 
-namespace dots
+namespace dots::type
 {
     struct Registry;
 }
@@ -46,7 +46,7 @@ namespace dots
         const std::string& peerName() const;
         bool connected() const;
 
-        void asyncReceive(Registry& registry, io::AuthManager* authManager, const std::string_view& name, receive_handler_t&& receiveHandler, transition_handler_t&& transitionHandler);
+        void asyncReceive(type::Registry& registry, io::AuthManager* authManager, const std::string_view& name, receive_handler_t&& receiveHandler, transition_handler_t&& transitionHandler);
         void transmit(const type::Struct& instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false);
         void transmit(const DotsHeader& header, const type::Struct& instance);
         void transmit(const io::Transmission& transmission);
@@ -88,7 +88,7 @@ namespace dots
         std::optional<std::string> m_authSecret;
         std::optional<io::Nonce> m_nonce;
 
-        Registry* m_registry;
+        type::Registry* m_registry;
         io::AuthManager* m_authManager;
         receive_handler_t m_receiveHandler;
         transition_handler_t m_transitionHandler;

@@ -1,6 +1,6 @@
 #include <optional>
 #include <dots/type/DynamicStruct.h>
-#include <dots/Registry.h>
+#include <dots/type/Registry.h>
 #include <dots/io/DescriptorConverter.h>
 #include <dots/type/FundamentalTypes.h>
 #include <dots/type/PropertyInitializer.h>
@@ -115,7 +115,7 @@ protected:
         m_testDynamicStructDescriptor = static_cast<Descriptor<DynamicStruct>*>(&m_descriptorConverter(testDynamicStructData));
     }
 
-    dots::Registry m_registry;
+    dots::type::Registry m_registry;
     dots::io::DescriptorConverter m_descriptorConverter;
     Descriptor<DynamicStruct>* m_testDynamicSubSubStructDescriptor;
     Descriptor<DynamicStruct>* m_testDynamicSubStructDescriptor;

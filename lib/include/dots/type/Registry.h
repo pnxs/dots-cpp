@@ -1,5 +1,4 @@
 #pragma once
-#include <map>
 #include <memory>
 #include <functional>
 #include <type_traits>
@@ -8,11 +7,11 @@
 #include <dots/type/EnumDescriptor.h>
 #include <dots/type/StructDescriptor.h>
 
-namespace dots
+namespace dots::type
 {
     struct Registry
     {
-        using new_type_handler_t = std::function<void(const type::Descriptor<>&)>;
+        using new_type_handler_t = std::function<void(const Descriptor<>&)>;
 
         Registry(new_type_handler_t newTypeHandler = nullptr, bool staticUserTypes = true);
         Registry(const Registry& other) = default;
@@ -25,12 +24,12 @@ namespace dots
         template <typename TypeHandler>
         void forEach(TypeHandler&& handler)
         {
-            constexpr bool IsTypeHandler = std::is_invocable_v<TypeHandler, const type::Descriptor<>&>;
+            constexpr bool IsTypeHandler = std::is_invocable_v<TypeHandler, const Descriptor<>&>;
             static_assert(IsTypeHandler, "Handler has to be a valid type handler");
 
             if constexpr (IsTypeHandler)
             {
-                for (const auto& [name, descriptor] : type::static_descriptors())
+                for (const auto& [name, descriptor] : static_descriptors())
                 {
                     if (m_staticUserTypes || !IsUserType(*descriptor))
                     {
@@ -50,7 +49,7 @@ namespace dots
         template <typename... TDescriptors, typename TypeHandler, std::enable_if_t<sizeof...(TDescriptors) >= 1, int> = 0>
         void forEach(TypeHandler&& handler)
         {
-            constexpr bool AreDescriptors = std::conjunction_v<std::is_base_of<type::Descriptor<>, TDescriptors>...>;
+            constexpr bool AreDescriptors = std::conjunction_v<std::is_base_of<Descriptor<>, TDescriptors>...>;
             constexpr bool IsTypeHandler = std::conjunction_v<std::is_invocable<TypeHandler, const TDescriptors&>...>;
 
             static_assert(AreDescriptors, "TDescriptor has to be a descriptor");
@@ -58,9 +57,9 @@ namespace dots
 
             if constexpr (AreDescriptors && IsTypeHandler)
             {
-                forEach([handler{ std::forward<TypeHandler>(handler) }](const type::Descriptor<>& descriptor)
+                forEach([handler{ std::forward<TypeHandler>(handler) }](const Descriptor<>& descriptor)
                 {
-                    auto handle_type = [](auto& handler, const type::Descriptor<>& descriptor, const auto* wantedDescriptor)
+                    auto handle_type = [](auto& handler, const Descriptor<>& descriptor, const auto* wantedDescriptor)
                     {
                         using wanted_descriptor_t = std::decay_t<std::remove_pointer_t<decltype(wantedDescriptor)>>;
                         (void)wantedDescriptor;
@@ -79,12 +78,12 @@ namespace dots
         template <typename TypeHandler, typename TypeFilter>
         void forEach(TypeHandler&& handler, TypeFilter&& filter)
         {
-            constexpr bool IsTypeFilter = std::is_invocable_r_v<bool, TypeFilter, const type::Descriptor<>&>;
+            constexpr bool IsTypeFilter = std::is_invocable_r_v<bool, TypeFilter, const Descriptor<>&>;
             static_assert(IsTypeFilter, "Handler has to be a valid type filter");
 
             if constexpr (IsTypeFilter)
             {
-                forEach([handler{ std::forward<TypeHandler>(handler) }, filter{ std::forward<TypeFilter>(filter) }](const type::Descriptor<>& descriptor)
+                forEach([handler{ std::forward<TypeHandler>(handler) }, filter{ std::forward<TypeFilter>(filter) }](const Descriptor<>& descriptor)
                 {
                     if (std::invoke(filter, descriptor))
                     {
@@ -94,42 +93,42 @@ namespace dots
             }
         }
 
-        const type::Descriptor<>* findType(const std::string_view& name, bool assertNotNull = false) const;
-        const type::EnumDescriptor<>* findEnumType(const std::string_view& name, bool assertNotNull = false) const;
-        const type::StructDescriptor<>* findStructType(const std::string_view& name, bool assertNotNull = false) const;
+        const Descriptor<>* findType(const std::string_view& name, bool assertNotNull = false) const;
+        const EnumDescriptor<>* findEnumType(const std::string_view& name, bool assertNotNull = false) const;
+        const StructDescriptor<>* findStructType(const std::string_view& name, bool assertNotNull = false) const;
 
-        type::Descriptor<>* findType(const std::string_view& name, bool assertNotNull = false);
-        type::EnumDescriptor<>* findEnumType(const std::string_view& name, bool assertNotNull = false);
-        type::StructDescriptor<>* findStructType(const std::string_view& name, bool assertNotNull = false);
+        Descriptor<>* findType(const std::string_view& name, bool assertNotNull = false);
+        EnumDescriptor<>* findEnumType(const std::string_view& name, bool assertNotNull = false);
+        StructDescriptor<>* findStructType(const std::string_view& name, bool assertNotNull = false);
 
-        const type::Descriptor<>& getType(const std::string_view& name) const;
-        const type::EnumDescriptor<>& getEnumType(const std::string_view& name) const;
-        const type::StructDescriptor<>& getStructType(const std::string_view& name) const;
+        const Descriptor<>& getType(const std::string_view& name) const;
+        const EnumDescriptor<>& getEnumType(const std::string_view& name) const;
+        const StructDescriptor<>& getStructType(const std::string_view& name) const;
 
-        type::Descriptor<>& getType(const std::string_view& name);
-        type::EnumDescriptor<>& getEnumType(const std::string_view& name);
-        type::StructDescriptor<>& getStructType(const std::string_view& name);
+        Descriptor<>& getType(const std::string_view& name);
+        EnumDescriptor<>& getEnumType(const std::string_view& name);
+        StructDescriptor<>& getStructType(const std::string_view& name);
 
         bool hasType(const std::string_view& name) const;
 
-        type::Descriptor<>& registerType(type::Descriptor<>& descriptor, bool assertNewType = true);
-        type::Descriptor<>& registerType(std::shared_ptr<type::Descriptor<>> descriptor, bool assertNewType = true);
+        Descriptor<>& registerType(Descriptor<>& descriptor, bool assertNewType = true);
+        Descriptor<>& registerType(std::shared_ptr<Descriptor<>> descriptor, bool assertNewType = true);
 
-        template <typename TDescriptor, typename... Args, std::enable_if_t<std::is_base_of_v<type::Descriptor<>, TDescriptor>, int> = 0>
+        template <typename TDescriptor, typename... Args, std::enable_if_t<std::is_base_of_v<Descriptor<>, TDescriptor>, int> = 0>
         TDescriptor& registerType(Args&&... args)
         {
-            return static_cast<TDescriptor&>(registerType(type::make_descriptor<TDescriptor>(std::forward<Args>(args)...)));
+            return static_cast<TDescriptor&>(registerType(make_descriptor<TDescriptor>(std::forward<Args>(args)...)));
         }
 
-        void deregisterType(const type::Descriptor<>& descriptor, bool assertRegisteredType = true);
+        void deregisterType(const Descriptor<>& descriptor, bool assertRegisteredType = true);
         void deregisterType(const std::string_view& name, bool assertRegisteredType = true);
 
     private:
 
-        static bool IsUserType(const type::Descriptor<>& descriptor);
+        static bool IsUserType(const Descriptor<>& descriptor);
 
         new_type_handler_t m_newTypeHandler;
         bool m_staticUserTypes;
-        type::DescriptorMap m_types;
+        DescriptorMap m_types;
     };
 }

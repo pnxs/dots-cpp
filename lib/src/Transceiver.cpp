@@ -61,12 +61,12 @@ namespace dots
         return m_ioContext;
     }
 
-    const Registry& Transceiver::registry() const
+    const type::Registry& Transceiver::registry() const
     {
         return m_registry;
     }
 
-    Registry& Transceiver::registry()
+    type::Registry& Transceiver::registry()
     {
         return m_registry;
     }

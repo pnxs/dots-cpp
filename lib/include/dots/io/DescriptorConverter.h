@@ -1,5 +1,5 @@
 #pragma once
-#include <dots/Registry.h>
+#include <dots/type/Registry.h>
 #include <EnumDescriptorData.dots.h>
 #include <StructDescriptorData.dots.h>
 
@@ -7,7 +7,7 @@ namespace dots::io
 {
     struct DescriptorConverter
     {
-        DescriptorConverter(Registry& registry);
+        DescriptorConverter(type::Registry& registry);
         DescriptorConverter(const DescriptorConverter& other) = default;
         DescriptorConverter(DescriptorConverter&& other) noexcept = default;
         ~DescriptorConverter() = default;
@@ -23,6 +23,6 @@ namespace dots::io
 
     private:
 
-        std::reference_wrapper<Registry> m_registry;
+        std::reference_wrapper<type::Registry> m_registry;
     };
 }

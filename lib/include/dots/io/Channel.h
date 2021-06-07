@@ -8,7 +8,7 @@
 #include <dots/tools/shared_ptr_only.h>
 #include <DotsHeader.dots.h>
 
-namespace dots
+namespace dots::type
 {
     struct Registry;
 }
@@ -32,7 +32,7 @@ namespace dots::io
         const Endpoint& localEndpoint();
         const Endpoint& remoteEndpoint();
 
-        void init(Registry& registry);
+        void init(type::Registry& registry);
 
         void asyncReceive(receive_handler_t&& receiveHandler, error_handler_t&& errorHandler);
         void transmit(const type::Struct& instance);
@@ -44,8 +44,8 @@ namespace dots::io
 
         void initEndpoints(Endpoint localEndpoint, Endpoint remoteEndpoint);
 
-        const Registry& registry() const;
-        Registry& registry();
+        const type::Registry& registry() const;
+        type::Registry& registry();
 
         virtual void asyncReceiveImpl() = 0;
         virtual void transmitImpl(const DotsHeader& header, const type::Struct& instance) = 0;
@@ -68,7 +68,7 @@ namespace dots::io
 
         std::set<std::string> m_sharedTypes;
         bool m_initialized;
-        Registry* m_registry;
+        type::Registry* m_registry;
         std::optional<Endpoint> m_localEndpoint;
         std::optional<Endpoint> m_remoteEndpoint;
         receive_handler_t m_receiveHandler;

@@ -42,7 +42,6 @@ target_sources(${TARGET_NAME}
         src/Event.cpp
         src/GuestTransceiver.cpp
         src/HostTransceiver.cpp
-        src/Registry.cpp
         src/Subscription.cpp
         src/Timer.cpp
         src/Transceiver.cpp
@@ -89,6 +88,7 @@ target_sources(${TARGET_NAME}
         src/type/DynamicStruct.cpp
         src/type/EnumDescriptor.cpp
         src/type/PropertyDescriptor.cpp
+        src/type/Registry.cpp
         src/type/Struct.cpp
         src/type/StructDescriptor.cpp
         src/type/TypeVisitor.cpp

@@ -1,5 +1,5 @@
 #include <dots/io/Channel.h>
-#include <dots/Registry.h>
+#include <dots/type/Registry.h>
 #include <dots/io/DescriptorConverter.h>
 #include <DotsMsgError.dots.h>
 
@@ -33,7 +33,7 @@ namespace dots::io
         return *m_remoteEndpoint;
     }
 
-    void Channel::init(Registry& registry)
+    void Channel::init(type::Registry& registry)
     {
         if (m_initialized)
         {
@@ -96,13 +96,13 @@ namespace dots::io
         m_remoteEndpoint.emplace(std::move(remoteEndpoint));
     }
 
-    const Registry& Channel::registry() const
+    const type::Registry& Channel::registry() const
     {
         verifyInitialized();
         return *m_registry;
     }
 
-    Registry& Channel::registry()
+    type::Registry& Channel::registry()
     {
         verifyInitialized();
         return *m_registry;

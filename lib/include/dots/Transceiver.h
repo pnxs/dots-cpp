@@ -7,7 +7,7 @@
 #include <dots/Connection.h>
 #include <dots/Dispatcher.h>
 #include <dots/Subscription.h>
-#include <dots/Registry.h>
+#include <dots/type/Registry.h>
 
 namespace dots
 {
@@ -17,7 +17,7 @@ namespace dots
         template <typename T = type::Struct>
         using event_handler_t = Dispatcher::event_handler_t<T>;
 
-        using new_type_handler_t = Registry::new_type_handler_t;
+        using new_type_handler_t = type::Registry::new_type_handler_t;
 
         Transceiver(std::string selfName, boost::asio::io_context& ioContext = io::global_io_context(), bool staticUserTypes = true);
         Transceiver(const Transceiver& other) = delete;
@@ -32,8 +32,8 @@ namespace dots
         const boost::asio::io_context& ioContext() const;
         boost::asio::io_context& ioContext();
 
-        const Registry& registry() const;
-        Registry& registry();
+        const type::Registry& registry() const;
+        type::Registry& registry();
 
         const ContainerPool& pool() const;
         const Container<>& container(const type::StructDescriptor<>& descriptor) const;
@@ -128,7 +128,7 @@ namespace dots
         std::optional<id_t> m_currentlyDispatchingId;
         std::vector<id_t> m_removeIds;
         std::shared_ptr<Transceiver*> m_this;
-        Registry m_registry;
+        type::Registry m_registry;
         Dispatcher m_dispatcher;
         std::string m_selfName;
         std::reference_wrapper<boost::asio::io_context> m_ioContext;
