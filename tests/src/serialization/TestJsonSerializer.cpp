@@ -1,9 +1,9 @@
 #include <dots/testing/gtest/gtest.h>
-#include <dots/io/serialization/JsonSerializer.h>
-#include <io/serialization/TestSerializerBase.h>
-#include <io/serialization/TestStringSerializerBase.h>
+#include <dots/serialization/JsonSerializer.h>
+#include <serialization/TestSerializerBase.h>
+#include <serialization/TestStringSerializerBase.h>
 
-struct JsonSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::io::JsonSerializer<>>
+struct JsonSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::serialization::JsonSerializer<>>
 {
     //
     // fundamental

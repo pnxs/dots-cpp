@@ -1,6 +1,6 @@
 #pragma once
 #include <type_traits>
-#include <dots/io/serialization/StringSerializer.h>
+#include <dots/serialization/StringSerializer.h>
 
 namespace dots::testing
 {

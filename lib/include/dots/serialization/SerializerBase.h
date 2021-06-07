@@ -2,7 +2,7 @@
 #include <stack>
 #include <dots/type/TypeVisitor.h>
 
-namespace dots::io
+namespace dots::serialization
 {
     template <typename Data, typename Derived, bool Static = true>
     struct SerializerBase : type::TypeVisitor<std::conditional_t<Static, Derived, void>>

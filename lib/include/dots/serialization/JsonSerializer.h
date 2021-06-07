@@ -1,8 +1,8 @@
 #pragma once
 #include <string_view>
-#include <dots/io/serialization/StringSerializerBase.h>
+#include <dots/serialization/StringSerializerBase.h>
 
-namespace dots::io
+namespace dots::serialization
 {
     struct JsonSerializerTraits : StringSerializerTraits
     {
@@ -68,26 +68,26 @@ namespace dots::io
 namespace dots
 {
     template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
-    std::string to_json(const T& instance, const property_set_t& includedProperties, io::StringSerializerOptions options = {})
+    std::string to_json(const T& instance, const property_set_t& includedProperties, serialization::StringSerializerOptions options = {})
     {
-        return io::JsonSerializer<>::Serialize(instance, includedProperties, options);
+        return serialization::JsonSerializer<>::Serialize(instance, includedProperties, options);
     }
 
     template <typename T>
-    std::string to_json(const T& value, io::StringSerializerOptions options = {})
+    std::string to_json(const T& value, serialization::StringSerializerOptions options = {})
     {
-        return io::JsonSerializer<>::Serialize(value, options);
+        return serialization::JsonSerializer<>::Serialize(value, options);
     }
 
     template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
     size_t from_json(const std::string& data, T& value)
     {
-        return io::JsonSerializer<>::Deserialize(data, value);
+        return serialization::JsonSerializer<>::Deserialize(data, value);
     }
 
     template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
     T from_json(const std::string& data)
     {
-        return io::JsonSerializer<>::Deserialize<T>(data);
+        return serialization::JsonSerializer<>::Deserialize<T>(data);
     }
 }

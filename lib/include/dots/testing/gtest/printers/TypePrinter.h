@@ -1,5 +1,5 @@
 #pragma once
-#include <dots/io/serialization/StringSerializer.h>
+#include <dots/serialization/StringSerializer.h>
 
 namespace dots::type
 {

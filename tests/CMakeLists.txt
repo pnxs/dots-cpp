@@ -12,15 +12,15 @@ add_executable(${TARGET_NAME} src/TestContainer.cpp)
 
 # properties [dots-unittests]
 target_dots_model(${TARGET_NAME}
-    src/io/serialization/serialization.dots
+    src/serialization/serialization.dots
 )
 target_sources(${TARGET_NAME}
     PRIVATE
-        src/io/serialization/TestCborSerializer.cpp
-        src/io/serialization/TestExperimentalCborSerializer.cpp
-        src/io/serialization/TestJsonSerializer.cpp
-        src/io/serialization/TestRapidJsonSerializer.cpp
-        src/io/serialization/TestStringSerializer.cpp
+        src/serialization/TestCborSerializer.cpp
+        src/serialization/TestExperimentalCborSerializer.cpp
+        src/serialization/TestJsonSerializer.cpp
+        src/serialization/TestRapidJsonSerializer.cpp
+        src/serialization/TestStringSerializer.cpp
 
         src/io/TestRegistry.cpp
 

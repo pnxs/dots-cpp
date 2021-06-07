@@ -1,5 +1,5 @@
 #include <dots/io/channels/LocalChannel.h>
-#include <dots/io/serialization/CborSerializer.h>
+#include <dots/serialization/CborSerializer.h>
 #include <dots/type/Registry.h>
 #include <dots/io/channels/LocalListener.h>
 

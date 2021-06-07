@@ -57,7 +57,7 @@ target_sources(${TARGET_NAME}
         src/io/Channel.cpp
         src/io/Listener.cpp
 
-        src/io/serialization/AsciiSerialization.cpp
+        src/serialization/AsciiSerialization.cpp
 
         src/io/channels/TcpListener.cpp
         src/io/channels/TcpChannel.cpp

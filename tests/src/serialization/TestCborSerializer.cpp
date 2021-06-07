@@ -1,8 +1,8 @@
 #include <dots/testing/gtest/gtest.h>
-#include <dots/io/serialization/ExperimentalCborSerializer.h>
-#include <io/serialization/TestSerializerBase.h>
+#include <dots/serialization/CborSerializer.h>
+#include <serialization/TestSerializerBase.h>
 
-struct ExperimentalCborSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::io::ExperimentalCborSerializer>
+struct CborSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::serialization::CborSerializer>
 {
     //
     // fundamental
@@ -43,11 +43,11 @@ struct ExperimentalCborSerializerTestDataEncoded : SerializerBaseTestDataEncoded
     data_t uint64Positive1{ 0x1B, 0x00, 0x2B, 0xDC, 0x54, 0x5D, 0xF2, 0xBD, 0xED };
     data_t uint64Positive2{ 0x1B, 0xFF, 0xD4, 0x23, 0xAB, 0xA2, 0x0D, 0x42, 0x13  };
 
-    data_t float32Zero{ 0xF9, 0x00, 0x00 };
+    data_t float32Zero{ 0xFA, 0x00, 0x00, 0x00, 0x00 };
     data_t float32Positive{ 0xFA, 0x40, 0x49, 0x0E, 0x56 };
     data_t float32Negative{ 0xFA, 0xC0, 0x2D, 0xF8, 0xA1 };
 
-    data_t float64Zero{ 0xF9, 0x00, 0x00 };
+    data_t float64Zero{ 0xFB, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
     data_t float64Positive{ 0xFB, 0x40, 0x09, 0x21, 0xFB, 0x54, 0x44, 0x2E, 0xEA };
     data_t float64Negative{ 0xFB, 0xC0, 0x05, 0xBF, 0x0A, 0x8B, 0x14, 0x5F, 0xCF };
 
@@ -80,18 +80,18 @@ struct ExperimentalCborSerializerTestDataEncoded : SerializerBaseTestDataEncoded
     // property
     //
 
-    data_t structSimple1_int32Property = Concat(int32Positive);
-    data_t structSimple1_stringProperty = Concat(string1);
-    data_t structSimple1_float32Property = Concat(float32Positive);
+    data_t structSimple1_int32Property = Concat(0x01, int32Positive);
+    data_t structSimple1_stringProperty = Concat(0x02, string1);
+    data_t structSimple1_float32Property = Concat(0x04, float32Positive);
 
-    data_t structComplex1_enumProperty = Concat(enum1);
-    data_t structComplex1_float64Property = Concat(float64Negative);
-    data_t structComplex1_timepointProperty = Concat(timePoint1);
-    data_t structComplex1_structSimpleProperty = Concat(0x81, 0x08, boolFalse);
+    data_t structComplex1_enumProperty = Concat(0x07, enum1);
+    data_t structComplex1_float64Property = Concat(0x04, float64Negative);
+    data_t structComplex1_timepointProperty = Concat(0x18, 0x19, timePoint1);
+    data_t structComplex1_structSimpleProperty = Concat(0x0F, 0xA1, 0x03, boolFalse);
 
-    data_t structComplex2_propertySetProperty = Concat(propertySetMixed1);
-    data_t structComplex2_durationVectorProperty = Concat(0x82, duration1, duration2);
-    data_t structComplex2_uuidProperty = Concat(uuid1);
+    data_t structComplex2_propertySetProperty = Concat(0x03, propertySetMixed1);
+    data_t structComplex2_durationVectorProperty = Concat(0x09, 0x82, duration1, duration2);
+    data_t structComplex2_uuidProperty = Concat(0x06, uuid1);
 
     //
     // vector
@@ -99,7 +99,7 @@ struct ExperimentalCborSerializerTestDataEncoded : SerializerBaseTestDataEncoded
 
     data_t vectorBool = Concat(0x83, boolTrue, boolFalse, boolFalse);
     data_t vectorFloat = Concat(0x82, float32Positive, float32Negative);
-    data_t vectorStructSimple = Concat(0x82, 0x81, 0x02, int32Positive, 0x81, 0x08, boolFalse);
+    data_t vectorStructSimple = Concat(0x82, 0xA1, 0x01, int32Positive, 0xA1, 0x03, boolFalse);
     data_t vectorEmpty = Concat(0x80);
 
     //
@@ -107,7 +107,7 @@ struct ExperimentalCborSerializerTestDataEncoded : SerializerBaseTestDataEncoded
     //
 
     data_t structSimple1_Valid = Concat(
-        0x83, 0x16,
+        0xA3,
         structSimple1_int32Property,
         structSimple1_stringProperty,
         structSimple1_float32Property
@@ -118,16 +118,16 @@ struct ExperimentalCborSerializerTestDataEncoded : SerializerBaseTestDataEncoded
     );
 
     data_t structSimple1_Specific = Concat(
-        0x81, 0x10,
+        0xA1,
         structSimple1_float32Property
     );
 
     data_t structSimple1_None = Concat(
-        0x80, 0x00
+        0xA0
     );
-
+    
     data_t structComplex1_Valid = Concat(
-        0x84, 0x1A, 0x02, 0x00, 0x80, 0x90,
+        0xA4,
         structComplex1_enumProperty,
         structComplex1_float64Property,
         structComplex1_timepointProperty,
@@ -135,19 +135,19 @@ struct ExperimentalCborSerializerTestDataEncoded : SerializerBaseTestDataEncoded
     );
 
     data_t structComplex1_Specific = Concat(
-        0x81, 0x1A, 0x02, 0x00, 0x00, 0x00,
+        0xA1,
         structComplex1_timepointProperty
     );
 
     data_t structComplex2_Valid = Concat(
-        0x83, 0x19, 0x02, 0x48,
+        0xA3,
         structComplex2_propertySetProperty,
         structComplex2_durationVectorProperty,
         structComplex2_uuidProperty
     );
 
     data_t structComplex2_Specific = Concat(
-        0x81, 0x19, 0x02, 0x00,
+        0xA1,
         structComplex2_durationVectorProperty
     );
 
@@ -176,4 +176,4 @@ struct ExperimentalCborSerializerTestDataEncoded : SerializerBaseTestDataEncoded
     );
 };
 
-INSTANTIATE_TYPED_TEST_SUITE_P(TestExperimentalCborSerializer, TestSerializerBase, ExperimentalCborSerializerTestDataEncoded);
+INSTANTIATE_TYPED_TEST_SUITE_P(TestCborSerializer, TestSerializerBase, CborSerializerTestDataEncoded);

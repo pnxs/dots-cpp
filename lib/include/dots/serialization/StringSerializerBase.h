@@ -2,10 +2,10 @@
 #include <string>
 #include <stack>
 #include <vector>
-#include <dots/io/serialization/SerializerBase.h>
+#include <dots/serialization/SerializerBase.h>
 #include <dots/tools/string_tools.h>
 
-namespace dots::io
+namespace dots::serialization
 {
     struct StringSerializerTraits
     {

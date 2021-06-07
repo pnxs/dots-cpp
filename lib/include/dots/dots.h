@@ -6,7 +6,7 @@
 #include <dots/Timer.h>
 #include <dots/GuestTransceiver.h>
 #include <dots/io/GlobalType.h>
-#include <dots/io/serialization/StringSerializer.h>
+#include <dots/serialization/StringSerializer.h>
 
 namespace dots
 {

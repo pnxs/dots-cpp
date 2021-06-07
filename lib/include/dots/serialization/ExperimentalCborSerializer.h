@@ -2,10 +2,10 @@
 #include <vector>
 #include <stdexcept>
 #include <string>
-#include <dots/io/serialization/CborSerializerBase.h>
+#include <dots/serialization/CborSerializerBase.h>
 #include <dots/type/TypeVisitor.h>
 
-namespace dots::io
+namespace dots::serialization
 {
     struct ExperimentalCborSerializer : CborSerializerBase<ExperimentalCborSerializer>
     {
@@ -176,36 +176,36 @@ namespace dots
     template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
     std::vector<uint8_t> to_cbor_experimental(const T& instance, const property_set_t& includedProperties)
     {
-        return io::ExperimentalCborSerializer::Serialize(instance, includedProperties);
+        return serialization::ExperimentalCborSerializer::Serialize(instance, includedProperties);
     }
 
     template <typename T>
     std::vector<uint8_t> to_cbor_experimental(const T& value)
     {
-        return io::ExperimentalCborSerializer::Serialize(value);
+        return serialization::ExperimentalCborSerializer::Serialize(value);
     }
 
     template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
     size_t from_cbor_experimental(const uint8_t* data, size_t size, T& value)
     {
-        return io::ExperimentalCborSerializer::Deserialize(data, size, value);
+        return serialization::ExperimentalCborSerializer::Deserialize(data, size, value);
     }
 
     template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
     size_t from_cbor_experimental(const std::vector<uint8_t>& data, T& value)
     {
-        return io::ExperimentalCborSerializer::Deserialize(data, value);
+        return serialization::ExperimentalCborSerializer::Deserialize(data, value);
     }
 
     template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
     T from_cbor_experimental(const uint8_t* data, size_t size)
     {
-        return io::ExperimentalCborSerializer::Deserialize<T>(data, size);
+        return serialization::ExperimentalCborSerializer::Deserialize<T>(data, size);
     }
 
     template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
     T from_cbor_experimental(const std::vector<uint8_t>& data)
     {
-        return io::ExperimentalCborSerializer::Deserialize<T>(data);
+        return serialization::ExperimentalCborSerializer::Deserialize<T>(data);
     }
 }

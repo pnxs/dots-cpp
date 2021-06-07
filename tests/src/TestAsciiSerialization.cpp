@@ -1,4 +1,4 @@
-#include <dots/io/serialization/AsciiSerialization.h>
+#include <dots/serialization/AsciiSerialization.h>
 #include "StructDescriptorData.dots.h"
 #include "DotsTestStruct.dots.h"
 #include "dots/type/Registry.h"

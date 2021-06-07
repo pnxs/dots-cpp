@@ -1,6 +1,6 @@
 #include <dots/Application.h>
 #include <dots/tools/logging.h>
-#include <dots/io/serialization/AsciiSerialization.h>
+#include <dots/serialization/AsciiSerialization.h>
 
 #include "DotsTestStruct.dots.h"
 #include "DotsTestVectorStruct.dots.h"

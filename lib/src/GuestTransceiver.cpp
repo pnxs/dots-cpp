@@ -1,6 +1,6 @@
 #include <dots/GuestTransceiver.h>
 #include <dots/tools/logging.h>
-#include <dots/io/serialization/AsciiSerialization.h>
+#include <dots/serialization/AsciiSerialization.h>
 #include <DotsMember.dots.h>
 #include <DotsCacheInfo.dots.h>
 

@@ -1,4 +1,4 @@
-#include <dots/io/serialization/AsciiSerialization.h>
+#include <dots/serialization/AsciiSerialization.h>
 #include <dots/type/Struct.h>
 #include <dots/type/EnumDescriptor.h>
 #include <stack>

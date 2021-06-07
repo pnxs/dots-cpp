@@ -2,7 +2,7 @@
 #include <dots/type/Registry.h>
 #include <dots/io/auth/Digest.h>
 #include <dots/tools/logging.h>
-#include <dots/io/serialization/StringSerializer.h>
+#include <dots/serialization/StringSerializer.h>
 #include <DotsMsgConnect.dots.h>
 #include <DotsClient.dots.h>
 #include <DotsDescriptorRequest.dots.h>

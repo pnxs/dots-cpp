@@ -1,10 +1,10 @@
 #pragma once
 #include <string>
-#include <dots/io/serialization/SerializerBase.h>
+#include <dots/serialization/SerializerBase.h>
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
 
-namespace dots::io
+namespace dots::serialization
 {
     struct RapidJsonSerializerTraits
     {

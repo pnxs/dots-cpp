@@ -1,9 +1,9 @@
 #pragma once
 #include <vector>
-#include <dots/io/serialization/CborSerializerBase.h>
+#include <dots/serialization/CborSerializerBase.h>
 #include <dots/type/TypeVisitor.h>
 
-namespace dots::io
+namespace dots::serialization
 {
     struct CborSerializer : CborSerializerBase<CborSerializer, false>
     {
@@ -187,36 +187,36 @@ namespace dots
     template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
     std::vector<uint8_t> to_cbor(const T& instance, const property_set_t& includedProperties)
     {
-        return io::CborSerializer::Serialize(instance, includedProperties);
+        return serialization::CborSerializer::Serialize(instance, includedProperties);
     }
 
     template <typename T>
     std::vector<uint8_t> to_cbor(const T& value)
     {
-        return io::CborSerializer::Serialize(value);
+        return serialization::CborSerializer::Serialize(value);
     }
 
     template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
     size_t from_cbor(const uint8_t* data, size_t size, T& value)
     {
-        return io::CborSerializer::Deserialize(data, size, value);
+        return serialization::CborSerializer::Deserialize(data, size, value);
     }
 
     template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
     size_t from_cbor(const std::vector<uint8_t>& data, T& value)
     {
-        return io::CborSerializer::Deserialize(data, value);
+        return serialization::CborSerializer::Deserialize(data, value);
     }
 
     template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
     T from_cbor(const uint8_t* data, size_t size)
     {
-        return io::CborSerializer::Deserialize<T>(data, size);
+        return serialization::CborSerializer::Deserialize<T>(data, size);
     }
 
     template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
     T from_cbor(const std::vector<uint8_t>& data)
     {
-        return io::CborSerializer::Deserialize<T>(data);
+        return serialization::CborSerializer::Deserialize<T>(data);
     }
 }

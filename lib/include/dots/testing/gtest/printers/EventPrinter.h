@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
 #include <dots/Event.h>
-#include <dots/io/serialization/StringSerializer.h>
+#include <dots/serialization/StringSerializer.h>
 
 namespace dots::io
 {

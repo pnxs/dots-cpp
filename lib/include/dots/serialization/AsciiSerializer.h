@@ -1,7 +1,7 @@
 #pragma once
-#include <dots/io/serialization/StringSerializerBase.h>
+#include <dots/serialization/StringSerializerBase.h>
 
-namespace dots::io
+namespace dots::serialization
 {
     struct ClassicMultiLineAsciiSerializerTraits : StringSerializerTraits
     {

@@ -1,9 +1,9 @@
 #include <dots/testing/gtest/gtest.h>
-#include <dots/io/serialization/StringSerializer.h>
-#include <io/serialization/TestSerializerBase.h>
-#include <io/serialization/TestStringSerializerBase.h>
+#include <dots/serialization/StringSerializer.h>
+#include <serialization/TestSerializerBase.h>
+#include <serialization/TestStringSerializerBase.h>
 
-struct StringSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::io::StringSerializer<>>
+struct StringSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::serialization::StringSerializer<>>
 {
     //
     // fundamental
