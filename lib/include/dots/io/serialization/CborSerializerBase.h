@@ -44,11 +44,11 @@ namespace dots::io
                 static constexpr uint8_t Map = 0xA0;
                 static constexpr uint8_t SimpleOrFloat = 0xE0;
 
-                static constexpr uint8_t IndefiniteArray = Array | 32;
-                static constexpr uint8_t IndefiniteMap = Map | 32;
+                static constexpr uint8_t IndefiniteArray = Array | 31;
+                static constexpr uint8_t IndefiniteMap = Map | 31;
 
-                static constexpr uint8_t IndefiniteArrayBreak = SimpleOrFloat | 32;
-                static constexpr uint8_t IndefiniteMapBreak = SimpleOrFloat | 32;
+                static constexpr uint8_t IndefiniteArrayBreak = SimpleOrFloat | 31;
+                static constexpr uint8_t IndefiniteMapBreak = SimpleOrFloat | 31;
 
                 static constexpr uint8_t Mask = 0xE0;
             };

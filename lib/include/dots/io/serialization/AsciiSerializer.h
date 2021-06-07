@@ -44,7 +44,7 @@ namespace dots::io
         }
 
         ClassicMultiLineAsciiSerializer(size_t indentSize) :
-            ClassicMultiLineAsciiSerializer(StringSerializerOptions{ true, true, indentSize })
+            ClassicMultiLineAsciiSerializer(StringSerializerOptions{ StringSerializerOptions::MultiLine, StringSerializerOptions::Relaxed, indentSize })
         {
             /* do nothing */
         }
@@ -91,7 +91,7 @@ namespace dots::io
         }
 
         ClassicSingleLineAsciiSerializer(size_t indentSize) :
-            ClassicSingleLineAsciiSerializer(StringSerializerOptions{ true, false, indentSize })
+            ClassicSingleLineAsciiSerializer(StringSerializerOptions{ StringSerializerOptions::Compact, StringSerializerOptions::Relaxed, indentSize })
         {
             /* do nothing */
         }

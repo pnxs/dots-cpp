@@ -36,19 +36,19 @@ namespace dots::io
         return StringSerializer<>::Serialize(value, options);
     }
 
-    template <typename T>
+    template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
     size_t from_string(const std::string& data, T& value, const type::Descriptor<T>& descriptor, StringSerializerOptions options = {})
     {
         return StringSerializer<>::Deserialize(data, value, descriptor, options);
     }
 
-    template <typename T>
+    template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
     size_t from_string(const std::string& data, T& value, StringSerializerOptions options = {})
     {
         return StringSerializer<>::Deserialize(data, value, options);
     }
 
-    template <typename T>
+    template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
     T from_string(const std::string& data, StringSerializerOptions options = {})
     {
         return StringSerializer<>::Deserialize<T>(data, options);

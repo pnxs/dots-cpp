@@ -15,6 +15,9 @@ namespace dots::io
     template <typename Writer = rapidjson::Writer<rapidjson::StringBuffer>, typename Traits = RapidJsonSerializerTraits>
     struct RapidJsonSerializer : type::TypeVisitor<RapidJsonSerializer<Writer>>
     {
+        using data_t = std::string;
+        using value_t = data_t::value_type;
+
         using writer_t = Writer;
         using document_t = rapidjson::Document;
         using traits_t = Traits;
@@ -106,31 +109,31 @@ namespace dots::io
         }
 
         template <typename T>
+        void serialize(const T& value, const type::Descriptor<T>& descriptor)
+        {
+            visit(value, descriptor);
+        }
+
+        template <typename T>
         void serialize(const T& value)
         {
-            constexpr bool IsProperty = type::is_property_v<T>;
-            static_assert(!IsProperty, "direct serialization of properties is not available for this serializer");
+            visit(value);
+        }
 
-            if constexpr (!IsProperty)
-            {
-                visit(value);
-            }
+        template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
+        void deserialize(T& value, const type::Descriptor<T>& descriptor)
+        {
+            visit(value, descriptor);
         }
 
         template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
         void deserialize(T& value)
         {
-            constexpr bool IsProperty = type::is_property_v<T>;
-            static_assert(!IsProperty, "direct deserialization of properties is not available for this serializer");
+            visit(value);
 
-            if constexpr (!IsProperty)
+            if (m_tupleEnd != nullptr)
             {
-                visit(value);
-
-                if (m_tupleEnd != nullptr)
-                {
-                    ++m_inputValue;
-                }
+                ++m_inputValue;
             }
         }
 
@@ -174,6 +177,78 @@ namespace dots::io
             m_tupleEnd = nullptr;
         }
 
+        template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
+        static data_t Serialize(const T& instance, const property_set_t& includedProperties)
+        {
+            rapidjson::StringBuffer buffer;
+            writer_t writer{ buffer };
+            RapidJsonSerializer serializer{ writer };
+            serializer.serialize(instance, includedProperties);
+
+            return buffer.GetString();
+        }
+
+        template <typename T>
+        static data_t Serialize(const T& value, const type::Descriptor<T>& descriptor)
+        {
+            rapidjson::StringBuffer buffer;
+            writer_t writer{ buffer };
+            RapidJsonSerializer serializer{ writer };
+            serializer.serialize(value, descriptor);
+
+            return buffer.GetString();
+        }
+
+        template <typename T>
+        static data_t Serialize(const T& value)
+        {
+            rapidjson::StringBuffer buffer;
+            writer_t writer{ buffer };
+            RapidJsonSerializer serializer{ writer };
+            serializer.serialize(value);
+
+            return buffer.GetString();
+        }
+
+        template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
+        static void Deserialize(const value_t* data, size_t size, T& value, const type::Descriptor<T>& descriptor)
+        {
+            RapidJsonSerializer serializer{ std::string_view{ data, size } };
+            serializer.deserialize(value, descriptor);
+        }
+
+        template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
+        static void Deserialize(const value_t* data, size_t size, T& value)
+        {
+            RapidJsonSerializer serializer{ std::string_view{ data, size } };
+            serializer.deserialize(value);
+        }
+
+        template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
+        static void Deserialize(const data_t& data, T& value, const type::Descriptor<T>& descriptor)
+        {
+            return Deserialize(data.data(), data.size(), value, descriptor);
+        }
+
+        template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
+        static void Deserialize(const data_t& data, T& value)
+        {
+            return Deserialize(data.data(), data.size(), value);
+        }
+
+        template <typename T, std::enable_if_t<!std::is_const_v<T> && !std::is_reference_v<T>, int> = 0>
+        static T Deserialize(const value_t* data, size_t size)
+        {
+            RapidJsonSerializer serializer{ std::string_view{ data, size } };
+            return serializer.deserialize<T>();
+        }
+
+        template <typename T, std::enable_if_t<!std::is_const_v<T> && !std::is_reference_v<T>, int> = 0>
+        static T Deserialize(const data_t& data)
+        {
+            return Deserialize<T>(data.data(), data.size());
+        }
+
     protected:
 
         using visitor_base_t = type::TypeVisitor<RapidJsonSerializer<Writer>>;
@@ -214,16 +289,19 @@ namespace dots::io
         template <typename T>
         bool visitPropertyBeginDerived(const T& property, bool/* first*/)
         {
-            write(property.descriptor().name());
-            return true;
-        }
+            if (visitor_base_t::template visitingLevel<true>() > 0)
+            {
+                write(property.descriptor().name());
+            }
 
-        template <typename T>
-        void visitPropertyEndDerived(const T& property, bool/* first*/)
-        {
-            if (!property.isValid())
+            if (property.isValid())
+            {
+                return true;
+            }
+            else
             {
                 m_writer->Null();
+                return false;
             }
         }
 

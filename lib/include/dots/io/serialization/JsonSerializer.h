@@ -76,13 +76,13 @@ namespace dots::io
         return JsonSerializer<>::Serialize(value, options);
     }
 
-    template <typename T>
+    template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
     size_t from_json(const std::string& data, T& value)
     {
         return JsonSerializer<>::Deserialize(data, value);
     }
 
-    template <typename T>
+    template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
     T from_json(const std::string& data)
     {
         return JsonSerializer<>::Deserialize<T>(data);

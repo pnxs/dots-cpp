@@ -20,7 +20,6 @@ target_sources(${TARGET_NAME}
         src/io/serialization/TestExperimentalCborSerializer.cpp
         src/io/serialization/TestJsonSerializer.cpp
         src/io/serialization/TestRapidJsonSerializer.cpp
-        src/io/serialization/TestSerializerBase.cpp
         src/io/serialization/TestStringSerializer.cpp
 
         src/io/TestRegistry.cpp
@@ -69,7 +68,7 @@ target_link_libraries(${TARGET_NAME}
         gtest
         gtest_main
         date::date
-        date::tz
+        date::date-tz
         RapidJSON::RapidJSON
 )
 
@@ -105,5 +104,5 @@ target_link_libraries(${TARGET_NAME_EXPERIMENTAL}
         gtest
         gtest_main
         date::date
-        date::tz
+        date::date-tz
 )

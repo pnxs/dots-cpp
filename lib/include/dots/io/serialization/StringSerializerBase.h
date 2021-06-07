@@ -88,7 +88,6 @@ namespace dots::io
         using data_t = typename serializer_base_t::data_t;
 
         StringSerializerBase(StringSerializerOptions options = {}) :
-            m_indentLevel(0),
             m_options{ std::move(options) }
         {
             /* do nothing */
@@ -104,58 +103,6 @@ namespace dots::io
         using serializer_base_t::lastSerializeSize;
         using serializer_base_t::lastDeserializeSize;
 
-        size_t serializeTupleBegin()
-        {
-            m_outputTupleInfo.push(false);
-            serializer_base_t::template visitBeginDerived<true>();
-            incrementIndentLevel();
-            writePrefixedNewLine(traits_t::TupleBegin);
-
-            return lastSerializeSize();
-        }
-
-        size_t serializeTupleEnd()
-        {
-            if (m_outputTupleInfo.empty())
-            {
-                throw std::logic_error{ "attempt to serialize tuple end without previous begin" };
-            }
-
-            m_outputTupleInfo.pop();
-
-            serializer_base_t::template visitBeginDerived<true>();
-            decrementIndentLevel();
-            writeSuffixedNewLine(traits_t::TupleEnd);
-
-            return lastSerializeSize();
-        }
-
-        size_t deserializeTupleBegin()
-        {
-            m_inputTupleInfo.push(false);
-            serializer_base_t::template visitBeginDerived<false>();
-            readTokenAfterWhitespace(traits_t::TupleBegin);
-            inputData() = m_input.data();
-
-            return lastDeserializeSize();
-        }
-
-        size_t deserializeTupleEnd()
-        {
-            if (m_inputTupleInfo.empty())
-            {
-                throw std::logic_error{ "attempt to deserialize tuple end without previous begin" };
-            }
-
-            m_inputTupleInfo.pop();
-
-            serializer_base_t::template visitBeginDerived<false>();
-            readTokenAfterWhitespace(traits_t::TupleEnd);
-            inputData() = m_input.data();
-
-            return lastDeserializeSize();
-        }
-
     protected:
 
         using visitor_base_t = type::TypeVisitor<Derived>;
@@ -167,48 +114,15 @@ namespace dots::io
         using serializer_base_t::inputData;
         using serializer_base_t::inputDataEnd;
 
-        template <bool Const>
-        void visitBeginDerived()
-        {
-            serializer_base_t::template visitBeginDerived<Const>();
-
-            if constexpr (Const)
-            {
-                if (!m_outputTupleInfo.empty() && m_outputTupleInfo.top())
-                {
-                    writePrefixedNewLine(traits_t::TupleElementSeparator);
-                }
-            }
-            else
-            {
-                if (!m_inputTupleInfo.empty() && m_inputTupleInfo.top())
-                {
-                    readTokenAfterWhitespace(traits_t::TupleElementSeparator);
-                }
-            }
-        }
-
-        template <bool Const>
+        template <bool Const, bool ConsiderTupleValue = true>
         void visitEndDerived()
         {
-            if constexpr (Const)
+            if constexpr (!Const)
             {
-                if (!m_outputTupleInfo.empty())
-                {
-                    m_outputTupleInfo.top() = true;
-                }
-            }
-            else
-            {
-                if (!m_inputTupleInfo.empty())
-                {
-                    m_inputTupleInfo.top() = true;
-                }
-
                 inputData() = m_input.data();
             }
 
-            serializer_base_t::template visitEndDerived<Const>();
+            serializer_base_t::template visitEndDerived<Const, ConsiderTupleValue>();
         }
 
         //
@@ -222,7 +136,7 @@ namespace dots::io
             {
                 if (m_options.style == StringSerializerOptions::Compact)
                 {
-                    if (indentLevel() == 0)
+                    if (serializer_base_t::serializeLevel() == 0)
                     {
                         write(instance._descriptor().name());
                     }
@@ -233,8 +147,7 @@ namespace dots::io
                 }
             }
 
-            incrementIndentLevel();
-            writePrefixedNewLine(traits_t::StructBegin);
+            write(traits_t::StructBegin);
 
             return true;
         }
@@ -242,83 +155,77 @@ namespace dots::io
         template <typename T>
         void visitStructEndDerived(const T&/* instance*/, const property_set_t&/* includedProperties*/)
         {
-            decrementIndentLevel();
             writeSuffixedNewLine(traits_t::StructEnd);
         }
 
         template <typename T>
         bool visitPropertyBeginDerived(const T& property, bool first)
         {
-            if (!first)
+            if (serializer_base_t::serializeLevel() > 0)
             {
-                writePrefixedNewLine(traits_t::PropertyValueEnd);
+                if (first)
+                {
+                    writeNewLine();
+                }
+                else
+                {
+                    writePrefixedNewLine(traits_t::PropertyValueEnd);
+                }
+
+                write(traits_t::PropertyNameBegin);
+                write(property.descriptor().name());
+
+                if (!traits_t::PropertyNameEnd.empty())
+                {
+                    write(traits_t::PropertyNameEnd);
+                }
+
+                if constexpr (!traits_t::PropertyValueBegin.empty())
+                {
+                    writeSeparator(traits_t::PropertyValueBegin);
+                }
+                else if (m_options.style >= StringSerializerOptions::Compact)
+                {
+                    write(" ");
+                }
             }
 
-            write(traits_t::PropertyNameBegin);
-            write(property.descriptor().name());
-
-            if (!traits_t::PropertyNameEnd.empty())
+            if (property.isValid())
             {
-                write(traits_t::PropertyNameEnd);
-            }
-
-            if constexpr (!traits_t::PropertyValueBegin.empty())
-            {
-                writeSeparator(traits_t::PropertyValueBegin);
-            }
-            else if (m_options.style >= StringSerializerOptions::Compact)
-            {
-                write(" ");
-            }
-
-            return true;
-        }
-
-        template <typename T>
-        void visitPropertyEndDerived(const T& property, bool/* first*/)
-        {
-            if (!property.isValid())
-            {
-                write(traits_t::PropertyInvalidValue);
-            }
-        }
-
-        template <typename T>
-        bool visitVectorBeginDerived(const vector_t<T>& vector, const type::Descriptor<vector_t<T>>&/* descriptor*/)
-        {
-            incrementIndentLevel();
-
-            if (vector.typelessSize() == 0)
-            {
-                write(traits_t::VectorBegin);
-                return false;
+                return true;
             }
             else
             {
-                writePrefixedNewLine(traits_t::VectorBegin);
-                return true;
+                write(traits_t::PropertyInvalidValue);
+                return false;
             }
         }
 
         template <typename T>
-        bool visitVectorValueBeginDerived(const vector_t<T>&/* vector*/, const type::Descriptor<vector_t<T>>&/* descriptor*/, size_t/* index*/)
+        bool visitVectorBeginDerived(const vector_t<T>&/* vector*/, const type::Descriptor<vector_t<T>>&/* descriptor*/)
         {
+            write(traits_t::VectorBegin);
             return true;
         }
 
         template <typename T>
-        void visitVectorValueEndDerived(const vector_t<T>& vector, const type::Descriptor<vector_t<T>>&/* descriptor*/, size_t index)
+        bool visitVectorValueBeginDerived(const vector_t<T>&/* vector*/, const type::Descriptor<vector_t<T>>&/* descriptor*/, size_t index)
         {
-            if (index < vector.typelessSize() - 1)
+            if (index == 0)
+            {
+                writeNewLine();
+            }
+            else
             {
                 writePrefixedNewLine(traits_t::VectorValueSeparator);
             }
+
+            return true;
         }
 
         template <typename T>
         void visitVectorEndDerived(const vector_t<T>&/* vector*/, const type::Descriptor<vector_t<T>>&/* descriptor*/)
         {
-            decrementIndentLevel();
             writeSuffixedNewLine(traits_t::VectorEnd);
         }
 
@@ -407,6 +314,28 @@ namespace dots::io
             }
         }
 
+        void serializeTupleBeginDerived()
+        {
+            write(traits_t::TupleBegin);
+        }
+
+        void serializeTupleValueBeginDerived(bool first)
+        {
+            if (first)
+            {
+                writeNewLine();
+            }
+            else
+            {
+                writePrefixedNewLine(traits_t::TupleElementSeparator);
+            }
+        }
+
+        void serializeTupleEndDerived()
+        {
+            writeSuffixedNewLine(traits_t::TupleEnd);
+        }
+
         //
         // deserialization
         //
@@ -430,8 +359,9 @@ namespace dots::io
             }
 
             readTokenAfterWhitespace(traits_t::StructBegin);
+            std::array endToken{ traits_t::PropertyValueEnd, traits_t::StructEnd };
 
-            for (;;)
+            for (bool structEnd = tryReadTokenAfterWhitespace(traits_t::StructEnd); !structEnd; structEnd = readAnyTokenAfterWhitespace(endToken) == traits_t::StructEnd)
             {
                 readTokenAfterWhitespace(traits_t::PropertyNameBegin);
                 std::string_view propertyName = readIdentifier();
@@ -448,11 +378,6 @@ namespace dots::io
                     const type::PropertyDescriptor& propertyDescriptor = *it;
                     type::ProxyProperty<> property{ instance, propertyDescriptor };
                     visit(property);
-                }
-
-                if (readAnyTokenAfterWhitespace(std::array{ traits_t::PropertyValueEnd, traits_t::StructEnd }) == traits_t::StructEnd)
-                {
-                    break;
                 }
             }
 
@@ -478,8 +403,9 @@ namespace dots::io
         bool visitVectorBeginDerived(vector_t<T>& vector, const type::Descriptor<vector_t<T>>& descriptor)
         {
             readTokenAfterWhitespace(traits_t::VectorBegin);
+            std::array endToken{ traits_t::VectorValueSeparator, traits_t::VectorEnd };
 
-            for (;;)
+            for (bool vectorEnd = tryReadTokenAfterWhitespace(traits_t::VectorEnd); !vectorEnd; vectorEnd = readAnyTokenAfterWhitespace(endToken) == traits_t::VectorEnd)
             {
                 descriptor.resize(vector, vector.typelessSize() + 1);
 
@@ -498,11 +424,6 @@ namespace dots::io
                     {
                         visit(vector.back(), descriptor.valueDescriptor());
                     }
-                }
-
-                if (readAnyTokenAfterWhitespace(std::array{ traits_t::VectorValueSeparator, traits_t::VectorEnd }) == traits_t::VectorEnd)
-                {
-                    break;
                 }
             }
 
@@ -578,28 +499,27 @@ namespace dots::io
             }
         }
 
+        void deserializeTupleBeginDerived()
+        {
+            readTokenAfterWhitespace(traits_t::TupleBegin);
+        }
+
+        void deserializeTupleValueBeginDerived(bool first)
+        {
+            if (!first)
+            {
+                readTokenAfterWhitespace(traits_t::TupleElementSeparator);
+            }
+        }
+
+        void deserializeTupleEndDerived()
+        {
+            readTokenAfterWhitespace(traits_t::TupleEnd);
+        }
+
         void setInputDerived()
         {
             m_input = std::string_view{ inputData(), static_cast<size_t>(inputDataEnd() - inputData()) };
-        }
-
-        //
-        // indentation
-        //
-
-        size_t& indentLevel()
-        {
-            return m_indentLevel;
-        }
-
-        void incrementIndentLevel()
-        {
-            ++m_indentLevel;
-        }
-
-        void decrementIndentLevel()
-        {
-            --m_indentLevel;
         }
 
         //
@@ -623,7 +543,7 @@ namespace dots::io
             if (m_options.style == StringSerializerOptions::MultiLine)
             {
                 write("\n");
-                output().resize(output().size() + m_indentLevel * m_options.indentSize, ' ');
+                output().resize(output().size() + serializer_base_t::serializeLevel() * m_options.indentSize, ' ');
             }
             else if (m_options.style >= StringSerializerOptions::Compact)
             {
@@ -857,7 +777,7 @@ namespace dots::io
             readWhitespace();
             bool stringDelimited = tryReadToken(traits_t::StringDelimiter);
 
-            if (indentLevel() == 0 && !stringDelimited)
+            if (serializer_base_t::deserializeLevel() == 0 && !stringDelimited)
             {
                 std::string token = std::string{ m_input };
                 m_input.remove_prefix(m_input.size());
@@ -881,12 +801,14 @@ namespace dots::io
                             return tools::starts_with(m_input, escapeMapping.to);
                         });
 
-                        if (it != traits_t::StringEscapeMapping.end())
+                        if (it == traits_t::StringEscapeMapping.end())
                         {
-                            const auto& [from, to] = *it;
-                            token += from;
-                            m_input.remove_prefix(to.size());
+                            throw makeTokenError("<valid-escape-sequence>");
                         }
+
+                        const auto& [from, to] = *it;
+                        token += from;
+                        m_input.remove_prefix(to.size());
                     }
                     else
                     {
@@ -1047,8 +969,6 @@ namespace dots::io
 
     private:
 
-        using tuple_info_t = std::stack<bool, std::vector<bool>>;
-
         template <size_t N>
         std::runtime_error makeTokenError(std::array<std::string_view, N> expected)
         {
@@ -1074,9 +994,6 @@ namespace dots::io
             return makeTokenError(std::array{ expected });
         }
 
-        tuple_info_t m_outputTupleInfo;
-        tuple_info_t m_inputTupleInfo;
-        size_t m_indentLevel;
         StringSerializerOptions m_options;
         std::string_view m_input;
     };
