@@ -261,7 +261,7 @@ namespace dots
             }
             else
             {
-                throw std::logic_error{ "received instance of non-system type " + instance._descriptor().name() + " while not in early_subscribe or connected state " + io::to_string(m_connectionState) };
+                throw std::logic_error{ "received instance of non-system type " + instance._descriptor().name() + " while not in early_subscribe or connected state " + to_string(m_connectionState) };
             }
         }
 
@@ -397,7 +397,7 @@ namespace dots
 
     void Connection::setConnectionState(DotsConnectionState state, const std::exception_ptr& e/* = nullptr*/)
     {
-        LOG_DEBUG_S("change connection state to " << io::to_string(state));
+        LOG_DEBUG_S("change connection state to " << to_string(state));
         m_connectionState = state;
 
         try

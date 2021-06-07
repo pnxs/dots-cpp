@@ -63,28 +63,31 @@ namespace dots::io
         JsonSerializer& operator = (const JsonSerializer& rhs) = default;
         JsonSerializer& operator = (JsonSerializer&& rhs) = default;
     };
+}
 
+namespace dots
+{
     template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
-    std::string to_json(const T& instance, const property_set_t& includedProperties, StringSerializerOptions options = {})
+    std::string to_json(const T& instance, const property_set_t& includedProperties, io::StringSerializerOptions options = {})
     {
-        return JsonSerializer<>::Serialize(instance, includedProperties, options);
+        return io::JsonSerializer<>::Serialize(instance, includedProperties, options);
     }
 
     template <typename T>
-    std::string to_json(const T& value, StringSerializerOptions options = {})
+    std::string to_json(const T& value, io::StringSerializerOptions options = {})
     {
-        return JsonSerializer<>::Serialize(value, options);
+        return io::JsonSerializer<>::Serialize(value, options);
     }
 
     template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
     size_t from_json(const std::string& data, T& value)
     {
-        return JsonSerializer<>::Deserialize(data, value);
+        return io::JsonSerializer<>::Deserialize(data, value);
     }
 
     template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
     T from_json(const std::string& data)
     {
-        return JsonSerializer<>::Deserialize<T>(data);
+        return io::JsonSerializer<>::Deserialize<T>(data);
     }
 }

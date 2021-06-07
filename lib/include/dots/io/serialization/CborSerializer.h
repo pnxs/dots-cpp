@@ -180,40 +180,43 @@ namespace dots::io
             readHead(Cbor::MajorType::IndefiniteArrayBreak);
         }
     };
+}
 
+namespace dots
+{
     template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
     std::vector<uint8_t> to_cbor(const T& instance, const property_set_t& includedProperties)
     {
-        return CborSerializer::Serialize(instance, includedProperties);
+        return io::CborSerializer::Serialize(instance, includedProperties);
     }
 
     template <typename T>
     std::vector<uint8_t> to_cbor(const T& value)
     {
-        return CborSerializer::Serialize(value);
+        return io::CborSerializer::Serialize(value);
     }
 
     template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
     size_t from_cbor(const uint8_t* data, size_t size, T& value)
     {
-        return CborSerializer::Deserialize(data, size, value);
+        return io::CborSerializer::Deserialize(data, size, value);
     }
 
     template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
     size_t from_cbor(const std::vector<uint8_t>& data, T& value)
     {
-        return CborSerializer::Deserialize(data, value);
+        return io::CborSerializer::Deserialize(data, value);
     }
 
     template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
     T from_cbor(const uint8_t* data, size_t size)
     {
-        return CborSerializer::Deserialize<T>(data, size);
+        return io::CborSerializer::Deserialize<T>(data, size);
     }
 
     template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
     T from_cbor(const std::vector<uint8_t>& data)
     {
-        return CborSerializer::Deserialize<T>(data);
+        return io::CborSerializer::Deserialize<T>(data);
     }
 }

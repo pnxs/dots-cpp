@@ -46,8 +46,8 @@ namespace dots::testing
                 if (os != nullptr)
                 {
                     *os << "\n" << 
-                        "             Diff: " << io::to_string(m_expected, diff) << "\n" <<
-                        "                 : " << io::to_string(actual, diff);
+                        "             Diff: " << to_string(m_expected, diff) << "\n" <<
+                        "                 : " << to_string(actual, diff);
                 }
 
                 return false;
@@ -56,12 +56,12 @@ namespace dots::testing
 
         void DescribeTo(std::ostream* os) const
         {
-            *os << io::to_string(m_expected, m_includedProperties);
+            *os << to_string(m_expected, m_includedProperties);
         }
 
         void DescribeNegationTo(std::ostream* os) const
         {
-            *os << io::to_string(m_expected, ~m_includedProperties);
+            *os << to_string(m_expected, ~m_includedProperties);
         }
 
     private:

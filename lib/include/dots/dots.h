@@ -10,8 +10,6 @@
 
 namespace dots
 {
-    using io::to_string;
-
     Timer::id_t add_timer(const type::Duration& timeout, const std::function<void()>& handler, bool periodic = false);
     void remove_timer(Timer::id_t id);
 
