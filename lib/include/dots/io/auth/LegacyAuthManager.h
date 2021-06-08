@@ -3,7 +3,7 @@
 #include <map>
 #include <boost/asio.hpp>
 #include <dots/io/auth/AuthManager.h>
-#include <dots/io/Subscription.h>
+#include <dots/Subscription.h>
 #include <DotsMsgConnect.dots.h>
 #include <DotsAuthentication.dots.h>
 #include <DotsAuthenticationPolicy.dots.h>

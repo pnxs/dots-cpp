@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <optional>
-#include <dots/io/HostTransceiver.h>
+#include <dots/HostTransceiver.h>
 #include "DotsDaemonStatus.dots.h"
 
 namespace dots
@@ -25,7 +25,7 @@ namespace dots
 
         inline static uint32_t M_nextTypeId = 0;
 
-        void handleTransition(const io::Connection& connection);
+        void handleTransition(const Connection& connection);
         void handleNewStructType(const type::StructDescriptor<>& descriptor);
         void cleanUpClients();
 
@@ -36,8 +36,8 @@ namespace dots
 
         static std::string flags2String(const dots::type::StructDescriptor<>* td);
 
-        io::HostTransceiver m_hostTransceiver;
+        HostTransceiver m_hostTransceiver;
         DotsDaemonStatus m_daemonStatus;
-        std::optional<io::Subscription> m_descriptorSubscription;
+        std::optional<Subscription> m_descriptorSubscription;
     };
 }

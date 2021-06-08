@@ -1,13 +1,11 @@
 #include <dots/testing/gtest/gtest.h>
-#include <dots/io/Dispatcher.h>
+#include <dots/Dispatcher.h>
 #include <DotsHeader.dots.h>
 #include <DotsTestStruct.dots.h>
 #include <DotsUncachedTestStruct.dots.h>
 
 namespace dots
 {
-    using io::Dispatcher;
-    using io::Event;
     using io::Transmission;
 }
 

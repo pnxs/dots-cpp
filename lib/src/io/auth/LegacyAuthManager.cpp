@@ -1,5 +1,5 @@
 #include <dots/io/auth/LegacyAuthManager.h>
-#include <dots/io/HostTransceiver.h>
+#include <dots/HostTransceiver.h>
 #include <dots/io/auth/Digest.h>
 #include <dots/tools/IpNetwork.h>
 #include <dots/tools/logging.h>

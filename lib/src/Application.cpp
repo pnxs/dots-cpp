@@ -7,7 +7,7 @@
 #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
 #include <dots/io/channels/UdsChannel.h>
 #endif
-#include <dots/io/Registry.h>
+#include <dots/type/Registry.h>
 #include <dots/tools/logging.h>
 #include <DotsClient.dots.h>
 
@@ -22,7 +22,7 @@ namespace dots
         // Connect to dotsd
 
         GuestTransceiver& globalGuestTransceiver = dots::transceiver(m_openEndpoint->userName().empty() ? name : m_openEndpoint->userName());
-        const io::Connection& connection = [&]() -> auto&
+        const Connection& connection = [&]() -> auto&
         {
             if (m_openEndpoint->scheme() == "tcp")
             {

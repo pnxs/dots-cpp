@@ -2,7 +2,7 @@
 #include <functional>
 #include <map>
 #include <boost/asio.hpp>
-#include <dots/io/Timer.h>
+#include <dots/Timer.h>
 
 namespace dots::io
 {

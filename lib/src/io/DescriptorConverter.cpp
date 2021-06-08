@@ -4,7 +4,7 @@
 
 namespace dots::io
 {
-    DescriptorConverter::DescriptorConverter(Registry& registry) :
+    DescriptorConverter::DescriptorConverter(type::Registry& registry) :
         m_registry(std::ref(registry))
     {
         /* do nothing */

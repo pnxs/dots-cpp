@@ -12,34 +12,34 @@ add_executable(${TARGET_NAME} src/TestContainer.cpp)
 
 # properties [dots-unittests]
 target_dots_model(${TARGET_NAME}
-    src/io/serialization/serialization.dots
+    src/serialization/serialization.dots
 )
 target_sources(${TARGET_NAME}
     PRIVATE
-        src/io/serialization/TestCborSerializer.cpp
-        src/io/serialization/TestExperimentalCborSerializer.cpp
-        src/io/serialization/TestJsonSerializer.cpp
-        src/io/serialization/TestRapidJsonSerializer.cpp
-        src/io/serialization/TestStringSerializer.cpp
+        src/serialization/TestCborSerializer.cpp
+        src/serialization/TestExperimentalCborSerializer.cpp
+        src/serialization/TestJsonSerializer.cpp
+        src/serialization/TestRapidJsonSerializer.cpp
+        src/serialization/TestStringSerializer.cpp
 
-        src/io/TestRegistry.cpp
+        src/type/TestRegistry.cpp
 
         src/tools/TestUri.cpp
 
-        src/TestDigest.cpp
-        src/TestAsciiSerialization.cpp
-        src/TestChrono.cpp
+        src/io/auth/TestDigest.cpp
+        src/serialization/TestAsciiSerialization.cpp
+        src/type/TestChrono.cpp
         src/TestDispatcher.cpp
-        src/TestEnumDescriptor.cpp
-        src/TestStaticDescriptor.cpp
-        src/TestStaticStruct.cpp
-        src/TestDynamicStruct.cpp
-        src/TestPropertySet.cpp
-        src/TestProperty.cpp
-        src/TestPropertyIterator.cpp
-        src/TestProxyProperty.cpp
-        src/TestIpNetwork.cpp
-        src/TestLegacyAuthManager.cpp
+        src/type/TestEnumDescriptor.cpp
+        src/type/TestStaticDescriptor.cpp
+        src/type/TestStaticStruct.cpp
+        src/type/TestDynamicStruct.cpp
+        src/type/TestPropertySet.cpp
+        src/type/TestProperty.cpp
+        src/type/TestPropertyIterator.cpp
+        src/type/TestProxyProperty.cpp
+        src/tools/TestIpNetwork.cpp
+        src/io/auth/TestLegacyAuthManager.cpp
         src/TestHostTransceiver.cpp
 )
 target_include_directories(${TARGET_NAME}
@@ -73,7 +73,7 @@ target_link_libraries(${TARGET_NAME}
 )
 
 # target [dots-unittests-experimental]
-add_executable(${TARGET_NAME_EXPERIMENTAL} src/TestStaticStructExperimental.cpp)
+add_executable(${TARGET_NAME_EXPERIMENTAL} src/type/TestStaticStructExperimental.cpp)
 
 # properties [dots-unittests-experimental]
 #target_sources(${TARGET_NAME_EXPERIMENTAL}

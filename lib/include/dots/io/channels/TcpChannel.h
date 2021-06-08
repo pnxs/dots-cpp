@@ -4,7 +4,7 @@
 #include <boost/asio.hpp>
 #include <dots/io/Channel.h>
 #include <dots/io/Endpoint.h>
-#include <dots/io/serialization/CborSerializer.h>
+#include <dots/serialization/CborSerializer.h>
 #include <DotsTransportHeader.dots.h>
 
 namespace dots::io
@@ -73,6 +73,6 @@ namespace dots::io
         DotsTransportHeader m_transportHeader;
         std::vector<uint8_t> m_headerBuffer;
         std::vector<uint8_t> m_instanceBuffer;
-        CborSerializer m_serializer;
+        serialization::CborSerializer m_serializer;
     };
 }

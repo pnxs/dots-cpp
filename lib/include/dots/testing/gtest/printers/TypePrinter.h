@@ -1,5 +1,5 @@
 #pragma once
-#include <dots/io/serialization/StringSerializer.h>
+#include <dots/serialization/StringSerializer.h>
 
 namespace dots::type
 {
@@ -20,7 +20,7 @@ namespace dots::type
     template <typename T, std::enable_if_t<details::is_gtest_printable_v<T>, int> = 0>
     std::ostream& operator << (std::ostream& os, T&& value)
     {
-        return os << io::to_string(std::forward<T>(value));
+        return os << to_string(std::forward<T>(value));
     }
 }
 
@@ -29,6 +29,6 @@ namespace dots::types
     template <typename T, std::enable_if_t<type::is_enum_v<std::decay_t<T>>, int> = 0>
     std::ostream& operator << (std::ostream& os, T&& value)
     {
-        return os << io::to_string(std::forward<T>(value));
+        return os << to_string(std::forward<T>(value));
     }
 }

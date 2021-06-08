@@ -4,7 +4,7 @@
 #include <dots/type/Struct.h>
 #include <dots/type/PropertyInitializer.h>
 
-namespace dots::io
+namespace dots
 {
     template<typename T>
     struct Event;
@@ -15,7 +15,7 @@ namespace dots::type
     template <typename Derived>
     struct StaticStruct : Struct
     {
-        using Cbd = dots::io::Event<Derived>;
+        using Cbd = dots::Event<Derived>;
 
         StaticStruct() : Struct(_Descriptor())
         {

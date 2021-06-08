@@ -3,7 +3,7 @@
 #define DOTS_ACKNOWLEDGE_DEPRECATION_OF_DotsTransportHeader_destinationClientId
 #include <dots/io/channels/TcpChannel.h>
 #include <dots/io/Io.h>
-#include <dots/io/Registry.h>
+#include <dots/type/Registry.h>
 #include <DotsClient.dots.h>
 #include <DotsDescriptorRequest.dots.h>
 

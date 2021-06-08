@@ -18,7 +18,7 @@ using namespace dots::types::literals;
 namespace dots
 {
     Server::Server(std::string name, listeners_t listeners, boost::asio::io_context& ioContext/* = dots::io::global_io_context()*/) :
-        m_hostTransceiver{ std::move(name), ioContext, false, [&](const io::Connection& connection){ handleTransition(connection); } },
+        m_hostTransceiver{ std::move(name), ioContext, false, [&](const Connection& connection){ handleTransition(connection); } },
         m_daemonStatus{ DotsDaemonStatus::serverName_i{ m_hostTransceiver.selfName() }, DotsDaemonStatus::startTime_i{ types::timepoint_t::Now() } }
     {
         add_timer(1s, [&](){ updateServerStatus(); }, true);
@@ -50,7 +50,7 @@ namespace dots
         return m_hostTransceiver.ioContext();
     }
 
-    void Server::handleTransition(const io::Connection& connection)
+    void Server::handleTransition(const Connection& connection)
     {
         m_hostTransceiver.publish(DotsClient{
             DotsClient::id_i{ connection.peerId() },
@@ -66,7 +66,7 @@ namespace dots
 
     void Server::cleanUpClients()
     {
-        std::set<io::Connection::id_t> expiredClients;
+        std::set<Connection::id_t> expiredClients;
 
         for (auto& element : m_hostTransceiver.pool().get<DotsClient>())
         {
@@ -93,7 +93,7 @@ namespace dots
             }
         }
 
-        for (io::Connection::id_t id : expiredClients)
+        for (Connection::id_t id : expiredClients)
         {
             m_hostTransceiver.remove(DotsClient{ DotsClient::id_i{ id } });
         }

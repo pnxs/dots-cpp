@@ -4,7 +4,7 @@
 #include <dots/io/Endpoint.h>
 #include <dots/io/auth/Digest.h>
 
-namespace dots::io
+namespace dots
 {
     struct HostTransceiver;
 }

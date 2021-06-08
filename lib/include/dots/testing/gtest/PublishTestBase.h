@@ -4,7 +4,7 @@
 #include <type_traits>
 #include <dots/testing/gtest/gtest.h>
 #include <dots/dots.h>
-#include <dots/io/HostTransceiver.h>
+#include <dots/HostTransceiver.h>
 #include <dots/io/channels/LocalListener.h>
 #include <dots/testing/gtest/expectations/PublishExpectation.h>
 #include <dots/tools/logging.h>
@@ -71,17 +71,17 @@ namespace dots::testing
             m_host.ioContext().restart();
         }
 
-        const io::HostTransceiver& host() const
+        const HostTransceiver& host() const
         {
             return m_host;
         }
 
-        io::HostTransceiver& host()
+        HostTransceiver& host()
         {
             return m_host;
         }
 
-        io::GuestTransceiver& globalGuest()
+        GuestTransceiver& globalGuest()
         {
             if (m_globalGuest == nullptr)
             {
@@ -93,7 +93,7 @@ namespace dots::testing
             return *m_globalGuest;
         }
 
-        io::GuestTransceiver& spoofGuest()
+        GuestTransceiver& spoofGuest()
         {
             if (m_spoofGuest == std::nullopt)
             {
@@ -105,23 +105,23 @@ namespace dots::testing
             return *m_spoofGuest;
         }
 
-        auto mockSubscriptionHandlers() const -> const std::map<io::GuestTransceiver*, mock_subscription_handlers_t>&
+        auto mockSubscriptionHandlers() const -> const std::map<GuestTransceiver*, mock_subscription_handlers_t>&
         {
             return m_mockSubscriptionHandlers;
         }
 
-        auto mockSubscriptionHandlers() -> std::map<io::GuestTransceiver*, mock_subscription_handlers_t>&
+        auto mockSubscriptionHandlers() -> std::map<GuestTransceiver*, mock_subscription_handlers_t>&
         {
             return m_mockSubscriptionHandlers;
         }
 
-        mock_subscription_handler_t& getMockSubscriptionHandler(io::GuestTransceiver& guest, const type::StructDescriptor<>& descriptor)
+        mock_subscription_handler_t& getMockSubscriptionHandler(GuestTransceiver& guest, const type::StructDescriptor<>& descriptor)
         {
             auto [itGuest, emplacedGuest] = m_mockSubscriptionHandlers.try_emplace(&guest);
 
             if (emplacedGuest)
             {
-                io::GuestTransceiver* guestPtr = itGuest->first;
+                GuestTransceiver* guestPtr = itGuest->first;
 
                 if (guestPtr != m_globalGuest && (m_spoofGuest == std::nullopt || &*m_spoofGuest != guestPtr))
                 {
@@ -142,11 +142,11 @@ namespace dots::testing
 
     private:
 
-        io::HostTransceiver m_host;
-        io::GuestTransceiver* m_globalGuest;
-        std::optional<io::GuestTransceiver> m_spoofGuest;
+        HostTransceiver m_host;
+        GuestTransceiver* m_globalGuest;
+        std::optional<GuestTransceiver> m_spoofGuest;
         io::LocalListener& m_localListener;
-        std::map<io::GuestTransceiver*, mock_subscription_handlers_t> m_mockSubscriptionHandlers;
+        std::map<GuestTransceiver*, mock_subscription_handlers_t> m_mockSubscriptionHandlers;
         std::vector<dots::Subscription> m_subscriptions;
     };
 

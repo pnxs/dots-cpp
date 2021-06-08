@@ -22,7 +22,7 @@ namespace dots::testing
         EventEqualMatcher& operator = (const EventEqualMatcher& rhs) = default;
         EventEqualMatcher& operator = (EventEqualMatcher&& rhs) = default;
 
-        bool MatchAndExplain(const io::Event<>& e, std::ostream* os) const
+        bool MatchAndExplain(const Event<>& e, std::ostream* os) const
         {
             const DotsHeader& header = e.header();
             const type::Struct& instance = e.transmitted();
@@ -56,7 +56,7 @@ namespace dots::testing
     };
 
     template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
-    ::testing::Matcher<const io::Event<>&> EventEqual(T instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false)
+    ::testing::Matcher<const Event<>&> EventEqual(T instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false)
     {
         types::property_set_t includedProperties_ = includedProperties == std::nullopt ? instance._validProperties() : *includedProperties;
         return EventEqualMatcher<T>(std::move(instance), includedProperties_, remove);
