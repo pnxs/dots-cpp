@@ -16,7 +16,7 @@ namespace dots
     {
         if (m_hostConnection != std::nullopt)
         {
-            throw std::logic_error{ "already connected" };
+            throw std::logic_error{ "attempt to open connection while already connected" };
         }
 
         m_preloadPublishTypes = std::move(preloadPublishTypes);
@@ -42,7 +42,7 @@ namespace dots
 
         if (descriptor.substructOnly())
         {
-            throw std::logic_error{ "attempt to publish substruct-only type: " + descriptor.name() };
+            throw std::logic_error{ "attempt to publish substruct-only type '" + descriptor.name() + "'" };
         }
 
         if (includedProperties == std::nullopt)
@@ -52,7 +52,7 @@ namespace dots
 
         if (!(descriptor.keyProperties() <= *includedProperties))
         {
-            throw std::runtime_error("tried to publish instance with invalid key (not all key-fields are set) what=" + includedProperties->toString() + " tdkeys=" + descriptor.keyProperties().toString());
+            throw std::runtime_error("attempt to publish instance with missing key properties '" + (descriptor.keyProperties() - *includedProperties).toString() + "'");
         }
 
         if (m_hostConnection == std::nullopt)

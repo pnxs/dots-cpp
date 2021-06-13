@@ -468,7 +468,7 @@ namespace dots
         }
         catch (const std::exception& e)
         {
-            throw std::logic_error{ std::string{ "exception in transition handler for connection " + peerDescription() + " -> " } + e.what() };
+            throw std::logic_error{ std::string{ "error in transition handler for connection " + peerDescription() + " -> " } + e.what() };
         }
     }
 

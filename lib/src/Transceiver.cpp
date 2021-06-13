@@ -90,7 +90,7 @@ namespace dots
     {
         if (descriptor.substructOnly())
         {
-            throw std::logic_error{ "attempt to subscribe to substruct-only type: " + descriptor.name() };
+            throw std::logic_error{ "attempt to subscribe to substruct-only type '" + descriptor.name() + "'" };
         }
 
         joinGroup(descriptor.name());
@@ -103,7 +103,7 @@ namespace dots
     {
         if (descriptor.substructOnly())
         {
-            throw std::logic_error{ "attempt to subscribe to substruct-only type: " + descriptor.name() };
+            throw std::logic_error{ "attempt to subscribe to substruct-only type '" + descriptor.name() + "'" };
         }
 
         joinGroup(descriptor.name());
@@ -156,7 +156,7 @@ namespace dots
             }
             catch (const std::exception& e)
             {
-                LOG_ERROR_S("error in new type handler -> " << e.what());
+                LOG_ERROR_S("error in new type handler for type '" << descriptor.name() << "' -> " << e.what());
             }
 
             m_currentlyDispatchingId = std::nullopt;
