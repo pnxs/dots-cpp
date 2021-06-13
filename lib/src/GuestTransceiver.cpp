@@ -55,8 +55,6 @@ namespace dots
             throw std::runtime_error("tried to publish instance with invalid key (not all key-fields are set) what=" + includedProperties->toString() + " tdkeys=" + descriptor.keyProperties().toString());
         }
 
-        LOG_DATA_S("data:" << to_ascii(&descriptor, &instance, *includedProperties));
-
         if (m_hostConnection == std::nullopt)
         {
             throw std::runtime_error{ "attempt to publish on closed connection" };
@@ -76,7 +74,6 @@ namespace dots
     {
         if (m_joinedGroups.count(std::string(name)) == 0)
         {
-            LOG_DEBUG_S("send DotsMember (join " << name << ")");
             publish(DotsMember{
                 DotsMember::groupName_i{name},
                 DotsMember::event_i{DotsMemberEvent::join}
@@ -89,7 +86,6 @@ namespace dots
     {
         if (m_joinedGroups.count(std::string(name)))
         {
-            LOG_DEBUG_S("send DotsMember (leave " << name << ")");
             publish(DotsMember{
                 DotsMember::groupName_i{name},
                 DotsMember::event_i{DotsMemberEvent::leave}

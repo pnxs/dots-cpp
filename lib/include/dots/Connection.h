@@ -5,6 +5,7 @@
 #include <optional>
 #include <dots/io/Channel.h>
 #include <dots/io/auth/AuthManager.h>
+#include <dots/serialization/StringSerializer.h>
 #include <DotsConnectionState.dots.h>
 #include <DotsHeader.dots.h>
 #include <DotsMsgHello.dots.h>
@@ -46,6 +47,8 @@ namespace dots
         const std::string& peerName() const;
         bool connected() const;
 
+        std::string peerDescription() const;
+
         void asyncReceive(type::Registry& registry, io::AuthManager* authManager, const std::string_view& name, receive_handler_t&& receiveHandler, transition_handler_t&& transitionHandler);
         void transmit(const type::Struct& instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false);
         void transmit(const DotsHeader& header, const type::Struct& instance);
@@ -57,6 +60,8 @@ namespace dots
     private:
 
         using system_type_t = std::tuple<const type::StructDescriptor<>*, types::property_set_t, std::function<void(const type::Struct&)>>;
+
+        static constexpr serialization::StringSerializerOptions StringOptions = { serialization::StringSerializerOptions::MultiLine };
 
         bool handleReceive(io::Transmission transmission);
         void handleClose(const std::exception_ptr& e);

@@ -69,8 +69,6 @@ namespace dots
 
         for (Connection* destinationConnection : m_groups[transmission.header().typeName])
         {
-            LOG_DEBUG_S("deliver message group:" << this << "(" << *transmission.header().typeName << ")");
-
             if (destinationConnection->state() != DotsConnectionState::closed)
             {
                 try
@@ -289,8 +287,6 @@ namespace dots
         const types::vector_t<types::string_t>& whiteList = descriptorRequest.whitelist.isValid() ? *descriptorRequest.whitelist : types::vector_t<types::string_t>{};
         const types::vector_t<types::string_t>& blacklist = descriptorRequest.blacklist.isValid() ? *descriptorRequest.blacklist : types::vector_t<types::string_t>{};
 
-        LOG_INFO_S("received DescriptorRequest from " << connection.peerName() << "(" << connection.peerId() << ")");
-
         registry().forEach<type::StructDescriptor<>>([&](const auto& descriptor) 
         {
             if (descriptor.internal())
@@ -308,8 +304,6 @@ namespace dots
                 return;
             }
 
-            LOG_DEBUG_S("sending structDescriptor for type '" << descriptor.name() << "' to " << connection.peerId());
-
             connection.transmit(descriptor);
         });
 
@@ -325,7 +319,6 @@ namespace dots
         {
             if (std::find(typeNames.begin(), typeNames.end(), container.descriptor().name()) != typeNames.end())
             {
-                LOG_INFO_S("clear container '" << container.descriptor().name() << "' (" << container.size() << " elements)");
                 std::vector<const type::Struct*> removeInstances;
 
                 for (const auto& [instance, cloneInformation] : container)
@@ -354,10 +347,6 @@ namespace dots
 
     void HostTransceiver::transmitContainer(Connection& connection, const Container<>& container)
     {
-        const auto& td = container.descriptor();
-
-        LOG_DEBUG_S("send cache for " << td.name() << " size=" << container.size());
-
         if (container.empty())
         {
             return;
@@ -371,21 +360,6 @@ namespace dots
 
         for (const auto& [instance, cloneInfo] : container)
         {
-            const char* lop = "";
-            switch (cloneInfo.lastOperation)
-            {
-                case DotsMt::create: lop = "C";
-                    break;
-                case DotsMt::update: lop = "U";
-                    break;
-                case DotsMt::remove: lop = "R";
-                    break;
-            }
-
-            LOG_DATA_S("clone-info: lastOp=" << lop << ", lastUpdateFrom=" << cloneInfo.lastUpdateFrom
-                << ", created=" << cloneInfo.created->toString() << ", creator=" << cloneInfo.createdFrom
-                << ", modified=" << cloneInfo.modified->toString() << ", localUpdateTime=" << cloneInfo.localUpdateTime->toString());
-
             header.sentTime = *cloneInfo.modified;
             header.serverSentTime = types::timepoint_t::Now();
             header.attributes = instance->_validProperties();
