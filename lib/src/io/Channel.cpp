@@ -119,14 +119,12 @@ namespace dots::io
         {
             importDependencies(transmission.instance());
 
+            // note: if the receive handler yields 'false', the channel must no
+            // longer be accessed afterwards, because it might have already been
+            // deleted by the callee prior to returning
             if (m_receiveHandler(std::move(transmission)))
             {
                 asyncReceiveImpl();
-            }
-            else
-            {
-                m_receiveHandler = nullptr;
-                m_errorHandler = nullptr;
             }
         }
         catch (...)

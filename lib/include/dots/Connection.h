@@ -27,7 +27,7 @@ namespace dots
         static constexpr id_t HostId = 1;
         static constexpr id_t FirstGuestId = 2;
 
-        using receive_handler_t = std::function<void(Connection&, io::Transmission)>;
+        using receive_handler_t = std::function<bool(Connection&, io::Transmission)>;
         using transition_handler_t = std::function<void(Connection&, const std::exception_ptr&)>;
 
         Connection(io::channel_ptr_t channel, bool host, std::optional<std::string> authSecret = std::nullopt);
@@ -45,7 +45,9 @@ namespace dots
         id_t selfId() const;
         id_t peerId() const;
         const std::string& peerName() const;
+
         bool connected() const;
+        bool closed() const;
 
         std::string peerDescription() const;
         std::string endpointDescription() const;

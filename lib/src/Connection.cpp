@@ -94,6 +94,11 @@ namespace dots
         return m_connectionState == DotsConnectionState::connected;
     }
 
+    bool Connection::closed() const
+    {
+        return m_connectionState == DotsConnectionState::closed;
+    }
+
     std::string Connection::peerDescription() const
     {
         return (m_selfId == HostId ? "guest '" : "host '") + m_peerName + " [" + std::to_string(m_peerId) + "]'";
@@ -246,6 +251,7 @@ namespace dots
                 instance._assertHasProperties(expectedProperties); // note: subsets are allowed for backwards compatibility with old implementation
 
                 handler(instance);
+                return true;
             }
         }
         else
@@ -266,7 +272,7 @@ namespace dots
                     }
 
                     header.isFromMyself = header.sender == m_selfId;
-                    m_receiveHandler(*this, std::move(transmission));
+                    return m_receiveHandler(*this, std::move(transmission));
                 }
                 else
                 {
@@ -278,13 +284,13 @@ namespace dots
                     if (header.sender.isValid())
                     {
                         header.isFromMyself = header.sender == m_selfId;
-                        m_receiveHandler(*this, std::move(transmission));
+                        return m_receiveHandler(*this, std::move(transmission));
                     }
                     else
                     {
                         header.sender(m_peerId);
                         header.isFromMyself = false;
-                        m_receiveHandler(*this, std::move(transmission));
+                        return m_receiveHandler(*this, std::move(transmission));
                     }
                 }
             }
@@ -293,8 +299,6 @@ namespace dots
                 throw std::logic_error{ "received instance of non-system type " + instance._descriptor().name() + " while not in early_subscribe or connected state " + to_string(m_connectionState) };
             }
         }
-
-        return true;
     }
 
     void Connection::handleClose(const std::exception_ptr& e)

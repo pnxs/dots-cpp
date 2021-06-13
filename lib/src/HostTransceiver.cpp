@@ -49,7 +49,7 @@ namespace dots
 
         io::Transmission transmission{ std::move(header), instance };
         dispatcher().dispatch(transmission);
-        transmit(nullptr, std::move(transmission));
+        transmit(std::move(transmission));
     }
 
     void HostTransceiver::joinGroup(const std::string_view&/* name*/)
@@ -62,7 +62,7 @@ namespace dots
         /* do nothing */
     }
 
-    void HostTransceiver::transmit(Connection* origin, const io::Transmission& transmission)
+    void HostTransceiver::transmit(const io::Transmission& transmission)
     {
         using dirty_connection_t = std::pair<Connection*, std::exception_ptr>;
         std::vector<dirty_connection_t> dirtyConnections;
@@ -84,23 +84,9 @@ namespace dots
 
         if (!dirtyConnections.empty())
         {
-            std::exception_ptr originError;
-
             for (const auto& [connection, e] : dirtyConnections)
             {
-                if (connection == origin)
-                {
-                    originError = e;
-                }
-                else
-                {
-                    connection->handleError(e);
-                }
-            }
-
-            if (originError != nullptr)
-            {
-                std::rethrow_exception(originError);
+                connection->handleError(e);
             }
         }
     }
@@ -109,7 +95,7 @@ namespace dots
     {
         auto connection = std::make_shared<Connection>(std::move(channel), true);
         connection->asyncReceive(registry(), m_authManager.get(), selfName(),
-            [this](Connection& connection, io::Transmission transmission) { handleTransmission(connection, std::move(transmission)); },
+            [this](Connection& connection, io::Transmission transmission) { return handleTransmission(connection, std::move(transmission)); },
             [this](Connection& connection, const std::exception_ptr& e) { handleTransition(connection, e); }
         );
         m_guestConnections.emplace(connection.get(), connection);
@@ -131,8 +117,14 @@ namespace dots
         m_listeners.erase(&listener);
     }
 
-    void HostTransceiver::handleTransmission(Connection& connection, io::Transmission transmission)
+    bool HostTransceiver::handleTransmission(Connection& connection, io::Transmission transmission)
     {
+        // ensure that the connection is alive until the handler returns,
+        // because it might get removed during processing of the transmission
+        // if it gets dirty
+        connection_ptr_t connectionPtr = m_guestConnections.find(&connection)->second;
+        (void)connectionPtr;
+
         const auto& [header, instance] = transmission;
 
         if (instance->_descriptor().internal())
@@ -140,12 +132,12 @@ namespace dots
             if (auto* member = instance.as<DotsMember>())
             {
                 handleMemberMessage(connection, *member);
-                return;
+                return !connection.closed();
             }
             else if (auto* descriptorRequest = instance.as<DotsDescriptorRequest>())
             {
                 handleDescriptorRequest(connection, *descriptorRequest);
-                return;
+                return !connection.closed();
             }
             else if (auto* clearCache = instance.as<DotsClearCache>())
             {
@@ -154,12 +146,14 @@ namespace dots
             else if (auto* echoRequest = instance.as<DotsEcho>())
             {
                 handleEchoRequest(connection, *echoRequest);
-                return;
+                return !connection.closed();
             }
         }
 
         dispatcher().dispatch(transmission);
-        transmit(&connection, std::move(transmission));
+        transmit(std::move(transmission));
+
+        return !connection.closed();
     }
 
     void HostTransceiver::handleTransition(Connection& connection, const std::exception_ptr&/* e*/) noexcept

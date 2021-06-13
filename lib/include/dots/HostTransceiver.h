@@ -52,12 +52,12 @@ namespace dots
         void joinGroup(const std::string_view& name) override;
         void leaveGroup(const std::string_view& name) override;
 
-        void transmit(Connection* origin, const io::Transmission& transmission);
+        void transmit(const io::Transmission& transmission);
 
         bool handleListenAccept(io::Listener& listener, io::channel_ptr_t channel);
         void handleListenError(io::Listener& listener, const std::exception_ptr& e);
 
-        void handleTransmission(Connection& connection, io::Transmission transmission);
+        bool handleTransmission(Connection& connection, io::Transmission transmission);
         void handleTransition(Connection& connection, const std::exception_ptr& e) noexcept;
 
         void handleMemberMessage(Connection& connection, const DotsMember& member);
