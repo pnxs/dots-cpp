@@ -48,6 +48,7 @@ namespace dots
         bool connected() const;
 
         std::string peerDescription() const;
+        std::string endpointDescription() const;
 
         void asyncReceive(type::Registry& registry, io::AuthManager* authManager, const std::string_view& name, receive_handler_t&& receiveHandler, transition_handler_t&& transitionHandler);
         void transmit(const type::Struct& instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false);

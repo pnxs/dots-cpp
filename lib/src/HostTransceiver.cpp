@@ -113,7 +113,6 @@ namespace dots
             [this](Connection& connection, const std::exception_ptr& e) { handleTransition(connection, e); }
         );
         m_guestConnections.emplace(connection.get(), connection);
-        LOG_DEBUG_S("guest '" << connection->peerName() << "' emplaced")
 
         return true;
     }
@@ -163,7 +162,7 @@ namespace dots
         transmit(&connection, std::move(transmission));
     }
 
-    void HostTransceiver::handleTransition(Connection& connection, const std::exception_ptr& e) noexcept
+    void HostTransceiver::handleTransition(Connection& connection, const std::exception_ptr&/* e*/) noexcept
     {
         if (m_transitionHandler)
         {
@@ -173,34 +172,14 @@ namespace dots
             }
             catch (const std::exception& e)
             {
-                LOG_ERROR_S("error in connection transition handler -> " << e.what());
+                LOG_ERROR_S("error in transition handler for " << connection.peerDescription() << " -> " << e.what());
             }
         }
 
         try
         {
-            if (connection.state() == DotsConnectionState::connected)
+            if (connection.state() == DotsConnectionState::closed)
             {
-                LOG_NOTICE_S("guest '" << connection.peerName() << "' opened connection at '" << connection.localEndpoint().uriStr() << "' from '" << connection.remoteEndpoint().uriStr() << "'");
-            }
-            else if (connection.state() == DotsConnectionState::closed)
-            {
-                if (e == nullptr)
-                {
-                    LOG_NOTICE_S("guest '" << connection.peerName() << "' gracefully closed connection");
-                }
-                else
-                {
-                    try
-                    {
-                        std::rethrow_exception(e);
-                    }
-                    catch (const std::exception& e)
-                    {
-                        LOG_ERROR_S("guest '" << connection.peerName() << "' closed connection with error -> " << e.what());
-                    }
-                }
-
                 for (auto& [groupName, group] : m_groups)
                 {
                     group.erase(&connection);
@@ -227,13 +206,12 @@ namespace dots
                     remove(*instance);
                 }
 
-                LOG_DEBUG_S("guest '" << connection.peerName() << "' erased");
                 m_guestConnections.erase(&connection);
             }
         }
         catch (const std::exception& e)
         {
-            LOG_ERROR_S("error while handling connection transition -> peerId: " << connection.peerId() << ", name: " << connection.peerName() << " -> " << e.what());
+            LOG_ERROR_S("error while handling transition for connection " << connection.peerDescription() << " -> " << e.what());
         }
     }
 

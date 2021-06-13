@@ -100,7 +100,7 @@ namespace dots
         return true;
     }
 
-    void GuestTransceiver::handleTransition(Connection& connection, const std::exception_ptr& e) noexcept
+    void GuestTransceiver::handleTransition(Connection& connection, const std::exception_ptr&/* e*/) noexcept
     {
         try
         {
@@ -123,28 +123,15 @@ namespace dots
             }
             else if (connection.state() == DotsConnectionState::closed)
             {
-                if (e != nullptr)
-                {
-                    try
-                    {
-                        std::rethrow_exception(e);
-                    }
-                    catch (const std::exception& e)
-                    {
-                        LOG_ERROR_S("connection error: " << e.what());
-                    }
-                }
-
                 if (m_hostConnection != std::nullopt)
                 {
-                    LOG_INFO_S("connection closed -> selfId: " << connection.selfId() << ", name: " << connection.peerName());
                     m_hostConnection = std::nullopt;
                 }
             }
         }
         catch (const std::exception& e)
         {
-            LOG_ERROR_S("error while handling connection transition -> selfId: " << connection.selfId() << ", name: " << connection.peerName() << " -> " << e.what());
+            LOG_ERROR_S("error while handling transition for connection " << connection.peerDescription() << " -> " << e.what());
             m_hostConnection = std::nullopt;
         }
     }

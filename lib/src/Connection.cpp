@@ -99,6 +99,11 @@ namespace dots
         return (m_selfId == HostId ? "guest '" : "host '") + m_peerName + " [" + std::to_string(m_peerId) + "]'";
     }
 
+    std::string Connection::endpointDescription() const
+    {
+        return "from '" + std::string{ m_channel->localEndpoint().uriStr() } + "' at '" + std::string{ m_channel->remoteEndpoint().uriStr() } + "'";
+    }
+
     void Connection::asyncReceive(type::Registry& registry, io::AuthManager* authManager, const std::string_view& name, receive_handler_t&& receiveHandler, transition_handler_t&& transitionHandler)
     {
         if (m_connectionState != DotsConnectionState::suspended)
@@ -417,8 +422,45 @@ namespace dots
 
     void Connection::setConnectionState(DotsConnectionState state, const std::exception_ptr& e/* = nullptr*/)
     {
-        LOG_DEBUG_S("change connection state to " << to_string(state));
         m_connectionState = state;
+
+        try
+        {
+            if (m_connectionState == DotsConnectionState::connecting)
+            {
+                LOG_DEBUG_S(peerDescription() << " is establishing connection " << endpointDescription());
+            }
+            else if (m_connectionState == DotsConnectionState::early_subscribe)
+            {
+                LOG_DEBUG_S(peerDescription() << " is preloading " << endpointDescription());
+            }
+            else if (m_connectionState == DotsConnectionState::connected)
+            {
+                LOG_NOTICE_S(peerDescription() << " established connection " << endpointDescription());
+            }
+            else if (m_connectionState == DotsConnectionState::closed)
+            {
+                if (e == nullptr)
+                {
+                    LOG_NOTICE_S(peerDescription() << " gracefully closed connection");
+                }
+                else
+                {
+                    try
+                    {
+                        std::rethrow_exception(e);
+                    }
+                    catch (const std::exception& e)
+                    {
+                        LOG_ERROR_S(peerDescription() << " closed connection with error -> " << e.what());
+                    }
+                }
+            }
+        }
+        catch (const std::exception& e)
+        {
+            LOG_ERROR_S("error while handling transition for connection " << peerDescription() << " -> " << e.what());
+        }
 
         try
         {
@@ -426,7 +468,7 @@ namespace dots
         }
         catch (const std::exception& e)
         {
-            throw std::logic_error{ std::string{ "exception in connection transition handler -> " } + e.what() };
+            throw std::logic_error{ std::string{ "exception in transition handler for connection " + peerDescription() + " -> " } + e.what() };
         }
     }
 
