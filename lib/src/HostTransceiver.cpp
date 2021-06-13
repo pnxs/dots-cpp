@@ -222,24 +222,24 @@ namespace dots
 
         if (member.event == DotsMemberEvent::kill)
         {
-            LOG_WARN_S("guest '" << connection.peerName() << "' requested unsupported kill event");
+            LOG_WARN_S(connection.peerDescription() << " requested unsupported kill event");
         }
         else if (member.event == DotsMemberEvent::leave)
         {
             if (size_t removed = m_groups[groupName].erase(&connection); removed == 0)
             {
-                LOG_WARN_S("guest '" << connection.peerName() << "' is not a member of group '" << groupName << "'");
+                LOG_WARN_S(connection.peerDescription() << " is not a member of group '" << groupName << "'");
             }
         }
         else if (member.event == DotsMemberEvent::join)
         {
             if (auto [it, emplaced] = m_groups[groupName].emplace(&connection); emplaced)
             {
-                LOG_INFO_S("guest '" << connection.peerName() << "' is now a member of group '" << groupName << "'");
+                LOG_INFO_S(connection.peerDescription() << " is now a member of group '" << groupName << "'");
             }
             else
             {
-                LOG_WARN_S("guest '" << connection.peerName() << "' is already member of group '" << groupName << "'");
+                LOG_WARN_S(connection.peerDescription() << " is already member of group '" << groupName << "'");
             }
 
             // note: transmitting the container content even when the guest has already joined the group is currently
