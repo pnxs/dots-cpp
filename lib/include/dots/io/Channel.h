@@ -67,6 +67,7 @@ namespace dots::io
         void verifyInitialized() const;
 
         std::set<std::string> m_sharedTypes;
+        bool m_asyncReceiving;
         bool m_initialized;
         type::Registry* m_registry;
         std::optional<Endpoint> m_localEndpoint;

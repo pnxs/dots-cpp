@@ -7,6 +7,7 @@ namespace dots::io
 {
     Channel::Channel(key_t key) :
         shared_ptr_only(key),
+        m_asyncReceiving(false),
         m_initialized(false),
         m_registry(nullptr)
     {
@@ -46,6 +47,11 @@ namespace dots::io
 
     void Channel::asyncReceive(receive_handler_t&& receiveHandler, error_handler_t&& errorHandler)
     {
+        if (m_asyncReceiving)
+        {
+            throw std::logic_error{ "only one async receive can be active at any given time" };
+        }
+
         verifyInitialized();
 
         if (receiveHandler == nullptr || errorHandler == nullptr)
@@ -55,6 +61,7 @@ namespace dots::io
 
         m_receiveHandler = std::move(receiveHandler);
         m_errorHandler = std::move(errorHandler);
+        m_asyncReceiving = true;
         asyncReceiveImpl();
     }
 
@@ -137,6 +144,7 @@ namespace dots::io
     {
         try
         {
+            m_asyncReceiving = false;
             m_errorHandler(e);
         }
         catch (const std::exception& e)
