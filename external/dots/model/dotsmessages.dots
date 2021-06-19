@@ -10,7 +10,7 @@ struct DotsHeader [internal,cached=false] {
     7: timepoint serverSentTime; // absolute time point when the server sends the this update.
     3: property_set attributes; // value properties that are contained in the payload.
     5: uint32 sender; // originating sender of this update.
-    8: uint32 fromCache; // number of objects that will be sent from cache. Not-set or 0 means "not from cache".
+    8: uint32 fromCache; // number of remaining objects that will be sent from cache. Not-set means "not from cache".
     4: bool removeObj; // true of the contained object should be removed.
     6: bool isFromMyself; // is set to true in the client's callback when the sender-name matches the specific client name.
 }
