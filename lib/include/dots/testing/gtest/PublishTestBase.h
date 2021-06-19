@@ -38,9 +38,6 @@ namespace dots::testing
 
         ~PublishTestBase()
         {
-            ioContext().restart();
-            processEvents();
-
             if (m_globalGuest != nullptr)
             {
                 transceiver("dots-test-guest", true);
