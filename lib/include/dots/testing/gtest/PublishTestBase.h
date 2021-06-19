@@ -131,7 +131,18 @@ namespace dots::testing
 
             if (emplacedSubscriptionHandler)
             {
-                m_subscriptions.emplace_back(m_host.subscribe(descriptor, itSubscriptionHandler->second.AsStdFunction()));
+                m_subscriptions.emplace_back(m_host.subscribe(descriptor, [this, mockHandler = &itSubscriptionHandler->second](const io::Transmission& transmission)
+                {
+                    // delay invocation of the mock handler, so that a potential self
+                    // update for the transmission is already queued for execution. this
+                    // ensures that if a user has specified a reactive action, they are
+                    // able to post the creation of a depending stimulus or expectation
+                    // "behind" the self update.
+                    boost::asio::post(ioContext(), [mockHandler, transmission = io::Transmission{ transmission.header(), transmission.instance() }]
+                    {
+                        (*mockHandler).AsStdFunction()(transmission);
+                    });
+                }));
             }
 
             return itSubscriptionHandler->second;
