@@ -41,6 +41,7 @@ target_sources(${TARGET_NAME}
         src/tools/TestIpNetwork.cpp
         src/io/auth/TestLegacyAuthManager.cpp
         src/TestHostTransceiver.cpp
+        src/TestConnection.cpp
 )
 target_include_directories(${TARGET_NAME}
     PRIVATE
