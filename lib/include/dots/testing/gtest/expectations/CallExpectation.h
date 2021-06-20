@@ -131,17 +131,12 @@ namespace dots::testing::details
     }
 }
 
-#define DOTS_EXPECT_CONSECUTIVE_CALL_SEQUENCE(expectCall_, expectCallSignature_, ...)                                                          \
-[&](auto&&... args) -> auto&                                                                                                                   \
-{                                                                                                                                              \
-    auto expect_call = [&](auto&& arg) -> auto&                                                                                                \
-    {                                                                                                                                          \
-        return expectCall_(std::forward<decltype(arg)>(arg));                                                                                  \
-    };                                                                                                                                         \
-                                                                                                                                               \
-    return dots::testing::details::expect_consecutive_call_sequence<expectCallSignature_>(expect_call, std::forward<decltype(args)>(args)...); \
-}                                                                                                                                              \
-(__VA_ARGS__)
+#define DOTS_EXPECT_CONSECUTIVE_CALL_SEQUENCE(expectCall_, expectCallSignature_, ...)                                                         \
+[&](auto expectCall, auto&&... args) -> auto&                                                                                                 \
+{                                                                                                                                             \
+    return dots::testing::details::expect_consecutive_call_sequence<expectCallSignature_>(expectCall, std::forward<decltype(args)>(args)...); \
+}                                                                                                                                             \
+(expectCall_, __VA_ARGS__)
 
 #define DOTS_EXPECT_NAMED_CALL_SEQUENCE(expectCall_, expectCallSignature_, sequence_, ...)                                               \
 [&](const ::testing::Sequence& sequence, auto&&... args) -> auto&                                                                        \
