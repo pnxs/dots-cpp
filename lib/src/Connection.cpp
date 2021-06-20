@@ -14,6 +14,21 @@
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
+#define LOG_TRANSMISSION(prefix_, header_, instance_)                                                                                                               \
+{                                                                                                                                                                   \
+    if ((instance_)._descriptor().internal())                                                                                                                       \
+    {                                                                                                                                                               \
+        LOG_DATA_S(prefix_ << peerDescription() << "\n" << dots::to_string(header_, StringOptions) << ",\n" << dots::to_string(instance_, StringOptions) << "\n");  \
+    }                                                                                                                                                               \
+    else                                                                                                                                                            \
+    {                                                                                                                                                               \
+        LOG_DEBUG_S(prefix_ << peerDescription() << "\n" << dots::to_string(header_, StringOptions) << ",\n" << dots::to_string(instance_, StringOptions) << "\n"); \
+    }                                                                                                                                                               \
+}
+
+#define LOG_TRANSMIT_TRANSMISSION(header_, instance_) LOG_TRANSMISSION("TRANSMIT to ", header_, instance_)
+#define LOG_RECEIVE_TRANSMISSION(header_, instance_) LOG_TRANSMISSION("RECEIVE from ", header_, instance_)
+
 namespace dots
 {
     Connection::Connection(io::channel_ptr_t channel, bool host, std::optional<std::string> authSecret/* = std::nullopt*/) :
@@ -77,6 +92,21 @@ namespace dots
     bool Connection::connected() const
     {
         return m_connectionState == DotsConnectionState::connected;
+    }
+
+    bool Connection::closed() const
+    {
+        return m_connectionState == DotsConnectionState::closed;
+    }
+
+    std::string Connection::peerDescription() const
+    {
+        return (m_selfId == HostId ? "guest '" : "host '") + m_peerName + " [" + std::to_string(m_peerId) + "]'";
+    }
+
+    std::string Connection::endpointDescription() const
+    {
+        return "from '" + std::string{ m_channel->localEndpoint().uriStr() } + "' at '" + std::string{ m_channel->remoteEndpoint().uriStr() } + "'";
     }
 
     void Connection::asyncReceive(type::Registry& registry, io::AuthManager* authManager, const std::string_view& name, receive_handler_t&& receiveHandler, transition_handler_t&& transitionHandler)
@@ -153,11 +183,13 @@ namespace dots
 
     void Connection::transmit(const DotsHeader& header, const type::Struct& instance)
     {
+        LOG_TRANSMIT_TRANSMISSION(header, instance);
         m_channel->transmit(header, instance);
     }
 
     void Connection::transmit(const io::Transmission& transmission)
     {
+        LOG_TRANSMIT_TRANSMISSION(transmission.header(), *transmission.instance());
         m_channel->transmit(transmission);
     }
 
@@ -196,6 +228,8 @@ namespace dots
 
     bool Connection::handleReceive(io::Transmission transmission)
     {
+        LOG_RECEIVE_TRANSMISSION(transmission.header(), *transmission.instance());
+
         if (m_connectionState == DotsConnectionState::closed)
         {
             return false;
@@ -217,6 +251,7 @@ namespace dots
                 instance._assertHasProperties(expectedProperties); // note: subsets are allowed for backwards compatibility with old implementation
 
                 handler(instance);
+                return true;
             }
         }
         else
@@ -237,7 +272,7 @@ namespace dots
                     }
 
                     header.isFromMyself = header.sender == m_selfId;
-                    m_receiveHandler(*this, std::move(transmission));
+                    return m_receiveHandler(*this, std::move(transmission));
                 }
                 else
                 {
@@ -249,13 +284,13 @@ namespace dots
                     if (header.sender.isValid())
                     {
                         header.isFromMyself = header.sender == m_selfId;
-                        m_receiveHandler(*this, std::move(transmission));
+                        return m_receiveHandler(*this, std::move(transmission));
                     }
                     else
                     {
                         header.sender(m_peerId);
                         header.isFromMyself = false;
-                        m_receiveHandler(*this, std::move(transmission));
+                        return m_receiveHandler(*this, std::move(transmission));
                     }
                 }
             }
@@ -264,8 +299,6 @@ namespace dots
                 throw std::logic_error{ "received instance of non-system type " + instance._descriptor().name() + " while not in early_subscribe or connected state " + to_string(m_connectionState) };
             }
         }
-
-        return true;
     }
 
     void Connection::handleClose(const std::exception_ptr& e)
@@ -279,7 +312,6 @@ namespace dots
     void Connection::handleHello(const DotsMsgHello& hello)
     {
         m_peerName = hello.serverName;
-        LOG_DEBUG_S("received hello from '" << *hello.serverName << "' authChallenge=" << hello.authChallenge);
 
         DotsMsgConnect connect{
             DotsMsgConnect::clientName_i{ m_selfName },
@@ -305,7 +337,6 @@ namespace dots
     void Connection::handleAuthorizationRequest(const DotsMsgConnectResponse& connectResponse)
     {
         m_selfId = connectResponse.clientId;
-        LOG_DEBUG_S("connectResponse: serverName=" << m_peerName << " accepted=" << *connectResponse.accepted);
 
         if (connectResponse.preload == true)
         {
@@ -338,8 +369,6 @@ namespace dots
 
             throw std::runtime_error{ "invalid authorization information" };
         }
-
-        LOG_INFO_S("authorized");
 
         m_peerName = connect.clientName;
 
@@ -397,8 +426,45 @@ namespace dots
 
     void Connection::setConnectionState(DotsConnectionState state, const std::exception_ptr& e/* = nullptr*/)
     {
-        LOG_DEBUG_S("change connection state to " << to_string(state));
         m_connectionState = state;
+
+        try
+        {
+            if (m_connectionState == DotsConnectionState::connecting)
+            {
+                LOG_DEBUG_S(peerDescription() << " is establishing connection " << endpointDescription());
+            }
+            else if (m_connectionState == DotsConnectionState::early_subscribe)
+            {
+                LOG_DEBUG_S(peerDescription() << " is preloading " << endpointDescription());
+            }
+            else if (m_connectionState == DotsConnectionState::connected)
+            {
+                LOG_NOTICE_S(peerDescription() << " established connection " << endpointDescription());
+            }
+            else if (m_connectionState == DotsConnectionState::closed)
+            {
+                if (e == nullptr)
+                {
+                    LOG_NOTICE_S(peerDescription() << " gracefully closed connection");
+                }
+                else
+                {
+                    try
+                    {
+                        std::rethrow_exception(e);
+                    }
+                    catch (const std::exception& e)
+                    {
+                        LOG_ERROR_S(peerDescription() << " closed connection with error -> " << e.what());
+                    }
+                }
+            }
+        }
+        catch (const std::exception& e)
+        {
+            LOG_ERROR_S("error while handling transition for connection " << peerDescription() << " -> " << e.what());
+        }
 
         try
         {
@@ -406,7 +472,7 @@ namespace dots
         }
         catch (const std::exception& e)
         {
-            throw std::logic_error{ std::string{ "exception in connection transition handler -> " } + e.what() };
+            throw std::logic_error{ std::string{ "error in transition handler for connection " + peerDescription() + " -> " } + e.what() };
         }
     }
 

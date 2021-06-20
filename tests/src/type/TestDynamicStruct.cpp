@@ -462,6 +462,8 @@ TEST_F(TestDynamicStruct, constructViaDescriptor_Default)
     EXPECT_FALSE(sutThis._get("stringProperty").isValid());
     EXPECT_FALSE(sutThis._get("boolProperty").isValid());
     EXPECT_FALSE(sutThis._get("floatVectorProperty").isValid());
+
+    m_testDynamicStructDescriptor->destruct(sutThis);
 }
 
 TEST_F(TestDynamicStruct, constructViaDescriptor_Copy)
@@ -484,6 +486,8 @@ TEST_F(TestDynamicStruct, constructViaDescriptor_Copy)
     EXPECT_TRUE(sutOther._get("stringProperty").isValid());
     EXPECT_FALSE(sutOther._get("boolProperty").isValid());
     EXPECT_TRUE(sutOther._get("floatVectorProperty").isValid());
+
+    m_testDynamicStructDescriptor->destruct(sutThis);
 }
 
 TEST_F(TestDynamicStruct, constructViaDescriptor_Move)
@@ -506,6 +510,8 @@ TEST_F(TestDynamicStruct, constructViaDescriptor_Move)
     EXPECT_FALSE(sutOther._get("stringProperty").isValid());
     EXPECT_FALSE(sutOther._get("boolProperty").isValid());
     EXPECT_FALSE(sutOther._get("floatVectorProperty").isValid());
+
+    m_testDynamicStructDescriptor->destruct(sutThis);
 }
 
 TEST_F(TestDynamicStruct, constructInPlaceViaDescriptor_Default)
@@ -518,6 +524,8 @@ TEST_F(TestDynamicStruct, constructInPlaceViaDescriptor_Default)
     EXPECT_FALSE(sutThis._get("stringProperty").isValid());
     EXPECT_FALSE(sutThis._get("boolProperty").isValid());
     EXPECT_FALSE(sutThis._get("floatVectorProperty").isValid());
+
+    m_testDynamicStructDescriptor->destruct(sutThis);
 }
 
 TEST_F(TestDynamicStruct, constructInPlaceViaDescriptor_Copy)
@@ -540,6 +548,8 @@ TEST_F(TestDynamicStruct, constructInPlaceViaDescriptor_Copy)
     EXPECT_TRUE(sutOther._get("stringProperty").isValid());
     EXPECT_FALSE(sutOther._get("boolProperty").isValid());
     EXPECT_TRUE(sutOther._get("floatVectorProperty").isValid());
+
+    m_testDynamicStructDescriptor->destruct(sutThis);
 }
 
 TEST_F(TestDynamicStruct, constructInPlaceViaDescriptor_Move)
@@ -562,6 +572,8 @@ TEST_F(TestDynamicStruct, constructInPlaceViaDescriptor_Move)
     EXPECT_FALSE(sutOther._get("stringProperty").isValid());
     EXPECT_FALSE(sutOther._get("boolProperty").isValid());
     EXPECT_FALSE(sutOther._get("floatVectorProperty").isValid());
+
+    m_testDynamicStructDescriptor->destruct(sutThis);
 }
 
 TEST_F(TestDynamicStruct, assignment_Copy)

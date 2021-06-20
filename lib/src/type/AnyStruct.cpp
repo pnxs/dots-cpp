@@ -5,7 +5,7 @@ namespace dots::type
     AnyStruct::AnyStruct(const StructDescriptor<>& descriptor):
         _instance{ reinterpret_cast<Struct*>(::operator new(descriptor.size())) }
     {
-        descriptor.construct(Typeless::From(*_instance));
+        descriptor.constructInPlace(Typeless::From(*_instance));
     }
 
     AnyStruct::AnyStruct(const Struct& instance) :

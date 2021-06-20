@@ -27,6 +27,7 @@ namespace dots::testing::details
 
             if constexpr (is_compatible_gtest_action_v<arg_tail_head_t, ExpectCallSignature>)
             {
+                auto action = std::forward<arg_tail_head_t>(std::get<0>(argTailTuple));
                 return callExpectation.WillOnce(::testing::DoAll(
                     [expectCall{ std::move(expectCall) }, argTailTuple{ std::move(argTailTuple) }](auto&&...)
                     {
@@ -38,7 +39,7 @@ namespace dots::testing::details
                             }, argTailTuple);
                         }
                     },
-                    std::forward<arg_tail_head_t>(std::get<0>(argTailTuple))
+                    std::move(action)
                 ));
             }
             else

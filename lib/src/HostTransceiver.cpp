@@ -49,7 +49,7 @@ namespace dots
 
         io::Transmission transmission{ std::move(header), instance };
         dispatcher().dispatch(transmission);
-        transmit(nullptr, std::move(transmission));
+        transmit(std::move(transmission));
     }
 
     void HostTransceiver::joinGroup(const std::string_view&/* name*/)
@@ -62,15 +62,13 @@ namespace dots
         /* do nothing */
     }
 
-    void HostTransceiver::transmit(Connection* origin, const io::Transmission& transmission)
+    void HostTransceiver::transmit(const io::Transmission& transmission)
     {
         using dirty_connection_t = std::pair<Connection*, std::exception_ptr>;
         std::vector<dirty_connection_t> dirtyConnections;
 
         for (Connection* destinationConnection : m_groups[transmission.header().typeName])
         {
-            LOG_DEBUG_S("deliver message group:" << this << "(" << *transmission.header().typeName << ")");
-
             if (destinationConnection->state() != DotsConnectionState::closed)
             {
                 try
@@ -86,23 +84,9 @@ namespace dots
 
         if (!dirtyConnections.empty())
         {
-            std::exception_ptr originError;
-
             for (const auto& [connection, e] : dirtyConnections)
             {
-                if (connection == origin)
-                {
-                    originError = e;
-                }
-                else
-                {
-                    connection->handleError(e);
-                }
-            }
-
-            if (originError != nullptr)
-            {
-                std::rethrow_exception(originError);
+                connection->handleError(e);
             }
         }
     }
@@ -111,11 +95,10 @@ namespace dots
     {
         auto connection = std::make_shared<Connection>(std::move(channel), true);
         connection->asyncReceive(registry(), m_authManager.get(), selfName(),
-            [this](Connection& connection, io::Transmission transmission) { handleTransmission(connection, std::move(transmission)); },
+            [this](Connection& connection, io::Transmission transmission) { return handleTransmission(connection, std::move(transmission)); },
             [this](Connection& connection, const std::exception_ptr& e) { handleTransition(connection, e); }
         );
         m_guestConnections.emplace(connection.get(), connection);
-        LOG_DEBUG_S("guest '" << connection->peerName() << "' emplaced")
 
         return true;
     }
@@ -134,8 +117,14 @@ namespace dots
         m_listeners.erase(&listener);
     }
 
-    void HostTransceiver::handleTransmission(Connection& connection, io::Transmission transmission)
+    bool HostTransceiver::handleTransmission(Connection& connection, io::Transmission transmission)
     {
+        // ensure that the connection is alive until the handler returns,
+        // because it might get removed during processing of the transmission
+        // if it gets dirty
+        connection_ptr_t connectionPtr = m_guestConnections.find(&connection)->second;
+        (void)connectionPtr;
+
         const auto& [header, instance] = transmission;
 
         if (instance->_descriptor().internal())
@@ -143,12 +132,12 @@ namespace dots
             if (auto* member = instance.as<DotsMember>())
             {
                 handleMemberMessage(connection, *member);
-                return;
+                return !connection.closed();
             }
             else if (auto* descriptorRequest = instance.as<DotsDescriptorRequest>())
             {
                 handleDescriptorRequest(connection, *descriptorRequest);
-                return;
+                return !connection.closed();
             }
             else if (auto* clearCache = instance.as<DotsClearCache>())
             {
@@ -157,15 +146,17 @@ namespace dots
             else if (auto* echoRequest = instance.as<DotsEcho>())
             {
                 handleEchoRequest(connection, *echoRequest);
-                return;
+                return !connection.closed();
             }
         }
 
         dispatcher().dispatch(transmission);
-        transmit(&connection, std::move(transmission));
+        transmit(std::move(transmission));
+
+        return !connection.closed();
     }
 
-    void HostTransceiver::handleTransition(Connection& connection, const std::exception_ptr& e) noexcept
+    void HostTransceiver::handleTransition(Connection& connection, const std::exception_ptr&/* e*/) noexcept
     {
         if (m_transitionHandler)
         {
@@ -175,34 +166,14 @@ namespace dots
             }
             catch (const std::exception& e)
             {
-                LOG_ERROR_S("error in connection transition handler -> " << e.what());
+                LOG_ERROR_S("error in transition handler for " << connection.peerDescription() << " -> " << e.what());
             }
         }
 
         try
         {
-            if (connection.state() == DotsConnectionState::connected)
+            if (connection.state() == DotsConnectionState::closed)
             {
-                LOG_NOTICE_S("guest '" << connection.peerName() << "' opened connection at '" << connection.localEndpoint().uriStr() << "' from '" << connection.remoteEndpoint().uriStr() << "'");
-            }
-            else if (connection.state() == DotsConnectionState::closed)
-            {
-                if (e == nullptr)
-                {
-                    LOG_NOTICE_S("guest '" << connection.peerName() << "' gracefully closed connection");
-                }
-                else
-                {
-                    try
-                    {
-                        std::rethrow_exception(e);
-                    }
-                    catch (const std::exception& e)
-                    {
-                        LOG_ERROR_S("guest '" << connection.peerName() << "' closed connection with error -> " << e.what());
-                    }
-                }
-
                 for (auto& [groupName, group] : m_groups)
                 {
                     group.erase(&connection);
@@ -229,13 +200,12 @@ namespace dots
                     remove(*instance);
                 }
 
-                LOG_DEBUG_S("guest '" << connection.peerName() << "' erased");
                 m_guestConnections.erase(&connection);
             }
         }
         catch (const std::exception& e)
         {
-            LOG_ERROR_S("error while handling connection transition -> peerId: " << connection.peerId() << ", name: " << connection.peerName() << " -> " << e.what());
+            LOG_ERROR_S("error while handling transition for connection " << connection.peerDescription() << " -> " << e.what());
         }
     }
 
@@ -246,24 +216,24 @@ namespace dots
 
         if (member.event == DotsMemberEvent::kill)
         {
-            LOG_WARN_S("guest '" << connection.peerName() << "' requested unsupported kill event");
+            LOG_WARN_S(connection.peerDescription() << " requested unsupported kill event");
         }
         else if (member.event == DotsMemberEvent::leave)
         {
             if (size_t removed = m_groups[groupName].erase(&connection); removed == 0)
             {
-                LOG_WARN_S("guest '" << connection.peerName() << "' is not a member of group '" << groupName << "'");
+                LOG_WARN_S(connection.peerDescription() << " is not a member of group '" << groupName << "'");
             }
         }
         else if (member.event == DotsMemberEvent::join)
         {
             if (auto [it, emplaced] = m_groups[groupName].emplace(&connection); emplaced)
             {
-                LOG_INFO_S("guest '" << connection.peerName() << "' is now a member of group '" << groupName << "'");
+                LOG_INFO_S(connection.peerDescription() << " is now a member of group '" << groupName << "'");
             }
             else
             {
-                LOG_WARN_S("guest '" << connection.peerName() << "' is already member of group '" << groupName << "'");
+                LOG_WARN_S(connection.peerDescription() << " is already member of group '" << groupName << "'");
             }
 
             // note: transmitting the container content even when the guest has already joined the group is currently
@@ -289,8 +259,6 @@ namespace dots
         const types::vector_t<types::string_t>& whiteList = descriptorRequest.whitelist.isValid() ? *descriptorRequest.whitelist : types::vector_t<types::string_t>{};
         const types::vector_t<types::string_t>& blacklist = descriptorRequest.blacklist.isValid() ? *descriptorRequest.blacklist : types::vector_t<types::string_t>{};
 
-        LOG_INFO_S("received DescriptorRequest from " << connection.peerName() << "(" << connection.peerId() << ")");
-
         registry().forEach<type::StructDescriptor<>>([&](const auto& descriptor) 
         {
             if (descriptor.internal())
@@ -308,8 +276,6 @@ namespace dots
                 return;
             }
 
-            LOG_DEBUG_S("sending structDescriptor for type '" << descriptor.name() << "' to " << connection.peerId());
-
             connection.transmit(descriptor);
         });
 
@@ -325,7 +291,6 @@ namespace dots
         {
             if (std::find(typeNames.begin(), typeNames.end(), container.descriptor().name()) != typeNames.end())
             {
-                LOG_INFO_S("clear container '" << container.descriptor().name() << "' (" << container.size() << " elements)");
                 std::vector<const type::Struct*> removeInstances;
 
                 for (const auto& [instance, cloneInformation] : container)
@@ -354,10 +319,6 @@ namespace dots
 
     void HostTransceiver::transmitContainer(Connection& connection, const Container<>& container)
     {
-        const auto& td = container.descriptor();
-
-        LOG_DEBUG_S("send cache for " << td.name() << " size=" << container.size());
-
         if (container.empty())
         {
             return;
@@ -371,21 +332,6 @@ namespace dots
 
         for (const auto& [instance, cloneInfo] : container)
         {
-            const char* lop = "";
-            switch (cloneInfo.lastOperation)
-            {
-                case DotsMt::create: lop = "C";
-                    break;
-                case DotsMt::update: lop = "U";
-                    break;
-                case DotsMt::remove: lop = "R";
-                    break;
-            }
-
-            LOG_DATA_S("clone-info: lastOp=" << lop << ", lastUpdateFrom=" << cloneInfo.lastUpdateFrom
-                << ", created=" << cloneInfo.created->toString() << ", creator=" << cloneInfo.createdFrom
-                << ", modified=" << cloneInfo.modified->toString() << ", localUpdateTime=" << cloneInfo.localUpdateTime->toString());
-
             header.sentTime = *cloneInfo.modified;
             header.serverSentTime = types::timepoint_t::Now();
             header.attributes = instance->_validProperties();

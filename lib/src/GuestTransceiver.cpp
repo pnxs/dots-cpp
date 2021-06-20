@@ -16,7 +16,7 @@ namespace dots
     {
         if (m_hostConnection != std::nullopt)
         {
-            throw std::logic_error{ "already connected" };
+            throw std::logic_error{ "attempt to open connection while already connected" };
         }
 
         m_preloadPublishTypes = std::move(preloadPublishTypes);
@@ -42,7 +42,7 @@ namespace dots
 
         if (descriptor.substructOnly())
         {
-            throw std::logic_error{ "attempt to publish substruct-only type: " + descriptor.name() };
+            throw std::logic_error{ "attempt to publish substruct-only type '" + descriptor.name() + "'" };
         }
 
         if (includedProperties == std::nullopt)
@@ -52,10 +52,8 @@ namespace dots
 
         if (!(descriptor.keyProperties() <= *includedProperties))
         {
-            throw std::runtime_error("tried to publish instance with invalid key (not all key-fields are set) what=" + includedProperties->toString() + " tdkeys=" + descriptor.keyProperties().toString());
+            throw std::runtime_error("attempt to publish instance with missing key properties '" + (descriptor.keyProperties() - *includedProperties).toString() + "'");
         }
-
-        LOG_DATA_S("data:" << to_ascii(&descriptor, &instance, *includedProperties));
 
         if (m_hostConnection == std::nullopt)
         {
@@ -76,7 +74,6 @@ namespace dots
     {
         if (m_joinedGroups.count(std::string(name)) == 0)
         {
-            LOG_DEBUG_S("send DotsMember (join " << name << ")");
             publish(DotsMember{
                 DotsMember::groupName_i{name},
                 DotsMember::event_i{DotsMemberEvent::join}
@@ -89,7 +86,6 @@ namespace dots
     {
         if (m_joinedGroups.count(std::string(name)))
         {
-            LOG_DEBUG_S("send DotsMember (leave " << name << ")");
             publish(DotsMember{
                 DotsMember::groupName_i{name},
                 DotsMember::event_i{DotsMemberEvent::leave}
@@ -104,7 +100,7 @@ namespace dots
         return true;
     }
 
-    void GuestTransceiver::handleTransition(Connection& connection, const std::exception_ptr& e) noexcept
+    void GuestTransceiver::handleTransition(Connection& connection, const std::exception_ptr&/* e*/) noexcept
     {
         try
         {
@@ -127,28 +123,15 @@ namespace dots
             }
             else if (connection.state() == DotsConnectionState::closed)
             {
-                if (e != nullptr)
-                {
-                    try
-                    {
-                        std::rethrow_exception(e);
-                    }
-                    catch (const std::exception& e)
-                    {
-                        LOG_ERROR_S("connection error: " << e.what());
-                    }
-                }
-
                 if (m_hostConnection != std::nullopt)
                 {
-                    LOG_INFO_S("connection closed -> selfId: " << connection.selfId() << ", name: " << connection.peerName());
                     m_hostConnection = std::nullopt;
                 }
             }
         }
         catch (const std::exception& e)
         {
-            LOG_ERROR_S("error while handling connection transition -> selfId: " << connection.selfId() << ", name: " << connection.peerName() << " -> " << e.what());
+            LOG_ERROR_S("error while handling transition for connection " << connection.peerDescription() << " -> " << e.what());
             m_hostConnection = std::nullopt;
         }
     }
