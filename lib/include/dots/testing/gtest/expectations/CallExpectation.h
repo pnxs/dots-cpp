@@ -15,8 +15,8 @@ namespace dots::testing::details
     template <typename T, typename = void>
     struct is_compatible_gtest_action : std::false_type {};
 
-    template <typename T, typename R, typename... Args>
-    struct is_compatible_gtest_action<T, R(Args...)> : std::disjunction<std::is_invocable<T>, std::is_invocable<T, Args...>> {};
+    template <typename T, typename... Args>
+    struct is_compatible_gtest_action<T, void(Args...)> : std::disjunction<std::is_invocable<T>, std::is_invocable<T, Args...>> {};
 
     template <typename T, typename Signature>
     using is_compatible_gtest_action_t = typename is_compatible_gtest_action<T, Signature>::type;
