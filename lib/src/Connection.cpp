@@ -141,8 +141,6 @@ namespace dots
                     DotsMsgHello::serverName_i{ name },
                     DotsMsgHello::authChallenge_i{ 0 }
                 });
-
-
             }
             else
             {
