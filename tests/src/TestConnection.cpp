@@ -80,19 +80,19 @@ namespace std
     }
 }
 
-#define DOTS_MAKE_EXPECT_TRANSITION(transitionHandlerMock_)                                                               \
-[this](DotsConnectionState state) -> auto&                                                                                \
-{                                                                                                                         \
-    return EXPECT_CALL(transitionHandlerMock_, Call(::testing::Property(&dots::Connection::state, state), ::testing::_)); \
+#define DOTS_MAKE_EXPECT_TRANSITION                                                                                        \
+[this](DotsConnectionState state) -> auto&                                                                                 \
+{                                                                                                                          \
+    return EXPECT_CALL(m_mockTransitionHandler, Call(::testing::Property(&dots::Connection::state, state), ::testing::_)); \
 }
-#define DOTS_EXPECT_TRANSITION(transitionHandlerMock_, state_) DOTS_MAKE_EXPECT_TRANSITION(transitionHandlerMock_)(state_)
-#define DOTS_EXPECT_TRANSITION_SEQUENCE(transitionHandlerMock_, ...) DOTS_EXPECT_CONSECUTIVE_CALL_SEQUENCE(DOTS_MAKE_EXPECT_TRANSITION(transitionHandlerMock_), void(dots::Connection&, const std::exception_ptr&), __VA_ARGS__)
+#define DOTS_EXPECT_TRANSITION(state_) DOTS_MAKE_EXPECT_TRANSITION(state_)
+#define DOTS_EXPECT_TRANSITION_SEQUENCE(...) DOTS_EXPECT_CONSECUTIVE_CALL_SEQUENCE(DOTS_MAKE_EXPECT_TRANSITION, void(dots::Connection&, const std::exception_ptr&), __VA_ARGS__)
 
 TEST_F(TestConnectionAsHost, HandshakeWithoutAuthenticationWithoutPreloading)
 {
     // expect transition sequence
 
-    DOTS_EXPECT_TRANSITION_SEQUENCE(m_mockTransitionHandler,
+    DOTS_EXPECT_TRANSITION_SEQUENCE(
         [this]{ EXPECT_EQ(m_sut->state(), DotsConnectionState::suspended); },
         DotsConnectionState::connecting,
         [this]{ EXPECT_EQ(m_sut->state(), DotsConnectionState::connecting); },
@@ -135,7 +135,7 @@ TEST_F(TestConnectionAsHost, HandshakeWithoutAuthenticationWithPreloading)
 {
     // expect transition sequence
 
-    DOTS_EXPECT_TRANSITION_SEQUENCE(m_mockTransitionHandler,
+    DOTS_EXPECT_TRANSITION_SEQUENCE(
         [this]{ EXPECT_EQ(m_sut->state(), DotsConnectionState::suspended); },
         DotsConnectionState::connecting,
         [this]{ EXPECT_EQ(m_sut->state(), DotsConnectionState::connecting); },
@@ -192,7 +192,7 @@ TEST_F(TestConnectionAsGuest, HandshakeWithoutAuthenticationWithPreloading)
 {
     // expect transition sequence
 
-    DOTS_EXPECT_TRANSITION_SEQUENCE(m_mockTransitionHandler,
+    DOTS_EXPECT_TRANSITION_SEQUENCE(
         [this]{ EXPECT_EQ(m_sut->state(), DotsConnectionState::suspended); },
         DotsConnectionState::connecting,
         [this] { EXPECT_EQ(m_sut->state(), DotsConnectionState::connecting); },
