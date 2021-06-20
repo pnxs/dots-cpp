@@ -171,5 +171,5 @@ namespace dots::testing
 }
 
 #define DOTS_EXPECT_TRANSMIT_AT_CHANNEL(mockChannel_, transmitExpectation_) DOTS_MAKE_EXPECT_TRANSMIT_AT_CHANNEL(mockChannel_)(transmitExpectation_)
-#define DOTS_EXPECT_TRANSMIT_SEQUENCE_AT_CHANNEL(mockChannel_, ...) DOTS_EXPECT_CONSECUTIVE_CALL_SEQUENCE(DOTS_MAKE_EXPECT_TRANSMIT_AT_CHANNEL(mockChannel_), void(const dots::io::Transmission& transmission), __VA_ARGS__)
-#define DOTS_EXPECT_NAMED_TRANSMIT_SEQUENCE_AT_CHANNEL(mockChannel_, sequence_, ...) DOTS_EXPECT_NAMED_CALL_SEQUENCE(DOTS_MAKE_EXPECT_TRANSMIT_AT_CHANNEL(mockChannel_), void(const dots::io::Transmission& transmission), sequence_, __VA_ARGS__)
+#define DOTS_EXPECT_TRANSMIT_SEQUENCE_AT_CHANNEL(mockChannel_, ...) DOTS_EXPECT_CONSECUTIVE_CALL_SEQUENCE(DOTS_MAKE_EXPECT_TRANSMIT_AT_CHANNEL(mockChannel_), __VA_ARGS__)
+#define DOTS_EXPECT_NAMED_TRANSMIT_SEQUENCE_AT_CHANNEL(mockChannel_, sequence_, ...) DOTS_EXPECT_NAMED_CALL_SEQUENCE(DOTS_MAKE_EXPECT_TRANSMIT_AT_CHANNEL(mockChannel_), sequence_, __VA_ARGS__)
