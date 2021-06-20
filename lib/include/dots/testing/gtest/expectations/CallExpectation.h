@@ -70,9 +70,9 @@ namespace dots::testing::details
     }
 
     template <typename DefaultExpectationFactory, typename ArgHead, typename... ArgTail>
-    auto& expect_named_call_sequence_recursive(DefaultExpectationFactory& defaultExpectationFactory, ArgHead&& argHead, ArgTail&&... argTail)
+    auto& expect_named_call_sequence_recursive(DefaultExpectationFactory& defaultExpectationFactory, const ::testing::Sequence& sequence, ArgHead&& argHead, ArgTail&&... argTail)
     {
-        auto& expectation = defaultExpectationFactory(std::forward<decltype(argHead)>(argHead));
+        auto& expectation = defaultExpectationFactory(std::forward<decltype(argHead)>(argHead)).InSequence(sequence);;
         using expectation_t = std::decay_t<decltype(expectation)>;
 
         if constexpr (sizeof...(argTail) > 0)
@@ -86,9 +86,9 @@ namespace dots::testing::details
 
                 if constexpr (sizeof...(argTail) > 1)
                 {
-                    return std::apply([&defaultExpectationFactory](auto&&/* argTailHead*/, auto&&... argTailTail) -> auto&
+                    return std::apply([&defaultExpectationFactory, &sequence](auto&&/* argTailHead*/, auto&&... argTailTail) -> auto&
                     {
-                        return expect_named_call_sequence_recursive(defaultExpectationFactory, std::forward<decltype(argTailTail)>(argTailTail)...);
+                        return expect_named_call_sequence_recursive(defaultExpectationFactory, sequence, std::forward<decltype(argTailTail)>(argTailTail)...);
                     }, argTailRefs);
                 }
                 else
@@ -99,7 +99,7 @@ namespace dots::testing::details
             else
             {
                 (void)expectation;
-                return expect_named_call_sequence_recursive(defaultExpectationFactory, std::forward<decltype(argTail)>(argTail)...);
+                return expect_named_call_sequence_recursive(defaultExpectationFactory, sequence, std::forward<decltype(argTail)>(argTail)...);
             }
         }
         else
@@ -126,37 +126,32 @@ namespace dots::testing::details
     }
 
     template <typename DefaultExpectationFactory, typename ArgHead, typename... ArgTail>
-    auto& expect_named_call_sequence(DefaultExpectationFactory defaultExpectationFactory, ArgHead&& argHead, ArgTail&&... argTail)
+    auto& expect_named_call_sequence(DefaultExpectationFactory defaultExpectationFactory, const ::testing::Sequence& sequence, ArgHead&& argHead, ArgTail&&... argTail)
     {
         if constexpr (std::is_invocable_v<decltype(argHead)>)
         {
-            auto& expectation = expect_named_call_sequence_recursive(defaultExpectationFactory, std::forward<decltype(argTail)>(argTail)...);
+            auto& expectation = expect_named_call_sequence_recursive(defaultExpectationFactory, sequence, std::forward<decltype(argTail)>(argTail)...);
             std::invoke(std::forward<decltype(argHead)>(argHead));
 
             return expectation;
         }
         else
         {
-            return expect_named_call_sequence_recursive(defaultExpectationFactory, std::forward<decltype(argHead)>(argHead), std::forward<decltype(argTail)>(argTail)...);
+            return expect_named_call_sequence_recursive(defaultExpectationFactory, sequence, std::forward<decltype(argHead)>(argHead), std::forward<decltype(argTail)>(argTail)...);
         }
     }
 }
 
-#define DOTS_EXPECT_CONSECUTIVE_CALL_SEQUENCE(defaultExpectationFactory_, ...)                                                         \
-[&](auto defaultExpectationFactory, auto&&... args) -> auto&                                                                           \
-{                                                                                                                                      \
-    return dots::testing::details::expect_consecutive_call_sequence(defaultExpectationFactory, std::forward<decltype(args)>(args)...); \
-}                                                                                                                                      \
-(defaultExpectationFactory_, __VA_ARGS__)                                                                                              \
+#define DOTS_EXPECT_CONSECUTIVE_CALL_SEQUENCE(defaultExpectationFactory_, ...)                                                             \
+[&](auto defaultExpectationFactory, auto&&... args) -> auto&                                                                               \
+{                                                                                                                                          \
+    return dots::testing::details::expect_consecutive_call_sequence(defaultExpectationFactory, std::forward<decltype(args)>(args)...);     \
+}                                                                                                                                          \
+(defaultExpectationFactory_, __VA_ARGS__)                                                                                                  \
 
-#define DOTS_EXPECT_NAMED_CALL_SEQUENCE(defaultExpectationFactory_, sequence_, ...)                                                    \
-[&](const ::testing::Sequence& sequence, auto&&... args) -> auto&                                                                      \
-{                                                                                                                                      \
-    auto default_call_sequence_factory = [&](auto&& arg) -> auto&                                                                      \
-    {                                                                                                                                  \
-        return defaultExpectationFactory_(std::forward<decltype(arg)>(arg)).InSequence(sequence);                                      \
-    };                                                                                                                                 \
-                                                                                                                                       \
-    return dots::testing::details::expect_named_call_sequence(default_call_sequence_factory, std::forward<decltype(args)>(args)...);   \
-}                                                                                                                                      \
-(sequence_, __VA_ARGS__)
+#define DOTS_EXPECT_NAMED_CALL_SEQUENCE(defaultExpectationFactory_, sequence_, ...)                                                        \
+[&](auto defaultExpectationFactory, const ::testing::Sequence& sequence, auto&&... args) -> auto&                                          \
+{                                                                                                                                          \
+    return dots::testing::details::expect_named_call_sequence(defaultExpectationFactory, sequence, std::forward<decltype(args)>(args)...); \
+}                                                                                                                                          \
+(defaultExpectationFactory_, sequence_, __VA_ARGS__)
