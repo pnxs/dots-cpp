@@ -4,6 +4,42 @@
 namespace dots::testing::details
 {
     template <typename T, typename = void>
+    struct is_expectation : std::false_type {};
+
+    template <typename T>
+    struct is_expectation<T, std::void_t<decltype(std::declval<T>().WillOnce(::testing::DoAll()))>> : std::true_type {};
+
+    template <typename T>
+    using is_expectation_t = typename is_expectation<T>::type;
+
+    template <typename T>
+    constexpr bool is_expectation_v = is_expectation_t<T>::value;
+
+    template <typename T>
+    struct is_expectation_factory
+    {
+        static auto IsExpectationFactory()
+        {
+            if constexpr (std::is_invocable_v<T>)
+            {
+                return is_expectation_t<std::invoke_result_t<T>>{};
+            }
+            else
+            {
+                return std::false_type{};
+            }
+        }
+
+        using type = decltype(IsExpectationFactory());
+    };
+
+    template <typename T>
+    using is_expectation_factory_t = typename is_expectation_factory<T>::type;
+
+    template <typename T>
+    constexpr bool is_expectation_factory_v = is_expectation_factory_t<T>::value;
+
+    template <typename T, typename = void>
     struct expectation_signature {};
 
     template <typename F>
@@ -12,11 +48,27 @@ namespace dots::testing::details
     template <typename T>
     using expectation_signature_t = typename expectation_signature<T>::type;
 
-    template <typename T, typename = void>
-    struct is_compatible_action : std::false_type {};
+    template <typename T, typename R, typename... Args>
+    struct is_compatible_action
+    {
+        static auto IsCompatibleAction()
+        {
+            if constexpr (std::is_invocable_v<T>)
+            {
+                return std::is_same<std::invoke_result_t<T>, void>{};
+            }
+            else if constexpr (std::is_invocable_v<T, Args...>)
+            {
+                return std::is_same<std::invoke_result_t<T, Args...>, void>{};
+            }
+            else
+            {
+                return std::false_type{};
+            }
+        }
 
-    template <typename T, typename... Args>
-    struct is_compatible_action<T, void(Args...)> : std::disjunction<std::is_invocable<T>, std::is_invocable<T, Args...>> {};
+        using type = decltype(IsCompatibleAction());
+    };
 
     template <typename T, typename Signature>
     using is_compatible_action_t = typename is_compatible_action<T, Signature>::type;
@@ -27,15 +79,33 @@ namespace dots::testing::details
     template <typename DefaultExpectationFactory, typename ArgHead, typename... ArgTail>
     auto& expect_consecutive_call_sequence_recursive(DefaultExpectationFactory defaultExpectationFactory, ArgHead&& argHead, ArgTail&&... argTail)
     {
-        auto& expectation = defaultExpectationFactory(std::forward<decltype(argHead)>(argHead));
-        using expectation_t = std::decay_t<decltype(expectation)>;
+        auto& expectation = [&defaultExpectationFactory](auto&& arg) -> auto&
+        {
+            using arg_t = decltype(arg);
+            using decayed_arg_t = std::decay_t<arg_t>;
+
+            if constexpr (is_expectation_v<decayed_arg_t>)
+            {
+                return std::forward<arg_t>(arg);
+            }
+            else if constexpr (is_expectation_factory_v<decayed_arg_t>)
+            {
+                return std::invoke(std::forward<arg_t>(arg));
+            }
+            else
+            {
+                return std::invoke(defaultExpectationFactory, std::forward<arg_t>(arg));
+            }
+        }(std::forward<decltype(argHead)>(argHead));
+
+        using decayed_expectation_t = std::decay_t<decltype(expectation)>;
 
         if constexpr (sizeof...(argTail) > 0)
         {
             auto argTailTuple = std::make_tuple(std::forward<decltype(argTail)>(argTail)...);
             using arg_tail_head_t = std::tuple_element_t<0, decltype(argTailTuple)>;
 
-            if constexpr (is_compatible_action_v<arg_tail_head_t, expectation_signature_t<expectation_t>>)
+            if constexpr (is_compatible_action_v<arg_tail_head_t, expectation_signature_t<decayed_expectation_t>>)
             {
                 auto action = std::forward<arg_tail_head_t>(std::get<0>(argTailTuple));
                 return expectation.WillOnce(::testing::DoAll(
