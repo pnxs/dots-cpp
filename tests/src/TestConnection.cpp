@@ -80,32 +80,24 @@ namespace std
     }
 }
 
-#define DOTS_MAKE_EXPECT_TRANSITION                                                                                        \
-[this](DotsConnectionState state) -> auto&                                                                                 \
-{                                                                                                                          \
-    return EXPECT_CALL(m_mockTransitionHandler, Call(::testing::Property(&dots::Connection::state, state), ::testing::_)); \
+#define EXPECT_TRANSITION(state_)                                                                                           \
+[this]() -> auto&                                                                                                           \
+{                                                                                                                           \
+    return EXPECT_CALL(m_mockTransitionHandler, Call(::testing::Property(&dots::Connection::state, state_), ::testing::_)); \
 }
-#define DOTS_EXPECT_TRANSITION(state_) DOTS_MAKE_EXPECT_TRANSITION(state_)
-#define DOTS_EXPECT_TRANSITION_SEQUENCE(...) DOTS_EXPECT_CONSECUTIVE_CALL_SEQUENCE(DOTS_MAKE_EXPECT_TRANSITION, __VA_ARGS__)
 
 TEST_F(TestConnectionAsHost, HandshakeWithoutAuthenticationWithoutPreloading)
 {
-    // expect transition sequence
-
-    DOTS_EXPECT_TRANSITION_SEQUENCE(
-        [this]{ EXPECT_EQ(m_sut->state(), DotsConnectionState::suspended); },
-        DotsConnectionState::connecting,
-        [this]{ EXPECT_EQ(m_sut->state(), DotsConnectionState::connecting); },
-        DotsConnectionState::connected,
-        [this]{ EXPECT_EQ(m_sut->state(), DotsConnectionState::connected); }
-    );
-
-    // expect handshake sequence
-
     DOTS_EXPECT_TRANSMIT_SEQUENCE(
         [this]
         {
+            EXPECT_EQ(m_sut->state(), DotsConnectionState::suspended);
             m_sut->asyncReceive(m_registry, nullptr, hostName(), [](dots::Connection&, dots::io::Transmission){ return true; }, m_mockTransitionHandler.AsStdFunction());
+        },
+        EXPECT_TRANSITION(DotsConnectionState::connecting),
+        [this]
+        {
+            EXPECT_EQ(m_sut->state(), DotsConnectionState::connecting);
         },
         DotsMsgHello{
             DotsMsgHello::serverName_i{ hostName() },
@@ -121,6 +113,11 @@ TEST_F(TestConnectionAsHost, HandshakeWithoutAuthenticationWithoutPreloading)
                 }
             });
         },
+        EXPECT_TRANSITION(DotsConnectionState::connected),
+        [this]
+        {
+            EXPECT_EQ(m_sut->state(), DotsConnectionState::connected);
+        },
         DotsMsgConnectResponse{
             DotsMsgConnectResponse::clientId_i{ m_sut->peerId() },
             DotsMsgConnectResponse::preload_i{ false },
@@ -133,24 +130,16 @@ TEST_F(TestConnectionAsHost, HandshakeWithoutAuthenticationWithoutPreloading)
 
 TEST_F(TestConnectionAsHost, HandshakeWithoutAuthenticationWithPreloading)
 {
-    // expect transition sequence
-
-    DOTS_EXPECT_TRANSITION_SEQUENCE(
-        [this]{ EXPECT_EQ(m_sut->state(), DotsConnectionState::suspended); },
-        DotsConnectionState::connecting,
-        [this]{ EXPECT_EQ(m_sut->state(), DotsConnectionState::connecting); },
-        DotsConnectionState::early_subscribe,
-        [this]{ EXPECT_EQ(m_sut->state(), DotsConnectionState::early_subscribe); },
-        DotsConnectionState::connected,
-        [this]{ EXPECT_EQ(m_sut->state(), DotsConnectionState::connected); }
-    );
-
-    // expect handshake sequence
-
     DOTS_EXPECT_TRANSMIT_SEQUENCE(
         [this]
         {
+            EXPECT_EQ(m_sut->state(), DotsConnectionState::suspended);
             m_sut->asyncReceive(m_registry, nullptr, hostName(), [](dots::Connection&, dots::io::Transmission){ return true; }, m_mockTransitionHandler.AsStdFunction());
+        },
+        EXPECT_TRANSITION(DotsConnectionState::connecting),
+        [this]
+        {
+            EXPECT_EQ(m_sut->state(), DotsConnectionState::connecting);
         },
         DotsMsgHello{
             DotsMsgHello::serverName_i{ hostName() },
@@ -166,6 +155,11 @@ TEST_F(TestConnectionAsHost, HandshakeWithoutAuthenticationWithPreloading)
                 }
             });
         },
+        EXPECT_TRANSITION(DotsConnectionState::early_subscribe),
+        [this]
+        {
+            EXPECT_EQ(m_sut->state(), DotsConnectionState::early_subscribe);
+        },
         DotsMsgConnectResponse{
             DotsMsgConnectResponse::clientId_i{ m_sut->peerId() },
             DotsMsgConnectResponse::preload_i{ true },
@@ -180,6 +174,11 @@ TEST_F(TestConnectionAsHost, HandshakeWithoutAuthenticationWithPreloading)
                 }
             });
         },
+        EXPECT_TRANSITION(DotsConnectionState::connected),
+        [this]
+        {
+            EXPECT_EQ(m_sut->state(), DotsConnectionState::connected);
+        },
         DotsMsgConnectResponse{
             DotsMsgConnectResponse::preloadFinished_i{ true }
         }
@@ -190,23 +189,10 @@ TEST_F(TestConnectionAsHost, HandshakeWithoutAuthenticationWithPreloading)
 
 TEST_F(TestConnectionAsGuest, HandshakeWithoutAuthenticationWithPreloading)
 {
-    // expect transition sequence
-
-    DOTS_EXPECT_TRANSITION_SEQUENCE(
-        [this]{ EXPECT_EQ(m_sut->state(), DotsConnectionState::suspended); },
-        DotsConnectionState::connecting,
-        [this] { EXPECT_EQ(m_sut->state(), DotsConnectionState::connecting); },
-        DotsConnectionState::early_subscribe,
-        [this]{ EXPECT_EQ(m_sut->state(), DotsConnectionState::early_subscribe); },
-        DotsConnectionState::connected,
-        [this]{ EXPECT_EQ(m_sut->state(), DotsConnectionState::connected); }
-    );
-
-    // expect handshake sequence
-
     DOTS_EXPECT_TRANSMIT_SEQUENCE(
         [this]
         {
+            EXPECT_EQ(m_sut->state(), DotsConnectionState::suspended);
             m_sut->asyncReceive(m_registry, nullptr, GuestName, [](dots::Connection&, dots::io::Transmission){ return true; }, m_mockTransitionHandler.AsStdFunction());
             DOTS_SPOOF_TRANSMIT(dots::testing::TransmitSpoof{
                 HostId,
@@ -215,6 +201,11 @@ TEST_F(TestConnectionAsGuest, HandshakeWithoutAuthenticationWithPreloading)
                     DotsMsgHello::authChallenge_i{ 0 }
                 }
             });
+        },
+        EXPECT_TRANSITION(DotsConnectionState::connecting),
+        [this]
+        {
+            EXPECT_EQ(m_sut->state(), DotsConnectionState::connecting);
         },
         DotsMsgConnect{
             DotsMsgConnect::clientName_i{ GuestName },
@@ -231,6 +222,11 @@ TEST_F(TestConnectionAsGuest, HandshakeWithoutAuthenticationWithPreloading)
                 }
             });
         },
+        EXPECT_TRANSITION(DotsConnectionState::early_subscribe),
+        [this]
+        {
+            EXPECT_EQ(m_sut->state(), DotsConnectionState::early_subscribe);
+        },
         DotsMsgConnect{
             DotsMsgConnect::preloadClientFinished_i{ true }
         },
@@ -239,6 +235,11 @@ TEST_F(TestConnectionAsGuest, HandshakeWithoutAuthenticationWithPreloading)
             DOTS_SPOOF_TRANSMIT(DotsMsgConnectResponse{
                 DotsMsgConnectResponse::preloadFinished_i{ true }
             });
+        },
+        EXPECT_TRANSITION(DotsConnectionState::connected),
+        [this]
+        {
+            EXPECT_EQ(m_sut->state(), DotsConnectionState::connected);
         }
     );
     
