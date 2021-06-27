@@ -48,8 +48,11 @@ namespace dots::testing::details
     template <typename T>
     using expectation_signature_t = typename expectation_signature<T>::type;
 
+    template <typename T, typename = void>
+    struct is_compatible_action : std::false_type {};
+
     template <typename T, typename R, typename... Args>
-    struct is_compatible_action
+    struct is_compatible_action<T, R(Args...)>
     {
         static auto IsCompatibleAction()
         {
