@@ -60,56 +60,43 @@ namespace dots
 
     void Dispatcher::removeTransmissionHandler(const type::StructDescriptor<>& descriptor, id_t id)
     {
-        if (auto itHandlers = m_transmissionHandlerPool.find(&descriptor); itHandlers != m_transmissionHandlerPool.end())
-        {
-            transmission_handlers_t& handlers = itHandlers->second;
-
-            if (auto itHandler = handlers.find(id); itHandler != handlers.end())
-            {
-                if (id == m_currentlyDispatchingId)
-                {
-                    m_removeIds.emplace_back(id);
-                }
-                else
-                {
-                    handlers.erase(itHandler);
-                }
-
-                return;
-            }
-        }
-
-        throw std::logic_error{ "cannot remove unknown transmission handler for type: " + descriptor.name() };
+        removeHandler(m_transmissionHandlerPool, descriptor, id);
     }
 
     void Dispatcher::removeEventHandler(const type::StructDescriptor<>& descriptor, id_t id)
     {
-        if (auto itHandlers = m_eventHandlerPool.find(&descriptor); itHandlers != m_eventHandlerPool.end())
-        {
-            event_handlers_t& handlers = itHandlers->second;
-
-            if (auto itHandler = handlers.find(id); itHandler != handlers.end())
-            {
-                if (id == m_currentlyDispatchingId)
-                {
-                    m_removeIds.emplace_back(id);
-                }
-                else
-                {
-                    handlers.erase(itHandler);
-                }
-
-                return;
-            }
-        }
-
-        throw std::logic_error{ "cannot remove unknown event handler for type: " + descriptor.name() };
+        removeHandler(m_eventHandlerPool, descriptor, id);
     }
 
     void Dispatcher::dispatch(const io::Transmission& transmission)
     {
         dispatchTransmission(transmission);
         dispatchEvent(transmission.header(), transmission.instance());
+    }
+
+    template <typename HandlerPool>
+    void Dispatcher::removeHandler(HandlerPool& handlerPool, const type::StructDescriptor<>& descriptor, id_t id)
+    {
+        if (auto itHandlers = handlerPool.find(&descriptor); itHandlers != handlerPool.end())
+        {
+            auto& handlers = itHandlers->second;
+
+            if (auto itHandler = handlers.find(id); itHandler != handlers.end())
+            {
+                if (id == m_currentlyDispatchingId)
+                {
+                    m_removeIds.emplace_back(id);
+                }
+                else
+                {
+                    handlers.erase(itHandler);
+                }
+
+                return;
+            }
+        }
+
+        throw std::logic_error{ "cannot remove unknown handler for type: " + descriptor.name() };
     }
 
     void Dispatcher::dispatchTransmission(const io::Transmission& transmission)
