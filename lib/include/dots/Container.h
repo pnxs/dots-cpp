@@ -36,35 +36,59 @@ namespace dots
         Container& operator = (const Container& rhs) = default;
         Container& operator = (Container&& rhs) = default;
 
-        const type::StructDescriptor<>& descriptor() const;
+        const type::StructDescriptor<>& descriptor() const &;
+        const type::StructDescriptor<>& descriptor() && = delete;
 
-        const_iterator_t begin() const;
-        const_iterator_t end() const;
+        const_iterator_t begin() const &;
+        const_iterator_t begin() && = delete;
 
-        const_iterator_t cbegin() const;
-        const_iterator_t cend() const;
+        const_iterator_t end() const &;
+        const_iterator_t end() && = delete;
 
-        bool empty() const;
-        size_t size() const;
+        const_iterator_t cbegin() const &;
+        const_iterator_t cbegin() && = delete;
 
-        const value_t* findClone(const type::Struct& instance) const;
-        const value_t& getClone(const type::Struct& instance) const;
+        const_iterator_t cend() const &;
+        const_iterator_t cend() && = delete;
 
-        const type::Struct* find(const type::Struct& instance) const;
-        const type::Struct& get(const type::Struct& instance) const;
+        bool empty() const &;
+        bool empty() && = delete;
 
-        const value_t& insert(const DotsHeader& header, const type::Struct& instance);
-        node_t remove(const DotsHeader& header, const type::Struct& instance);
+        size_t size() const &;
+        size_t size() && = delete;
 
-        void clear();
+        const value_t* findClone(const type::Struct& instance) const &;
+        const value_t* findClone(const type::Struct& instance) && = delete;
 
-        void forEachClone(const std::function<void(const value_t&)>& f) const;
-        void forEach(const std::function<void(const type::Struct&)>& f) const;
+        const value_t& getClone(const type::Struct& instance) const &;
+        const value_t& getClone(const type::Struct& instance) && = delete;
 
-        size_t totalMemoryUsage() const;
+        const type::Struct* find(const type::Struct& instance) const &;
+        const type::Struct* find(const type::Struct& instance) && = delete;
+
+        const type::Struct& get(const type::Struct& instance) const &;
+        const type::Struct& get(const type::Struct& instance) && = delete;
+
+        const value_t& insert(const DotsHeader& header, const type::Struct& instance) &;
+        const value_t& insert(const DotsHeader& header, const type::Struct& instance) && = delete;
+
+        node_t remove(const DotsHeader& header, const type::Struct& instance) &;
+        node_t remove(const DotsHeader& header, const type::Struct& instance) && = delete;
+
+        void clear() &;
+        void clear() && = delete;
+
+        void forEachClone(const std::function<void(const value_t&)>& f) const &;
+        void forEachClone(const std::function<void(const value_t&)>& f) && = delete;
+
+        void forEach(const std::function<void(const type::Struct&)>& f) const &;
+        void forEach(const std::function<void(const type::Struct&)>& f) && = delete;
+
+        size_t totalMemoryUsage() const &;
+        size_t totalMemoryUsage() && = delete;
 
         template <typename T>
-        const Container<T>& as() const
+        const Container<T>& as() const &
         {
             static_assert(std::is_base_of_v<type::Struct, T>);
 
@@ -77,10 +101,13 @@ namespace dots
         }
 
         template <typename T>
-        Container<T>& as()
+        Container<T>& as() &
         {
             return const_cast<Container<T>&>(std::as_const(*this).as<T>());
         }
+
+        template <typename T>
+        const Container<T>& as() && = delete;
 
     private:
 
@@ -106,36 +133,50 @@ namespace dots
         Container& operator = (Container&& rhs) = default;
 
         template <typename T_ = T, std::enable_if_t<std::tuple_size_v<typename T_::_key_properties_t> == 0, int> = 0>
-        const T* find() const
+        const T* find() const &
         {
             return static_cast<const T*>(Container<>::find(T{}));
         }
 
         template <typename T_ = T, std::enable_if_t<std::tuple_size_v<typename T_::_key_properties_t> == 0, int> = 0>
-        const T& get() const
+        const T* find() && = delete;
+
+        template <typename T_ = T, std::enable_if_t<std::tuple_size_v<typename T_::_key_properties_t> == 0, int> = 0>
+        const T& get() const &
         {
             return static_cast<const T&>(Container<>::get(T{}));
         }
 
+        template <typename T_ = T, std::enable_if_t<std::tuple_size_v<typename T_::_key_properties_t> == 0, int> = 0>
+        const T& get() && = delete;
+
         template <typename T_ = T, std::enable_if_t<std::tuple_size_v<typename T_::_key_properties_t> >= 1, int> = 0>
-        const T* find(const T& instance) const
+        const T* find(const T& instance) const &
         {
             return static_cast<const T*>(Container<>::find(instance));
         }
 
         template <typename T_ = T, std::enable_if_t<std::tuple_size_v<typename T_::_key_properties_t> >= 1, int> = 0>
-        const T& get(const T& instance) const
+        const T* find(const T& instance) && = delete;
+
+        template <typename T_ = T, std::enable_if_t<std::tuple_size_v<typename T_::_key_properties_t> >= 1, int> = 0>
+        const T& get(const T& instance) const &
         {
             return static_cast<const T&>(Container<>::get(instance));
         }
 
-        void forEach(const std::function<void(const T&)>& f) const
+        template <typename T_ = T, std::enable_if_t<std::tuple_size_v<typename T_::_key_properties_t> >= 1, int> = 0>
+        const T& get(const T& instance) && = delete;
+
+        void forEach(const std::function<void(const T&)>& f) const &
         {
             forEachClone([&](const value_t& value)
             {
                 f(value.first.to<T>());
             });
         }
+
+        void forEach(const std::function<void(const T&)>& f) && = delete;
 
     private:
 
