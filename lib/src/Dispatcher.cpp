@@ -114,31 +114,6 @@ namespace dots
 
     void Dispatcher::dispatchTransmission(const io::Transmission& transmission)
     {
-        auto dispatchTransmissionToHandlers = [this](transmission_handlers_t& transmissionHandlers, const io::Transmission& transmission)
-        {
-            for (const auto& [id, handler] : transmissionHandlers)
-            {
-                try
-                {
-                    m_currentlyDispatchingId = id;
-                    handler(transmission);
-                }
-                catch (...)
-                {
-                    // TODO: logging?
-                }
-
-                m_currentlyDispatchingId = std::nullopt;
-            }
-
-            for (id_t id : m_removeIds)
-            {
-                transmissionHandlers.erase(id);
-            }
-
-            m_removeIds.clear();
-        };
-
         const type::StructDescriptor<>& descriptor = transmission.instance()->_descriptor();
 
         auto itHandlers = m_transmissionHandlerPool.find(&descriptor);
@@ -149,38 +124,13 @@ namespace dots
         }
 
         transmission_handlers_t& handlers = itHandlers->second;
-        dispatchTransmissionToHandlers(handlers, transmission);
+        dispatchToHandlers(handlers, transmission);
     }
 
     void Dispatcher::dispatchEvent(const DotsHeader& header, const type::AnyStruct& instance)
     {
         const type::StructDescriptor<>& descriptor = instance->_descriptor();
         event_handlers_t& handlers = m_eventHandlerPool[&descriptor];
-
-        auto dispatchEventToHandlers = [this](event_handlers_t& handlers, const Event<>& e)
-        {
-            for (const auto& [id, handler] : handlers)
-            {
-                try
-                {
-                    m_currentlyDispatchingId = id;
-                    handler(e);
-                }
-                catch (...)
-                {
-                    // TODO: logging?
-                }
-
-                m_currentlyDispatchingId = std::nullopt;
-            }
-
-            for (id_t id : m_removeIds)
-            {
-                handlers.erase(id);
-            }
-
-            m_removeIds.clear();
-        };
 
         if (descriptor.cached())
         {
@@ -190,13 +140,13 @@ namespace dots
             {
                 if (Container<>::node_t removed = container.remove(header, instance); !removed.empty())
                 {
-                    dispatchEventToHandlers(handlers, Event<>{ header, instance, removed.key(), removed.mapped() });
+                    dispatchToHandlers(handlers, Event<>{ header, instance, removed.key(), removed.mapped() });
                 }
             }
             else
             {
                 const auto& [updated, cloneInfo] = container.insert(header, instance);
-                dispatchEventToHandlers(handlers, Event<>{ header, instance, updated, cloneInfo });
+                dispatchToHandlers(handlers, Event<>{ header, instance, updated, cloneInfo });
             }
         }
         else
@@ -206,7 +156,7 @@ namespace dots
                 throw std::logic_error{ "cannot remove uncached instance for type: " + descriptor.name() };
             }
 
-            dispatchEventToHandlers(handlers, Event<>{ header, instance, instance,
+            dispatchToHandlers(handlers, Event<>{ header, instance, instance,
                 DotsCloneInformation{
                     DotsCloneInformation::lastOperation_i{ DotsMt::create },
                     DotsCloneInformation::createdFrom_i{ header.sender },
@@ -215,5 +165,31 @@ namespace dots
                 }
             });
         }
+    }
+
+    template <typename Handlers, typename Dispatchable>
+    void Dispatcher::dispatchToHandlers(Handlers& handlers, const Dispatchable& dispatchable)
+    {
+        for (const auto& [id, handler] : handlers)
+        {
+            try
+            {
+                m_currentlyDispatchingId = id;
+                handler(dispatchable);
+            }
+            catch (...)
+            {
+                // TODO: logging?
+            }
+
+            m_currentlyDispatchingId = std::nullopt;
+        }
+
+        for (id_t id : m_removeIds)
+        {
+            handlers.erase(id);
+        }
+
+        m_removeIds.clear();
     }
 }

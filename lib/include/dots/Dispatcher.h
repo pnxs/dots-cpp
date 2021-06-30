@@ -102,6 +102,9 @@ namespace dots
         void dispatchTransmission(const io::Transmission& transmission);
         void dispatchEvent(const DotsHeader& header, const type::AnyStruct& instance);
 
+        template <typename Handlers, typename Dispatchable>
+        void dispatchToHandlers(Handlers& handlers, const Dispatchable& dispatchable);
+
         id_t m_nextId = 0;
         std::optional<id_t> m_currentlyDispatchingId;
         std::vector<id_t> m_removeIds;
