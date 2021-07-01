@@ -60,50 +60,12 @@ namespace dots
 
     void Dispatcher::removeTransmissionHandler(const type::StructDescriptor<>& descriptor, id_t id)
     {
-        if (auto itHandlers = m_transmissionHandlerPool.find(&descriptor); itHandlers != m_transmissionHandlerPool.end())
-        {
-            transmission_handlers_t& handlers = itHandlers->second;
-
-            if (auto itHandler = handlers.find(id); itHandler != handlers.end())
-            {
-                if (id == m_currentlyDispatchingId)
-                {
-                    m_removeIds.emplace_back(id);
-                }
-                else
-                {
-                    handlers.erase(itHandler);
-                }
-
-                return;
-            }
-        }
-
-        throw std::logic_error{ "cannot remove unknown transmission handler for type: " + descriptor.name() };
+        removeHandler(m_transmissionHandlerPool, descriptor, id);
     }
 
     void Dispatcher::removeEventHandler(const type::StructDescriptor<>& descriptor, id_t id)
     {
-        if (auto itHandlers = m_eventHandlerPool.find(&descriptor); itHandlers != m_eventHandlerPool.end())
-        {
-            event_handlers_t& handlers = itHandlers->second;
-
-            if (auto itHandler = handlers.find(id); itHandler != handlers.end())
-            {
-                if (id == m_currentlyDispatchingId)
-                {
-                    m_removeIds.emplace_back(id);
-                }
-                else
-                {
-                    handlers.erase(itHandler);
-                }
-
-                return;
-            }
-        }
-
-        throw std::logic_error{ "cannot remove unknown event handler for type: " + descriptor.name() };
+        removeHandler(m_eventHandlerPool, descriptor, id);
     }
 
     void Dispatcher::dispatch(const io::Transmission& transmission)
@@ -112,33 +74,33 @@ namespace dots
         dispatchEvent(transmission.header(), transmission.instance());
     }
 
+    template <typename HandlerPool>
+    void Dispatcher::removeHandler(HandlerPool& handlerPool, const type::StructDescriptor<>& descriptor, id_t id)
+    {
+        if (auto itHandlers = handlerPool.find(&descriptor); itHandlers != handlerPool.end())
+        {
+            auto& handlers = itHandlers->second;
+
+            if (auto itHandler = handlers.find(id); itHandler != handlers.end())
+            {
+                if (id == m_currentlyDispatchingId)
+                {
+                    m_removeIds.emplace_back(id);
+                }
+                else
+                {
+                    handlers.erase(itHandler);
+                }
+
+                return;
+            }
+        }
+
+        throw std::logic_error{ "cannot remove unknown handler for type: " + descriptor.name() };
+    }
+
     void Dispatcher::dispatchTransmission(const io::Transmission& transmission)
     {
-        auto dispatchTransmissionToHandlers = [this](transmission_handlers_t& transmissionHandlers, const io::Transmission& transmission)
-        {
-            for (const auto& [id, handler] : transmissionHandlers)
-            {
-                try
-                {
-                    m_currentlyDispatchingId = id;
-                    handler(transmission);
-                }
-                catch (...)
-                {
-                    // TODO: logging?
-                }
-
-                m_currentlyDispatchingId = std::nullopt;
-            }
-
-            for (id_t id : m_removeIds)
-            {
-                transmissionHandlers.erase(id);
-            }
-
-            m_removeIds.clear();
-        };
-
         const type::StructDescriptor<>& descriptor = transmission.instance()->_descriptor();
 
         auto itHandlers = m_transmissionHandlerPool.find(&descriptor);
@@ -149,38 +111,13 @@ namespace dots
         }
 
         transmission_handlers_t& handlers = itHandlers->second;
-        dispatchTransmissionToHandlers(handlers, transmission);
+        dispatchToHandlers(handlers, transmission);
     }
 
     void Dispatcher::dispatchEvent(const DotsHeader& header, const type::AnyStruct& instance)
     {
         const type::StructDescriptor<>& descriptor = instance->_descriptor();
         event_handlers_t& handlers = m_eventHandlerPool[&descriptor];
-
-        auto dispatchEventToHandlers = [this](event_handlers_t& handlers, const Event<>& e)
-        {
-            for (const auto& [id, handler] : handlers)
-            {
-                try
-                {
-                    m_currentlyDispatchingId = id;
-                    handler(e);
-                }
-                catch (...)
-                {
-                    // TODO: logging?
-                }
-
-                m_currentlyDispatchingId = std::nullopt;
-            }
-
-            for (id_t id : m_removeIds)
-            {
-                handlers.erase(id);
-            }
-
-            m_removeIds.clear();
-        };
 
         if (descriptor.cached())
         {
@@ -190,13 +127,13 @@ namespace dots
             {
                 if (Container<>::node_t removed = container.remove(header, instance); !removed.empty())
                 {
-                    dispatchEventToHandlers(handlers, Event<>{ header, instance, removed.key(), removed.mapped() });
+                    dispatchToHandlers(handlers, Event<>{ header, instance, removed.key(), removed.mapped() });
                 }
             }
             else
             {
                 const auto& [updated, cloneInfo] = container.insert(header, instance);
-                dispatchEventToHandlers(handlers, Event<>{ header, instance, updated, cloneInfo });
+                dispatchToHandlers(handlers, Event<>{ header, instance, updated, cloneInfo });
             }
         }
         else
@@ -206,7 +143,7 @@ namespace dots
                 throw std::logic_error{ "cannot remove uncached instance for type: " + descriptor.name() };
             }
 
-            dispatchEventToHandlers(handlers, Event<>{ header, instance, instance,
+            dispatchToHandlers(handlers, Event<>{ header, instance, instance,
                 DotsCloneInformation{
                     DotsCloneInformation::lastOperation_i{ DotsMt::create },
                     DotsCloneInformation::createdFrom_i{ header.sender },
@@ -215,5 +152,31 @@ namespace dots
                 }
             });
         }
+    }
+
+    template <typename Handlers, typename Dispatchable>
+    void Dispatcher::dispatchToHandlers(Handlers& handlers, const Dispatchable& dispatchable)
+    {
+        for (const auto& [id, handler] : handlers)
+        {
+            try
+            {
+                m_currentlyDispatchingId = id;
+                handler(dispatchable);
+            }
+            catch (...)
+            {
+                // TODO: logging?
+            }
+
+            m_currentlyDispatchingId = std::nullopt;
+        }
+
+        for (id_t id : m_removeIds)
+        {
+            handlers.erase(id);
+        }
+
+        m_removeIds.clear();
     }
 }

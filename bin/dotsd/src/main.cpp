@@ -52,14 +52,42 @@ int main(int argc, char* argv[])
     {
         if (vm.count("listen"))
         {
-            return vm["listen"].as<std::vector<string>>();
+            auto warn_about_argument_ignore = [](std::string argName, std::string argValue)
+            {
+                LOG_WARN_S("ignoring legacy argument '" << argName << "=" << argValue << "' because a listen endpoint argument was specified");
+            };
+
+            if (auto it = vm.find("dots-address"); it != vm.end())
+            {
+                warn_about_argument_ignore("dots-address", it->second.as<std::string>());
+            }
+
+            if (auto it = vm.find("dots-port"); it != vm.end())
+            {
+                warn_about_argument_ignore("dots-port", it->second.as<std::string>());
+            }
+
+            return vm["listen"].as<std::vector<std::string>>();
         }
         else
         {
-            return std::vector<string>{};
+            string authority = "127.0.0.1";
+
+            if (auto it = vm.find("dots-address"); it != vm.end())
+            {
+                authority = it->second.as<std::string>();
+            }
+
+            if (auto it = vm.find("dots-port"); it != vm.end())
+            {
+                authority += ':';
+                authority += it->second.as<std::string>();
+            }
+            
+            return std::vector<std::string>{ "tcp://" + authority };
         }
     }();
-    listenEndpointUris.emplace_back("tcp://127.0.0.1:11234");
+
     dots::Server::listeners_t listeners;
 
     for (const string& listenEndpointUri : listenEndpointUris)
@@ -70,14 +98,9 @@ int main(int argc, char* argv[])
 
             if (listenEndpoint.scheme() == "tcp")
             {
-                if (auto it = vm.find("dots-address"); it != vm.end())
+                if (listenEndpoint.port().empty())
                 {
-                    listenEndpoint.setHost(it->second.as<std::string>());
-                }
-
-                if (auto it = vm.find("dots-port"); it != vm.end())
-                {
-                    listenEndpoint.setPort(it->second.as<std::string>());
+                    listenEndpoint.setPort("11234");
                 }
 
                 listeners.emplace_back(std::make_unique<dots::io::TcpListener>(io_context, listenEndpoint)); 

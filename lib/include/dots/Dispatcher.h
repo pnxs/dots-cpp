@@ -99,8 +99,14 @@ namespace dots
         using event_handlers_t = std::map<id_t, event_handler_t<>, std::greater<>>;
         using event_handler_pool_t = std::unordered_map<const type::StructDescriptor<>*, event_handlers_t>;
 
+        template <typename HandlerPool>
+        void removeHandler(HandlerPool& handlerPool, const type::StructDescriptor<>& descriptor, id_t id);
+
         void dispatchTransmission(const io::Transmission& transmission);
         void dispatchEvent(const DotsHeader& header, const type::AnyStruct& instance);
+
+        template <typename Handlers, typename Dispatchable>
+        void dispatchToHandlers(Handlers& handlers, const Dispatchable& dispatchable);
 
         id_t m_nextId = 0;
         std::optional<id_t> m_currentlyDispatchingId;
