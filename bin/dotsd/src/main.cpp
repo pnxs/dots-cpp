@@ -56,10 +56,10 @@ int main(int argc, char* argv[])
         }
         else
         {
-            return std::vector<string>{};
+            return std::vector<string>{ "tcp://127.0.0.1:11234" };
         }
     }();
-    listenEndpointUris.emplace_back("tcp://127.0.0.1:11234");
+
     dots::Server::listeners_t listeners;
 
     for (const string& listenEndpointUri : listenEndpointUris)
