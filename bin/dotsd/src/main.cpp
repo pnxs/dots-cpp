@@ -98,6 +98,11 @@ int main(int argc, char* argv[])
 
             if (listenEndpoint.scheme() == "tcp")
             {
+                if (listenEndpoint.port().empty())
+                {
+                    listenEndpoint.setPort("11234");
+                }
+
                 listeners.emplace_back(std::make_unique<dots::io::TcpListener>(io_context, listenEndpoint)); 
             }
             else if (listenEndpoint.scheme() == "ws")
