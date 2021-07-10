@@ -301,23 +301,21 @@ namespace dots::testing
     return IMPL_EXPECT_DOTS_PUBLISH(std::forward<decltype(instance)>(instance), includedProperties, true);     \
 }
 
-#define IMPL_SPOOF_DOTS_PUBLISH                                                                                       \
-[this](auto&& instance, std::optional<dots::types::property_set_t> includedProperties, bool remove)                   \
-{                                                                                                                     \
-    constexpr bool IsStruct = std::is_base_of_v<dots::type::Struct, std::decay_t<decltype(instance)>>;                \
-    static_assert(IsStruct, "DOTS publish spoof has to be an instance of a DOTS struct type");                        \
-                                                                                                                      \
-    if constexpr (IsStruct)                                                                                           \
-    {                                                                                                                 \
-        const auto& instance_ = std::forward<decltype(instance)>(instance);                                           \
-                                                                                                                      \
-        for (auto& [guest, mockSubscriptionHandlers] : PublishTestBase::mockSubscriptionHandlers())                   \
-        {                                                                                                             \
-            (void)mockSubscriptionHandlers;                                                                           \
-            IMPL_EXPECT_DOTS_PUBLISH_FROM_GUEST(*guest, instance_, includedProperties, remove).RetiresOnSaturation(); \
-        }                                                                                                             \
-        PublishTestBase::spoofGuest().publish(instance_, includedProperties, remove);                                 \
-    }                                                                                                                 \
+#define IMPL_SPOOF_DOTS_PUBLISH                                                                                      \
+[this](auto instance, std::optional<dots::types::property_set_t> includedProperties, bool remove)                    \
+{                                                                                                                    \
+    constexpr bool IsStruct = std::is_base_of_v<dots::type::Struct, std::decay_t<decltype(instance)>>;               \
+    static_assert(IsStruct, "DOTS publish spoof has to be an instance of a DOTS struct type");                       \
+                                                                                                                     \
+    if constexpr (IsStruct)                                                                                          \
+    {                                                                                                                \
+        for (auto& [guest, mockSubscriptionHandlers] : PublishTestBase::mockSubscriptionHandlers())                  \
+        {                                                                                                            \
+            (void)mockSubscriptionHandlers;                                                                          \
+            IMPL_EXPECT_DOTS_PUBLISH_FROM_GUEST(*guest, instance, includedProperties, remove).RetiresOnSaturation(); \
+        }                                                                                                            \
+        PublishTestBase::spoofGuest().publish(instance, includedProperties, remove);                                 \
+    }                                                                                                                \
 }
 
 #define SPOOF_DOTS_PUBLISH                                                                            \
