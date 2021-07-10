@@ -113,7 +113,7 @@ namespace dots::testing
                                                                                                                                                  \
     if constexpr (IsStruct)                                                                                                                      \
     {                                                                                                                                            \
-        TransmitTestBase::mockChannel().spoof(sender, instance, includedProperties, remove);                                                     \
+        TransmitTestBase::mockChannel().spoof(sender, std::forward<decltype(instance)>(instance), includedProperties, remove);                   \
     }                                                                                                                                            \
 }
 
