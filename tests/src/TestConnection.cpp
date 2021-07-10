@@ -33,6 +33,7 @@ protected:
 
     dots::type::Registry m_registry;
     std::optional<dots::Connection> m_sut;
+    ::testing::MockFunction<bool(dots::Connection&, dots::io::Transmission)> m_mockReceiveHandler;
     ::testing::MockFunction<void(dots::Connection&, const std::exception_ptr&)> m_mockTransitionHandler;
 };
 
@@ -92,7 +93,7 @@ TEST_F(TestConnectionAsHost, HandshakeWithoutAuthenticationWithoutPreloading)
         [this]
         {
             EXPECT_EQ(m_sut->state(), DotsConnectionState::suspended);
-            m_sut->asyncReceive(m_registry, nullptr, hostName(), [](dots::Connection&, dots::io::Transmission){ return true; }, m_mockTransitionHandler.AsStdFunction());
+            m_sut->asyncReceive(m_registry, nullptr, hostName(), m_mockReceiveHandler.AsStdFunction(), m_mockTransitionHandler.AsStdFunction());
         },
         EXPECT_TRANSITION(DotsConnectionState::connecting),
         [this]
@@ -134,7 +135,7 @@ TEST_F(TestConnectionAsHost, HandshakeWithoutAuthenticationWithPreloading)
         [this]
         {
             EXPECT_EQ(m_sut->state(), DotsConnectionState::suspended);
-            m_sut->asyncReceive(m_registry, nullptr, hostName(), [](dots::Connection&, dots::io::Transmission){ return true; }, m_mockTransitionHandler.AsStdFunction());
+            m_sut->asyncReceive(m_registry, nullptr, hostName(), m_mockReceiveHandler.AsStdFunction(), m_mockTransitionHandler.AsStdFunction());
         },
         EXPECT_TRANSITION(DotsConnectionState::connecting),
         [this]
@@ -193,7 +194,7 @@ TEST_F(TestConnectionAsGuest, HandshakeWithoutAuthenticationWithPreloading)
         [this]
         {
             EXPECT_EQ(m_sut->state(), DotsConnectionState::suspended);
-            m_sut->asyncReceive(m_registry, nullptr, GuestName, [](dots::Connection&, dots::io::Transmission){ return true; }, m_mockTransitionHandler.AsStdFunction());
+            m_sut->asyncReceive(m_registry, nullptr, GuestName, m_mockReceiveHandler.AsStdFunction(), m_mockTransitionHandler.AsStdFunction());
             SPOOF_DOTS_TRANSMIT_FROM_SENDER(
                 HostId,
                 DotsMsgHello{
