@@ -82,20 +82,7 @@ namespace dots::testing
 #define IMPL_EXPECT_DOTS_PUBLISH_AT_SUBSCRIBER                                                                                                                                           \
 [](dots::testing::mock_subscription_handler_t& mockSubscriptionHandler, auto&& publishExpectation, std::optional<dots::types::property_set_t> includedProperties, bool remove) -> auto&  \
 {                                                                                                                                                                                        \
-    constexpr bool IsStruct = std::is_base_of_v<dots::type::Struct, std::decay_t<decltype(publishExpectation)>>;                                                                         \
-    static_assert(IsStruct, "DOTS publish expectation has to be an instance of a DOTS struct type");                                                                                     \
-                                                                                                                                                                                         \
-    if constexpr (IsStruct)                                                                                                                                                              \
-    {                                                                                                                                                                                    \
-        return EXPECT_CALL(mockSubscriptionHandler, Call(dots::testing::TransmissionEqual(std::forward<decltype(publishExpectation)>(publishExpectation), includedProperties, remove))); \
-    }                                                                                                                                                                                    \
-    else                                                                                                                                                                                 \
-    {                                                                                                                                                                                    \
-        auto&& publishExpectation = std::declval<dots::type::Struct>();                                                                                                                  \
-        auto&& mockSubscriptionHandler = std::declval<::testing::MockFunction<void(const dots::io::Transmission&)>>();                                                                   \
-                                                                                                                                                                                         \
-        return EXPECT_CALL(mockSubscriptionHandler, Call(dots::testing::TransmissionEqual(publishExpectation, includedProperties, remove)));                                             \
-    }                                                                                                                                                                                    \
+    return EXPECT_CALL(mockSubscriptionHandler, Call(dots::testing::TransmissionEqual(std::forward<decltype(publishExpectation)>(publishExpectation), includedProperties, remove)));     \
 }
 
 #define EXPECT_DOTS_PUBLISH_AT_SUBSCRIBER                                                                                                                                                 \

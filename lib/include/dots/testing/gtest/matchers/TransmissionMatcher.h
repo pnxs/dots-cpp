@@ -56,10 +56,21 @@ namespace dots::testing
         bool m_remove;
     };
 
-    template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
-    ::testing::Matcher<const io::Transmission&> TransmissionEqual(T instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false)
+    template <typename T>
+    ::testing::Matcher<const io::Transmission&> TransmissionEqual(T&& instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false)
     {
-        types::property_set_t includedProperties_ = includedProperties == std::nullopt ? instance._validProperties() : *includedProperties;
-        return TransmissionEqualMatcher<T>(std::move(instance), includedProperties_, remove);
+        using decayed_t = std::decay_t<T>;
+        constexpr bool IsStruct = std::is_base_of_v<dots::type::Struct, decayed_t>;
+        static_assert(IsStruct, "instance type T has to be a DOTS struct type");
+
+        if constexpr (IsStruct)
+        {
+            types::property_set_t includedProperties_ = includedProperties == std::nullopt ? instance._validProperties() : *includedProperties;
+            return TransmissionEqualMatcher<decayed_t>(std::forward<T>(instance), includedProperties_, remove);
+        }
+        else
+        {
+            return std::declval<::testing::Matcher<const io::Transmission&>>();
+        }
     }
 }

@@ -149,6 +149,23 @@ namespace dots::testing
             return itSubscriptionHandler->second;
         }
 
+        template <typename T>
+        mock_subscription_handler_t& getMockSubscriptionHandler(GuestTransceiver& guest, T&& instance)
+        {
+            constexpr bool IsStruct = std::is_base_of_v<type::Struct, std::decay_t<T>>;
+            static_assert(IsStruct, "instance type T has to be a DOTS struct type");
+
+            if constexpr (IsStruct)
+            {
+                return getMockSubscriptionHandler(guest, std::forward<T>(instance)._descriptor());
+            }
+            else
+            {
+                auto&& mockSubscriptionHandler = std::declval<::testing::MockFunction<void(const io::Transmission&)>>();
+                return mockSubscriptionHandler;
+            }
+        }
+
     private:
 
         HostTransceiver m_host;
@@ -248,26 +265,10 @@ namespace dots::testing
 
 #endif
 
-#define IMPL_EXPECT_DOTS_PUBLISH_FROM_GUEST                                                                                                                      \
-[this](dots::GuestTransceiver& guestTransceiver, auto&& publishExpectation, std::optional<dots::types::property_set_t> includedProperties, bool remove) -> auto& \
-{                                                                                                                                                                \
-    constexpr bool IsStruct = std::is_base_of_v<dots::type::Struct, std::decay_t<decltype(publishExpectation)>>;                                                 \
-    static_assert(IsStruct, "DOTS publish expectation has to be an instance of a DOTS struct type");                                                             \
-                                                                                                                                                                 \
-    if constexpr (IsStruct)                                                                                                                                      \
-    {                                                                                                                                                            \
-        const auto& instance = std::forward<decltype(publishExpectation)>(publishExpectation);                                                                   \
-        auto& mockSubscriptionHandler = PublishTestBase::getMockSubscriptionHandler(guestTransceiver, instance._descriptor());                                   \
-                                                                                                                                                                 \
-        return IMPL_EXPECT_DOTS_PUBLISH_AT_SUBSCRIBER(mockSubscriptionHandler, instance, includedProperties, remove);                                            \
-    }                                                                                                                                                            \
-    else                                                                                                                                                         \
-    {                                                                                                                                                            \
-        auto&& instance = std::declval<dots::type::Struct>();                                                                                                    \
-        auto&& mockSubscriptionHandler = std::declval<::testing::MockFunction<void(const dots::io::Transmission&)>>();                                           \
-                                                                                                                                                                 \
-        return IMPL_EXPECT_DOTS_PUBLISH_AT_SUBSCRIBER(mockSubscriptionHandler, instance, includedProperties, remove);                                            \
-    }                                                                                                                                                            \
+#define IMPL_EXPECT_DOTS_PUBLISH_FROM_GUEST                                                                                                                                           \
+[this](dots::GuestTransceiver& guestTransceiver, auto publishExpectation, std::optional<dots::types::property_set_t> includedProperties, bool remove) -> auto&                        \
+{                                                                                                                                                                                     \
+    return IMPL_EXPECT_DOTS_PUBLISH_AT_SUBSCRIBER(PublishTestBase::getMockSubscriptionHandler(guestTransceiver, publishExpectation), publishExpectation, includedProperties, remove); \
 }
 
 #define EXPECT_DOTS_PUBLISH_FROM_GUEST                                                                                                                             \

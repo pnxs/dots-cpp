@@ -115,22 +115,10 @@ namespace dots::testing
     };
 }
 
-#define IMPL_EXPECT_DOTS_TRANSMIT_AT_CHANNEL                                                                                                                         \
-[](dots::testing::MockChannel& mockChannel, auto&& transmitExpectation, std::optional<dots::types::property_set_t> includedProperties, bool remove) -> auto&         \
-{                                                                                                                                                                    \
-    constexpr bool IsStruct = std::is_base_of_v<dots::type::Struct, std::decay_t<decltype(transmitExpectation)>>;                                                    \
-    static_assert(IsStruct, "DOTS transmit expectation has to be an instance of a DOTS struct type");                                                                \
-                                                                                                                                                                     \
-    if constexpr (IsStruct)                                                                                                                                          \
-    {                                                                                                                                                                \
-        const auto& instance = transmitExpectation;                                                                                                                  \
-        return EXPECT_CALL(mockChannel.transmitMock(), Call(dots::testing::TransmissionEqual(instance, includedProperties, remove)));                                \
-    }                                                                                                                                                                \
-    else                                                                                                                                                             \
-    {                                                                                                                                                                \
-        auto&& instance = std::declval<dots::type::Struct>();                                                                                                        \
-        return EXPECT_CALL(std::declval<dots::testing::MockChannel>().transmitMock(), Call(dots::testing::TransmissionEqual(instance, includedProperties, remove))); \
-    }                                                                                                                                                                \
+#define IMPL_EXPECT_DOTS_TRANSMIT_AT_CHANNEL                                                                                                                                              \
+[](dots::testing::MockChannel& mockChannel, auto&& transmitExpectation, std::optional<dots::types::property_set_t> includedProperties, bool remove) -> auto&                              \
+{                                                                                                                                                                                         \
+    return EXPECT_CALL(mockChannel.transmitMock(), Call(dots::testing::TransmissionEqual(std::forward<decltype(transmitExpectation)>(transmitExpectation), includedProperties, remove))); \
 }
 
 #define EXPECT_DOTS_TRANSMIT_AT_CHANNEL                                                                                                                        \
