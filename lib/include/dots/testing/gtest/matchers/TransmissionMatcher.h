@@ -10,9 +10,9 @@ namespace dots::testing
     {
         using is_gtest_matcher = void;
 
-        TransmissionEqualMatcher(T instance, property_set_t includedProperties, bool remove) :
-            m_expectedStructMatcher{ std::move(instance), includedProperties },
-            m_remove(remove)
+        TransmissionEqualMatcher(T instance, DotsHeader header) :
+            m_expectedStructMatcher{ std::move(instance), header.attributes },
+            m_header(std::move(header))
         {
             /* do nothing */
         }
@@ -28,7 +28,8 @@ namespace dots::testing
             const DotsHeader& header = transmission.header();
             const type::Struct& instance = transmission.instance();
 
-            if (bool isRemove = header.removeObj == true; isRemove != m_remove)
+            if ((m_header.removeObj.isValid() && header.removeObj != m_header.removeObj) || 
+                (m_header.isFromMyself.isValid() && header.isFromMyself != m_header.isFromMyself))
             {
                 return false;
             }
@@ -40,24 +41,36 @@ namespace dots::testing
 
         void DescribeTo(std::ostream* os) const
         {
-            *os << (m_remove ? "REMOVE        " : "CREATE/UPDATE ");
+            describeHeaderTo(os);
             m_expectedStructMatcher.DescribeTo(os);
         }
 
         void DescribeNegationTo(std::ostream* os) const
         {
-            *os << (m_remove ? "REMOVE        " : "CREATE/UPDATE ");
+            describeHeaderTo(os);
             m_expectedStructMatcher.DescribeNegationTo(os);
         }
 
     private:
 
+        void describeHeaderTo(std::ostream* os) const
+        {
+            if (m_header.isFromMyself == true)
+            {
+                *os << (m_header.removeObj == true ? "SELF REMOVE        " : "SELF CREATE/UPDATE ");
+            }
+            else
+            {
+                *os << (m_header.removeObj == true ? "REMOVE        " : "CREATE/UPDATE ");
+            }
+        }
+
         StructEqualMatcher<T> m_expectedStructMatcher;
-        bool m_remove;
+        DotsHeader m_header;
     };
 
     template <typename T>
-    ::testing::Matcher<const io::Transmission&> TransmissionEqual(T&& instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false)
+    ::testing::Matcher<const io::Transmission&> TransmissionEqual(T&& instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false, bool isFromMyself = false)
     {
         using decayed_t = std::decay_t<T>;
         constexpr bool IsStruct = std::is_base_of_v<dots::type::Struct, decayed_t>;
@@ -65,8 +78,24 @@ namespace dots::testing
 
         if constexpr (IsStruct)
         {
-            types::property_set_t includedProperties_ = includedProperties == std::nullopt ? instance._validProperties() : *includedProperties;
-            return TransmissionEqualMatcher<decayed_t>(std::forward<T>(instance), includedProperties_, remove);
+            DotsHeader header{
+                DotsHeader::attributes_i{ includedProperties == std::nullopt ? instance._validProperties() : *includedProperties },
+            };
+
+            if (remove)
+            {
+                header.removeObj = true;
+            }
+
+            if (isFromMyself)
+            {
+                header.isFromMyself = true;
+            }
+
+            return TransmissionEqualMatcher<decayed_t>(
+                std::forward<T>(instance), 
+                std::move(header)
+            );
         }
         else
         {

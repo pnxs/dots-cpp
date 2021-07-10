@@ -79,20 +79,20 @@ namespace dots::testing
 
 #endif
 
-#define IMPL_EXPECT_DOTS_PUBLISH_AT_SUBSCRIBER                                                                                                                                \
-[](dots::testing::mock_subscription_handler_t& mockSubscriptionHandler, auto&& instance, std::optional<dots::types::property_set_t> includedProperties, bool remove) -> auto& \
-{                                                                                                                                                                             \
-    return EXPECT_CALL(mockSubscriptionHandler, Call(dots::testing::TransmissionEqual(std::forward<decltype(instance)>(instance), includedProperties, remove)));              \
+#define IMPL_EXPECT_DOTS_PUBLISH_AT_SUBSCRIBER                                                                                                                                                   \
+[](dots::testing::mock_subscription_handler_t& mockSubscriptionHandler, auto&& instance, std::optional<dots::types::property_set_t> includedProperties, bool remove, bool isFromMyself) -> auto& \
+{                                                                                                                                                                                                \
+    return EXPECT_CALL(mockSubscriptionHandler, Call(dots::testing::TransmissionEqual(std::forward<decltype(instance)>(instance), includedProperties, remove, isFromMyself)));                   \
 }
 
 #define EXPECT_DOTS_PUBLISH_AT_SUBSCRIBER                                                                                                                                       \
 [](dots::testing::mock_subscription_handler_t& mockSubscriptionHandler, auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto& \
 {                                                                                                                                                                               \
-    return IMPL_EXPECT_DOTS_PUBLISH_AT_SUBSCRIBER(mockSubscriptionHandler, std::forward<decltype(instance)>(instance), includedProperties, false);                              \
+    return IMPL_EXPECT_DOTS_PUBLISH_AT_SUBSCRIBER(mockSubscriptionHandler, std::forward<decltype(instance)>(instance), includedProperties, false, false);                       \
 }
 
 #define EXPECT_DOTS_REMOVE_AT_SUBSCRIBER                                                                                                                                        \
 [](dots::testing::mock_subscription_handler_t& mockSubscriptionHandler, auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto& \
 {                                                                                                                                                                               \
-    return IMPL_EXPECT_DOTS_PUBLISH_AT_SUBSCRIBER(mockSubscriptionHandler, std::forward<decltype(instance)>(instance), includedProperties, true);                               \
+    return IMPL_EXPECT_DOTS_PUBLISH_AT_SUBSCRIBER(mockSubscriptionHandler, std::forward<decltype(instance)>(instance), includedProperties, true, false);                        \
 }
