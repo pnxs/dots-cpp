@@ -1,7 +1,9 @@
 #pragma once
 #include <dots/testing/gtest/gtest.h>
 
-namespace dots::testing::details
+#if defined(DOTS_ENABLE_DEPRECATED_SEQUENCE_SUPPORT)
+
+namespace dots::testing::deprecated::details
 {
     template <typename T, typename = void>
     struct is_expectation : std::false_type {};
@@ -215,16 +217,18 @@ namespace dots::testing::details
     }
 }
 
-#define DOTS_EXPECT_CONSECUTIVE_CALL_SEQUENCE(defaultExpectationFactory_, ...)                                                             \
-[&](auto defaultExpectationFactory, auto&&... args) -> auto&                                                                               \
-{                                                                                                                                          \
-    return dots::testing::details::expect_consecutive_call_sequence(defaultExpectationFactory, std::forward<decltype(args)>(args)...);     \
-}                                                                                                                                          \
-(defaultExpectationFactory_, __VA_ARGS__)                                                                                                  \
+#define DOTS_EXPECT_CONSECUTIVE_CALL_SEQUENCE(defaultExpectationFactory_, ...)                                                                     \
+[&](auto defaultExpectationFactory, auto&&... args) -> auto&                                                                                       \
+{                                                                                                                                                  \
+    return dots::testing::deprecated::details::expect_consecutive_call_sequence(defaultExpectationFactory, std::forward<decltype(args)>(args)...); \
+}                                                                                                                                                  \
+(defaultExpectationFactory_, __VA_ARGS__)                                                                                                          \
 
-#define DOTS_EXPECT_NAMED_CALL_SEQUENCE(defaultExpectationFactory_, sequence_, ...)                                                        \
-[&](auto defaultExpectationFactory, const ::testing::Sequence& sequence, auto&&... args) -> auto&                                          \
-{                                                                                                                                          \
-    return dots::testing::details::expect_named_call_sequence(defaultExpectationFactory, sequence, std::forward<decltype(args)>(args)...); \
-}                                                                                                                                          \
+#define DOTS_EXPECT_NAMED_CALL_SEQUENCE(defaultExpectationFactory_, sequence_, ...)                                                                    \
+[&](auto defaultExpectationFactory, const ::testing::Sequence& sequence, auto&&... args) -> auto&                                                      \
+{                                                                                                                                                      \
+    return dots::testing::deprecated::details::expect_named_call_sequence(defaultExpectationFactory, sequence, std::forward<decltype(args)>(args)...); \
+}                                                                                                                                                      \
 (defaultExpectationFactory_, sequence_, __VA_ARGS__)
+
+#endif

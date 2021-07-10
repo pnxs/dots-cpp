@@ -1,7 +1,7 @@
 #pragma once
 #include <dots/testing/gtest/gtest.h>
 
-namespace dots::testing::expectation_sequence_details
+namespace dots::testing::details
 {
     template <typename T, typename = void>
     struct is_expectation : std::false_type {};
@@ -161,15 +161,15 @@ namespace dots::testing::expectation_sequence_details
     }
 }
 
-#define DOTS_NAMED_EXPECTATION_SEQUENCE                                                                                        \
-[&](const ::testing::Sequence& sequence, auto&&... args) -> auto&                                                              \
-{                                                                                                                              \
-    return dots::testing::expectation_sequence_details::expectation_sequence(sequence, std::forward<decltype(args)>(args)...); \
+#define DOTS_NAMED_EXPECTATION_SEQUENCE                                                                   \
+[&](const ::testing::Sequence& sequence, auto&&... args) -> auto&                                         \
+{                                                                                                         \
+    return dots::testing::details::expectation_sequence(sequence, std::forward<decltype(args)>(args)...); \
 }  
 
-#define DOTS_EXPECTATION_SEQUENCE                                                                                              \
-[&](auto&&... args) -> auto&                                                                                                   \
-{                                                                                                                              \
-    static ::testing::Sequence Sequence;                                                                                       \
-    return dots::testing::expectation_sequence_details::expectation_sequence(Sequence, std::forward<decltype(args)>(args)...); \
+#define DOTS_EXPECTATION_SEQUENCE                                                                         \
+[&](auto&&... args) -> auto&                                                                              \
+{                                                                                                         \
+    static ::testing::Sequence Sequence;                                                                  \
+    return dots::testing::details::expectation_sequence(Sequence, std::forward<decltype(args)>(args)...); \
 }
