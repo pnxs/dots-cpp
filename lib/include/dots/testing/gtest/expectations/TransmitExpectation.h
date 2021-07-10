@@ -115,20 +115,20 @@ namespace dots::testing
     };
 }
 
-#define IMPL_EXPECT_DOTS_TRANSMIT_AT_CHANNEL                                                                                                                                              \
-[](dots::testing::MockChannel& mockChannel, auto&& transmitExpectation, std::optional<dots::types::property_set_t> includedProperties, bool remove) -> auto&                              \
-{                                                                                                                                                                                         \
-    return EXPECT_CALL(mockChannel.transmitMock(), Call(dots::testing::TransmissionEqual(std::forward<decltype(transmitExpectation)>(transmitExpectation), includedProperties, remove))); \
+#define IMPL_EXPECT_DOTS_TRANSMIT_AT_CHANNEL                                                                                                                        \
+[](dots::testing::MockChannel& mockChannel, auto&& instance, std::optional<dots::types::property_set_t> includedProperties, bool remove) -> auto&                   \
+{                                                                                                                                                                   \
+    return EXPECT_CALL(mockChannel.transmitMock(), Call(dots::testing::TransmissionEqual(std::forward<decltype(instance)>(instance), includedProperties, remove))); \
 }
 
-#define EXPECT_DOTS_TRANSMIT_AT_CHANNEL                                                                                                                        \
-[](dots::testing::MockChannel& mockChannel, auto&& transmitExpectation, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto& \
-{                                                                                                                                                              \
-    return IMPL_EXPECT_DOTS_TRANSMIT_AT_CHANNEL(mockChannel, std::forward<decltype(transmitExpectation)>(transmitExpectation), includedProperties, false);     \
+#define EXPECT_DOTS_TRANSMIT_AT_CHANNEL                                                                                                             \
+[](dots::testing::MockChannel& mockChannel, auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto& \
+{                                                                                                                                                   \
+    return IMPL_EXPECT_DOTS_TRANSMIT_AT_CHANNEL(mockChannel, std::forward<decltype(instance)>(instance), includedProperties, false);                \
 }
 
-#define EXPECT_DOTS_REMOVE_TRANSMIT_AT_CHANNEL                                                                                                                 \
-[](dots::testing::MockChannel& mockChannel, auto&& transmitExpectation, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto& \
-{                                                                                                                                                              \
-    return IMPL_EXPECT_DOTS_TRANSMIT_AT_CHANNEL(mockChannel, std::forward<decltype(transmitExpectation)>(transmitExpectation), includedProperties, true);      \
+#define EXPECT_DOTS_REMOVE_TRANSMIT_AT_CHANNEL                                                                                                      \
+[](dots::testing::MockChannel& mockChannel, auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto& \
+{                                                                                                                                                   \
+    return IMPL_EXPECT_DOTS_TRANSMIT_AT_CHANNEL(mockChannel, std::forward<decltype(instance)>(instance), includedProperties, true);                 \
 }

@@ -265,69 +265,69 @@ namespace dots::testing
 
 #endif
 
-#define IMPL_EXPECT_DOTS_PUBLISH_FROM_GUEST                                                                                                                                           \
-[this](dots::GuestTransceiver& guestTransceiver, auto publishExpectation, std::optional<dots::types::property_set_t> includedProperties, bool remove) -> auto&                        \
-{                                                                                                                                                                                     \
-    return IMPL_EXPECT_DOTS_PUBLISH_AT_SUBSCRIBER(PublishTestBase::getMockSubscriptionHandler(guestTransceiver, publishExpectation), publishExpectation, includedProperties, remove); \
+#define IMPL_EXPECT_DOTS_PUBLISH_FROM_GUEST                                                                                                                       \
+[this](dots::GuestTransceiver& guestTransceiver, auto instance, std::optional<dots::types::property_set_t> includedProperties, bool remove) -> auto&              \
+{                                                                                                                                                                 \
+    return IMPL_EXPECT_DOTS_PUBLISH_AT_SUBSCRIBER(PublishTestBase::getMockSubscriptionHandler(guestTransceiver, instance), instance, includedProperties, remove); \
 }
 
-#define EXPECT_DOTS_PUBLISH_FROM_GUEST                                                                                                                             \
-[this](dots::GuestTransceiver& guestTransceiver, auto&& publishExpectation, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto& \
-{                                                                                                                                                                  \
-    return IMPL_EXPECT_DOTS_PUBLISH_FROM_GUEST(guestTransceiver, std::forward<decltype(publishExpectation)>(publishExpectation), includedProperties, false);       \
+#define EXPECT_DOTS_PUBLISH_FROM_GUEST                                                                                                                   \
+[this](dots::GuestTransceiver& guestTransceiver, auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto& \
+{                                                                                                                                                        \
+    return IMPL_EXPECT_DOTS_PUBLISH_FROM_GUEST(guestTransceiver, std::forward<decltype(instance)>(instance), includedProperties, false);                 \
 }
 
-#define EXPECT_DOTS_REMOVE_FROM_GUEST                                                                                                                              \
-[this](dots::GuestTransceiver& guestTransceiver, auto&& publishExpectation, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto& \
-{                                                                                                                                                                  \
-    return IMPL_EXPECT_DOTS_PUBLISH_FROM_GUEST(guestTransceiver, std::forward<decltype(publishExpectation)>(publishExpectation), includedProperties, true);        \
+#define EXPECT_DOTS_REMOVE_FROM_GUEST                                                                                                                    \
+[this](dots::GuestTransceiver& guestTransceiver, auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto& \
+{                                                                                                                                                        \
+    return IMPL_EXPECT_DOTS_PUBLISH_FROM_GUEST(guestTransceiver, std::forward<decltype(instance)>(instance), includedProperties, true);                  \
 }
 
-#define IMPL_EXPECT_DOTS_PUBLISH                                                                                                                                            \
-[this](auto&& publishExpectation, std::optional<dots::types::property_set_t> includedProperties, bool remove) -> auto&                                                      \
-{                                                                                                                                                                           \
-    return IMPL_EXPECT_DOTS_PUBLISH_FROM_GUEST(PublishTestBase::globalGuest(), std::forward<decltype(publishExpectation)>(publishExpectation), includedProperties, remove); \
+#define IMPL_EXPECT_DOTS_PUBLISH                                                                                                                        \
+[this](auto&& instance, std::optional<dots::types::property_set_t> includedProperties, bool remove) -> auto&                                            \
+{                                                                                                                                                       \
+    return IMPL_EXPECT_DOTS_PUBLISH_FROM_GUEST(PublishTestBase::globalGuest(), std::forward<decltype(instance)>(instance), includedProperties, remove); \
 }
 
-#define EXPECT_DOTS_PUBLISH                                                                                                     \
-[this](auto&& publishExpectation, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto&        \
-{                                                                                                                               \
-    return IMPL_EXPECT_DOTS_PUBLISH(std::forward<decltype(publishExpectation)>(publishExpectation), includedProperties, false); \
+#define EXPECT_DOTS_PUBLISH                                                                                    \
+[this](auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto& \
+{                                                                                                              \
+    return IMPL_EXPECT_DOTS_PUBLISH(std::forward<decltype(instance)>(instance), includedProperties, false);    \
 }
 
-#define EXPECT_DOTS_REMOVE                                                                                                     \
-[this](auto&& publishExpectation, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto&       \
-{                                                                                                                              \
-    return IMPL_EXPECT_DOTS_PUBLISH(std::forward<decltype(publishExpectation)>(publishExpectation), includedProperties, true); \
+#define EXPECT_DOTS_REMOVE                                                                                     \
+[this](auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto& \
+{                                                                                                              \
+    return IMPL_EXPECT_DOTS_PUBLISH(std::forward<decltype(instance)>(instance), includedProperties, true);     \
 }
 
-#define IMPL_SPOOF_DOTS_PUBLISH                                                                                      \
-[this](auto&& publishSpoof, std::optional<dots::types::property_set_t> includedProperties, bool remove)              \
-{                                                                                                                    \
-    constexpr bool IsStruct = std::is_base_of_v<dots::type::Struct, std::decay_t<decltype(publishSpoof)>>;           \
-    static_assert(IsStruct, "DOTS publish spoof has to be an instance of a DOTS struct type");                       \
-                                                                                                                     \
-    if constexpr (IsStruct)                                                                                          \
-    {                                                                                                                \
-        const auto& instance = std::forward<decltype(publishSpoof)>(publishSpoof);                                   \
-                                                                                                                     \
-        for (auto& [guest, mockSubscriptionHandlers] : PublishTestBase::mockSubscriptionHandlers())                  \
-        {                                                                                                            \
-            (void)mockSubscriptionHandlers;                                                                          \
-            IMPL_EXPECT_DOTS_PUBLISH_FROM_GUEST(*guest, instance, includedProperties, remove).RetiresOnSaturation(); \
-        }                                                                                                            \
-        PublishTestBase::spoofGuest().publish(instance, includedProperties, remove);                                 \
-    }                                                                                                                \
+#define IMPL_SPOOF_DOTS_PUBLISH                                                                                       \
+[this](auto&& instance, std::optional<dots::types::property_set_t> includedProperties, bool remove)                   \
+{                                                                                                                     \
+    constexpr bool IsStruct = std::is_base_of_v<dots::type::Struct, std::decay_t<decltype(instance)>>;                \
+    static_assert(IsStruct, "DOTS publish spoof has to be an instance of a DOTS struct type");                        \
+                                                                                                                      \
+    if constexpr (IsStruct)                                                                                           \
+    {                                                                                                                 \
+        const auto& instance_ = std::forward<decltype(instance)>(instance);                                           \
+                                                                                                                      \
+        for (auto& [guest, mockSubscriptionHandlers] : PublishTestBase::mockSubscriptionHandlers())                   \
+        {                                                                                                             \
+            (void)mockSubscriptionHandlers;                                                                           \
+            IMPL_EXPECT_DOTS_PUBLISH_FROM_GUEST(*guest, instance_, includedProperties, remove).RetiresOnSaturation(); \
+        }                                                                                                             \
+        PublishTestBase::spoofGuest().publish(instance_, includedProperties, remove);                                 \
+    }                                                                                                                 \
 }
 
-#define SPOOF_DOTS_PUBLISH                                                                                  \
-[this](auto&& publishSpoof, std::optional<dots::types::property_set_t> includedProperties = std::nullopt)   \
-{                                                                                                           \
-    IMPL_SPOOF_DOTS_PUBLISH(std::forward<decltype(publishSpoof)>(publishSpoof), includedProperties, false); \
+#define SPOOF_DOTS_PUBLISH                                                                            \
+[this](auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) \
+{                                                                                                     \
+    IMPL_SPOOF_DOTS_PUBLISH(std::forward<decltype(instance)>(instance), includedProperties, false);   \
 }
 
-#define SPOOF_DOTS_REMOVE                                                                                  \
-[this](auto&& publishSpoof, std::optional<dots::types::property_set_t> includedProperties = std::nullopt)  \
-{                                                                                                          \
-    IMPL_SPOOF_DOTS_PUBLISH(std::forward<decltype(publishSpoof)>(publishSpoof), includedProperties, true); \
+#define SPOOF_DOTS_REMOVE                                                                             \
+[this](auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) \
+{                                                                                                     \
+    IMPL_SPOOF_DOTS_PUBLISH(std::forward<decltype(instance)>(instance), includedProperties, true);    \
 }
