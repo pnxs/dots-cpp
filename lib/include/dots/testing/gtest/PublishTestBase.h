@@ -382,7 +382,7 @@ namespace dots::testing
 
             if (emplacedSubscriptionHandler)
             {
-                m_subscriptions.emplace_back(m_host.subscribe(descriptor, [this, mockHandler = &itSubscriptionHandler->second](const io::Transmission& transmission)
+                m_subscriptions.emplace_back(transceiver.subscribe(descriptor, [this, mockHandler = &itSubscriptionHandler->second](const io::Transmission& transmission)
                 {
                     // delay invocation of the mock handler, so that a potential self
                     // update for the transmission is already queued for execution. this
