@@ -9,9 +9,9 @@ namespace dots::testing
     {
         using is_gtest_matcher = void;
 
-        EventEqualMatcher(T instance, property_set_t includedProperties, bool remove) :
-            m_expectedStructMatcher{ std::move(instance), includedProperties },
-            m_remove(remove)
+        EventEqualMatcher(T instance, DotsHeader header) :
+            m_expectedStructMatcher{ std::move(instance), header.attributes },
+            m_header(std::move(header))
         {
             /* do nothing */
         }
@@ -22,12 +22,13 @@ namespace dots::testing
         EventEqualMatcher& operator = (const EventEqualMatcher& rhs) = default;
         EventEqualMatcher& operator = (EventEqualMatcher&& rhs) = default;
 
-        bool MatchAndExplain(const Event<>& e, std::ostream* os) const
+        bool MatchAndExplain(const Event<>& event, std::ostream* os) const
         {
-            const DotsHeader& header = e.header();
-            const type::Struct& instance = e.transmitted();
+            const DotsHeader& header = event.header();
+            const type::Struct& instance = event.transmitted();
 
-            if (bool isRemove = header.removeObj == true; isRemove != m_remove)
+            if ((m_header.removeObj.isValid() && header.removeObj != m_header.removeObj) || 
+                (m_header.isFromMyself.isValid() && header.isFromMyself != m_header.isFromMyself))
             {
                 return false;
             }
@@ -39,26 +40,65 @@ namespace dots::testing
 
         void DescribeTo(std::ostream* os) const
         {
-            *os << (m_remove ? "REMOVE        " : "CREATE/UPDATE ");
+            describeHeaderTo(os);
             m_expectedStructMatcher.DescribeTo(os);
         }
 
         void DescribeNegationTo(std::ostream* os) const
         {
-            *os << (m_remove ? "REMOVE        " : "CREATE/UPDATE ");
+            describeHeaderTo(os);
             m_expectedStructMatcher.DescribeNegationTo(os);
         }
 
     private:
 
+        void describeHeaderTo(std::ostream* os) const
+        {
+            if (m_header.isFromMyself == true)
+            {
+                *os << (m_header.removeObj == true ? "SELF REMOVE        " : "SELF CREATE/UPDATE ");
+            }
+            else
+            {
+                *os << (m_header.removeObj == true ? "     REMOVE        " : "     CREATE/UPDATE ");
+            }
+        }
+
         StructEqualMatcher<T> m_expectedStructMatcher;
-        bool m_remove;
+        DotsHeader m_header;
     };
 
-    template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
-    ::testing::Matcher<const Event<>&> EventEqual(T instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false)
+    template <typename T>
+    ::testing::Matcher<const Event<>&> EventEqual(T&& instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false, bool isFromMyself = false)
     {
-        types::property_set_t includedProperties_ = includedProperties == std::nullopt ? instance._validProperties() : *includedProperties;
-        return EventEqualMatcher<T>(std::move(instance), includedProperties_, remove);
+        using decayed_t = std::decay_t<T>;
+        constexpr bool IsStruct = std::is_base_of_v<dots::type::Struct, decayed_t>;
+        static_assert(IsStruct, "instance type T has to be a DOTS struct type");
+
+        if constexpr (IsStruct)
+        {
+            DotsHeader header{
+                DotsHeader::attributes_i{ includedProperties == std::nullopt ? instance._validProperties() : *includedProperties },
+            };
+
+            if (remove)
+            {
+                header.removeObj = true;
+            }
+
+            if (isFromMyself)
+            {
+                header.isFromMyself = true;
+            }
+
+            return EventEqualMatcher<decayed_t>(
+                std::forward<T>(instance), 
+                std::move(header)
+            );
+        }
+        else
+        {
+            return std::declval<::testing::Matcher<const Event<>&>>();
+        }
     }
 }
