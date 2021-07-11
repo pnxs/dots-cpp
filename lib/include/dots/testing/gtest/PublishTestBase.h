@@ -331,12 +331,22 @@ namespace dots::testing
             return m_host;
         }
 
+        void connectGuest(GuestTransceiver& guest, type::DescriptorMap preloadPublishTypes, type::DescriptorMap preloadSubscribeTypes, std::optional<std::string> authSecret)
+        {
+            guest.open<io::LocalChannel>(std::move(preloadPublishTypes), std::move(preloadSubscribeTypes), std::move(authSecret), m_localListener);
+        }
+
+        void connectGuest(GuestTransceiver& guest)
+        {
+            guest.open<io::LocalChannel>(m_localListener);
+        }
+
         GuestTransceiver& globalGuest()
         {
             if (m_globalGuest == nullptr)
             {
                 m_globalGuest = &transceiver("dots-global-guest", true);
-                m_globalGuest->open<io::LocalChannel>(io::global_publish_types(), io::global_subscribe_types(), std::optional<std::string>{ std::nullopt }, m_localListener);
+                connectGuest(*m_globalGuest, io::global_publish_types(), io::global_subscribe_types(), std::optional<std::string>{ std::nullopt });
                 processEvents();
             }
 
@@ -348,39 +358,27 @@ namespace dots::testing
             if (m_spoofGuest == std::nullopt)
             {
                 m_spoofGuest.emplace("dots-spoof-guest", m_host.ioContext());
-                m_spoofGuest->open<io::LocalChannel>(m_localListener);
+                connectGuest(*m_spoofGuest);
                 processEvents();
             }
 
             return *m_spoofGuest;
         }
 
-        auto mockSubscriptionHandlers() const -> const std::map<GuestTransceiver*, mock_subscription_handlers_t>&
+        auto mockSubscriptionHandlers() const -> const std::map<Transceiver*, mock_subscription_handlers_t>&
         {
             return m_mockSubscriptionHandlers;
         }
 
-        auto mockSubscriptionHandlers() -> std::map<GuestTransceiver*, mock_subscription_handlers_t>&
+        auto mockSubscriptionHandlers() -> std::map<Transceiver*, mock_subscription_handlers_t>&
         {
             return m_mockSubscriptionHandlers;
         }
 
-        mock_subscription_handler_t& getMockSubscriptionHandler(GuestTransceiver& guest, const type::StructDescriptor<>& descriptor)
+        mock_subscription_handler_t& getMockSubscriptionHandler(Transceiver& transceiver, const type::StructDescriptor<>& descriptor)
         {
-            auto [itGuest, emplacedGuest] = m_mockSubscriptionHandlers.try_emplace(&guest);
-
-            if (emplacedGuest)
-            {
-                GuestTransceiver* guestPtr = itGuest->first;
-
-                if (guestPtr != m_globalGuest && (m_spoofGuest == std::nullopt || &*m_spoofGuest != guestPtr))
-                {
-                    guestPtr->open<io::LocalChannel>(m_localListener);
-                    processEvents();
-                }
-            }
-
-            auto [itSubscriptionHandler, emplacedSubscriptionHandler] = itGuest->second.try_emplace(&descriptor);
+            auto itTransceiver = m_mockSubscriptionHandlers.try_emplace(&transceiver).first;
+            auto [itSubscriptionHandler, emplacedSubscriptionHandler] = itTransceiver->second.try_emplace(&descriptor);
 
             if (emplacedSubscriptionHandler)
             {
@@ -402,14 +400,14 @@ namespace dots::testing
         }
 
         template <typename T>
-        mock_subscription_handler_t& getMockSubscriptionHandler(GuestTransceiver& guest, T&& instance)
+        mock_subscription_handler_t& getMockSubscriptionHandler(Transceiver& transceiver, T&& instance)
         {
             constexpr bool IsStruct = std::is_base_of_v<type::Struct, std::decay_t<T>>;
             static_assert(IsStruct, "instance type T has to be a DOTS struct type");
 
             if constexpr (IsStruct)
             {
-                return getMockSubscriptionHandler(guest, std::forward<T>(instance)._descriptor());
+                return getMockSubscriptionHandler(transceiver, std::forward<T>(instance)._descriptor());
             }
             else
             {
@@ -424,33 +422,33 @@ namespace dots::testing
         GuestTransceiver* m_globalGuest;
         std::optional<GuestTransceiver> m_spoofGuest;
         io::LocalListener& m_localListener;
-        std::map<GuestTransceiver*, mock_subscription_handlers_t> m_mockSubscriptionHandlers;
+        std::map<Transceiver*, mock_subscription_handlers_t> m_mockSubscriptionHandlers;
         std::vector<dots::Subscription> m_subscriptions;
     };
 }
 
-#define IMPL_EXPECT_DOTS_PUBLISH_FROM_GUEST                                                                                                                                     \
-[this](dots::GuestTransceiver& guestTransceiver, auto instance, std::optional<dots::types::property_set_t> includedProperties, bool remove, bool isFromMyself) -> auto&         \
-{                                                                                                                                                                               \
-    return IMPL_EXPECT_DOTS_PUBLISH_AT_SUBSCRIBER(PublishTestBase::getMockSubscriptionHandler(guestTransceiver, instance), instance, includedProperties, remove, isFromMyself); \
+#define IMPL_EXPECT_DOTS_PUBLISH_AT_TRANSCEIVER                                                                                                                            \
+[this](dots::Transceiver& transceiver, auto instance, std::optional<dots::types::property_set_t> includedProperties, bool remove, bool isFromMyself) -> auto&              \
+{                                                                                                                                                                          \
+    return IMPL_EXPECT_DOTS_PUBLISH_AT_SUBSCRIBER(PublishTestBase::getMockSubscriptionHandler(transceiver, instance), instance, includedProperties, remove, isFromMyself); \
 }
 
-#define EXPECT_DOTS_PUBLISH_FROM_GUEST                                                                                                                   \
-[this](dots::GuestTransceiver& guestTransceiver, auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto& \
-{                                                                                                                                                        \
-    return IMPL_EXPECT_DOTS_PUBLISH_FROM_GUEST(guestTransceiver, std::forward<decltype(instance)>(instance), includedProperties, false, false);          \
+#define EXPECT_DOTS_PUBLISH_FROM_TRANSCEIVER                                                                                                   \
+[this](dots::Transceiver& transceiver, auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto& \
+{                                                                                                                                              \
+    return IMPL_EXPECT_DOTS_PUBLISH_AT_TRANSCEIVER(transceiver, std::forward<decltype(instance)>(instance), includedProperties, false, false); \
 }
 
-#define EXPECT_DOTS_REMOVE_FROM_GUEST                                                                                                                    \
-[this](dots::GuestTransceiver& guestTransceiver, auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto& \
-{                                                                                                                                                        \
-    return IMPL_EXPECT_DOTS_PUBLISH_FROM_GUEST(guestTransceiver, std::forward<decltype(instance)>(instance), includedProperties, true, false);           \
+#define EXPECT_DOTS_REMOVE_FROM_TRANSCEIVER                                                                                                    \
+[this](dots::Transceiver& transceiver, auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto& \
+{                                                                                                                                              \
+    return IMPL_EXPECT_DOTS_PUBLISH_AT_TRANSCEIVER(transceiver, std::forward<decltype(instance)>(instance), includedProperties, true, false);  \
 }
 
-#define IMPL_EXPECT_DOTS_PUBLISH                                                                                                                                      \
-[this](auto&& instance, std::optional<dots::types::property_set_t> includedProperties, bool remove, bool isFromMyself) -> auto&                                       \
-{                                                                                                                                                                     \
-    return IMPL_EXPECT_DOTS_PUBLISH_FROM_GUEST(PublishTestBase::globalGuest(), std::forward<decltype(instance)>(instance), includedProperties, remove, isFromMyself); \
+#define IMPL_EXPECT_DOTS_PUBLISH                                                                                                                                   \
+[this](auto&& instance, std::optional<dots::types::property_set_t> includedProperties, bool remove, bool isFromMyself) -> auto&                                    \
+{                                                                                                                                                                  \
+    return IMPL_EXPECT_DOTS_PUBLISH_AT_TRANSCEIVER(PublishTestBase::host(), std::forward<decltype(instance)>(instance), includedProperties, remove, isFromMyself); \
 }
 
 #define EXPECT_DOTS_PUBLISH                                                                                        \
@@ -465,21 +463,21 @@ namespace dots::testing
     return IMPL_EXPECT_DOTS_PUBLISH(std::forward<decltype(instance)>(instance), includedProperties, true, false); \
 }
 
-#define IMPL_SPOOF_DOTS_PUBLISH                                                                                             \
-[this](auto instance, std::optional<dots::types::property_set_t> includedProperties, bool remove)                           \
-{                                                                                                                           \
-    constexpr bool IsStruct = std::is_base_of_v<dots::type::Struct, std::decay_t<decltype(instance)>>;                      \
-    static_assert(IsStruct, "DOTS publish spoof has to be an instance of a DOTS struct type");                              \
-                                                                                                                            \
-    if constexpr (IsStruct)                                                                                                 \
-    {                                                                                                                       \
-        for (auto& [guest, mockSubscriptionHandlers] : PublishTestBase::mockSubscriptionHandlers())                         \
-        {                                                                                                                   \
-            (void)mockSubscriptionHandlers;                                                                                 \
-            IMPL_EXPECT_DOTS_PUBLISH_FROM_GUEST(*guest, instance, includedProperties, remove, false).RetiresOnSaturation(); \
-        }                                                                                                                   \
-        PublishTestBase::spoofGuest().publish(instance, includedProperties, remove);                                        \
-    }                                                                                                                       \
+#define IMPL_SPOOF_DOTS_PUBLISH                                                                                                       \
+[this](auto instance, std::optional<dots::types::property_set_t> includedProperties, bool remove)                                     \
+{                                                                                                                                     \
+    constexpr bool IsStruct = std::is_base_of_v<dots::type::Struct, std::decay_t<decltype(instance)>>;                                \
+    static_assert(IsStruct, "DOTS publish spoof has to be an instance of a DOTS struct type");                                        \
+                                                                                                                                      \
+    if constexpr (IsStruct)                                                                                                           \
+    {                                                                                                                                 \
+        for (auto& [transceiver, mockSubscriptionHandlers] : PublishTestBase::mockSubscriptionHandlers())                             \
+        {                                                                                                                             \
+            (void)mockSubscriptionHandlers;                                                                                           \
+            IMPL_EXPECT_DOTS_PUBLISH_AT_TRANSCEIVER(*transceiver, instance, includedProperties, remove, false).RetiresOnSaturation(); \
+        }                                                                                                                             \
+        PublishTestBase::spoofGuest().publish(instance, includedProperties, remove);                                                  \
+    }                                                                                                                                 \
 }
 
 #define SPOOF_DOTS_PUBLISH                                                                            \
