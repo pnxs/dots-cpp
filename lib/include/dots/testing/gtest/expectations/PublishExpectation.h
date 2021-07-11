@@ -1,17 +1,15 @@
 #pragma once
-#include <dots/testing/gtest/matchers/TransmissionMatcher.h>
-
-namespace dots::testing
-{
-    using mock_subscription_handler_t = ::testing::MockFunction<void(const io::Transmission&)>;
-}
+#include <dots/testing/gtest/matchers/EventMatcher.h>
 
 #if defined(DOTS_ENABLE_DEPRECATED_SEQUENCE_SUPPORT)
 
+#include <dots/testing/gtest/matchers/TransmissionMatcher.h>
 #include <dots/testing/gtest/expectations/CallExpectation.h>
 
 namespace dots::testing
 {
+    using mock_subscription_handler_t = ::testing::MockFunction<void(const io::Transmission&)>;
+
     struct publish_expectation_tag {};
 
     template <typename T>
@@ -77,12 +75,17 @@ namespace dots::testing
 #define DOTS_EXPECT_PUBLISH_SEQUENCE_AT_SUBSCRIBER(mockSubscriptionHandlerRetriever_, ...) DOTS_EXPECT_CONSECUTIVE_CALL_SEQUENCE(DOTS_MAKE_EXPECT_PUBLISH_AT_SUBSCRIBER(mockSubscriptionHandlerRetriever_), __VA_ARGS__)
 #define DOTS_EXPECT_NAMED_PUBLISH_SEQUENCE_AT_SUBSCRIBER(mockSubscriptionHandlerRetriever_, sequence_, ...) DOTS_EXPECT_NAMED_CALL_SEQUENCE(DOTS_MAKE_EXPECT_PUBLISH_AT_SUBSCRIBER(mockSubscriptionHandlerRetriever_), sequence_, __VA_ARGS__)
 
-#endif
+#else
+
+namespace dots::testing
+{
+    using mock_subscription_handler_t = ::testing::MockFunction<void(const Event<>&)>;
+}
 
 #define IMPL_EXPECT_DOTS_PUBLISH_AT_SUBSCRIBER                                                                                                                                                   \
 [](dots::testing::mock_subscription_handler_t& mockSubscriptionHandler, auto&& instance, std::optional<dots::types::property_set_t> includedProperties, bool remove, bool isFromMyself) -> auto& \
 {                                                                                                                                                                                                \
-    return EXPECT_CALL(mockSubscriptionHandler, Call(dots::testing::TransmissionEqual(std::forward<decltype(instance)>(instance), includedProperties, remove, isFromMyself)));                   \
+    return EXPECT_CALL(mockSubscriptionHandler, Call(dots::testing::EventEqual(std::forward<decltype(instance)>(instance), includedProperties, remove, isFromMyself)));                   \
 }
 
 #define EXPECT_DOTS_PUBLISH_AT_SUBSCRIBER                                                                                                                                       \
@@ -96,3 +99,5 @@ namespace dots::testing
 {                                                                                                                                                                               \
     return IMPL_EXPECT_DOTS_PUBLISH_AT_SUBSCRIBER(mockSubscriptionHandler, std::forward<decltype(instance)>(instance), includedProperties, true, false);                        \
 }
+
+#endif

@@ -266,13 +266,11 @@ namespace dots::testing
 {
     struct PublishTestBase : ::testing::Test
     {
-        using mock_subscription_handler_t = ::testing::MockFunction<void(const io::Transmission&)>;
-
         PublishTestBase(boost::asio::io_context& ioContext = io::global_io_context(), std::string hostName = "dots-test-host") :
             m_host{ std::move(hostName), ioContext },
             m_globalGuest(nullptr),
             m_spoofGuest(std::nullopt),
-            m_localListener{ m_host.listen<dots::io::LocalListener>() }
+            m_localListener{ m_host.listen<io::LocalListener>() }
         {
             PublishTestBase::ioContext().restart();
 
@@ -382,19 +380,11 @@ namespace dots::testing
 
             if (emplacedSubscriptionHandler)
             {
-                m_subscriptions.emplace_back(transceiver.subscribe(descriptor, [this, mockHandler = &itSubscriptionHandler->second](const io::Transmission& transmission)
+                m_subscriptions.emplace_back(transceiver.subscribe(descriptor, [this, mockHandler = &itSubscriptionHandler->second](const Event<>& event)
                 {
                     try
                     {
-                        // delay invocation of the mock handler, so that a potential self
-                        // update for the transmission is already queued for execution. this
-                        // ensures that if a user has specified a reactive action, they are
-                        // able to post the creation of a depending stimulus or expectation
-                        // "behind" the self update.
-                        boost::asio::post(ioContext(), [mockHandler, transmission = io::Transmission{ transmission.header(), transmission.instance() }]
-                        {
-                            (*mockHandler).AsStdFunction()(transmission);
-                        });
+                        (*mockHandler).AsStdFunction()(event);
                     }
                     catch (const std::exception& e)
                     {
@@ -418,7 +408,7 @@ namespace dots::testing
             }
             else
             {
-                auto&& mockSubscriptionHandler = std::declval<::testing::MockFunction<void(const io::Transmission&)>>();
+                auto&& mockSubscriptionHandler = std::declval<mock_subscription_handler_t>();
                 return mockSubscriptionHandler;
             }
         }
@@ -430,7 +420,7 @@ namespace dots::testing
         std::optional<GuestTransceiver> m_spoofGuest;
         io::LocalListener& m_localListener;
         std::map<Transceiver*, mock_subscription_handlers_t> m_mockSubscriptionHandlers;
-        std::vector<dots::Subscription> m_subscriptions;
+        std::vector<Subscription> m_subscriptions;
     };
 }
 
