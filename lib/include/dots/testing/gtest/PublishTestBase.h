@@ -384,15 +384,22 @@ namespace dots::testing
             {
                 m_subscriptions.emplace_back(transceiver.subscribe(descriptor, [this, mockHandler = &itSubscriptionHandler->second](const io::Transmission& transmission)
                 {
-                    // delay invocation of the mock handler, so that a potential self
-                    // update for the transmission is already queued for execution. this
-                    // ensures that if a user has specified a reactive action, they are
-                    // able to post the creation of a depending stimulus or expectation
-                    // "behind" the self update.
-                    boost::asio::post(ioContext(), [mockHandler, transmission = io::Transmission{ transmission.header(), transmission.instance() }]
+                    try
                     {
-                        (*mockHandler).AsStdFunction()(transmission);
-                    });
+                        // delay invocation of the mock handler, so that a potential self
+                        // update for the transmission is already queued for execution. this
+                        // ensures that if a user has specified a reactive action, they are
+                        // able to post the creation of a depending stimulus or expectation
+                        // "behind" the self update.
+                        boost::asio::post(ioContext(), [mockHandler, transmission = io::Transmission{ transmission.header(), transmission.instance() }]
+                        {
+                            (*mockHandler).AsStdFunction()(transmission);
+                        });
+                    }
+                    catch (const std::exception& e)
+                    {
+                        LOG_ERROR_S("error in action of publish expectation -> " << e.what());
+                    }
                 }));
             }
 
