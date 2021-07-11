@@ -61,7 +61,7 @@ namespace dots::testing
             }
             else
             {
-                *os << (m_header.removeObj == true ? "REMOVE        " : "CREATE/UPDATE ");
+                *os << (m_header.removeObj == true ? "     REMOVE        " : "     CREATE/UPDATE ");
             }
         }
 
