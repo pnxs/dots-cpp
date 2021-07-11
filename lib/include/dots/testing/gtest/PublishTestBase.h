@@ -445,22 +445,16 @@ namespace dots::testing
     return IMPL_EXPECT_DOTS_PUBLISH_AT_TRANSCEIVER(transceiver, std::forward<decltype(instance)>(instance), includedProperties, true, false);  \
 }
 
-#define IMPL_EXPECT_DOTS_PUBLISH                                                                                                                                   \
-[this](auto&& instance, std::optional<dots::types::property_set_t> includedProperties, bool remove, bool isFromMyself) -> auto&                                    \
-{                                                                                                                                                                  \
-    return IMPL_EXPECT_DOTS_PUBLISH_AT_TRANSCEIVER(PublishTestBase::host(), std::forward<decltype(instance)>(instance), includedProperties, remove, isFromMyself); \
+#define EXPECT_DOTS_PUBLISH                                                                                                               \
+[this](auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto&                            \
+{                                                                                                                                         \
+    return EXPECT_DOTS_PUBLISH_FROM_TRANSCEIVER(PublishTestBase::host(), std::forward<decltype(instance)>(instance), includedProperties); \
 }
 
-#define EXPECT_DOTS_PUBLISH                                                                                        \
-[this](auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto&     \
-{                                                                                                                  \
-    return IMPL_EXPECT_DOTS_PUBLISH(std::forward<decltype(instance)>(instance), includedProperties, false, false); \
-}
-
-#define EXPECT_DOTS_REMOVE                                                                                        \
-[this](auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto&    \
-{                                                                                                                 \
-    return IMPL_EXPECT_DOTS_PUBLISH(std::forward<decltype(instance)>(instance), includedProperties, true, false); \
+#define EXPECT_DOTS_REMOVE                                                                                                               \
+[this](auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto&                           \
+{                                                                                                                                        \
+    return EXPECT_DOTS_REMOVE_FROM_TRANSCEIVER(PublishTestBase::host(), std::forward<decltype(instance)>(instance), includedProperties); \
 }
 
 #define IMPL_SPOOF_DOTS_PUBLISH                                                                                                       \
