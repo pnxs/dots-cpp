@@ -319,6 +319,13 @@ namespace dots::testing
             m_host.ioContext().restart();
         }
 
+        template <typename Rep, typename Period>
+        void processEvents(std::chrono::duration<Rep, Period> duration)
+        {
+            m_host.ioContext().run_for(std::chrono::duration_cast<std::chrono::microseconds>(duration));
+            m_host.ioContext().restart();
+        }
+
         const HostTransceiver& host() const
         {
             return m_host;
