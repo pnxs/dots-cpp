@@ -2,7 +2,6 @@
 #include <dots/testing/gtest/gtest.h>
 #include <dots/testing/gtest/PublishTestBase.h>
 #include <dots/HostTransceiver.h>
-#include <dots/tools/fun.h>
 
 struct TestHostTransceiver : dots::testing::PublishTestBase
 {
@@ -12,28 +11,43 @@ protected:
     {
         /* do nothing */
     }
-
 };
 
-TEST_F(TestHostTransceiver, testDotsEcho)
+TEST_F(TestHostTransceiver, HandleEchoRequest)
 {
-    std::optional<DotsEcho> reply;
+    dots::testing::mock_subscription_handler_t mockGuestSubscriber;
+    dots::Subscription guestSubscription = dots::subscribe<DotsEcho>(mockGuestSubscriber.AsStdFunction());
 
-    dots::Subscription subscription = dots::subscribe<DotsEcho>([&](const DotsEcho::Cbd& event) {
-        reply = event();
-    });
-
-    dots::publish(DotsEcho{
-        DotsEcho::request_i(true),
-        DotsEcho::identifier_i(0),
-        DotsEcho::sequenceNumber_i(1)
-    });
+    DOTS_EXPECTATION_SEQUENCE(
+        [this]
+        {
+            dots::publish(DotsEcho{
+                DotsEcho::request_i(true),
+                DotsEcho::identifier_i(42),
+                DotsEcho::sequenceNumber_i(1)
+            });
+        },
+        EXPECT_DOTS_PUBLISH_AT_SUBSCRIBER(mockGuestSubscriber, DotsEcho{
+            DotsEcho::request_i(false),
+            DotsEcho::identifier_i(42),
+            DotsEcho::sequenceNumber_i(1)
+        }),
+        [this]
+        {
+            dots::publish(DotsEcho{
+                DotsEcho::request_i(true),
+                DotsEcho::identifier_i(72),
+                DotsEcho::sequenceNumber_i(2),
+                DotsEcho::data_i{ DotsEcho::_Name }
+            });
+        },
+        EXPECT_DOTS_PUBLISH_AT_SUBSCRIBER(mockGuestSubscriber, DotsEcho{
+            DotsEcho::request_i(false),
+            DotsEcho::identifier_i(72),
+            DotsEcho::sequenceNumber_i(2),
+            DotsEcho::data_i{ DotsEcho::_Name }
+        })
+    );
 
     processEvents();
-
-    ASSERT_TRUE(reply.has_value());
-    EXPECT_EQ(false, reply->request);
-    EXPECT_EQ(0u, reply->identifier);
-    EXPECT_EQ(1u, reply->sequenceNumber);
-
 }
