@@ -3,14 +3,8 @@
 
 namespace dots::testing::details
 {
-    template <typename T, typename = void>
-    struct is_expectation : std::false_type {};
-
     template <typename T>
-    struct is_expectation<T, std::void_t<decltype(std::declval<T>().WillOnce(::testing::DoAll()))>> : std::true_type {};
-
-    template <typename T>
-    using is_expectation_t = typename is_expectation<T>::type;
+    using is_expectation_t = std::is_constructible<::testing::Expectation, T>;
 
     template <typename T>
     constexpr bool is_expectation_v = is_expectation_t<T>::value;
@@ -88,10 +82,9 @@ namespace dots::testing::details
         auto& expectation = [](auto&& arg) -> auto&
         {
             using arg_t = decltype(arg);
-            using decayed_arg_t = std::decay_t<arg_t>;
 
-            constexpr bool IsExpectation = is_expectation_v<decayed_arg_t>;
-            constexpr bool IsExpectationFactory = is_expectation_factory_v<decayed_arg_t>;
+            constexpr bool IsExpectation = is_expectation_v<arg_t>;
+            constexpr bool IsExpectationFactory = is_expectation_factory_v<arg_t>;
 
             static_assert(IsExpectation || IsExpectationFactory, "expectation sequence argument must be either an expectation or a trivially invocable expectation factory");
 
