@@ -76,40 +76,18 @@ namespace dots::testing::details
     template <typename... Ts>
     using expectation_tuple_t = std::tuple<std::conditional_t<is_expectation_v<std::decay_t<Ts>>, std::decay_t<Ts>&, std::decay_t<Ts>>...>;
 
-    template <typename ArgHead, typename... ArgTail>
-    auto& expectation_sequence_recursive(const ::testing::Sequence& sequence, ArgHead&& argHead, ArgTail&&... argTail)
+    template <typename Expectation, typename... ArgTail>
+    auto& expectation_sequence_recursive(const ::testing::Sequence& sequence, Expectation&& expectation, ArgTail&&... argTail)
     {
-        auto& expectation = [](auto&& arg) -> auto&
-        {
-            using arg_t = decltype(arg);
-
-            constexpr bool IsExpectation = is_expectation_v<arg_t>;
-            constexpr bool IsExpectationFactory = is_expectation_factory_v<arg_t>;
-
-            static_assert(IsExpectation || IsExpectationFactory, "expectation sequence argument must be either an expectation or a trivially invocable expectation factory");
-
-            if constexpr (IsExpectation)
-            {
-                return std::forward<arg_t>(arg);
-            }
-            else if constexpr (IsExpectationFactory)
-            {
-                return std::invoke(std::forward<arg_t>(arg));
-            }
-            else
-            {
-                return EXPECT_CALL(std::declval<::testing::MockFunction<void()>>(), Call());
-            }
-        }(std::forward<decltype(argHead)>(argHead)).InSequence(sequence);
-
-        using expectation_t = std::decay_t<decltype(expectation)>;
+        static_assert(is_expectation_v<Expectation>, "expectation sequence argument must be a Google Test expectation");
+        expectation.InSequence(sequence);
 
         if constexpr (sizeof...(argTail) > 0)
         {
             auto argTailRefs = std::forward_as_tuple(std::forward<decltype(argTail)>(argTail)...);
             using arg_tail_head_t = std::tuple_element_t<0, decltype(argTailRefs)>;
 
-            if constexpr (is_compatible_action_v<arg_tail_head_t, expectation_signature_t<expectation_t>>)
+            if constexpr (is_compatible_action_v<arg_tail_head_t, expectation_signature_t<std::decay_t<Expectation>>>)
             {
                 expectation.WillOnce(::testing::DoAll(std::forward<arg_tail_head_t>(std::get<0>(argTailRefs))));
 
