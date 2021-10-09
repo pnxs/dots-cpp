@@ -4,71 +4,170 @@
 
 namespace dots::testing::details
 {
-    template <typename Expectation, typename... ArgTail>
-    auto& expectation_sequence_recursive(const ::testing::Sequence& sequence, Expectation&& expectation, ArgTail&&... argTail)
+    template <typename... Expectations>
+    struct TypedExpectationSet
     {
-        static_assert(is_expectation_v<Expectation>, "expectation sequence argument must be a Google Test expectation");
-        expectation.InSequence(sequence);
+        static_assert(std::conjunction_v<std::is_constructible<::testing::Expectation, Expectations&>...>, "expectation bundle arguments must be Google Test expectations");
+
+        TypedExpectationSet(Expectations&... expectations) : m_expectations{ std::tie(expectations...) }
+        {
+            /* do nothing */
+        }
+
+    private:
+
+        template <typename... OtherExpectations>
+        void after(const TypedExpectationSet<OtherExpectations...>& other) const
+        {
+            std::apply([&other](auto&... expectations)
+            {
+                auto after = [&other](auto& expectation)
+                {
+                    std::apply([&expectation](auto&... previousExpectations)
+                    {
+                        (expectation.After(previousExpectations), ...);
+                    }, other.m_expectations);
+                };
+
+                (after(expectations), ...);
+            }, m_expectations);
+        }
+
+        template <typename Action>
+        void willOnce(Action&& action) const
+        {
+            if constexpr (sizeof...(Expectations) == 1)
+            {
+                constexpr bool IsCompatibleAction = is_compatible_action_v<Action, expectation_signature_t<Expectations...>>;
+                static_assert(IsCompatibleAction, "action for set of a single expectation must be compatible with signature of expectation function or be trivially invocable");
+
+                if constexpr (IsCompatibleAction)
+                {
+                    std::apply([action{ std::forward<Action>(action) }](auto& expectation)
+                    {
+                        expectation.WillOnce(::testing::DoAll(std::move(action)));
+                    }, m_expectations);
+                }
+            }
+            else if constexpr (sizeof...(Expectations) >= 2)
+            {
+                constexpr bool IsTrivialAction = std::is_invocable_v<Action>;
+                static_assert(IsTrivialAction, "action for set of multiple expectations must be trivially invocable");
+
+                if constexpr (IsTrivialAction)
+                {
+                    auto deferred_action = [actionData{ std::make_shared<std::pair<Action, uint32_t>>(std::forward<Action>(action), 0u) }]()
+                    {
+                        if (auto& [action, satisfiedExpectations] = *actionData; ++satisfiedExpectations == sizeof...(Expectations))
+                        {
+                            action();
+                        }
+                    };
+
+                    std::apply([deferred_action](auto&... expectations)
+                    {
+                        (expectations.WillOnce(::testing::DoAll(deferred_action)), ...);
+                    }, m_expectations);
+                }
+            }
+        }
+
+        template <typename...>
+        friend struct TypedExpectationSet;
+
+        template <typename... PreviousExpectations, typename... NextExpectations, typename... ArgTail>
+        friend auto expectation_sequence_recursive(const TypedExpectationSet<PreviousExpectations...>& previous, const TypedExpectationSet<NextExpectations...>& next, ArgTail&&... argTail);
+
+        std::tuple<Expectations&...> m_expectations;
+    };
+
+    template <typename T>
+    struct is_typed_expectation_set : std::false_type {};
+
+    template <typename... Expectations>
+    struct is_typed_expectation_set<TypedExpectationSet<Expectations...>> : std::true_type {};
+
+    template <typename T>
+    using is_typed_expectation_set_t = typename is_typed_expectation_set<T>::type;
+
+    template <typename T>
+    constexpr bool is_typed_expectation_set_v = is_typed_expectation_set_t<T>::value;
+
+    template <typename... PreviousExpectations, typename... NextExpectations, typename... ArgTail>
+    auto expectation_sequence_recursive(const TypedExpectationSet<PreviousExpectations...>& previous, const TypedExpectationSet<NextExpectations...>& next, ArgTail&&... argTail)
+    {
+        next.after(previous);
 
         if constexpr (sizeof...(argTail) > 0)
         {
             auto argTailRefs = std::forward_as_tuple(std::forward<decltype(argTail)>(argTail)...);
             using arg_tail_head_t = std::tuple_element_t<0, decltype(argTailRefs)>;
 
-            if constexpr (is_compatible_action_v<arg_tail_head_t, expectation_signature_t<std::decay_t<Expectation>>>)
+            if constexpr (is_typed_expectation_set_v<arg_tail_head_t>)
             {
-                expectation.WillOnce(::testing::DoAll(std::forward<arg_tail_head_t>(std::get<0>(argTailRefs))));
+                return expectation_sequence_recursive(next, std::forward<decltype(argTail)>(argTail)...);
+            }
+            else if constexpr (is_expectation_v<arg_tail_head_t>)
+            {
+                return std::apply([&next](auto& argTailHead, auto&&... argTailTail) -> auto
+                {
+                    return expectation_sequence_recursive(next, TypedExpectationSet{ argTailHead }, std::forward<decltype(argTailTail)>(argTailTail)...);
+                }, argTailRefs);
+            }
+            else
+            {
+                next.willOnce(std::forward<arg_tail_head_t>(std::get<0>(argTailRefs)));
 
                 if constexpr (sizeof...(argTail) > 1)
                 {
-                    return std::apply([&sequence](auto&&/* argTailHead*/, auto&&... argTailTail) -> auto&
+                    return std::apply([&next](auto&/* argTailHead*/, auto&&... argTailTail) -> auto
                     {
-                        return expectation_sequence_recursive(sequence, std::forward<decltype(argTailTail)>(argTailTail)...);
+                        return expectation_sequence_recursive(next, std::forward<decltype(argTailTail)>(argTailTail)...);
                     }, argTailRefs);
                 }
                 else
                 {
-                    return expectation;
+                    return next;
                 }
-            }
-            else
-            {
-                (void)expectation;
-                return expectation_sequence_recursive(sequence, std::forward<decltype(argTail)>(argTail)...);
             }
         }
         else
         {
-            return expectation;
+            return next;
         }
     }
 
+    template <typename... PreviousExpectations, typename NextExpectation, typename... ArgTail, std::enable_if_t<!is_typed_expectation_set_v<NextExpectation>, int> = 0>
+    auto expectation_sequence_recursive(const TypedExpectationSet<PreviousExpectations...>& previous, NextExpectation& next, ArgTail&&... argTail)
+    {
+        return expectation_sequence_recursive(previous, TypedExpectationSet{ next }, std::forward<decltype(argTail)>(argTail)...);
+    }
+
     template <typename ArgHead, typename... ArgTail>
-    auto& expectation_sequence(const ::testing::Sequence& sequence, ArgHead&& argHead, ArgTail&&... argTail)
+    auto expectation_sequence(ArgHead&& argHead, ArgTail&&... argTail)
     {
         if constexpr (std::is_invocable_v<decltype(argHead)>)
         {
-            auto& expectation = expectation_sequence_recursive(sequence, std::forward<decltype(argTail)>(argTail)...);
+            auto expectation = expectation_sequence_recursive(TypedExpectationSet{}, std::forward<decltype(argTail)>(argTail)...);
             std::invoke(std::forward<decltype(argHead)>(argHead));
 
             return expectation;
         }
         else
         {
-            return expectation_sequence_recursive(sequence, std::forward<decltype(argHead)>(argHead), std::forward<decltype(argTail)>(argTail)...);
+            return expectation_sequence_recursive(TypedExpectationSet{}, std::forward<decltype(argHead)>(argHead), std::forward<decltype(argTail)>(argTail)...);
         }
     }
 }
 
-#define DOTS_NAMED_EXPECTATION_SEQUENCE                                                                   \
-[&](const ::testing::Sequence& sequence, auto&&... args) -> auto&                                         \
-{                                                                                                         \
-    return dots::testing::details::expectation_sequence(sequence, std::forward<decltype(args)>(args)...); \
-}  
+#define DOTS_EXPECTATION_SEQUENCE                                                        \
+[&](auto&&... args)                                                                      \
+{                                                                                        \
+    dots::testing::details::expectation_sequence(std::forward<decltype(args)>(args)...); \
+}
 
-#define DOTS_EXPECTATION_SEQUENCE                                                                         \
-[&](auto&&... args) -> auto&                                                                              \
-{                                                                                                         \
-    static ::testing::Sequence Sequence;                                                                  \
-    return dots::testing::details::expectation_sequence(Sequence, std::forward<decltype(args)>(args)...); \
+#define DOTS_EXPECTATION_SET                                                                     \
+[&](auto&&... args) -> auto                                                                      \
+{                                                                                                \
+    return dots::testing::details::TypedExpectationSet{ std::forward<decltype(args)>(args)... }; \
 }
