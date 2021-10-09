@@ -38,7 +38,8 @@ namespace dots::testing::details
         {
             if constexpr (sizeof...(Expectations) == 1)
             {
-                constexpr bool IsCompatibleAction = is_compatible_action_v<Action, expectation_signature_t<Expectations...>>;
+                using expectation_t = std::tuple_element_t<0, std::tuple<Expectations...>>;
+                constexpr bool IsCompatibleAction = is_compatible_action_v<Action, expectation_signature_t<expectation_t>>;
                 static_assert(IsCompatibleAction, "action for set of a single expectation must be compatible with signature of expectation function or be trivially invocable");
 
                 if constexpr (IsCompatibleAction)
