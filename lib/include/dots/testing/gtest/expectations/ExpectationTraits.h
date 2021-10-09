@@ -9,30 +9,6 @@ namespace dots::testing::details
     template <typename T>
     constexpr bool is_expectation_v = is_expectation_t<T>::value;
 
-    template <typename T>
-    struct is_expectation_factory
-    {
-        static auto IsExpectationFactory()
-        {
-            if constexpr (std::is_invocable_v<T>)
-            {
-                return is_expectation_t<std::invoke_result_t<T>>{};
-            }
-            else
-            {
-                return std::false_type{};
-            }
-        }
-
-        using type = decltype(IsExpectationFactory());
-    };
-
-    template <typename T>
-    using is_expectation_factory_t = typename is_expectation_factory<T>::type;
-
-    template <typename T>
-    constexpr bool is_expectation_factory_v = is_expectation_factory_t<T>::value;
-
     template <typename T, typename = void>
     struct expectation_signature {};
 
@@ -72,7 +48,4 @@ namespace dots::testing::details
 
     template <typename T, typename Signature>
     constexpr bool is_compatible_action_v = is_compatible_action_t<T, Signature>::value;
-
-    template <typename... Ts>
-    using expectation_tuple_t = std::tuple<std::conditional_t<is_expectation_v<std::decay_t<Ts>>, std::decay_t<Ts>&, std::decay_t<Ts>>...>;
 }
