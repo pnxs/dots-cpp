@@ -5,69 +5,72 @@
 
 namespace dots::testing
 {
-    template <typename T>
-    struct TransmissionEqualMatcher
+    namespace details
     {
-        using is_gtest_matcher = void;
-
-        TransmissionEqualMatcher(T instance, DotsHeader header) :
-            m_expectedStructMatcher{ std::move(instance), header.attributes },
-            m_header(std::move(header))
+        template <typename T>
+        struct TransmissionEqualMatcher
         {
-            /* do nothing */
-        }
-        TransmissionEqualMatcher(const TransmissionEqualMatcher& other) = default;
-        TransmissionEqualMatcher(TransmissionEqualMatcher&& other) = default;
-        ~TransmissionEqualMatcher() = default;
+            using is_gtest_matcher = void;
 
-        TransmissionEqualMatcher& operator = (const TransmissionEqualMatcher& rhs) = default;
-        TransmissionEqualMatcher& operator = (TransmissionEqualMatcher&& rhs) = default;
-
-        bool MatchAndExplain(const io::Transmission& transmission, std::ostream* os) const
-        {
-            const DotsHeader& header = transmission.header();
-            const type::Struct& instance = transmission.instance();
-
-            if ((m_header.removeObj.isValid() && header.removeObj != m_header.removeObj) || 
-                (m_header.isFromMyself.isValid() && header.isFromMyself != m_header.isFromMyself))
+            TransmissionEqualMatcher(T instance, DotsHeader header) :
+                m_expectedStructMatcher{ std::move(instance), header.attributes },
+                m_header(std::move(header))
             {
-                return false;
+                /* do nothing */
             }
-            else 
+            TransmissionEqualMatcher(const TransmissionEqualMatcher& other) = default;
+            TransmissionEqualMatcher(TransmissionEqualMatcher&& other) = default;
+            ~TransmissionEqualMatcher() = default;
+
+            TransmissionEqualMatcher& operator = (const TransmissionEqualMatcher& rhs) = default;
+            TransmissionEqualMatcher& operator = (TransmissionEqualMatcher&& rhs) = default;
+
+            bool MatchAndExplain(const io::Transmission& transmission, std::ostream* os) const
             {
-                return m_expectedStructMatcher.MatchAndExplain(instance, os);
+                const DotsHeader& header = transmission.header();
+                const type::Struct& instance = transmission.instance();
+
+                if ((m_header.removeObj.isValid() && header.removeObj != m_header.removeObj) || 
+                    (m_header.isFromMyself.isValid() && header.isFromMyself != m_header.isFromMyself))
+                {
+                    return false;
+                }
+                else 
+                {
+                    return m_expectedStructMatcher.MatchAndExplain(instance, os);
+                }
             }
-        }
 
-        void DescribeTo(std::ostream* os) const
-        {
-            describeHeaderTo(os);
-            m_expectedStructMatcher.DescribeTo(os);
-        }
-
-        void DescribeNegationTo(std::ostream* os) const
-        {
-            describeHeaderTo(os);
-            m_expectedStructMatcher.DescribeNegationTo(os);
-        }
-
-    private:
-
-        void describeHeaderTo(std::ostream* os) const
-        {
-            if (m_header.isFromMyself == true)
+            void DescribeTo(std::ostream* os) const
             {
-                *os << (m_header.removeObj == true ? "SELF REMOVE        " : "SELF CREATE/UPDATE ");
+                describeHeaderTo(os);
+                m_expectedStructMatcher.DescribeTo(os);
             }
-            else
-            {
-                *os << (m_header.removeObj == true ? "     REMOVE        " : "     CREATE/UPDATE ");
-            }
-        }
 
-        StructEqualMatcher<T> m_expectedStructMatcher;
-        DotsHeader m_header;
-    };
+            void DescribeNegationTo(std::ostream* os) const
+            {
+                describeHeaderTo(os);
+                m_expectedStructMatcher.DescribeNegationTo(os);
+            }
+
+        private:
+
+            void describeHeaderTo(std::ostream* os) const
+            {
+                if (m_header.isFromMyself == true)
+                {
+                    *os << (m_header.removeObj == true ? "SELF REMOVE        " : "SELF CREATE/UPDATE ");
+                }
+                else
+                {
+                    *os << (m_header.removeObj == true ? "     REMOVE        " : "     CREATE/UPDATE ");
+                }
+            }
+
+            StructEqualMatcher<T> m_expectedStructMatcher;
+            DotsHeader m_header;
+        };
+    }
 
     template <typename T>
     ::testing::Matcher<const io::Transmission&> TransmissionEqual(T&& instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false, bool isFromMyself = false)
@@ -92,7 +95,7 @@ namespace dots::testing
                 header.isFromMyself = true;
             }
 
-            return TransmissionEqualMatcher<decayed_t>(
+            return details::TransmissionEqualMatcher<decayed_t>(
                 std::forward<T>(instance), 
                 std::move(header)
             );
