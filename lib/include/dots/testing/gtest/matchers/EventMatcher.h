@@ -71,6 +71,34 @@ namespace dots::testing
         };
     }
 
+    /*!
+     * @brief Create a Google Test matcher that compares DOTS events for
+     * equality.
+     *
+     * An event will be matched as equal if the transmitted instance in the
+     * event is equal to the given instance for the given property set.
+     *
+     * Additionally, the event must match the given @p remove and
+     * @p isFromMyself flags.
+     *
+     * @tparam T The DOTS struct type of the event.
+     *
+     * @param instance The instance to compare the transmitted instance in
+     * the event to.
+     *
+     * @param includedProperties The property set to include in the
+     * equality comparison. If no set is given, the valid property set of
+     * @p instance will be used.
+     *
+     * @param remove Specifies whether matched events must be remove
+     * events.
+     *
+     * @param isFromMyself Specifies whether matched events must originate
+     * from myself.
+     *
+     * @return ::testing::Matcher<const Event<>&> The created Google Test
+     * matcher.
+     */
     template <typename T>
     ::testing::Matcher<const Event<>&> EventEqual(T&& instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false, bool isFromMyself = false)
     {

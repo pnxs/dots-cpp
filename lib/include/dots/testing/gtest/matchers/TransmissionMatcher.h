@@ -72,6 +72,35 @@ namespace dots::testing
         };
     }
 
+    /*!
+     * @brief Create a Google Test matcher that compares DOTS transmissions
+     * for equality.
+     *
+     * A transmission will be matched as equal if the instance in the
+     * transmission is equal to the given instance for the given property
+     * set.
+     *
+     * Additionally, the transmission header must match the given @p remove
+     * and @p isFromMyself flags.
+     *
+     * @tparam T The DOTS struct type of the transmission.
+     *
+     * @param instance The instance to compare the instance in the
+     * transmission to.
+     *
+     * @param includedProperties The property set to include in the
+     * equality comparison. If no set is given, the valid property set of
+     * @p instance will be used.
+     *
+     * @param remove Specifies whether matching transmissions must be have
+     * the remove flag set in the header.
+     *
+     * @param isFromMyself Specifies whether matching transmissions must
+     * have the isFromMyself flag set in the header.
+     *
+     * @return ::testing::Matcher<const io::Transmission&> The created
+     * Google Test matcher.
+     */
     template <typename T>
     ::testing::Matcher<const io::Transmission&> TransmissionEqual(T&& instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false, bool isFromMyself = false)
     {

@@ -73,12 +73,53 @@ namespace dots::testing
         };
     }
 
+    /*!
+     * @brief Create a Google Test matcher that compares DOTS struct
+     * instances for equality.
+     *
+     * A struct will be matched as equal if the instance is equal to the
+     * given instance for the given property set.
+     *
+     * @remark This matcher is comparing against instances of the Struct
+     * base type. For an explicitly typed version see StaticStructEqual().
+     *
+     * @tparam Expected The DOTS struct type.
+     *
+     * @param expected The instance to match.
+     *
+     * @param includedProperties The property set to include in the
+     * equality comparison.
+     *
+     * @return ::testing::Matcher<const type::Struct&> The created Google
+     * Test matcher.
+     */
     template <typename Expected, std::enable_if_t<std::is_base_of_v<type::Struct, std::decay_t<Expected>>, int> = 0>
     ::testing::Matcher<const type::Struct&> StructEqual(Expected&& expected, const property_set_t& includedProperties = property_set_t::All)
     {
         return details::StructEqualMatcher<std::decay_t<Expected>>(std::forward<Expected>(expected), includedProperties);
     }
 
+    /*!
+     * @brief Create a Google Test matcher that compares DOTS struct
+     * instances for equality.
+     *
+     * A struct will be matched as equal if the instance in the
+     * transmission is equal to the given instance for the given property
+     * set.
+     *
+     * @remark This matcher is comparing against instances of the explicit
+     * struct type. For Struct base class version see StructEqual().
+     *
+     * @tparam Expected The DOTS struct type.
+     *
+     * @param expected The instance to match.
+     *
+     * @param includedProperties The property set to include in the
+     * equality comparison.
+     *
+     * @return ::testing::Matcher<const std::decay_t<Expected>&> The
+     * created Google Test matcher.
+     */
     template <typename Expected, std::enable_if_t<std::is_base_of_v<type::Struct, std::decay_t<Expected>>, int> = 0>
     ::testing::Matcher<const std::decay_t<Expected>&> StaticStructEqual(Expected&& expected, const property_set_t& includedProperties = property_set_t::All)
     {

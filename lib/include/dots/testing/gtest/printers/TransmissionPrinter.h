@@ -5,6 +5,19 @@
 
 namespace dots::io
 {
+    /*!
+     * @brief Print a DOTS transmission to an output stream.
+     *
+     * @remark This function is intended to be used indirectly by the
+     * Google Test printing system.
+     *
+     * @remark The printer is using the global dots::to_string() function
+     * to perform the string conversion of the transmission instance.
+     *
+     * @param transmission The DOTS transmission to print.
+     *
+     * @param os The output stream to print to.
+     */
     inline void PrintTo(const Transmission& transmission, std::ostream* os)
     {
         if (transmission.header().isFromMyself == true)

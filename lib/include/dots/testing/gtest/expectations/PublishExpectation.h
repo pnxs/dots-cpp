@@ -88,12 +88,81 @@ namespace dots::testing
     return EXPECT_CALL(mockSubscriptionHandler, Call(dots::testing::EventEqual(std::forward<decltype(instance)>(instance), includedProperties, remove, isFromMyself)));                   \
 }
 
+/*!
+ * @brief Create a Google Test expectation for a DOTS publish event at
+ * a specific subscription handler.
+ *
+ * This function-like macro creates an expectation that a given
+ * instance will be published and result in a corresponding DOTS event
+ * at a given subscriber.
+ *
+ * The expectation will be satisfied if the published (i.e.
+ * transmitted) instance of the event compares equal for the given
+ * property set (see also dots::testing::EventEqual()).
+ *
+ * @remark This macro is usually used indirectly by higher-level macros
+ * such as EXPECT_DOTS_PUBLISH_AT_TRANSCEIVER() or
+ * EXPECT_DOTS_PUBLISH().
+ *
+ * @remark The resulting expectation can either be used individually or
+ * as part of a DOTS_EXPECTATION_SEQUENCE().
+ *
+ * @remark This macro requires events to be create or update events.
+ * Expectations for remove events can be created by the
+ * EXPECT_DOTS_REMOVE_AT_SUBSCRIBER() macro.
+ *
+ * @param mockSubscriptionHandler The mock subscription handler where
+ * the event is expected to occur.
+ *
+ * @param instance The instance to compare the transmitted instance in
+ * the event to.
+ *
+ * @param includedProperties The property set to include in the
+ * equality comparison. If no set is given, the valid property set of
+ * @p instance will be used.
+ *
+ * @return auto& A reference to the created Google Test expectation.
+ */
 #define EXPECT_DOTS_PUBLISH_AT_SUBSCRIBER                                                                                                                                       \
 [](dots::testing::mock_subscription_handler_t& mockSubscriptionHandler, auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto& \
 {                                                                                                                                                                               \
     return IMPL_EXPECT_DOTS_PUBLISH_AT_SUBSCRIBER(mockSubscriptionHandler, std::forward<decltype(instance)>(instance), includedProperties, false, false);                       \
 }
 
+/*!
+ * @brief Create a Google Test expectation for a DOTS remove event at a
+ * specific subscription handler.
+ *
+ * This function-like macro creates an expectation that a given
+ * instance will be removed and result in a corresponding DOTS event at
+ * a given subscriber.
+ *
+ * The expectation will be satisfied if the published (i.e.
+ * transmitted) instance of the event compares equal for the given
+ * property set (see also dots::testing::EventEqual()).
+ *
+ * @remark This macro is usually used indirectly by higher-level macros
+ * such as EXPECT_DOTS_REMOVE_AT_TRANSCEIVER() or EXPECT_DOTS_REMOVE().
+ *
+ * @remark The resulting expectation can either be used individually or
+ * as part of a DOTS_EXPECTATION_SEQUENCE().
+ *
+ * @remark This macro requires events to be remove events. Expectations
+ * for create or update events can be created by the
+ * EXPECT_DOTS_PUBLISH_AT_SUBSCRIBER() macro.
+ *
+ * @param mockSubscriptionHandler The mock subscription handler where
+ * the event is expected to occur.
+ *
+ * @param instance The instance to compare the transmitted instance in
+ * the event to.
+ *
+ * @param includedProperties The property set to include in the
+ * equality comparison. If no set is given, the valid property set of
+ * @p instance will be used.
+ *
+ * @return auto& A reference to the created Google Test expectation.
+ */
 #define EXPECT_DOTS_REMOVE_AT_SUBSCRIBER                                                                                                                                        \
 [](dots::testing::mock_subscription_handler_t& mockSubscriptionHandler, auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto& \
 {                                                                                                                                                                               \

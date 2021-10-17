@@ -200,12 +200,112 @@ namespace dots::testing::details
     }
 }
 
+/*!
+ * @brief Create a sequence of Google Test expectations.
+ *
+ * This function-like macro imposes ordering requirements to an
+ * arbitrary number of expectation arguments as if the .After clause
+ * was used. This means that all expectations will be required to occur
+ * in the order they are given.
+ *
+ * Expectation arguments can be any expectations created by the Google
+ * Test EXPECT_CALL() macro. This includes results that are produced by
+ * macros which are based on that macro, such as DOTS_EXPECT_PUBLISH().
+ *
+ * To create a partial ordering, expectations can also be grouped
+ * together into typed expectation sets (see DOTS_EXPECTATION_SET()).
+ *
+ * Every expectation argument can optionally be followed up by an
+ * action (e.g. a lambda) that will be invoked when the expectation is
+ * satisfied.
+ *
+ * The macro optionally also accepts a parameterless action as its
+ * first argument, which will be invoked once the sequence was created.
+ *
+ * This macro is intended to be used in the top level of a Google Test
+ * test case.
+ *
+ * @code{.cpp}
+ * DOTS_EXPECTATION_SEQUENCE(
+ *     [&]
+ *     {
+ *         // initial action invoked after sequence creation
+ *     },
+ *     EXPECT_CALL(...), // #1
+ *     [&]
+ *     {
+ *         // action invoked after satisfaction of #1
+ *     },
+ *     EXPECT_CALL(...), // #2
+ *     EXPECT_DOTS_PUBLISH(...), // #3
+ *     [&](const dots::Event<>& event)
+ *     {
+ *         // action invoked after satisfaction of #3
+ *     }
+ *     ...
+ * );
+ * @endcode
+ *
+ * @remark Actions for satisfied expectations can be any objects that
+ * are either trivially invocable (i.e. without arguments) or are
+ * compatible with the signature of the mock function the expectation
+ * was created for.
+ *
+ * @param args The list of ordered Google Test expectations and actions
+ * to create a sequence from.
+ */
 #define DOTS_EXPECTATION_SEQUENCE                                                        \
 [&](auto&&... args)                                                                      \
 {                                                                                        \
     dots::testing::details::expectation_sequence(std::forward<decltype(args)>(args)...); \
 }
 
+/*!
+ * @brief Create a typed set of Google Test expectations.
+ *
+ * This function-like macro groups an arbitrary number of Google Test
+ * expectations into a typed expectation set, which can be used as an
+ * argument for DOTS_EXPECTATION_SEQUENCE() to create partial
+ * expectation orderings.
+ *
+ * This means that every expectation in the set may occur in any order
+ * relative to one another, but will be required to occur after the
+ * expectation preceding the set.
+ *
+ * Likewise, an expectation succeeding the set will be required to
+ * occur after all its members.
+ *
+ * The set can optionally be followed by a parameterless action that
+ * will be invoked once all expectations were satisfied.
+ *
+ * @code{.cpp}
+ * DOTS_EXPECTATION_SEQUENCE(
+ *     EXPECT_CALL(...), // #1
+ *     EXPECT_CALL(...), // #2
+ *     DOTS_EXPECTATION_SET(
+ *         // members may occur in any order
+ *         EXPECT_DOTS_PUBLISH(...), // #3a
+ *         EXPECT_DOTS_PUBLISH(...), // #3b
+ *         EXPECT_CALL(...) // #3c
+ *     ),
+ *     [&]
+ *     {
+ *         // action invoked after satisfaction of #3a, #3b and #3c
+ *     },
+ *     EXPECT_CALL(...), // #4
+ *     ...
+ * );
+ * @endcode
+ *
+ * @remark The exact return type of this macro is an implementation
+ * detail and results should only be used in conjunction with
+ * DOTS_EXPECTATION_SEQUENCE().
+ *
+ * @param args The list of Google Test expectations to create a set of.
+ *
+ * @return The typed expectation set of the expectations given in @p
+ * args.
+ */
 #define DOTS_EXPECTATION_SET                                                                     \
 [&](auto&&... args) -> auto                                                                      \
 {                                                                                                \
