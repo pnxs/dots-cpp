@@ -191,6 +191,35 @@ namespace dots::testing
             m_ioContext.poll();
             m_ioContext.restart();
         }
+        
+        /*!
+         * @brief Process events for a specific duration.
+         *
+         * Calling this function will process the event loop (i.e. the IO
+         * context) until all work has finished and there are no more handlers
+         * to be dispatched, until the context has been stopped, or until the
+         * given duration has elapsed.
+         *
+         * In particular, if there are any active timers, this function will
+         * block up to the given duration and wait for the timers to end.
+         *
+         * Technically, this effectively calls
+         * boost::asio::io_context::run_for() followed by a
+         * boost::asio::io_context::restart().
+         *
+         * @tparam Rep An arithmetic type representing the number of ticks.
+         *
+         * @tparam Period A std::ratio representing the tick period (i.e. the
+         * number of second's fractions per tick).
+         *
+         * @param duration The duration for which the call may block.
+         */
+        template <typename Rep, typename Period>
+        void processEvents(std::chrono::duration<Rep, Period> duration)
+        {
+            m_ioContext.run_for(std::chrono::duration_cast<std::chrono::microseconds>(duration));
+            m_ioContext.restart();
+        }
 
     private:
 
