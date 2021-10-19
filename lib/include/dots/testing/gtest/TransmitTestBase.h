@@ -192,16 +192,6 @@ namespace dots::testing
             m_ioContext.restart();
         }
 
-        /*!
-         * @brief Create unique guest id.
-         *
-         * @return Connection::id_t The unique guest id.
-         */
-        static Connection::id_t MakeGuestId()
-        {
-            return M_nextGuestId++;
-        }
-
     private:
 
         inline static Connection::id_t M_nextGuestId = SpoofId + 1;
