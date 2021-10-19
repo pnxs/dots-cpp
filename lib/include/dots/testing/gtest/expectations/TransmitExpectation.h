@@ -60,19 +60,6 @@ namespace dots::testing
         MockChannel& operator = (const MockChannel& rhs) = delete;
         MockChannel& operator = (MockChannel&& rhs) = delete;
 
-        void transmitImpl(const DotsHeader& header, const type::Struct& instance) override
-        {
-            transmitImpl(io::Transmission{ header, type::AnyStruct{ instance } });
-        }
-
-        void transmitImpl(const io::Transmission& transmission) override
-        {
-            boost::asio::post(m_ioContext.get(), [this, transmission = io::Transmission{ transmission.header(), transmission.instance() }]()
-            {
-                m_transmitMock.AsStdFunction()(transmission);
-            });
-        }
-
         /*!
          * @brief Get the currently used IO context.
          *
@@ -259,6 +246,19 @@ namespace dots::testing
         void asyncReceiveImpl() override
         {
             /* do nothing */
+        }
+
+        void transmitImpl(const DotsHeader& header, const type::Struct& instance) override
+        {
+            transmitImpl(io::Transmission{ header, type::AnyStruct{ instance } });
+        }
+
+        void transmitImpl(const io::Transmission& transmission) override
+        {
+            boost::asio::post(m_ioContext.get(), [this, transmission = io::Transmission{ transmission.header(), transmission.instance() }]()
+            {
+                m_transmitMock.AsStdFunction()(transmission);
+            });
         }
 
     private:
