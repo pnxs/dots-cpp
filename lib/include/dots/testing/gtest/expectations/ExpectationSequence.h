@@ -13,6 +13,13 @@ namespace dots::testing::details
             /* do nothing */
         }
 
+        TypedExpectationSet(const TypedExpectationSet& other) = default;
+        TypedExpectationSet(TypedExpectationSet&& other) = default;
+        ~TypedExpectationSet() = default;
+
+        TypedExpectationSet& operator = (const TypedExpectationSet& rhs) = delete;
+        TypedExpectationSet& operator = (TypedExpectationSet&& rhs) = delete;
+
     private:
 
         template <typename... OtherExpectations>
@@ -298,8 +305,9 @@ namespace dots::testing::details
  * @endcode
  *
  * @remark The exact return type of this macro is an implementation
- * detail and results should only be used in conjunction with
- * DOTS_EXPECTATION_SEQUENCE().
+ * detail and results should only be used as arguments to
+ * DOTS_EXPECTATION_SEQUENCE(). However, the returned object can
+ * assumed to be copyable and movable, but not assignable.
  *
  * @param args The list of Google Test expectations to create a set of.
  *
