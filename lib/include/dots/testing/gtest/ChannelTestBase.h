@@ -142,9 +142,6 @@ namespace dots::testing
         /*!
          * @brief Get the mock channel.
          *
-         * Note that this is the same IO context that was given in
-         * PublishTestBase().
-         *
          * @attention It should rarely be required to access the mock channel
          * manually. In particular, creating expectations and spoofing
          * transmits should be done via the corresponding macros, such as
@@ -160,7 +157,7 @@ namespace dots::testing
         /*!
          * @brief Get the host name.
          *
-         * Note that this is the same name that was given in PublishTestBase().
+         * Note that this is the same name that was given in ChannelTestBase().
          *
          * @return const std::string& A reference to the host name.
          */
