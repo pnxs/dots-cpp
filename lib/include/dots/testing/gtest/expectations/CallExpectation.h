@@ -1,7 +1,7 @@
 #pragma once
 #include <dots/testing/gtest/gtest.h>
 
-#if defined(DOTS_ENABLE_DEPRECATED_SEQUENCE_SUPPORT)
+#if defined(DOTS_ENABLE_DEPRECATED_TESTING_SUPPORT)
 
 namespace dots::testing::deprecated::details
 {

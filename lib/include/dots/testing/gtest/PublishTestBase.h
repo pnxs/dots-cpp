@@ -10,7 +10,7 @@
 #include <dots/testing/gtest/expectations/PublishExpectation.h>
 #include <dots/tools/logging.h>
 
-#if defined(DOTS_ENABLE_DEPRECATED_SEQUENCE_SUPPORT)
+#if defined(DOTS_ENABLE_DEPRECATED_TESTING_SUPPORT)
 
 namespace dots::testing
 {

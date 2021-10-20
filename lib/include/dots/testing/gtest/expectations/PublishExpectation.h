@@ -1,7 +1,7 @@
 #pragma once
 #include <dots/testing/gtest/matchers/EventMatcher.h>
 
-#if defined(DOTS_ENABLE_DEPRECATED_SEQUENCE_SUPPORT)
+#if defined(DOTS_ENABLE_DEPRECATED_TESTING_SUPPORT)
 
 #include <dots/testing/gtest/matchers/TransmissionMatcher.h>
 #include <dots/testing/gtest/expectations/CallExpectation.h>
@@ -85,7 +85,7 @@ namespace dots::testing
 #define IMPL_EXPECT_DOTS_PUBLISH_AT_SUBSCRIBER                                                                                                                                                   \
 [](dots::testing::mock_subscription_handler_t& mockSubscriptionHandler, auto&& instance, std::optional<dots::types::property_set_t> includedProperties, bool remove, bool isFromMyself) -> auto& \
 {                                                                                                                                                                                                \
-    return EXPECT_CALL(mockSubscriptionHandler, Call(dots::testing::EventEqual(std::forward<decltype(instance)>(instance), includedProperties, remove, isFromMyself)));                   \
+    return EXPECT_CALL(mockSubscriptionHandler, Call(dots::testing::EventEqual(std::forward<decltype(instance)>(instance), includedProperties, remove, isFromMyself)));                          \
 }
 
 /*!
