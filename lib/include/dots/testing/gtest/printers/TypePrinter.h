@@ -7,13 +7,13 @@ namespace dots::type
     {
         template <typename T>
         constexpr bool is_gtest_printable_v = std::disjunction_v<
-            std::is_same<std::decay_t<T>, uuid_t>,
-            std::is_same<std::decay_t<T>, timepoint_t>,
-            std::is_same<std::decay_t<T>, steady_timepoint_t>,
-            std::is_same<std::decay_t<T>, duration_t>,
-            is_property<std::decay_t<T>>,
-            is_enum<std::decay_t<T>>,
-            std::is_base_of<Struct, std::decay_t<T>>
+            std::is_same<T, uuid_t>,
+            std::is_same<T, timepoint_t>,
+            std::is_same<T, steady_timepoint_t>,
+            std::is_same<T, duration_t>,
+            is_property<T>,
+            is_enum<T>,
+            std::is_base_of<Struct, T>
         >;
     }
 
@@ -38,7 +38,7 @@ namespace dots::type
      *
      * @return std::ostream& The given output stream @p os.
      */
-    template <typename T, std::enable_if_t<details::is_gtest_printable_v<T>, int> = 0>
+    template <typename T, std::enable_if_t<details::is_gtest_printable_v<std::decay_t<T>>, int> = 0>
     std::ostream& operator << (std::ostream& os, T&& value)
     {
         return os << to_string(std::forward<T>(value));
