@@ -42,6 +42,32 @@ namespace dots::testing::details
         template <typename Action>
         void willOnce(Action&& action) const
         {
+            int cardinality = std::apply([this](auto&... expectations)
+            {
+                auto get_cardinality = [](auto& expectation)
+                {
+                    if (expectation.cardinality().IsSaturatedByCallCount(0))
+                    {
+                        return 0;
+                    }
+                    else if (expectation.cardinality().IsSaturatedByCallCount(1))
+                    {
+                        return 1;
+                    }
+                    else
+                    {
+                        throw std::logic_error{ "expectation sets only support actions on expectations with a cardinality of 0 or 1" };
+                    }
+                };
+
+                return (get_cardinality(expectations) + ... + 0);
+            }, m_expectations);
+
+            if (cardinality == 0)
+            {
+                throw std::logic_error{ "expectation sets with a total cardinality of 0 cannot have a subsequent action" };
+            }
+
             if constexpr (sizeof...(Expectations) == 1)
             {
                 using expectation_t = std::tuple_element_t<0, std::tuple<Expectations...>>;
@@ -63,17 +89,25 @@ namespace dots::testing::details
 
                 if constexpr (IsTrivialAction)
                 {
-                    auto deferred_action = [actionData{ std::make_shared<std::pair<Action, uint32_t>>(std::forward<Action>(action), 0u) }]()
+                    std::apply([cardinality, action{ std::forward<Action>(action) }](auto&... expectations)
                     {
-                        if (auto& [action, satisfiedExpectations] = *actionData; ++satisfiedExpectations == sizeof...(Expectations))
+                        auto deferred_action = [cardinality, actionData{ std::make_shared<std::pair<Action, int>>(std::move(action), 0) }]()
                         {
-                            action();
-                        }
-                    };
+                            if (auto& [action, callCount] = *actionData; ++callCount == cardinality)
+                            {
+                                action();
+                            }
+                        };
 
-                    std::apply([deferred_action](auto&... expectations)
-                    {
-                        (expectations.WillOnce(::testing::DoAll(deferred_action)), ...);
+                        auto add_deferred_action = [&deferred_action](auto& expectation)
+                        {
+                            if (!expectation.cardinality().IsSaturatedByCallCount(0))
+                            {
+                                expectation.WillOnce(::testing::DoAll(deferred_action));
+                            }
+                        };
+
+                        (add_deferred_action(expectations), ...);
                     }, m_expectations);
                 }
             }
@@ -243,15 +277,21 @@ namespace dots::testing::details
  *     {
  *         // action invoked after satisfaction of #1
  *     },
- *     EXPECT_CALL(...), // #2
- *     EXPECT_DOTS_PUBLISH(...), // #3
+ *     EXPECT_CALL(...).Times(0), // #2
+ *     EXPECT_CALL(...).Times(2), // #3
+ *     EXPECT_DOTS_PUBLISH(...), // #4
  *     [&](const dots::Event<>& event)
  *     {
- *         // action invoked after satisfaction of #3
+ *         // action invoked after satisfaction of #4
  *     }
  *     ...
  * );
  * @endcode
+ *
+ * @attention Expectation arguments with a cardinality other than 1
+ * (e.g. by using the .Times(2) clause) cannot have a subsequent
+ * action. If the argument is an expectation set, all members but one
+ * may have a cardinality of 0.
  *
  * @remark Actions for satisfied expectations can be any objects that
  * are either trivially invocable (i.e. without arguments) or are
@@ -292,7 +332,7 @@ namespace dots::testing::details
  *     DOTS_EXPECTATION_SET(
  *         // members may occur in any order
  *         EXPECT_DOTS_PUBLISH(...), // #3a
- *         EXPECT_DOTS_PUBLISH(...), // #3b
+ *         EXPECT_DOTS_PUBLISH(...).Times(0), // #3b
  *         EXPECT_CALL(...) // #3c
  *     ),
  *     [&]
