@@ -1,6 +1,6 @@
 #include <optional>
 #include <dots/testing/gtest/gtest.h>
-#include <dots/testing/gtest/PublishTestBase.h>
+#include <dots/testing/gtest/EventTestBase.h>
 #include <dots/HostTransceiver.h>
 
 struct TestHostTransceiver : dots::testing::EventTestBase
