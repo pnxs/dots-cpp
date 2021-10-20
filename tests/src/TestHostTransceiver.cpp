@@ -3,7 +3,7 @@
 #include <dots/testing/gtest/PublishTestBase.h>
 #include <dots/HostTransceiver.h>
 
-struct TestHostTransceiver : dots::testing::PublishTestBase
+struct TestHostTransceiver : dots::testing::EventTestBase
 {
 protected:
 

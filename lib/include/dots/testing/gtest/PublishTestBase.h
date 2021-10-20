@@ -260,12 +260,12 @@ namespace dots::testing
     }                                                                                                                           \
 }(__VA_ARGS__)
 
-#else
+#endif
 
 namespace dots::testing
 {
     /*!
-     * @class PublishTestBase PublishTestBase.h
+     * @class EventTestBase PublishTestBase.h
      * <dots/testing/gtest/PublishTestBase.h>
      *
      * @brief Base class for Google Test suites that test components based
@@ -291,7 +291,7 @@ namespace dots::testing
      *
      * @warning This class is intended to be used as a base class only.
      */
-    struct PublishTestBase : ::testing::Test
+    struct EventTestBase : ::testing::Test
     {
         /*!
          * @brief Set up the DOTS test environment.
@@ -321,13 +321,13 @@ namespace dots::testing
          *
          * @param hostName The name the host will use to identify itself.
          */
-        PublishTestBase(boost::asio::io_context& ioContext = io::global_io_context(), std::string hostName = "dots-test-host") :
+        EventTestBase(boost::asio::io_context& ioContext = io::global_io_context(), std::string hostName = "dots-test-host") :
             m_host{ std::move(hostName), ioContext },
             m_globalGuest(nullptr),
             m_spoofGuest(std::nullopt),
             m_localListener{ m_host.listen<io::LocalListener>() }
         {
-            PublishTestBase::ioContext().restart();
+            EventTestBase::ioContext().restart();
 
             // disable verbose logging unless overriden by the user
             if (::getenv("LOGGING_LEVEL") == nullptr)
@@ -339,8 +339,8 @@ namespace dots::testing
             globalGuest();
         }
 
-        PublishTestBase(const PublishTestBase& other) = delete;
-        PublishTestBase(PublishTestBase&& other) = delete;
+        EventTestBase(const EventTestBase& other) = delete;
+        EventTestBase(EventTestBase&& other) = delete;
 
         /*!
          * @brief Tear down the DOTS test environment.
@@ -353,7 +353,7 @@ namespace dots::testing
          * In particular, the global guest transceiver will be reset if it has
          * been used.
          */
-        ~PublishTestBase()
+        ~EventTestBase()
         {
             if (m_globalGuest != nullptr)
             {
@@ -362,8 +362,8 @@ namespace dots::testing
             }
         }
 
-        PublishTestBase& operator = (const PublishTestBase& rhs) = delete;
-        PublishTestBase& operator = (PublishTestBase&& rhs) = delete;
+        EventTestBase& operator = (const EventTestBase& rhs) = delete;
+        EventTestBase& operator = (EventTestBase&& rhs) = delete;
 
     protected:
 
@@ -373,7 +373,7 @@ namespace dots::testing
          * @brief Get the currently used IO context.
          *
          * Note that this is the same IO context that was given in
-         * PublishTestBase().
+         * EventTestBase().
          *
          * @return const boost::asio::io_context& A reference to the currently
          * used IO context.
@@ -387,10 +387,10 @@ namespace dots::testing
          * @brief Get the currently used IO context.
          *
          * Note that this is the same IO context that was given in
-         * PublishTestBase().
+         * EventTestBase().
          *
-         * @return boost::asio::io_context& A reference to the currently
-         * used IO context.
+         * @return boost::asio::io_context& A reference to the currently used
+         * IO context.
          */
         boost::asio::io_context& ioContext()
         {
@@ -686,10 +686,10 @@ namespace dots::testing
     };
 }
 
-#define IMPL_EXPECT_DOTS_PUBLISH_AT_TRANSCEIVER                                                                                                                            \
-[this](dots::Transceiver& transceiver, auto instance, std::optional<dots::types::property_set_t> includedProperties, bool remove, bool isFromMyself) -> auto&              \
-{                                                                                                                                                                          \
-    return IMPL_EXPECT_DOTS_PUBLISH_AT_SUBSCRIBER(PublishTestBase::getMockSubscriptionHandler(transceiver, instance), instance, includedProperties, remove, isFromMyself); \
+#define IMPL_EXPECT_DOTS_PUBLISH_AT_TRANSCEIVER                                                                                                                          \
+[this](dots::Transceiver& transceiver, auto instance, std::optional<dots::types::property_set_t> includedProperties, bool remove, bool isFromMyself) -> auto&            \
+{                                                                                                                                                                        \
+    return IMPL_EXPECT_DOTS_PUBLISH_AT_SUBSCRIBER(EventTestBase::getMockSubscriptionHandler(transceiver, instance), instance, includedProperties, remove, isFromMyself); \
 }
 
 /*!
@@ -705,8 +705,8 @@ namespace dots::testing
  * property set (see also dots::testing::EventEqual()).
  *
  * @attention This macro requires usage of the
- * dots::testing::PublishTestBase and will not work if the current
- * Google Test suite is not derived from it.
+ * dots::testing::EventTestBase and will not work if the current Google
+ * Test suite is not derived from it.
  *
  * @remark The resulting expectation can either be used individually or
  * as part of a DOTS_EXPECTATION_SEQUENCE().
@@ -746,8 +746,8 @@ namespace dots::testing
  * property set (see also dots::testing::EventEqual()).
  *
  * @attention This macro requires usage of the
- * dots::testing::PublishTestBase and will not work if the current
- * Google Test suite is not derived from it.
+ * dots::testing::EventTestBase and will not work if the current Google
+ * Test suite is not derived from it.
  *
  * @remark The resulting expectation can either be used individually or
  * as part of a DOTS_EXPECTATION_SEQUENCE().
@@ -784,8 +784,8 @@ namespace dots::testing
  * transceiver itself.
  *
  * @attention This macro requires usage of the
- * dots::testing::PublishTestBase and will not work if the current
- * Google Test suite is not derived from it.
+ * dots::testing::EventTestBase and will not work if the current Google
+ * Test suite is not derived from it.
  *
  * @remark The resulting expectation can either be used individually or
  * as part of a DOTS_EXPECTATION_SEQUENCE().
@@ -822,8 +822,8 @@ namespace dots::testing
  * transceiver itself.
  *
  * @attention This macro requires usage of the
- * dots::testing::PublishTestBase and will not work if the current
- * Google Test suite is not derived from it.
+ * dots::testing::EventTestBase and will not work if the current Google
+ * Test suite is not derived from it.
  *
  * @remark The resulting expectation can either be used individually or
  * as part of a DOTS_EXPECTATION_SEQUENCE().
@@ -858,17 +858,16 @@ namespace dots::testing
  *
  * Using the macro is equivalent of using
  * EXPECT_DOTS_PUBLISH_AT_TRANSCEIVER() with the host transceiver of
- * the dots::testing::PublishTestBase. The expectation will therefore
- * be satisfied regardless of where the expected publish originates
- * from.
+ * the dots::testing::EventTestBase. The expectation will therefore be
+ * satisfied regardless of where the expected publish originates from.
  *
  * Even though it can be used for arbitrary transceivers that are
  * connected to the test host, it is recommended to only use this macro
  * to test components that are using the global guest transceiver.
  *
  * @attention This macro requires usage of the
- * dots::testing::PublishTestBase and will not work if the current
- * Google Test suite is not derived from it.
+ * dots::testing::EventTestBase and will not work if the current Google
+ * Test suite is not derived from it.
  *
  * @remark The resulting expectation can either be used individually or
  * as part of a DOTS_EXPECTATION_SEQUENCE().
@@ -886,10 +885,10 @@ namespace dots::testing
  *
  * @return auto& A reference to the created Google Test expectation.
  */
-#define EXPECT_DOTS_PUBLISH                                                                                                             \
-[this](auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto&                          \
-{                                                                                                                                       \
-    return EXPECT_DOTS_PUBLISH_AT_TRANSCEIVER(PublishTestBase::host(), std::forward<decltype(instance)>(instance), includedProperties); \
+#define EXPECT_DOTS_PUBLISH                                                                                                           \
+[this](auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto&                        \
+{                                                                                                                                     \
+    return EXPECT_DOTS_PUBLISH_AT_TRANSCEIVER(EventTestBase::host(), std::forward<decltype(instance)>(instance), includedProperties); \
 }
 
 /*!
@@ -900,7 +899,7 @@ namespace dots::testing
  *
  * Using the macro is equivalent of using
  * EXPECT_DOTS_REMOVE_AT_TRANSCEIVER() with the host transceiver of the
- * dots::testing::PublishTestBase. The expectation will therefore be
+ * dots::testing::EventTestBase. The expectation will therefore be
  * satisfied regardless of where the expected remove originates from.
  *
  * Even though it can be used for arbitrary transceivers that are
@@ -908,8 +907,8 @@ namespace dots::testing
  * to test components that are using the global guest transceiver.
  *
  * @attention This macro requires usage of the
- * dots::testing::PublishTestBase and will not work if the current
- * Google Test suite is not derived from it.
+ * dots::testing::EventTestBase and will not work if the current Google
+ * Test suite is not derived from it.
  *
  * @remark The resulting expectation can either be used individually or
  * as part of a DOTS_EXPECTATION_SEQUENCE().
@@ -927,10 +926,10 @@ namespace dots::testing
  *
  * @return auto& A reference to the created Google Test expectation.
  */
-#define EXPECT_DOTS_REMOVE                                                                                                             \
-[this](auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto&                         \
-{                                                                                                                                      \
-    return EXPECT_DOTS_REMOVE_AT_TRANSCEIVER(PublishTestBase::host(), std::forward<decltype(instance)>(instance), includedProperties); \
+#define EXPECT_DOTS_REMOVE                                                                                                           \
+[this](auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto&                       \
+{                                                                                                                                    \
+    return EXPECT_DOTS_REMOVE_AT_TRANSCEIVER(EventTestBase::host(), std::forward<decltype(instance)>(instance), includedProperties); \
 }
 
 /*!
@@ -947,11 +946,11 @@ namespace dots::testing
  *
  * Technically, using the macro is equivalent of using
  * EXPECT_DOTS_PUBLISH_AT_TRANSCEIVER() with the global guest
- * transceiver of the dots::testing::PublishTestBase.
+ * transceiver of the dots::testing::EventTestBase.
  *
  * @attention This macro requires usage of the
- * dots::testing::PublishTestBase and will not work if the current
- * Google Test suite is not derived from it.
+ * dots::testing::EventTestBase and will not work if the current Google
+ * Test suite is not derived from it.
  *
  * @remark Actions following the satisfaction of this expectation are
  * guaranteed to be invoked after the event was processed by the global
@@ -973,10 +972,10 @@ namespace dots::testing
  *
  * @return auto& A reference to the created Google Test expectation.
  */
-#define EXPECT_DOTS_SELF_PUBLISH                                                                                                                    \
-[this](auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto&                                      \
-{                                                                                                                                                   \
-    return EXPECT_DOTS_SELF_PUBLISH_AT_TRANSCEIVER(PublishTestBase::globalGuest(), std::forward<decltype(instance)>(instance), includedProperties); \
+#define EXPECT_DOTS_SELF_PUBLISH                                                                                                                  \
+[this](auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto&                                    \
+{                                                                                                                                                 \
+    return EXPECT_DOTS_SELF_PUBLISH_AT_TRANSCEIVER(EventTestBase::globalGuest(), std::forward<decltype(instance)>(instance), includedProperties); \
 }
 
 /*!
@@ -993,11 +992,11 @@ namespace dots::testing
  *
  * Technically, using the macro is equivalent of using
  * EXPECT_DOTS_SELF_REMOVE_AT_TRANSCEIVER() with the global guest
- * transceiver of the dots::testing::PublishTestBase.
+ * transceiver of the dots::testing::EventTestBase.
  *
  * @attention This macro requires usage of the
- * dots::testing::PublishTestBase and will not work if the current
- * Google Test suite is not derived from it.
+ * dots::testing::EventTestBase and will not work if the current Google
+ * Test suite is not derived from it.
  *
  * @remark Actions following the satisfaction of this expectation are
  * guaranteed to be invoked after the event was processed by the global
@@ -1019,10 +1018,10 @@ namespace dots::testing
  *
  * @return auto& A reference to the created Google Test expectation.
  */
-#define EXPECT_DOTS_SELF_REMOVE                                                                                                                    \
-[this](auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto&                                     \
-{                                                                                                                                                  \
-    return EXPECT_DOTS_SELF_REMOVE_AT_TRANSCEIVER(PublishTestBase::globalGuest(), std::forward<decltype(instance)>(instance), includedProperties); \
+#define EXPECT_DOTS_SELF_REMOVE                                                                                                                  \
+[this](auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto&                                   \
+{                                                                                                                                                \
+    return EXPECT_DOTS_SELF_REMOVE_AT_TRANSCEIVER(EventTestBase::globalGuest(), std::forward<decltype(instance)>(instance), includedProperties); \
 }
 
 #define IMPL_SPOOF_DOTS_PUBLISH                                                                                                       \
@@ -1033,12 +1032,12 @@ namespace dots::testing
                                                                                                                                       \
     if constexpr (IsStruct)                                                                                                           \
     {                                                                                                                                 \
-        for (auto& [transceiver, mockSubscriptionHandlers] : PublishTestBase::mockSubscriptionHandlers())                             \
+        for (auto& [transceiver, mockSubscriptionHandlers] : EventTestBase::mockSubscriptionHandlers())                               \
         {                                                                                                                             \
             (void)mockSubscriptionHandlers;                                                                                           \
             IMPL_EXPECT_DOTS_PUBLISH_AT_TRANSCEIVER(*transceiver, instance, includedProperties, remove, false).RetiresOnSaturation(); \
         }                                                                                                                             \
-        PublishTestBase::spoofGuest().publish(instance, includedProperties, remove);                                                  \
+        EventTestBase::spoofGuest().publish(instance, includedProperties, remove);                                                    \
     }                                                                                                                                 \
 }
 
@@ -1051,15 +1050,14 @@ namespace dots::testing
  * The resulting publish is for all intents and purposes a "real"
  * publish and will result in corresponding DOTS events for all
  * transceivers that are connected to the host of the
- * dots::testing::PublishTestBase.
+ * dots::testing::EventTestBase.
  *
  * @attention This macro requires usage of the
- * dots::testing::PublishTestBase and will not work if the current
- * Google Test suite is not derived from it.
+ * dots::testing::EventTestBase and will not work if the current Google
+ * Test suite is not derived from it.
  *
  * @attention The publish is performed asynchronously and will not take
- * place until dots::testing::PublishTestBase::processEvents() is
- * called.
+ * place until dots::testing::EventTestBase::processEvents() is called.
  *
  * @remark This macro spoofs instances to be created or updated. The
  * removal of instances can be spoofed with the SPOOF_DOTS_REMOVE()
@@ -1085,16 +1083,14 @@ namespace dots::testing
  *
  * The resulting remove is for all intents and purposes a "real" remove
  * and will result in corresponding DOTS events for all transceivers
- * that are connected to the host of the
- * dots::testing::PublishTestBase.
+ * that are connected to the host of the dots::testing::EventTestBase.
  *
  * @attention This macro requires usage of the
- * dots::testing::PublishTestBase and will not work if the current
- * Google Test suite is not derived from it.
+ * dots::testing::EventTestBase and will not work if the current Google
+ * Test suite is not derived from it.
  *
  * @attention The publish is performed asynchronously and will not take
- * place until dots::testing::PublishTestBase::processEvents() is
- * called.
+ * place until dots::testing::EventTestBase::processEvents() is called.
  *
  * @remark This macro spoofs instances to be removed. The creation or
  * updating of instances can be spoofed with the SPOOF_DOTS_PUBLISH()
@@ -1111,5 +1107,3 @@ namespace dots::testing
 {                                                                                                     \
     IMPL_SPOOF_DOTS_PUBLISH(std::forward<decltype(instance)>(instance), includedProperties, true);    \
 }
-
-#endif

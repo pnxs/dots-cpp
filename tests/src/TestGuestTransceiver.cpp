@@ -3,7 +3,7 @@
 #include <dots/testing/gtest/PublishTestBase.h>
 #include <DotsTestStruct.dots.h>
 
-struct TestGuestTransceiver : dots::testing::PublishTestBase
+struct TestGuestTransceiver : dots::testing::EventTestBase
 {
     TestGuestTransceiver()
     {
