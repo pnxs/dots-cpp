@@ -8,20 +8,21 @@
 namespace dots::testing
 {
     /*!
-     * @class MockChannel TransmitExpectation.h <dots/testing/gtest/TransmitExpectation.h>
+     * @class MockChannel TransmitExpectation.h
+     * <dots/testing/gtest/TransmitExpectation.h>
      *
      * @brief Mock for DOTS IO channels.
      *
-     * This channel can be used as a mock to test components that rely on DOTS
-     * IO channels.
+     * This channel can be used as a mock to test components that rely on
+     * DOTS IO channels.
      *
-     * Note that this is not a classical Google Test mock that directly mocks
-     * virtual functions. Instead, the actual mocking is realized via a
-     * separate mock function, which is invoked asynchronously.
+     * Note that this is not a classical Google Test mock that directly
+     * mocks virtual functions. Instead, the actual mocking is realized via
+     * a separate mock function, which is invoked asynchronously.
      *
-     * @attention Even though it is possible to manually access the mock, it is
-     * recommended to use the dots::testing::TransmitTestBase, along with the
-     * corresponding test macros whenever possible.
+     * @attention Even though it is possible to manually access the mock,
+     * it is recommended to use the dots::testing::ChannelTestBase, along
+     * with the corresponding test macros whenever possible.
      */
     struct MockChannel : io::Channel
     {

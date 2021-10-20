@@ -4,10 +4,10 @@
 #include <dots/io/Io.h>
 #include <dots/type/Registry.h>
 #include <dots/testing/gtest/expectations/TransmitExpectation.h>
-#include <dots/testing/gtest/TransmitTestBase.h>
+#include <dots/testing/gtest/ChannelTestBase.h>
 #include <DotsTestStruct.dots.h>
 
-struct TestConnectionBase : dots::testing::TransmitTestBase
+struct TestConnectionBase : dots::testing::ChannelTestBase
 {
     TestConnectionBase(bool host) :
         m_sut{ std::in_place, mockChannel().shared_from_this(), host }

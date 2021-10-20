@@ -9,58 +9,57 @@
 namespace dots::testing
 {
     /*!
-     * @class TransmitTestBase TransmitTestBase.h
-     * <dots/testing/gtest/TransmitTestBase.h>
+     * @class ChannelTestBase ChannelTestBase.h
+     * <dots/testing/gtest/ChannelTestBase.h>
      *
-     * @brief Base class for Google Test suites that test components based on
-     * DOTS channels.
+     * @brief Base class for Google Test suites that test components based
+     * on DOTS channels.
      *
      * Deriving from this class provides Google Test support for components
-     * that rely on DOTS transmissions via channels (see dots::io::Channel).
+     * that rely on DOTS transmissions via channels (see
+     * dots::io::Channel).
      *
      * Expectations and spoofs of DOTS transmissions can be created via
      * corresponding test macros (e.g. EXPECT_DOTS_TRANSMIT() and
      * SPOOF_DOTS_TRANSMIT() respectively).
      *
-     * @attention Unless otherwise required, it is recommended to write test
-     * cases in the "sequence style" by utilizing the
+     * @attention Unless otherwise required, it is recommended to write
+     * test cases in the "sequence style" by utilizing the
      * DOTS_EXPECTATION_SEQUENCE() macro.
      *
      * @warning This class is intended to be used as a base class only.
      */
-    struct TransmitTestBase : ::testing::Test
+    struct ChannelTestBase : ::testing::Test
     {
         /*!
          * @brief Set up the DOTS test environment.
          *
-         * Calling this constructor from a derived class initializes the
-         * DOTS test environment.
+         * Calling this constructor from a derived class initializes the DOTS
+         * test environment.
          *
          * Similar to an "actual" DOTS application, the test environment is
-         * running asynchronously in an event loop. This is because
-         * components based on DOTS are inherently asynchronous and also
-         * often rely on other asynchronous mechanisms, such as posts or
-         * timer events.
+         * running asynchronously in an event loop. This is because components
+         * based on DOTS are inherently asynchronous and also often rely on
+         * other asynchronous mechanisms, such as posts or timer events.
          *
          * The event loop defaults to the global event loop, but can be
          * provided by the user if necessary.
          *
-         * After the constructor has returned, the test environment will
-         * have been initialized and be ready for use.
+         * After the constructor has returned, the test environment will have
+         * been initialized and be ready for use.
          *
-         * @warning The given IO context must match the IO context used by
-         * the components that are part of the test.
+         * @warning The given IO context must match the IO context used by the
+         * components that are part of the test.
          *
-         * @remark To reduce clutter in the test output, the constructor
-         * sets the logging level to tools::Level::warn. This can be
-         * overridden by setting the LOGGING_LEVEL environment variable.
+         * @remark To reduce clutter in the test output, the constructor sets
+         * the logging level to tools::Level::warn. This can be overridden by
+         * setting the LOGGING_LEVEL environment variable.
          *
-         * @param ioContext The ASIO IO context (i.e. the "event loop") to
-         * use.
+         * @param ioContext The ASIO IO context (i.e. the "event loop") to use.
          *
          * @param hostName The name the host will use to identify itself.
          */
-        TransmitTestBase(boost::asio::io_context& ioContext = io::global_io_context(), std::string hostName = "dots-test-host") :
+        ChannelTestBase(boost::asio::io_context& ioContext = io::global_io_context(), std::string hostName = "dots-test-host") :
             m_ioContext(ioContext),
             m_mockChannel{ dots::io::make_channel<MockChannel>(ioContext) },
             m_hostName{ std::move(hostName) }
@@ -74,8 +73,8 @@ namespace dots::testing
             }
         }
 
-        TransmitTestBase(const TransmitTestBase& other) = delete;
-        TransmitTestBase(TransmitTestBase&& other) = delete;
+        ChannelTestBase(const ChannelTestBase& other) = delete;
+        ChannelTestBase(ChannelTestBase&& other) = delete;
 
         /*!
          * @brief Tear down the DOTS test environment.
@@ -83,10 +82,10 @@ namespace dots::testing
          * Calling the destructor from a derived class cleans up the test
          * environment. This includes the teardown of the mock channel.
          */
-        ~TransmitTestBase() = default;
+        ~ChannelTestBase() = default;
 
-        TransmitTestBase& operator = (const TransmitTestBase& rhs) = delete;
-        TransmitTestBase& operator = (TransmitTestBase&& rhs) = delete;
+        ChannelTestBase& operator = (const ChannelTestBase& rhs) = delete;
+        ChannelTestBase& operator = (ChannelTestBase&& rhs) = delete;
 
     protected:
 
@@ -101,10 +100,10 @@ namespace dots::testing
          * @brief Get the currently used IO context.
          *
          * Note that this is the same IO context that was given in
-         * TransmitTestBase().
+         * ChannelTestBase().
          *
-         * @return const boost::asio::io_context& A reference to the
-         * currently used IO context.
+         * @return const boost::asio::io_context& A reference to the currently
+         * used IO context.
          */
         const boost::asio::io_context& ioContext() const
         {
@@ -115,10 +114,10 @@ namespace dots::testing
          * @brief Get the currently used IO context.
          *
          * Note that this is the same IO context that was given in
-         * TransmitTestBase().
+         * ChannelTestBase().
          *
-         * @return boost::asio::io_context& A reference to the currently
-         * used IO context.
+         * @return boost::asio::io_context& A reference to the currently used
+         * IO context.
          */
         boost::asio::io_context& ioContext()
         {
@@ -128,10 +127,10 @@ namespace dots::testing
         /*!
          * @brief Get the mock channel.
          *
-         * @attention Note that it should rarely be required to access the
-         * mock channel manually. In particular, creating expectations and
-         * spoofing transmits should be done via the corresponding macros,
-         * such as EXPECT_DOTS_TRANSMIT() and SPOOF_DOTS_TRANSMIT().
+         * @attention Note that it should rarely be required to access the mock
+         * channel manually. In particular, creating expectations and spoofing
+         * transmits should be done via the corresponding macros, such as
+         * EXPECT_DOTS_TRANSMIT() and SPOOF_DOTS_TRANSMIT().
          *
          * @return MockChannel& A reference to the mock channel.
          */
@@ -146,10 +145,10 @@ namespace dots::testing
          * Note that this is the same IO context that was given in
          * PublishTestBase().
          *
-         * @attention It should rarely be required to access the mock
-         * channel manually. In particular, creating expectations and
-         * spoofing transmits should be done via the corresponding macros,
-         * such as EXPECT_DOTS_TRANSMIT() and SPOOF_DOTS_TRANSMIT().
+         * @attention It should rarely be required to access the mock channel
+         * manually. In particular, creating expectations and spoofing
+         * transmits should be done via the corresponding macros, such as
+         * EXPECT_DOTS_TRANSMIT() and SPOOF_DOTS_TRANSMIT().
          *
          * @return MockChannel& A reference to the mock channel.
          */
@@ -161,8 +160,7 @@ namespace dots::testing
         /*!
          * @brief Get the host name.
          *
-         * Note that this is the same name that was given in
-         * PublishTestBase().
+         * Note that this is the same name that was given in PublishTestBase().
          *
          * @return const std::string& A reference to the host name.
          */
@@ -175,15 +173,14 @@ namespace dots::testing
          * @brief Process all outstanding events.
          *
          * Calling this function will process all outstanding events (i.e.
-         * ready handlers) in the event loop (i.e. the IO context), until
-         * it has been stopped or there are no more ready handlers.
+         * ready handlers) in the event loop (i.e. the IO context), until it
+         * has been stopped or there are no more ready handlers.
          *
-         * This function will never block and in particular not wait for
-         * any active timers to end.
+         * This function will never block and in particular not wait for any
+         * active timers to end.
          *
-         * Technically, this effectively calls
-         * boost::asio::io_context::poll() followed by a
-         * boost::asio::io_context::restart().
+         * Technically, this effectively calls boost::asio::io_context::poll()
+         * followed by a boost::asio::io_context::restart().
          *
          */
         void processEvents()
@@ -234,7 +231,7 @@ namespace dots::testing
 #define IMPL_EXPECT_DOTS_TRANSMIT                                                                                                                                        \
 [this](auto&& instance, std::optional<dots::types::property_set_t> includedProperties, bool remove) -> auto&                                                             \
 {                                                                                                                                                                        \
-    return IMPL_EXPECT_DOTS_TRANSMIT_AT_CHANNEL(dots::testing::TransmitTestBase::mockChannel(), std::forward<decltype(instance)>(instance), includedProperties, remove); \
+    return IMPL_EXPECT_DOTS_TRANSMIT_AT_CHANNEL(dots::testing::ChannelTestBase::mockChannel(), std::forward<decltype(instance)>(instance), includedProperties, remove); \
 }
 
 /*!
@@ -242,18 +239,18 @@ namespace dots::testing
  *
  * This function-like macro creates an expectation that a given
  * instance will be transmitted via the mock channel of the
- * dots::testing::TransmitTestBase.
+ * dots::testing::ChannelTestBase.
  *
  * Using the macro is equivalent of using
  * EXPECT_DOTS_TRANSMIT_AT_CHANNEL() with the mock channel of the
- * dots::testing::TransmitTestBase.
+ * dots::testing::ChannelTestBase.
  *
  * The expectation will be satisfied if the transmitted instance
  * compares equal for the given property set (see also
  * dots::testing::TransmissionEqual()).
  *
  * @attention This macro requires usage of the
- * dots::testing::TransmitTestBase and will not work if the current
+ * dots::testing::ChannelTestBase and will not work if the current
  * Google Test suite is not derived from it.
  *
  * @remark The resulting expectation can either be used individually or
@@ -283,18 +280,18 @@ namespace dots::testing
  *
  * This function-like macro creates an expectation that a given
  * instance will be transmitted as removed via the mock channel of the
- * dots::testing::TransmitTestBase.
+ * dots::testing::ChannelTestBase.
  *
  * Using the macro is equivalent of using
  * EXPECT_DOTS_REMOVE_TRANSMIT_AT_CHANNEL() with the mock channel of
- * the dots::testing::TransmitTestBase.
+ * the dots::testing::ChannelTestBase.
  *
  * The expectation will be satisfied if the transmitted instance
  * compares equal for the given property set (see also
  * dots::testing::TransmissionEqual()).
  *
  * @attention This macro requires usage of the
- * dots::testing::TransmitTestBase and will not work if the current
+ * dots::testing::ChannelTestBase and will not work if the current
  * Google Test suite is not derived from it.
  *
  * @remark The resulting expectation can either be used individually or
@@ -319,14 +316,14 @@ namespace dots::testing
 }
 
 #define IMPL_SPOOF_DOTS_TRANSMIT                                                                                                                 \
-[this](auto&& instance, std::optional<dots::types::property_set_t> includedProperties, bool remove, uint32_t sender = TransmitTestBase::SpoofId) \
+[this](auto&& instance, std::optional<dots::types::property_set_t> includedProperties, bool remove, uint32_t sender = ChannelTestBase::SpoofId) \
 {                                                                                                                                                \
     constexpr bool IsStruct = std::is_base_of_v<dots::type::Struct, std::decay_t<decltype(instance)>>;                                           \
     static_assert(IsStruct, "DOTS transmit spoof has to be an instance of a DOTS struct type");                                                  \
                                                                                                                                                  \
     if constexpr (IsStruct)                                                                                                                      \
     {                                                                                                                                            \
-        TransmitTestBase::mockChannel().spoof(sender, std::forward<decltype(instance)>(instance), includedProperties, remove);                   \
+        ChannelTestBase::mockChannel().spoof(sender, std::forward<decltype(instance)>(instance), includedProperties, remove);                   \
     }                                                                                                                                            \
 }
 
@@ -341,11 +338,11 @@ namespace dots::testing
  * the user of the channel.
  *
  * @attention This macro requires usage of the
- * dots::testing::TransmitTestBase and will not work if the current
+ * dots::testing::ChannelTestBase and will not work if the current
  * Google Test suite is not derived from it.
  *
  * @attention The transmit is performed asynchronously and will not
- * take place until dots::testing::TransmitTestBase::processEvents() is
+ * take place until dots::testing::ChannelTestBase::processEvents() is
  * called.
  *
  * @remark This macro spoofs instances without the remove flag being
@@ -372,11 +369,11 @@ namespace dots::testing
  * SPOOF_DOTS_TRANSMIT() but uses the given sender id in the header.
  *
  * @attention This macro requires usage of the
- * dots::testing::TransmitTestBase and will not work if the current
+ * dots::testing::ChannelTestBase and will not work if the current
  * Google Test suite is not derived from it.
  *
  * @attention The transmit is performed asynchronously and will not
- * take place until dots::testing::TransmitTestBase::processEvents() is
+ * take place until dots::testing::ChannelTestBase::processEvents() is
  * called.
  *
  * @param sender The sender id that will be used in the header.
@@ -408,11 +405,11 @@ namespace dots::testing
  * the user of the channel.
  *
  * @attention This macro requires usage of the
- * dots::testing::TransmitTestBase and will not work if the current
+ * dots::testing::ChannelTestBase and will not work if the current
  * Google Test suite is not derived from it.
  *
  * @attention The transmit is performed asynchronously and will not
- * take place until dots::testing::TransmitTestBase::processEvents() is
+ * take place until dots::testing::ChannelTestBase::processEvents() is
  * called.
  *
  * @remark This macro spoofs instances with the remove flag being set.
