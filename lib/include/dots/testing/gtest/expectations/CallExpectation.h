@@ -3,124 +3,41 @@
 
 #if defined(DOTS_ENABLE_DEPRECATED_TESTING_SUPPORT)
 
-namespace dots::testing::deprecated::details
+namespace dots::testing::details
 {
     template <typename T, typename = void>
-    struct is_expectation : std::false_type {};
-
-    template <typename T>
-    struct is_expectation<T, std::void_t<decltype(std::declval<T>().WillOnce(::testing::DoAll()))>> : std::true_type {};
-
-    template <typename T>
-    using is_expectation_t = typename is_expectation<T>::type;
-
-    template <typename T>
-    constexpr bool is_expectation_v = is_expectation_t<T>::value;
-
-    template <typename T>
-    struct is_expectation_factory
-    {
-        static auto IsExpectationFactory()
-        {
-            if constexpr (std::is_invocable_v<T>)
-            {
-                return is_expectation_t<std::invoke_result_t<T>>{};
-            }
-            else
-            {
-                return std::false_type{};
-            }
-        }
-
-        using type = decltype(IsExpectationFactory());
-    };
-
-    template <typename T>
-    using is_expectation_factory_t = typename is_expectation_factory<T>::type;
-
-    template <typename T>
-    constexpr bool is_expectation_factory_v = is_expectation_factory_t<T>::value;
-
-    template <typename T, typename = void>
-    struct expectation_signature {};
-
-    template <typename F>
-    struct expectation_signature<::testing::internal::TypedExpectation<F>> { using type = F; };
-
-    template <typename T>
-    using expectation_signature_t = typename expectation_signature<T>::type;
-
-    template <typename T, typename = void>
-    struct is_compatible_action : std::false_type {};
+    struct is_compatible_gtest_action : std::false_type {};
 
     template <typename T, typename R, typename... Args>
-    struct is_compatible_action<T, R(Args...)>
-    {
-        static auto IsCompatibleAction()
-        {
-            if constexpr (std::is_invocable_v<T>)
-            {
-                return std::is_same<std::invoke_result_t<T>, void>{};
-            }
-            else if constexpr (std::is_invocable_v<T, Args...>)
-            {
-                return std::is_same<std::invoke_result_t<T, Args...>, void>{};
-            }
-            else
-            {
-                return std::false_type{};
-            }
-        }
-
-        using type = decltype(IsCompatibleAction());
-    };
+    struct is_compatible_gtest_action<T, R(Args...)> : std::disjunction<std::is_invocable<T>, std::is_invocable<T, Args...>> {};
 
     template <typename T, typename Signature>
-    using is_compatible_action_t = typename is_compatible_action<T, Signature>::type;
+    using is_compatible_gtest_action_t = typename is_compatible_gtest_action<T, Signature>::type;
 
     template <typename T, typename Signature>
-    constexpr bool is_compatible_action_v = is_compatible_action_t<T, Signature>::value;
+    constexpr bool is_compatible_gtest_action_v = is_compatible_gtest_action_t<T, Signature>::value;
 
-    template <typename DefaultExpectationFactory, typename ArgHead, typename... ArgTail>
-    auto& expect_consecutive_call_sequence_recursive(DefaultExpectationFactory defaultExpectationFactory, ArgHead&& argHead, ArgTail&&... argTail)
+    template <typename ExpectCallSignature, typename ExpectCall, typename ArgHead, typename... ArgTail>
+    auto& expect_consecutive_call_sequence_recursive(ExpectCall expectCall, ArgHead&& argHead, ArgTail&&... argTail)
     {
-        auto& expectation = [&defaultExpectationFactory](auto&& arg) -> auto&
-        {
-            using arg_t = decltype(arg);
-            using decayed_arg_t = std::decay_t<arg_t>;
-
-            if constexpr (is_expectation_v<decayed_arg_t>)
-            {
-                return std::forward<arg_t>(arg);
-            }
-            else if constexpr (is_expectation_factory_v<decayed_arg_t>)
-            {
-                return std::invoke(std::forward<arg_t>(arg));
-            }
-            else
-            {
-                return std::invoke(defaultExpectationFactory, std::forward<arg_t>(arg));
-            }
-        }(std::forward<decltype(argHead)>(argHead));
-
-        using decayed_expectation_t = std::decay_t<decltype(expectation)>;
+        auto& callExpectation = expectCall(std::forward<decltype(argHead)>(argHead));
 
         if constexpr (sizeof...(argTail) > 0)
         {
             auto argTailTuple = std::make_tuple(std::forward<decltype(argTail)>(argTail)...);
             using arg_tail_head_t = std::tuple_element_t<0, decltype(argTailTuple)>;
 
-            if constexpr (is_compatible_action_v<arg_tail_head_t, expectation_signature_t<decayed_expectation_t>>)
+            if constexpr (is_compatible_gtest_action_v<arg_tail_head_t, ExpectCallSignature>)
             {
                 auto action = std::forward<arg_tail_head_t>(std::get<0>(argTailTuple));
-                return expectation.WillOnce(::testing::DoAll(
-                    [defaultExpectationFactory{ std::move(defaultExpectationFactory) }, argTailTuple{ std::move(argTailTuple) }](auto&&...)
+                return callExpectation.WillOnce(::testing::DoAll(
+                    [expectCall{ std::move(expectCall) }, argTailTuple{ std::move(argTailTuple) }](auto&&...)
                     {
                         if constexpr (sizeof...(argTail) > 1)
                         {
-                            std::apply([defaultExpectationFactory{ std::move(defaultExpectationFactory) }](auto&&/* argTailHead*/, auto&&... argTailTail) -> auto&
+                            std::apply([expectCall{ std::move(expectCall) }](auto&&/* argTailHead*/, auto&&... argTailTail) -> auto&
                             {
-                                return expect_consecutive_call_sequence_recursive(defaultExpectationFactory, std::forward<decltype(argTailTail)>(argTailTail)...);
+                                return expect_consecutive_call_sequence_recursive<ExpectCallSignature>(expectCall, std::forward<decltype(argTailTail)>(argTailTail)...);
                             }, argTailTuple);
                         }
                     },
@@ -129,106 +46,115 @@ namespace dots::testing::deprecated::details
             }
             else
             {
-                return expectation.WillOnce(::testing::DoAll([defaultExpectationFactory{ std::move(defaultExpectationFactory) }, argTailTuple{ std::move(argTailTuple) }](auto&&...)
+                return callExpectation.WillOnce(::testing::DoAll([expectCall{ std::move(expectCall) }, argTailTuple{ std::move(argTailTuple) }](auto&&...)
                 {
-                    std::apply([defaultExpectationFactory{ std::move(defaultExpectationFactory) }](auto&&... argTailTail) -> auto&
+                    std::apply([expectCall{ std::move(expectCall) }](auto&&... argTailTail) -> auto&
                     {
-                        return expect_consecutive_call_sequence_recursive(defaultExpectationFactory, std::forward<decltype(argTailTail)>(argTailTail)...);
+                        return expect_consecutive_call_sequence_recursive<ExpectCallSignature>(expectCall, std::forward<decltype(argTailTail)>(argTailTail)...);
                     }, argTailTuple);
                 }));
             }
         }
         else
         {
-            return expectation;
+            return callExpectation;
         }
     }
 
-    template <typename DefaultExpectationFactory, typename ArgHead, typename... ArgTail>
-    auto& expect_named_call_sequence_recursive(DefaultExpectationFactory& defaultExpectationFactory, const ::testing::Sequence& sequence, ArgHead&& argHead, ArgTail&&... argTail)
+    template <typename ExpectCallSignature, typename ExpectCall, typename ArgHead, typename... ArgTail>
+    auto& expect_named_call_sequence_recursive(ExpectCall& expectCall, ArgHead&& argHead, ArgTail&&... argTail)
     {
-        auto& expectation = defaultExpectationFactory(std::forward<decltype(argHead)>(argHead)).InSequence(sequence);;
-        using expectation_t = std::decay_t<decltype(expectation)>;
+        auto& callExpectation = expectCall(std::forward<decltype(argHead)>(argHead));
 
         if constexpr (sizeof...(argTail) > 0)
         {
             auto argTailRefs = std::forward_as_tuple(std::forward<decltype(argTail)>(argTail)...);
             using arg_tail_head_t = std::tuple_element_t<0, decltype(argTailRefs)>;
 
-            if constexpr (is_compatible_action_v<arg_tail_head_t, expectation_signature_t<expectation_t>>)
+            if constexpr (is_compatible_gtest_action_v<arg_tail_head_t, ExpectCallSignature>)
             {
-                expectation.WillOnce(::testing::DoAll(std::forward<arg_tail_head_t>(std::get<0>(argTailRefs))));
+                callExpectation.WillOnce(::testing::DoAll(std::forward<arg_tail_head_t>(std::get<0>(argTailRefs))));
 
                 if constexpr (sizeof...(argTail) > 1)
                 {
-                    return std::apply([&defaultExpectationFactory, &sequence](auto&&/* argTailHead*/, auto&&... argTailTail) -> auto&
+                    return std::apply([&expectCall](auto&&/* argTailHead*/, auto&&... argTailTail) -> auto&
                     {
-                        return expect_named_call_sequence_recursive(defaultExpectationFactory, sequence, std::forward<decltype(argTailTail)>(argTailTail)...);
+                        return expect_named_call_sequence_recursive<ExpectCallSignature>(expectCall, std::forward<decltype(argTailTail)>(argTailTail)...);
                     }, argTailRefs);
                 }
                 else
                 {
-                    return expectation;
+                    return callExpectation;
                 }
             }
             else
             {
-                (void)expectation;
-                return expect_named_call_sequence_recursive(defaultExpectationFactory, sequence, std::forward<decltype(argTail)>(argTail)...);
+                (void)callExpectation;
+                return expect_named_call_sequence_recursive<ExpectCallSignature>(expectCall, std::forward<decltype(argTail)>(argTail)...);
             }
         }
         else
         {
-            return expectation;
+            return callExpectation;
         }
     }
 
 
-    template <typename DefaultExpectationFactory, typename ArgHead, typename... ArgTail>
-    auto& expect_consecutive_call_sequence(DefaultExpectationFactory defaultExpectationFactory, ArgHead&& argHead, ArgTail&&... argTail)
+    template <typename ExpectCallSignature, typename ExpectCall, typename ArgHead, typename... ArgTail>
+    auto& expect_consecutive_call_sequence(ExpectCall expectCall, ArgHead&& argHead, ArgTail&&... argTail)
     {
         if constexpr (std::is_invocable_v<decltype(argHead)>)
         {
-            auto& expectation = expect_consecutive_call_sequence_recursive(defaultExpectationFactory, std::forward<decltype(argTail)>(argTail)...);
+            auto& callExpectation = expect_consecutive_call_sequence_recursive<ExpectCallSignature>(expectCall, std::forward<decltype(argTail)>(argTail)...);
             std::invoke(std::forward<decltype(argHead)>(argHead));
 
-            return expectation;
+            return callExpectation;
         }
         else
         {
-            return expect_consecutive_call_sequence_recursive(defaultExpectationFactory, std::forward<decltype(argHead)>(argHead), std::forward<decltype(argTail)>(argTail)...);
+            return expect_consecutive_call_sequence_recursive<ExpectCallSignature>(expectCall, std::forward<decltype(argHead)>(argHead), std::forward<decltype(argTail)>(argTail)...);
         }
     }
 
-    template <typename DefaultExpectationFactory, typename ArgHead, typename... ArgTail>
-    auto& expect_named_call_sequence(DefaultExpectationFactory defaultExpectationFactory, const ::testing::Sequence& sequence, ArgHead&& argHead, ArgTail&&... argTail)
+    template <typename ExpectCallSignature, typename ExpectCall, typename ArgHead, typename... ArgTail>
+    auto& expect_named_call_sequence(ExpectCall expectCall, ArgHead&& argHead, ArgTail&&... argTail)
     {
         if constexpr (std::is_invocable_v<decltype(argHead)>)
         {
-            auto& expectation = expect_named_call_sequence_recursive(defaultExpectationFactory, sequence, std::forward<decltype(argTail)>(argTail)...);
+            auto& callExpectation = expect_named_call_sequence_recursive<ExpectCallSignature>(expectCall, std::forward<decltype(argTail)>(argTail)...);
             std::invoke(std::forward<decltype(argHead)>(argHead));
 
-            return expectation;
+            return callExpectation;
         }
         else
         {
-            return expect_named_call_sequence_recursive(defaultExpectationFactory, sequence, std::forward<decltype(argHead)>(argHead), std::forward<decltype(argTail)>(argTail)...);
+            return expect_named_call_sequence_recursive<ExpectCallSignature>(expectCall, std::forward<decltype(argHead)>(argHead), std::forward<decltype(argTail)>(argTail)...);
         }
     }
 }
 
-#define DOTS_EXPECT_CONSECUTIVE_CALL_SEQUENCE(defaultExpectationFactory_, ...)                                                                     \
-[&](auto defaultExpectationFactory, auto&&... args) -> auto&                                                                                       \
-{                                                                                                                                                  \
-    return dots::testing::deprecated::details::expect_consecutive_call_sequence(defaultExpectationFactory, std::forward<decltype(args)>(args)...); \
-}                                                                                                                                                  \
-(defaultExpectationFactory_, __VA_ARGS__)                                                                                                          \
+#define DOTS_EXPECT_CONSECUTIVE_CALL_SEQUENCE(expectCall_, expectCallSignature_, ...)                                                          \
+[&](auto&&... args) -> auto&                                                                                                                   \
+{                                                                                                                                              \
+    auto expect_call = [&](auto&& arg) -> auto&                                                                                                \
+    {                                                                                                                                          \
+        return expectCall_(std::forward<decltype(arg)>(arg));                                                                                  \
+    };                                                                                                                                         \
+                                                                                                                                               \
+    return dots::testing::details::expect_consecutive_call_sequence<expectCallSignature_>(expect_call, std::forward<decltype(args)>(args)...); \
+}                                                                                                                                              \
+(__VA_ARGS__)
 
-#define DOTS_EXPECT_NAMED_CALL_SEQUENCE(defaultExpectationFactory_, sequence_, ...)                                                                    \
-[&](auto defaultExpectationFactory, const ::testing::Sequence& sequence, auto&&... args) -> auto&                                                      \
-{                                                                                                                                                      \
-    return dots::testing::deprecated::details::expect_named_call_sequence(defaultExpectationFactory, sequence, std::forward<decltype(args)>(args)...); \
-}                                                                                                                                                      \
-(defaultExpectationFactory_, sequence_, __VA_ARGS__)
+#define DOTS_EXPECT_NAMED_CALL_SEQUENCE(expectCall_, expectCallSignature_, sequence_, ...)                                               \
+[&](const ::testing::Sequence& sequence, auto&&... args) -> auto&                                                                        \
+{                                                                                                                                        \
+    auto expect_call = [&](auto&& arg) -> auto&                                                                                          \
+    {                                                                                                                                    \
+        return expectCall_(std::forward<decltype(arg)>(arg)).InSequence(sequence);                                                       \
+    };                                                                                                                                   \
+                                                                                                                                         \
+    return dots::testing::details::expect_named_call_sequence<expectCallSignature_>(expect_call, std::forward<decltype(args)>(args)...); \
+}                                                                                                                                        \
+(sequence_, __VA_ARGS__)
 
 #endif

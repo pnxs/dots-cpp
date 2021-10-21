@@ -151,23 +151,6 @@ namespace dots::testing
             return itSubscriptionHandler->second;
         }
 
-        template <typename T>
-        mock_subscription_handler_t& getMockSubscriptionHandler(GuestTransceiver& guest, T&& instance)
-        {
-            constexpr bool IsStruct = std::is_base_of_v<type::Struct, std::decay_t<T>>;
-            static_assert(IsStruct, "instance type T has to be a DOTS struct type");
-
-            if constexpr (IsStruct)
-            {
-                return getMockSubscriptionHandler(guest, std::forward<T>(instance)._descriptor());
-            }
-            else
-            {
-                auto&& mockSubscriptionHandler = std::declval<::testing::MockFunction<void(const io::Transmission&)>>();
-                return mockSubscriptionHandler;
-            }
-        }
-
     private:
 
         HostTransceiver m_host;
