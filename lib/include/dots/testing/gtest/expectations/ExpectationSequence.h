@@ -6,7 +6,7 @@ namespace dots::testing::details
     template <typename... Expectations>
     struct TypedExpectationSet
     {
-        static_assert(std::conjunction_v<std::is_constructible<::testing::Expectation, Expectations&>...>, "expectation bundle arguments must be Google Test expectations");
+        static_assert(std::conjunction_v<std::is_constructible<::testing::Expectation, Expectations&>...>, "expectation set arguments must be Google Test expectations");
 
         TypedExpectationSet(Expectations&... expectations) : m_expectations{ std::tie(expectations...) }
         {
@@ -184,7 +184,7 @@ namespace dots::testing::details
             auto argTailRefs = std::forward_as_tuple(std::forward<decltype(argTail)>(argTail)...);
             using arg_tail_head_t = std::tuple_element_t<0, decltype(argTailRefs)>;
 
-            if constexpr (is_typed_expectation_set_v<arg_tail_head_t>)
+            if constexpr (is_typed_expectation_set_v<std::decay_t<arg_tail_head_t>>)
             {
                 return expectation_sequence_recursive(next, std::forward<decltype(argTail)>(argTail)...);
             }
