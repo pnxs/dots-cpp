@@ -18,7 +18,7 @@ namespace dots
         Timer& operator = (const Timer& rhs) = delete;
         Timer& operator = (Timer&& rhs) = delete;
 
-        id_t id() { return m_id; }
+        id_t id() const { return m_id; }
 
     private:
 
