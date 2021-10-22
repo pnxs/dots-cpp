@@ -294,23 +294,23 @@ static void write_atomic_types_to_ascii(const type::Descriptor<>& td, const void
     //std::cout << "write atomic is_arithmetic:" << t.is_arithmetic() << " is_enum:" << t.is_enumeration() << " t:" << t.get_name() << "\n";
     //std::cout << "var ptr: " << var.get_ptr() << " type=" << var.get_type().get_name() << "\n";
     switch (td.type()) {
-        case type::Type::int8:            writer.Int(*(const int8_t *) data); break;
-        case type::Type::int16:           writer.Int(*(const int16_t *) data); break;
-        case type::Type::int32:           writer.Int(*(const int32_t *) data); break;
-        case type::Type::int64:           writer.Int64(*(const long long *) data); break;
-        case type::Type::uint8:           writer.Uint(*(const uint8_t *) data); break;
-        case type::Type::uint16:          writer.Uint(*(const uint16_t *) data); break;
-        case type::Type::uint32:          writer.Uint(*(const uint32_t *) data); break;
-        case type::Type::uint64:          writer.Uint64(*(const unsigned long long *) data); break;
-        case type::Type::boolean:         writer.Bool(*(const bool *) data); break;
-        case type::Type::float32:         writer.Double(*(const float *) data);break;
-        case type::Type::float64:         writer.Double(*(const double *) data);break;
-        case type::Type::string:          writer.String(*(const std::string*) data);break;
-        case type::Type::property_set:    writer.Int(((const dots::types::property_set_t*)data)->toValue()); break;
-        case type::Type::timepoint:       writer.Double(((const type::TimePoint*)data)->duration().toFractionalSeconds()); break;
-        case type::Type::steady_timepoint:writer.Double(((const type::SteadyTimePoint*)data)->duration().toFractionalSeconds()); break;
-        case type::Type::duration:        writer.Double(((const type::Duration*)data)->toFractionalSeconds()); break;
-        case type::Type::uuid:            writer.String(((const dots::types::uuid_t*)data)->toString()); break;
+        case type::Type::int8:            writer.Int(*static_cast<const int8_t*>(data)); break;
+        case type::Type::int16:           writer.Int(*static_cast<const int16_t*>(data)); break;
+        case type::Type::int32:           writer.Int(*static_cast<const int32_t*>(data)); break;
+        case type::Type::int64:           writer.Int64(*static_cast<const long long*>(data)); break;
+        case type::Type::uint8:           writer.Uint(*static_cast<const uint8_t*>(data)); break;
+        case type::Type::uint16:          writer.Uint(*static_cast<const uint16_t*>(data)); break;
+        case type::Type::uint32:          writer.Uint(*static_cast<const uint32_t*>(data)); break;
+        case type::Type::uint64:          writer.Uint64(*static_cast<const unsigned long long*>(data)); break;
+        case type::Type::boolean:         writer.Bool(*static_cast<const bool*>(data)); break;
+        case type::Type::float32:         writer.Double(*static_cast<const float*>(data));break;
+        case type::Type::float64:         writer.Double(*static_cast<const double*>(data));break;
+        case type::Type::string:          writer.String(*static_cast<const std::string*>(data));break;
+        case type::Type::property_set:    writer.Int(static_cast<const dots::types::property_set_t*>(data)->toValue()); break;
+        case type::Type::timepoint:       writer.Double(static_cast<const type::TimePoint*>(data)->duration().toFractionalSeconds()); break;
+        case type::Type::steady_timepoint:writer.Double(static_cast<const type::SteadyTimePoint*>(data)->duration().toFractionalSeconds()); break;
+        case type::Type::duration:        writer.Double(static_cast<const type::Duration*>(data)->toFractionalSeconds()); break;
+        case type::Type::uuid:            writer.String(static_cast<const dots::types::uuid_t*>(data)->toString()); break;
         case type::Type::Enum:
         {
             writer.Enum(data, static_cast<const type::EnumDescriptor<>*>(&td));
@@ -328,7 +328,7 @@ static inline void write_ascii(const type::Descriptor<>& td, const void* data, P
 {
     if (td.type() == type::Type::Vector)
     {
-        write_array_to_ascii(static_cast<const type::VectorDescriptor&>(td), *reinterpret_cast<const type::Vector<>*>(data), writer);
+        write_array_to_ascii(static_cast<const type::VectorDescriptor&>(td), *static_cast<const type::Vector<>*>(data), writer);
     }
     else if (td.isFundamentalType() || td.type() == type::Type::Enum)
     {
@@ -358,7 +358,7 @@ static void write_array_to_ascii(const type::VectorDescriptor& vd, const type::V
 
 static void to_ascii_recursive(const type::StructDescriptor<>& td, const void *data, types::property_set_t what, Printer& writer, types::property_set_t highlight)
 {
-    types::property_set_t validProperties = td.propertyArea(*reinterpret_cast<const type::Struct*>(data)).validProperties();
+    types::property_set_t validProperties = td.propertyArea(*static_cast<const type::Struct*>(data)).validProperties();
 
     /// attributes which should be serialized 'and' are valid
     const types::property_set_t serializePropertySet = (what ^ validProperties);

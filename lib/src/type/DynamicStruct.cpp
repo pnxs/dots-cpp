@@ -6,7 +6,7 @@ namespace dots::type
 {
     DynamicStruct::DynamicStruct(const Descriptor<DynamicStruct>& descriptor) :
         Struct(descriptor),
-        m_propertyArea{ std::unique_ptr<PropertyArea>{ reinterpret_cast<PropertyArea*>(::operator new(descriptor.size() - sizeof(DynamicStruct))) } }
+        m_propertyArea{ std::unique_ptr<PropertyArea>{ static_cast<PropertyArea*>(::operator new(descriptor.size() - sizeof(DynamicStruct))) } }
     {
         ::new(static_cast<void*>(propertyAreaGet())) PropertyArea{};
     }
