@@ -34,7 +34,7 @@ namespace dots::tools
     }
 
     Uri::Uri(Uri&& other) :
-        m_uriStr{ std::move(other.uriStr()) }
+        m_uriStr{ other.uriStr() }
     {
         parse();
     }

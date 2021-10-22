@@ -49,7 +49,7 @@ namespace dots
 
         io::Transmission transmission{ std::move(header), instance };
         dispatcher().dispatch(transmission);
-        transmit(std::move(transmission));
+        transmit(transmission);
     }
 
     void HostTransceiver::joinGroup(const std::string_view&/* name*/)
@@ -151,7 +151,7 @@ namespace dots
         }
 
         dispatcher().dispatch(transmission);
-        transmit(std::move(transmission));
+        transmit(transmission);
 
         return !connection.closed();
     }

@@ -9,7 +9,7 @@ namespace dots::type
         m_tag(tag),
         m_isKey(isKey),
         m_set{ PropertySet::FromIndex(m_tag) },
-        m_offset{ std::move(offset) }
+        m_offset{ offset }
     {
         if (const auto* structDescriptor = m_descriptor->as<StructDescriptor<>>(); structDescriptor != nullptr)
         {
