@@ -62,7 +62,7 @@ namespace dots::io
 
         void asyncResolveEndpoint(const std::string_view& host, const std::string_view& port, resolve_handler_t handler);
 
-        void verifyErrorCode(const boost::system::error_code& error);
+        void verifyErrorCode(const boost::system::error_code& ec);
 
         receive_handler_t m_cb;
         error_handler_t m_ecb;
