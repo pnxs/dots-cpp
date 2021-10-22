@@ -54,7 +54,7 @@ namespace dots::io
 
         using resolve_handler_t = std::function<void(const boost::system::error_code& error, std::optional<boost::asio::ip::tcp::endpoint>)>;
 
-	    void setDefaultSocketOptions();
+        void setDefaultSocketOptions();
 
         void asyncReadHeaderLength();
         void asyncReadHeader();
