@@ -8,8 +8,6 @@
 
 namespace dots::testing
 {
-    using mock_subscription_handler_t = ::testing::MockFunction<void(const io::Transmission&)>;
-
     struct publish_expectation_tag {};
 
     template <typename T>
@@ -75,7 +73,7 @@ namespace dots::testing
 #define DOTS_EXPECT_PUBLISH_SEQUENCE_AT_SUBSCRIBER(mockSubscriptionHandlerRetriever_, ...) DOTS_EXPECT_CONSECUTIVE_CALL_SEQUENCE(DOTS_MAKE_EXPECT_PUBLISH_AT_SUBSCRIBER(mockSubscriptionHandlerRetriever_), void(const dots::io::Transmission&), __VA_ARGS__)
 #define DOTS_EXPECT_NAMED_PUBLISH_SEQUENCE_AT_SUBSCRIBER(mockSubscriptionHandlerRetriever_, sequence_, ...) DOTS_EXPECT_NAMED_CALL_SEQUENCE(DOTS_MAKE_EXPECT_PUBLISH_AT_SUBSCRIBER(mockSubscriptionHandlerRetriever_), void(const dots::io::Transmission&), sequence_, __VA_ARGS__)
 
-#else
+#endif
 
 namespace dots::testing
 {
@@ -168,5 +166,3 @@ namespace dots::testing
 {                                                                                                                                                                               \
     return IMPL_EXPECT_DOTS_PUBLISH_AT_SUBSCRIBER(mockSubscriptionHandler, std::forward<decltype(instance)>(instance), includedProperties, true, false);                        \
 }
-
-#endif
