@@ -1,5 +1,4 @@
 #pragma once
-#include <functional>
 #include <optional>
 #include <boost/asio.hpp>
 #include <dots/io/Listener.h>

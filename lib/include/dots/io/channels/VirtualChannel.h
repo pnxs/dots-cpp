@@ -1,6 +1,5 @@
 #pragma once
 #include <functional>
-#include <utility>
 #include <set>
 #include <boost/asio.hpp>
 #include <dots/io/Channel.h>

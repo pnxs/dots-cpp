@@ -1,5 +1,4 @@
 #pragma once
-#include <variant>
 #include <dots/type/PropertyDescriptor.h>
 
 namespace dots::type

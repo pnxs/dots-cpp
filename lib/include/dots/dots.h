@@ -1,7 +1,6 @@
 #pragma once
 #include <functional>
 #include <string_view>
-#include <boost/asio.hpp>
 #include <dots/type/Chrono.h>
 #include <dots/Timer.h>
 #include <dots/GuestTransceiver.h>

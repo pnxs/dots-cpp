@@ -1,6 +1,5 @@
 #include <string>
 #include <type_traits>
-#include <cstddef>
 #include <dots/testing/gtest/gtest.h>
 #include <dots/type/Property.h>
 #include <dots/type/FundamentalTypes.h>

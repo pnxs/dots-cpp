@@ -1,6 +1,5 @@
 #pragma once
 #include <string_view>
-#include <array>
 #include <functional>
 #include <type_traits>
 #include <dots/type/PropertyContainer.h>

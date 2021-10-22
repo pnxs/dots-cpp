@@ -1,7 +1,5 @@
 #pragma once
 #include <string_view>
-#include <array>
-#include <functional>
 #include <type_traits>
 #include <algorithm>
 #include <dots/type/PropertyArea.h>
