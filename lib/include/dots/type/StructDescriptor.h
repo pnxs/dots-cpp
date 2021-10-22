@@ -25,7 +25,7 @@ namespace dots::type
         StructDescriptor(key_t key, std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptors, size_t areaOffset, size_t size, size_t alignment);
         StructDescriptor(const StructDescriptor& other) = delete;
         StructDescriptor(StructDescriptor&& other) = delete;
-        ~StructDescriptor() = default;
+        ~StructDescriptor() override = default;
 
         StructDescriptor& operator = (const StructDescriptor& rhs) = delete;
         StructDescriptor& operator = (StructDescriptor&& rhs) = delete;

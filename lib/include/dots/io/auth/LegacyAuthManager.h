@@ -17,7 +17,7 @@ namespace dots::io
         LegacyAuthManager(HostTransceiver& transceiver);
         LegacyAuthManager(const LegacyAuthManager& other) = delete;
         LegacyAuthManager(LegacyAuthManager&& other) = default;
-        ~LegacyAuthManager() = default;
+        ~LegacyAuthManager() override = default;
 
         LegacyAuthManager& operator = (const LegacyAuthManager& rhs) = delete;
         LegacyAuthManager& operator = (LegacyAuthManager&& rhs) = default;

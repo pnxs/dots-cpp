@@ -20,7 +20,7 @@ namespace dots
         HostTransceiver(std::string selfName = "DotsHostTransceiver", boost::asio::io_context& ioContext = io::global_io_context(), bool staticUserTypes = true, transition_handler_t transitionHandler = nullptr);
         HostTransceiver(const HostTransceiver& other) = delete;
         HostTransceiver(HostTransceiver&& other) = default;
-        virtual ~HostTransceiver() = default;
+        ~HostTransceiver() override = default;
 
         HostTransceiver& operator = (const HostTransceiver& rhs) = delete;
         HostTransceiver& operator = (HostTransceiver&& rhs) = default;

@@ -56,7 +56,7 @@ namespace dots::testing
         }
         MockChannel(const MockChannel& other) = delete;
         MockChannel(MockChannel&& other) = delete;
-        virtual ~MockChannel() = default;
+        ~MockChannel() override = default;
 
         MockChannel& operator = (const MockChannel& rhs) = delete;
         MockChannel& operator = (MockChannel&& rhs) = delete;

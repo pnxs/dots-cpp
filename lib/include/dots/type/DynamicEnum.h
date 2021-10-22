@@ -22,7 +22,7 @@ namespace dots::type
         Descriptor(key_t key, std::string name, std::vector<EnumeratorDescriptor<DynamicEnum>> enumeratorDescriptors);
         Descriptor(const Descriptor& other) = delete;
         Descriptor(Descriptor&& other) = delete;
-        ~Descriptor() = default;
+        ~Descriptor() override = default;
 
         Descriptor& operator = (const Descriptor& rhs) = delete;
         Descriptor& operator = (Descriptor&& rhs) = delete;

@@ -13,7 +13,7 @@ namespace dots
         GuestTransceiver(std::string selfName, boost::asio::io_context& ioContext = io::global_io_context(), bool staticUserTypes = true);
         GuestTransceiver(const GuestTransceiver& other) = delete;
         GuestTransceiver(GuestTransceiver&& other) = default;
-        virtual ~GuestTransceiver() = default;
+        ~GuestTransceiver() override = default;
 
         GuestTransceiver& operator = (const GuestTransceiver& rhs) = delete;
         GuestTransceiver& operator = (GuestTransceiver&& rhs) = default;

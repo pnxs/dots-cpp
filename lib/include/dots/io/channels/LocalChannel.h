@@ -13,7 +13,7 @@ namespace dots::io
         LocalChannel(Channel::key_t key, boost::asio::io_context& ioContext, LocalListener& peer);
         LocalChannel(const LocalChannel& other) = delete;
         LocalChannel(LocalChannel&& other) = delete;
-        virtual ~LocalChannel() = default;
+        ~LocalChannel() override = default;
 
         LocalChannel& operator = (const LocalChannel& rhs) = delete;
         LocalChannel& operator = (LocalChannel&& rhs) = delete;

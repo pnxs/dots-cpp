@@ -17,7 +17,7 @@ namespace dots::io
         WebSocketChannel(Channel::key_t key, ws_stream_t&& stream);
         WebSocketChannel(const WebSocketChannel& other) = delete;
         WebSocketChannel(WebSocketChannel&& other) = delete;
-        virtual ~WebSocketChannel() = default;
+        ~WebSocketChannel() override = default;
 
         WebSocketChannel& operator = (const WebSocketChannel& rhs) = delete;
         WebSocketChannel& operator = (WebSocketChannel&& rhs) = delete;

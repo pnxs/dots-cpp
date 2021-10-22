@@ -71,7 +71,7 @@ namespace dots::type
         }
         EnumeratorDescriptor(const EnumeratorDescriptor& other) = default;
         EnumeratorDescriptor(EnumeratorDescriptor&& other) = default;
-        ~EnumeratorDescriptor() = default;
+        ~EnumeratorDescriptor() override = default;
 
         EnumeratorDescriptor& operator = (const EnumeratorDescriptor& rhs) = default;
         EnumeratorDescriptor& operator = (EnumeratorDescriptor&& rhs) = default;
@@ -113,7 +113,7 @@ namespace dots::type
         EnumDescriptor(key_t key, std::string name, size_t underlyingTypeSize, size_t underlyingTypeAlignment);
         EnumDescriptor(const EnumDescriptor& other) = delete;
         EnumDescriptor(EnumDescriptor&& other) = delete;
-        ~EnumDescriptor() = default;
+        ~EnumDescriptor() override = default;
 
         EnumDescriptor& operator = (const EnumDescriptor& rhs) = delete;
         EnumDescriptor& operator = (EnumDescriptor&& rhs) = delete;

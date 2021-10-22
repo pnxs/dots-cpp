@@ -40,7 +40,7 @@ namespace dots::io
         TcpChannel(Channel::key_t key, boost::asio::ip::tcp::socket&& socket);
         TcpChannel(const TcpChannel& other) = delete;
         TcpChannel(TcpChannel&& other) = delete;
-        virtual ~TcpChannel() = default;
+        ~TcpChannel() override = default;
 
         TcpChannel& operator = (const TcpChannel& rhs) = delete;
         TcpChannel& operator = (TcpChannel&& rhs) = delete;
