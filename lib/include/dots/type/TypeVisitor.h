@@ -41,7 +41,7 @@ namespace dots::type
         }
 
         template <typename T, std::enable_if_t<std::is_base_of_v<Struct, T>, int> = 0>
-        void visit(const T& instance, const PropertySet& includedProperties)
+        void visit(const T& instance, PropertySet includedProperties)
         {
             visitBegin<true>();
             visitStructInternal<true, T>(instance, includedProperties);
@@ -49,7 +49,7 @@ namespace dots::type
         }
 
         template <typename T, std::enable_if_t<std::is_base_of_v<Struct, T>, int> = 0>
-        void visit(T& instance, const PropertySet& includedProperties)
+        void visit(T& instance, PropertySet includedProperties)
         {
             visitBegin<false>();
             visitStructInternal<false, T>(instance, includedProperties);
@@ -123,7 +123,7 @@ namespace dots::type
         }
 
         template <typename U>
-        void visitStructEndDerived(U&/* instance*/, const PropertySet&/* includedProperties*/)
+        void visitStructEndDerived(U&/* instance*/, PropertySet/* includedProperties*/)
         {
             /* do nothing */
         }
@@ -540,8 +540,8 @@ namespace dots::type
 
         virtual bool visitStructBegin(const Struct& instance, PropertySet& includedProperties);
         virtual bool visitStructBegin(Struct& instance, PropertySet& includedProperties);
-        virtual void visitStructEnd(const Struct& instance, const PropertySet& includedProperties);
-        virtual void visitStructEnd(Struct& instance, const PropertySet& includedProperties);
+        virtual void visitStructEnd(const Struct& instance, PropertySet includedProperties);
+        virtual void visitStructEnd(Struct& instance, PropertySet includedProperties);
 
         virtual bool visitPropertyBegin(const ProxyProperty<>& property, bool first);
         virtual bool visitPropertyBegin(ProxyProperty<>& property, bool first);
@@ -636,7 +636,7 @@ namespace dots::type
         }
 
         template <typename U>
-        void visitStructEndDerived(U& instance, const PropertySet& includedProperties)
+        void visitStructEndDerived(U& instance, PropertySet includedProperties)
         {
             visitStructEnd(instance, includedProperties);
         }

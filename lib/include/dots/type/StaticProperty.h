@@ -37,7 +37,7 @@ namespace dots::type
             return Derived::Metadata.set();
         }
 
-        static constexpr bool IsPartOf(const PropertySet& propertySet)
+        static constexpr bool IsPartOf(PropertySet propertySet)
         {
             return Set() <= propertySet;
         }

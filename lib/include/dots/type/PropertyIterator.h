@@ -20,7 +20,7 @@ namespace dots::type
         using pointer              = std::conditional_t<IsConst, const value_type*, value_type*>;
         using difference_type      = std::ptrdiff_t;
 
-        PropertyIterator(area_t& area, const descriptor_container_t& descriptors, descriptor_iterator_t descriptorIt, const PropertySet& properties = PropertySet::All) :
+        PropertyIterator(area_t& area, const descriptor_container_t& descriptors, descriptor_iterator_t descriptorIt, PropertySet properties = PropertySet::All) :
             m_area(&area),
             m_descriptors(&descriptors),
             m_descriptorIt(std::move(descriptorIt)),

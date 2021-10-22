@@ -64,22 +64,22 @@ namespace dots::type
         size_t dynamicMemoryUsage(const Typeless& instance) const override;
         size_t dynamicMemoryUsage(const Struct& instance) const;
 
-        virtual Struct& assign(Struct& instance, const Struct& other, const PropertySet& includedProperties) const;
-        virtual Struct& assign(Struct& instance, Struct&& other, const PropertySet& includedProperties) const;
-        virtual Struct& copy(Struct& instance, const Struct& other, const PropertySet& includedProperties) const;
-        virtual Struct& merge(Struct& instance, const Struct& other, const PropertySet& includedProperties) const;
-        virtual void swap(Struct& instance, Struct& other, const PropertySet& includedProperties) const;
-        virtual void clear(Struct& instance, const PropertySet& includedProperties) const;
+        virtual Struct& assign(Struct& instance, const Struct& other, PropertySet includedProperties) const;
+        virtual Struct& assign(Struct& instance, Struct&& other, PropertySet includedProperties) const;
+        virtual Struct& copy(Struct& instance, const Struct& other, PropertySet includedProperties) const;
+        virtual Struct& merge(Struct& instance, const Struct& other, PropertySet includedProperties) const;
+        virtual void swap(Struct& instance, Struct& other, PropertySet includedProperties) const;
+        virtual void clear(Struct& instance, PropertySet includedProperties) const;
 
-        virtual bool equal(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const;
+        virtual bool equal(const Struct& lhs, const Struct& rhs, PropertySet includedProperties) const;
         virtual bool same(const Struct& lhs, const Struct& rhs) const;
 
-        virtual bool less(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const;
-        virtual bool lessEqual(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const;
-        virtual bool greater(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const;
-        virtual bool greaterEqual(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const;
+        virtual bool less(const Struct& lhs, const Struct& rhs, PropertySet includedProperties) const;
+        virtual bool lessEqual(const Struct& lhs, const Struct& rhs, PropertySet includedProperties) const;
+        virtual bool greater(const Struct& lhs, const Struct& rhs, PropertySet includedProperties) const;
+        virtual bool greaterEqual(const Struct& lhs, const Struct& rhs, PropertySet includedProperties) const;
 
-        virtual PropertySet diffProperties(const Struct& instance, const Struct& other, const PropertySet& includedProperties) const;
+        virtual PropertySet diffProperties(const Struct& instance, const Struct& other, PropertySet includedProperties) const;
 
         virtual const PropertyArea& propertyArea(const Struct& instance) const = 0;
         virtual PropertyArea& propertyArea(Struct& instance) const = 0;
@@ -93,14 +93,14 @@ namespace dots::type
         bool substructOnly() const;
 
         const property_descriptor_container_t& propertyDescriptors() const;
-        partial_property_descriptor_container_t propertyDescriptors(const PropertySet& properties) const;
+        partial_property_descriptor_container_t propertyDescriptors(PropertySet properties) const;
 
         property_descriptor_container_t& propertyDescriptors();
 
         const std::vector<PropertyPath>& propertyPaths() const;
 
-        const PropertySet& properties() const;
-        const PropertySet& keyProperties() const;
+        PropertySet properties() const;
+        PropertySet keyProperties() const;
 
     private:
 
@@ -155,37 +155,37 @@ namespace dots::type
             return StructDescriptor::propertyArea(static_cast<T&>(instance));
         }
 
-        static T& assign(T& instance, const T& other, const PropertySet& includedProperties)
+        static T& assign(T& instance, const T& other, PropertySet includedProperties)
         {
             return instance._assign(other, includedProperties);
         }
 
-        static T& assign(T& instance, T&& other, const PropertySet& includedProperties)
+        static T& assign(T& instance, T&& other, PropertySet includedProperties)
         {
             return instance._assign(std::move(other), includedProperties);
         }
 
-        static T& copy(T& instance, const T& other, const PropertySet& includedProperties)
+        static T& copy(T& instance, const T& other, PropertySet includedProperties)
         {
             return instance._copy(other, includedProperties);
         }
 
-        static T& merge(T& instance, const T& other, const PropertySet& includedProperties)
+        static T& merge(T& instance, const T& other, PropertySet includedProperties)
         {
             return instance._merge(other, includedProperties);
         }
 
-        static void swap(T& instance, T& other, const PropertySet& includedProperties)
+        static void swap(T& instance, T& other, PropertySet includedProperties)
         {
             instance._swap(other, includedProperties);
         }
 
-        static void clear(T& instance, const PropertySet& includedProperties)
+        static void clear(T& instance, PropertySet includedProperties)
         {
             instance._clear(includedProperties);
         }
 
-        static bool equal(const T& lhs, const T& rhs, const PropertySet& includedProperties)
+        static bool equal(const T& lhs, const T& rhs, PropertySet includedProperties)
         {
             return lhs._equal(rhs, includedProperties);
         }
@@ -195,27 +195,27 @@ namespace dots::type
             return lhs._same(rhs);
         }
 
-        static bool less(const T& lhs, const T& rhs, const PropertySet& includedProperties)
+        static bool less(const T& lhs, const T& rhs, PropertySet includedProperties)
         {
             return lhs._less(rhs, includedProperties);
         }
 
-        static bool lessEqual(const T& lhs, const T& rhs, const PropertySet& includedProperties)
+        static bool lessEqual(const T& lhs, const T& rhs, PropertySet includedProperties)
         {
             return lhs._lessEqual(rhs, includedProperties);
         }
 
-        static bool greater(const T& lhs, const T& rhs, const PropertySet& includedProperties)
+        static bool greater(const T& lhs, const T& rhs, PropertySet includedProperties)
         {
             return lhs._greater(rhs, includedProperties);
         }
 
-        static bool greaterEqual(const T& lhs, const T& rhs, const PropertySet& includedProperties)
+        static bool greaterEqual(const T& lhs, const T& rhs, PropertySet includedProperties)
         {
             return lhs._greaterEqual(rhs, includedProperties);
         }
 
-        static PropertySet diffProperties(const T& instance, const T& other, const PropertySet& includedProperties)
+        static PropertySet diffProperties(const T& instance, const T& other, PropertySet includedProperties)
         {
             return instance._diffProperties(other, includedProperties);
         }
@@ -267,37 +267,37 @@ namespace dots::type
         using StructDescriptor<T, false>::greaterEqual;
         using StructDescriptor<T, false>::diffProperties;
 
-        Struct& assign(Struct& instance, const Struct& other, const PropertySet& includedProperties) const override
+        Struct& assign(Struct& instance, const Struct& other, PropertySet includedProperties) const override
         {
             return assign(static_cast<T&>(instance), static_cast<const T&>(other), includedProperties);
         }
 
-        Struct& assign(Struct& instance, Struct&& other, const PropertySet& includedProperties) const override
+        Struct& assign(Struct& instance, Struct&& other, PropertySet includedProperties) const override
         {
             return assign(static_cast<T&>(instance), static_cast<T&&>(other), includedProperties);
         }
 
-        Struct& copy(Struct& instance, const Struct& other, const PropertySet& includedProperties) const override
+        Struct& copy(Struct& instance, const Struct& other, PropertySet includedProperties) const override
         {
             return copy(static_cast<T&>(instance), static_cast<const T&>(other), includedProperties);
         }
 
-        Struct& merge(Struct& instance, const Struct& other, const PropertySet& includedProperties) const override
+        Struct& merge(Struct& instance, const Struct& other, PropertySet includedProperties) const override
         {
             return merge(static_cast<T&>(instance), static_cast<const T&>(other), includedProperties);
         }
 
-        void swap(Struct& instance, Struct& other, const PropertySet& includedProperties) const override
+        void swap(Struct& instance, Struct& other, PropertySet includedProperties) const override
         {
             swap(static_cast<T&>(instance), static_cast<T&>(other), includedProperties);
         }
 
-        void clear(Struct& instance, const PropertySet& includedProperties) const override
+        void clear(Struct& instance, PropertySet includedProperties) const override
         {
             clear(static_cast<T&>(instance), includedProperties);
         }
 
-        bool equal(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const override
+        bool equal(const Struct& lhs, const Struct& rhs, PropertySet includedProperties) const override
         {
             return equal(static_cast<const T&>(lhs), static_cast<const T&>(rhs), includedProperties);
         }
@@ -307,27 +307,27 @@ namespace dots::type
             return same(static_cast<const T&>(lhs), static_cast<const T&>(rhs));
         }
 
-        bool less(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const override
+        bool less(const Struct& lhs, const Struct& rhs, PropertySet includedProperties) const override
         {
             return less(static_cast<const T&>(lhs), static_cast<const T&>(rhs), includedProperties);
         }
 
-        bool lessEqual(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const override
+        bool lessEqual(const Struct& lhs, const Struct& rhs, PropertySet includedProperties) const override
         {
             return lessEqual(static_cast<const T&>(lhs), static_cast<const T&>(rhs), includedProperties);
         }
 
-        bool greater(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const override
+        bool greater(const Struct& lhs, const Struct& rhs, PropertySet includedProperties) const override
         {
             return greater(static_cast<const T&>(lhs), static_cast<const T&>(rhs), includedProperties);
         }
 
-        bool greaterEqual(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const override
+        bool greaterEqual(const Struct& lhs, const Struct& rhs, PropertySet includedProperties) const override
         {
             return greaterEqual(static_cast<const T&>(lhs), static_cast<const T&>(rhs), includedProperties);
         }
 
-        PropertySet diffProperties(const Struct& instance, const Struct& other, const PropertySet& includedProperties) const override
+        PropertySet diffProperties(const Struct& instance, const Struct& other, PropertySet includedProperties) const override
         {
             return diffProperties(static_cast<const T&>(instance), static_cast<const T&>(other), includedProperties);
         }

@@ -59,37 +59,37 @@ namespace dots::type
             return !empty();
         }
 
-        constexpr bool operator == (const PropertySet& rhs) const
+        constexpr bool operator == (PropertySet rhs) const
         {
             return m_value == rhs.m_value;
         }
 
-        constexpr bool operator != (const PropertySet& rhs) const
+        constexpr bool operator != (PropertySet rhs) const
         {
             return !(*this == rhs);
         }
 
-        constexpr bool operator < (const PropertySet& rhs) const
+        constexpr bool operator < (PropertySet rhs) const
         {
             return m_value != rhs.m_value && *this <= rhs;
         }
 
-        constexpr bool operator > (const PropertySet& rhs) const
+        constexpr bool operator > (PropertySet rhs) const
         {
             return rhs < *this;
         }
 
-        constexpr bool operator <= (const PropertySet& rhs) const
+        constexpr bool operator <= (PropertySet rhs) const
         {
             return (m_value & rhs.m_value) == m_value;
         }
 
-        constexpr bool operator >= (const PropertySet& rhs) const
+        constexpr bool operator >= (PropertySet rhs) const
         {
             return rhs <= *this;
         }
 
-        constexpr PropertySet operator + (const PropertySet& rhs) const
+        constexpr PropertySet operator + (PropertySet rhs) const
         {
             PropertySet result = *this;
             result += rhs;
@@ -97,7 +97,7 @@ namespace dots::type
             return result;
         }
 
-        constexpr PropertySet operator - (const PropertySet& rhs) const
+        constexpr PropertySet operator - (PropertySet rhs) const
         {
             PropertySet result = *this;
             result -= rhs;
@@ -105,7 +105,7 @@ namespace dots::type
             return result;
         }
 
-        constexpr PropertySet operator ^ (const PropertySet& rhs) const
+        constexpr PropertySet operator ^ (PropertySet rhs) const
         {
             PropertySet result = *this;
             result ^= rhs;
@@ -118,43 +118,43 @@ namespace dots::type
             return PropertySet{ ~m_value };
         }
 
-        constexpr PropertySet& operator += (const PropertySet& rhs)
+        constexpr PropertySet& operator += (PropertySet rhs)
         {
             m_value |= rhs.m_value;
             return *this;
         }
 
-        constexpr PropertySet& operator -= (const PropertySet& rhs)
+        constexpr PropertySet& operator -= (PropertySet rhs)
         {
             m_value &= ~rhs.m_value;
             return *this;
         }
 
-        constexpr PropertySet& operator ^= (const PropertySet& rhs)
+        constexpr PropertySet& operator ^= (PropertySet rhs)
         {
             m_value &= rhs.m_value;
             return *this;
         }
 
-        constexpr PropertySet intersection(const PropertySet& rhs) const
+        constexpr PropertySet intersection(PropertySet rhs) const
         {
             PropertySet result = *this;
             return result.intersect(rhs);
         }
 
-        constexpr PropertySet& intersect(const PropertySet& rhs)
+        constexpr PropertySet& intersect(PropertySet rhs)
         {
             m_value &= rhs.m_value;
             return *this;
         }
 
-        constexpr PropertySet symmetricDifference(const PropertySet& rhs) const
+        constexpr PropertySet symmetricDifference(PropertySet rhs) const
         {
             PropertySet result = *this;
             return result.symmetricSubtract(rhs);
         }
 
-        constexpr PropertySet& symmetricSubtract(const PropertySet& rhs)
+        constexpr PropertySet& symmetricSubtract(PropertySet rhs)
         {
             m_value ^= rhs.m_value;
             return *this;

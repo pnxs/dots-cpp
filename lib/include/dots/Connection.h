@@ -80,7 +80,7 @@ namespace dots
         void setConnectionState(DotsConnectionState state, const std::exception_ptr& e = nullptr);
 
         template <typename T>
-        void expectSystemType(const types::property_set_t& expectedAttributes, void(Connection::* handler)(const T&));
+        void expectSystemType(types::property_set_t expectedAttributes, void(Connection::* handler)(const T&));
 
         inline static id_t M_nextGuestId = FirstGuestId;
 

@@ -206,7 +206,7 @@ namespace dots::type
         }
     }
 
-    Struct& StructDescriptor<Typeless, false, void>::assign(Struct& instance, const Struct& other, const PropertySet& includedProperties) const
+    Struct& StructDescriptor<Typeless, false, void>::assign(Struct& instance, const Struct& other, PropertySet includedProperties) const
     {
         PropertySet assignProperties = other._validProperties() ^ includedProperties;
 
@@ -225,7 +225,7 @@ namespace dots::type
         return instance;
     }
 
-    Struct& StructDescriptor<Typeless, false, void>::assign(Struct& instance, Struct&& other, const PropertySet& includedProperties) const
+    Struct& StructDescriptor<Typeless, false, void>::assign(Struct& instance, Struct&& other, PropertySet includedProperties) const
     {
         PropertySet assignProperties = other._validProperties() ^ includedProperties;
 
@@ -244,7 +244,7 @@ namespace dots::type
         return instance;
     }
 
-    Struct& StructDescriptor<Typeless, false, void>::copy(Struct& instance, const Struct& other, const PropertySet& includedProperties) const
+    Struct& StructDescriptor<Typeless, false, void>::copy(Struct& instance, const Struct& other, PropertySet includedProperties) const
     {
         PropertySet copyProperties = (instance._validProperties() + other._validProperties()) ^ includedProperties;
 
@@ -263,7 +263,7 @@ namespace dots::type
         return instance;
     }
 
-    Struct& StructDescriptor<Typeless, false, void>::merge(Struct& instance, const Struct& other, const PropertySet& includedProperties) const
+    Struct& StructDescriptor<Typeless, false, void>::merge(Struct& instance, const Struct& other, PropertySet includedProperties) const
     {
         PropertySet mergeProperties = other._validProperties() ^ includedProperties;
 
@@ -282,7 +282,7 @@ namespace dots::type
         return instance;
     }
 
-    void StructDescriptor<Typeless, false, void>::swap(Struct& instance, Struct& other, const PropertySet& includedProperties) const
+    void StructDescriptor<Typeless, false, void>::swap(Struct& instance, Struct& other, PropertySet includedProperties) const
     {
         for (auto&[propertyThis, propertyOther] : instance._propertyRange(other, includedProperties))
         {
@@ -290,7 +290,7 @@ namespace dots::type
         }
     }
 
-    void StructDescriptor<Typeless, false, void>::clear(Struct& instance, const PropertySet& includedProperties) const
+    void StructDescriptor<Typeless, false, void>::clear(Struct& instance, PropertySet includedProperties) const
     {
         for (auto& property : instance._propertyRange(includedProperties))
         {
@@ -298,7 +298,7 @@ namespace dots::type
         }
     }
 
-    bool StructDescriptor<Typeless, false, void>::equal(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const
+    bool StructDescriptor<Typeless, false, void>::equal(const Struct& lhs, const Struct& rhs, PropertySet includedProperties) const
     {
         for (const auto&[propertyThis, propertyOther] : lhs._propertyRange(rhs, includedProperties))
         {
@@ -316,7 +316,7 @@ namespace dots::type
         return lhs._equal(rhs, lhs._keyProperties());
     }
 
-    bool StructDescriptor<Typeless, false, void>::less(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const
+    bool StructDescriptor<Typeless, false, void>::less(const Struct& lhs, const Struct& rhs, PropertySet includedProperties) const
     {
         if (includedProperties.empty())
         {
@@ -340,22 +340,22 @@ namespace dots::type
         }
     }
 
-    bool StructDescriptor<Typeless, false, void>::lessEqual(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const
+    bool StructDescriptor<Typeless, false, void>::lessEqual(const Struct& lhs, const Struct& rhs, PropertySet includedProperties) const
     {
         return !lhs._greater(rhs, includedProperties);
     }
 
-    bool StructDescriptor<Typeless, false, void>::greater(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const
+    bool StructDescriptor<Typeless, false, void>::greater(const Struct& lhs, const Struct& rhs, PropertySet includedProperties) const
     {
         return rhs._less(lhs, includedProperties);
     }
 
-    bool StructDescriptor<Typeless, false, void>::greaterEqual(const Struct& lhs, const Struct& rhs, const PropertySet& includedProperties) const
+    bool StructDescriptor<Typeless, false, void>::greaterEqual(const Struct& lhs, const Struct& rhs, PropertySet includedProperties) const
     {
         return !lhs._less(rhs, includedProperties);
     }
 
-    PropertySet StructDescriptor<Typeless, false, void>::diffProperties(const Struct& instance, const Struct& other, const PropertySet& includedProperties) const
+    PropertySet StructDescriptor<Typeless, false, void>::diffProperties(const Struct& instance, const Struct& other, PropertySet includedProperties) const
     {
         PropertySet symmetricDiff = instance._validProperties().symmetricDifference(other._validProperties()) ^ includedProperties;
         PropertySet intersection = instance._validProperties() ^ other._validProperties() ^ includedProperties;
@@ -414,7 +414,7 @@ namespace dots::type
         return m_propertyDescriptors;
     }
 
-    partial_property_descriptor_container_t StructDescriptor<Typeless, false, void>::propertyDescriptors(const PropertySet& properties) const
+    partial_property_descriptor_container_t StructDescriptor<Typeless, false, void>::propertyDescriptors(PropertySet properties) const
     {
         partial_property_descriptor_container_t partialPropertyDescriptors;
 
@@ -458,12 +458,12 @@ namespace dots::type
         return m_propertyPaths;
     }
 
-    const PropertySet& StructDescriptor<Typeless, false, void>::properties() const
+    PropertySet StructDescriptor<Typeless, false, void>::properties() const
     {
         return m_properties;
     }
 
-    const PropertySet& StructDescriptor<Typeless, false, void>::keyProperties() const
+    PropertySet StructDescriptor<Typeless, false, void>::keyProperties() const
     {
         return m_keyProperties;
     }

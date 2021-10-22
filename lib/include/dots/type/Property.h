@@ -448,7 +448,7 @@ namespace dots::type
             return static_cast<const Derived&>(*this).derivedDescriptor();
         }
 
-        constexpr bool isPartOf(const PropertySet& propertySet) const
+        constexpr bool isPartOf(PropertySet propertySet) const
         {
             return descriptor().set() <= propertySet;
         }

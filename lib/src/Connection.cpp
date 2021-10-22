@@ -475,7 +475,7 @@ namespace dots
     }
 
     template <typename T>
-    void Connection::expectSystemType(const types::property_set_t& expectedAttributes, void(Connection::* handler)(const T&))
+    void Connection::expectSystemType(types::property_set_t expectedAttributes, void(Connection::* handler)(const T&))
     {
         m_expectedSystemType = { &T::_Descriptor(), expectedAttributes, [this, handler](const type::Struct& instance){ (this->*handler)(instance._to<T>()); } };
     }

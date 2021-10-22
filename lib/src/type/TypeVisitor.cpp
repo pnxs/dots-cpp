@@ -32,12 +32,12 @@ namespace dots::type
         return TypeVisitor<TypeVisitor<void>>::visitStructBeginDerived(instance, includedProperties);
     }
 
-    void TypeVisitor<void, void>::visitStructEnd(const Struct& instance, const PropertySet& includedProperties)
+    void TypeVisitor<void, void>::visitStructEnd(const Struct& instance, PropertySet includedProperties)
     {
         TypeVisitor<TypeVisitor<void>>::visitStructEndDerived(instance, includedProperties);
     }
 
-    void TypeVisitor<void, void>::visitStructEnd(Struct& instance, const PropertySet& includedProperties)
+    void TypeVisitor<void, void>::visitStructEnd(Struct& instance, PropertySet includedProperties)
     {
         TypeVisitor<TypeVisitor<void>>::visitStructEndDerived(instance, includedProperties);
     }
