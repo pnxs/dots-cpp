@@ -70,7 +70,7 @@ namespace dots
         }
     }
 
-    void GuestTransceiver::joinGroup(const std::string_view& name)
+    void GuestTransceiver::joinGroup(std::string_view name)
     {
         if (m_joinedGroups.count(std::string(name)) == 0)
         {
@@ -82,7 +82,7 @@ namespace dots
         }
     }
 
-    void GuestTransceiver::leaveGroup(const std::string_view& name)
+    void GuestTransceiver::leaveGroup(std::string_view name)
     {
         if (m_joinedGroups.count(std::string(name)))
         {

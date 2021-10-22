@@ -88,13 +88,13 @@ namespace dots
         return const_cast<Container<>&>(std::as_const(*this).get(descriptor, insertIfNotExist));
     }
 
-    const Container<>* ContainerPool::find(const std::string_view& name) const
+    const Container<>* ContainerPool::find(std::string_view name) const
     {
         auto it = m_nameCache.find(name);
         return it == m_nameCache.end() ? nullptr : it->second;
     }
 
-    const Container<>& ContainerPool::get(const std::string_view& name) const
+    const Container<>& ContainerPool::get(std::string_view name) const
     {
         const Container<>* container = find(name);
 
@@ -106,12 +106,12 @@ namespace dots
         return *container;
     }
 
-    Container<>* ContainerPool::find(const std::string_view& name)
+    Container<>* ContainerPool::find(std::string_view name)
     {
         return const_cast<Container<>*>(std::as_const(*this).find(name));
     }
 
-    Container<>& ContainerPool::get(const std::string_view& name)
+    Container<>& ContainerPool::get(std::string_view name)
     {
         return const_cast<Container<>&>(std::as_const(*this).get(name));
     }

@@ -20,7 +20,7 @@ namespace dots::io
          * @param host
          * @param port
          */
-        TcpChannel(Channel::key_t key, boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port);
+        TcpChannel(Channel::key_t key, boost::asio::io_context& ioContext, std::string_view host, std::string_view port);
 
         /**
          * Connect channel asynchronously.
@@ -30,7 +30,7 @@ namespace dots::io
          * @param port
          * @param onConnect
          */
-        TcpChannel(Channel::key_t key, boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port, std::function<void(const boost::system::error_code& error)> onConnect);
+        TcpChannel(Channel::key_t key, boost::asio::io_context& ioContext, std::string_view host, std::string_view port, std::function<void(const boost::system::error_code& error)> onConnect);
 
         /**
          * Construct channel with an already connected socket.
@@ -60,7 +60,7 @@ namespace dots::io
         void asyncReadHeader();
         void asyncReadInstance();
 
-        void asyncResolveEndpoint(const std::string_view& host, const std::string_view& port, resolve_handler_t handler);
+        void asyncResolveEndpoint(std::string_view host, std::string_view port, resolve_handler_t handler);
 
         void verifyErrorCode(const boost::system::error_code& ec);
 

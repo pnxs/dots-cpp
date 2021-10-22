@@ -112,12 +112,12 @@ namespace dots
         return makeSubscription([&, id]{ m_dispatcher.removeEventHandler(descriptor, id); });
     }
 
-    Subscription Transceiver::subscribe(const std::string_view& name, transmission_handler_t&& handler)
+    Subscription Transceiver::subscribe(std::string_view name, transmission_handler_t&& handler)
     {
         return subscribe(m_registry.getStructType(name), std::move(handler));
     }
 
-    Subscription Transceiver::subscribe(const std::string_view& name, event_handler_t<>&& handler)
+    Subscription Transceiver::subscribe(std::string_view name, event_handler_t<>&& handler)
     {
         return subscribe(m_registry.getStructType(name), std::move(handler));
     }

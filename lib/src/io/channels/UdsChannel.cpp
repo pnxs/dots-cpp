@@ -13,7 +13,7 @@ namespace dots::io::posix
         /* do nothing */
     }
 
-    UdsChannel::UdsChannel(Channel::key_t key, boost::asio::io_context& ioContext, const std::string_view& path) :
+    UdsChannel::UdsChannel(Channel::key_t key, boost::asio::io_context& ioContext, std::string_view path) :
         Channel(key),
         m_socket{ ioContext },
         m_headerSize(0)

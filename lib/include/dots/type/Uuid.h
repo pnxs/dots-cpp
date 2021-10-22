@@ -27,8 +27,8 @@ namespace dots::type
 
         std::string toString() const;
 
-        static Uuid FromString(const std::string_view& value);
-        static Uuid FromData(const std::string_view& data);
+        static Uuid FromString(std::string_view value);
+        static Uuid FromData(std::string_view data);
         static Uuid Random();
 
     private:

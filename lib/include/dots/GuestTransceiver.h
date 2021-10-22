@@ -37,8 +37,8 @@ namespace dots
 
     private:
 
-        void joinGroup(const std::string_view& name) override;
-        void leaveGroup(const std::string_view& name) override;
+        void joinGroup(std::string_view name) override;
+        void leaveGroup(std::string_view name) override;
 
         bool handleTransmission(Connection& connection, io::Transmission transmission);
         void handleTransition(Connection& connection, const std::exception_ptr& e) noexcept;

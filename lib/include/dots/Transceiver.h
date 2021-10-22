@@ -40,8 +40,8 @@ namespace dots
         Subscription subscribe(const type::StructDescriptor<>& descriptor, transmission_handler_t&& handler);
         Subscription subscribe(const type::StructDescriptor<>& descriptor, event_handler_t<>&& handler);
 
-        Subscription subscribe(const std::string_view& name, transmission_handler_t&& handler);
-        Subscription subscribe(const std::string_view& name, event_handler_t<>&& handler);
+        Subscription subscribe(std::string_view name, transmission_handler_t&& handler);
+        Subscription subscribe(std::string_view name, event_handler_t<>&& handler);
 
         Subscription subscribe(new_type_handler_t&& handler);
 
@@ -115,8 +115,8 @@ namespace dots
         using id_t = uint64_t;
         using new_type_handlers_t = std::map<id_t, new_type_handler_t, std::greater<>>;
 
-        virtual void joinGroup(const std::string_view& name) = 0;
-        virtual void leaveGroup(const std::string_view& name) = 0;
+        virtual void joinGroup(std::string_view name) = 0;
+        virtual void leaveGroup(std::string_view name) = 0;
 
         template <typename UnsubscribeHandler>
         Subscription makeSubscription(UnsubscribeHandler&& unsubscribeHandler);

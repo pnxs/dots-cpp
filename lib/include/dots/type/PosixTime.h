@@ -8,7 +8,7 @@ namespace dots::type::posix
 {
     struct ScopedTimeZone
     {
-        ScopedTimeZone(const std::string_view& timeZone)
+        ScopedTimeZone(std::string_view timeZone)
         {
             std::string_view currentTimeZone = ::getenv("TZ");
 

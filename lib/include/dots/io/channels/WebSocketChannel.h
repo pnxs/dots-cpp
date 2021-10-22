@@ -13,7 +13,7 @@ namespace dots::io
         static constexpr char Subprotocol[] = "dots-json";
 
         WebSocketChannel(Channel::key_t key, boost::asio::io_context& ioContext, const Endpoint& endpoint);
-        WebSocketChannel(Channel::key_t key, boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port);
+        WebSocketChannel(Channel::key_t key, boost::asio::io_context& ioContext, std::string_view host, std::string_view port);
         WebSocketChannel(Channel::key_t key, ws_stream_t&& stream);
         WebSocketChannel(const WebSocketChannel& other) = delete;
         WebSocketChannel(WebSocketChannel&& other) = delete;

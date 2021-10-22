@@ -14,8 +14,8 @@ namespace dots::type
     template <typename T>
     struct DynamicPropertyInitializer
     {
-        DynamicPropertyInitializer(const std::string_view& name, const T& value) : name(name), value(value) {}
-        DynamicPropertyInitializer(const std::string_view& name, T&& value) : name(name), value(std::move(value)) {}
+        DynamicPropertyInitializer(std::string_view name, const T& value) : name(name), value(value) {}
+        DynamicPropertyInitializer(std::string_view name, T&& value) : name(name), value(std::move(value)) {}
         DynamicPropertyInitializer(const DynamicPropertyInitializer& other) = default;
         DynamicPropertyInitializer(DynamicPropertyInitializer&& other) = default;
         ~DynamicPropertyInitializer() = default;

@@ -209,7 +209,7 @@ namespace dots::type
         virtual const std::vector<enumerator_ref_t>& enumeratorsTypeless() const = 0;
 
         virtual const EnumeratorDescriptor<>& enumeratorFromTag(uint32_t tag) const = 0;
-        virtual const EnumeratorDescriptor<>& enumeratorFromName(const std::string_view& name) const = 0;
+        virtual const EnumeratorDescriptor<>& enumeratorFromName(std::string_view name) const = 0;
         virtual const EnumeratorDescriptor<>& enumeratorFromValue(const Typeless& value) const = 0;
     };
 
@@ -272,7 +272,7 @@ namespace dots::type
             return *it;
         }
 
-        const EnumeratorDescriptor<E>& enumeratorFromName(const std::string_view& name) const override
+        const EnumeratorDescriptor<E>& enumeratorFromName(std::string_view name) const override
         {
             auto it = std::find_if(m_enumerators.begin(), m_enumerators.end(), [&name](const EnumeratorDescriptor<E>& enumeratorDescriptor)
             {

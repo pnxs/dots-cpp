@@ -49,8 +49,8 @@ namespace dots
         using group_t = std::unordered_set<Connection*>;
         using group_map_t = std::unordered_map<std::string, group_t>;
 
-        void joinGroup(const std::string_view& name) override;
-        void leaveGroup(const std::string_view& name) override;
+        void joinGroup(std::string_view name) override;
+        void leaveGroup(std::string_view name) override;
 
         void transmit(const io::Transmission& transmission);
 

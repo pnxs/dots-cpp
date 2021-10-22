@@ -109,7 +109,7 @@ namespace dots
         return "from '" + std::string{ m_channel->localEndpoint().uriStr() } + "' at '" + std::string{ m_channel->remoteEndpoint().uriStr() } + "'";
     }
 
-    void Connection::asyncReceive(type::Registry& registry, io::AuthManager* authManager, const std::string_view& name, receive_handler_t&& receiveHandler, transition_handler_t&& transitionHandler)
+    void Connection::asyncReceive(type::Registry& registry, io::AuthManager* authManager, std::string_view name, receive_handler_t&& receiveHandler, transition_handler_t&& transitionHandler)
     {
         if (m_connectionState != DotsConnectionState::suspended)
         {

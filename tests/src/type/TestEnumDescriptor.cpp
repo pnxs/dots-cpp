@@ -83,7 +83,7 @@ TEST_F(TestEnumDescriptor, enumeratorsTypeless_expectedSize)
 
 TEST_F(TestEnumDescriptor, enumerators_expectedElements)
 {
-    auto expect_eq_enumerator = [](const auto& enumerator, uint32_t tag, const std::string_view& name, const auto& value)
+    auto expect_eq_enumerator = [](const auto& enumerator, uint32_t tag, std::string_view name, const auto& value)
     {
         EXPECT_EQ(enumerator.tag(), tag);
         EXPECT_EQ(enumerator.name(), name);
@@ -108,7 +108,7 @@ TEST_F(TestEnumDescriptor, enumerators_expectedElements)
 
 TEST_F(TestEnumDescriptor, enumeratorsTypeless_expectedElements)
 {
-    auto expect_eq_enumerator_simple = [&](const EnumeratorDescriptor<>& enumerator, uint32_t tag, const std::string_view& name, const TestEnumSimple& value)
+    auto expect_eq_enumerator_simple = [&](const EnumeratorDescriptor<>& enumerator, uint32_t tag, std::string_view name, const TestEnumSimple& value)
     {
         EXPECT_EQ(enumerator.tag(), tag);
         EXPECT_EQ(enumerator.name(), name);
@@ -122,7 +122,7 @@ TEST_F(TestEnumDescriptor, enumeratorsTypeless_expectedElements)
     expect_eq_enumerator_simple(m_sutSimple->enumeratorsTypeless()[4], 11, "enumerator11", TestEnumSimple::enumerator11);
     expect_eq_enumerator_simple(m_sutSimple->enumeratorsTypeless()[5], 13, "enumerator13", TestEnumSimple::enumerator13);
 
-    auto expect_eq_enumerator_generic = [&](const EnumeratorDescriptor<>& enumerator, uint32_t tag, const std::string_view& name, const TestEnumGeneric& value)
+    auto expect_eq_enumerator_generic = [&](const EnumeratorDescriptor<>& enumerator, uint32_t tag, std::string_view name, const TestEnumGeneric& value)
     {
         EXPECT_EQ(enumerator.tag(), tag);
         EXPECT_EQ(enumerator.name(), name);

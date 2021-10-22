@@ -28,12 +28,12 @@ namespace dots::type
             return _find(tag);
         }
 
-        const_property_iterator operator [] (const std::string_view& name) const
+        const_property_iterator operator [] (std::string_view name) const
         {
             return _find(name);
         }
 
-        property_iterator operator [] (const std::string_view& name)
+        property_iterator operator [] (std::string_view name)
         {
             return _find(name);
         }
@@ -241,7 +241,7 @@ namespace dots::type
             });
         }
 
-        const_property_iterator _find(const std::string_view& name) const
+        const_property_iterator _find(std::string_view name) const
         {
             return _find([&](const ProxyProperty<>& property)
             {
@@ -249,7 +249,7 @@ namespace dots::type
             });
         }
 
-        property_iterator _find(const std::string_view& name)
+        property_iterator _find(std::string_view name)
         {
             return _find([&](const ProxyProperty<>& property)
             {

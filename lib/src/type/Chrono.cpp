@@ -48,13 +48,13 @@ namespace dots::type
         return oss.str();
     }
 
-    bool Duration::fromString(const std::string_view& value)
+    bool Duration::fromString(std::string_view value)
     {
         *this = FromString(value);
         return true;
     }
 
-    Duration Duration::FromString(const std::string_view& value)
+    Duration Duration::FromString(std::string_view value)
     {
         if (value == "PT0S")
         {
@@ -132,7 +132,7 @@ namespace dots::type
     using sys_duration_t = sys_time_t::duration;
 
     template <typename Base>
-    std::string TimePointImpl<Base>::toString(const std::string_view& fmt/* = DefaultFormat*/, bool utc/* = false*/) const
+    std::string TimePointImpl<Base>::toString(std::string_view fmt/* = DefaultFormat*/, bool utc/* = false*/) const
     {
         if (fmt.empty())
         {
@@ -180,14 +180,14 @@ namespace dots::type
     }
 
     template <typename Base>
-    bool TimePointImpl<Base>::fromString(const std::string_view& value, const std::string_view& fmt/* = DefaultFormat*/)
+    bool TimePointImpl<Base>::fromString(std::string_view value, std::string_view fmt/* = DefaultFormat*/)
     {
         *this = FromString(value, fmt);
         return true;
     }
 
     template <typename Base>
-    TimePointImpl<Base> TimePointImpl<Base>::FromString(const std::string_view& value, const std::string_view& fmt/* = DefaultFormat*/)
+    TimePointImpl<Base> TimePointImpl<Base>::FromString(std::string_view value, std::string_view fmt/* = DefaultFormat*/)
     {
         if (fmt.empty())
         {

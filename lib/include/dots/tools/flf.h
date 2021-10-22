@@ -9,7 +9,7 @@ namespace dots::tools
      */
     struct Flf
     {
-        constexpr Flf(const std::string_view& filePath, int l, const std::string_view fun) :
+        constexpr Flf(std::string_view filePath, int l, const std::string_view fun) :
             file(filePath.substr(filePath.find_last_of('/') + 1)),
             line(l),
             func(fun)

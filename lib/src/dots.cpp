@@ -33,7 +33,7 @@ namespace dots
     }
     #endif
 
-    GuestTransceiver& transceiver(const std::string_view& name/* = "dots-transceiver"*/, bool reset/* = false*/)
+    GuestTransceiver& transceiver(std::string_view name/* = "dots-transceiver"*/, bool reset/* = false*/)
     {
         if (GlobalTransceiver == std::nullopt || reset)
         {

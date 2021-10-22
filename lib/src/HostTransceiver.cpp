@@ -52,12 +52,12 @@ namespace dots
         transmit(transmission);
     }
 
-    void HostTransceiver::joinGroup(const std::string_view&/* name*/)
+    void HostTransceiver::joinGroup(std::string_view/* name*/)
     {
         /* do nothing */
     }
 
-    void HostTransceiver::leaveGroup(const std::string_view&/* name*/)
+    void HostTransceiver::leaveGroup(std::string_view/* name*/)
     {
         /* do nothing */
     }

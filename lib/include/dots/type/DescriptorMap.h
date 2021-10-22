@@ -26,13 +26,13 @@ namespace dots::type
 
         const underlying_map_t& data() const;
 
-        const Descriptor<>* find(const std::string_view& name, bool assertNotNull = false) const;
-        Descriptor<>* find(const std::string_view& name, bool assertNotNull = false);
+        const Descriptor<>* find(std::string_view name, bool assertNotNull = false) const;
+        Descriptor<>* find(std::string_view name, bool assertNotNull = false);
 
-        const Descriptor<>& get(const std::string_view& name) const;
-        Descriptor<>& get(const std::string_view& name);
+        const Descriptor<>& get(std::string_view name) const;
+        Descriptor<>& get(std::string_view name);
 
-        bool contains(const std::string_view& name) const;
+        bool contains(std::string_view name) const;
 
         std::pair<Descriptor<>*, bool> tryEmplace(Descriptor<>& descriptor);
 
@@ -52,7 +52,7 @@ namespace dots::type
             return static_cast<TDescriptor&>(emplace(make_descriptor<TDescriptor>(std::forward<Args>(args)...)));
         }
 
-        void erase(const std::string_view& name, bool assertContainedType = true);
+        void erase(std::string_view name, bool assertContainedType = true);
         void erase(const Descriptor<>& descriptor, bool assertContainedType = true);
 
         void clear();

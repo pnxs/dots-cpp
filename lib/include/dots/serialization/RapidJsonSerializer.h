@@ -36,7 +36,7 @@ namespace dots::serialization
             /* do nothing */
         }
 
-        RapidJsonSerializer(Writer& writer, const std::string_view& input) :
+        RapidJsonSerializer(Writer& writer, std::string_view input) :
             RapidJsonSerializer(&writer, input)
         {
             /* do nothing */
@@ -54,7 +54,7 @@ namespace dots::serialization
             /* do nothing */
         }
 
-        RapidJsonSerializer(const std::string_view& input) :
+        RapidJsonSerializer(std::string_view input) :
             RapidJsonSerializer(nullptr, input)
         {
             /* do nothing */
@@ -90,7 +90,7 @@ namespace dots::serialization
             setInputValue(static_cast<const document_t::ValueType&>(*m_document));
         }
 
-        void setInputValue(const std::string_view& input)
+        void setInputValue(std::string_view input)
         {
             document_t document;
             document.Parse(input.data(), input.size());
@@ -680,7 +680,7 @@ namespace dots::serialization
             }
         }
 
-        RapidJsonSerializer(Writer* writer, const std::string_view& input) :
+        RapidJsonSerializer(Writer* writer, std::string_view input) :
             m_writer(writer)
         {
             if (!input.empty())

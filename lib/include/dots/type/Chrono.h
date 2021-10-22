@@ -45,9 +45,9 @@ namespace dots::type
         constexpr int toNanoseconds() const { return static_cast<int>(std::chrono::round<std::chrono::nanoseconds>(*this).count()); }
 
         std::string toString() const;
-        bool fromString(const std::string_view& value);
+        bool fromString(std::string_view value);
 
-        static Duration FromString(const std::string_view& value);
+        static Duration FromString(std::string_view value);
     };
 
     template <typename Base>
@@ -77,10 +77,10 @@ namespace dots::type
         constexpr duration_t duration() const { return base_t::time_since_epoch(); }
         constexpr bool isZero() const { return duration().isZero(); }
 
-        std::string toString(const std::string_view& fmt = DefaultFormat, bool utc = false) const;
-        bool fromString(const std::string_view& value, const std::string_view& fmt = DefaultFormat);
+        std::string toString(std::string_view fmt = DefaultFormat, bool utc = false) const;
+        bool fromString(std::string_view value, std::string_view fmt = DefaultFormat);
 
-        static TimePointImpl FromString(const std::string_view& value, const std::string_view& fmt = DefaultFormat);
+        static TimePointImpl FromString(std::string_view value, std::string_view fmt = DefaultFormat);
 
         static TimePointImpl Now()
         {
