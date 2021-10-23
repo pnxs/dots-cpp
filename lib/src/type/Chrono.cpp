@@ -85,10 +85,13 @@ namespace dots::type
                 continue;
             }
 
+            // note that the first parameter is used only to determine the duration type.
+            // this can be simplified with C++20 by using a template parameter.
             auto parse_duration = [](auto duration, const std::string& part)
             {
                 using duration_t = decltype(duration);
                 using rep_t = typename duration_t::rep;
+                (void)duration;
 
                 rep_t count;
 

@@ -223,7 +223,7 @@ namespace dots::io
 
     void TcpChannel::asyncResolveEndpoint(std::string_view host, std::string_view port, resolve_handler_t handler)
     {
-        m_resolver.async_resolve(host, port, boost::asio::ip::resolver_query_base::numeric_service, [port, handler](const boost::system::error_code& error, auto iter) {
+        m_resolver.async_resolve(host, port, boost::asio::ip::resolver_query_base::numeric_service, [handler](const boost::system::error_code& error, auto iter) {
             if (error)
             {
                 handler(error, {});
