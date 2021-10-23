@@ -11,7 +11,7 @@ namespace dots
 {
     inline std::optional<GuestTransceiver> GlobalTransceiver;
 
-    Timer::id_t add_timer(const type::Duration& timeout, const std::function<void()>& handler, bool periodic/* = false*/)
+    Timer::id_t add_timer(type::Duration timeout, const std::function<void()>& handler, bool periodic/* = false*/)
     {
         return io::global_service<io::TimerService>().addTimer(timeout, handler, periodic);
     }

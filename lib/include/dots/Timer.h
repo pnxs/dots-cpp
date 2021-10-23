@@ -10,7 +10,7 @@ namespace dots
         using id_t = uint32_t;
         using callback_t = std::function<void()>;
 
-        Timer(boost::asio::io_context& ioContext, id_t id, const type::Duration& interval, const callback_t& cb, bool periodic = false);
+        Timer(boost::asio::io_context& ioContext, id_t id, type::Duration interval, const callback_t& cb, bool periodic = false);
         Timer(const Timer& other) = delete;
         Timer(Timer&& other) = delete;
         ~Timer();
@@ -25,8 +25,8 @@ namespace dots
         using timer_t = boost::asio::steady_timer;
         using duration_t = timer_t::clock_type::duration;
 
-        void startRelative(const type::Duration& duration);
-        void startAbsolute(const type::SteadyTimePoint& timepoint);
+        void startRelative(type::Duration duration);
+        void startAbsolute(type::SteadyTimePoint timepoint);
         void asyncWait();
 
         std::shared_ptr<Timer*> m_this;

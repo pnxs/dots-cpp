@@ -9,7 +9,7 @@
 
 namespace dots
 {
-    Timer::id_t add_timer(const type::Duration& timeout, const std::function<void()>& handler, bool periodic = false);
+    Timer::id_t add_timer(type::Duration timeout, const std::function<void()>& handler, bool periodic = false);
     void remove_timer(Timer::id_t id);
 
     #if defined(BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR)
