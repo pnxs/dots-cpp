@@ -140,7 +140,7 @@ namespace dots::io
         }
     }
 
-    void Channel::processError(const std::exception_ptr& e)
+    void Channel::processError(std::exception_ptr e)
     {
         try
         {

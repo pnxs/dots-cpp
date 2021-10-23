@@ -41,7 +41,7 @@ namespace dots
         void leaveGroup(std::string_view name) override;
 
         bool handleTransmission(Connection& connection, io::Transmission transmission);
-        void handleTransition(Connection& connection, const std::exception_ptr& e) noexcept;
+        void handleTransition(Connection& connection, std::exception_ptr e) noexcept;
 
         std::optional<Connection> m_hostConnection;
         type::DescriptorMap m_preloadPublishTypes;

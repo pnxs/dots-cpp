@@ -130,7 +130,7 @@ namespace dots
         m_channel->init(*m_registry);
         m_channel->asyncReceive(
             [this](io::Transmission transmission){ return handleReceive(std::move(transmission)); },
-            [this](const std::exception_ptr& e){ handleError(e); }
+            [this](std::exception_ptr e){ handleError(e); }
         );
 
         if (m_selfId == HostId)
@@ -196,7 +196,7 @@ namespace dots
         m_channel->transmit(descriptor);
     }
 
-    void Connection::handleError(const std::exception_ptr& e)
+    void Connection::handleError(std::exception_ptr e)
     {
         if (m_connectionState == DotsConnectionState::connected)
         {
@@ -299,7 +299,7 @@ namespace dots
         }
     }
 
-    void Connection::handleClose(const std::exception_ptr& e)
+    void Connection::handleClose(std::exception_ptr e)
     {
         m_receiveHandler = nullptr;
         m_registry = nullptr;
@@ -422,7 +422,7 @@ namespace dots
         }
     }
 
-    void Connection::setConnectionState(DotsConnectionState state, const std::exception_ptr& e/* = nullptr*/)
+    void Connection::setConnectionState(DotsConnectionState state, std::exception_ptr e/* = nullptr*/)
     {
         m_connectionState = state;
 

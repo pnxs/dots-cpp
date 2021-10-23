@@ -25,7 +25,7 @@ namespace dots
         m_hostConnection.emplace(std::move(channel), false, std::move(authSecret));
         m_hostConnection->asyncReceive(registry(), nullptr, selfName(),
             [this](Connection& connection, io::Transmission transmission){ return handleTransmission(connection, std::move(transmission)); },
-            [this](Connection& connection, const std::exception_ptr& e){ handleTransition(connection, e); }
+            [this](Connection& connection, std::exception_ptr e){ handleTransition(connection, e); }
         );
 
         return *m_hostConnection;
@@ -100,7 +100,7 @@ namespace dots
         return true;
     }
 
-    void GuestTransceiver::handleTransition(Connection& connection, const std::exception_ptr&/* e*/) noexcept
+    void GuestTransceiver::handleTransition(Connection& connection, std::exception_ptr/* e*/) noexcept
     {
         try
         {

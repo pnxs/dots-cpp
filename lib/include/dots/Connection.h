@@ -27,7 +27,7 @@ namespace dots
         static constexpr id_t FirstGuestId = 2;
 
         using receive_handler_t = std::function<bool(Connection&, io::Transmission)>;
-        using transition_handler_t = std::function<void(Connection&, const std::exception_ptr&)>;
+        using transition_handler_t = std::function<void(Connection&, std::exception_ptr)>;
 
         Connection(io::channel_ptr_t channel, bool host, std::optional<std::string> authSecret = std::nullopt);
         Connection(const Connection& other) = delete;
@@ -57,7 +57,7 @@ namespace dots
         void transmit(const io::Transmission& transmission);
         void transmit(const type::StructDescriptor<>& descriptor);
 
-        void handleError(const std::exception_ptr& e);
+        void handleError(std::exception_ptr e);
 
     private:
 
@@ -66,7 +66,7 @@ namespace dots
         static constexpr serialization::StringSerializerOptions StringOptions = { serialization::StringSerializerOptions::MultiLine };
 
         bool handleReceive(io::Transmission transmission);
-        void handleClose(const std::exception_ptr& e);
+        void handleClose(std::exception_ptr e);
 
         void handleHello(const DotsMsgHello& hello);
         void handleAuthorizationRequest(const DotsMsgConnectResponse& connectResponse);
@@ -77,7 +77,7 @@ namespace dots
 
         void handlePeerError(const DotsMsgError& error);
 
-        void setConnectionState(DotsConnectionState state, const std::exception_ptr& e = nullptr);
+        void setConnectionState(DotsConnectionState state, std::exception_ptr e = nullptr);
 
         template <typename T>
         void expectSystemType(types::property_set_t expectedAttributes, void(Connection::* handler)(const T&));

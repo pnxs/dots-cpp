@@ -20,7 +20,7 @@ namespace dots
 
         listenerPtr->asyncAccept(
             [this](io::Listener& listener, io::channel_ptr_t channel){ return handleListenAccept(listener, std::move(channel)); },
-            [this](io::Listener& listener, const std::exception_ptr& e){ handleListenError(listener, e); }
+            [this](io::Listener& listener, std::exception_ptr e){ handleListenError(listener, e); }
         );
 
         return *listenerPtr;
@@ -96,14 +96,14 @@ namespace dots
         auto connection = std::make_shared<Connection>(std::move(channel), true);
         connection->asyncReceive(registry(), m_authManager.get(), selfName(),
             [this](Connection& connection, io::Transmission transmission) { return handleTransmission(connection, std::move(transmission)); },
-            [this](Connection& connection, const std::exception_ptr& e) { handleTransition(connection, e); }
+            [this](Connection& connection, std::exception_ptr e) { handleTransition(connection, e); }
         );
         m_guestConnections.emplace(connection.get(), connection);
 
         return true;
     }
 
-    void HostTransceiver::handleListenError(io::Listener& listener, const std::exception_ptr& e)
+    void HostTransceiver::handleListenError(io::Listener& listener, std::exception_ptr e)
     {
         try
         {
@@ -156,7 +156,7 @@ namespace dots
         return !connection.closed();
     }
 
-    void HostTransceiver::handleTransition(Connection& connection, const std::exception_ptr&/* e*/) noexcept
+    void HostTransceiver::handleTransition(Connection& connection, std::exception_ptr/* e*/) noexcept
     {
         if (m_transitionHandler)
         {
