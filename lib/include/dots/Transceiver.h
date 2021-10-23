@@ -37,13 +37,13 @@ namespace dots
         const ContainerPool& pool() const;
         const Container<>& container(const type::StructDescriptor<>& descriptor) const;
 
-        Subscription subscribe(const type::StructDescriptor<>& descriptor, transmission_handler_t&& handler);
-        Subscription subscribe(const type::StructDescriptor<>& descriptor, event_handler_t<>&& handler);
+        Subscription subscribe(const type::StructDescriptor<>& descriptor, transmission_handler_t handler);
+        Subscription subscribe(const type::StructDescriptor<>& descriptor, event_handler_t<> handler);
 
-        Subscription subscribe(std::string_view name, transmission_handler_t&& handler);
-        Subscription subscribe(std::string_view name, event_handler_t<>&& handler);
+        Subscription subscribe(std::string_view name, transmission_handler_t handler);
+        Subscription subscribe(std::string_view name, event_handler_t<> handler);
 
-        Subscription subscribe(new_type_handler_t&& handler);
+        Subscription subscribe(new_type_handler_t handler);
 
         virtual void publish(const type::Struct& instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false) = 0;
         void remove(const type::Struct& instance);

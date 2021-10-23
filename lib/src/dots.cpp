@@ -11,9 +11,9 @@ namespace dots
 {
     inline std::optional<GuestTransceiver> GlobalTransceiver;
 
-    Timer::id_t add_timer(type::Duration timeout, const std::function<void()>& handler, bool periodic/* = false*/)
+    Timer::id_t add_timer(type::Duration timeout, std::function<void()> handler, bool periodic/* = false*/)
     {
-        return io::global_service<io::TimerService>().addTimer(timeout, handler, periodic);
+        return io::global_service<io::TimerService>().addTimer(timeout, std::move(handler), periodic);
     }
 
     void remove_timer(Timer::id_t id)
@@ -22,9 +22,9 @@ namespace dots
     }
 
     #if defined(BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR)
-    void add_fd_handler(int fileDescriptor, const std::function<void()>& handler)
+    void add_fd_handler(int fileDescriptor, std::function<void()> handler)
     {
-        io::global_service<io::FdHandlerService>().addInEventHandler(fileDescriptor, handler);
+        io::global_service<io::FdHandlerService>().addInEventHandler(fileDescriptor, std::move(handler));
     }
 
     void remove_fd_handler(int fileDescriptor)
@@ -53,12 +53,12 @@ namespace dots
         publish(instance, instance._keyProperties(), true);
     }
 
-    Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::transmission_handler_t&& handler)
+    Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::transmission_handler_t handler)
     {
         return transceiver().subscribe(descriptor, std::move(handler));
     }
 
-    Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::event_handler_t<>&& handler)
+    Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::event_handler_t<> handler)
     {
         return transceiver().subscribe(descriptor, std::move(handler));
     }

@@ -30,8 +30,8 @@ namespace dots
         const Container<>& container(const type::StructDescriptor<>& descriptor) const;
         Container<>& container(const type::StructDescriptor<>& descriptor);
 
-        id_t addTransmissionHandler(const type::StructDescriptor<>& descriptor, transmission_handler_t&& handler);
-        id_t addEventHandler(const type::StructDescriptor<>& descriptor, event_handler_t<>&& handler);
+        id_t addTransmissionHandler(const type::StructDescriptor<>& descriptor, transmission_handler_t handler);
+        id_t addEventHandler(const type::StructDescriptor<>& descriptor, event_handler_t<> handler);
 
         void removeTransmissionHandler(const type::StructDescriptor<>& descriptor, id_t id);
         void removeEventHandler(const type::StructDescriptor<>& descriptor, id_t id);

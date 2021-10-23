@@ -20,7 +20,7 @@ namespace dots::io
         FdHandlerService& operator = (const FdHandlerService& rhs) = delete;
         FdHandlerService& operator = (FdHandlerService&& rhs) noexcept(false) = delete;
 
-        void addInEventHandler(int fileDescriptor, const callback_t& callback);
+        void addInEventHandler(int fileDescriptor, callback_t callback);
         void removeInEventHandler(int fileDescriptor);
 
     private:

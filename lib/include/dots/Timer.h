@@ -10,7 +10,7 @@ namespace dots
         using id_t = uint32_t;
         using callback_t = std::function<void()>;
 
-        Timer(boost::asio::io_context& ioContext, id_t id, type::Duration interval, const callback_t& cb, bool periodic = false);
+        Timer(boost::asio::io_context& ioContext, id_t id, type::Duration interval, callback_t cb, bool periodic = false);
         Timer(const Timer& other) = delete;
         Timer(Timer&& other) = delete;
         ~Timer();

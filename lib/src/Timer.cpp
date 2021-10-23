@@ -4,10 +4,10 @@
 
 namespace dots
 {
-    Timer::Timer(boost::asio::io_context& ioContext, id_t id, type::Duration interval, const callback_t& cb, bool periodic) :
+    Timer::Timer(boost::asio::io_context& ioContext, id_t id, type::Duration interval, callback_t cb, bool periodic) :
         m_this{ std::make_shared<Timer*>(this) },
         m_timer(ioContext),
-        m_cb(cb),
+        m_cb(std::move(cb)),
         m_id(id),
         m_interval(interval),
         m_next(type::SteadyTimePoint::Now()),

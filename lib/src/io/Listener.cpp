@@ -2,7 +2,7 @@
 
 namespace dots::io
 {
-    void Listener::asyncAccept(accept_handler_t&& acceptHandler, error_handler_t&& errorHandler)
+    void Listener::asyncAccept(accept_handler_t acceptHandler, error_handler_t errorHandler)
     {
         if (m_asyncAcceptActive)
         {

@@ -2,7 +2,7 @@
 
 namespace dots
 {
-    Subscription::Subscription(unsubscribe_handler_t&& handler) :
+    Subscription::Subscription(unsubscribe_handler_t handler) :
         m_handler{ std::move(handler) }
     {
         /* do nothing */

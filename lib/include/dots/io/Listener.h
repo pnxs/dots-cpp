@@ -18,7 +18,7 @@ namespace dots::io
         Listener& operator = (const Listener& rhs) = delete;
         Listener& operator = (Listener&& rhs) = delete;
 
-        void asyncAccept(accept_handler_t&& acceptHandler, error_handler_t&& errorHandler);
+        void asyncAccept(accept_handler_t acceptHandler, error_handler_t errorHandler);
 
     protected:
 

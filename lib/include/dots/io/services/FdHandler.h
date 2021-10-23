@@ -19,7 +19,7 @@ class FdHandler
 
 public:
     FdHandler(boost::asio::io_context& ioContext, int fd, std::function<void()> handler)
-            : m_sd(ioContext, fd), m_handler(handler)
+            : m_sd(ioContext, fd), m_handler(std::move(handler))
     {
         start_read();
     }

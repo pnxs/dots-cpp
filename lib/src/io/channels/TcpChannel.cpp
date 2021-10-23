@@ -42,13 +42,13 @@ namespace dots::io
     TcpChannel::TcpChannel(Channel::key_t key, boost::asio::io_context& ioContext, std::string_view host, std::string_view port, std::function<void(const boost::system::error_code& error)> onConnect) :
         TcpChannel(key, boost::asio::ip::tcp::socket{ ioContext })
     {
-        asyncResolveEndpoint(host, port, [this, host, port, onConnect](auto& error, auto endpoint) {
+        asyncResolveEndpoint(host, port, [this, host, port, onConnect{ std::move(onConnect) }](auto& error, auto endpoint) {
             if (error)
             {
                 onConnect(error);
             }
 
-            m_socket.async_connect(*endpoint, [this, endpoint, onConnect, host, port](const boost::system::error_code& error) {
+            m_socket.async_connect(*endpoint, [this, endpoint, onConnect{ std::move(onConnect) }, host, port](const boost::system::error_code& error) {
                 if (error)
                 {
                     onConnect(error);
@@ -223,7 +223,7 @@ namespace dots::io
 
     void TcpChannel::asyncResolveEndpoint(std::string_view host, std::string_view port, resolve_handler_t handler)
     {
-        m_resolver.async_resolve(host, port, boost::asio::ip::resolver_query_base::numeric_service, [handler](const boost::system::error_code& error, auto iter) {
+        m_resolver.async_resolve(host, port, boost::asio::ip::resolver_query_base::numeric_service, [handler{ std::move(handler) }](const boost::system::error_code& error, auto iter) {
             if (error)
             {
                 handler(error, {});

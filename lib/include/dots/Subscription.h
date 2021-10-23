@@ -7,7 +7,7 @@ namespace dots
     {
         using unsubscribe_handler_t = std::function<void()>;
 
-        Subscription(unsubscribe_handler_t&& handler);
+        Subscription(unsubscribe_handler_t handler);
         Subscription(const Subscription& other) = delete;
         Subscription(Subscription&& other) noexcept;
         ~Subscription();

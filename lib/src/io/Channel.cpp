@@ -45,7 +45,7 @@ namespace dots::io
         m_initialized = true;
     }
 
-    void Channel::asyncReceive(receive_handler_t&& receiveHandler, error_handler_t&& errorHandler)
+    void Channel::asyncReceive(receive_handler_t receiveHandler, error_handler_t errorHandler)
     {
         if (m_asyncReceiving)
         {

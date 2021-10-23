@@ -86,7 +86,7 @@ namespace dots
         return m_dispatcher.container(descriptor);
     }
 
-    Subscription Transceiver::subscribe(const type::StructDescriptor<>& descriptor, transmission_handler_t&& handler)
+    Subscription Transceiver::subscribe(const type::StructDescriptor<>& descriptor, transmission_handler_t handler)
     {
         if (descriptor.substructOnly())
         {
@@ -99,7 +99,7 @@ namespace dots
         return makeSubscription([&, id]{ m_dispatcher.removeTransmissionHandler(descriptor, id); });
     }
 
-    Subscription Transceiver::subscribe(const type::StructDescriptor<>& descriptor, event_handler_t<>&& handler)
+    Subscription Transceiver::subscribe(const type::StructDescriptor<>& descriptor, event_handler_t<> handler)
     {
         if (descriptor.substructOnly())
         {
@@ -112,17 +112,17 @@ namespace dots
         return makeSubscription([&, id]{ m_dispatcher.removeEventHandler(descriptor, id); });
     }
 
-    Subscription Transceiver::subscribe(std::string_view name, transmission_handler_t&& handler)
+    Subscription Transceiver::subscribe(std::string_view name, transmission_handler_t handler)
     {
         return subscribe(m_registry.getStructType(name), std::move(handler));
     }
 
-    Subscription Transceiver::subscribe(std::string_view name, event_handler_t<>&& handler)
+    Subscription Transceiver::subscribe(std::string_view name, event_handler_t<> handler)
     {
         return subscribe(m_registry.getStructType(name), std::move(handler));
     }
 
-    Subscription Transceiver::subscribe(new_type_handler_t&& handler)
+    Subscription Transceiver::subscribe(new_type_handler_t handler)
     {
         const auto& [id, handler_] = *m_newTypeHandlers.try_emplace(m_nextId++, std::move(handler)).first;
         m_registry.forEach(handler_);
