@@ -24,7 +24,7 @@ namespace dots::io
 
         virtual void asyncAcceptImpl() = 0;
         void processAccept(channel_ptr_t channel);
-        void processError(std::exception_ptr e);
+        void processError(std::exception_ptr ePtr);
         void processError(const std::string& what);
         void verifyErrorCode(std::error_code errorCode);
 

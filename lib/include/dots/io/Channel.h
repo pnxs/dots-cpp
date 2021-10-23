@@ -52,7 +52,7 @@ namespace dots::io
         virtual void transmitImpl(const Transmission& transmission);
 
         void processReceive(Transmission transmission) noexcept;
-        void processError(std::exception_ptr e);
+        void processError(std::exception_ptr ePtr);
         void processError(const std::string& what);
         void verifyErrorCode(std::error_code errorCode);
 

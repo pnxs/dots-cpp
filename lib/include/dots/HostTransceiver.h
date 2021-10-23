@@ -55,10 +55,10 @@ namespace dots
         void transmit(const io::Transmission& transmission);
 
         bool handleListenAccept(io::Listener& listener, io::channel_ptr_t channel);
-        void handleListenError(io::Listener& listener, std::exception_ptr e);
+        void handleListenError(io::Listener& listener, std::exception_ptr ePtr);
 
         bool handleTransmission(Connection& connection, io::Transmission transmission);
-        void handleTransition(Connection& connection, std::exception_ptr e) noexcept;
+        void handleTransition(Connection& connection, std::exception_ptr ePtr) noexcept;
 
         void handleMemberMessage(Connection& connection, const DotsMember& member);
         void handleDescriptorRequest(Connection& connection, const DotsDescriptorRequest& descriptorRequest);

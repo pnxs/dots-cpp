@@ -140,12 +140,12 @@ namespace dots::io
         }
     }
 
-    void Channel::processError(std::exception_ptr e)
+    void Channel::processError(std::exception_ptr ePtr)
     {
         try
         {
             m_asyncReceiving = false;
-            m_errorHandler(e);
+            m_errorHandler(ePtr);
         }
         catch (const std::exception& e)
         {

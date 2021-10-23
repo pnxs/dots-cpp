@@ -29,11 +29,11 @@ namespace dots::io
         }
     }
 
-    void Listener::processError(std::exception_ptr e)
+    void Listener::processError(std::exception_ptr ePtr)
     {
         if (m_errorHandler != nullptr)
         {
-            m_errorHandler(*this, e);
+            m_errorHandler(*this, ePtr);
         }
     }
 

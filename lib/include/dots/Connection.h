@@ -57,7 +57,7 @@ namespace dots
         void transmit(const io::Transmission& transmission);
         void transmit(const type::StructDescriptor<>& descriptor);
 
-        void handleError(std::exception_ptr e);
+        void handleError(std::exception_ptr ePtr);
 
     private:
 
@@ -66,7 +66,7 @@ namespace dots
         static constexpr serialization::StringSerializerOptions StringOptions = { serialization::StringSerializerOptions::MultiLine };
 
         bool handleReceive(io::Transmission transmission);
-        void handleClose(std::exception_ptr e);
+        void handleClose(std::exception_ptr ePtr);
 
         void handleHello(const DotsMsgHello& hello);
         void handleAuthorizationRequest(const DotsMsgConnectResponse& connectResponse);
