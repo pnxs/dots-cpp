@@ -42,7 +42,7 @@ namespace dots::io
         processError(std::make_exception_ptr(std::runtime_error{ what }));
     }
 
-    void Listener::verifyErrorCode(const std::error_code& errorCode)
+    void Listener::verifyErrorCode(std::error_code errorCode)
     {
         if (errorCode)
         {

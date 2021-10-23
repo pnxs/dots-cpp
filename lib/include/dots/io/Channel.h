@@ -54,7 +54,7 @@ namespace dots::io
         void processReceive(Transmission transmission) noexcept;
         void processError(std::exception_ptr e);
         void processError(const std::string& what);
-        void verifyErrorCode(const std::error_code& errorCode);
+        void verifyErrorCode(std::error_code errorCode);
 
     private:
 

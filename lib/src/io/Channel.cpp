@@ -158,7 +158,7 @@ namespace dots::io
         processError(std::make_exception_ptr(std::runtime_error{ what }));
     }
 
-    void Channel::verifyErrorCode(const std::error_code& errorCode)
+    void Channel::verifyErrorCode(std::error_code errorCode)
     {
         if (errorCode)
         {
