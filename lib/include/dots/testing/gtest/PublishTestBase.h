@@ -6,8 +6,11 @@
 #include <dots/dots.h>
 #include <dots/HostTransceiver.h>
 #include <dots/io/channels/LocalListener.h>
+#include <dots/testing/gtest/expectations/CallExpectation.h>
 #include <dots/testing/gtest/expectations/PublishExpectation.h>
 #include <dots/tools/logging.h>
+
+#if defined(DOTS_ENABLE_DEPRECATED_TESTING_SUPPORT)
 
 namespace dots::testing
 {
@@ -239,3 +242,5 @@ namespace dots::testing
         DOTS_SPOOF_PUBLISH(dots::testing::PublishSpoof{ std::forward<decltype(instances)>(instances), std::nullopt, true }...); \
     }                                                                                                                           \
 }(__VA_ARGS__)
+
+#endif

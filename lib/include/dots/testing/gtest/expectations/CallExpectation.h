@@ -1,6 +1,8 @@
 #pragma once
 #include <dots/testing/gtest/gtest.h>
 
+#if defined(DOTS_ENABLE_DEPRECATED_TESTING_SUPPORT)
+
 namespace dots::testing::details
 {
     template <typename T, typename = void>
@@ -154,3 +156,5 @@ namespace dots::testing::details
     return dots::testing::details::expect_named_call_sequence<expectCallSignature_>(expect_call, std::forward<decltype(args)>(args)...); \
 }                                                                                                                                        \
 (sequence_, __VA_ARGS__)
+
+#endif
