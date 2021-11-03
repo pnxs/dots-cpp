@@ -73,16 +73,6 @@ namespace dots::type
 
         using vector_t::operator=;
 
-        Vector& operator = (const vector_t& rhs) noexcept
-        {
-            return vector_t::operator=(rhs);
-        }
-
-        Vector& operator = (vector_t&& rhs) noexcept
-        {
-            return vector_t::operator=(std::move(rhs));
-        }
-
         Vector& operator = (const Vector<Typeless>& rhs) override
         {
             // TODO: ensure compatible type

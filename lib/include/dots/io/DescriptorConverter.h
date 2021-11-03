@@ -15,8 +15,8 @@ namespace dots::io
         DescriptorConverter& operator = (const DescriptorConverter& rhs) = default;
         DescriptorConverter& operator = (DescriptorConverter&& rhs) noexcept = default;
 
-        type::EnumDescriptor<>& operator () (const types::EnumDescriptorData& structDescriptorData);
-        type::StructDescriptor<>& operator () (const types::StructDescriptorData& structData);
+        type::EnumDescriptor<>& operator () (const types::EnumDescriptorData& enumData) const;
+        type::StructDescriptor<>& operator () (const types::StructDescriptorData& structData) const;
 
         types::EnumDescriptorData operator () (const type::EnumDescriptor<>& enumDescriptor);
         types::StructDescriptorData operator () (const type::StructDescriptor<>& structDescriptor);

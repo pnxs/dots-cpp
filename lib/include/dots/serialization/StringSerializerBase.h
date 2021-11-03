@@ -88,7 +88,7 @@ namespace dots::serialization
         using data_t = typename serializer_base_t::data_t;
 
         StringSerializerBase(StringSerializerOptions options = {}) :
-            m_options{ std::move(options) }
+            m_options{ options }
         {
             /* do nothing */
         }

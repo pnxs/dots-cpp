@@ -17,13 +17,13 @@ namespace dots
 
     Transceiver::Transceiver(Transceiver&& other) noexcept :
         m_nextId(other.m_nextId),
-        m_currentlyDispatchingId{ std::move(other.m_currentlyDispatchingId) },
+        m_currentlyDispatchingId{ other.m_currentlyDispatchingId },
         m_removeIds{ std::move(other.m_removeIds) },
         m_this{ std::move(other.m_this) },
         m_registry{ std::move(other.m_registry) },
         m_dispatcher{ std::move(other.m_dispatcher) },
         m_selfName{ std::move(other.m_selfName) },
-        m_ioContext{ std::move(other.m_ioContext) },
+        m_ioContext{ other.m_ioContext },
         m_newTypeHandlers{ std::move(other.m_newTypeHandlers) }
     {
         /* do nothing */
@@ -32,13 +32,13 @@ namespace dots
     Transceiver& Transceiver::operator = (Transceiver&& rhs) noexcept
     {
         m_nextId = rhs.m_nextId;
-        m_currentlyDispatchingId = std::move(rhs.m_currentlyDispatchingId);
+        m_currentlyDispatchingId = rhs.m_currentlyDispatchingId;
         m_removeIds = std::move(rhs.m_removeIds);
         m_this = std::move(rhs.m_this);
         m_registry = std::move(rhs.m_registry);
         m_dispatcher = std::move(rhs.m_dispatcher);
         m_selfName = std::move(rhs.m_selfName);
-        m_ioContext = std::move(rhs.m_ioContext);
+        m_ioContext = rhs.m_ioContext;
         m_newTypeHandlers = std::move(rhs.m_newTypeHandlers);
 
         *m_this = this;
@@ -86,7 +86,7 @@ namespace dots
         return m_dispatcher.container(descriptor);
     }
 
-    Subscription Transceiver::subscribe(const type::StructDescriptor<>& descriptor, transmission_handler_t&& handler)
+    Subscription Transceiver::subscribe(const type::StructDescriptor<>& descriptor, transmission_handler_t handler)
     {
         if (descriptor.substructOnly())
         {
@@ -99,7 +99,7 @@ namespace dots
         return makeSubscription([&, id]{ m_dispatcher.removeTransmissionHandler(descriptor, id); });
     }
 
-    Subscription Transceiver::subscribe(const type::StructDescriptor<>& descriptor, event_handler_t<>&& handler)
+    Subscription Transceiver::subscribe(const type::StructDescriptor<>& descriptor, event_handler_t<> handler)
     {
         if (descriptor.substructOnly())
         {
@@ -112,17 +112,17 @@ namespace dots
         return makeSubscription([&, id]{ m_dispatcher.removeEventHandler(descriptor, id); });
     }
 
-    Subscription Transceiver::subscribe(const std::string_view& name, transmission_handler_t&& handler)
+    Subscription Transceiver::subscribe(std::string_view name, transmission_handler_t handler)
     {
         return subscribe(m_registry.getStructType(name), std::move(handler));
     }
 
-    Subscription Transceiver::subscribe(const std::string_view& name, event_handler_t<>&& handler)
+    Subscription Transceiver::subscribe(std::string_view name, event_handler_t<> handler)
     {
         return subscribe(m_registry.getStructType(name), std::move(handler));
     }
 
-    Subscription Transceiver::subscribe(new_type_handler_t&& handler)
+    Subscription Transceiver::subscribe(new_type_handler_t handler)
     {
         const auto& [id, handler_] = *m_newTypeHandlers.try_emplace(m_nextId++, std::move(handler)).first;
         m_registry.forEach(handler_);

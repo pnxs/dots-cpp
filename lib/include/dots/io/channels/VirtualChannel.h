@@ -1,6 +1,5 @@
 #pragma once
 #include <functional>
-#include <utility>
 #include <set>
 #include <boost/asio.hpp>
 #include <dots/io/Channel.h>
@@ -13,7 +12,7 @@ namespace dots::io
         VirtualChannel(Channel::key_t key, boost::asio::io_context& ioContext, std::string serverName = "VirtualChannel", bool skipHandshake = false);
         VirtualChannel(const VirtualChannel& other) = delete;
         VirtualChannel(VirtualChannel&& other) = delete;
-        virtual ~VirtualChannel() = default;
+        ~VirtualChannel() override = default;
 
         VirtualChannel& operator = (const VirtualChannel& rhs) = delete;
         VirtualChannel& operator = (VirtualChannel&& rhs) = delete;

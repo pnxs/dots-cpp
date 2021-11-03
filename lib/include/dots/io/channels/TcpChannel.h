@@ -20,7 +20,7 @@ namespace dots::io
          * @param host
          * @param port
          */
-        TcpChannel(Channel::key_t key, boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port);
+        TcpChannel(Channel::key_t key, boost::asio::io_context& ioContext, std::string_view host, std::string_view port);
 
         /**
          * Connect channel asynchronously.
@@ -30,7 +30,7 @@ namespace dots::io
          * @param port
          * @param onConnect
          */
-        TcpChannel(Channel::key_t key, boost::asio::io_context& ioContext, const std::string_view& host, const std::string_view& port, std::function<void(const boost::system::error_code& error)> onConnect);
+        TcpChannel(Channel::key_t key, boost::asio::io_context& ioContext, std::string_view host, std::string_view port, std::function<void(const boost::system::error_code& error)> onConnect);
 
         /**
          * Construct channel with an already connected socket.
@@ -40,7 +40,7 @@ namespace dots::io
         TcpChannel(Channel::key_t key, boost::asio::ip::tcp::socket&& socket);
         TcpChannel(const TcpChannel& other) = delete;
         TcpChannel(TcpChannel&& other) = delete;
-        virtual ~TcpChannel() = default;
+        ~TcpChannel() override = default;
 
         TcpChannel& operator = (const TcpChannel& rhs) = delete;
         TcpChannel& operator = (TcpChannel&& rhs) = delete;
@@ -54,15 +54,15 @@ namespace dots::io
 
         using resolve_handler_t = std::function<void(const boost::system::error_code& error, std::optional<boost::asio::ip::tcp::endpoint>)>;
 
-	    void setDefaultSocketOptions();
+        void setDefaultSocketOptions();
 
         void asyncReadHeaderLength();
         void asyncReadHeader();
         void asyncReadInstance();
 
-        void asyncResolveEndpoint(const std::string_view& host, const std::string_view& port, resolve_handler_t handler);
+        void asyncResolveEndpoint(std::string_view host, std::string_view port, resolve_handler_t handler);
 
-        void verifyErrorCode(const boost::system::error_code& error);
+        void verifyErrorCode(const boost::system::error_code& ec);
 
         receive_handler_t m_cb;
         error_handler_t m_ecb;

@@ -14,8 +14,8 @@ namespace dots::type
     template <typename T>
     struct DynamicPropertyInitializer
     {
-        DynamicPropertyInitializer(const std::string_view& name, const T& value) : name(name), value(value) {}
-        DynamicPropertyInitializer(const std::string_view& name, T&& value) : name(name), value(std::move(value)) {}
+        DynamicPropertyInitializer(std::string_view name, const T& value) : name(name), value(value) {}
+        DynamicPropertyInitializer(std::string_view name, T&& value) : name(name), value(std::move(value)) {}
         DynamicPropertyInitializer(const DynamicPropertyInitializer& other) = default;
         DynamicPropertyInitializer(DynamicPropertyInitializer&& other) = default;
         ~DynamicPropertyInitializer() = default;
@@ -99,22 +99,22 @@ namespace dots::type
 
         using Struct::_diffProperties;
 
-        DynamicStruct& _assign(const DynamicStruct& other, const PropertySet& includedProperties = PropertySet::All);
-        DynamicStruct& _assign(DynamicStruct&& other, const PropertySet& includedProperties = PropertySet::All);
-        DynamicStruct& _copy(const DynamicStruct& other, const PropertySet& includedProperties = PropertySet::All);
-        DynamicStruct& _merge(const DynamicStruct& other, const PropertySet& includedProperties = PropertySet::All);
-        void _swap(DynamicStruct& other, const PropertySet& includedProperties = PropertySet::All);
-        void _clear(const PropertySet& includedProperties = PropertySet::All);
+        DynamicStruct& _assign(const DynamicStruct& other, PropertySet includedProperties = PropertySet::All);
+        DynamicStruct& _assign(DynamicStruct&& other, PropertySet includedProperties = PropertySet::All);
+        DynamicStruct& _copy(const DynamicStruct& other, PropertySet includedProperties = PropertySet::All);
+        DynamicStruct& _merge(const DynamicStruct& other, PropertySet includedProperties = PropertySet::All);
+        void _swap(DynamicStruct& other, PropertySet includedProperties = PropertySet::All);
+        void _clear(PropertySet includedProperties = PropertySet::All);
 
-        bool _equal(const DynamicStruct& rhs, const PropertySet& includedProperties = PropertySet::All) const;
+        bool _equal(const DynamicStruct& rhs, PropertySet includedProperties = PropertySet::All) const;
         bool _same(const DynamicStruct& rhs) const;
 
-        bool _less(const DynamicStruct& rhs, const PropertySet& includedProperties = PropertySet::All) const;
-        bool _lessEqual(const DynamicStruct& rhs, const PropertySet& includedProperties = PropertySet::All) const;
-        bool _greater(const DynamicStruct& rhs, const PropertySet& includedProperties = PropertySet::All) const;
-        bool _greaterEqual(const DynamicStruct& rhs, const PropertySet& includedProperties = PropertySet::All) const;
+        bool _less(const DynamicStruct& rhs, PropertySet includedProperties = PropertySet::All) const;
+        bool _lessEqual(const DynamicStruct& rhs, PropertySet includedProperties = PropertySet::All) const;
+        bool _greater(const DynamicStruct& rhs, PropertySet includedProperties = PropertySet::All) const;
+        bool _greaterEqual(const DynamicStruct& rhs, PropertySet includedProperties = PropertySet::All) const;
 
-        PropertySet _diffProperties(const DynamicStruct& other, const PropertySet& includedProperties = PropertySet::All) const;
+        PropertySet _diffProperties(const DynamicStruct& other, PropertySet includedProperties = PropertySet::All) const;
 
         const PropertyArea& _propertyArea() const;
         PropertyArea& _propertyArea();
@@ -146,7 +146,7 @@ namespace dots::type
         }
         Descriptor(const Descriptor& other) = delete;
         Descriptor(Descriptor&& other) = delete;
-        ~Descriptor() = default;
+        ~Descriptor() override = default;
 
         Descriptor& operator = (const Descriptor& rhs) = delete;
         Descriptor& operator = (Descriptor&& rhs) = delete;

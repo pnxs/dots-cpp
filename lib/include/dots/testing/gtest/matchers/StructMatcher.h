@@ -11,7 +11,7 @@ namespace dots::testing
         {
             using is_gtest_matcher = void;
 
-            StructEqualMatcher(Expected expected, const property_set_t& includedProperties = property_set_t::All) :
+            StructEqualMatcher(Expected expected, property_set_t includedProperties = property_set_t::All) :
                 m_expected{ std::move(expected) },
                 m_includedProperties(includedProperties)
             {
@@ -94,7 +94,7 @@ namespace dots::testing
      * Test matcher.
      */
     template <typename Expected, std::enable_if_t<std::is_base_of_v<type::Struct, std::decay_t<Expected>>, int> = 0>
-    ::testing::Matcher<const type::Struct&> StructEqual(Expected&& expected, const property_set_t& includedProperties = property_set_t::All)
+    ::testing::Matcher<const type::Struct&> StructEqual(Expected&& expected, property_set_t includedProperties = property_set_t::All)
     {
         return details::StructEqualMatcher<std::decay_t<Expected>>(std::forward<Expected>(expected), includedProperties);
     }
@@ -121,7 +121,7 @@ namespace dots::testing
      * created Google Test matcher.
      */
     template <typename Expected, std::enable_if_t<std::is_base_of_v<type::Struct, std::decay_t<Expected>>, int> = 0>
-    ::testing::Matcher<const std::decay_t<Expected>&> StaticStructEqual(Expected&& expected, const property_set_t& includedProperties = property_set_t::All)
+    ::testing::Matcher<const std::decay_t<Expected>&> StaticStructEqual(Expected&& expected, property_set_t includedProperties = property_set_t::All)
     {
         return details::StructEqualMatcher<std::decay_t<Expected>>(std::forward<Expected>(expected), includedProperties);
     }

@@ -40,11 +40,11 @@ namespace dots
         Container<>* find(const type::StructDescriptor<>& descriptor);
         Container<>& get(const type::StructDescriptor<>& descriptor, bool insertIfNotExist = true);
 
-        const Container<>* find(const std::string_view& name) const;
-        const Container<>& get(const std::string_view& name) const;
+        const Container<>* find(std::string_view name) const;
+        const Container<>& get(std::string_view name) const;
 
-        Container<>* find(const std::string_view& name);
-        Container<>& get(const std::string_view& name);
+        Container<>* find(std::string_view name);
+        Container<>& get(std::string_view name);
 
         node_t remove(const type::StructDescriptor<>& descriptor);
 

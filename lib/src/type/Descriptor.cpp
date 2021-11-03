@@ -1,5 +1,4 @@
 #include <dots/type/Descriptor.h>
-#include <stdexcept>
 
 namespace dots::type
 {

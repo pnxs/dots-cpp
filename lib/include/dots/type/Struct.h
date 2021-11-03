@@ -1,6 +1,5 @@
 #pragma once
 #include <string_view>
-#include <array>
 #include <functional>
 #include <type_traits>
 #include <dots/type/PropertyContainer.h>
@@ -25,27 +24,27 @@ namespace dots::type
         size_t _staticMemoryUsage() const;
         size_t _totalMemoryUsage() const;
 
-        const PropertySet& _keyProperties() const;
+        PropertySet _keyProperties() const;
 
-        Struct& _assign(const Struct& other, const PropertySet& includedProperties = PropertySet::All);
-        Struct& _assign(Struct&& other, const PropertySet& includedProperties = PropertySet::All);
-        Struct& _copy(const Struct& other, const PropertySet& includedProperties = PropertySet::All);
-        Struct& _merge(const Struct& other, const PropertySet& includedProperties = PropertySet::All);
-        void _swap(Struct& other, const PropertySet& includedProperties = PropertySet::All);
-        void _clear(const PropertySet& includedProperties = PropertySet::All);
+        Struct& _assign(const Struct& other, PropertySet includedProperties = PropertySet::All);
+        Struct& _assign(Struct&& other, PropertySet includedProperties = PropertySet::All);
+        Struct& _copy(const Struct& other, PropertySet includedProperties = PropertySet::All);
+        Struct& _merge(const Struct& other, PropertySet includedProperties = PropertySet::All);
+        void _swap(Struct& other, PropertySet includedProperties = PropertySet::All);
+        void _clear(PropertySet includedProperties = PropertySet::All);
 
-        bool _equal(const Struct& rhs, const PropertySet& includedProperties = PropertySet::All) const;
+        bool _equal(const Struct& rhs, PropertySet includedProperties = PropertySet::All) const;
         bool _same(const Struct& rhs) const;
 
-        bool _less(const Struct& rhs, const PropertySet& includedProperties = PropertySet::All) const;
-        bool _lessEqual(const Struct& rhs, const PropertySet& includedProperties = PropertySet::All) const;
-        bool _greater(const Struct& rhs, const PropertySet& includedProperties = PropertySet::All) const;
-        bool _greaterEqual(const Struct& rhs, const PropertySet& includedProperties = PropertySet::All) const;
+        bool _less(const Struct& rhs, PropertySet includedProperties = PropertySet::All) const;
+        bool _lessEqual(const Struct& rhs, PropertySet includedProperties = PropertySet::All) const;
+        bool _greater(const Struct& rhs, PropertySet includedProperties = PropertySet::All) const;
+        bool _greaterEqual(const Struct& rhs, PropertySet includedProperties = PropertySet::All) const;
 
-        PropertySet _diffProperties(const Struct& other, const PropertySet& includedProperties = PropertySet::All) const;
+        PropertySet _diffProperties(const Struct& other, PropertySet includedProperties = PropertySet::All) const;
 
         template <bool AllowSubset = true>
-        bool _hasProperties(const PropertySet& properties) const
+        bool _hasProperties(PropertySet properties) const
         {
             if constexpr (AllowSubset)
             {
@@ -58,13 +57,13 @@ namespace dots::type
         }
 
         template <bool AllowSubset = true>
-        void _assertHasProperties(const PropertySet& expectedProperties) const
+        void _assertHasProperties(PropertySet expectedProperties) const
         {
-            const PropertySet& actualProperties = _validProperties();
+            PropertySet actualProperties = _validProperties();
 
             if (!_hasProperties<AllowSubset>(expectedProperties))
             {
-                auto to_property_list = [](const StructDescriptor<>& descriptor, const PropertySet& properties)
+                auto to_property_list = [](const StructDescriptor<>& descriptor, PropertySet properties)
                 {
                     std::string propertyList;
 

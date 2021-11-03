@@ -43,7 +43,7 @@ namespace dots::type
         return boost::uuids::to_string(uuid);
     }
 
-    Uuid Uuid::FromString(const std::string_view& value)
+    Uuid Uuid::FromString(std::string_view value)
     {
         auto uuid = boost::uuids::string_generator{}(value.data());
         value_t data;
@@ -52,7 +52,7 @@ namespace dots::type
         return Uuid{ data };
     }
 
-    Uuid Uuid::FromData(const std::string_view& data)
+    Uuid Uuid::FromData(std::string_view data)
     {
         value_t data_;
 

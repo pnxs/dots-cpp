@@ -109,7 +109,7 @@ namespace dots
         return "from '" + std::string{ m_channel->localEndpoint().uriStr() } + "' at '" + std::string{ m_channel->remoteEndpoint().uriStr() } + "'";
     }
 
-    void Connection::asyncReceive(type::Registry& registry, io::AuthManager* authManager, const std::string_view& name, receive_handler_t&& receiveHandler, transition_handler_t&& transitionHandler)
+    void Connection::asyncReceive(type::Registry& registry, io::AuthManager* authManager, std::string_view name, receive_handler_t receiveHandler, transition_handler_t transitionHandler)
     {
         if (m_connectionState != DotsConnectionState::suspended)
         {
@@ -130,7 +130,7 @@ namespace dots
         m_channel->init(*m_registry);
         m_channel->asyncReceive(
             [this](io::Transmission transmission){ return handleReceive(std::move(transmission)); },
-            [this](const std::exception_ptr& e){ handleError(e); }
+            [this](std::exception_ptr ePtr){ handleError(ePtr); }
         );
 
         if (m_selfId == HostId)
@@ -196,13 +196,13 @@ namespace dots
         m_channel->transmit(descriptor);
     }
 
-    void Connection::handleError(const std::exception_ptr& e)
+    void Connection::handleError(std::exception_ptr ePtr)
     {
         if (m_connectionState == DotsConnectionState::connected)
         {
             try
             {
-                std::rethrow_exception(e);
+                std::rethrow_exception(ePtr);
             }
             catch (const std::exception& e)
             {
@@ -221,7 +221,7 @@ namespace dots
             }
         }
 
-        handleClose(e);
+        handleClose(ePtr);
     }
 
     bool Connection::handleReceive(io::Transmission transmission)
@@ -299,12 +299,12 @@ namespace dots
         }
     }
 
-    void Connection::handleClose(const std::exception_ptr& e)
+    void Connection::handleClose(std::exception_ptr ePtr)
     {
         m_receiveHandler = nullptr;
         m_registry = nullptr;
         expectSystemType<DotsMsgError>(types::property_set_t::None, nullptr);
-        setConnectionState(DotsConnectionState::closed, e);
+        setConnectionState(DotsConnectionState::closed, ePtr);
     }
 
     void Connection::handleHello(const DotsMsgHello& hello)
@@ -422,7 +422,7 @@ namespace dots
         }
     }
 
-    void Connection::setConnectionState(DotsConnectionState state, const std::exception_ptr& e/* = nullptr*/)
+    void Connection::setConnectionState(DotsConnectionState state, std::exception_ptr e/* = nullptr*/)
     {
         m_connectionState = state;
 
@@ -475,7 +475,7 @@ namespace dots
     }
 
     template <typename T>
-    void Connection::expectSystemType(const types::property_set_t& expectedAttributes, void(Connection::* handler)(const T&))
+    void Connection::expectSystemType(types::property_set_t expectedAttributes, void(Connection::* handler)(const T&))
     {
         m_expectedSystemType = { &T::_Descriptor(), expectedAttributes, [this, handler](const type::Struct& instance){ (this->*handler)(instance._to<T>()); } };
     }

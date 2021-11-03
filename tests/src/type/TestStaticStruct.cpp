@@ -261,7 +261,6 @@ using namespace dots::types;
 
 struct TestStaticStruct : ::testing::Test
 {
-protected:
 };
 
 TEST_F(TestStaticStruct, PropertyOffsetsMatchActualOffsets)

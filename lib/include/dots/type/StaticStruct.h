@@ -114,7 +114,7 @@ namespace dots::type
             return _applyPropertyPairs(other, std::forward<Callable>(callable), typename Derived::_key_properties_t{});
         }
 
-        Derived& _assign(const Derived& other, const PropertySet& includedProperties = PropertySet::All)
+        Derived& _assign(const Derived& other, PropertySet includedProperties = PropertySet::All)
         {
             _applyPropertyPairs(other, [&](const auto&... propertyPairs)
             {
@@ -137,7 +137,7 @@ namespace dots::type
             return static_cast<Derived&>(*this);
         }
 
-        Derived& _assign(Derived&& other, const PropertySet& includedProperties = PropertySet::All)
+        Derived& _assign(Derived&& other, PropertySet includedProperties = PropertySet::All)
         {
             _applyPropertyPairs(other, [&](const auto&... propertyPairs)
             {
@@ -160,7 +160,7 @@ namespace dots::type
             return static_cast<Derived&>(*this);
         }
 
-        Derived& _copy(const Derived& other, const PropertySet& includedProperties = PropertySet::All)
+        Derived& _copy(const Derived& other, PropertySet includedProperties = PropertySet::All)
         {
             _applyPropertyPairs(other, [&](const auto&... propertyPairs)
             {
@@ -179,7 +179,7 @@ namespace dots::type
             return static_cast<Derived&>(*this);
         }
 
-        Derived& _merge(const Derived& other, const PropertySet& includedProperties = PropertySet::All)
+        Derived& _merge(const Derived& other, PropertySet includedProperties = PropertySet::All)
         {
             _applyPropertyPairs(other, [&](const auto&... propertyPairs)
             {
@@ -208,7 +208,7 @@ namespace dots::type
             return static_cast<Derived&>(*this);
         }
 
-        void _swap(Derived& other, const PropertySet& includedProperties = PropertySet::All)
+        void _swap(Derived& other, PropertySet includedProperties = PropertySet::All)
         {
             _applyPropertyPairs(other, [&](const auto&... propertyPairs)
             {
@@ -225,7 +225,7 @@ namespace dots::type
             });
         }
 
-        void _clear(const PropertySet& includedProperties = PropertySet::All)
+        void _clear(PropertySet includedProperties = PropertySet::All)
         {
             _applyProperties([&](auto&... properties)
             {
@@ -242,7 +242,7 @@ namespace dots::type
             }, typename Derived::_properties_t{});
         }
 
-        bool _equal(const Derived& rhs, const PropertySet& includedProperties = PropertySet::All) const
+        bool _equal(const Derived& rhs, PropertySet includedProperties = PropertySet::All) const
         {
             return _applyPropertyPairs(rhs, [&](const auto&... propertyPairs)
             {
@@ -284,7 +284,7 @@ namespace dots::type
             });
         }
 
-        bool _less(const Derived& rhs, const PropertySet& includedProperties = PropertySet::All) const
+        bool _less(const Derived& rhs, PropertySet includedProperties = PropertySet::All) const
         {
             return _applyPropertyPairs(rhs, [&](const auto&... propertyPairs)
             {
@@ -299,22 +299,22 @@ namespace dots::type
             });
         }
 
-        bool _lessEqual(const Derived& rhs, const PropertySet& includedProperties = PropertySet::All) const
+        bool _lessEqual(const Derived& rhs, PropertySet includedProperties = PropertySet::All) const
         {
             return !_greater(rhs, includedProperties);
         }
 
-        bool _greater(const Derived& rhs, const PropertySet& includedProperties = PropertySet::All) const
+        bool _greater(const Derived& rhs, PropertySet includedProperties = PropertySet::All) const
         {
             return rhs._less(*this, includedProperties);
         }
 
-        bool _greaterEqual(const Derived& rhs, const PropertySet& includedProperties = PropertySet::All) const
+        bool _greaterEqual(const Derived& rhs, PropertySet includedProperties = PropertySet::All) const
         {
             return !_less(rhs, includedProperties);
         }
 
-        PropertySet _diffProperties(const Derived& other, const PropertySet& includedProperties = PropertySet::All) const
+        PropertySet _diffProperties(const Derived& other, PropertySet includedProperties = PropertySet::All) const
         {
             PropertySet symmetricDiff = _validProperties().symmetricDifference(other._validProperties()) ^ includedProperties;
             PropertySet intersection = _validProperties() ^ other._validProperties() ^ includedProperties;
@@ -351,7 +351,7 @@ namespace dots::type
             return m_propertyArea;
         }
 
-        const PropertySet& _validProperties() const
+        PropertySet _validProperties() const
         {
             return m_propertyArea.validProperties();
         }
@@ -481,7 +481,7 @@ namespace dots::type
         }
 
         template <typename PropertyPair, typename... PropertyPairs>
-        bool _less(const PropertySet& includedProperties, const PropertyPair& firstPair, const PropertyPairs&... remainingPairs) const
+        bool _less(PropertySet includedProperties, const PropertyPair& firstPair, const PropertyPairs&... remainingPairs) const
         {
             if (includedProperties.empty())
             {

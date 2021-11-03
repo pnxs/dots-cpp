@@ -5,7 +5,6 @@
 #include <limits>
 #include <cstring>
 #include <dots/type/TypeVisitor.h>
-#include <dots/type/StaticProperty.h>
 #include <dots/serialization/SerializerBase.h>
 
 namespace dots::serialization

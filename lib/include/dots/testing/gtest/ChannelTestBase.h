@@ -82,7 +82,7 @@ namespace dots::testing
          * Calling the destructor from a derived class cleans up the test
          * environment. This includes the teardown of the mock channel.
          */
-        ~ChannelTestBase() = default;
+        ~ChannelTestBase() override = default;
 
         ChannelTestBase& operator = (const ChannelTestBase& rhs) = delete;
         ChannelTestBase& operator = (ChannelTestBase&& rhs) = delete;

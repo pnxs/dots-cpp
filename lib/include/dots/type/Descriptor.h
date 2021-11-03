@@ -50,7 +50,7 @@ namespace dots::type
         Descriptor(key_t key, Type type, std::string name, size_t size, size_t alignment);
         Descriptor(const Descriptor& other) = delete;
         Descriptor(Descriptor&& other) = delete;
-        virtual ~Descriptor() = default;
+        ~Descriptor() override = default;
 
         Descriptor& operator = (const Descriptor& rhs) = delete;
         Descriptor& operator = (Descriptor&& rhs) = delete;

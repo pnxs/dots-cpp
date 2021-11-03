@@ -3,7 +3,7 @@
 namespace dots::type
 {
     AnyStruct::AnyStruct(const StructDescriptor<>& descriptor):
-        _instance{ reinterpret_cast<Struct*>(::operator new(descriptor.size())) }
+        _instance{ static_cast<Struct*>(::operator new(descriptor.size())) }
     {
         descriptor.constructInPlace(Typeless::From(*_instance));
     }

@@ -20,7 +20,7 @@ namespace dots
         HostTransceiver(std::string selfName = "DotsHostTransceiver", boost::asio::io_context& ioContext = io::global_io_context(), bool staticUserTypes = true, transition_handler_t transitionHandler = nullptr);
         HostTransceiver(const HostTransceiver& other) = delete;
         HostTransceiver(HostTransceiver&& other) = default;
-        virtual ~HostTransceiver() = default;
+        ~HostTransceiver() override = default;
 
         HostTransceiver& operator = (const HostTransceiver& rhs) = delete;
         HostTransceiver& operator = (HostTransceiver&& rhs) = default;
@@ -49,16 +49,16 @@ namespace dots
         using group_t = std::unordered_set<Connection*>;
         using group_map_t = std::unordered_map<std::string, group_t>;
 
-        void joinGroup(const std::string_view& name) override;
-        void leaveGroup(const std::string_view& name) override;
+        void joinGroup(std::string_view name) override;
+        void leaveGroup(std::string_view name) override;
 
         void transmit(const io::Transmission& transmission);
 
         bool handleListenAccept(io::Listener& listener, io::channel_ptr_t channel);
-        void handleListenError(io::Listener& listener, const std::exception_ptr& e);
+        void handleListenError(io::Listener& listener, std::exception_ptr ePtr);
 
         bool handleTransmission(Connection& connection, io::Transmission transmission);
-        void handleTransition(Connection& connection, const std::exception_ptr& e) noexcept;
+        void handleTransition(Connection& connection, std::exception_ptr ePtr) noexcept;
 
         void handleMemberMessage(Connection& connection, const DotsMember& member);
         void handleDescriptorRequest(Connection& connection, const DotsDescriptorRequest& descriptorRequest);

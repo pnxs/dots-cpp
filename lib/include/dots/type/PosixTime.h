@@ -8,7 +8,7 @@ namespace dots::type::posix
 {
     struct ScopedTimeZone
     {
-        ScopedTimeZone(const std::string_view& timeZone)
+        ScopedTimeZone(std::string_view timeZone)
         {
             std::string_view currentTimeZone = ::getenv("TZ");
 
@@ -106,7 +106,7 @@ namespace dots::type::posix
         {
         }
 
-        constexpr Timeval(const Duration& duration) :
+        constexpr Timeval(Duration duration) :
             Timeval(timeval{
                 static_cast<time_t>(duration.toSeconds()),
                 static_cast<suseconds_t>(::nearbyint((duration.toFractionalSeconds() - duration.toSeconds()) * MicrosecondsPerSecond))

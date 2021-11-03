@@ -7,9 +7,6 @@ using namespace dots::type::literals;
 
 struct TestDuration : ::testing::Test
 {
-protected:
-
-    TestDuration(){}
 };
 
 TEST_F(TestDuration, toString)
@@ -123,8 +120,6 @@ protected:
     static constexpr char UnixTimestampISO8601UTC[] = "2020-03-11T21:07:57.500+00:00";
     static constexpr char UnixTimestampISO8601CET[] = "2020-03-11T22:07:57.500+01:00";
     static constexpr char UnixTimestampISO8601SRET[] = "2020-03-12T08:07:57.500+11:00";
-
-    TestTimePoint(){}
 };
 
 TEST_F(TestTimePoint, toString)
@@ -148,8 +143,6 @@ protected:
     static constexpr double SteadyTimestampValue = 324702.125000;
     static constexpr char SteadyTimestampString[] = "324702.125000";
     static constexpr char  SteadyTimestampISO8601[] = "P3DT18H11M42.125S";
-
-    TestSteadyTimePoint(){}
 };
 
 TEST_F(TestSteadyTimePoint, toString)

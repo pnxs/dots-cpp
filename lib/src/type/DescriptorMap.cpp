@@ -28,7 +28,7 @@ namespace dots::type
         return m_underlyingMap;
     }
 
-    const Descriptor<>* DescriptorMap::find(const std::string_view& name, bool assertNotNull/* = false*/) const
+    const Descriptor<>* DescriptorMap::find(std::string_view name, bool assertNotNull/* = false*/) const
     {
         if (auto it = m_underlyingMap.find(name); it == m_underlyingMap.end())
         {
@@ -47,22 +47,22 @@ namespace dots::type
         }
     }
 
-    Descriptor<>* DescriptorMap::find(const std::string_view& name, bool assertNotNull)
+    Descriptor<>* DescriptorMap::find(std::string_view name, bool assertNotNull)
     {
         return const_cast<Descriptor<>*>(std::as_const(*this).find(name, assertNotNull));
     }
 
-    const Descriptor<>& DescriptorMap::get(const std::string_view& name) const
+    const Descriptor<>& DescriptorMap::get(std::string_view name) const
     {
         return *find(name, true);
     }
 
-    Descriptor<>& DescriptorMap::get(const std::string_view& name)
+    Descriptor<>& DescriptorMap::get(std::string_view name)
     {
         return const_cast<Descriptor<>&>(std::as_const(*this).get(name));
     }
 
-    bool DescriptorMap::contains(const std::string_view& name) const
+    bool DescriptorMap::contains(std::string_view name) const
     {
         return find(name) == nullptr;
     }
@@ -90,7 +90,7 @@ namespace dots::type
         return emplace(*descriptor);
     }
 
-    void DescriptorMap::erase(const std::string_view& name, bool assertContainedType)
+    void DescriptorMap::erase(std::string_view name, bool assertContainedType)
     {
         if (auto it = m_underlyingMap.find(name); it == m_underlyingMap.end())
         {

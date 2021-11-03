@@ -13,7 +13,7 @@ namespace dots
         GuestTransceiver(std::string selfName, boost::asio::io_context& ioContext = io::global_io_context(), bool staticUserTypes = true);
         GuestTransceiver(const GuestTransceiver& other) = delete;
         GuestTransceiver(GuestTransceiver&& other) = default;
-        virtual ~GuestTransceiver() = default;
+        ~GuestTransceiver() override = default;
 
         GuestTransceiver& operator = (const GuestTransceiver& rhs) = delete;
         GuestTransceiver& operator = (GuestTransceiver&& rhs) = default;
@@ -37,11 +37,11 @@ namespace dots
 
     private:
 
-        void joinGroup(const std::string_view& name) override;
-        void leaveGroup(const std::string_view& name) override;
+        void joinGroup(std::string_view name) override;
+        void leaveGroup(std::string_view name) override;
 
         bool handleTransmission(Connection& connection, io::Transmission transmission);
-        void handleTransition(Connection& connection, const std::exception_ptr& e) noexcept;
+        void handleTransition(Connection& connection, std::exception_ptr ePtr) noexcept;
 
         std::optional<Connection> m_hostConnection;
         type::DescriptorMap m_preloadPublishTypes;

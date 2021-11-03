@@ -93,23 +93,23 @@ namespace dots::type
             }
         }
 
-        const Descriptor<>* findType(const std::string_view& name, bool assertNotNull = false) const;
-        const EnumDescriptor<>* findEnumType(const std::string_view& name, bool assertNotNull = false) const;
-        const StructDescriptor<>* findStructType(const std::string_view& name, bool assertNotNull = false) const;
+        const Descriptor<>* findType(std::string_view name, bool assertNotNull = false) const;
+        const EnumDescriptor<>* findEnumType(std::string_view name, bool assertNotNull = false) const;
+        const StructDescriptor<>* findStructType(std::string_view name, bool assertNotNull = false) const;
 
-        Descriptor<>* findType(const std::string_view& name, bool assertNotNull = false);
-        EnumDescriptor<>* findEnumType(const std::string_view& name, bool assertNotNull = false);
-        StructDescriptor<>* findStructType(const std::string_view& name, bool assertNotNull = false);
+        Descriptor<>* findType(std::string_view name, bool assertNotNull = false);
+        EnumDescriptor<>* findEnumType(std::string_view name, bool assertNotNull = false);
+        StructDescriptor<>* findStructType(std::string_view name, bool assertNotNull = false);
 
-        const Descriptor<>& getType(const std::string_view& name) const;
-        const EnumDescriptor<>& getEnumType(const std::string_view& name) const;
-        const StructDescriptor<>& getStructType(const std::string_view& name) const;
+        const Descriptor<>& getType(std::string_view name) const;
+        const EnumDescriptor<>& getEnumType(std::string_view name) const;
+        const StructDescriptor<>& getStructType(std::string_view name) const;
 
-        Descriptor<>& getType(const std::string_view& name);
-        EnumDescriptor<>& getEnumType(const std::string_view& name);
-        StructDescriptor<>& getStructType(const std::string_view& name);
+        Descriptor<>& getType(std::string_view name);
+        EnumDescriptor<>& getEnumType(std::string_view name);
+        StructDescriptor<>& getStructType(std::string_view name);
 
-        bool hasType(const std::string_view& name) const;
+        bool hasType(std::string_view name) const;
 
         Descriptor<>& registerType(Descriptor<>& descriptor, bool assertNewType = true);
         Descriptor<>& registerType(std::shared_ptr<Descriptor<>> descriptor, bool assertNewType = true);
@@ -121,7 +121,7 @@ namespace dots::type
         }
 
         void deregisterType(const Descriptor<>& descriptor, bool assertRegisteredType = true);
-        void deregisterType(const std::string_view& name, bool assertRegisteredType = true);
+        void deregisterType(std::string_view name, bool assertRegisteredType = true);
 
     private:
 

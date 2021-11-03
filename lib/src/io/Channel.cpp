@@ -45,7 +45,7 @@ namespace dots::io
         m_initialized = true;
     }
 
-    void Channel::asyncReceive(receive_handler_t&& receiveHandler, error_handler_t&& errorHandler)
+    void Channel::asyncReceive(receive_handler_t receiveHandler, error_handler_t errorHandler)
     {
         if (m_asyncReceiving)
         {
@@ -140,12 +140,12 @@ namespace dots::io
         }
     }
 
-    void Channel::processError(const std::exception_ptr& e)
+    void Channel::processError(std::exception_ptr ePtr)
     {
         try
         {
             m_asyncReceiving = false;
-            m_errorHandler(e);
+            m_errorHandler(ePtr);
         }
         catch (const std::exception& e)
         {
@@ -158,7 +158,7 @@ namespace dots::io
         processError(std::make_exception_ptr(std::runtime_error{ what }));
     }
 
-    void Channel::verifyErrorCode(const std::error_code& errorCode)
+    void Channel::verifyErrorCode(std::error_code errorCode)
     {
         if (errorCode)
         {

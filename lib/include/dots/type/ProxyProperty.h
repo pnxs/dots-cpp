@@ -118,7 +118,7 @@ namespace dots::type
             /* do nothing */
         }
 
-        const PropertySet& validPathProperties() const
+        PropertySet validPathProperties() const
         {
             if (std::holds_alternative<const PropertyDescriptor*>(m_path))
             {

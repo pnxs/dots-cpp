@@ -19,7 +19,7 @@ namespace dots::io
         TimerService& operator = (const TimerService& rhs) = delete;
         TimerService& operator = (TimerService&& rhs) noexcept(false) = delete;
 
-        Timer::id_t addTimer(const type::Duration& timeout, const callback_t& cb, bool periodic);
+        Timer::id_t addTimer(type::Duration timeout, callback_t cb, bool periodic);
         void removeTimer(Timer::id_t id);
 
     private:

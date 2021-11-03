@@ -2,7 +2,7 @@
 
 namespace dots::io
 {
-    void Listener::asyncAccept(accept_handler_t&& acceptHandler, error_handler_t&& errorHandler)
+    void Listener::asyncAccept(accept_handler_t acceptHandler, error_handler_t errorHandler)
     {
         if (m_asyncAcceptActive)
         {
@@ -29,11 +29,11 @@ namespace dots::io
         }
     }
 
-    void Listener::processError(const std::exception_ptr& e)
+    void Listener::processError(std::exception_ptr ePtr)
     {
         if (m_errorHandler != nullptr)
         {
-            m_errorHandler(*this, e);
+            m_errorHandler(*this, ePtr);
         }
     }
 
@@ -42,7 +42,7 @@ namespace dots::io
         processError(std::make_exception_ptr(std::runtime_error{ what }));
     }
 
-    void Listener::verifyErrorCode(const std::error_code& errorCode)
+    void Listener::verifyErrorCode(std::error_code errorCode)
     {
         if (errorCode)
         {

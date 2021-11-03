@@ -20,7 +20,7 @@ namespace dots
 
         listenerPtr->asyncAccept(
             [this](io::Listener& listener, io::channel_ptr_t channel){ return handleListenAccept(listener, std::move(channel)); },
-            [this](io::Listener& listener, const std::exception_ptr& e){ handleListenError(listener, e); }
+            [this](io::Listener& listener, std::exception_ptr ePtr){ handleListenError(listener, ePtr); }
         );
 
         return *listenerPtr;
@@ -49,15 +49,15 @@ namespace dots
 
         io::Transmission transmission{ std::move(header), instance };
         dispatcher().dispatch(transmission);
-        transmit(std::move(transmission));
+        transmit(transmission);
     }
 
-    void HostTransceiver::joinGroup(const std::string_view&/* name*/)
+    void HostTransceiver::joinGroup(std::string_view/* name*/)
     {
         /* do nothing */
     }
 
-    void HostTransceiver::leaveGroup(const std::string_view&/* name*/)
+    void HostTransceiver::leaveGroup(std::string_view/* name*/)
     {
         /* do nothing */
     }
@@ -96,18 +96,18 @@ namespace dots
         auto connection = std::make_shared<Connection>(std::move(channel), true);
         connection->asyncReceive(registry(), m_authManager.get(), selfName(),
             [this](Connection& connection, io::Transmission transmission) { return handleTransmission(connection, std::move(transmission)); },
-            [this](Connection& connection, const std::exception_ptr& e) { handleTransition(connection, e); }
+            [this](Connection& connection, std::exception_ptr ePtr) { handleTransition(connection, ePtr); }
         );
         m_guestConnections.emplace(connection.get(), connection);
 
         return true;
     }
 
-    void HostTransceiver::handleListenError(io::Listener& listener, const std::exception_ptr& e)
+    void HostTransceiver::handleListenError(io::Listener& listener, std::exception_ptr ePtr)
     {
         try
         {
-            std::rethrow_exception(e);
+            std::rethrow_exception(ePtr);
         }
         catch (const std::exception& e)
         {
@@ -151,12 +151,12 @@ namespace dots
         }
 
         dispatcher().dispatch(transmission);
-        transmit(std::move(transmission));
+        transmit(transmission);
 
         return !connection.closed();
     }
 
-    void HostTransceiver::handleTransition(Connection& connection, const std::exception_ptr&/* e*/) noexcept
+    void HostTransceiver::handleTransition(Connection& connection, std::exception_ptr/* e*/) noexcept
     {
         if (m_transitionHandler)
         {

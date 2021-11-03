@@ -34,7 +34,7 @@ protected:
     dots::type::Registry m_registry;
     std::optional<dots::Connection> m_sut;
     ::testing::MockFunction<bool(dots::Connection&, dots::io::Transmission)> m_mockReceiveHandler;
-    ::testing::MockFunction<void(dots::Connection&, const std::exception_ptr&)> m_mockTransitionHandler;
+    ::testing::MockFunction<void(dots::Connection&, std::exception_ptr)> m_mockTransitionHandler;
 };
 
 struct TestConnectionAsHost : TestConnectionBase

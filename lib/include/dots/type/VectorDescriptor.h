@@ -10,7 +10,7 @@ namespace dots::type
         Descriptor(key_t key, std::string name, Descriptor<>& valueDescriptor, size_t size, size_t alignment);
         Descriptor(const Descriptor& other) = delete;
         Descriptor(Descriptor&& other) = delete;
-        ~Descriptor() = default;
+        ~Descriptor() override = default;
 
         Descriptor& operator = (const Descriptor& rhs) = delete;
         Descriptor& operator = (Descriptor&& rhs) = delete;

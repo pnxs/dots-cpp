@@ -5,10 +5,6 @@
 
 struct TestGuestTransceiver : dots::testing::EventTestBase
 {
-    TestGuestTransceiver()
-    {
-        /* do nothing */
-    }
 
 protected:
 

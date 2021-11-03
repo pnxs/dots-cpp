@@ -1,5 +1,4 @@
 #pragma once
-#include <functional>
 #include <optional>
 #include <boost/asio.hpp>
 #include <dots/io/Listener.h>
@@ -13,7 +12,7 @@ namespace dots::io
         TcpListener(boost::asio::io_context& ioContext, std::string address, std::string port, std::optional<int> backlog = std::nullopt);
         TcpListener(const TcpListener& other) = delete;
         TcpListener(TcpListener&& other) = delete;
-        ~TcpListener() = default;
+        ~TcpListener() override = default;
 
         TcpListener& operator = (const TcpListener& rhs) = delete;
         TcpListener& operator = (TcpListener&& rhs) = delete;

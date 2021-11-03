@@ -19,7 +19,7 @@ namespace dots::io
     {
         using key_t = tools::shared_ptr_only::key_t;
         using receive_handler_t = std::function<bool(Transmission)>;
-        using error_handler_t = std::function<void(const std::exception_ptr&)>;
+        using error_handler_t = std::function<void(std::exception_ptr)>;
 
         Channel(key_t key);
         Channel(const Channel& other) = delete;
@@ -34,7 +34,7 @@ namespace dots::io
 
         void init(type::Registry& registry);
 
-        void asyncReceive(receive_handler_t&& receiveHandler, error_handler_t&& errorHandler);
+        void asyncReceive(receive_handler_t receiveHandler, error_handler_t errorHandler);
         void transmit(const type::Struct& instance);
         void transmit(const DotsHeader& header, const type::Struct& instance);
         void transmit(const Transmission& transmission);
@@ -52,9 +52,9 @@ namespace dots::io
         virtual void transmitImpl(const Transmission& transmission);
 
         void processReceive(Transmission transmission) noexcept;
-        void processError(const std::exception_ptr& e);
+        void processError(std::exception_ptr ePtr);
         void processError(const std::string& what);
-        void verifyErrorCode(const std::error_code& errorCode);
+        void verifyErrorCode(std::error_code errorCode);
 
     private:
 

@@ -3,7 +3,6 @@
 
 struct TestUri : ::testing::Test
 {
-protected:
 };
 
 TEST_F(TestUri, ctor_MinimalUriString)

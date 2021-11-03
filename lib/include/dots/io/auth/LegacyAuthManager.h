@@ -17,7 +17,7 @@ namespace dots::io
         LegacyAuthManager(HostTransceiver& transceiver);
         LegacyAuthManager(const LegacyAuthManager& other) = delete;
         LegacyAuthManager(LegacyAuthManager&& other) = default;
-        ~LegacyAuthManager() = default;
+        ~LegacyAuthManager() override = default;
 
         LegacyAuthManager& operator = (const LegacyAuthManager& rhs) = delete;
         LegacyAuthManager& operator = (LegacyAuthManager&& rhs) = default;
@@ -30,7 +30,7 @@ namespace dots::io
         const std::optional<bool>& defaultPolicy() const;
 
         bool requiresAuthentication(const boost::asio::ip::address& address);
-        bool verifyResponse(const boost::asio::ip::address& address, uint64_t authNonce, const DotsMsgConnect& response);
+        bool verifyResponse(const boost::asio::ip::address& address, uint64_t authNonce, const DotsMsgConnect& msgConnect);
 
         std::vector<DotsAuthentication> findMatchingRules(const boost::asio::ip::address& address, const std::string& clientName);
 

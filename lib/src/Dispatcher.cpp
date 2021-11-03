@@ -22,7 +22,7 @@ namespace dots
         return m_containerPool.get(descriptor);
     }
 
-    auto Dispatcher::addTransmissionHandler(const type::StructDescriptor<>& descriptor, transmission_handler_t&& handler) -> id_t
+    auto Dispatcher::addTransmissionHandler(const type::StructDescriptor<>& descriptor, transmission_handler_t handler) -> id_t
     {
         id_t id = m_nextId++;
         m_transmissionHandlerPool[&descriptor].emplace(id, std::move(handler));
@@ -30,7 +30,7 @@ namespace dots
         return id;
     }
 
-    auto Dispatcher::addEventHandler(const type::StructDescriptor<>& descriptor, event_handler_t<>&& handler) -> id_t
+    auto Dispatcher::addEventHandler(const type::StructDescriptor<>& descriptor, event_handler_t<> handler) -> id_t
     {
         id_t id = m_nextId++;
         event_handlers_t& handlers = m_eventHandlerPool[&descriptor];

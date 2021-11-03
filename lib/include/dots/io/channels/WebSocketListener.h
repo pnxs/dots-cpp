@@ -1,5 +1,4 @@
 #pragma once
-#include <functional>
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
 #include <dots/io/Listener.h>
@@ -12,7 +11,7 @@ namespace dots::io
         WebSocketListener(boost::asio::io_context& ioContext, std::string address, std::string port, std::optional<int> backlog = std::nullopt);
         WebSocketListener(const WebSocketListener& other) = delete;
         WebSocketListener(WebSocketListener&& other) = delete;
-        ~WebSocketListener() = default;
+        ~WebSocketListener() override = default;
 
         WebSocketListener& operator = (const WebSocketListener& rhs) = delete;
         WebSocketListener& operator = (WebSocketListener&& rhs) = delete;

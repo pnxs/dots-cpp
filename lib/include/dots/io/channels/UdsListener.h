@@ -11,7 +11,7 @@ namespace dots::io::posix
     struct UdsListener : Listener
     {
         UdsListener(boost::asio::io_context& ioContext, const Endpoint& endpoint, std::optional<int> backlog = std::nullopt);
-        UdsListener(boost::asio::io_context& ioContext, const std::string_view& path, std::optional<int> backlog = std::nullopt);
+        UdsListener(boost::asio::io_context& ioContext, std::string_view path, std::optional<int> backlog = std::nullopt);
         UdsListener(const UdsListener& other) = delete;
         UdsListener(UdsListener&& other) = delete;
         ~UdsListener();

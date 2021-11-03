@@ -10,9 +10,9 @@ namespace dots::io
         /* do nothing */
     }
 
-    void FdHandlerService::addInEventHandler(int fileDescriptor, const callback_t& callback)
+    void FdHandlerService::addInEventHandler(int fileDescriptor, callback_t callback)
     {
-        m_inEventHandlers.try_emplace(fileDescriptor, static_cast<boost::asio::io_context&>(context()), fileDescriptor, callback);
+        m_inEventHandlers.try_emplace(fileDescriptor, static_cast<boost::asio::io_context&>(context()), fileDescriptor, std::move(callback));
     }
 
     void FdHandlerService::removeInEventHandler(int fileDescriptor)

@@ -55,7 +55,7 @@ namespace dots::type
         Descriptor<types::vector_t<types::string_t>>::Instance();
     }
 
-    const Descriptor<>* Registry::findType(const std::string_view& name, bool assertNotNull/* = false*/) const
+    const Descriptor<>* Registry::findType(std::string_view name, bool assertNotNull/* = false*/) const
     {
         if (const Descriptor<>* descriptor = m_types.find(name); descriptor == nullptr)
         {
@@ -81,7 +81,7 @@ namespace dots::type
         }
     }
 
-    const EnumDescriptor<>* Registry::findEnumType(const std::string_view& name, bool assertNotNull/* = false*/) const
+    const EnumDescriptor<>* Registry::findEnumType(std::string_view name, bool assertNotNull/* = false*/) const
     {
         auto descriptor = static_cast<const EnumDescriptor<>*>(findType(name, assertNotNull));
 
@@ -98,7 +98,7 @@ namespace dots::type
         return descriptor;
     }
 
-    const StructDescriptor<>* Registry::findStructType(const std::string_view& name, bool assertNotNull/* = false*/) const
+    const StructDescriptor<>* Registry::findStructType(std::string_view name, bool assertNotNull/* = false*/) const
     {
         auto descriptor = static_cast<const StructDescriptor<>*>(findType(name, assertNotNull));
 
@@ -115,52 +115,52 @@ namespace dots::type
         return descriptor;
     }
 
-    Descriptor<>* Registry::findType(const std::string_view& name, bool assertNotNull)
+    Descriptor<>* Registry::findType(std::string_view name, bool assertNotNull)
     {
         return const_cast<Descriptor<>*>(std::as_const(*this).findType(name, assertNotNull));
     }
 
-    EnumDescriptor<>* Registry::findEnumType(const std::string_view& name, bool assertNotNull)
+    EnumDescriptor<>* Registry::findEnumType(std::string_view name, bool assertNotNull)
     {
         return const_cast<EnumDescriptor<>*>(std::as_const(*this).findEnumType(name, assertNotNull));
     }
 
-    StructDescriptor<>* Registry::findStructType(const std::string_view& name, bool assertNotNull)
+    StructDescriptor<>* Registry::findStructType(std::string_view name, bool assertNotNull)
     {
         return const_cast<StructDescriptor<>*>(std::as_const(*this).findStructType(name, assertNotNull));
     }
 
-    const Descriptor<>& Registry::getType(const std::string_view& name) const
+    const Descriptor<>& Registry::getType(std::string_view name) const
     {
         return *findType(name, true);
     }
 
-    const EnumDescriptor<>& Registry::getEnumType(const std::string_view& name) const
+    const EnumDescriptor<>& Registry::getEnumType(std::string_view name) const
     {
         return *findEnumType(name, true);
     }
 
-    const  StructDescriptor<>& Registry::getStructType(const std::string_view& name) const
+    const  StructDescriptor<>& Registry::getStructType(std::string_view name) const
     {
         return *findStructType(name, true);
     }
 
-    Descriptor<>& Registry::getType(const std::string_view& name)
+    Descriptor<>& Registry::getType(std::string_view name)
     {
         return const_cast<Descriptor<>&>(std::as_const(*this).getType(name));
     }
 
-    EnumDescriptor<>& Registry::getEnumType(const std::string_view& name)
+    EnumDescriptor<>& Registry::getEnumType(std::string_view name)
     {
         return const_cast<EnumDescriptor<>&>(std::as_const(*this).getEnumType(name));
     }
 
-    StructDescriptor<>& Registry::getStructType(const std::string_view& name)
+    StructDescriptor<>& Registry::getStructType(std::string_view name)
     {
         return const_cast<StructDescriptor<>&>(std::as_const(*this).getStructType(name));
     }
 
-    bool Registry::hasType(const std::string_view& name) const
+    bool Registry::hasType(std::string_view name) const
     {
         return findType(name) != nullptr;
     }
@@ -215,7 +215,7 @@ namespace dots::type
         m_types.erase(descriptor.name(), assertRegisteredType);
     }
 
-    void Registry::deregisterType(const std::string_view& name, bool assertRegisteredType/* = true*/)
+    void Registry::deregisterType(std::string_view name, bool assertRegisteredType/* = true*/)
     {
         m_types.erase(name, assertRegisteredType);
     }

@@ -34,42 +34,42 @@ namespace dots::type
         return _staticMemoryUsage() + _dynamicMemoryUsage();
     }
 
-    const PropertySet& Struct::_keyProperties() const
+    PropertySet Struct::_keyProperties() const
     {
         return _desc->keyProperties();
     }
 
-    Struct& Struct::_assign(const Struct& other, const PropertySet& includedProperties/* = PropertySet:All*/)
+    Struct& Struct::_assign(const Struct& other, PropertySet includedProperties/* = PropertySet:All*/)
     {
         return _desc->assign(*this, other, includedProperties);
     }
 
-    Struct& Struct::_assign(Struct&& other, const PropertySet& includedProperties)
+    Struct& Struct::_assign(Struct&& other, PropertySet includedProperties)
     {
         return _desc->assign(*this, std::move(other), includedProperties);
     }
 
-    Struct& Struct::_copy(const Struct& other, const PropertySet& includedProperties/* = PropertySet:All*/)
+    Struct& Struct::_copy(const Struct& other, PropertySet includedProperties/* = PropertySet:All*/)
     {
         return _desc->copy(*this, other, includedProperties);
     }
 
-    Struct& Struct::_merge(const Struct& other, const PropertySet& includedProperties/* = PropertySet:All*/)
+    Struct& Struct::_merge(const Struct& other, PropertySet includedProperties/* = PropertySet:All*/)
     {
         return _desc->merge(*this, other, includedProperties);
     }
 
-    void Struct::_swap(Struct& other, const PropertySet& includedProperties/* = PropertySet:All*/)
+    void Struct::_swap(Struct& other, PropertySet includedProperties/* = PropertySet:All*/)
     {
         return _desc->swap(*this, other, includedProperties);
     }
 
-    void Struct::_clear(const PropertySet& includedProperties/* = PropertySet:All*/)
+    void Struct::_clear(PropertySet includedProperties/* = PropertySet:All*/)
     {
         _desc->clear(*this, includedProperties);
     }
 
-    bool Struct::_equal(const Struct& rhs, const PropertySet& includedProperties/* = PropertySet:All*/) const
+    bool Struct::_equal(const Struct& rhs, PropertySet includedProperties/* = PropertySet:All*/) const
     {
         return _desc->equal(*this, rhs, includedProperties);
     }
@@ -79,27 +79,27 @@ namespace dots::type
         return _desc->same(*this, rhs);
     }
 
-    bool Struct::_less(const Struct& rhs, const PropertySet& includedProperties/* = PropertySet:All*/) const
+    bool Struct::_less(const Struct& rhs, PropertySet includedProperties/* = PropertySet:All*/) const
     {
         return _desc->less(*this, rhs, includedProperties);
     }
 
-    bool Struct::_lessEqual(const Struct& rhs, const PropertySet& includedProperties/* = PropertySet::All*/) const
+    bool Struct::_lessEqual(const Struct& rhs, PropertySet includedProperties/* = PropertySet::All*/) const
     {
         return _desc->lessEqual(*this, rhs, includedProperties);
     }
 
-    bool Struct::_greater(const Struct& rhs, const PropertySet& includedProperties/* = PropertySet::All*/) const
+    bool Struct::_greater(const Struct& rhs, PropertySet includedProperties/* = PropertySet::All*/) const
     {
         return _desc->greater(*this, rhs, includedProperties);
     }
 
-    bool Struct::_greaterEqual(const Struct& rhs, const PropertySet& includedProperties/* = PropertySet::All*/) const
+    bool Struct::_greaterEqual(const Struct& rhs, PropertySet includedProperties/* = PropertySet::All*/) const
     {
         return _desc->greaterEqual(*this, rhs, includedProperties);
     }
 
-    PropertySet Struct::_diffProperties(const Struct& other, const PropertySet& includedProperties/* = PropertySet::All*/) const
+    PropertySet Struct::_diffProperties(const Struct& other, PropertySet includedProperties/* = PropertySet::All*/) const
     {
         return _desc->diffProperties(*this, other, includedProperties);
     }

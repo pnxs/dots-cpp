@@ -1,5 +1,4 @@
 #pragma once
-#include <functional>
 #include <dots/type/StructDescriptor.h>
 #include <dots/type/DescriptorMap.h>
 

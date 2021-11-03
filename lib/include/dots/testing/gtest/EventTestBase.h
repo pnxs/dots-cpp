@@ -101,7 +101,7 @@ namespace dots::testing
          * In particular, the global guest transceiver will be reset if it has
          * been used.
          */
-        ~EventTestBase()
+        ~EventTestBase() override
         {
             if (m_globalGuest != nullptr)
             {

@@ -10,7 +10,7 @@ namespace dots::io
         /* do nothing */
     }
 
-    type::EnumDescriptor<>& DescriptorConverter::operator () (const types::EnumDescriptorData& enumData)
+    type::EnumDescriptor<>& DescriptorConverter::operator () (const types::EnumDescriptorData& enumData) const
     {
         if (type::EnumDescriptor<>* descriptor = m_registry.get().findEnumType(*enumData.name); descriptor != nullptr)
         {
@@ -27,7 +27,7 @@ namespace dots::io
         return m_registry.get().registerType<type::Descriptor<type::DynamicEnum>>(enumData.name, std::move(enumerators));
     }
 
-    type::StructDescriptor<>& DescriptorConverter::operator () (const types::StructDescriptorData& structData)
+    type::StructDescriptor<>& DescriptorConverter::operator () (const types::StructDescriptorData& structData) const
     {
         if (type::StructDescriptor<>* descriptor = m_registry.get().findStructType(*structData.name); descriptor != nullptr)
         {

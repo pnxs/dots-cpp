@@ -5,12 +5,6 @@
 
 struct TestHostTransceiver : dots::testing::EventTestBase
 {
-protected:
-
-    TestHostTransceiver()
-    {
-        /* do nothing */
-    }
 };
 
 TEST_F(TestHostTransceiver, HandleEchoRequest)
