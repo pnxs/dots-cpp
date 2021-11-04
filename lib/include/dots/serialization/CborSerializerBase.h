@@ -4,6 +4,7 @@
 #include <string>
 #include <limits>
 #include <cstring>
+#include <cmath>
 #include <dots/type/TypeVisitor.h>
 #include <dots/serialization/SerializerBase.h>
 
