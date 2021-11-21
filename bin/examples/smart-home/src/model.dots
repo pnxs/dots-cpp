@@ -1,0 +1,22 @@
+// A specific smart switch device.
+struct Switch {
+    1: [key] string id; // Unique identifier of the switch (e.g. "Basement_MotionSwitch").
+    2: bool enabled;    // The state of the switch. An invalid property is equivalent to 'false'.
+}
+
+// A specific stateless smart switch device.
+struct StatelessSwitch [cached=false] {
+    1: string id; // Unique identifier of the switch (e.g. "Stairwell_LowerSwitch").
+}
+
+// A specific smart dimmer device.
+struct Dimmer {
+    1: [key] string id;   // Unique identifier of the switch (e.g. "LivingRoom_TopDimmer").
+    2: uint32 brightness; // The brightness value of the dimmer in percent (i.e. between 0 and 100). An invalid property is equivalent to '0'.
+}
+
+// Controls the target state of a specific smart light source.
+struct LightControl {
+    1: [key] string id;   // Unique identifier of the device (e.g. "Stairwell_Light").
+    2: uint32 brightness; // The brightness value of the light source in percent (i.e. between 0 and 100). An invalid property is equivalent to '0'.
+}
