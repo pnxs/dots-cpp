@@ -77,3 +77,11 @@ set(CPACK_STRIP_FILES TRUE)
 set(CPACK_GENERATOR "DEB")
 
 include(CPack)
+
+# documentation
+find_package(Doxygen)
+if (Doxygen_FOUND)
+    set(DOXYGEN_EXCLUDE_PATTERNS */external/* */tests/*)
+    set(DOXYGEN_USE_MDFILE_AS_MAINPAGE ./README.md)
+    doxygen_add_docs(dots-doc)
+endif()
