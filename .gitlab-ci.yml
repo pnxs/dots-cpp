@@ -16,7 +16,6 @@ build_ubuntu:
         paths:
             - ./build/lib/libdots.a
             - ./build/bin/dotsd/dotsd
-            - ./build/bin/examples/testClient/testClient
             - ./build/tests/dots-unittests
             - ./build/dots-cpp_*.deb
             - ./build/dots-cpp-dev_*.deb

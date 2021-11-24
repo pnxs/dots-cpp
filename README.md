@@ -117,11 +117,11 @@ Build library:
 cmake -G Ninja -B ./build/ && cmake --build ./build/
 ```
 
-Run example:
+Run example (e.g. roundtrip):
 
 ```sh
 ./build/bin/dotsd/dotsd &
-./build/bin/examples/testClient/testClient
+./build/bin/examples/roundtrip/roundtrip
 ```
 
 # License
