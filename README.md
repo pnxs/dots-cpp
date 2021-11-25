@@ -45,11 +45,11 @@ dots::Subscription subscription = dots::subscribe<Foobar>([](const dots::Event<F
 
 # Overview
 
-The dots-cpp library is a complete publish-subscribe IPC solution for both local and distributed applications implementing the (currently informal) DOTS specification.
+The dots-cpp library is a complete publish-subscribe IPC solution for both local and distributed applications based on the (currently informal) DOTS specification.
 
 ## Features: DOTS
 
-* **Type-oriented**: DOTS uses a self-describing type system that makes it always unambiguous how data is structured and what types are expected. Authors can define types in a simple modeling language and leverage static type support or write dynamic applications using introspection.
+* **Type-oriented**: DOTS uses a self-describing type system that makes it always unambiguous how data is structured and what types are expected. Authors can define types in a simple modeling language and leverage static type support or write dynamic applications using type introspection.
 * **Stateful**: By default, objects of a DOTS type have a *cached* state. This state is known and can be inspected by interested applications at any time, even if they subscribe to a particular type after objects were already published.
 * **Object-driven**: DOTS is all about the state of objects. Subscribers can react to object changes via events or just use the current state of an object when desired.
 * **Efficient**: Objects can be partially updated and by default are serialized using CBOR, which in many cases results in payloads of only "a few bytes" in size.
@@ -77,8 +77,8 @@ Introductory examples:
 * [object-trace](./bin/examples/object-trace/README.md): Traces "all" DOTS struct objects within a DOTS system dynamically.
 
 Intermediate examples:
-* [smart-home](./bin/examples/smart-home/README.md): Controls the logic of various fictitious smart-devices.
-* [object-reader](./bin/examples/object-reader/README.md): Creates and publishes an object from a DOTS struct type dynamically.
+* [smart-home](./bin/examples/smart-home/README.md): Controls the logic of multiple fictitious smart-devices.
+* [object-reader](./bin/examples/object-reader/README.md): Creates and publishes an object of a DOTS struct type dynamically.
 
 # Dependencies
 
@@ -129,7 +129,7 @@ Build library:
 cmake -G Ninja -B ./build/ && cmake --build ./build/
 ```
 
-Run example (e.g. roundtrip):
+Run an [example](#examples) (e.g. roundtrip):
 
 ```sh
 ./build/bin/dotsd/dotsd &
@@ -138,4 +138,4 @@ Run example (e.g. roundtrip):
 
 # License
 
-This library is currently licensed under the GPL-3.0.
+This project is currently licensed under the GPL-3.0.
