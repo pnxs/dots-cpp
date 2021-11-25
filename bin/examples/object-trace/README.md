@@ -20,3 +20,19 @@ Note that objects will also be traced when their types are made available while 
 * Checking flags of a DOTS struct type.
 * Retrieving meta information from a DOTS event (e.g. at which point in time the object was published).
 * Getting a string representation of a DOTS struct type instance.
+
+## Usage
+
+The example requires a running DOTS host (e.g. [dotsd](../../dotsd)) to connect to.
+
+The application can then be started from the build directory as follows:
+
+```sh
+./bin/examples/object-trace/object-trace
+```
+
+To actually have something to trace, another example (e.g. [roundtrip](../roundtrip/)) can be run in parallel:
+
+```sh
+./bin/examples/roundtrip/roundtrip
+```

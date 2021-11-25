@@ -22,3 +22,37 @@ The desired logic is as follows:
 * Adding and removing timers.
 * Using uncached DOTS types.
 * Testing components using the Google Test integration.
+
+## Usage
+
+The example requires a running DOTS host (e.g. [dotsd](../../dotsd)) to connect to.
+
+The application can then be started from the build directory as follows:
+
+```sh
+./bin/examples/smart-home/smart-home
+```
+
+To control any of the fictitious smart devices, corresponding objects can be published via the [object-reader](../object-reader) example:
+
+```sh
+./bin/examples/object-reader/object-reader 'Dimmer{ .id = "LivingRoom_MasterDimmer", .brightness = 42 }'
+./bin/examples/object-reader/object-reader 'StatelessSwitch{ .id = "Stairwell_LowerSwitch" }'
+./bin/examples/object-reader/object-reader 'StatelessSwitch{ .id = "Stairwell_UpperSwitch" }'
+./bin/examples/object-reader/object-reader 'Switch{ .id = "Basement_MotionSwitch", .enabled = true }'
+...
+```
+
+To have a better idea of what is going on, the [object-trace](../object-trace) example can be run in parallel:
+
+```sh
+./bin/examples/object-trace/object-trace
+```
+
+## Unit tests
+
+The example also features unit tests, which can be run from the build directory as follows:
+
+```
+./bin/examples/smart-home/smart-home-tests
+```
