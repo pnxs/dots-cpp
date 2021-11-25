@@ -22,7 +22,7 @@ If the type is unknown when the application is started, the application will wai
 
 This example is intended to be used in conjunction with other applications to manually manipulate the state of objects.
 
-For example, after starting the [smart-home](../smart-home) application, the object-reader can be used to control the fictitious smart devices.
+For example, after starting the [smart-home](../smart-home/README.md) application, the object-reader can be used to control the fictitious smart devices.
 
 ### Reading single objects
 

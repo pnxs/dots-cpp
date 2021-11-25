@@ -19,7 +19,7 @@ The application subscribes to a specific type and then publishes a corresponding
 
 ## Usage
 
-The example requires a running DOTS host (e.g. [dotsd](../../dotsd)) to connect to.
+The example requires a running DOTS host (e.g. [dotsd](../../dotsd/README.md)) to connect to.
 
 The application can then be started from the build directory as follows:
 
@@ -27,7 +27,7 @@ The application can then be started from the build directory as follows:
 ./bin/examples/roundtrip/roundtrip
 ```
 
-To have a better idea of what is going on, the [object-trace](../object-trace) example can be run in parallel:
+To have a better idea of what is going on, the [object-trace](../object-trace/README.md) example can be run in parallel:
 
 ```sh
 ./bin/examples/object-trace/object-trace

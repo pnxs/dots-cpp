@@ -23,7 +23,7 @@ Note that objects will also be traced when their types are made available while 
 
 ## Usage
 
-The example requires a running DOTS host (e.g. [dotsd](../../dotsd)) to connect to.
+The example requires a running DOTS host (e.g. [dotsd](../../dotsd/README.md)) to connect to.
 
 The application can then be started from the build directory as follows:
 
@@ -31,7 +31,7 @@ The application can then be started from the build directory as follows:
 ./bin/examples/object-trace/object-trace
 ```
 
-To actually have something to trace, another example (e.g. [roundtrip](../roundtrip/)) can be run in parallel:
+To actually have something to trace, another example (e.g. [roundtrip](../roundtrip/README.md)) can be run in parallel:
 
 ```sh
 ./bin/examples/roundtrip/roundtrip

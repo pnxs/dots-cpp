@@ -73,12 +73,12 @@ The dots-cpp library is a complete publish-subscribe IPC solution for both local
 The repository includes a set of example applications:
 
 Introductory examples:
-* [roundtrip](./bin/examples/roundtrip/): Performs a simple roundtrip of a static DOTS struct type.
-* [object-trace](./bin/examples/object-trace/): Traces "all" DOTS struct objects within a DOTS system dynamically.
+* [roundtrip](./bin/examples/roundtrip/README.md): Performs a simple roundtrip of a static DOTS struct type.
+* [object-trace](./bin/examples/object-trace/README.md): Traces "all" DOTS struct objects within a DOTS system dynamically.
 
 Intermediate examples:
-* [smart-home](./bin/examples/smart-home/): Controls the logic of various fictitious smart-devices.
-* [object-reader](./bin/examples/object-reader/): Creates and publishes an object from a DOTS struct type dynamically.
+* [smart-home](./bin/examples/smart-home/README.md): Controls the logic of various fictitious smart-devices.
+* [object-reader](./bin/examples/object-reader/README.md): Creates and publishes an object from a DOTS struct type dynamically.
 
 # Dependencies
 

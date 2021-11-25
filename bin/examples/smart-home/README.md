@@ -25,7 +25,7 @@ The desired logic is as follows:
 
 ## Usage
 
-The example requires a running DOTS host (e.g. [dotsd](../../dotsd)) to connect to.
+The example requires a running DOTS host (e.g. [dotsd](../../dotsd/README.md)) to connect to.
 
 The application can then be started from the build directory as follows:
 
@@ -33,7 +33,7 @@ The application can then be started from the build directory as follows:
 ./bin/examples/smart-home/smart-home
 ```
 
-To control any of the fictitious smart devices, corresponding objects can be published via the [object-reader](../object-reader) example:
+To control any of the fictitious smart devices, corresponding objects can be published via the [object-reader](../object-reader/README.md) example:
 
 ```sh
 ./bin/examples/object-reader/object-reader 'Dimmer{ .id = "LivingRoom_MasterDimmer", .brightness = 42 }'
@@ -43,7 +43,7 @@ To control any of the fictitious smart devices, corresponding objects can be pub
 ...
 ```
 
-To have a better idea of what is going on, the [object-trace](../object-trace) example can be run in parallel:
+To have a better idea of what is going on, the [object-trace](../object-trace/README.md) example can be run in parallel:
 
 ```sh
 ./bin/examples/object-trace/object-trace
