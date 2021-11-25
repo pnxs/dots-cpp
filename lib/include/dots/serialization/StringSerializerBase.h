@@ -911,6 +911,18 @@ namespace dots::serialization
             }
 
             m_input.remove_prefix(static_cast<size_t>(result.ptr - m_input.data()));
+
+            if constexpr (traits_t::IntegerSignSuffixes && std::is_unsigned_v<T>)
+            {
+                if (m_options.policy == StringSerializerOptions::Strict)
+                {
+                    readToken("u");
+                }
+                else if (m_options.policy == StringSerializerOptions::Relaxed)
+                {
+                    tryReadToken("u");
+                }
+            }
         }
 
         template <typename T, std::enable_if_t<std::is_floating_point_v<T>, int> = 0>

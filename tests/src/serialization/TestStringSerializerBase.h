@@ -55,8 +55,21 @@ TYPED_TEST_P(TestStringSerializerBase, deserialize_WithInputPolicy)
 
         {
             SerializationStructComplex serializationStruct;
+            base_t::serializer_t::template Deserialize(base_t::Encoded().structComplex_RelaxedPolicy3, serializationStruct);
+            EXPECT_TRUE(serializationStruct._equal(base_t::Decoded().structComplex3, SerializationStructComplex::uint32Property_p));
+        }
+
+        {
+            SerializationStructComplex serializationStruct;
+            base_t::serializer_t::template Deserialize(base_t::Encoded().structComplex_RelaxedPolicy4, serializationStruct);
+            EXPECT_TRUE(serializationStruct._equal(base_t::Decoded().structComplex3, SerializationStructComplex::uint32Property_p));
+        }
+
+        {
+            SerializationStructComplex serializationStruct;
             EXPECT_THROW(base_t::serializer_t::template Deserialize(base_t::Encoded().structComplex_StrictPolicy1, serializationStruct, StringSerializerOptions{ StringSerializerOptions::SingleLine, StringSerializerOptions::Strict }), std::runtime_error);
             EXPECT_THROW(base_t::serializer_t::template Deserialize(base_t::Encoded().structComplex_StrictPolicy2, serializationStruct, StringSerializerOptions{ StringSerializerOptions::SingleLine, StringSerializerOptions::Strict }), std::runtime_error);
+            EXPECT_THROW(base_t::serializer_t::template Deserialize(base_t::Encoded().structComplex_StrictPolicy3, serializationStruct, StringSerializerOptions{ StringSerializerOptions::SingleLine, StringSerializerOptions::Strict }), std::runtime_error);
         }
     }
 }

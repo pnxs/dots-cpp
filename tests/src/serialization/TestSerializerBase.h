@@ -104,6 +104,10 @@ struct TestSerializerBaseDataDecoded
         SerializationStructComplex::uuidProperty_i{ uuid1 }
     };
 
+    SerializationStructComplex structComplex3{
+        SerializationStructComplex::uint32Property_i{ uint32Positive1 }
+    };
+
     //
     // property
     //

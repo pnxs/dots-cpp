@@ -228,8 +228,11 @@ struct StringSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::ser
 
     data_t structComplex_RelaxedPolicy1 = Concat("{ .enumProperty = SerializationEnum::", enum1," }");
     data_t structComplex_RelaxedPolicy2 = Concat("{ .enumProperty = ", enum1, " }");
+    data_t structComplex_RelaxedPolicy3 = Concat("{ .uint32Property = ", uint32Positive1, " }");
+    data_t structComplex_RelaxedPolicy4 = Concat("{ .uint32Property = ", int32Positive, " }");
     data_t structComplex_StrictPolicy1 = Concat("{ .enumProperty = SerializationEnum::", enum1, " }");
     data_t structComplex_StrictPolicy2 = Concat("SerializationStructComplex{ .enumProperty = ", enum1, " }");
+    data_t structComplex_StrictPolicy3 = Concat("SerializationStructComplex{ .uint32Property = ", int32Positive, " }");
 };
 
 INSTANTIATE_TYPED_TEST_SUITE_P(TestStringSerializer, TestSerializerBase, StringSerializerTestDataEncoded);
