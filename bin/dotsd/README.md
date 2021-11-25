@@ -1,4 +1,4 @@
-# dotsd
+# Application: dotsd
 
 The *dotsd (DOTS daemon)* is a standalone *DOTS host* (i.e "server") application. Outside of advanced use cases, it is usually the only host application required to set up a running DOTS system.
 
@@ -8,7 +8,7 @@ In addition to the usual host functionalities, the dotsd will also itself publis
 *  `DotsClient`: Status information for each connected guest.
 *  `DotsResourceUsage`: Resource usage information of the dotsd (Unix-like OSs only).
 
-## Usage
+# Usage
 
 The dotsd can use a variety of transport protocols, which can be configured by providing URI-like endpoints:
 

@@ -2,7 +2,7 @@
 
 This is an intermediate example that demonstrates how to use the dots-cpp library in a way that resembles simple real-life DOTS applications.
 
-## Description
+# Description
 
 The example is based on a fictional scenario in which a home owner has set up several *smart* devices and wants to program them in a particular way.
 
@@ -14,7 +14,7 @@ The desired logic is as follows:
 * Stairwell: Toggle a single lamp by two stateless smart switches located at each end of the stairwell.
 * Basement: Control a single lamp with a smart motion sensor. The light must also kept being turned on for some time after no motion is detected anymore.
 
-## Focus
+# Focus
 
 * Structuring an application with several components.
 * Subscribing to a DOTS struct type with a member function handler.
@@ -23,7 +23,7 @@ The desired logic is as follows:
 * Using uncached DOTS types.
 * Testing components using the Google Test integration.
 
-## Usage
+# Usage
 
 The example requires a running DOTS host (e.g. [dotsd](../../dotsd/README.md)) to connect to.
 
@@ -49,7 +49,7 @@ To have a better idea of what is going on, the [object-trace](../object-trace/RE
 ./bin/examples/object-trace/object-trace
 ```
 
-## Unit tests
+# Unit Tests
 
 The example also features unit tests, which can be run from the build directory as follows:
 
