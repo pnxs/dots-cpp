@@ -113,14 +113,14 @@ namespace dots
      * not support POSIX stream descriptors. Support is usually present on
      * UNIX-based systems but not on Windows.
      *
-     * Also note that this function will have no effect if there already is
-     * a handler for the given file descriptor registered.
-     *
      * @param fileDescriptor The descriptor associated with the file to
      * observe asynchronously.
      *
      * @param handler The handler to invoke asynchronously every time the
      * file state changes.
+     *
+     * @exception std::logic_error Thrown if there already is a handler
+     * registered for the given file descriptor.
      */
     void add_fd_handler(int fileDescriptor, std::function<void()> handler);
 
