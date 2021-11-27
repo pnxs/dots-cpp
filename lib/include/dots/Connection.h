@@ -358,7 +358,6 @@ namespace dots
         std::optional<std::string> m_authSecret;
         std::optional<io::Nonce> m_nonce;
 
-        type::Registry* m_registry;
         io::AuthManager* m_authManager;
         receive_handler_t m_receiveHandler;
         transition_handler_t m_transitionHandler;
