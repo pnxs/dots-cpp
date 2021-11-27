@@ -275,43 +275,6 @@ namespace dots
     }
 
     /*!
-     * @brief Subscribe to transmissions of a specific type via the global
-     * transceiver.
-     *
-     * This will effectively call GuestTransceiver::subscribe() on the
-     * global transceiver returned by dots::transceiver().
-     *
-     * Calling this function will create a subscription to a given type and
-     * cause the given handler to be invoked asynchronously every time a
-     * corresponding transmission is received.
-     *
-     * Note that contrary to event subscriptions, the handler will be
-     * invoked with the raw transmission data before the local Container
-     * has been updated.
-     *
-     * @attention Regular users are usually not required to create
-     * subscriptions to transmissions and are advised to use event
-     * subscriptions instead.
-     *
-     * @param descriptor The type to subscribe to.
-     *
-     * @param handler The handler to invoke asynchronously every time a
-     * corresponding transmission is received. If the given type is a
-     * cached type and the corresponding Container is not empty, the given
-     * handler will also be invoked synchronously with each contained
-     * instance before this function returns.
-     *
-     * @return Subscription The Subscription object that manages the state
-     * of the subscription. The subscription will stay active until the
-     * object is destroyed or Subscription::unsubscribe() is called
-     * manually.
-     *
-     * @exception std::logic_error Thrown if @p descriptor is a sub-struct
-     * only type.
-     */
-    Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::transmission_handler_t handler);
-
-    /*!
      * @brief Subscribe to events of a specific type via the global
      * transceiver.
      *

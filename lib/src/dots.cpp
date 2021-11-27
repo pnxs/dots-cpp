@@ -53,11 +53,6 @@ namespace dots
         publish(instance, instance._keyProperties(), true);
     }
 
-    Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::transmission_handler_t handler)
-    {
-        return transceiver().subscribe(descriptor, std::move(handler));
-    }
-
     Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::event_handler_t<> handler)
     {
         return transceiver().subscribe(descriptor, std::move(handler));
