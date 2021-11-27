@@ -5,7 +5,7 @@
 #include <map>
 #include <dots/io/services/FdHandler.h>
 
-namespace dots::io
+namespace dots::io::posix
 {
     struct FdHandlerService : boost::asio::execution_context::service
     {

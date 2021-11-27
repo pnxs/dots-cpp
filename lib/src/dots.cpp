@@ -24,12 +24,12 @@ namespace dots
     #if defined(BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR)
     void add_fd_handler(int fileDescriptor, std::function<void()> handler)
     {
-        io::global_service<io::FdHandlerService>().addInEventHandler(fileDescriptor, std::move(handler));
+        io::global_service<io::posix::FdHandlerService>().addInEventHandler(fileDescriptor, std::move(handler));
     }
 
     void remove_fd_handler(int fileDescriptor)
     {
-        io::global_service<io::FdHandlerService>().removeInEventHandler(fileDescriptor);
+        io::global_service<io::posix::FdHandlerService>().removeInEventHandler(fileDescriptor);
     }
     #endif
 
