@@ -81,7 +81,7 @@ namespace dots
 
         if (unknownInstance)
         {
-            auto itInserted = m_instances.emplace_hint(itUpper, instance, DotsCloneInformation{
+            auto itCreated = m_instances.emplace_hint(itUpper, instance, DotsCloneInformation{
                 DotsCloneInformation::lastOperation_i{ DotsMt::create },
                 DotsCloneInformation::lastUpdateFrom_i{ header.sender },
                 DotsCloneInformation::created_i{ header.sentTime },
@@ -90,7 +90,7 @@ namespace dots
                 DotsCloneInformation::localUpdateTime_i{ types::timepoint_t::Now() }
             });
 
-            return *itInserted;
+            return *itCreated;
         }
         else
         {
