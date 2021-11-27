@@ -19,7 +19,7 @@ namespace dots::types
 
     struct TestSubStruct : type::StaticStruct<TestSubStruct>
     {
-        struct p1_t : type::StaticProperty<bool_t, p1_t>
+        struct p1_pt : type::StaticProperty<bool_t, p1_pt>
         {
             using StaticProperty::StaticProperty;
             inline static constexpr auto Metadata = []()
@@ -29,7 +29,7 @@ namespace dots::types
             }();
         };
 
-        struct p2_t : type::StaticProperty<bool_t, p2_t>
+        struct p2_pt : type::StaticProperty<bool_t, p2_pt>
         {
             using StaticProperty::StaticProperty;
             inline static constexpr auto Metadata = []()
@@ -39,7 +39,7 @@ namespace dots::types
             }();
         };
 
-        struct p3_t : type::StaticProperty<float64_t, p3_t>
+        struct p3_pt : type::StaticProperty<float64_t, p3_pt>
         {
             using StaticProperty::StaticProperty;
             inline static constexpr auto Metadata = []()
@@ -49,21 +49,21 @@ namespace dots::types
             }();
         };
 
-        using _key_properties_t = std::tuple<p1_t*>;
-        using _properties_t     = std::tuple<p1_t*, p2_t*, p3_t*>;
+        using _key_properties_t = std::tuple<p1_pt*>;
+        using _properties_t     = std::tuple<p1_pt*, p2_pt*, p3_pt*>;
 
         template <typename P>
         const P& _getProperty() const
         {
-            if constexpr (std::is_same_v<P, p1_t>)
+            if constexpr (std::is_same_v<P, p1_pt>)
             {
                 return p1;
             }
-            else if constexpr (std::is_same_v<P, p2_t>)
+            else if constexpr (std::is_same_v<P, p2_pt>)
             {
                 return p2;
             }
-            else if constexpr (std::is_same_v<P, p3_t>)
+            else if constexpr (std::is_same_v<P, p3_pt>)
             {
                 return p3;
             }
@@ -79,9 +79,9 @@ namespace dots::types
             return const_cast<P&>(std::as_const(*this).template _getProperty<P>());
         }
 
-        p1_t p1;
-        p2_t p2;
-        p3_t p3;
+        p1_pt p1;
+        p2_pt p2;
+        p3_pt p3;
 
         inline static property_set_t p1_p = property_set_t::FromIndex(1);
         inline static property_set_t p2_p = property_set_t::FromIndex(2);
@@ -115,7 +115,7 @@ namespace dots::types
 
     struct TestStruct : type::StaticStruct<TestStruct>
     {
-        struct intProperty_t : type::StaticProperty<int32_t, intProperty_t>
+        struct intProperty_pt : type::StaticProperty<int32_t, intProperty_pt>
         {
             using StaticProperty::StaticProperty;
             inline static constexpr auto Metadata = []()
@@ -125,7 +125,7 @@ namespace dots::types
             }();
         };
 
-        struct stringProperty_t : type::StaticProperty<string_t, stringProperty_t>
+        struct stringProperty_pt : type::StaticProperty<string_t, stringProperty_pt>
         {
             using StaticProperty::StaticProperty;
             inline static constexpr auto Metadata = []()
@@ -135,7 +135,7 @@ namespace dots::types
             }();
         };
 
-        struct boolProperty_t : type::StaticProperty<bool_t, boolProperty_t>
+        struct boolProperty_pt : type::StaticProperty<bool_t, boolProperty_pt>
         {
             using StaticProperty::StaticProperty;
             inline static constexpr auto Metadata = []()
@@ -145,7 +145,7 @@ namespace dots::types
             }();
         };
 
-        struct floatVectorProperty_t : type::StaticProperty<vector_t<float32_t>, floatVectorProperty_t>
+        struct floatVectorProperty_pt : type::StaticProperty<vector_t<float32_t>, floatVectorProperty_pt>
         {
             using StaticProperty::StaticProperty;
             inline static constexpr auto Metadata = []()
@@ -155,7 +155,7 @@ namespace dots::types
             }();
         };
 
-        struct subStruct_t : type::StaticProperty<TestSubStruct, subStruct_t>
+        struct subStruct_pt : type::StaticProperty<TestSubStruct, subStruct_pt>
         {
             using StaticProperty::StaticProperty;
             inline static constexpr auto Metadata = []()
@@ -165,29 +165,29 @@ namespace dots::types
             }();
         };
 
-        using _key_properties_t = std::tuple<intProperty_t*>;
-        using _properties_t     = std::tuple<intProperty_t*, stringProperty_t*, boolProperty_t*, floatVectorProperty_t*, subStruct_t*>;
+        using _key_properties_t = std::tuple<intProperty_pt*>;
+        using _properties_t     = std::tuple<intProperty_pt*, stringProperty_pt*, boolProperty_pt*, floatVectorProperty_pt*, subStruct_pt*>;
 
         template <typename P>
         const P& _getProperty() const
         {
-            if constexpr (std::is_same_v<P, intProperty_t>)
+            if constexpr (std::is_same_v<P, intProperty_pt>)
             {
                 return intProperty;
             }
-            else if constexpr (std::is_same_v<P, stringProperty_t>)
+            else if constexpr (std::is_same_v<P, stringProperty_pt>)
             {
                 return stringProperty;
             }
-            else if constexpr (std::is_same_v<P, boolProperty_t>)
+            else if constexpr (std::is_same_v<P, boolProperty_pt>)
             {
                 return boolProperty;
             }
-            else if constexpr (std::is_same_v<P, floatVectorProperty_t>)
+            else if constexpr (std::is_same_v<P, floatVectorProperty_pt>)
             {
                 return floatVectorProperty;
             }
-            else if constexpr (std::is_same_v<P, subStruct_t>)
+            else if constexpr (std::is_same_v<P, subStruct_pt>)
             {
                 return subStruct;
             }
@@ -203,11 +203,11 @@ namespace dots::types
             return const_cast<P&>(std::as_const(*this).template _getProperty<P>());
         }
 
-        intProperty_t intProperty;
-        stringProperty_t stringProperty;
-        boolProperty_t boolProperty;
-        floatVectorProperty_t floatVectorProperty;
-        subStruct_t subStruct;
+        intProperty_pt intProperty;
+        stringProperty_pt stringProperty;
+        boolProperty_pt boolProperty;
+        floatVectorProperty_pt floatVectorProperty;
+        subStruct_pt subStruct;
 
         inline static property_set_t intProperty_p = property_set_t::FromIndex(1);
         inline static property_set_t stringProperty_p = property_set_t::FromIndex(2);
@@ -238,33 +238,33 @@ TEST_F(TestStaticStructExperimental, PropertyOffsetsMatchActualOffsets)
     TestStruct sut;
 
     auto determine_offset = [&](const auto& property) { return reinterpret_cast<size_t>(&property) - reinterpret_cast<size_t>(&sut._propertyArea()); };
-    EXPECT_EQ(TestStruct::intProperty_t::Offset(), determine_offset(sut.intProperty));
-    EXPECT_EQ(TestStruct::stringProperty_t::Offset(), determine_offset(sut.stringProperty));
-    EXPECT_EQ(TestStruct::boolProperty_t::Offset(), determine_offset(sut.boolProperty));
-    EXPECT_EQ(TestStruct::floatVectorProperty_t::Offset(), determine_offset(sut.floatVectorProperty));
-    EXPECT_EQ(TestStruct::subStruct_t::Offset(), determine_offset(sut.subStruct));
+    EXPECT_EQ(TestStruct::intProperty_pt::Offset(), determine_offset(sut.intProperty));
+    EXPECT_EQ(TestStruct::stringProperty_pt::Offset(), determine_offset(sut.stringProperty));
+    EXPECT_EQ(TestStruct::boolProperty_pt::Offset(), determine_offset(sut.boolProperty));
+    EXPECT_EQ(TestStruct::floatVectorProperty_pt::Offset(), determine_offset(sut.floatVectorProperty));
+    EXPECT_EQ(TestStruct::subStruct_pt::Offset(), determine_offset(sut.subStruct));
 
     TestSubStruct sutSub;
     auto determine_sub_offset = [&](const auto& property) { return reinterpret_cast<size_t>(&property) - reinterpret_cast<size_t>(&sutSub._propertyArea()); };
-    EXPECT_EQ(TestSubStruct::p1_t::Offset(), determine_sub_offset(sutSub.p1));
-    EXPECT_EQ(TestSubStruct::p2_t::Offset(), determine_sub_offset(sutSub.p2));
-    EXPECT_EQ(TestSubStruct::p3_t::Offset(), determine_sub_offset(sutSub.p3));
+    EXPECT_EQ(TestSubStruct::p1_pt::Offset(), determine_sub_offset(sutSub.p1));
+    EXPECT_EQ(TestSubStruct::p2_pt::Offset(), determine_sub_offset(sutSub.p2));
+    EXPECT_EQ(TestSubStruct::p3_pt::Offset(), determine_sub_offset(sutSub.p3));
 }
 
 TEST_F(TestStaticStructExperimental, PropertiesHaveExpectedTags)
 {
-    EXPECT_EQ(TestStruct::intProperty_t::Tag(), 1u);
-    EXPECT_EQ(TestStruct::stringProperty_t::Tag(), 2u);
-    EXPECT_EQ(TestStruct::boolProperty_t::Tag(), 3u);
-    EXPECT_EQ(TestStruct::floatVectorProperty_t::Tag(), 4u);
+    EXPECT_EQ(TestStruct::intProperty_pt::Tag(), 1u);
+    EXPECT_EQ(TestStruct::stringProperty_pt::Tag(), 2u);
+    EXPECT_EQ(TestStruct::boolProperty_pt::Tag(), 3u);
+    EXPECT_EQ(TestStruct::floatVectorProperty_pt::Tag(), 4u);
 }
 
 TEST_F(TestStaticStructExperimental, PropertiesHaveExpectedNames)
 {
-    EXPECT_EQ(TestStruct::intProperty_t::Name(), "intProperty");
-    EXPECT_EQ(TestStruct::stringProperty_t::Name(), "stringProperty");
-    EXPECT_EQ(TestStruct::boolProperty_t::Name(), "boolProperty");
-    EXPECT_EQ(TestStruct::floatVectorProperty_t::Name(), "floatVectorProperty");
+    EXPECT_EQ(TestStruct::intProperty_pt::Name(), "intProperty");
+    EXPECT_EQ(TestStruct::stringProperty_pt::Name(), "stringProperty");
+    EXPECT_EQ(TestStruct::boolProperty_pt::Name(), "boolProperty");
+    EXPECT_EQ(TestStruct::floatVectorProperty_pt::Name(), "floatVectorProperty");
 }
 
 TEST_F(TestStaticStructExperimental, PropertiesHaveExpectedSet)
