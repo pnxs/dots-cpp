@@ -40,9 +40,9 @@ int main(int argc, char* argv[])
         });
 
         // asynchronously wait until descriptor has been received
-        dots::transceiver().subscribe<StructDescriptorData>([](auto&){}).discard();
-        dots::transceiver().subscribe<EnumDescriptorData>([](auto&){}).discard();
-        dots::transceiver().subscribe<dots::type::StructDescriptor<>>([&](const dots::type::StructDescriptor<>& descriptor)
+        dots::subscribe<StructDescriptorData>([](auto&){}).discard();
+        dots::subscribe<EnumDescriptorData>([](auto&){}).discard();
+        dots::subscribe<dots::type::StructDescriptor<>>([&](const dots::type::StructDescriptor<>& descriptor)
         {
             if (descriptor.name() == typeName)
             {
