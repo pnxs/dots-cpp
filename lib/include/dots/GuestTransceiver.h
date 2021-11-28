@@ -159,8 +159,8 @@ namespace dots
          *
          * @param instance The instance to publish.
          *
-         * @param includedProperties The property set to include in the
-         * publish. If no set is given, the valid property set of
+         * @param includedProperties The properties to publish in addition to
+         * the key properties. If no set is given, the valid property set of
          * @p instance will be used.
          *
          * @param remove Specifies whether the publish is a remove.

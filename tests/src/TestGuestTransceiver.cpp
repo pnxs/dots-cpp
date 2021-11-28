@@ -125,17 +125,17 @@ TEST_F(TestGuestTransceiver, PublishPartialInstanceWhenPropertiesAreGiven)
     DOTS_EXPECTATION_SEQUENCE(
         [&]
         {
-            dots::publish(instance, DotsTestStruct::indKeyfField_p + DotsTestStruct::floatField_p);
+            dots::publish(instance, DotsTestStruct::floatField_p);
         },
         EXPECT_DOTS_PUBLISH(instance, DotsTestStruct::indKeyfField_p + DotsTestStruct::floatField_p),
         [&]
         {
-            dots::publish(instance, DotsTestStruct::indKeyfField_p + DotsTestStruct::int64Field_p);
+            dots::publish(instance, DotsTestStruct::int64Field_p);
         },
         EXPECT_DOTS_PUBLISH(instance, DotsTestStruct::indKeyfField_p + DotsTestStruct::int64Field_p),
         [&]
         {
-            dots::publish(instance, DotsTestStruct::indKeyfField_p + DotsTestStruct::stringField_p + DotsTestStruct::enumField_p);
+            dots::publish(instance, DotsTestStruct::stringField_p + DotsTestStruct::enumField_p);
         },
         EXPECT_DOTS_PUBLISH(instance, DotsTestStruct::indKeyfField_p + DotsTestStruct::stringField_p + DotsTestStruct::enumField_p)
     );

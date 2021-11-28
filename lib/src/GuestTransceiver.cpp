@@ -45,14 +45,19 @@ namespace dots
             throw std::logic_error{ "attempt to publish substruct-only type '" + descriptor.name() + "'" };
         }
 
+        if (!(descriptor.keyProperties() <= instance._validProperties()))
+        {
+            throw std::runtime_error("attempt to publish instance with missing key properties '" + (descriptor.keyProperties() - instance._validProperties()).toString() + "'");
+        }
+
         if (includedProperties == std::nullopt)
         {
             includedProperties = instance._validProperties();
         }
-
-        if (!(descriptor.keyProperties() <= *includedProperties))
+        else
         {
-            throw std::runtime_error("attempt to publish instance with missing key properties '" + (descriptor.keyProperties() - *includedProperties).toString() + "'");
+            *includedProperties += descriptor.keyProperties();
+            *includedProperties ^= descriptor.properties();
         }
 
         if (m_hostConnection == std::nullopt)

@@ -35,18 +35,19 @@ namespace dots
             throw std::logic_error{ "attempt to publish substruct-only type '" + descriptor.name() + "'" };
         }
 
+        if (!(descriptor.keyProperties() <= instance._validProperties()))
+        {
+            throw std::runtime_error("attempt to publish instance with missing key properties '" + (descriptor.keyProperties() - instance._validProperties()).toString() + "'");
+        }
+
         if (includedProperties == std::nullopt)
         {
             includedProperties = instance._validProperties();
         }
         else
         {
+            *includedProperties += descriptor.keyProperties();
             *includedProperties ^= instance._descriptor().properties();
-        }
-
-        if (!(descriptor.keyProperties() <= *includedProperties))
-        {
-            throw std::runtime_error("attempt to publish instance with missing key properties '" + (descriptor.keyProperties() - *includedProperties).toString() + "'");
         }
 
         DotsHeader header{
