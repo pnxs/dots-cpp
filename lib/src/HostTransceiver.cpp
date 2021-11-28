@@ -28,6 +28,13 @@ namespace dots
 
     void HostTransceiver::publish(const type::Struct& instance, std::optional<types::property_set_t> includedProperties/* = std::nullopt*/, bool remove/* = false*/)
     {
+        const type::StructDescriptor<>& descriptor = instance._descriptor();
+
+        if (descriptor.substructOnly())
+        {
+            throw std::logic_error{ "attempt to publish substruct-only type '" + descriptor.name() + "'" };
+        }
+
         if (includedProperties == std::nullopt)
         {
             includedProperties = instance._validProperties();
