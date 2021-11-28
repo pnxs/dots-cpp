@@ -45,7 +45,7 @@ namespace dots
 
     void publish(const type::Struct& instance, std::optional<types::property_set_t> includedProperties/* = std::nullopt*/, bool remove/* = false*/)
     {
-        transceiver().publish(instance, includedProperties == std::nullopt ? instance._validProperties() : *includedProperties, remove);
+        transceiver().publish(instance, includedProperties, remove);
     }
 
     void remove(const type::Struct& instance)
