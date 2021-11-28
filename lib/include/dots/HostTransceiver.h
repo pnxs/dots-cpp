@@ -116,6 +116,9 @@ namespace dots
          *
          * @param remove Specifies whether the publish is a remove.
          *
+         * @exception std::logic_error Thrown if @p instance is of a
+         * 'substruct-only' type.
+         *
          * @exception std::runtime_error Thrown if a key property of the
          * instance is invalid.
          */
