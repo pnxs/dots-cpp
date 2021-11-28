@@ -44,6 +44,11 @@ namespace dots
             *includedProperties ^= instance._descriptor().properties();
         }
 
+        if (!(descriptor.keyProperties() <= *includedProperties))
+        {
+            throw std::runtime_error("attempt to publish instance with missing key properties '" + (descriptor.keyProperties() - *includedProperties).toString() + "'");
+        }
+
         DotsHeader header{
             DotsHeader::typeName_i{ instance._descriptor().name() },
             DotsHeader::sentTime_i{ types::timepoint_t::Now() },

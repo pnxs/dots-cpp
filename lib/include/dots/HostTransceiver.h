@@ -115,6 +115,9 @@ namespace dots
          * @p instance will be used.
          *
          * @param remove Specifies whether the publish is a remove.
+         *
+         * @exception std::runtime_error Thrown if a key property of the
+         * instance is invalid.
          */
         void publish(const type::Struct& instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false) override;
 
