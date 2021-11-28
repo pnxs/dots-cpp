@@ -254,6 +254,7 @@ namespace dots
         {
             if (m_connectionState == DotsConnectionState::connected || m_connectionState == DotsConnectionState::early_subscribe)
             {
+                instance._assertHasProperties(instance._keyProperties());
                 DotsHeader& header = transmission.header();
 
                 if (m_selfId == HostId)
