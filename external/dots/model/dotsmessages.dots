@@ -81,22 +81,3 @@ struct DotsTransportHeader [internal,cached=false] {
 struct DotsClearCache [internal,cached=false] {
     1: vector<string> typeNames; // names of the types to clear
 }
-
-struct DotsDumpContinuousRecorder [internal,cached=false] {
-    1: string recorderId;
-    2: string fileName;
-}
-
-enum DotsContinuousRecorderState {
-    1: idle,
-    2: recording,
-    3: dumping
-}
-
-struct DotsContinuousRecorderStatus [internal,cleanup] {
-    1: [key] string recorderId;
-    2: uint32 bufferSize;
-    3: uint32 bufferSizeUsed;
-    4: timepoint startTime;
-    5: DotsContinuousRecorderState state;
-}

@@ -32,6 +32,7 @@ target_dots_model(${TARGET_NAME}
     src/model/authentication.dots
     src/model/dotstesttypes.dots
     src/model/daemon.dots
+    src/model/legacy.dots
 )
 target_sources(${TARGET_NAME}
     PRIVATE

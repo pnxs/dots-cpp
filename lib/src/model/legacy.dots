@@ -1,0 +1,21 @@
+// Only required for backwards compatibility of legacy utilities
+struct DotsDumpContinuousRecorder [internal,cached=false] {
+    1: string recorderId;
+    2: string fileName;
+}
+
+// Only required for backwards compatibility of legacy utilities
+enum DotsContinuousRecorderState {
+    1: idle,
+    2: recording,
+    3: dumping
+}
+
+// Only required for backwards compatibility of legacy utilities
+struct DotsContinuousRecorderStatus [internal,cleanup] {
+    1: [key] string recorderId;
+    2: uint32 bufferSize;
+    3: uint32 bufferSizeUsed;
+    4: timepoint startTime;
+    5: DotsContinuousRecorderState state;
+}
