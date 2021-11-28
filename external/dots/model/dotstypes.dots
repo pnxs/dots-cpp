@@ -46,12 +46,6 @@ struct DotsDaemonStatus [internal] {
     6: DotsResourceUsage resourceUsage;
 }
 
-struct DotsRecordHeader [internal,cached=false] {
-    1: [key] string name;
-    2: timepoint startTime;
-    3: vector<string> whitelist;
-}
-
 struct DotsCacheInfo [internal,cached=false] {
     1: string typeName;
     2: bool startTransmission;
@@ -66,16 +60,6 @@ struct DotsClient [internal] {
     4: vector<string> publishedTypes;
     5: vector<string> subscribedTypes;
     6: DotsConnectionState connectionState;
-}
-
-struct DotsTypes [internal] {
-    1: [key] uint32 id;
-    2: string name;
-}
-
-struct DotsNamespaces [internal] {
-    1: [key] uint32 id;
-    2: string name;
 }
 
 enum DotsMt {
