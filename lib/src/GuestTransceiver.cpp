@@ -38,16 +38,14 @@ namespace dots
 
     void GuestTransceiver::publish(const type::Struct& instance, std::optional<types::property_set_t> includedProperties/* = std::nullopt*/, bool remove/* = false*/)
     {
-        const type::StructDescriptor<>& descriptor = instance._descriptor();
-
-        if (descriptor.substructOnly())
+        if (const type::StructDescriptor<>& descriptor = instance._descriptor(); descriptor.substructOnly())
         {
             throw std::logic_error{ "attempt to publish substruct-only type '" + descriptor.name() + "'" };
         }
 
-        if (!(descriptor.keyProperties() <= instance._validProperties()))
+        if (!(instance._keyProperties() <= instance._validProperties()))
         {
-            throw std::runtime_error("attempt to publish instance with missing key properties '" + (descriptor.keyProperties() - instance._validProperties()).toString() + "'");
+            throw std::runtime_error("attempt to publish instance with missing key properties '" + (instance._keyProperties() - instance._validProperties()).toString() + "'");
         }
 
         if (includedProperties == std::nullopt)
@@ -56,8 +54,8 @@ namespace dots
         }
         else
         {
-            *includedProperties += descriptor.keyProperties();
-            *includedProperties ^= descriptor.properties();
+            *includedProperties += instance._keyProperties();
+            *includedProperties ^= instance._properties();
         }
 
         if (m_hostConnection == std::nullopt)

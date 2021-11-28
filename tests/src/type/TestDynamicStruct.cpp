@@ -404,9 +404,7 @@ TEST_F(TestDynamicStruct, _descriptor_FlagsHaveExpectedValues)
 TEST_F(TestDynamicStruct, _keyProperties)
 {
     DynamicStruct sut{ *m_testDynamicStructDescriptor };
-    const StructDescriptor<>& descriptor = sut._descriptor();
-
-    EXPECT_EQ(descriptor.keyProperties(), sut._get("intProperty").descriptor().set());
+    EXPECT_EQ(sut._keyProperties(), sut._get("intProperty").descriptor().set());
 }
 
 TEST_F(TestDynamicStruct, ctor_Initializer)

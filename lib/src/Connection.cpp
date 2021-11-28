@@ -166,7 +166,7 @@ namespace dots
         }
         else
         {
-            *includedProperties ^= instance._descriptor().properties();
+            *includedProperties ^= instance._properties();
         }
 
         transmit(DotsHeader{

@@ -199,7 +199,7 @@ namespace dots::testing
             }
             else
             {
-                *includedProperties ^= instance._descriptor().properties();
+                *includedProperties ^= instance._properties();
             }
 
             spoof(DotsHeader{

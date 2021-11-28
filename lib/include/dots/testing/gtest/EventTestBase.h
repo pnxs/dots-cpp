@@ -782,8 +782,8 @@ namespace dots::testing
     {                                                                                                                                 \
         if (includedProperties != std::nullopt)                                                                                       \
         {                                                                                                                             \
-            *includedProperties += instance._descriptor().keyProperties();                                                            \
-            *includedProperties ^= instance._descriptor().properties();                                                               \
+            *includedProperties += instance._keyProperties();                                                                         \
+            *includedProperties ^= instance._properties();                                                                            \
         }                                                                                                                             \
                                                                                                                                       \
         for (auto& [transceiver, mockSubscriptionHandlers] : EventTestBase::mockSubscriptionHandlers())                               \
