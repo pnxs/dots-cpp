@@ -1,0 +1,29 @@
+struct DotsCacheInfo [internal,cached=false] {
+    1: string typeName;
+    2: bool startTransmission;
+    3: bool endTransmission;
+    4: bool endDescriptorRequest;
+}
+
+// Clears (removes) the objects in the container of the listed types.
+struct DotsClearCache [internal,cached=false] {
+    1: vector<string> typeNames; // names of the types to clear
+}
+
+struct DotsDescriptorRequest [internal,cached=false] {
+    1: vector<string> whitelist;
+    2: vector<string> blacklist;
+}
+
+// Used for echo/ping function of host-transceiver:
+// The DOTS guest may send a DotsEcho to the host, the host just returns the sent
+// data back to the client.
+// A guest can use this to implement a keep-alive, a connection-check or to measure
+// the latency between the guest and the host.
+// The usage of 'identifier', 'sequenceNumber' is defined by the guest.
+struct DotsEcho [internal,cached=false] {
+    1: bool request; //< Need to be set to 'true' when requesting, 'false' when host replies.
+    2: uint32 identifier;
+    3: uint32 sequenceNumber;
+    4: string data;
+}

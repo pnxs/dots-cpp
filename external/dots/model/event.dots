@@ -1,23 +1,14 @@
-
-enum DotsConnectionState {
-   1: connecting,
-   2: early_subscribe,
-   3: connected,
-   4: suspended,
-   5: closed
-}
-
 enum DotsMemberEvent {
     1: join,
     2: leave,
     3: kill
 }
 
-struct DotsCacheInfo [internal,cached=false] {
-    1: string typeName;
-    2: bool startTransmission;
-    3: bool endTransmission;
-    4: bool endDescriptorRequest;
+// With DotsMember, a client can join or leave groups.
+struct DotsMember [internal,cached=false] {
+    1: string groupName; // group to join or leave
+    2: DotsMemberEvent event; // set to join or leave
+    3: uint32 client; // ID of the client that join or leave.
 }
 
 enum DotsMt {
