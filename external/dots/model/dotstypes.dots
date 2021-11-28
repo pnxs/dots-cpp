@@ -13,53 +13,11 @@ enum DotsMemberEvent {
     3: kill
 }
 
-struct DotsStatistics [internal] {
-    1: uint64 bytes;
-    2: uint64 packages;
-}
-
-struct DotsCacheStatus [internal] {
-    1: uint32 nrTypes;
-    2: uint64 size;
-}
-
-struct DotsResourceUsage [internal] {
-    1: int32 minorFaults; // number of minor page-faults
-    2: int32 majorFaults; // number of major page-faults
-    3: int32 inBlock;
-    4: int32 outBlock;
-    5: int32 nrSignals; // number of received signals
-    6: int32 nrSwaps; // number of memory swaps
-    7: int32 nrVoluntaryContextSwitches;
-    8: int32 nrInvoluntaryContextSwitches;
-    9: int32 maxRss; // maximum used memory (peak) in Kb over process lifetime
-    10: duration userCpuTime; // used 'user' CPU-time in seconds
-    11: duration systemCpuTime; // used 'system' CPU-time in seconds
-}
-
-struct DotsDaemonStatus [internal] {
-    1: [key] string serverName;
-    2: timepoint startTime;
-    3: DotsStatistics received;
-    4: DotsStatistics sent;
-    5: DotsCacheStatus cache;
-    6: DotsResourceUsage resourceUsage;
-}
-
 struct DotsCacheInfo [internal,cached=false] {
     1: string typeName;
     2: bool startTransmission;
     3: bool endTransmission;
     4: bool endDescriptorRequest;
-}
-
-struct DotsClient [internal] {
-    1: [key] uint32 id;
-    2: string name;
-    3: bool running;
-    4: vector<string> publishedTypes;
-    5: vector<string> subscribedTypes;
-    6: DotsConnectionState connectionState;
 }
 
 enum DotsMt {
