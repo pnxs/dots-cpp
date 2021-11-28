@@ -12,6 +12,11 @@ namespace dots
         type::Descriptor<DotsCacheInfo>::Instance();
     }
 
+    const std::optional<Connection>& GuestTransceiver::connection() const
+    {
+        return m_hostConnection;
+    }
+
     const Connection& GuestTransceiver::open(type::DescriptorMap preloadPublishTypes, type::DescriptorMap preloadSubscribeTypes, std::optional<std::string> authSecret, io::channel_ptr_t channel)
     {
         if (m_hostConnection != std::nullopt)

@@ -54,6 +54,19 @@ namespace dots
         GuestTransceiver& operator = (GuestTransceiver&& rhs) = default;
 
         /*!
+         * @brief Get current host connection.
+         *
+         * @warning The state of the std::optional must always be checked
+         * before accessing the contained object, as the Connection object will
+         * be destroyed when the connection is closed.
+         *
+         * @return const std::optional<Connection>& A reference to the current
+         * host connection. Might be empty if no connection was opened by
+         * GuestTransceiver::open() or if it already has been closed.
+         */
+        const std::optional<Connection>& connection() const;
+
+        /*!
          * @brief Start to asynchronously open and establish a host connection
          * via a specific channel.
          *
