@@ -4,9 +4,9 @@ The *dotsd (DOTS daemon)* is a standalone *DOTS host* (i.e "server") application
 
 A DOTS host acts in the role of a *message broker* and distributes published objects to all subscribed *DOTS guests* (i.e. "clients"). Guests can establish connections through a variety of transport protocols (e.g. TCP), depending on how the host is configured.
 
-In addition to the usual host functionalities, the dotsd will also itself publish additional information via objects of the following types:
+In addition to the usual host functionalities, the dotsd will also itself publish additional information via objects of the following *internal* types:
 *  `DotsClient`: Status information for each connected guest.
-*  `DotsResourceUsage`: Resource usage information of the dotsd (Unix-like OSs only).
+*  `DotsDaemonStatus`: Status information for the daemon itself.
 
 # Usage
 
