@@ -13,10 +13,48 @@
 
 namespace dots
 {
+    /*!
+     * @class HostTransceiver HostTransceiver.h <dots/HostTransceiver.h>
+     *
+     * @brief Transceiver for hosting DOTS spaces.
+     *
+     * The HostTransceiver class implements the "DOTS host" concept. Hosts
+     * create "DOTS spaces" that can be attended by "DOTS guests".
+     *
+     * A space is an environment in which attendees (including the host)
+     * can subscribe to DOTS struct types and publish instances of types
+     * into.
+     *
+     * The host is responsible for distributing the transmissions of
+     * published DOTS instances to all attendees that are subscribed to the
+     * corresponding types.
+     *
+     * Even though a HostTransceiver often technically acts as a server, it
+     * is agnostic about how a connection is established. A HostTransceiver
+     * can asynchronously accept incoming connections from provided
+     * io::Listener instances.
+     */
     struct HostTransceiver : Transceiver
     {
         using transition_handler_t = std::function<void(const Connection&)>;
 
+        /*!
+         * @brief Construct a new HostTransceiver object.
+         *
+         * After construction, the transceiver will be inactive until listeners
+         * are added via HostTransceiver::listen().
+         *
+         * @param selfName The name the transceiver will use to identify
+         * itself.
+         *
+         * @param ioContext The ASIO IO context (i.e. the "event loop") to use.
+         *
+         * @param staticUserTypes Specifies whether static struct types will
+         * automatically be known by the registry.
+         *
+         * @param transitionHandler The handler to invoke every time the a
+         * Connection transitions to a different connection state.
+         */
         HostTransceiver(std::string selfName = "DotsHostTransceiver", boost::asio::io_context& ioContext = io::global_io_context(), bool staticUserTypes = true, transition_handler_t transitionHandler = nullptr);
         HostTransceiver(const HostTransceiver& other) = delete;
         HostTransceiver(HostTransceiver&& other) = default;
@@ -25,16 +63,80 @@ namespace dots
         HostTransceiver& operator = (const HostTransceiver& rhs) = delete;
         HostTransceiver& operator = (HostTransceiver&& rhs) = default;
 
+        /*!
+         * @brief Asynchronously accept incoming connections on a specific
+         * listener.
+         *
+         * @param listener The listener to asynchronously accept connections
+         * from.
+         *
+         * @return io::Listener& A reference to the listener after asynchronous
+         * accepting has been started.
+         */
         io::Listener& listen(io::listener_ptr_t&& listener);
 
+        /*!
+         * @brief Construct a specific listener and asynchronously accept
+         * incoming connections.
+         *
+         * @tparam TListener The type of the listener to construct.
+         *
+         * @tparam Args The types of the arguments to forward to the compatible
+         * constructor of @p TListener .
+         *
+         * @param args The arguments to forward to the compatible constructor
+         * of @p TListener .
+         *
+         * @return TListener& A reference to the listener after asynchronous
+         * accepting has been started.
+         */
         template <typename TListener, typename... Args>
         TListener& listen(Args&&... args)
         {
             return static_cast<TListener&>(listen(std::make_unique<TListener>(ioContext(), std::forward<Args>(args)...)));
         }
 
+        /*!
+         * @brief Publish an instance of a DOTS struct type.
+         *
+         * This will create a corresponding io::Transmission for the publish
+         * and dispatch it to all subscribers. For local subscribers, this is
+         * done synchronously before the function returns, while for remote
+         * subscribers the instance will be transmitted asynchronously.
+         *
+         * If the type of instance is "cached", the cache (i.e. the Container)
+         * for that type is updated before any event subscriptions are
+         * processed.
+         *
+         * @param instance The instance to publish.
+         *
+         * @param includedProperties The property set to include in the
+         * publish. If no set is given, the valid property set of
+         * @p instance will be used.
+         *
+         * @param remove Specifies whether the publish is a remove.
+         */
         void publish(const type::Struct& instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false) override;
 
+        /*!
+         * @brief Set the io::AuthManager instance to use for accepted
+         * connections.
+         *
+         * This sets the type of authentication that is used for every
+         * Connection that is accepted after this function returns.
+         *
+         * Note that it has no effect on connections that are already
+         * established when the function is called.
+         *
+         * @tparam T The authentication manager type. Must be derived from
+         * io::AuthManager.
+         *
+         * @tparam Args The types of the arguments to forward to the compatible
+         * constructor of @p T .
+         *
+         * @param args The arguments to forward to the compatible constructor
+         * of @p T .
+         */
         template <typename T, typename... Args>
         void setAuthManager(Args&&... args)
         {

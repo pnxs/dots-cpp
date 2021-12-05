@@ -1,0 +1,6 @@
+// Contains artificial data for the roundtrip example.
+struct RoundtripData {
+    1: [key] uint32 id;   // Key property that identifies a specific instance of the type.
+    2: string someString; // Some example string data.
+    3: float32 someFloat; // Some example float data.
+}
