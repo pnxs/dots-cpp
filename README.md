@@ -54,8 +54,8 @@ The dots-cpp library is a complete publish-subscribe IPC solution for both local
 * **Object-driven**: DOTS is all about the state of objects. Subscribers can react to object changes via events or just use the current state of an object when desired.
 * **Efficient**: Objects can be partially updated and by default are serialized using CBOR, which in many cases results in payloads of only "a few bytes" in size.
 * **Origin-agnostic**: Subscribers do not have to care about how data is produced, where it is coming from or how it is serialized. This makes it easy to change producers, inject objects for testing, or reproduce system states for debugging or analysis.
-* **Transport-agnostic**: Even though DOTS specifies a default binary encoding via CBOR, it can in principle be built upon any transport protocol and serialization method. For example: Processes running on the same machine might want to use UNIX domain sockets, while remote applications could be connected via TCP.
-* **Language-agnostic**: DOTS can in principle be implemented in any programming language. While currently not publicly available, DOTS libraries and applications have been written in C#, TypeScript and Python in addition to C++.
+* **Transport-agnostic**: Even though DOTS specifies a default binary encoding via CBOR, it can be built upon any transport protocol and serialization method. For example: Processes running on the same machine might want to use UNIX domain sockets, while remote applications could be connected via TCP.
+* **Language-agnostic**: DOTS can be implemented in any programming language. DOTS libraries and applications have been written in C#, TypeScript and Python in addition to C++.
 
 ## Features: Library
 
