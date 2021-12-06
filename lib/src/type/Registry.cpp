@@ -39,31 +39,31 @@ namespace dots::type
         ensureDescriptor<types::uuid_t>();
         ensureDescriptor<types::string_t>();
 
+        for (auto& staticType : static_descriptors())
+        {
+            if (m_staticUserTypes or staticType.second->isFundamentalType())
+            {
+                m_types.emplace(staticType.second);
+            }
+        }
     }
 
     const Descriptor<>* Registry::findType(std::string_view name, bool assertNotNull/* = false*/) const
     {
-        if (const Descriptor<>* descriptor = m_types.find(name); descriptor == nullptr)
+        if (const Descriptor<>* descriptor = m_types.find(name); descriptor != nullptr)
         {
-            if (descriptor = static_descriptors().find(name); descriptor == nullptr || (!m_staticUserTypes && IsUserType(*descriptor)))
-            {
-                if (assertNotNull)
-                {
-                    throw std::logic_error{ std::string{ "no type registered with name: " } + name.data() };
-                }
-                else
-                {
-                    return nullptr;
-                }
-            }
-            else
-            {
-                return descriptor;
-            }
+            return descriptor;
         }
         else
         {
-            return descriptor;
+            if (assertNotNull)
+            {
+                throw std::logic_error{ std::string{ "no type registered with name: " } + name.data() };
+            }
+            else
+            {
+                return nullptr;
+            }
         }
     }
 

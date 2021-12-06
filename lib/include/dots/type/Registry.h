@@ -29,15 +29,6 @@ namespace dots::type
 
             if constexpr (IsTypeHandler)
             {
-                for (const auto& [name, descriptor] : static_descriptors())
-                {
-                    if (m_staticUserTypes || !IsUserType(*descriptor))
-                    {
-                        (void)name;
-                        handler(*descriptor);
-                    }
-                }
-
                 for (const auto& [name, descriptor] : m_types)
                 {
                     (void)name;
