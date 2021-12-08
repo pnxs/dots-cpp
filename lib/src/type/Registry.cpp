@@ -39,11 +39,18 @@ namespace dots::type
         ensureDescriptor<types::uuid_t>();
         ensureDescriptor<types::string_t>();
 
-        for (auto& staticType : static_descriptors())
+        for (auto& [name, descriptor] : static_descriptors())
         {
-            if (m_staticUserTypes or staticType.second->isFundamentalType())
+            if (m_staticUserTypes or descriptor->isFundamentalType())
             {
-                m_types.emplace(staticType.second);
+                m_types.emplace(descriptor);
+            }
+            else if (const auto* vectorDescriptor = descriptor->as<VectorDescriptor>(); vectorDescriptor != nullptr)
+            {
+                if (vectorDescriptor->valueDescriptor().isFundamentalType())
+                {
+                    m_types.emplace(descriptor);
+                }
             }
         }
     }

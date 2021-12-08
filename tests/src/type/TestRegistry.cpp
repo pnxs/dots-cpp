@@ -51,6 +51,8 @@ TEST_F(TestRegistry, ctor_NoUserTypesWhenStaticTypesAreDisabled)
     EXPECT_STRUCT_TYPE_NOT_IN_REGISTRY(DotsHeader::_Descriptor().name());
     EXPECT_STRUCT_TYPE_NOT_IN_REGISTRY(DotsTestStruct::_Descriptor().name());
     EXPECT_STRUCT_TYPE_NOT_IN_REGISTRY("Foobar");
+
+    EXPECT_EQ(sut.size(), 34); // 17 fundamental types (*2 due to vector<T>)
 }
 
 TEST_F(TestRegistry, registerType)
