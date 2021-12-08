@@ -22,7 +22,7 @@ namespace dots::type
         Registry& operator = (Registry&& rhs) noexcept = default;
 
         template <typename TypeHandler>
-        void forEach(TypeHandler&& handler)
+        void forEach(TypeHandler&& handler) const
         {
             constexpr bool IsTypeHandler = std::is_invocable_v<TypeHandler, const Descriptor<>&>;
             static_assert(IsTypeHandler, "Handler has to be a valid type handler");
@@ -38,7 +38,7 @@ namespace dots::type
         }
 
         template <typename... TDescriptors, typename TypeHandler, std::enable_if_t<sizeof...(TDescriptors) >= 1, int> = 0>
-        void forEach(TypeHandler&& handler)
+        void forEach(TypeHandler&& handler) const
         {
             constexpr bool AreDescriptors = std::conjunction_v<std::is_base_of<Descriptor<>, TDescriptors>...>;
             constexpr bool IsTypeHandler = std::conjunction_v<std::is_invocable<TypeHandler, const TDescriptors&>...>;
@@ -67,7 +67,7 @@ namespace dots::type
         }
 
         template <typename TypeHandler, typename TypeFilter>
-        void forEach(TypeHandler&& handler, TypeFilter&& filter)
+        void forEach(TypeHandler&& handler, TypeFilter&& filter) const
         {
             constexpr bool IsTypeFilter = std::is_invocable_r_v<bool, TypeFilter, const Descriptor<>&>;
             static_assert(IsTypeFilter, "Handler has to be a valid type filter");
