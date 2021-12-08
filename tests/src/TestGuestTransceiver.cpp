@@ -111,3 +111,34 @@ TEST_F(TestGuestTransceiver, IncrementPropertyOfCachedTypeOnOtherUpdate)
 
     processEvents();
 }
+
+TEST_F(TestGuestTransceiver, PublishPartialInstanceWhenPropertiesAreGiven)
+{
+    DotsTestStruct instance{
+        DotsTestStruct::stringField_i{ "foo" },
+        DotsTestStruct::indKeyfField_i{ 42 },
+        DotsTestStruct::floatField_i{ 3.1415f },
+        DotsTestStruct::enumField_i{ DotsTestEnum::value3 },
+        DotsTestStruct::int64Field_i{ 1 }
+    };
+
+    DOTS_EXPECTATION_SEQUENCE(
+        [&]
+        {
+            dots::publish(instance, DotsTestStruct::floatField_p);
+        },
+        EXPECT_DOTS_PUBLISH(instance, DotsTestStruct::indKeyfField_p + DotsTestStruct::floatField_p),
+        [&]
+        {
+            dots::publish(instance, DotsTestStruct::int64Field_p);
+        },
+        EXPECT_DOTS_PUBLISH(instance, DotsTestStruct::indKeyfField_p + DotsTestStruct::int64Field_p),
+        [&]
+        {
+            dots::publish(instance, DotsTestStruct::stringField_p + DotsTestStruct::enumField_p);
+        },
+        EXPECT_DOTS_PUBLISH(instance, DotsTestStruct::indKeyfField_p + DotsTestStruct::stringField_p + DotsTestStruct::enumField_p)
+    );
+
+    processEvents();
+}

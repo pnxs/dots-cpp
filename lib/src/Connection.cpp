@@ -38,8 +38,7 @@ namespace dots
         m_peerId(host ? M_nextGuestId++ : HostId),
         m_peerName("<not_set>"),
         m_channel(std::move(channel)),
-        m_authSecret{ std::move(authSecret) },
-        m_registry(nullptr)
+        m_authSecret{ std::move(authSecret) }
     {
         /* do nothing */
     }
@@ -121,13 +120,12 @@ namespace dots
             throw std::logic_error{ "both a receive and a transition handler must be set" };
         }
 
-        m_registry = &registry;
         m_authManager = authManager;
         m_receiveHandler = std::move(receiveHandler);
         m_transitionHandler = std::move(transitionHandler);
 
         setConnectionState(DotsConnectionState::connecting);
-        m_channel->init(*m_registry);
+        m_channel->init(registry);
         m_channel->asyncReceive(
             [this](io::Transmission transmission){ return handleReceive(std::move(transmission)); },
             [this](std::exception_ptr ePtr){ handleError(ePtr); }
@@ -168,7 +166,7 @@ namespace dots
         }
         else
         {
-            *includedProperties ^= instance._descriptor().properties();
+            *includedProperties ^= instance._properties();
         }
 
         transmit(DotsHeader{
@@ -256,6 +254,7 @@ namespace dots
         {
             if (m_connectionState == DotsConnectionState::connected || m_connectionState == DotsConnectionState::early_subscribe)
             {
+                instance._assertHasProperties(instance._keyProperties());
                 DotsHeader& header = transmission.header();
 
                 if (m_selfId == HostId)
@@ -302,7 +301,6 @@ namespace dots
     void Connection::handleClose(std::exception_ptr ePtr)
     {
         m_receiveHandler = nullptr;
-        m_registry = nullptr;
         expectSystemType<DotsMsgError>(types::property_set_t::None, nullptr);
         setConnectionState(DotsConnectionState::closed, ePtr);
     }

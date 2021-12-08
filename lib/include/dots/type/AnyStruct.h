@@ -65,4 +65,16 @@ namespace dots::type
 
         std::unique_ptr<Struct> _instance;
     };
+    
+    property_iterator begin(AnyStruct& instance);
+    const_property_iterator begin(const AnyStruct& instance);
+
+    property_iterator end(AnyStruct& instance);
+    const_property_iterator end(const AnyStruct& instance);
+
+    reverse_property_iterator rbegin(AnyStruct& instance);
+    const_reverse_property_iterator rbegin(const AnyStruct& instance);
+
+    reverse_property_iterator rend(AnyStruct& instance);
+    const_reverse_property_iterator rend(const AnyStruct& instance);
 }

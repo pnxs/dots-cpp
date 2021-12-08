@@ -24,6 +24,7 @@ namespace dots::type
         size_t _staticMemoryUsage() const;
         size_t _totalMemoryUsage() const;
 
+        PropertySet _properties() const;
         PropertySet _keyProperties() const;
 
         Struct& _assign(const Struct& other, PropertySet includedProperties = PropertySet::All);

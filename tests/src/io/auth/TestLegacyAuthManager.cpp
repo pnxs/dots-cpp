@@ -137,7 +137,7 @@ TEST_F(TestLegacyAuthManager, testDefaultPolicy)
     EXPECT_FALSE(m_sut.defaultPolicy().has_value());
 
     {
-        DotsAuthenticationPolicy d({});
+        DotsAuthenticationPolicy d{ DotsAuthenticationPolicy::nameSpace_i{ "" } };
         d.accept(false);
         m_transceiver.publish(d);
     }
@@ -146,7 +146,7 @@ TEST_F(TestLegacyAuthManager, testDefaultPolicy)
     EXPECT_EQ(*m_sut.defaultPolicy(), false);
 
     {
-        DotsAuthenticationPolicy d({});
+        DotsAuthenticationPolicy d{ DotsAuthenticationPolicy::nameSpace_i{ "" } };
         d.accept(true);
         m_transceiver.publish(d);
     }
@@ -155,7 +155,7 @@ TEST_F(TestLegacyAuthManager, testDefaultPolicy)
     EXPECT_EQ(*m_sut.defaultPolicy(), true);
 
     {
-        DotsAuthenticationPolicy d({});
+        DotsAuthenticationPolicy d{ DotsAuthenticationPolicy::nameSpace_i{ "" } };
         m_transceiver.remove(d);
     }
 
@@ -193,7 +193,7 @@ TEST_F(TestLegacyAuthManager, testCheckAuthentication)
     }
 
     {
-        DotsAuthenticationPolicy d({});
+        DotsAuthenticationPolicy d{ DotsAuthenticationPolicy::nameSpace_i{ "" } };
         d.accept(false);
         m_transceiver.publish(d);
     }

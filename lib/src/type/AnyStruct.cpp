@@ -88,4 +88,44 @@ namespace dots::type
     {
         return *_instance;
     }
+
+    property_iterator begin(AnyStruct& instance)
+    {
+        return instance->_begin();
+    }
+
+    const_property_iterator begin(const AnyStruct& instance)
+    {
+        return instance->_begin();
+    }
+
+    property_iterator end(AnyStruct& instance)
+    {
+        return instance->_end();
+    }
+
+    const_property_iterator end(const AnyStruct& instance)
+    {
+        return instance->_end();
+    }
+
+    reverse_property_iterator rbegin(AnyStruct& instance)
+    {
+        return instance->_rbegin();
+    }
+
+    const_reverse_property_iterator rbegin(const AnyStruct& instance)
+    {
+        return instance->_rbegin();
+    }
+
+    reverse_property_iterator rend(AnyStruct& instance)
+    {
+        return instance->_rend();
+    }
+
+    const_reverse_property_iterator rend(const AnyStruct& instance)
+    {
+        return instance->_rend();
+    }
 }

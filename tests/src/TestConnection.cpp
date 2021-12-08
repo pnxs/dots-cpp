@@ -188,6 +188,65 @@ TEST_F(TestConnectionAsHost, HandshakeWithoutAuthenticationWithPreloading)
     processEvents();
 }
 
+TEST_F(TestConnectionAsHost, RejectInstancesThatAreMissingKeyProperties)
+{
+    DOTS_EXPECTATION_SEQUENCE(
+        [this]
+        {
+            EXPECT_EQ(m_sut->state(), DotsConnectionState::suspended);
+            m_sut->asyncReceive(m_registry, nullptr, hostName(), m_mockReceiveHandler.AsStdFunction(), m_mockTransitionHandler.AsStdFunction());
+        },
+        EXPECT_TRANSITION(DotsConnectionState::connecting),
+        [this]
+        {
+            EXPECT_EQ(m_sut->state(), DotsConnectionState::connecting);
+        },
+        EXPECT_DOTS_TRANSMIT(DotsMsgHello{
+            DotsMsgHello::serverName_i{ hostName() },
+            DotsMsgHello::authChallenge_i{ 0u }
+        }),
+        [this]
+        {
+            SPOOF_DOTS_TRANSMIT_FROM_SENDER(
+                UninitializedId,
+                DotsMsgConnect{
+                    DotsMsgConnect::clientName_i{ GuestName },
+                    DotsMsgConnect::preloadCache_i{ false }
+                }
+            );
+        },
+        EXPECT_TRANSITION(DotsConnectionState::connected),
+        [this]
+        {
+            EXPECT_EQ(m_sut->state(), DotsConnectionState::connected);
+        },
+        EXPECT_DOTS_TRANSMIT(DotsMsgConnectResponse{
+            DotsMsgConnectResponse::clientId_i{ m_sut->peerId() },
+            DotsMsgConnectResponse::preload_i{ false },
+            DotsMsgConnectResponse::accepted_i{ true }
+        }),
+        [this]
+        {
+            SPOOF_DOTS_TRANSMIT_FROM_SENDER(
+                m_sut->peerId(),
+                DotsTestStruct{
+                    DotsTestStruct::stringField_i{ "foobar"}
+                }
+            );
+        },
+        EXPECT_TRANSITION(DotsConnectionState::closed),
+        [this]
+        {
+            EXPECT_EQ(m_sut->state(), DotsConnectionState::closed);
+        },
+        EXPECT_DOTS_TRANSMIT(DotsMsgError{
+            DotsMsgError::errorCode_i{ 1 }
+        })
+    );
+    
+    processEvents();
+}
+
 TEST_F(TestConnectionAsGuest, HandshakeWithoutAuthenticationWithPreloading)
 {
     DOTS_EXPECTATION_SEQUENCE(
@@ -245,6 +304,82 @@ TEST_F(TestConnectionAsGuest, HandshakeWithoutAuthenticationWithPreloading)
         {
             EXPECT_EQ(m_sut->state(), DotsConnectionState::connected);
         }
+    );
+    
+    processEvents();
+}
+
+TEST_F(TestConnectionAsGuest, RejectInstancesThatAreMissingKeyProperties)
+{
+    DOTS_EXPECTATION_SEQUENCE(
+        [this]
+        {
+            EXPECT_EQ(m_sut->state(), DotsConnectionState::suspended);
+            m_sut->asyncReceive(m_registry, nullptr, GuestName, m_mockReceiveHandler.AsStdFunction(), m_mockTransitionHandler.AsStdFunction());
+            SPOOF_DOTS_TRANSMIT_FROM_SENDER(
+                HostId,
+                DotsMsgHello{
+                    DotsMsgHello::serverName_i{ hostName() },
+                    DotsMsgHello::authChallenge_i{ 0 }
+                }
+            );
+        },
+        EXPECT_TRANSITION(DotsConnectionState::connecting),
+        [this]
+        {
+            EXPECT_EQ(m_sut->state(), DotsConnectionState::connecting);
+        },
+        EXPECT_DOTS_TRANSMIT(DotsMsgConnect{
+            DotsMsgConnect::clientName_i{ GuestName },
+            DotsMsgConnect::preloadCache_i{ true }
+        }),
+        [this]
+        {
+            SPOOF_DOTS_TRANSMIT_FROM_SENDER(
+                HostId,
+                DotsMsgConnectResponse{
+                    DotsMsgConnectResponse::clientId_i{ GuestId },
+                    DotsMsgConnectResponse::preload_i{ true },
+                    DotsMsgConnectResponse::accepted_i{ true }
+                }
+            );
+        },
+        EXPECT_TRANSITION(DotsConnectionState::early_subscribe),
+        [this]
+        {
+            EXPECT_EQ(m_sut->state(), DotsConnectionState::early_subscribe);
+        },
+        EXPECT_DOTS_TRANSMIT(DotsMsgConnect{
+            DotsMsgConnect::preloadClientFinished_i{ true }
+        }),
+        [this]
+        {
+            SPOOF_DOTS_TRANSMIT_FROM_SENDER(
+                HostId,
+                DotsMsgConnectResponse{
+                    DotsMsgConnectResponse::preloadFinished_i{ true }
+                }
+            );
+        },
+        EXPECT_TRANSITION(DotsConnectionState::connected),
+        [this]
+        {
+            EXPECT_EQ(m_sut->state(), DotsConnectionState::connected);
+            SPOOF_DOTS_TRANSMIT_FROM_SENDER(
+                HostId,
+                DotsTestStruct{
+                    DotsTestStruct::stringField_i{ "foobar"}
+                }
+            );
+        },
+        EXPECT_TRANSITION(DotsConnectionState::closed),
+        [this]
+        {
+            EXPECT_EQ(m_sut->state(), DotsConnectionState::closed);
+        },
+        EXPECT_DOTS_TRANSMIT(DotsMsgError{
+            DotsMsgError::errorCode_i{ 1 }
+        })
     );
     
     processEvents();

@@ -75,7 +75,7 @@ namespace dots::types
         #endif
 
 {% for property in attributes %}
-        struct {{property.name}}_t : type::StaticProperty<types::{{property.cxx_type}}, {{property.name}}_t>
+        struct {{property.name}}_pt : type::StaticProperty<types::{{property.cxx_type}}, {{property.name}}_pt>
         {
             using struct_t = {{name}};
             #if (defined DOTS_PROPERTIES_NO_CONSTEXPR_OFFSETS)
@@ -92,13 +92,13 @@ namespace dots::types
             }();
             #endif
 
-            {{property.name}}_t& operator = (const {{property.name}}_t& rhs) = default;
-            {{property.name}}_t& operator = ({{property.name}}_t&& rhs) = default;
+            {{property.name}}_pt& operator = (const {{property.name}}_pt& rhs) = default;
+            {{property.name}}_pt& operator = ({{property.name}}_pt&& rhs) = default;
 
             #if (defined DOTS_EXPERIMENTAL_DESIGNATED_STRUCT_INITIALIZATION)
             using StaticProperty::StaticProperty;
-            {{property.name}}_t() = default;
-            ~{{property.name}}_t() = default;
+            {{property.name}}_pt() = default;
+            ~{{property.name}}_pt() = default;
             #endif
             
             using StaticProperty::operator=;
@@ -108,21 +108,21 @@ namespace dots::types
             friend {{name}};
 
             #if (!defined DOTS_EXPERIMENTAL_DESIGNATED_STRUCT_INITIALIZATION)
-            {{property.name}}_t() = default;
-            ~{{property.name}}_t() = default;
+            {{property.name}}_pt() = default;
+            ~{{property.name}}_pt() = default;
             #endif
-            {{property.name}}_t(const {{property.name}}_t& other) = default;
-            {{property.name}}_t({{property.name}}_t&& other) = default;
+            {{property.name}}_pt(const {{property.name}}_pt& other) = default;
+            {{property.name}}_pt({{property.name}}_pt&& other) = default;
         };
         static constexpr types::property_set_t {{property.name}}_p = types::property_set_t::FromIndex({{property.tag}});
 
 {% endfor %}
-        using _key_properties_t = std::tuple<{% for property in keyAttributes %}{{property.name}}_t*{% if not loop.last %}, {% endif %}{% endfor %}>;
-        using _properties_t     = std::tuple<{% for property in attributes %}{{property.name}}_t*{% if not loop.last %}, {% endif %}{% endfor %}>;
+        using _key_properties_t = std::tuple<{% for property in keyAttributes %}{{property.name}}_pt*{% if not loop.last %}, {% endif %}{% endfor %}>;
+        using _properties_t     = std::tuple<{% for property in attributes %}{{property.name}}_pt*{% if not loop.last %}, {% endif %}{% endfor %}>;
 
         #if (!defined DOTS_EXPERIMENTAL_DESIGNATED_STRUCT_INITIALIZATION)
         {% for property in attributes %}
-        using {{property.name}}_i = type::PropertyInitializer<{{property.name}}_t, types::{{property.cxx_type}}>;
+        using {{property.name}}_i = type::PropertyInitializer<{{property.name}}_pt>;
         {% endfor %}
 
         {{name}}() = default;
@@ -144,7 +144,7 @@ namespace dots::types
         const P& _getProperty() const
         {
             {% for property in attributes %}
-            {% if not loop.first %}else {% endif %}if constexpr (std::is_same_v<P, {{property.name}}_t>)
+            {% if not loop.first %}else {% endif %}if constexpr (std::is_same_v<P, {{property.name}}_pt>)
             {
                 return {{property.name}};
             }
@@ -166,9 +166,9 @@ namespace dots::types
         #if (!defined DOTS_ACKNOWLEDGE_DEPRECATION_OF_{{name}}_{{property.name}})
         [[deprecated]]
         #endif
-        {{property.name}}_t {{property.name}}; // [DEPRECATED] {{property.tag}}: {% if property.key %}[key] {% endif %}{{property.type}} {{property.name}} // [DEPRECATED] {{property.comment}}
+        {{property.name}}_pt {{property.name}}; // [DEPRECATED] {{property.tag}}: {% if property.key %}[key] {% endif %}{{property.type}} {{property.name}} // [DEPRECATED] {{property.comment}}
         {% else %}
-        {{property.name}}_t {{property.name}}; // {{property.tag}}: {% if property.key %}[key] {% endif %}{{property.type}} {{property.name}} // {{property.comment}}
+        {{property.name}}_pt {{property.name}}; // {{property.tag}}: {% if property.key %}[key] {% endif %}{{property.type}} {{property.name}} // {{property.comment}}
         {% endif %}
 {% endfor %}
     };

@@ -24,12 +24,12 @@ namespace dots
     #if defined(BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR)
     void add_fd_handler(int fileDescriptor, std::function<void()> handler)
     {
-        io::global_service<io::FdHandlerService>().addInEventHandler(fileDescriptor, std::move(handler));
+        io::global_service<io::posix::FdHandlerService>().addInEventHandler(fileDescriptor, std::move(handler));
     }
 
     void remove_fd_handler(int fileDescriptor)
     {
-        io::global_service<io::FdHandlerService>().removeInEventHandler(fileDescriptor);
+        io::global_service<io::posix::FdHandlerService>().removeInEventHandler(fileDescriptor);
     }
     #endif
 
@@ -45,17 +45,12 @@ namespace dots
 
     void publish(const type::Struct& instance, std::optional<types::property_set_t> includedProperties/* = std::nullopt*/, bool remove/* = false*/)
     {
-        transceiver().publish(instance, includedProperties == std::nullopt ? instance._validProperties() : *includedProperties, remove);
+        transceiver().publish(instance, includedProperties, remove);
     }
 
     void remove(const type::Struct& instance)
     {
         publish(instance, instance._keyProperties(), true);
-    }
-
-    Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::transmission_handler_t handler)
-    {
-        return transceiver().subscribe(descriptor, std::move(handler));
     }
 
     Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::event_handler_t<> handler)

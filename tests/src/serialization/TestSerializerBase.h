@@ -104,22 +104,26 @@ struct TestSerializerBaseDataDecoded
         SerializationStructComplex::uuidProperty_i{ uuid1 }
     };
 
+    SerializationStructComplex structComplex3{
+        SerializationStructComplex::uint32Property_i{ uint32Positive1 }
+    };
+
     //
     // property
     //
 
-    const SerializationStructSimple::int32Property_t& structSimple1_int32Property = structSimple1.int32Property;
-    const SerializationStructSimple::stringProperty_t& structSimple1_stringProperty = structSimple1.stringProperty;
-    const SerializationStructSimple::float32Property_t& structSimple1_float32Property = structSimple1.float32Property;
+    const SerializationStructSimple::int32Property_pt& structSimple1_int32Property = structSimple1.int32Property;
+    const SerializationStructSimple::stringProperty_pt& structSimple1_stringProperty = structSimple1.stringProperty;
+    const SerializationStructSimple::float32Property_pt& structSimple1_float32Property = structSimple1.float32Property;
 
-    const SerializationStructComplex::enumProperty_t& structComplex1_enumProperty = structComplex1.enumProperty;
-    const SerializationStructComplex::float64Property_t& structComplex1_float64Property = structComplex1.float64Property;
-    const SerializationStructComplex::timepointProperty_t& structComplex1_timepointProperty = structComplex1.timepointProperty;
-    const SerializationStructComplex::structSimpleProperty_t& structComplex1_structSimpleProperty = structComplex1.structSimpleProperty;
+    const SerializationStructComplex::enumProperty_pt& structComplex1_enumProperty = structComplex1.enumProperty;
+    const SerializationStructComplex::float64Property_pt& structComplex1_float64Property = structComplex1.float64Property;
+    const SerializationStructComplex::timepointProperty_pt& structComplex1_timepointProperty = structComplex1.timepointProperty;
+    const SerializationStructComplex::structSimpleProperty_pt& structComplex1_structSimpleProperty = structComplex1.structSimpleProperty;
 
-    const SerializationStructComplex::propertySetProperty_t& structComplex2_propertySetProperty = structComplex2.propertySetProperty;
-    const SerializationStructComplex::durationVectorProperty_t& structComplex2_durationVectorProperty = structComplex2.durationVectorProperty;
-    const SerializationStructComplex::uuidProperty_t& structComplex2_uuidProperty = structComplex2.uuidProperty;
+    const SerializationStructComplex::propertySetProperty_pt& structComplex2_propertySetProperty = structComplex2.propertySetProperty;
+    const SerializationStructComplex::durationVectorProperty_pt& structComplex2_durationVectorProperty = structComplex2.durationVectorProperty;
+    const SerializationStructComplex::uuidProperty_pt& structComplex2_uuidProperty = structComplex2.uuidProperty;
 
     //
     // vector

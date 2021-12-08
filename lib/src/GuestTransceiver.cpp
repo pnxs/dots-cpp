@@ -12,6 +12,11 @@ namespace dots
         type::Descriptor<DotsCacheInfo>::Instance();
     }
 
+    const std::optional<Connection>& GuestTransceiver::connection() const
+    {
+        return m_hostConnection;
+    }
+
     const Connection& GuestTransceiver::open(type::DescriptorMap preloadPublishTypes, type::DescriptorMap preloadSubscribeTypes, std::optional<std::string> authSecret, io::channel_ptr_t channel)
     {
         if (m_hostConnection != std::nullopt)
@@ -38,21 +43,24 @@ namespace dots
 
     void GuestTransceiver::publish(const type::Struct& instance, std::optional<types::property_set_t> includedProperties/* = std::nullopt*/, bool remove/* = false*/)
     {
-        const type::StructDescriptor<>& descriptor = instance._descriptor();
-
-        if (descriptor.substructOnly())
+        if (const type::StructDescriptor<>& descriptor = instance._descriptor(); descriptor.substructOnly())
         {
             throw std::logic_error{ "attempt to publish substruct-only type '" + descriptor.name() + "'" };
+        }
+
+        if (!(instance._keyProperties() <= instance._validProperties()))
+        {
+            throw std::runtime_error("attempt to publish instance with missing key properties '" + (instance._keyProperties() - instance._validProperties()).toString() + "'");
         }
 
         if (includedProperties == std::nullopt)
         {
             includedProperties = instance._validProperties();
         }
-
-        if (!(descriptor.keyProperties() <= *includedProperties))
+        else
         {
-            throw std::runtime_error("attempt to publish instance with missing key properties '" + (descriptor.keyProperties() - *includedProperties).toString() + "'");
+            *includedProperties += instance._keyProperties();
+            *includedProperties ^= instance._properties();
         }
 
         if (m_hostConnection == std::nullopt)

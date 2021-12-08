@@ -226,10 +226,13 @@ struct JsonSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::seria
     // input policy
     //
 
-    data_t structComplex_RelaxedPolicy1 = Concat("{ \"enumProperty\": ", enum1," }");
+    data_t structComplex_RelaxedPolicy1 = Concat("{ \"enumProperty\": ", enum1, " }");
     data_t structComplex_RelaxedPolicy2 = Concat("{ \"enumProperty\": ", enum1, " }");
+    data_t structComplex_RelaxedPolicy3 = Concat("{ \"uint32Property\": ", uint32Positive1, " }");
+    data_t structComplex_RelaxedPolicy4 = Concat("{ \"uint32Property\": ", uint32Positive1, " }");
     data_t structComplex_StrictPolicy1 = Concat("{ \"enumProperty\": ", enum1, " }");
     data_t structComplex_StrictPolicy2 = Concat("{ \"enumProperty\": ", enum1, " }");
+    data_t structComplex_StrictPolicy3 = Concat("{ \"uint32Property\": ", uint32Positive1, " }");
 };
 
 INSTANTIATE_TYPED_TEST_SUITE_P(TestJsonSerializer, TestSerializerBase, JsonSerializerTestDataEncoded);

@@ -110,11 +110,17 @@ namespace dots
          *
          * @param instance The instance to publish.
          *
-         * @param includedProperties The property set to include in the
-         * publish. If no set is given, the valid property set of
+         * @param includedProperties The properties to publish in addition to
+         * the key properties. If no set is given, the valid property set of
          * @p instance will be used.
          *
          * @param remove Specifies whether the publish is a remove.
+         *
+         * @exception std::logic_error Thrown if @p instance is of a
+         * 'substruct-only' type.
+         *
+         * @exception std::runtime_error Thrown if a key property of the
+         * instance is invalid.
          */
         void publish(const type::Struct& instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false) override;
 

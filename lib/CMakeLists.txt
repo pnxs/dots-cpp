@@ -26,11 +26,14 @@ add_library(${EXPORT_NAME}::${EXPORT_NAME} ALIAS ${TARGET_NAME})
 
 # properties
 target_dots_model(${TARGET_NAME}
+    ${CMAKE_CURRENT_LIST_DIR}/../external/dots/model/connection.dots
+    ${CMAKE_CURRENT_LIST_DIR}/../external/dots/model/event.dots
+    ${CMAKE_CURRENT_LIST_DIR}/../external/dots/model/user.dots
     ${CMAKE_CURRENT_LIST_DIR}/../external/dots/model/descriptors.dots
-    ${CMAKE_CURRENT_LIST_DIR}/../external/dots/model/dotsmessages.dots
-    ${CMAKE_CURRENT_LIST_DIR}/../external/dots/model/dotstypes.dots
     src/model/authentication.dots
     src/model/dotstesttypes.dots
+    src/model/daemon.dots
+    src/model/legacy.dots
 )
 target_sources(${TARGET_NAME}
     PRIVATE
@@ -139,7 +142,7 @@ target_link_libraries(${TARGET_NAME}
         Boost::filesystem
         # link pthread which is required for C++ threads on Linux and OSX
         $<$<OR:$<PLATFORM_ID:Linux>,$<PLATFORM_ID:Darwin>>:pthread>
-        # link bcrypt which is required for certain Boost funcionality on Windows
+        # link bcrypt which is required for certain Boost functionality on Windows
         $<$<PLATFORM_ID:Windows>:bcrypt>
     PRIVATE
         $<BUILD_INTERFACE:date::date>

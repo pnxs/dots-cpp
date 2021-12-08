@@ -28,13 +28,24 @@ namespace dots
 
     void HostTransceiver::publish(const type::Struct& instance, std::optional<types::property_set_t> includedProperties/* = std::nullopt*/, bool remove/* = false*/)
     {
+        if (const type::StructDescriptor<>& descriptor = instance._descriptor(); descriptor.substructOnly())
+        {
+            throw std::logic_error{ "attempt to publish substruct-only type '" + descriptor.name() + "'" };
+        }
+
+        if (!(instance._keyProperties() <= instance._validProperties()))
+        {
+            throw std::runtime_error("attempt to publish instance with missing key properties '" + (instance._keyProperties() - instance._validProperties()).toString() + "'");
+        }
+
         if (includedProperties == std::nullopt)
         {
             includedProperties = instance._validProperties();
         }
         else
         {
-            *includedProperties ^= instance._descriptor().properties();
+            *includedProperties += instance._keyProperties();
+            *includedProperties ^= instance._properties();
         }
 
         DotsHeader header{

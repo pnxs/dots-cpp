@@ -780,6 +780,12 @@ namespace dots::testing
                                                                                                                                       \
     if constexpr (IsStruct)                                                                                                           \
     {                                                                                                                                 \
+        if (includedProperties != std::nullopt)                                                                                       \
+        {                                                                                                                             \
+            *includedProperties += instance._keyProperties();                                                                         \
+            *includedProperties ^= instance._properties();                                                                            \
+        }                                                                                                                             \
+                                                                                                                                      \
         for (auto& [transceiver, mockSubscriptionHandlers] : EventTestBase::mockSubscriptionHandlers())                               \
         {                                                                                                                             \
             (void)mockSubscriptionHandlers;                                                                                           \
@@ -813,8 +819,8 @@ namespace dots::testing
  *
  * @param instance The instance to spoof.
  *
- * @param includedProperties The property set to include in the spoof.
- * If no set is given, the valid property set of
+ * @param includedProperties The properties to spoof in addition to the
+ * key properties. If no set is given, the valid property set of
  * @p instance will be used.
  */
 #define SPOOF_DOTS_PUBLISH                                                                            \
@@ -846,8 +852,8 @@ namespace dots::testing
  *
  * @param instance The instance to spoof.
  *
- * @param includedProperties The property set to include in the spoof.
- * If no set is given, the valid property set of
+ * @param includedProperties The properties to spoof in addition to the
+ * key properties. If no set is given, the valid property set of
  * @p instance will be used.
  */
 #define SPOOF_DOTS_REMOVE                                                                             \

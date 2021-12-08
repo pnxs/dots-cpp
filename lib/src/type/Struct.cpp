@@ -34,6 +34,11 @@ namespace dots::type
         return _staticMemoryUsage() + _dynamicMemoryUsage();
     }
 
+    PropertySet Struct::_properties() const
+    {
+        return _desc->properties();
+    }
+
     PropertySet Struct::_keyProperties() const
     {
         return _desc->keyProperties();

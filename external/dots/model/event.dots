@@ -1,0 +1,27 @@
+enum DotsMemberEvent {
+    1: join,
+    2: leave,
+    3: kill
+}
+
+// With DotsMember, a client can join or leave groups.
+struct DotsMember [internal,cached=false] {
+    1: string groupName; // group to join or leave
+    2: DotsMemberEvent event; // set to join or leave
+    3: uint32 client; // ID of the client that join or leave.
+}
+
+enum DotsMt {
+    1: create,
+    2: update,
+    3: remove
+}
+
+struct DotsCloneInformation [internal] {
+    1: DotsMt lastOperation;
+    2: uint32 lastUpdateFrom;
+    3: timepoint created;
+    4: uint32 createdFrom;
+    5: timepoint modified;
+    6: timepoint localUpdateTime;
+}

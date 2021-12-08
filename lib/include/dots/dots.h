@@ -113,14 +113,14 @@ namespace dots
      * not support POSIX stream descriptors. Support is usually present on
      * UNIX-based systems but not on Windows.
      *
-     * Also note that this function will have no effect if there already is
-     * a handler for the given file descriptor registered.
-     *
      * @param fileDescriptor The descriptor associated with the file to
      * observe asynchronously.
      *
      * @param handler The handler to invoke asynchronously every time the
      * file state changes.
+     *
+     * @exception std::logic_error Thrown if there already is a handler
+     * registered for the given file descriptor.
      */
     void add_fd_handler(int fileDescriptor, std::function<void()> handler);
 
@@ -183,11 +183,14 @@ namespace dots
      *
      * @param instance The instance to publish.
      *
-     * @param includedProperties The property set to include in the
-     * publish. If no set is given, the valid property set of
+     * @param includedProperties The properties to publish in addition to
+     * the key properties. If no set is given, the valid property set of
      * @p instance will be used.
      *
      * @param remove Specifies whether the publish is a remove.
+     *
+     * @exception std::logic_error Thrown if @p instance is of a
+     * 'substruct-only' type.
      *
      * @exception std::runtime_error Thrown if a key property of the
      * instance is invalid.
@@ -224,8 +227,8 @@ namespace dots
      *
      * @param instance The instance to publish.
      *
-     * @param includedProperties The property set to include in the
-     * publish. If no set is given, the valid property set of
+     * @param includedProperties The properties to publish in addition to
+     * the key properties. If no set is given, the valid property set of
      * @p instance will be used.
      *
      * @param remove Specifies whether the publish is a remove.
@@ -273,43 +276,6 @@ namespace dots
         io::register_global_publish_type<T>();
         remove(static_cast<const type::Struct&>(instance));
     }
-
-    /*!
-     * @brief Subscribe to transmissions of a specific type via the global
-     * transceiver.
-     *
-     * This will effectively call GuestTransceiver::subscribe() on the
-     * global transceiver returned by dots::transceiver().
-     *
-     * Calling this function will create a subscription to a given type and
-     * cause the given handler to be invoked asynchronously every time a
-     * corresponding transmission is received.
-     *
-     * Note that contrary to event subscriptions, the handler will be
-     * invoked with the raw transmission data before the local Container
-     * has been updated.
-     *
-     * @attention Regular users are usually not required to create
-     * subscriptions to transmissions and are advised to use event
-     * subscriptions instead.
-     *
-     * @param descriptor The type to subscribe to.
-     *
-     * @param handler The handler to invoke asynchronously every time a
-     * corresponding transmission is received. If the given type is a
-     * cached type and the corresponding Container is not empty, the given
-     * handler will also be invoked synchronously with each contained
-     * instance before this function returns.
-     *
-     * @return Subscription The Subscription object that manages the state
-     * of the subscription. The subscription will stay active until the
-     * object is destroyed or Subscription::unsubscribe() is called
-     * manually.
-     *
-     * @exception std::logic_error Thrown if @p descriptor is a sub-struct
-     * only type.
-     */
-    Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::transmission_handler_t handler);
 
     /*!
      * @brief Subscribe to events of a specific type via the global
@@ -398,11 +364,69 @@ namespace dots
      * object is destroyed or Subscription::unsubscribe() is called
      * manually.
      */
-    template<typename T, typename EventHandler, typename... Args>
+    template<typename T, typename EventHandler, typename... Args, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
     Subscription subscribe(EventHandler&& handler, Args&&... args)
     {
         io::register_global_subscribe_type<T>();
         return transceiver().subscribe<T>(std::forward<EventHandler>(handler), std::forward<Args>(args)...);
+    }
+
+    /*!
+     * @brief Subscribe to new types of specific categories via the global
+     * transceiver.
+     *
+     * This will effectively call GuestTransceiver::subscribe() on the
+     * global transceiver returned by dots::transceiver().
+     *
+     * Calling this function will create a subscription to new types of
+     * given categories and cause the given handler to be invoked whenever
+     * a corresponding type is added to the registry.
+     *
+     * The descriptor categories can be specified as an arbitrary
+     * combination of DOTS descriptor types. Additionally, @p handler can
+     * be any compatible invocable object.
+     *
+     * For example:
+     *
+     * @code{.cpp}
+     * // subscribing to new struct and enum types with lambda handler
+     * dots::subscribe<dots::type::StructDescriptor<>, dots::type::EnumDescriptor<>>([](const auto& descriptor)
+     * {
+     *     // ...
+     * });
+     *
+     * // subscribing to new vector types with member function
+     * dots::subscribe<dots::type::VectorDescriptor>(&SomeClass::handleNewVector, this);
+     * @endcode
+     *
+     * @tparam TDescriptors The descriptor types (e.g.
+     * dots::type::StructDescriptor<>).
+     *
+     * @tparam TypeHandler The type of the handler. Must be invocable with
+     * references of all @p TDescriptor types and optionally @p args if
+     * given.
+     *
+     * @tparam Args The types of the optional arguments to the handler.
+     *
+     * @param handler The handler to invoke asynchronously every time a
+     * type of the given categories is added to the registry. If the
+     * registry already contains types of the given categories, the given
+     * handler will also be invoked synchronously with all such currently
+     * known types before this function returns.
+     *
+     * @param args Optional arguments that will be bound and passed to the
+     * handler upon invocation (e.g. 'this' when specifying a class member
+     * function as @p handler ).
+     *
+     * @return Subscription The Subscription object that manages the state
+     * of the subscription. The subscription will stay active until the
+     * object is destroyed or Subscription::unsubscribe() is called
+     * manually.
+     */
+    template <typename... TDescriptors, typename TypeHandler, typename... Args, std::enable_if_t<sizeof...(TDescriptors) >= 1 && std::conjunction_v<std::is_base_of<type::Descriptor<>, TDescriptors>...>, int> = 0>
+    Subscription subscribe(TypeHandler&& handler, Args&&... args)
+    {
+        return transceiver().subscribe<TDescriptors...>(std::forward<TypeHandler>(handler), std::forward<Args>(args)...);
     }
 
     /*!
