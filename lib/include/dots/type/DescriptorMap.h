@@ -32,6 +32,8 @@ namespace dots::type
         const Descriptor<>& get(std::string_view name) const;
         Descriptor<>& get(std::string_view name);
 
+        size_t size() const;
+
         bool contains(std::string_view name) const;
 
         std::pair<Descriptor<>*, bool> tryEmplace(Descriptor<>& descriptor);

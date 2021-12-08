@@ -101,6 +101,7 @@ namespace dots::type
         StructDescriptor<>& getStructType(std::string_view name);
 
         bool hasType(std::string_view name) const;
+        size_t size() const;
 
         Descriptor<>& registerType(Descriptor<>& descriptor, bool assertNewType = true);
         Descriptor<>& registerType(std::shared_ptr<Descriptor<>> descriptor, bool assertNewType = true);

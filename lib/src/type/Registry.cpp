@@ -151,6 +151,11 @@ namespace dots::type
         return findType(name) != nullptr;
     }
 
+    size_t Registry::size() const
+    {
+        return m_types.size();
+    }
+
     Descriptor<>& Registry::registerType(Descriptor<>& descriptor, bool assertNewType/* = true*/)
     {
         if (auto descriptor_ = findType(descriptor.name()); descriptor_ != nullptr)
