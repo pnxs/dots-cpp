@@ -42,7 +42,7 @@ namespace dots
          * @param staticUserTypes Specifies whether static struct types will
          * automatically be known by the registry.
          */
-        Transceiver(std::string selfName, boost::asio::io_context& ioContext = io::global_io_context(), bool staticUserTypes = true);
+        Transceiver(std::string selfName, boost::asio::io_context& ioContext = io::global_io_context(), type::Registry::StaticTypePolicy staticTypePolicy = type::Registry::StaticTypePolicy::All);
         Transceiver(const Transceiver& other) = delete;
         Transceiver(Transceiver&& other) noexcept;
         virtual ~Transceiver() = default;

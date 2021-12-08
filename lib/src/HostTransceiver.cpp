@@ -6,8 +6,11 @@
 
 namespace dots
 {
-    HostTransceiver::HostTransceiver(std::string selfName/* = "DotsHostTransceiver"*/, boost::asio::io_context& ioContext/* = global_io_context()*/, bool staticUserTypes/* = true*/, transition_handler_t transitionHandler/* = nullpt*/) :
-        Transceiver(std::move(selfName), ioContext, staticUserTypes),
+    HostTransceiver::HostTransceiver(std::string selfName/* = "DotsHostTransceiver"*/,
+                                     boost::asio::io_context& ioContext/* = global_io_context()*/,
+                                     type::Registry::StaticTypePolicy staticTypePolicy /*= type::Registry::StaticTypePolicy::All*/,
+                                     transition_handler_t transitionHandler/* = nullpt*/) :
+        Transceiver(std::move(selfName), ioContext, staticTypePolicy),
         m_transitionHandler{ std::move(transitionHandler) }
     {
         /* do nothing */

@@ -12,8 +12,13 @@ namespace dots::type
     struct Registry
     {
         using new_type_handler_t = std::function<void(const Descriptor<>&)>;
+        enum class StaticTypePolicy {
+            None,
+            InternalOnly,
+            All,
+        };
 
-        Registry(new_type_handler_t newTypeHandler = nullptr, bool staticUserTypes = true);
+        Registry(new_type_handler_t newTypeHandler = nullptr, StaticTypePolicy staticTypePolicy = StaticTypePolicy::All);
         Registry(const Registry& other) = default;
         Registry(Registry&& other) noexcept = default;
         ~Registry() = default;
@@ -29,6 +34,18 @@ namespace dots::type
 
             if constexpr (IsTypeHandler)
             {
+                if (m_staticTypePolicy != StaticTypePolicy::None)
+                {
+                    for (const auto& [name, descriptor] : static_descriptors())
+                    {
+                        if (m_staticTypePolicy == StaticTypePolicy::All || !IsUserType(*descriptor))
+                        {
+                            (void)name;
+                            handler(*descriptor);
+                        }
+                    }
+                }
+
                 for (const auto& [name, descriptor] : m_types)
                 {
                     (void)name;
@@ -120,7 +137,7 @@ namespace dots::type
         static bool IsUserType(const Descriptor<>& descriptor);
 
         new_type_handler_t m_newTypeHandler;
-        bool m_staticUserTypes;
+        StaticTypePolicy m_staticTypePolicy;
         DescriptorMap m_types;
     };
 }
