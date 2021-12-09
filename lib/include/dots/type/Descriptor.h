@@ -196,7 +196,7 @@ namespace dots::type
         }
 
         static bool IsFundamentalType(const Descriptor& descriptor);
-        static bool IsFundamentalType(Type type);
+        [[deprecated]] static bool IsFundamentalType(Type type);
 
     private:
 
