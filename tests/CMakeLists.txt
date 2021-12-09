@@ -38,6 +38,7 @@ target_sources(${TARGET_NAME}
         src/type/TestProperty.cpp
         src/type/TestPropertyIterator.cpp
         src/type/TestProxyProperty.cpp
+        src/type/TestDescriptor.cpp
         src/tools/TestIpNetwork.cpp
         src/io/auth/TestLegacyAuthManager.cpp
         src/TestHostTransceiver.cpp

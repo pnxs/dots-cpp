@@ -117,6 +117,11 @@ namespace dots::type
             return const_cast<Descriptor<T>&>(std::as_const(*this).valueDescriptor());
         }
 
+        bool isFundamentalType() const override
+        {
+            return valueDescriptor().isFundamentalType();
+        }
+
     private:
 
         std::shared_ptr<Descriptor<T>> m_valueDescriptor;
