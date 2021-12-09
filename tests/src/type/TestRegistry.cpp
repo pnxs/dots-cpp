@@ -37,7 +37,7 @@ struct TestRegistry : ::testing::Test
     EXPECT_THROW(sut.getStructType(typeName_), std::logic_error); \
 }();
 
-TEST_F(TestRegistry, ctor_UserTypesWhenStaticTypesAreEnabled)
+TEST_F(TestRegistry, ctor_UserTypesWithStaticTypePolicyAll)
 {
     dots::type::Registry sut;
     EXPECT_STRUCT_TYPE_IN_REGISTRY(DotsHeader::_Descriptor().name());
@@ -45,9 +45,17 @@ TEST_F(TestRegistry, ctor_UserTypesWhenStaticTypesAreEnabled)
     EXPECT_STRUCT_TYPE_NOT_IN_REGISTRY("Foobar");
 }
 
-TEST_F(TestRegistry, ctor_NoUserTypesWhenStaticTypesAreDisabled)
+TEST_F(TestRegistry, ctor_NoUserTypesWithStaticTypePolicyInternalOnly)
 {
-    dots::type::Registry sut{ nullptr, dots::type::Registry::StaticTypePolicy::None };
+    dots::type::Registry sut{ nullptr, dots::type::Registry::StaticTypePolicy::InternalOnly };
+    EXPECT_STRUCT_TYPE_IN_REGISTRY(DotsHeader::_Descriptor().name());
+    EXPECT_STRUCT_TYPE_NOT_IN_REGISTRY(DotsTestStruct::_Descriptor().name());
+    EXPECT_STRUCT_TYPE_NOT_IN_REGISTRY("Foobar");
+}
+
+TEST_F(TestRegistry, ctor_NoUserAndNoInternalTypesWithStaticTypePolicyFundamentalOnly)
+{
+    dots::type::Registry sut{ nullptr, dots::type::Registry::StaticTypePolicy::FundamentalOnly };
     EXPECT_STRUCT_TYPE_NOT_IN_REGISTRY(DotsHeader::_Descriptor().name());
     EXPECT_STRUCT_TYPE_NOT_IN_REGISTRY(DotsTestStruct::_Descriptor().name());
     EXPECT_STRUCT_TYPE_NOT_IN_REGISTRY("Foobar");
@@ -59,7 +67,7 @@ TEST_F(TestRegistry, registerType)
 {
     auto& descriptor = dots::type::Descriptor<DotsTestStruct>::Instance();
     ::testing::MockFunction<void(const dots::type::Descriptor<>&)> mockNewTypeHandler;
-    dots::type::Registry sut{ mockNewTypeHandler.AsStdFunction(), dots::type::Registry::StaticTypePolicy::None };
+    dots::type::Registry sut{ mockNewTypeHandler.AsStdFunction(), dots::type::Registry::StaticTypePolicy::FundamentalOnly };
 
     EXPECT_STRUCT_TYPE_NOT_IN_REGISTRY(descriptor.name());
     EXPECT_CALL(mockNewTypeHandler, Call(::testing::_)).Times(::testing::AnyNumber());
@@ -75,7 +83,7 @@ TEST_F(TestRegistry, registerType)
 TEST_F(TestRegistry, deregisterType)
 {
     auto& descriptor = dots::type::Descriptor<DotsTestStruct>::Instance();
-    dots::type::Registry sut{ nullptr, dots::type::Registry::StaticTypePolicy::None };
+    dots::type::Registry sut{ nullptr, dots::type::Registry::StaticTypePolicy::FundamentalOnly };
 
     sut.registerType(descriptor);
     EXPECT_STRUCT_TYPE_IN_REGISTRY(descriptor.name());
@@ -85,7 +93,7 @@ TEST_F(TestRegistry, deregisterType)
     EXPECT_STRUCT_TYPE_NOT_IN_REGISTRY(DotsTestStruct::_Descriptor().name());
 }
 
-#if 0
+
 TEST_F(TestRegistry, deregisterStaticType)
 {
     auto& descriptor = DotsHeader::_Descriptor();
@@ -99,13 +107,12 @@ TEST_F(TestRegistry, deregisterStaticType)
     EXPECT_STRUCT_TYPE_NOT_IN_REGISTRY(descriptor.name());
     EXPECT_FALSE(sut.hasType(descriptor.name()));
 }
-#endif
 
 TEST_F(TestRegistry, forEach)
 {
     using namespace dots::type;
     
-    Registry sut{ nullptr, dots::type::Registry::StaticTypePolicy::None };
+    Registry sut{ nullptr, dots::type::Registry::StaticTypePolicy::FundamentalOnly };
     sut.registerType(Descriptor<DotsTestStruct>::Instance());
     sut.registerType(Descriptor<dots::vector_t<DotsTestStruct>>::Instance());
 

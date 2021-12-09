@@ -13,7 +13,7 @@ namespace dots::type
     {
         using new_type_handler_t = std::function<void(const Descriptor<>&)>;
         enum class StaticTypePolicy {
-            None,
+            FundamentalOnly,
             InternalOnly,
             All,
         };
@@ -34,18 +34,6 @@ namespace dots::type
 
             if constexpr (IsTypeHandler)
             {
-                if (m_staticTypePolicy != StaticTypePolicy::None)
-                {
-                    for (const auto& [name, descriptor] : static_descriptors())
-                    {
-                        if (m_staticTypePolicy == StaticTypePolicy::All || !IsUserType(*descriptor))
-                        {
-                            (void)name;
-                            handler(*descriptor);
-                        }
-                    }
-                }
-
                 for (const auto& [name, descriptor] : m_types)
                 {
                     (void)name;

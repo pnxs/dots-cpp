@@ -39,57 +39,54 @@ namespace dots::type
         ensureDescriptor<types::uuid_t>();
         ensureDescriptor<types::string_t>();
 
-        if (m_staticTypePolicy == StaticTypePolicy::None)
+        switch (m_staticTypePolicy)
         {
-            for (auto&[name, descriptor]: static_descriptors())
-            {
-                if (descriptor->isFundamentalType())
+            case StaticTypePolicy::FundamentalOnly:
+                for (auto&[name, descriptor]: static_descriptors())
                 {
-                    m_types.emplace(descriptor);
+                    if (descriptor->isFundamentalType())
+                    {
+                        m_types.emplace(descriptor);
+                    }
+                    else if (const auto *vectorDescriptor = descriptor->as<VectorDescriptor>(); vectorDescriptor != nullptr)
+                    {
+                        if (vectorDescriptor->valueDescriptor().isFundamentalType())
+                        {
+                            m_types.emplace(descriptor);
+                        }
+                    }
                 }
-                else if (const auto *vectorDescriptor = descriptor->as<VectorDescriptor>(); vectorDescriptor != nullptr)
+                break;
+            case StaticTypePolicy::InternalOnly:
+                for (auto&[name, descriptor]: static_descriptors())
                 {
-                    if (vectorDescriptor->valueDescriptor().isFundamentalType())
+                    if (not IsUserType(*descriptor))
                     {
                         m_types.emplace(descriptor);
                     }
                 }
-            }
+                break;
+            case StaticTypePolicy::All:
+                for (auto&[name, descriptor]: static_descriptors())
+                {
+                    m_types.emplace(descriptor);
+                }
+                break;
         }
+
     }
 
     const Descriptor<>* Registry::findType(std::string_view name, bool assertNotNull/* = false*/) const
     {
         if (const Descriptor<>* descriptor = m_types.find(name); descriptor == nullptr)
         {
-            if (m_staticTypePolicy != StaticTypePolicy::None)
+            if (assertNotNull)
             {
-                if (descriptor = static_descriptors().find(name); descriptor == nullptr || (m_staticTypePolicy != StaticTypePolicy::All && IsUserType(*descriptor)))
-                {
-                    if (assertNotNull)
-                    {
-                        throw std::logic_error{std::string{"no type registered with name: "} + name.data()};
-                    }
-                    else
-                    {
-                        return nullptr;
-                    }
-                }
-                else
-                {
-                    return descriptor;
-                }
+                throw std::logic_error{std::string{"no type registered with name1: "} + name.data()};
             }
             else
             {
-                if (assertNotNull)
-                {
-                    throw std::logic_error{std::string{"no type registered with name1: "} + name.data()};
-                }
-                else
-                {
-                    return nullptr;
-                }
+                return nullptr;
             }
         }
         else
