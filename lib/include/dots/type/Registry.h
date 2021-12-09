@@ -125,7 +125,6 @@ namespace dots::type
         static bool IsUserType(const Descriptor<>& descriptor);
 
         new_type_handler_t m_newTypeHandler;
-        StaticTypePolicy m_staticTypePolicy;
         DescriptorMap m_types;
     };
 }

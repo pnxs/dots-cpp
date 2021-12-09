@@ -11,8 +11,7 @@ namespace dots::type
 
 
     Registry::Registry(new_type_handler_t newTypeHandler/* = nullptr*/, StaticTypePolicy staticTypePolicy /* = StaticTypePolicy::All*/) :
-        m_newTypeHandler(std::move(newTypeHandler)),
-        m_staticTypePolicy(staticTypePolicy)
+        m_newTypeHandler(std::move(newTypeHandler))
     {
         // ensure fundamental types are instantiated and added to static descriptor map
         // ensure fundamental vector types are instantiated and added to static descriptor map
@@ -39,7 +38,7 @@ namespace dots::type
         ensureDescriptor<types::uuid_t>();
         ensureDescriptor<types::string_t>();
 
-        switch (m_staticTypePolicy)
+        switch (staticTypePolicy)
         {
             case StaticTypePolicy::FundamentalOnly:
                 for (auto&[name, descriptor]: static_descriptors())
