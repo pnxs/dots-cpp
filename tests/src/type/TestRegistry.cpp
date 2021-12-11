@@ -60,7 +60,14 @@ TEST_F(TestRegistry, ctor_NoUserAndNoInternalTypesWithStaticTypePolicyFundamenta
     EXPECT_STRUCT_TYPE_NOT_IN_REGISTRY(DotsTestStruct::_Descriptor().name());
     EXPECT_STRUCT_TYPE_NOT_IN_REGISTRY("Foobar");
 
-    EXPECT_EQ(sut.size(), 34); // 17 fundamental types (*2 due to vector<T>)
+    // Expected are at least 17 fundamental types (*2 due to vector<T>),
+    // but the registry can include more (e.g. vector_t<vector_t<unit8_t>>)
+    // from other test suites.
+    EXPECT_GE(sut.size(), 34);
+    sut.forEach([](const dots::type::Descriptor<>& descriptor)
+    {
+        EXPECT_TRUE(descriptor.isFundamentalType());
+    });
 }
 
 TEST_F(TestRegistry, registerType)
