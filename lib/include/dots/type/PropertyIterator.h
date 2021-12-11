@@ -26,9 +26,16 @@ namespace dots::type
             m_descriptorIt(std::move(descriptorIt)),
             m_properties(properties)
         {
-            if (!onEnd() && !emplaceProxy().isPartOf(m_properties))
+            if (!onEnd())
             {
-                ++(*this);
+                if (isPartOf())
+                {
+                    emplaceProxy();
+                }
+                else
+                {
+                    ++*this;
+                }
             }
         }
         PropertyIterator(const PropertyIterator& other) = default;
@@ -56,8 +63,13 @@ namespace dots::type
             {
                 ++m_descriptorIt;
 
-                if (onEnd() || emplaceProxy().isPartOf(m_properties))
+                if (onEnd())
                 {
+                    break;
+                }
+                else if (isPartOf())
+                {
+                    emplaceProxy();
                     break;
                 }
             }
@@ -71,8 +83,9 @@ namespace dots::type
             {
                 --m_descriptorIt;
 
-                if (emplaceProxy().isPartOf(m_properties))
+                if (isPartOf())
                 {
+                    emplaceProxy();
                     break;
                 }
             }
@@ -144,6 +157,7 @@ namespace dots::type
                 return m_descriptorIt == m_descriptors->begin();
             }
         }
+
         bool onEnd() const
         {
             if constexpr (IsReverse)
@@ -155,6 +169,12 @@ namespace dots::type
                 return m_descriptorIt == m_descriptors->end();
             }
         }
+
+        bool isPartOf() const
+        {
+            return m_descriptorIt->set() <= m_properties;
+        }
+
         reference emplaceProxy()
         {
             if constexpr (IsConst)
