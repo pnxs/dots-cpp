@@ -4,8 +4,46 @@
 
 namespace dots
 {
+    Container<type::Struct>::key_compare::key_compare(const dots::type::StructDescriptor<>& descriptor)
+    {
+        for (const type::PropertyDescriptor& propertyDescriptor : descriptor.propertyDescriptors())
+        {
+            if (propertyDescriptor.isKey())
+            {
+                m_keyPropertyDescriptors.emplace_back(propertyDescriptor);
+            }
+        }
+    }
+
+    bool Container<type::Struct>::key_compare::operator()(const type::Struct& lhs, const type::Struct& rhs) const
+    {
+        const type::PropertyArea& lhsPropertyArea = lhs._propertyArea();
+        const type::PropertyArea& rhsPropertyArea = rhs._propertyArea();
+
+        for (const auto& propertyDescriptor_ : m_keyPropertyDescriptors)
+        {
+            const type::PropertyDescriptor& propertyDescriptor = propertyDescriptor_.get();
+            const auto& lhsValue = lhsPropertyArea.getProperty<type::Typeless>(propertyDescriptor.offset());
+            const auto& rhsValue = rhsPropertyArea.getProperty<type::Typeless>(propertyDescriptor.offset());
+
+            const type::Descriptor<>& valueDescriptor = propertyDescriptor.valueDescriptor();
+
+            if (valueDescriptor.less(lhsValue, rhsValue))
+            {
+                return true;
+            }
+            else if (valueDescriptor.less(rhsValue, lhsValue))
+            {
+                return false;
+            }
+        }
+
+        return false;
+    }
+
     Container<type::Struct>::Container(const type::StructDescriptor<>& descriptor) :
-        m_descriptor(&descriptor)
+        m_descriptor(&descriptor),
+        m_instances{ descriptor }
     {
         /* do nothing */
     }

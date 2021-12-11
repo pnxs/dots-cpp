@@ -47,10 +47,12 @@ namespace dots
         {
             using is_transparent = void;
 
-            bool operator () (const type::Struct& lhs, const type::Struct& rhs) const
-            {
-                return lhs._less(rhs, lhs._keyProperties());
-            }
+            key_compare(const type::StructDescriptor<>& descriptor);
+            bool operator () (const type::Struct& lhs, const type::Struct& rhs) const;
+
+        private:
+
+            type::partial_property_descriptor_container_t m_keyPropertyDescriptors;
         };
 
         using container_t = std::map<type::AnyStruct, DotsCloneInformation, key_compare>;
