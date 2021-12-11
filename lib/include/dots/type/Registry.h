@@ -11,7 +11,9 @@ namespace dots::type
 {
     struct Registry
     {
+        using const_iterator_t = DescriptorMap::const_iterator_t;
         using new_type_handler_t = std::function<void(const Descriptor<>&)>;
+
         enum class StaticTypePolicy {
             FundamentalOnly,
             InternalOnly,
@@ -25,6 +27,38 @@ namespace dots::type
 
         Registry& operator = (const Registry& rhs) = default;
         Registry& operator = (Registry&& rhs) noexcept = default;
+
+        /*!
+         * @brief Get a constant iterator to the beginning of the Registry.
+         *
+         * @return const_iterator_t A constant iterator to the beginning of the
+         * Registry.
+         */
+        const_iterator_t begin() const;
+
+        /*!
+         * @brief Get a constant iterator to the end of the Registry.
+         *
+         * @return const_iterator_t A constant iterator to the end of the
+         * Registry.
+         */
+        const_iterator_t end() const;
+
+        /*!
+         * @brief Get a constant iterator to the beginning of the Registry.
+         *
+         * @return const_iterator_t A constant iterator to the beginning of the
+         * Registry.
+         */
+        const_iterator_t cbegin() const;
+
+        /*!
+         * @brief Get a constant iterator to the end of the Registry.
+         *
+         * @return const_iterator_t A constant iterator to the end of the
+         * Registry.
+         */
+        const_iterator_t cend() const;
 
         template <typename TypeHandler>
         void forEach(TypeHandler&& handler) const

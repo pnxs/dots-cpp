@@ -75,6 +75,26 @@ namespace dots::type
 
     }
 
+    Registry::const_iterator_t Registry::begin() const
+    {
+        return m_types.begin();
+    }
+
+    Registry::const_iterator_t Registry::end() const
+    {
+        return m_types.end();
+    }
+
+    Registry::const_iterator_t Registry::cbegin() const
+    {
+        return m_types.cbegin();
+    }
+
+    Registry::const_iterator_t Registry::cend() const
+    {
+        return m_types.cend();
+    }
+
     const Descriptor<>* Registry::findType(std::string_view name, bool assertNotNull/* = false*/) const
     {
         if (const Descriptor<>* descriptor = m_types.find(name); descriptor == nullptr)

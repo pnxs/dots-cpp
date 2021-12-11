@@ -64,10 +64,10 @@ TEST_F(TestRegistry, ctor_NoUserAndNoInternalTypesWithStaticTypePolicyFundamenta
     // but the registry can include more (e.g. vector_t<vector_t<unit8_t>>)
     // from other test suites.
     EXPECT_GE(sut.size(), 34);
-    sut.forEach([](const dots::type::Descriptor<>& descriptor)
+    EXPECT_TRUE(std::all_of(sut.begin(), sut.end(), [](auto& descriptor)
     {
-        EXPECT_TRUE(descriptor.isFundamentalType());
-    });
+        return descriptor.second->isFundamentalType();
+    }));
 }
 
 TEST_F(TestRegistry, registerType)
