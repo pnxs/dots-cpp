@@ -49,7 +49,7 @@ namespace dots::type
 
     bool Descriptor<Typeless>::IsFundamentalType(const Descriptor& descriptor)
     {
-        return IsFundamentalType(descriptor.type());
+        return descriptor.isFundamentalType();
     }
 
     bool Descriptor<Typeless>::IsFundamentalType(Type type)

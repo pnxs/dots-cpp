@@ -11,9 +11,16 @@ namespace dots::type
 {
     struct Registry
     {
+        using const_iterator_t = DescriptorMap::const_iterator_t;
         using new_type_handler_t = std::function<void(const Descriptor<>&)>;
 
-        Registry(new_type_handler_t newTypeHandler = nullptr, bool staticUserTypes = true);
+        enum class StaticTypePolicy {
+            FundamentalOnly,
+            InternalOnly,
+            All,
+        };
+
+        Registry(new_type_handler_t newTypeHandler = nullptr, StaticTypePolicy staticTypePolicy = StaticTypePolicy::All);
         Registry(const Registry& other) = default;
         Registry(Registry&& other) noexcept = default;
         ~Registry() = default;
@@ -21,23 +28,46 @@ namespace dots::type
         Registry& operator = (const Registry& rhs) = default;
         Registry& operator = (Registry&& rhs) noexcept = default;
 
+        /*!
+         * @brief Get a constant iterator to the beginning of the Registry.
+         *
+         * @return const_iterator_t A constant iterator to the beginning of the
+         * Registry.
+         */
+        const_iterator_t begin() const;
+
+        /*!
+         * @brief Get a constant iterator to the end of the Registry.
+         *
+         * @return const_iterator_t A constant iterator to the end of the
+         * Registry.
+         */
+        const_iterator_t end() const;
+
+        /*!
+         * @brief Get a constant iterator to the beginning of the Registry.
+         *
+         * @return const_iterator_t A constant iterator to the beginning of the
+         * Registry.
+         */
+        const_iterator_t cbegin() const;
+
+        /*!
+         * @brief Get a constant iterator to the end of the Registry.
+         *
+         * @return const_iterator_t A constant iterator to the end of the
+         * Registry.
+         */
+        const_iterator_t cend() const;
+
         template <typename TypeHandler>
-        void forEach(TypeHandler&& handler)
+        void forEach(TypeHandler&& handler) const
         {
             constexpr bool IsTypeHandler = std::is_invocable_v<TypeHandler, const Descriptor<>&>;
             static_assert(IsTypeHandler, "Handler has to be a valid type handler");
 
             if constexpr (IsTypeHandler)
             {
-                for (const auto& [name, descriptor] : static_descriptors())
-                {
-                    if (m_staticUserTypes || !IsUserType(*descriptor))
-                    {
-                        (void)name;
-                        handler(*descriptor);
-                    }
-                }
-
                 for (const auto& [name, descriptor] : m_types)
                 {
                     (void)name;
@@ -47,7 +77,7 @@ namespace dots::type
         }
 
         template <typename... TDescriptors, typename TypeHandler, std::enable_if_t<sizeof...(TDescriptors) >= 1, int> = 0>
-        void forEach(TypeHandler&& handler)
+        void forEach(TypeHandler&& handler) const
         {
             constexpr bool AreDescriptors = std::conjunction_v<std::is_base_of<Descriptor<>, TDescriptors>...>;
             constexpr bool IsTypeHandler = std::conjunction_v<std::is_invocable<TypeHandler, const TDescriptors&>...>;
@@ -76,7 +106,7 @@ namespace dots::type
         }
 
         template <typename TypeHandler, typename TypeFilter>
-        void forEach(TypeHandler&& handler, TypeFilter&& filter)
+        void forEach(TypeHandler&& handler, TypeFilter&& filter) const
         {
             constexpr bool IsTypeFilter = std::is_invocable_r_v<bool, TypeFilter, const Descriptor<>&>;
             static_assert(IsTypeFilter, "Handler has to be a valid type filter");
@@ -110,6 +140,7 @@ namespace dots::type
         StructDescriptor<>& getStructType(std::string_view name);
 
         bool hasType(std::string_view name) const;
+        size_t size() const;
 
         Descriptor<>& registerType(Descriptor<>& descriptor, bool assertNewType = true);
         Descriptor<>& registerType(std::shared_ptr<Descriptor<>> descriptor, bool assertNewType = true);
@@ -128,7 +159,6 @@ namespace dots::type
         static bool IsUserType(const Descriptor<>& descriptor);
 
         new_type_handler_t m_newTypeHandler;
-        bool m_staticUserTypes;
         DescriptorMap m_types;
     };
 }

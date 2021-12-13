@@ -6,8 +6,10 @@
 
 namespace dots
 {
-    GuestTransceiver::GuestTransceiver(std::string selfName, boost::asio::io_context& ioContext/* = global_io_context()*/, bool staticUserTypes/* = true*/) :
-        Transceiver(std::move(selfName), ioContext, staticUserTypes)
+    GuestTransceiver::GuestTransceiver(std::string selfName,
+                                       boost::asio::io_context& ioContext/* = global_io_context()*/,
+                                       type::Registry::StaticTypePolicy staticTypePolicy /*= type::Registry::StaticTypePolicy::All*/) :
+        Transceiver(std::move(selfName), ioContext, staticTypePolicy)
     {
         type::Descriptor<DotsCacheInfo>::Instance();
     }

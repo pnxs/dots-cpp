@@ -62,6 +62,11 @@ namespace dots::type
         return const_cast<Descriptor<>&>(std::as_const(*this).get(name));
     }
 
+    size_t DescriptorMap::size() const
+    {
+        return m_underlyingMap.size();
+    }
+
     bool DescriptorMap::contains(std::string_view name) const
     {
         return find(name) == nullptr;

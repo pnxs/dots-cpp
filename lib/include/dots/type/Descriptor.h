@@ -56,7 +56,7 @@ namespace dots::type
         Descriptor& operator = (Descriptor&& rhs) = delete;
 
         Type type() const;
-        bool isFundamentalType() const;
+        virtual bool isFundamentalType() const;
 
         const std::string& name() const;
         size_t size() const;
@@ -196,9 +196,10 @@ namespace dots::type
         }
 
         static bool IsFundamentalType(const Descriptor& descriptor);
-        static bool IsFundamentalType(Type type);
 
     private:
+
+        static bool IsFundamentalType(Type type);
 
         Type m_type;
         std::string m_name;

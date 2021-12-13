@@ -55,7 +55,10 @@ namespace dots
          * @param transitionHandler The handler to invoke every time the a
          * Connection transitions to a different connection state.
          */
-        HostTransceiver(std::string selfName = "DotsHostTransceiver", boost::asio::io_context& ioContext = io::global_io_context(), bool staticUserTypes = true, transition_handler_t transitionHandler = nullptr);
+        HostTransceiver(std::string selfName = "DotsHostTransceiver",
+                        boost::asio::io_context& ioContext = io::global_io_context(),
+                        type::Registry::StaticTypePolicy staticTypePolicy = type::Registry::StaticTypePolicy::All,
+                        transition_handler_t transitionHandler = nullptr);
         HostTransceiver(const HostTransceiver& other) = delete;
         HostTransceiver(HostTransceiver&& other) = default;
         ~HostTransceiver() override = default;

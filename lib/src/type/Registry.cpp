@@ -2,77 +2,110 @@
 
 namespace dots::type
 {
-    Registry::Registry(new_type_handler_t newTypeHandler/* = nullptr*/, bool staticUserTypes/* = true*/) :
-        m_newTypeHandler(std::move(newTypeHandler)),
-        m_staticUserTypes(staticUserTypes)
+    template<typename T>
+    static void ensureDescriptor()
+    {
+        Descriptor<T>::Instance();
+        Descriptor<types::vector_t<T>>::Instance();
+    }
+
+
+    Registry::Registry(new_type_handler_t newTypeHandler/* = nullptr*/, StaticTypePolicy staticTypePolicy /* = StaticTypePolicy::All*/) :
+        m_newTypeHandler(std::move(newTypeHandler))
     {
         // ensure fundamental types are instantiated and added to static descriptor map
-        Descriptor<types::bool_t>::Instance();
-
-        Descriptor<types::int8_t>::Instance();
-        Descriptor<types::uint8_t>::Instance();
-        Descriptor<types::int16_t>::Instance();
-        Descriptor<types::uint16_t>::Instance();
-        Descriptor<types::int32_t>::Instance();
-        Descriptor<types::uint32_t>::Instance();
-        Descriptor<types::int64_t>::Instance();
-        Descriptor<types::uint64_t>::Instance();
-
-        Descriptor<types::float32_t>::Instance();
-        Descriptor<types::float64_t>::Instance();
-
-        Descriptor<types::property_set_t>::Instance();
-
-        Descriptor<types::timepoint_t>::Instance();
-        Descriptor<types::steady_timepoint_t>::Instance();
-        Descriptor<types::duration_t>::Instance();
-
-        Descriptor<types::uuid_t>::Instance();
-        Descriptor<types::string_t>::Instance();
-
         // ensure fundamental vector types are instantiated and added to static descriptor map
-        Descriptor<types::vector_t<types::bool_t>>::Instance();
+        ensureDescriptor<types::bool_t>();
 
-        Descriptor<types::vector_t<types::int8_t>>::Instance();
-        Descriptor<types::vector_t<types::uint8_t>>::Instance();
-        Descriptor<types::vector_t<types::int16_t>>::Instance();
-        Descriptor<types::vector_t<types::uint16_t>>::Instance();
-        Descriptor<types::vector_t<types::int32_t>>::Instance();
-        Descriptor<types::vector_t<types::uint32_t>>::Instance();
-        Descriptor<types::vector_t<types::int64_t>>::Instance();
-        Descriptor<types::vector_t<types::uint64_t>>::Instance();
+        ensureDescriptor<types::int8_t>();
+        ensureDescriptor<types::uint8_t>();
+        ensureDescriptor<types::int16_t>();
+        ensureDescriptor<types::uint16_t>();
+        ensureDescriptor<types::int32_t>();
+        ensureDescriptor<types::uint32_t>();
+        ensureDescriptor<types::int64_t>();
+        ensureDescriptor<types::uint64_t>();
 
-        Descriptor<types::vector_t<types::float32_t>>::Instance();
-        Descriptor<types::vector_t<types::float64_t>>::Instance();
+        ensureDescriptor<types::float32_t>();
+        ensureDescriptor<types::float64_t>();
 
-        Descriptor<types::vector_t<types::property_set_t>>::Instance();
+        ensureDescriptor<types::property_set_t>();
 
-        Descriptor<types::vector_t<types::timepoint_t>>::Instance();
-        Descriptor<types::vector_t<types::steady_timepoint_t>>::Instance();
-        Descriptor<types::vector_t<types::duration_t>>::Instance();
+        ensureDescriptor<types::timepoint_t>();
+        ensureDescriptor<types::steady_timepoint_t>();
+        ensureDescriptor<types::duration_t>();
 
-        Descriptor<types::vector_t<types::uuid_t>>::Instance();
-        Descriptor<types::vector_t<types::string_t>>::Instance();
+        ensureDescriptor<types::uuid_t>();
+        ensureDescriptor<types::string_t>();
+
+        switch (staticTypePolicy)
+        {
+            case StaticTypePolicy::FundamentalOnly:
+                for (auto&[name, descriptor]: static_descriptors())
+                {
+                    if (descriptor->isFundamentalType())
+                    {
+                        m_types.emplace(descriptor);
+                    }
+                    else if (const auto *vectorDescriptor = descriptor->as<VectorDescriptor>(); vectorDescriptor != nullptr)
+                    {
+                        if (vectorDescriptor->valueDescriptor().isFundamentalType())
+                        {
+                            m_types.emplace(descriptor);
+                        }
+                    }
+                }
+                break;
+            case StaticTypePolicy::InternalOnly:
+                for (auto&[name, descriptor]: static_descriptors())
+                {
+                    if (not IsUserType(*descriptor))
+                    {
+                        m_types.emplace(descriptor);
+                    }
+                }
+                break;
+            case StaticTypePolicy::All:
+                for (auto&[name, descriptor]: static_descriptors())
+                {
+                    m_types.emplace(descriptor);
+                }
+                break;
+        }
+
+    }
+
+    Registry::const_iterator_t Registry::begin() const
+    {
+        return m_types.begin();
+    }
+
+    Registry::const_iterator_t Registry::end() const
+    {
+        return m_types.end();
+    }
+
+    Registry::const_iterator_t Registry::cbegin() const
+    {
+        return m_types.cbegin();
+    }
+
+    Registry::const_iterator_t Registry::cend() const
+    {
+        return m_types.cend();
     }
 
     const Descriptor<>* Registry::findType(std::string_view name, bool assertNotNull/* = false*/) const
     {
         if (const Descriptor<>* descriptor = m_types.find(name); descriptor == nullptr)
         {
-            if (descriptor = static_descriptors().find(name); descriptor == nullptr || (!m_staticUserTypes && IsUserType(*descriptor)))
+            if (assertNotNull)
             {
-                if (assertNotNull)
-                {
-                    throw std::logic_error{ std::string{ "no type registered with name: " } + name.data() };
-                }
-                else
-                {
-                    return nullptr;
-                }
+                throw std::logic_error{std::string{"no type registered with name1: "} + name.data()};
             }
             else
             {
-                return descriptor;
+                return nullptr;
             }
         }
         else
@@ -163,6 +196,11 @@ namespace dots::type
     bool Registry::hasType(std::string_view name) const
     {
         return findType(name) != nullptr;
+    }
+
+    size_t Registry::size() const
+    {
+        return m_types.size();
     }
 
     Descriptor<>& Registry::registerType(Descriptor<>& descriptor, bool assertNewType/* = true*/)

@@ -37,7 +37,7 @@ struct TestRegistry : ::testing::Test
     EXPECT_THROW(sut.getStructType(typeName_), std::logic_error); \
 }();
 
-TEST_F(TestRegistry, ctor_UserTypesWhenStaticTypesAreEnabled)
+TEST_F(TestRegistry, ctor_UserTypesWithStaticTypePolicyAll)
 {
     dots::type::Registry sut;
     EXPECT_STRUCT_TYPE_IN_REGISTRY(DotsHeader::_Descriptor().name());
@@ -45,19 +45,36 @@ TEST_F(TestRegistry, ctor_UserTypesWhenStaticTypesAreEnabled)
     EXPECT_STRUCT_TYPE_NOT_IN_REGISTRY("Foobar");
 }
 
-TEST_F(TestRegistry, ctor_NoUserTypesWhenStaticTypesAreDisabled)
+TEST_F(TestRegistry, ctor_NoUserTypesWithStaticTypePolicyInternalOnly)
 {
-    dots::type::Registry sut{ nullptr, false };
+    dots::type::Registry sut{ nullptr, dots::type::Registry::StaticTypePolicy::InternalOnly };
     EXPECT_STRUCT_TYPE_IN_REGISTRY(DotsHeader::_Descriptor().name());
     EXPECT_STRUCT_TYPE_NOT_IN_REGISTRY(DotsTestStruct::_Descriptor().name());
     EXPECT_STRUCT_TYPE_NOT_IN_REGISTRY("Foobar");
+}
+
+TEST_F(TestRegistry, ctor_NoUserAndNoInternalTypesWithStaticTypePolicyFundamentalOnly)
+{
+    dots::type::Registry sut{ nullptr, dots::type::Registry::StaticTypePolicy::FundamentalOnly };
+    EXPECT_STRUCT_TYPE_NOT_IN_REGISTRY(DotsHeader::_Descriptor().name());
+    EXPECT_STRUCT_TYPE_NOT_IN_REGISTRY(DotsTestStruct::_Descriptor().name());
+    EXPECT_STRUCT_TYPE_NOT_IN_REGISTRY("Foobar");
+
+    // Expected are at least 17 fundamental types (*2 due to vector<T>),
+    // but the registry can include more (e.g. vector_t<vector_t<unit8_t>>)
+    // from other test suites.
+    EXPECT_GE(sut.size(), 34);
+    EXPECT_TRUE(std::all_of(sut.begin(), sut.end(), [](auto& descriptor)
+    {
+        return descriptor.second->isFundamentalType();
+    }));
 }
 
 TEST_F(TestRegistry, registerType)
 {
     auto& descriptor = dots::type::Descriptor<DotsTestStruct>::Instance();
     ::testing::MockFunction<void(const dots::type::Descriptor<>&)> mockNewTypeHandler;
-    dots::type::Registry sut{ mockNewTypeHandler.AsStdFunction(), false };
+    dots::type::Registry sut{ mockNewTypeHandler.AsStdFunction(), dots::type::Registry::StaticTypePolicy::FundamentalOnly };
 
     EXPECT_STRUCT_TYPE_NOT_IN_REGISTRY(descriptor.name());
     EXPECT_CALL(mockNewTypeHandler, Call(::testing::_)).Times(::testing::AnyNumber());
@@ -73,7 +90,7 @@ TEST_F(TestRegistry, registerType)
 TEST_F(TestRegistry, deregisterType)
 {
     auto& descriptor = dots::type::Descriptor<DotsTestStruct>::Instance();
-    dots::type::Registry sut{ nullptr, false };
+    dots::type::Registry sut{ nullptr, dots::type::Registry::StaticTypePolicy::FundamentalOnly };
 
     sut.registerType(descriptor);
     EXPECT_STRUCT_TYPE_IN_REGISTRY(descriptor.name());
@@ -83,18 +100,33 @@ TEST_F(TestRegistry, deregisterType)
     EXPECT_STRUCT_TYPE_NOT_IN_REGISTRY(DotsTestStruct::_Descriptor().name());
 }
 
+
+TEST_F(TestRegistry, deregisterStaticType)
+{
+    auto& descriptor = DotsHeader::_Descriptor();
+    dots::type::Registry sut;
+
+    EXPECT_STRUCT_TYPE_IN_REGISTRY(descriptor.name());
+    EXPECT_TRUE(sut.hasType(descriptor.name()));
+
+    EXPECT_THROW(sut.deregisterType("Foobar"), std::logic_error);
+    sut.deregisterType(descriptor);
+    EXPECT_STRUCT_TYPE_NOT_IN_REGISTRY(descriptor.name());
+    EXPECT_FALSE(sut.hasType(descriptor.name()));
+}
+
 TEST_F(TestRegistry, forEach)
 {
     using namespace dots::type;
     
-    Registry sut{ nullptr, false };
+    Registry sut{ nullptr, dots::type::Registry::StaticTypePolicy::FundamentalOnly };
     sut.registerType(Descriptor<DotsTestStruct>::Instance());
     sut.registerType(Descriptor<dots::vector_t<DotsTestStruct>>::Instance());
 
     {
         ::testing::MockFunction<void(const Descriptor<>&)> mockTypeHandler;
         EXPECT_CALL(mockTypeHandler, Call(::testing::_)).Times(::testing::AnyNumber());
-        EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<DotsHeader>::Instance()))).Times(1);
+        EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<DotsHeader>::Instance()))).Times(0);
         EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<DotsTestSubStruct>::Instance()))).Times(1);
         EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<DotsTestEnum>::Instance()))).Times(1);
         EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<DotsTestStruct>::Instance()))).Times(1);
@@ -106,7 +138,7 @@ TEST_F(TestRegistry, forEach)
     {
         ::testing::MockFunction<void(const StructDescriptor<>&)> mockTypeHandler;
         EXPECT_CALL(mockTypeHandler, Call(::testing::Property(&Descriptor<>::type, Type::Struct))).Times(::testing::AnyNumber());
-        EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<DotsHeader>::Instance()))).Times(1);
+        EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<DotsHeader>::Instance()))).Times(0);
         EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<DotsTestSubStruct>::Instance()))).Times(1);
         EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<DotsTestStruct>::Instance()))).Times(1);
 
@@ -117,7 +149,7 @@ TEST_F(TestRegistry, forEach)
         ::testing::MockFunction<void(const Descriptor<>&)> mockTypeHandler;
         EXPECT_CALL(mockTypeHandler, Call(::testing::Property(&Descriptor<>::type, Type::Struct))).Times(::testing::AnyNumber());
         EXPECT_CALL(mockTypeHandler, Call(::testing::Property(&Descriptor<>::type, Type::Enum))).Times(::testing::AnyNumber());
-        EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<DotsHeader>::Instance()))).Times(1);
+        EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<DotsHeader>::Instance()))).Times(0);
         EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<DotsTestSubStruct>::Instance()))).Times(1);
         EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<DotsTestEnum>::Instance()))).Times(1);
         EXPECT_CALL(mockTypeHandler, Call(::testing::Ref(Descriptor<DotsTestStruct>::Instance()))).Times(1);
