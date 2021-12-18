@@ -49,6 +49,9 @@ namespace dots
 
             key_compare(const type::StructDescriptor<>& descriptor);
             bool operator () (const type::Struct& lhs, const type::Struct& rhs) const;
+            bool operator () (const type::AnyStruct& lhs, const type::Struct& rhs) const;
+            bool operator () (const type::Struct& lhs, const type::AnyStruct& rhs) const;
+            bool operator () (const type::AnyStruct& lhs, const type::AnyStruct& rhs) const;
 
         private:
 

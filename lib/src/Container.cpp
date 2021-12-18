@@ -41,6 +41,21 @@ namespace dots
         return false;
     }
 
+    bool Container<type::Struct>::key_compare::operator()(const type::AnyStruct& lhs, const type::Struct& rhs) const
+    {
+        return (*this)(static_cast<const type::Struct&>(lhs), rhs);
+    }
+
+    bool Container<type::Struct>::key_compare::operator()(const type::Struct& lhs, const type::AnyStruct& rhs) const
+    {
+        return (*this)(lhs, static_cast<const type::Struct&>(rhs));
+    }
+
+    bool Container<type::Struct>::key_compare::operator()(const type::AnyStruct& lhs, const type::AnyStruct& rhs) const
+    {
+        return (*this)(static_cast<const type::Struct&>(lhs), static_cast<const type::Struct&>(rhs));
+    }
+
     Container<type::Struct>::Container(const type::StructDescriptor<>& descriptor) :
         m_descriptor(&descriptor),
         m_instances{ descriptor }
