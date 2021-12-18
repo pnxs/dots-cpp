@@ -170,15 +170,17 @@ namespace dots::io
     {
         if (auto* structDescriptorData = instance._as<StructDescriptorData>())
         {
-            if (bool isNewSharedType = m_sharedTypes.emplace(structDescriptorData->name).second; isNewSharedType)
+            if (bool isNewSharedType = m_sharedTypes.count(structDescriptorData->name) == 0; isNewSharedType)
             {
+                m_sharedTypes.emplace(structDescriptorData->name);
                 io::DescriptorConverter{ registry() }(*structDescriptorData);
             }
         }
         else if (auto* enumDescriptorData = instance._as<EnumDescriptorData>())
         {
-            if (bool isNewSharedType = m_sharedTypes.emplace(enumDescriptorData->name).second; isNewSharedType)
+            if (bool isNewSharedType = m_sharedTypes.count(enumDescriptorData->name) == 0; isNewSharedType)
             {
+                m_sharedTypes.emplace(enumDescriptorData->name);
                 io::DescriptorConverter{ registry() }(*enumDescriptorData);
             }
         }
@@ -186,8 +188,10 @@ namespace dots::io
 
     void Channel::exportDependencies(const type::Descriptor<>& descriptor)
     {
-        if (bool isNewSharedType = m_sharedTypes.emplace(descriptor.name()).second; isNewSharedType)
+        if (bool isNewSharedType = m_sharedTypes.count(descriptor.name()) == 0; isNewSharedType)
         {
+            m_sharedTypes.emplace(descriptor.name());
+
             if (const auto* vectorDescriptor = descriptor.as<type::VectorDescriptor>(); vectorDescriptor != nullptr)
             {
                 exportDependencies(vectorDescriptor->valueDescriptor());
