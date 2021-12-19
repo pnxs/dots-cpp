@@ -69,7 +69,7 @@ namespace dots::io
                 }
 
                 // note: this move is explicitly allowed according to the Boost ASIO v1.72 documentation of the socket
-                processAccept(make_channel<TcpChannel>(std::move(m_socket)));
+                processAccept(make_channel<TcpChannel>(std::move(m_socket), &m_payloadCache));
             }
             catch (const std::exception& e)
             {

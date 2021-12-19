@@ -1,11 +1,4 @@
-#define DOTS_ACKNOWLEDGE_DEPRECATION_OF_DotsTransportHeader_destinationGroup
-#define DOTS_ACKNOWLEDGE_DEPRECATION_OF_DotsTransportHeader_nameSpace
-#define DOTS_ACKNOWLEDGE_DEPRECATION_OF_DotsTransportHeader_destinationClientId
 #include <dots/io/channels/TcpChannel.h>
-#include <dots/io/Io.h>
-#include <dots/type/Registry.h>
-#include <DotsClient.dots.h>
-#include <DotsDescriptorRequest.dots.h>
 
 namespace dots::io
 {
@@ -16,7 +9,7 @@ namespace dots::io
     }
 
     TcpChannel::TcpChannel(Channel::key_t key, boost::asio::io_context& ioContext, std::string_view host, std::string_view port) :
-        TcpChannel(key, boost::asio::ip::tcp::socket{ ioContext })
+        TcpChannel(key, boost::asio::ip::tcp::socket{ ioContext }, nullptr)
     {
         auto endpoints = m_resolver.resolve(boost::asio::ip::tcp::socket::protocol_type::v4(), host, port, boost::asio::ip::resolver_query_base::numeric_service);
 
@@ -24,9 +17,9 @@ namespace dots::io
         {
             try
             {
-                m_socket.connect(endpoint);
+                stream().connect(endpoint);
                 setDefaultSocketOptions();
-                initEndpoints(Endpoint{ m_socket.local_endpoint() }, Endpoint{ m_socket.remote_endpoint() });
+                initEndpoints(Endpoint{ stream().local_endpoint() }, Endpoint{ stream().remote_endpoint() });
 
                 return;
             }
@@ -40,7 +33,7 @@ namespace dots::io
     }
 
     TcpChannel::TcpChannel(Channel::key_t key, boost::asio::io_context& ioContext, std::string_view host, std::string_view port, std::function<void(const boost::system::error_code& error)> onConnect) :
-        TcpChannel(key, boost::asio::ip::tcp::socket{ ioContext })
+        TcpChannel(key, boost::asio::ip::tcp::socket{ ioContext }, nullptr)
     {
         asyncResolveEndpoint(host, port, [this, host, port, onConnect{ std::move(onConnect) }](auto& error, auto endpoint) {
             if (error)
@@ -48,7 +41,7 @@ namespace dots::io
                 onConnect(error);
             }
 
-            m_socket.async_connect(*endpoint, [this, endpoint, onConnect{ std::move(onConnect) }, host, port](const boost::system::error_code& error) {
+            stream().async_connect(*endpoint, [this, endpoint, onConnect{ std::move(onConnect) }, host, port](const boost::system::error_code& error) {
                 if (error)
                 {
                     onConnect(error);
@@ -57,168 +50,28 @@ namespace dots::io
                 else
                 {
                     setDefaultSocketOptions();
-                    initEndpoints(Endpoint{ m_socket.local_endpoint() }, Endpoint{ m_socket.remote_endpoint() });
+                    initEndpoints(Endpoint{ stream().local_endpoint() }, Endpoint{ stream().remote_endpoint() });
                     onConnect(error);
                 }
             });
         });
     }
 
-    TcpChannel::TcpChannel(Channel::key_t key, boost::asio::ip::tcp::socket&& socket) :
-        Channel(key),
-        m_socket{ std::move(socket) },
-        m_resolver( socket.get_executor()),
-        m_headerSize(0)
+    TcpChannel::TcpChannel(Channel::key_t key, boost::asio::ip::tcp::socket&& socket_, payload_cache_t* payloadCache) :
+        AsyncStreamChannel(key, std::move(socket_), payloadCache),
+        m_resolver( stream().get_executor())
     {
-        m_instanceBuffer.resize(8192);
-        m_headerBuffer.resize(1024);
-
-        if (m_socket.is_open())
+        if (stream().is_open())
         {
-            initEndpoints(Endpoint{ m_socket.local_endpoint() }, Endpoint{ m_socket.remote_endpoint() });
+            initEndpoints(Endpoint{ stream().local_endpoint() }, Endpoint{ stream().remote_endpoint() });
         }
-    }
-
-    void TcpChannel::asyncReceiveImpl()
-    {
-        asyncReadHeaderLength();
-    }
-
-    void TcpChannel::transmitImpl(const DotsHeader& header, const type::Struct& instance)
-    {
-        m_serializer.serialize(instance, header.attributes);
-        std::vector<uint8_t> serializedInstance = std::move(m_serializer.output());
-
-        DotsTransportHeader transportHeader{
-            DotsTransportHeader::dotsHeader_i{ header },
-            DotsTransportHeader::payloadSize_i{ static_cast<uint32_t>(serializedInstance.size()) }
-        };
-
-        // adjust header for backwards compatibility to legacy implementation
-        {
-            // always set destination group
-            transportHeader.destinationGroup = transportHeader.dotsHeader->typeName;
-
-            // conditionally set namespace
-            if (instance._descriptor().internal() && !instance._is<DotsClient>() && !instance._is<DotsDescriptorRequest>())
-            {
-                transportHeader.nameSpace("SYS");
-            }
-
-            // set mandatory sent time if not valid
-            if (!transportHeader.dotsHeader->sentTime.isValid())
-            {
-                transportHeader.dotsHeader->sentTime(types::timepoint_t::Now());
-            }
-
-            // set mandatory sender if not valid. note that a fixed server id for the sender can be used here because
-            // in case of a client connection the id is handled on the server's side an will be overwritten anyway
-            if (!transportHeader.dotsHeader->sender.isValid())
-            {
-               transportHeader.dotsHeader->sender = 1;
-            }
-        }
-        
-        uint16_t serializedHeaderSize = static_cast<uint16_t>(m_serializer.serialize(transportHeader));
-        std::vector<uint8_t> serializedHeader = std::move(m_serializer.output());
-
-        std::array<boost::asio::const_buffer, 3> buffers{
-            boost::asio::buffer(&serializedHeaderSize, sizeof(serializedHeaderSize)),
-            boost::asio::buffer(serializedHeader.data(), serializedHeader.size()),
-            boost::asio::buffer(serializedInstance.data(), serializedInstance.size())
-        };
-
-        m_socket.write_some(buffers);
-        m_serializer.output().clear();
     }
 
     void TcpChannel::setDefaultSocketOptions()
     {
-        m_socket.set_option(boost::asio::ip::tcp::no_delay(true));
-        m_socket.set_option(boost::asio::ip::tcp::socket::keep_alive(true));
-        m_socket.set_option(boost::asio::socket_base::linger(true, 10));
-    }
-
-    void TcpChannel::asyncReadHeaderLength()
-    {
-        boost::asio::async_read(m_socket, boost::asio::buffer(&m_headerSize, sizeof(m_headerSize)), [&, this_{ weak_from_this() }](auto ec, auto /*bytes*/)
-        {
-            try
-            {
-                if (this_.expired())
-                {
-                    return;
-                }
-
-                verifyErrorCode(ec);
-
-                if (m_headerSize > m_headerBuffer.size())
-                {
-                    throw std::runtime_error{ "header buffer too small for header of size: " + std::to_string(m_headerSize) };
-                }
-
-                asyncReadHeader();
-            }
-            catch (...)
-            {
-                processError(std::current_exception());
-            }
-        });
-    }
-
-    void TcpChannel::asyncReadHeader()
-    {
-        boost::asio::async_read(m_socket, boost::asio::buffer(m_headerBuffer.data(), m_headerSize), [&, this_{ weak_from_this() }](auto ec, auto /*bytes*/)
-        {
-            try
-            {
-                if (this_.expired())
-                {
-                    return;
-                }
-
-                verifyErrorCode(ec);
-                m_serializer.setInput(m_headerBuffer);
-                m_transportHeader = m_serializer.deserialize<DotsTransportHeader>();
-
-                if (!m_transportHeader.payloadSize.isValid())
-                {
-                    throw std::runtime_error{ "received header without payloadSize" };
-                }
-
-                m_instanceBuffer.resize(m_transportHeader.payloadSize);
-                asyncReadInstance();
-
-            }
-            catch (...)
-            {
-                processError(std::current_exception());
-            }
-        });
-    }
-
-    void TcpChannel::asyncReadInstance()
-    {
-        boost::asio::async_read(m_socket, boost::asio::buffer(m_instanceBuffer), [&, this_{ weak_from_this() }](auto ec, auto /*bytes*/)
-        {
-            try
-            {
-                if (this_.expired())
-                {
-                    return;
-                }
-
-                verifyErrorCode(ec);
-                m_serializer.setInput(m_instanceBuffer);
-                type::AnyStruct instance{ registry().getStructType(*m_transportHeader.dotsHeader->typeName) };
-                m_serializer.deserialize(*instance);
-                processReceive(Transmission{ std::move(m_transportHeader.dotsHeader), std::move(instance) });
-            }
-            catch (...)
-            {
-                processError(std::current_exception());
-            }
-        });
+        stream().set_option(boost::asio::ip::tcp::no_delay(true));
+        stream().set_option(boost::asio::ip::tcp::socket::keep_alive(true));
+        stream().set_option(boost::asio::socket_base::linger(true, 10));
     }
 
     void TcpChannel::asyncResolveEndpoint(std::string_view host, std::string_view port, resolve_handler_t handler)
