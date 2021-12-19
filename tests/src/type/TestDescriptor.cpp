@@ -23,3 +23,38 @@ TEST_F(TestDescriptor, isFundamental)
     EXPECT_FALSE(m_sutVectorDotsHeader->isFundamentalType());
 
 }
+
+TEST_F(TestDescriptor, usesDynamicMemory)
+{
+    EXPECT_FALSE(Descriptor<bool_t>::Instance().usesDynamicMemory());
+
+    EXPECT_FALSE(Descriptor<int8_t>::Instance().usesDynamicMemory());
+    EXPECT_FALSE(Descriptor<uint8_t>::Instance().usesDynamicMemory());
+    EXPECT_FALSE(Descriptor<int16_t>::Instance().usesDynamicMemory());
+    EXPECT_FALSE(Descriptor<uint16_t>::Instance().usesDynamicMemory());
+    EXPECT_FALSE(Descriptor<int32_t>::Instance().usesDynamicMemory());
+    EXPECT_FALSE(Descriptor<uint32_t>::Instance().usesDynamicMemory());
+    EXPECT_FALSE(Descriptor<int64_t>::Instance().usesDynamicMemory());
+    EXPECT_FALSE(Descriptor<uint64_t>::Instance().usesDynamicMemory());
+
+    EXPECT_FALSE(Descriptor<float32_t>::Instance().usesDynamicMemory());
+    EXPECT_FALSE(Descriptor<float64_t>::Instance().usesDynamicMemory());
+
+    EXPECT_FALSE(Descriptor<property_set_t>::Instance().usesDynamicMemory());
+
+    EXPECT_FALSE(Descriptor<timepoint_t>::Instance().usesDynamicMemory());
+    EXPECT_FALSE(Descriptor<steady_timepoint_t>::Instance().usesDynamicMemory());
+    EXPECT_FALSE(Descriptor<duration_t>::Instance().usesDynamicMemory());
+
+    EXPECT_FALSE(Descriptor<uuid_t>::Instance().usesDynamicMemory());
+    EXPECT_TRUE(Descriptor<string_t>::Instance().usesDynamicMemory());
+    
+    EXPECT_TRUE(Descriptor<vector_t<bool_t>>::Instance().usesDynamicMemory());
+    EXPECT_TRUE(Descriptor<vector_t<int8_t>>::Instance().usesDynamicMemory());
+
+    EXPECT_FALSE(Descriptor<DotsMt>::Instance().usesDynamicMemory());
+    EXPECT_TRUE(Descriptor<vector_t<DotsMt>>::Instance().usesDynamicMemory());
+
+    EXPECT_TRUE(Descriptor<DotsHeader>::Instance().usesDynamicMemory());
+    EXPECT_TRUE(Descriptor<vector_t<DotsHeader>>::Instance().usesDynamicMemory());
+}

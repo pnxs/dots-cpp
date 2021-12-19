@@ -179,7 +179,7 @@ namespace dots::type
 
     bool StructDescriptor<Typeless, false, void>::usesDynamicMemory() const
     {
-        return m_dynamicMemoryProperties.empty();
+        return !m_dynamicMemoryProperties.empty();
     }
 
     size_t StructDescriptor<Typeless, false, void>::dynamicMemoryUsage(const Typeless& instance) const
