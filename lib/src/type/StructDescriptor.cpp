@@ -467,4 +467,9 @@ namespace dots::type
     {
         return m_keyProperties;
     }
+
+    PropertySet StructDescriptor<Typeless, false, void>::dynamicMemoryProperties() const
+    {
+        return m_dynamicMemoryProperties;
+    }
 }

@@ -101,6 +101,7 @@ namespace dots::type
 
         PropertySet properties() const;
         PropertySet keyProperties() const;
+        PropertySet dynamicMemoryProperties() const;
 
     private:
 
