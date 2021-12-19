@@ -42,20 +42,15 @@ namespace dots::io
             throw std::runtime_error{ "local channel is not linked or expired unexpectedly" };
         }
 
-        boost::asio::post(other->m_ioContext.get(), [this, this_{ weak_from_this() }, header = header, instance = type::AnyStruct{ instance }]() mutable
+        boost::asio::post(other->m_ioContext.get(), [peer = m_peer, header = header, instance = type::AnyStruct{ instance }]() mutable
         {
+            auto other = peer.lock();
+
             try
             {
-                if (this_.expired())
-                {
-                    return;
-                }
-
-                auto other = m_peer.lock();
-
                 if (other == nullptr)
                 {
-                    throw std::runtime_error{ "linked local channel expired unexpectedly" };
+                    return;
                 }
 
                 const type::StructDescriptor<>* descriptor = other->registry().findStructType(*header.typeName);
@@ -75,7 +70,7 @@ namespace dots::io
             }
             catch (...)
             {
-                processError(std::current_exception());
+                other->processError(std::current_exception());
             }
         });
     }
