@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <atomic>
 #include <dots/type/AnyStruct.h>
 #include <DotsHeader.dots.h>
 
@@ -67,7 +68,7 @@ namespace dots::io
 
     private:
 
-        inline static id_t M_LastId = 0;
+        inline static std::atomic<id_t> M_LastId = 0;
 
         struct TransmissionData
         {
