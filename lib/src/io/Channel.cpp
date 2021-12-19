@@ -170,27 +170,29 @@ namespace dots::io
     {
         if (auto* structDescriptorData = instance._as<StructDescriptorData>())
         {
-            if (bool isNewSharedType = m_sharedTypes.count(structDescriptorData->name) == 0; isNewSharedType)
+            if (bool isNewSharedType = m_sharedTypeNames.count(structDescriptorData->name) == 0; isNewSharedType)
             {
-                m_sharedTypes.emplace(structDescriptorData->name);
-                io::DescriptorConverter{ registry() }(*structDescriptorData);
+                m_sharedTypeNames.emplace(structDescriptorData->name);
+                const type::StructDescriptor<>& descriptor = io::DescriptorConverter{ registry() }(*structDescriptorData);
+                m_sharedTypeDescriptors.emplace(&descriptor);
             }
         }
         else if (auto* enumDescriptorData = instance._as<EnumDescriptorData>())
         {
-            if (bool isNewSharedType = m_sharedTypes.count(enumDescriptorData->name) == 0; isNewSharedType)
+            if (bool isNewSharedType = m_sharedTypeNames.count(enumDescriptorData->name) == 0; isNewSharedType)
             {
-                m_sharedTypes.emplace(enumDescriptorData->name);
-                io::DescriptorConverter{ registry() }(*enumDescriptorData);
+                m_sharedTypeNames.emplace(enumDescriptorData->name);
+                const type::EnumDescriptor<>& descriptor = io::DescriptorConverter{ registry() }(*enumDescriptorData);
+                m_sharedTypeDescriptors.emplace(&descriptor);
             }
         }
     }
 
     void Channel::exportDependencies(const type::Descriptor<>& descriptor)
     {
-        if (bool isNewSharedType = m_sharedTypes.count(descriptor.name()) == 0; isNewSharedType)
+        if (bool isNewSharedType = m_sharedTypeDescriptors.count(&descriptor) == 0; isNewSharedType)
         {
-            m_sharedTypes.emplace(descriptor.name());
+            m_sharedTypeDescriptors.emplace(&descriptor);
 
             if (const auto* vectorDescriptor = descriptor.as<type::VectorDescriptor>(); vectorDescriptor != nullptr)
             {
