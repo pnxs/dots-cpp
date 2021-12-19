@@ -42,7 +42,7 @@ namespace dots::io
             throw std::runtime_error{ "local channel is not linked or expired unexpectedly" };
         }
 
-        boost::asio::post(other->m_ioContext.get(), [peer = m_peer, header = header, instance = type::AnyStruct{ instance }]() mutable
+        boost::asio::post(other->m_ioContext.get(), [peer = m_peer, header = header, data = to_cbor(instance, *header.attributes)]() mutable
         {
             auto other = peer.lock();
 
@@ -63,7 +63,6 @@ namespace dots::io
                 // note: a serialization roundtrip is performed here to ensure that the descriptor of the local registry is used. this is
                 // required, because descriptors are not guaranteed to be identical (e.g. when mixing static and dynamic descriptors).
                 type::AnyStruct instance_{ *descriptor };
-                std::vector<uint8_t> data = to_cbor(*instance, *header.attributes);
                 from_cbor(data, instance_.get());
 
                 other->processReceive(Transmission{ std::move(header), std::move(instance_) });
