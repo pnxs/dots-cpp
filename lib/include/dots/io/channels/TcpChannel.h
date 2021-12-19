@@ -3,7 +3,7 @@
 
 namespace dots::io
 {
-    struct TcpChannel : AsyncStreamChannel<boost::asio::ip::tcp::socket, serialization::CborSerializer, true>
+    struct TcpChannel : AsyncStreamChannel<boost::asio::ip::tcp::socket, serialization::CborSerializer, TransmissionFormat::Legacy>
     {
         TcpChannel(Channel::key_t key, boost::asio::io_context& ioContext, const Endpoint& endpoint);
 

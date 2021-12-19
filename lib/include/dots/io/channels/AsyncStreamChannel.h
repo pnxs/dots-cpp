@@ -2,12 +2,10 @@
 #define DOTS_ACKNOWLEDGE_DEPRECATION_OF_DotsTransportHeader_destinationGroup
 #define DOTS_ACKNOWLEDGE_DEPRECATION_OF_DotsTransportHeader_nameSpace
 #define DOTS_ACKNOWLEDGE_DEPRECATION_OF_DotsTransportHeader_destinationClientId
-#include <string_view>
 #include <optional>
 #include <boost/asio.hpp>
 #include <dots/type/Registry.h>
 #include <dots/io/Channel.h>
-#include <dots/io/Endpoint.h>
 #include <dots/serialization/CborSerializer.h>
 #include <dots/serialization/ExperimentalCborSerializer.h>
 #include <DotsClient.dots.h>
@@ -16,6 +14,22 @@
 
 namespace dots::io
 {
+    /*!
+     * @brief Specifies which format to use for serializing transmissions.
+     *
+     * When set to 'Legacy', transmissions will be serialized using a
+     * DotsTransportHeader to be backwards compatible with legacy
+     * applications.
+     *
+     * @remark This enum is intended to be used as an argument to
+     * instantiate the dots::io::AsyncStreamChannel template.
+     */
+    enum struct TransmissionFormat : uint8_t
+    {
+        Default,
+        Legacy
+    };
+
     /*!
      * @class AsyncStreamChannel AsyncStreamChannel.h
      * <dots/AsyncStreamChannel.h>
@@ -46,11 +60,12 @@ namespace dots::io
      *
      * @tparam Serializer The serializer to use.
      *
-     * @tparam LegacyTransmissions Specifies whether or not transmission
-     * should be serialized in the legacy format using a
-     * DotsTransportHeader.
+     * @tparam TransmissionFormat Specifies which format is used for
+     * serializing transmissions. Note that this is not the serialization
+     * encoding of instances, which is specified by the @p Serializer
+     * argument.
      */
-    template <typename Stream, typename Serializer = serialization::CborSerializer, bool LegacyTransmissions = false>
+    template <typename Stream, typename Serializer = serialization::CborSerializer, TransmissionFormat TransmissionFormat = TransmissionFormat::Default>
     struct AsyncStreamChannel : Channel
     {
         using stream_t = Stream;
@@ -172,7 +187,7 @@ namespace dots::io
                 return;
             }
 
-            if constexpr (LegacyTransmissions)
+            if constexpr (TransmissionFormat == TransmissionFormat::Legacy)
             {
                 auto process_transmission = [this]
                 {
@@ -286,8 +301,8 @@ namespace dots::io
         
         static constexpr size_t ReadBufferMinSize = 16 * 128;
 
-        using transmission_size_t = std::conditional_t<LegacyTransmissions, dots::uint16_t, dots::uint32_t>;
-        static constexpr size_t TransmissionSizeSize = LegacyTransmissions ? sizeof(dots::uint16_t) : sizeof(dots::uint32_t) + 1;
+        using transmission_size_t = std::conditional_t<TransmissionFormat == TransmissionFormat::Legacy, dots::uint16_t, dots::uint32_t>;
+        static constexpr size_t TransmissionSizeSize = TransmissionFormat == TransmissionFormat::Legacy ? sizeof(dots::uint16_t) : sizeof(dots::uint32_t) + 1;
 
         using iterator_t = typename buffer_t::iterator;
 
@@ -440,14 +455,14 @@ namespace dots::io
          * current input data.
          *
          * Note that this function is only available if legacy transmissions
-         * are used (i.e. @p LegacyTransmissions is given as true).
+         * are used.
          *
-         * @tparam LegacyTransmissions_ Defaulted helper value parameter used
+         * @tparam TransmissionFormat_ Defaulted helper value parameter used
          * for SFINAE. Do not specify manually!
          *
          * @return size_t The deserialized header size.
          */
-        template <bool LegacyTransmissions_ = LegacyTransmissions, std::enable_if_t<LegacyTransmissions_, int> = 0>
+        template <io::TransmissionFormat TransmissionFormat_ = TransmissionFormat, std::enable_if_t<TransmissionFormat_ == TransmissionFormat::Legacy, int> = 0>
         size_t deserializeHeaderSize()
         {
             auto transmissionSize = reinterpret_cast<const transmission_size_t&>(* m_serializer.inputData());
@@ -464,7 +479,7 @@ namespace dots::io
          */
         size_t deserializeTransmissionSize()
         {
-            if constexpr (LegacyTransmissions)
+            if constexpr (TransmissionFormat == TransmissionFormat::Legacy)
             {
                 m_serializer.deserialize(m_transportHeader);
 
@@ -488,7 +503,7 @@ namespace dots::io
          */
         Transmission deserializeTransmission()
         {
-            if constexpr (LegacyTransmissions)
+            if constexpr (TransmissionFormat == TransmissionFormat::Legacy)
             {
                 type::AnyStruct instance{ registry().getStructType(*m_transportHeader.dotsHeader->typeName) };
                 m_serializer.deserialize(*instance);
@@ -508,7 +523,7 @@ namespace dots::io
         /*!
          * @brief Serialize a transmission into the current write buffer.
          *
-         * Note that when @p LegacyTransmissions was given as true, the
+         * Note that when @p TransmissionFormat is set to legacy, the
          * serialization format will consist of a DotsTransportHeader with
          * various steps of preprocessing to ensure backwards compatibility
          * with legacy DOTS applications.
@@ -522,7 +537,7 @@ namespace dots::io
          */
         iterator_t serializeTransmission(const DotsHeader& header, const type::Struct& instance)
         {
-            if constexpr (LegacyTransmissions)
+            if constexpr (TransmissionFormat == TransmissionFormat::Legacy)
             {
                 serializer_t serializer;
                 serializer.serialize(instance, header.attributes);
