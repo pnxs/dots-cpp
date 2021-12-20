@@ -1,4 +1,5 @@
 #include <dots/io/Channel.h>
+#include <cassert>
 #include <dots/type/Registry.h>
 #include <dots/io/DescriptorConverter.h>
 #include <DotsMsgError.dots.h>
@@ -52,7 +53,7 @@ namespace dots::io
             throw std::logic_error{ "only one async receive can be active at any given time" };
         }
 
-        verifyInitialized();
+        assert(m_initialized);
 
         if (receiveHandler == nullptr || errorHandler == nullptr)
         {
@@ -75,14 +76,14 @@ namespace dots::io
 
     void Channel::transmit(const DotsHeader& header, const type::Struct& instance)
     {
-        verifyInitialized();
+        assert(m_initialized);
         exportDependencies(instance._descriptor());
         transmitImpl(header, instance);
     }
 
     void Channel::transmit(const Transmission& transmission)
     {
-        verifyInitialized();
+        assert(m_initialized);
         exportDependencies(transmission.instance()->_descriptor());
         transmitImpl(transmission);
     }
@@ -105,13 +106,13 @@ namespace dots::io
 
     const type::Registry& Channel::registry() const
     {
-        verifyInitialized();
+        assert(m_initialized);
         return *m_registry;
     }
 
     type::Registry& Channel::registry()
     {
-        verifyInitialized();
+        assert(m_initialized);
         return *m_registry;
     }
 
@@ -215,14 +216,6 @@ namespace dots::io
                     transmit(io::DescriptorConverter{ registry() }(*structDescriptor));
                 }
             }
-        }
-    }
-
-    void Channel::verifyInitialized() const
-    {
-        if (!m_initialized)
-        {
-            throw std::logic_error{ "channel has not been initialized" };
         }
     }
 }
