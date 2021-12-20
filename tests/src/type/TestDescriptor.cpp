@@ -2,6 +2,7 @@
 #include <dots/testing/gtest/gtest.h>
 #include <dots/type/Descriptor.h>
 #include <DotsTestStruct.dots.h>
+#include <DotsTestVectorStruct.dots.h>
 
 using namespace dots::type;
 using namespace dots::types;
@@ -94,15 +95,10 @@ TEST_F(TestDescriptor, dynamicMemoryUsage)
     EXPECT_DYNAMIC_MEMORY_USAGE(DotsTestEnum::value1, 0);
 
     EXPECT_DYNAMIC_MEMORY_USAGE(
-        DotsTestStruct{
-            DotsTestStruct::stringField_i{ "SomeTypeName" },
-            DotsTestStruct::tp_i{ timepoint_t::Now() },
-            DotsTestStruct::floatField_i{ 42.0f },
-            DotsTestStruct::subStruct_i{ DotsTestSubStruct{
-                DotsTestSubStruct::flag1_i{ true }
-            } }
+        DotsTestVectorStruct{
+            DotsTestVectorStruct::stringList_i{ vector_t<string_t>{ "foo", "bar", "baz", "qux" } }
         },
-        13
+        4 * sizeof(string_t) + 4 * 4
     );
 
     EXPECT_DYNAMIC_MEMORY_USAGE(vector_t<string_t>{ "foo", "bar", "baz", "qux" }, 4 * sizeof(string_t) + 4 * 4);

@@ -203,7 +203,7 @@ namespace dots::type
         {
             size_t dynMemUsage = 0;
 
-            for (const ProxyProperty<>& property : instance._propertyRange(m_dynamicMemoryProperties))
+            for (const ProxyProperty<>& property : instance._propertyRange(m_dynamicMemoryProperties ^ instance._validProperties()))
             {
                 dynMemUsage += property.descriptor().valueDescriptor().dynamicMemoryUsage(property);
             }
