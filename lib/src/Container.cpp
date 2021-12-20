@@ -60,7 +60,13 @@ namespace dots
         m_descriptor(&descriptor),
         m_instances{ descriptor }
     {
-        /* do nothing */
+        for (const type::PropertyDescriptor& propertyDescriptor : descriptor.propertyDescriptors())
+        {
+            if (!propertyDescriptor.isKey())
+            {
+                m_noKeyPropertyDescriptors.emplace_back(propertyDescriptor);
+            }
+        }
     }
 
     const type::StructDescriptor<>& Container<type::Struct>::descriptor() const &
@@ -151,7 +157,7 @@ namespace dots
             type::Struct& existing = node.key();
             DotsCloneInformation& cloneInfo = node.mapped();
 
-            existing._copy(instance, *header.attributes - instance._keyProperties());
+            updateWithoutKeys(existing, instance, *header.attributes);
             cloneInfo.lastOperation = DotsMt::update;
             cloneInfo.lastUpdateFrom = header.sender;
             cloneInfo.modified = header.sentTime;
@@ -172,7 +178,7 @@ namespace dots
             type::Struct& removed = node.key();
             DotsCloneInformation& cloneInfo = node.mapped();
 
-            removed._copy(instance, *header.attributes - instance._keyProperties());
+            updateWithoutKeys(removed, instance, *header.attributes);
             cloneInfo.lastOperation = DotsMt::remove;
             cloneInfo.lastUpdateFrom = header.sender;
             cloneInfo.modified = header.sentTime;
@@ -210,5 +216,49 @@ namespace dots
         });
 
         return staticMemUsage + dynElementMemUsage + dynInstanceMemUsage;
+    }
+
+    void Container<type::Struct>::updateWithoutKeys(type::Struct& lhs, const type::Struct& rhs, property_set_t includedSet)
+    {
+        using namespace type;
+        
+        property_set_t updateSet = (lhs._validProperties() + rhs._validProperties()) ^ includedSet;
+
+        PropertyArea& lhsArea = lhs._propertyArea();
+        const PropertyArea& rhsArea = rhs._propertyArea();
+
+        property_set_t& lhsValidSet = lhsArea.validProperties();
+        property_set_t rhsValidSet = rhsArea.validProperties();
+
+        for (const auto& propertyDescriptor_ : m_noKeyPropertyDescriptors)
+        {
+            const PropertyDescriptor& propertyDescriptor = propertyDescriptor_.get();
+
+            if (property_set_t propertySet = propertyDescriptor.set(); propertySet <= updateSet)
+            {
+                const Descriptor<>& valueDescriptor = propertyDescriptor.valueDescriptor();
+                auto& lhsValue = lhsArea.getProperty<Typeless>(propertyDescriptor.offset());
+                
+                if (propertySet <= rhsValidSet)
+                {
+                    const auto& rhsValue = rhsArea.getProperty<Typeless>(propertyDescriptor.offset());
+
+                    if (propertySet <= lhsValidSet)
+                    {
+                        valueDescriptor.assign(lhsValue, rhsValue);
+                    }
+                    else
+                    {
+                        valueDescriptor.constructInPlace(lhsValue, rhsValue);
+                        lhsValidSet += propertySet;
+                    }
+                }
+                else
+                {
+                    valueDescriptor.destruct(lhsValue);
+                    lhsValidSet -= propertySet;
+                }
+            }
+        }
     }
 }

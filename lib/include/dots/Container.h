@@ -430,8 +430,11 @@ namespace dots
 
     private:
 
+        void updateWithoutKeys(type::Struct& lhs, const type::Struct& rhs, property_set_t includedSet);
+
         const type::StructDescriptor<>* m_descriptor;
         container_t m_instances;
+        type::partial_property_descriptor_container_t m_noKeyPropertyDescriptors;
     };
 
     /*!
