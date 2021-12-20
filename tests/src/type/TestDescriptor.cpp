@@ -1,6 +1,7 @@
 #include <string>
 #include <dots/testing/gtest/gtest.h>
 #include <dots/type/Descriptor.h>
+#include <DotsTestStruct.dots.h>
 
 using namespace dots::type;
 using namespace dots::types;
@@ -57,4 +58,55 @@ TEST_F(TestDescriptor, usesDynamicMemory)
 
     EXPECT_TRUE(Descriptor<DotsHeader>::Instance().usesDynamicMemory());
     EXPECT_TRUE(Descriptor<vector_t<DotsHeader>>::Instance().usesDynamicMemory());
+}
+
+#define EXPECT_DYNAMIC_MEMORY_USAGE                                                                                   \
+[](auto value, size_t dynamicMemoryUsage)                                                                             \
+{                                                                                                                     \
+    EXPECT_EQ(Descriptor<decltype(value)>::Instance().dynamicMemoryUsage(Typeless::From(value)), dynamicMemoryUsage); \
+}
+
+TEST_F(TestDescriptor, dynamicMemoryUsage)
+{
+    EXPECT_DYNAMIC_MEMORY_USAGE(bool_t{ true }, 0);
+
+    EXPECT_DYNAMIC_MEMORY_USAGE(int8_t{ -42 }, 0);
+    EXPECT_DYNAMIC_MEMORY_USAGE(uint8_t{ 42 }, 0);
+    EXPECT_DYNAMIC_MEMORY_USAGE(int16_t{ -12345 }, 0);
+    EXPECT_DYNAMIC_MEMORY_USAGE(uint16_t{ 12345 }, 0);
+    EXPECT_DYNAMIC_MEMORY_USAGE(int32_t{ -12345789 }, 0);
+    EXPECT_DYNAMIC_MEMORY_USAGE(uint32_t{ 12345789 }, 0);
+    EXPECT_DYNAMIC_MEMORY_USAGE(int64_t{ -12345678910111213 }, 0);
+    EXPECT_DYNAMIC_MEMORY_USAGE(uint64_t{ 12345678910111213 }, 0);
+
+    EXPECT_DYNAMIC_MEMORY_USAGE(float32_t{ 3.1415f }, 0);
+    EXPECT_DYNAMIC_MEMORY_USAGE(float64_t{ -2.71828182846 }, 0);
+
+    EXPECT_DYNAMIC_MEMORY_USAGE(property_set_t{ 0b10101010111111110000000001010101 }, 0);
+
+    EXPECT_DYNAMIC_MEMORY_USAGE(timepoint_t::FromString("2020-03-11T21:07:57.500+00:00"), 0);
+    EXPECT_DYNAMIC_MEMORY_USAGE(steady_timepoint_t::FromString("P3DT18H11M42.125S"), 0);
+    EXPECT_DYNAMIC_MEMORY_USAGE(duration_t{ 123.456 }, 0);
+
+    EXPECT_DYNAMIC_MEMORY_USAGE(uuid_t::FromString("8c96148e-58bd-11eb-ae93-0242ac130002"), 0);
+    EXPECT_DYNAMIC_MEMORY_USAGE(string_t{ "foobar"}, 7);
+
+    EXPECT_DYNAMIC_MEMORY_USAGE(DotsTestEnum::value1, 0);
+
+    EXPECT_DYNAMIC_MEMORY_USAGE(
+        DotsTestStruct{
+            DotsTestStruct::stringField_i{ "SomeTypeName" },
+            DotsTestStruct::tp_i{ timepoint_t::Now() },
+            DotsTestStruct::floatField_i{ 42.0f },
+            DotsTestStruct::subStruct_i{ DotsTestSubStruct{
+                DotsTestSubStruct::flag1_i{ true }
+            } }
+        },
+        13
+    );
+
+    EXPECT_DYNAMIC_MEMORY_USAGE(vector_t<string_t>{ "foo", "bar", "baz", "qux" }, 4 * sizeof(string_t) + 4 * 4);
+    EXPECT_DYNAMIC_MEMORY_USAGE(vector_t<bool_t>{ true, false, true }, 3 * sizeof(bool_t));
+    EXPECT_DYNAMIC_MEMORY_USAGE(vector_t<float32_t>{ 3.1415f, -2.7183f }, 2 * sizeof(float32_t));
+    EXPECT_DYNAMIC_MEMORY_USAGE(vector_t<DotsTestEnum>{ DotsTestEnum::value1, DotsTestEnum::value2, DotsTestEnum::value3 }, 3 * sizeof(DotsMt));
 }
