@@ -300,6 +300,7 @@ namespace dots::io
     private:
         
         static constexpr size_t ReadBufferMinSize = 16 * 128;
+        static constexpr size_t WriteBufferMaxSize = 10 * 1024 * 1024;
 
         using transmission_size_t = std::conditional_t<TransmissionFormat == TransmissionFormat::Legacy, dots::uint16_t, dots::uint32_t>;
         static constexpr size_t TransmissionSizeSize = TransmissionFormat == TransmissionFormat::Legacy ? sizeof(dots::uint16_t) : sizeof(dots::uint32_t) + 1;
@@ -537,6 +538,11 @@ namespace dots::io
          */
         iterator_t serializeTransmission(const DotsHeader& header, const type::Struct& instance)
         {
+            if (m_serializer.output().size() > WriteBufferMaxSize)
+            {
+                throw std::runtime_error{ "async write buffer exceeded maximum size" };
+            }
+
             if constexpr (TransmissionFormat == TransmissionFormat::Legacy)
             {
                 serializer_t serializer;
