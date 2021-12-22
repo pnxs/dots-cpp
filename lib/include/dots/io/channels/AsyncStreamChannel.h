@@ -643,16 +643,17 @@ namespace dots::io
             }
             else
             {
+                payload_cache_t& payloadCache = *m_payloadCache;
                 buffer_t& writeBuffer = m_serializer.output();
 
-                if (*m_payloadCache != std::nullopt && transmission.id() == (*m_payloadCache)->first)
+                if (transmission.id() == payloadCache->first)
                 {
-                    writeBuffer.insert(writeBuffer.end(), (*m_payloadCache)->second.begin(), (*m_payloadCache)->second.end());
+                    writeBuffer.insert(writeBuffer.end(), payloadCache->second.begin(), payloadCache->second.end());
                 }
                 else
                 {
                     auto begin = serializeTransmission(transmission.header(), transmission.instance());
-                    (*m_payloadCache).emplace(transmission.id(), buffer_t(begin, writeBuffer.end()));
+                    payloadCache.emplace(transmission.id(), buffer_t(begin, writeBuffer.end()));
                 }
             }
         }
