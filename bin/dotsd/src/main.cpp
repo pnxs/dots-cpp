@@ -1,4 +1,5 @@
 #include <dots/io/channels/TcpListener.h>
+#include <dots/io/channels/LegacyTcpListener.h>
 #include <dots/io/channels/WebSocketListener.h>
 #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
 #include <dots/io/channels/UdsListener.h>
@@ -103,6 +104,10 @@ int main(int argc, char* argv[])
                 }
 
                 listeners.emplace_back(std::make_unique<dots::io::TcpListener>(io_context, listenEndpoint)); 
+            }
+            else if (listenEndpoint.scheme() == "tcp-legacy")
+            {
+                listeners.emplace_back(std::make_unique<dots::io::LegacyTcpListener>(io_context, listenEndpoint)); 
             }
             else if (listenEndpoint.scheme() == "ws")
             {
