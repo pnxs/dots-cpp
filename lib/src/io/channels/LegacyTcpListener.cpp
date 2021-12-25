@@ -5,14 +5,15 @@ namespace dots::io
     LegacyTcpListener::LegacyTcpListener(boost::asio::io_context& ioContext, const Endpoint& endpoint, std::optional<int> backlog/* = std::nullopt*/) :
         LegacyTcpListener(ioContext, std::string{ endpoint.host() }, std::string{ endpoint.port() }, backlog)
     {
-        /* do nothig */
+        /* do nothing */
     }
 
     LegacyTcpListener::LegacyTcpListener(boost::asio::io_context& ioContext, std::string address, std::string port, std::optional<int> backlog/* = std::nullopt*/) :
         m_address{ std::move(address) },
         m_port{ std::move(port) },
         m_acceptor{ ioContext },
-        m_socket{ ioContext }
+        m_socket{ ioContext },
+        m_payloadCache{ 0, LegacyTcpChannel::buffer_t{} }
     {
         try
         {

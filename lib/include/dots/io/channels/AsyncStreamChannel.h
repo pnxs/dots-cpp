@@ -72,7 +72,7 @@ namespace dots::io
         using serializer_t = Serializer;
 
         using buffer_t = typename serializer_t::data_t;
-        using payload_cache_t = std::optional<std::pair<Transmission::id_t, buffer_t>>;
+        using payload_cache_t = std::pair<Transmission::id_t, buffer_t>;
 
         /*!
          * @brief Construct a new AsyncStreamChannel object.
@@ -643,17 +643,18 @@ namespace dots::io
             }
             else
             {
-                payload_cache_t& payloadCache = *m_payloadCache;
+                auto& [cacheId, cacheBuffer] = *m_payloadCache;
                 buffer_t& writeBuffer = m_serializer.output();
 
-                if (transmission.id() == payloadCache->first)
+                if (transmission.id() == cacheId)
                 {
-                    writeBuffer.insert(writeBuffer.end(), payloadCache->second.begin(), payloadCache->second.end());
+                    writeBuffer.insert(writeBuffer.end(), cacheBuffer.begin(), cacheBuffer.end());
                 }
                 else
                 {
-                    auto begin = serializeTransmission(transmission.header(), transmission.instance());
-                    payloadCache.emplace(transmission.id(), buffer_t(begin, writeBuffer.end()));
+                    iterator_t begin = serializeTransmission(transmission.header(), transmission.instance());
+                    cacheId = transmission.id();
+                    cacheBuffer = buffer_t{ begin, writeBuffer.end() };
                 }
             }
         }

@@ -13,7 +13,8 @@ namespace dots::io::posix
     UdsListener::UdsListener(boost::asio::io_context& ioContext, std::string_view path, std::optional<int> backlog/* = std::nullopt*/) :
         m_endpoint{ path.data() },
         m_acceptor{ ioContext },
-        m_socket{ ioContext }
+        m_socket{ ioContext },
+        m_payloadCache{ 0, UdsChannel::buffer_t{} }
     {
         try
         {
