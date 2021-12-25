@@ -121,12 +121,12 @@ namespace dots::io
          */
         AsyncStreamChannel(Channel::key_t key, stream_t&& stream, payload_cache_t* payloadCache) :
             Channel(key),
-            m_stream{ std::move(stream) },
-            m_payloadCache(payloadCache),
             m_asyncWriting(false),
-            m_readDispatching(false)
+            m_readDispatching(false),
+            m_stream{ std::move(stream) },
+            m_payloadCache(payloadCache)
         {
-            m_readBuffer.resize(ReadBufferMinSize);
+            /* do nothing */
         }
 
         AsyncStreamChannel(const AsyncStreamChannel& other) = delete;
@@ -659,14 +659,14 @@ namespace dots::io
             }
         }
 
-        stream_t m_stream;
 
-        serializer_t m_serializer;
+        DotsTransportHeader m_transportHeader;
         buffer_t m_readBuffer;
         buffer_t m_writeBuffer;
-        payload_cache_t* m_payloadCache;
+        serializer_t m_serializer;
         bool m_asyncWriting;
         bool m_readDispatching;
-        DotsTransportHeader m_transportHeader;
+        stream_t m_stream;
+        payload_cache_t* m_payloadCache;
     };
 }
