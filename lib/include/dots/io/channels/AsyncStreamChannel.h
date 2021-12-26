@@ -654,7 +654,7 @@ namespace dots::io
                 {
                     iterator_t begin = serializeTransmission(transmission.header(), transmission.instance());
                     cacheId = transmission.id();
-                    cacheBuffer = buffer_t{ begin, writeBuffer.end() };
+                    cacheBuffer.assign(begin, writeBuffer.end());
                 }
             }
         }
