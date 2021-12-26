@@ -367,10 +367,9 @@ namespace dots::io
             else
             {
                 size_t availableBytes = m_serializer.inputAvailable();
-                requiredBytes -= availableBytes;
 
                 std::copy(m_serializer.inputData(), m_serializer.inputDataEnd(), m_readBuffer.begin());
-                m_readBuffer.resize(std::max(ReadBufferMinSize, availableBytes + requiredBytes));
+                m_readBuffer.resize(std::max(ReadBufferMinSize, requiredBytes));
                 m_serializer.setInput(m_readBuffer.data(), availableBytes);
 
                 uint8_t* readBufferBegin = m_readBuffer.data() + availableBytes;
