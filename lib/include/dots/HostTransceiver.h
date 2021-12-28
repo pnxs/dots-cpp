@@ -49,8 +49,8 @@ namespace dots
          *
          * @param ioContext The ASIO IO context (i.e. the "event loop") to use.
          *
-         * @param staticUserTypes Specifies whether static struct types will
-         * automatically be known by the registry.
+         * @param staticTypePolicy Specifies the static type policy of the
+         * transceiver's registry.
          *
          * @param transitionHandler The handler to invoke every time the a
          * Connection transitions to a different connection state.

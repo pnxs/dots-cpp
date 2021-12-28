@@ -39,8 +39,8 @@ namespace dots
          *
          * @param ioContext The ASIO IO context (i.e. the "event loop") to use.
          *
-         * @param staticUserTypes Specifies whether static struct types will
-         * automatically be known by the registry.
+         * @param staticTypePolicy Specifies the static type policy of the
+         * transceiver's registry.
          */
         Transceiver(std::string selfName, boost::asio::io_context& ioContext = io::global_io_context(), type::Registry::StaticTypePolicy staticTypePolicy = type::Registry::StaticTypePolicy::All);
         Transceiver(const Transceiver& other) = delete;
