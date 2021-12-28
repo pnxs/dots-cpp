@@ -10,7 +10,7 @@ namespace dots::type
     }
 
 
-    Registry::Registry(new_type_handler_t newTypeHandler/* = nullptr*/, StaticTypePolicy staticTypePolicy /* = StaticTypePolicy::All*/) :
+    Registry::Registry( std::optional<new_type_handler_t> newTypeHandler/* = std::nullopt*/, StaticTypePolicy staticTypePolicy /* = StaticTypePolicy::All*/) :
         m_newTypeHandler(std::move(newTypeHandler))
     {
         // ensure fundamental types are instantiated and added to static descriptor map
@@ -235,9 +235,9 @@ namespace dots::type
             }
         }
 
-        if (m_newTypeHandler != nullptr)
+        if (m_newTypeHandler != std::nullopt)
         {
-            m_newTypeHandler(descriptor);
+            (*m_newTypeHandler)(descriptor);
         }
 
         return descriptor;

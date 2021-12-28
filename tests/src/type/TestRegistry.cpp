@@ -47,7 +47,7 @@ TEST_F(TestRegistry, ctor_UserTypesWithStaticTypePolicyAll)
 
 TEST_F(TestRegistry, ctor_NoUserTypesWithStaticTypePolicyInternalOnly)
 {
-    dots::type::Registry sut{ nullptr, dots::type::Registry::StaticTypePolicy::InternalOnly };
+    dots::type::Registry sut{ std::nullopt, dots::type::Registry::StaticTypePolicy::InternalOnly };
     EXPECT_STRUCT_TYPE_IN_REGISTRY(DotsHeader::_Descriptor().name());
     EXPECT_STRUCT_TYPE_NOT_IN_REGISTRY(DotsTestStruct::_Descriptor().name());
     EXPECT_STRUCT_TYPE_NOT_IN_REGISTRY("Foobar");
@@ -55,7 +55,7 @@ TEST_F(TestRegistry, ctor_NoUserTypesWithStaticTypePolicyInternalOnly)
 
 TEST_F(TestRegistry, ctor_NoUserAndNoInternalTypesWithStaticTypePolicyFundamentalOnly)
 {
-    dots::type::Registry sut{ nullptr, dots::type::Registry::StaticTypePolicy::FundamentalOnly };
+    dots::type::Registry sut{ std::nullopt, dots::type::Registry::StaticTypePolicy::FundamentalOnly };
     EXPECT_STRUCT_TYPE_NOT_IN_REGISTRY(DotsHeader::_Descriptor().name());
     EXPECT_STRUCT_TYPE_NOT_IN_REGISTRY(DotsTestStruct::_Descriptor().name());
     EXPECT_STRUCT_TYPE_NOT_IN_REGISTRY("Foobar");
@@ -90,7 +90,7 @@ TEST_F(TestRegistry, registerType)
 TEST_F(TestRegistry, deregisterType)
 {
     auto& descriptor = dots::type::Descriptor<DotsTestStruct>::Instance();
-    dots::type::Registry sut{ nullptr, dots::type::Registry::StaticTypePolicy::FundamentalOnly };
+    dots::type::Registry sut{ std::nullopt, dots::type::Registry::StaticTypePolicy::FundamentalOnly };
 
     sut.registerType(descriptor);
     EXPECT_STRUCT_TYPE_IN_REGISTRY(descriptor.name());
@@ -119,7 +119,7 @@ TEST_F(TestRegistry, forEach)
 {
     using namespace dots::type;
     
-    Registry sut{ nullptr, dots::type::Registry::StaticTypePolicy::FundamentalOnly };
+    Registry sut{ std::nullopt, dots::type::Registry::StaticTypePolicy::FundamentalOnly };
     sut.registerType(Descriptor<DotsTestStruct>::Instance());
     sut.registerType(Descriptor<dots::vector_t<DotsTestStruct>>::Instance());
 

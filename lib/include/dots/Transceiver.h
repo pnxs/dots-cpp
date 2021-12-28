@@ -405,32 +405,24 @@ namespace dots
 
             if constexpr (IsTypeHandler)
             {
-                auto handle_type = [](auto& handler, auto& argsTuple, const type::Descriptor<>& descriptor, const auto* wantedDescriptor)
-                {
-                    using wanted_descriptor_t = std::decay_t<std::remove_pointer_t<decltype(wantedDescriptor)>>;
-                    (void)wantedDescriptor;
+                return subscribe(new_type_handler_t{
+                    [handler{ std::forward<TypeHandler>(handler) }] (auto&... args, const type::Descriptor<>& descriptor) mutable
+                    {
+                        auto handle_type = [&](const auto* wantedDescriptor)
+                        {
+                            using wanted_descriptor_t = std::decay_t<std::remove_pointer_t<decltype(wantedDescriptor)>>;
+                            (void)wantedDescriptor;
 
-                    if (wantedDescriptor = descriptor.as<wanted_descriptor_t>(); wantedDescriptor != nullptr)
-                    {
-                        std::apply([&](auto&... args){ std::invoke(handler, args..., *wantedDescriptor); }, argsTuple);
-                    }
-                };
+                            if (wantedDescriptor = descriptor.as<wanted_descriptor_t>(); wantedDescriptor != nullptr)
+                            {
+                                std::invoke(handler, args..., *wantedDescriptor);
+                            }
+                        };
 
-                // note that the two branches are intentionally identical except for the mutability of the outer lambda
-                if constexpr (std::is_const_v<TypeHandler>)
-                {
-                    return subscribe([handler{ std::forward<TypeHandler>(handler) }, argsTuple = std::make_tuple(std::forward<Args>(args)...), &handle_type](const type::Descriptor<>& descriptor)
-                    {
-                        (handle_type(handler, argsTuple, descriptor, static_cast<const TDescriptors*>(nullptr)), ...);
-                    });
-                }
-                else
-                {
-                    return subscribe([handler{ std::forward<TypeHandler>(handler) }, argsTuple = std::make_tuple(std::forward<Args>(args)...), &handle_type](const type::Descriptor<>& descriptor) mutable
-                    {
-                        (handle_type(handler, argsTuple, descriptor, static_cast<const TDescriptors*>(nullptr)), ...);
-                    });
-                }
+                        (handle_type(static_cast<const TDescriptors*>(nullptr)), ...);
+                    },
+                    std::forward<Args>(args)...
+                });
             }
             else
             {
