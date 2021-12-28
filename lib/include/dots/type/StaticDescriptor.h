@@ -131,9 +131,9 @@ namespace dots::type
             return !less(lhs, rhs);
         }
 
-        static constexpr size_t dynamicMemoryUsage(const T&/* value*/)
+        size_t dynamicMemoryUsage(const T& value) const
         {
-            return 0;
+            return Base::dynamicMemoryUsage(Typeless::From(value));
         }
 
         std::shared_ptr<const Descriptor<T>> shared_from_this() const
@@ -305,16 +305,6 @@ namespace dots::type
         bool greaterEqual(const Typeless& lhs, const Typeless& rhs) const override
         {
             return greaterEqual(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
-        }
-
-        size_t dynamicMemoryUsage(const Typeless& value) const override
-        {
-            return dynamicMemoryUsage(reinterpret_cast<const T&>(value));
-        }
-
-        bool usesDynamicMemory() const override
-        {
-            return false;
         }
     };
 }

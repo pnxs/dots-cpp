@@ -1,19 +1,19 @@
-#include <dots/io/channels/TcpListener.h>
+#include <dots/io/channels/LegacyTcpListener.h>
 
 namespace dots::io
 {
-    TcpListener::TcpListener(boost::asio::io_context& ioContext, const Endpoint& endpoint, std::optional<int> backlog/* = std::nullopt*/) :
-        TcpListener(ioContext, std::string{ endpoint.host() }, std::string{ endpoint.port() }, backlog)
+    LegacyTcpListener::LegacyTcpListener(boost::asio::io_context& ioContext, const Endpoint& endpoint, std::optional<int> backlog/* = std::nullopt*/) :
+        LegacyTcpListener(ioContext, std::string{ endpoint.host() }, std::string{ endpoint.port() }, backlog)
     {
         /* do nothing */
     }
 
-    TcpListener::TcpListener(boost::asio::io_context& ioContext, std::string address, std::string port, std::optional<int> backlog/* = std::nullopt*/) :
+    LegacyTcpListener::LegacyTcpListener(boost::asio::io_context& ioContext, std::string address, std::string port, std::optional<int> backlog/* = std::nullopt*/) :
         m_address{ std::move(address) },
         m_port{ std::move(port) },
         m_acceptor{ ioContext },
         m_socket{ ioContext },
-        m_payloadCache{ 0, TcpChannel::buffer_t{} }
+        m_payloadCache{ 0, LegacyTcpChannel::buffer_t{} }
     {
         try
         {
@@ -39,7 +39,7 @@ namespace dots::io
         }
     }
 
-    void TcpListener::asyncAcceptImpl()
+    void LegacyTcpListener::asyncAcceptImpl()
     {
         m_acceptor.async_accept(m_socket, [this](const boost::system::error_code& error)
         {
@@ -70,7 +70,7 @@ namespace dots::io
                 }
 
                 // note: this move is explicitly allowed according to the Boost ASIO v1.72 documentation of the socket
-                processAccept(make_channel<TcpChannel>(std::move(m_socket), &m_payloadCache));
+                processAccept(make_channel<LegacyTcpChannel>(std::move(m_socket), &m_payloadCache));
             }
             catch (const std::exception& e)
             {

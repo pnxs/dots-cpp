@@ -32,7 +32,7 @@ namespace dots::serialization
         {
             m_inputData = inputData;
             m_inputDataEnd = m_inputData + inputDataSize;
-            m_inputDataBegin = nullptr;
+            m_inputDataBegin = m_inputData;
             derived().setInputDerived();
         }
 
@@ -42,6 +42,26 @@ namespace dots::serialization
         }
 
         void setInput(data_t&& input) = delete;
+
+        const value_t* inputData() const
+        {
+            return m_inputData;
+        }
+
+        const value_t* inputDataBegin() const
+        {
+            return m_inputDataBegin;
+        }
+
+        const value_t* inputDataEnd() const
+        {
+            return m_inputDataEnd;
+        }
+
+        size_t inputOffset() const
+        {
+            return m_inputData - m_inputDataBegin;
+        }
 
         size_t lastSerializeSize() const
         {
@@ -295,11 +315,6 @@ namespace dots::serialization
         const value_t*& inputData()
         {
             return m_inputData;
-        }
-
-        const value_t*& inputDataEnd()
-        {
-            return m_inputDataEnd;
         }
 
         size_t serializeLevel() const

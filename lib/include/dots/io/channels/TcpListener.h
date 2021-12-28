@@ -27,5 +27,6 @@ namespace dots::io
         std::string m_port;
         boost::asio::ip::tcp::acceptor m_acceptor;
         boost::asio::ip::tcp::socket m_socket;
+        TcpChannel::payload_cache_t m_payloadCache;
     };
 }

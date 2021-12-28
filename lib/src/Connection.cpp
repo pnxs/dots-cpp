@@ -14,6 +14,7 @@
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
+#if defined(DOTS_ENABLE_TRANSMISSION_LOGGING)
 #define LOG_TRANSMISSION(prefix_, header_, instance_)                                                                                                               \
 {                                                                                                                                                                   \
     if ((instance_)._descriptor().internal())                                                                                                                       \
@@ -25,6 +26,9 @@
         LOG_DEBUG_S(prefix_ << peerDescription() << "\n" << dots::to_string(header_, StringOptions) << ",\n" << dots::to_string(instance_, StringOptions) << "\n"); \
     }                                                                                                                                                               \
 }
+#else
+#define LOG_TRANSMISSION(prefix_, header_, instance_)
+#endif
 
 #define LOG_TRANSMIT_TRANSMISSION(header_, instance_) LOG_TRANSMISSION("TRANSMIT to ", header_, instance_)
 #define LOG_RECEIVE_TRANSMISSION(header_, instance_) LOG_TRANSMISSION("RECEIVE from ", header_, instance_)

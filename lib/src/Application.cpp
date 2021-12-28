@@ -3,6 +3,7 @@
 #include <boost/program_options.hpp>
 #include <dots/io/Io.h>
 #include <dots/io/channels/TcpChannel.h>
+#include <dots/io/channels/LegacyTcpChannel.h>
 #include <dots/io/channels/WebSocketChannel.h>
 #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
 #include <dots/io/channels/UdsChannel.h>
@@ -26,6 +27,10 @@ namespace dots
             if (m_openEndpoint->scheme() == "tcp")
             {
                 return globalGuestTransceiver.open<io::TcpChannel>(io::global_publish_types(), io::global_subscribe_types(), std::move(m_authSecret), *m_openEndpoint);
+            }
+            else if (m_openEndpoint->scheme() == "tcp-legacy")
+            {
+                return globalGuestTransceiver.open<io::LegacyTcpChannel>(io::global_publish_types(), io::global_subscribe_types(), std::move(m_authSecret), *m_openEndpoint);
             }
             else if (m_openEndpoint->scheme() == "ws")
             {

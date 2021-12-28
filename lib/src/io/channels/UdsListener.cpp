@@ -13,7 +13,8 @@ namespace dots::io::posix
     UdsListener::UdsListener(boost::asio::io_context& ioContext, std::string_view path, std::optional<int> backlog/* = std::nullopt*/) :
         m_endpoint{ path.data() },
         m_acceptor{ ioContext },
-        m_socket{ ioContext }
+        m_socket{ ioContext },
+        m_payloadCache{ 0, UdsChannel::buffer_t{} }
     {
         try
         {
@@ -70,7 +71,7 @@ namespace dots::io::posix
                 }
 
                 // note: this move is explicitly allowed according to the ASIO v1.72 documentation of the socket
-                processAccept(make_channel<UdsChannel>(std::move(m_socket)));
+                processAccept(make_channel<UdsChannel>(std::move(m_socket), &m_payloadCache));
             }
             catch (const std::exception& e)
             {

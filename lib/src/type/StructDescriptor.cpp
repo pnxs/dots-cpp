@@ -119,10 +119,20 @@ namespace dots::type
 
     Struct& StructDescriptor<Typeless, false, void>::destruct(Struct& instance) const
     {
-        for (auto& property : instance._propertyRange())
+        PropertyArea& propertyArea = instance._propertyArea();
+        PropertySet& validProperties = instance._propertyArea().validProperties();
+        PropertySet validDynamicProperties = validProperties ^ instance._descriptor().dynamicMemoryProperties();
+
+        for (const PropertyDescriptor& propertyDescriptor : instance._propertyDescriptors())
         {
-            property.destroy();
+            if (propertyDescriptor.set() <= validDynamicProperties)
+            {
+                Typeless& value = propertyArea.getProperty<Typeless>(propertyDescriptor.offset());
+                propertyDescriptor.valueDescriptor().destruct(value);
+            }
         }
+
+        validProperties = {};
 
         return instance;
     }
@@ -179,7 +189,7 @@ namespace dots::type
 
     bool StructDescriptor<Typeless, false, void>::usesDynamicMemory() const
     {
-        return m_dynamicMemoryProperties.empty();
+        return !m_dynamicMemoryProperties.empty();
     }
 
     size_t StructDescriptor<Typeless, false, void>::dynamicMemoryUsage(const Typeless& instance) const
@@ -193,7 +203,7 @@ namespace dots::type
         {
             size_t dynMemUsage = 0;
 
-            for (const ProxyProperty<>& property : instance._propertyRange(m_dynamicMemoryProperties))
+            for (const ProxyProperty<>& property : instance._propertyRange(m_dynamicMemoryProperties ^ instance._validProperties()))
             {
                 dynMemUsage += property.descriptor().valueDescriptor().dynamicMemoryUsage(property);
             }
@@ -466,5 +476,10 @@ namespace dots::type
     PropertySet StructDescriptor<Typeless, false, void>::keyProperties() const
     {
         return m_keyProperties;
+    }
+
+    PropertySet StructDescriptor<Typeless, false, void>::dynamicMemoryProperties() const
+    {
+        return m_dynamicMemoryProperties;
     }
 }

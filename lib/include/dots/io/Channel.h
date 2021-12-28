@@ -3,6 +3,7 @@
 #include <system_error>
 #include <type_traits>
 #include <set>
+#include <unordered_set>
 #include <dots/io/Endpoint.h>
 #include <dots/io/Transmission.h>
 #include <dots/tools/shared_ptr_only.h>
@@ -64,9 +65,8 @@ namespace dots::io
         void importDependencies(const type::Struct& instance);
         void exportDependencies(const type::Descriptor<>& descriptor);
 
-        void verifyInitialized() const;
-
-        std::set<std::string> m_sharedTypes;
+        std::set<std::string> m_sharedTypeNames;
+        std::unordered_set<const type::Descriptor<>*> m_sharedTypeDescriptors;
         bool m_asyncReceiving;
         bool m_initialized;
         type::Registry* m_registry;

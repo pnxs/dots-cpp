@@ -4,10 +4,69 @@
 
 namespace dots
 {
-    Container<type::Struct>::Container(const type::StructDescriptor<>& descriptor) :
-        m_descriptor(&descriptor)
+    Container<type::Struct>::key_compare::key_compare(const dots::type::StructDescriptor<>& descriptor)
     {
-        /* do nothing */
+        for (const type::PropertyDescriptor& propertyDescriptor : descriptor.propertyDescriptors())
+        {
+            if (propertyDescriptor.isKey())
+            {
+                m_keyPropertyDescriptors.emplace_back(propertyDescriptor);
+            }
+        }
+    }
+
+    bool Container<type::Struct>::key_compare::operator()(const type::Struct& lhs, const type::Struct& rhs) const
+    {
+        const type::PropertyArea& lhsPropertyArea = lhs._propertyArea();
+        const type::PropertyArea& rhsPropertyArea = rhs._propertyArea();
+
+        for (const auto& propertyDescriptor_ : m_keyPropertyDescriptors)
+        {
+            const type::PropertyDescriptor& propertyDescriptor = propertyDescriptor_.get();
+            const auto& lhsValue = lhsPropertyArea.getProperty<type::Typeless>(propertyDescriptor.offset());
+            const auto& rhsValue = rhsPropertyArea.getProperty<type::Typeless>(propertyDescriptor.offset());
+
+            const type::Descriptor<>& valueDescriptor = propertyDescriptor.valueDescriptor();
+
+            if (valueDescriptor.less(lhsValue, rhsValue))
+            {
+                return true;
+            }
+            else if (valueDescriptor.less(rhsValue, lhsValue))
+            {
+                return false;
+            }
+        }
+
+        return false;
+    }
+
+    bool Container<type::Struct>::key_compare::operator()(const type::AnyStruct& lhs, const type::Struct& rhs) const
+    {
+        return (*this)(static_cast<const type::Struct&>(lhs), rhs);
+    }
+
+    bool Container<type::Struct>::key_compare::operator()(const type::Struct& lhs, const type::AnyStruct& rhs) const
+    {
+        return (*this)(lhs, static_cast<const type::Struct&>(rhs));
+    }
+
+    bool Container<type::Struct>::key_compare::operator()(const type::AnyStruct& lhs, const type::AnyStruct& rhs) const
+    {
+        return (*this)(static_cast<const type::Struct&>(lhs), static_cast<const type::Struct&>(rhs));
+    }
+
+    Container<type::Struct>::Container(const type::StructDescriptor<>& descriptor) :
+        m_descriptor(&descriptor),
+        m_instances{ descriptor }
+    {
+        for (const type::PropertyDescriptor& propertyDescriptor : descriptor.propertyDescriptors())
+        {
+            if (!propertyDescriptor.isKey())
+            {
+                m_noKeyPropertyDescriptors.emplace_back(propertyDescriptor);
+            }
+        }
     }
 
     const type::StructDescriptor<>& Container<type::Struct>::descriptor() const &
@@ -98,7 +157,7 @@ namespace dots
             type::Struct& existing = node.key();
             DotsCloneInformation& cloneInfo = node.mapped();
 
-            existing._copy(instance, *header.attributes - instance._keyProperties());
+            updateWithoutKeys(existing, instance, *header.attributes);
             cloneInfo.lastOperation = DotsMt::update;
             cloneInfo.lastUpdateFrom = header.sender;
             cloneInfo.modified = header.sentTime;
@@ -119,7 +178,7 @@ namespace dots
             type::Struct& removed = node.key();
             DotsCloneInformation& cloneInfo = node.mapped();
 
-            removed._copy(instance, *header.attributes - instance._keyProperties());
+            updateWithoutKeys(removed, instance, *header.attributes);
             cloneInfo.lastOperation = DotsMt::remove;
             cloneInfo.lastUpdateFrom = header.sender;
             cloneInfo.modified = header.sentTime;
@@ -157,5 +216,49 @@ namespace dots
         });
 
         return staticMemUsage + dynElementMemUsage + dynInstanceMemUsage;
+    }
+
+    void Container<type::Struct>::updateWithoutKeys(type::Struct& lhs, const type::Struct& rhs, property_set_t includedSet)
+    {
+        using namespace type;
+        
+        property_set_t updateSet = (lhs._validProperties() + rhs._validProperties()) ^ includedSet;
+
+        PropertyArea& lhsArea = lhs._propertyArea();
+        const PropertyArea& rhsArea = rhs._propertyArea();
+
+        property_set_t& lhsValidSet = lhsArea.validProperties();
+        property_set_t rhsValidSet = rhsArea.validProperties();
+
+        for (const auto& propertyDescriptor_ : m_noKeyPropertyDescriptors)
+        {
+            const PropertyDescriptor& propertyDescriptor = propertyDescriptor_.get();
+
+            if (property_set_t propertySet = propertyDescriptor.set(); propertySet <= updateSet)
+            {
+                const Descriptor<>& valueDescriptor = propertyDescriptor.valueDescriptor();
+                auto& lhsValue = lhsArea.getProperty<Typeless>(propertyDescriptor.offset());
+                
+                if (propertySet <= rhsValidSet)
+                {
+                    const auto& rhsValue = rhsArea.getProperty<Typeless>(propertyDescriptor.offset());
+
+                    if (propertySet <= lhsValidSet)
+                    {
+                        valueDescriptor.assign(lhsValue, rhsValue);
+                    }
+                    else
+                    {
+                        valueDescriptor.constructInPlace(lhsValue, rhsValue);
+                        lhsValidSet += propertySet;
+                    }
+                }
+                else
+                {
+                    valueDescriptor.destruct(lhsValue);
+                    lhsValidSet -= propertySet;
+                }
+            }
+        }
     }
 }

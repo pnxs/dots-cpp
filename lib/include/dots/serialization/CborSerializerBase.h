@@ -25,12 +25,12 @@ namespace dots::serialization
 
         using serializer_base_t::output;
 
+        using serializer_base_t::inputData;
+        using serializer_base_t::inputDataEnd;
+
     protected:
 
         friend serializer_base_t;
-
-        using serializer_base_t::inputData;
-        using serializer_base_t::inputDataEnd;
 
         struct Cbor
         {

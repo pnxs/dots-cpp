@@ -28,6 +28,7 @@ namespace dots::io::posix
         boost::asio::local::stream_protocol::endpoint m_endpoint;
         boost::asio::local::stream_protocol::acceptor m_acceptor;
         boost::asio::local::stream_protocol::socket m_socket;
+        UdsChannel::payload_cache_t m_payloadCache;
     };
 }
 #else
