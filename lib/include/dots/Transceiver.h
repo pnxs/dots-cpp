@@ -406,7 +406,7 @@ namespace dots
             if constexpr (IsTypeHandler)
             {
                 return subscribe(new_type_handler_t{
-                    [handler{ std::forward<TypeHandler>(handler) }] (auto&... args, const type::Descriptor<>& descriptor) mutable
+                    [handler{ std::forward<TypeHandler>(handler) }] (Args&... args, const type::Descriptor<>& descriptor) mutable
                     {
                         auto handle_type = [&](const auto* wantedDescriptor)
                         {
