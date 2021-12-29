@@ -126,8 +126,8 @@ namespace dots
         setConnectionState(DotsConnectionState::connecting);
         m_channel->init(registry);
         m_channel->asyncReceive(
-            [this](io::Transmission transmission){ return handleReceive(std::move(transmission)); },
-            [this](std::exception_ptr ePtr){ handleError(ePtr); }
+            { &Connection::handleReceive, this },
+            { &Connection::handleError, this }
         );
 
         if (m_selfId == HostId)

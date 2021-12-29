@@ -22,8 +22,8 @@ namespace dots
         m_listeners.emplace(listenerPtr, std::move(listener));
 
         listenerPtr->asyncAccept(
-            [this](io::Listener& listener, io::channel_ptr_t channel){ return handleListenAccept(listener, std::move(channel)); },
-            [this](io::Listener& listener, std::exception_ptr ePtr){ handleListenError(listener, ePtr); }
+            { &HostTransceiver::handleListenAccept, this },
+            { &HostTransceiver::handleListenError, this }
         );
 
         return *listenerPtr;
@@ -109,8 +109,8 @@ namespace dots
     {
         auto connection = std::make_shared<Connection>(std::move(channel), true);
         connection->asyncReceive(registry(), m_authManager.get(), selfName(),
-            [this](Connection& connection, io::Transmission transmission) { return handleTransmission(connection, std::move(transmission)); },
-            [this](Connection& connection, std::exception_ptr ePtr) { handleTransition(connection, ePtr); }
+            { &HostTransceiver::handleTransmission, this },
+            { &HostTransceiver::handleTransition, this }
         );
         m_guestConnections.emplace(connection.get(), connection);
 
