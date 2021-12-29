@@ -47,8 +47,8 @@ namespace dots::io
         void verifyErrorCode(const boost::system::error_code& ec);
         void setDefaultSocketOptions();
 
-        receive_handler_t m_cb;
-        error_handler_t m_ecb;
+        std::optional<receive_handler_t> m_cb;
+        std::optional<error_handler_t> m_ecb;
 
         boost::asio::ip::tcp::resolver m_resolver;
     };

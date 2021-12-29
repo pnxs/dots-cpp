@@ -9,7 +9,7 @@ namespace dots
     HostTransceiver::HostTransceiver(std::string selfName/* = "DotsHostTransceiver"*/,
                                      boost::asio::io_context& ioContext/* = global_io_context()*/,
                                      type::Registry::StaticTypePolicy staticTypePolicy /*= type::Registry::StaticTypePolicy::All*/,
-                                     transition_handler_t transitionHandler/* = nullpt*/) :
+                                     std::optional<transition_handler_t> transitionHandler/* = std::nullopt*/) :
         Transceiver(std::move(selfName), ioContext, staticTypePolicy),
         m_transitionHandler{ std::move(transitionHandler) }
     {
@@ -176,7 +176,7 @@ namespace dots
         {
             try
             {
-                m_transitionHandler(connection);
+                (*m_transitionHandler)(connection);
             }
             catch (const std::exception& e)
             {

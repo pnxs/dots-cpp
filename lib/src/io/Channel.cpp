@@ -55,11 +55,6 @@ namespace dots::io
 
         assert(m_initialized);
 
-        if (receiveHandler == nullptr || errorHandler == nullptr)
-        {
-            throw std::logic_error{ "both a receive and an error handler must be set" };
-        }
-
         m_receiveHandler = std::move(receiveHandler);
         m_errorHandler = std::move(errorHandler);
         m_asyncReceiving = true;
@@ -130,7 +125,7 @@ namespace dots::io
             // note: if the receive handler yields 'false', the channel must no
             // longer be accessed afterwards, because it might have already been
             // deleted by the callee prior to returning
-            if (m_receiveHandler(std::move(transmission)))
+            if ((*m_receiveHandler)(std::move(transmission)))
             {
                 asyncReceiveImpl();
             }
@@ -146,7 +141,7 @@ namespace dots::io
         try
         {
             m_asyncReceiving = false;
-            m_errorHandler(ePtr);
+            (*m_errorHandler)(ePtr);
         }
         catch (const std::exception& e)
         {

@@ -2,6 +2,7 @@
 #include <string_view>
 #include <tuple>
 #include <optional>
+#include <dots/tools/Handler.h>
 #include <dots/io/Channel.h>
 #include <dots/io/auth/AuthManager.h>
 #include <dots/serialization/StringSerializer.h>
@@ -45,8 +46,8 @@ namespace dots
         static constexpr id_t HostId = 1;
         static constexpr id_t FirstGuestId = 2;
 
-        using receive_handler_t = std::function<bool(Connection&, io::Transmission)>;
-        using transition_handler_t = std::function<void(Connection&, std::exception_ptr)>;
+        using receive_handler_t = tools::Handler<bool(Connection&, io::Transmission)>;
+        using transition_handler_t = tools::Handler<void(Connection&, std::exception_ptr)>;
 
         /*!
          * @brief Construct a new Connection object.
@@ -324,7 +325,7 @@ namespace dots
 
     private:
 
-        using system_type_t = std::tuple<const type::StructDescriptor<>*, types::property_set_t, std::function<void(const type::Struct&)>>;
+        using system_type_t = std::tuple<const type::StructDescriptor<>*, types::property_set_t, std::optional<tools::Handler<void(const type::Struct&)>>>;
 
         static constexpr serialization::StringSerializerOptions StringOptions = { serialization::StringSerializerOptions::MultiLine };
 
@@ -359,8 +360,8 @@ namespace dots
         std::optional<io::Nonce> m_nonce;
 
         io::AuthManager* m_authManager;
-        receive_handler_t m_receiveHandler;
-        transition_handler_t m_transitionHandler;
+        std::optional<receive_handler_t> m_receiveHandler;
+        std::optional<transition_handler_t> m_transitionHandler;
     };
 
     using connection_ptr_t = std::shared_ptr<Connection>;

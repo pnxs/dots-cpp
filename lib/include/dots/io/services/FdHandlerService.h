@@ -3,6 +3,7 @@
 #if defined(BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR)
 #include <functional>
 #include <map>
+#include <dots/tools/Handler.h>
 #include <dots/io/services/FdHandler.h>
 
 namespace dots::io::posix
@@ -10,7 +11,7 @@ namespace dots::io::posix
     struct FdHandlerService : boost::asio::execution_context::service
     {
         using key_type = FdHandlerService;
-        using callback_t = std::function<void()>;
+        using callback_t = tools::Handler<void()>;
 
         explicit FdHandlerService(boost::asio::execution_context& executionContext);
         FdHandlerService(const FdHandlerService& other) = delete;

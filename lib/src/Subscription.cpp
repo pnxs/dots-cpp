@@ -11,7 +11,7 @@ namespace dots
     Subscription::Subscription(Subscription&& other) noexcept :
         m_handler(std::move(other.m_handler))
     {
-        other.m_handler = nullptr;
+        other.m_handler = std::nullopt;
     }
 
     Subscription::~Subscription()
@@ -24,22 +24,22 @@ namespace dots
         unsubscribe();
 
         m_handler = std::move(rhs.m_handler);
-        rhs.m_handler = nullptr;
+        rhs.m_handler = std::nullopt;
 
         return *this;
     }
 
     void Subscription::unsubscribe()
     {
-        if (m_handler != nullptr)
+        if (m_handler != std::nullopt)
         {
-            m_handler();
-            m_handler = nullptr;
+            (*m_handler)();
+            m_handler = std::nullopt;
         }
     }
 
     void Subscription::discard()
     {
-        m_handler = nullptr;
+        m_handler = std::nullopt;
     }
 }

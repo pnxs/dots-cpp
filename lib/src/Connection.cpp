@@ -36,7 +36,7 @@
 namespace dots
 {
     Connection::Connection(io::channel_ptr_t channel, bool host, std::optional<std::string> authSecret/* = std::nullopt*/) :
-        m_expectedSystemType{ &DotsMsgError::_Descriptor(), types::property_set_t::None, nullptr },
+        m_expectedSystemType{ &DotsMsgError::_Descriptor(), types::property_set_t::None, std::nullopt },
         m_connectionState(DotsConnectionState::suspended),
         m_selfId(host ? HostId : UninitializedId),
         m_peerId(host ? M_nextGuestId++ : HostId),
@@ -117,11 +117,6 @@ namespace dots
         if (m_connectionState != DotsConnectionState::suspended)
         {
             throw std::logic_error{ "only one async receive can be started on a connection" };
-        }
-
-        if (receiveHandler == nullptr || transitionHandler == nullptr)
-        {
-            throw std::logic_error{ "both a receive and a transition handler must be set" };
         }
 
         m_authManager = authManager;
@@ -250,7 +245,7 @@ namespace dots
                 instance._assertIs(expectedType);
                 instance._assertHasProperties(expectedProperties); // note: subsets are allowed for backwards compatibility with old implementation
 
-                handler(instance);
+                (*handler)(instance);
                 return true;
             }
         }
@@ -273,7 +268,7 @@ namespace dots
                     }
 
                     header.isFromMyself = header.sender == m_selfId;
-                    return m_receiveHandler(*this, std::move(transmission));
+                    return (*m_receiveHandler)(*this, std::move(transmission));
                 }
                 else
                 {
@@ -285,13 +280,13 @@ namespace dots
                     if (header.sender.isValid())
                     {
                         header.isFromMyself = header.sender == m_selfId;
-                        return m_receiveHandler(*this, std::move(transmission));
+                        return (*m_receiveHandler)(*this, std::move(transmission));
                     }
                     else
                     {
                         header.sender(m_peerId);
                         header.isFromMyself = false;
-                        return m_receiveHandler(*this, std::move(transmission));
+                        return (*m_receiveHandler)(*this, std::move(transmission));
                     }
                 }
             }
@@ -304,7 +299,7 @@ namespace dots
 
     void Connection::handleClose(std::exception_ptr ePtr)
     {
-        m_receiveHandler = nullptr;
+        m_receiveHandler = std::nullopt;
         expectSystemType<DotsMsgError>(types::property_set_t::None, nullptr);
         setConnectionState(DotsConnectionState::closed, ePtr);
     }
@@ -468,7 +463,7 @@ namespace dots
 
         try
         {
-            m_transitionHandler(*this, e);
+            (*m_transitionHandler)(*this, e);
         }
         catch (const std::exception& e)
         {

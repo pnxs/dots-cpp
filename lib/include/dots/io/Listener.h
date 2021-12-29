@@ -1,14 +1,15 @@
 #pragma once
-#include <functional>
 #include <memory>
+#include <optional>
+#include <dots/tools/Handler.h>
 #include <dots/io/Channel.h>
 
 namespace dots::io
 {
     struct Listener
     {
-        using accept_handler_t = std::function<bool(Listener&, channel_ptr_t)>;
-        using error_handler_t = std::function<void(Listener&, std::exception_ptr)>;
+        using accept_handler_t = tools::Handler<bool(Listener&, channel_ptr_t)>;
+        using error_handler_t = tools::Handler<void(Listener&, std::exception_ptr)>;
 
         Listener() = default;
         Listener(const Listener& other) = delete;
@@ -31,8 +32,8 @@ namespace dots::io
     private:
 
         bool m_asyncAcceptActive = false;
-        accept_handler_t m_acceptHandler;
-        error_handler_t m_errorHandler;
+        std::optional<accept_handler_t> m_acceptHandler;
+        std::optional<error_handler_t> m_errorHandler;
     };
 
     using listener_ptr_t = std::unique_ptr<Listener>;

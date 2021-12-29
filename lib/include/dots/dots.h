@@ -22,8 +22,8 @@
  * DOTS_NO_GLOBAL_TRANSCEIVER to the preprocessor.
  */
 
-#include <functional>
 #include <string_view>
+#include <dots/tools/Handler.h>
 #include <dots/type/Chrono.h>
 #include <dots/Timer.h>
 #include <dots/GuestTransceiver.h>
@@ -67,7 +67,7 @@ namespace dots
      * can be used to cancel the timer prematurely (see
      * dots::remove_timer()).
      */
-    Timer::id_t add_timer(type::Duration timeout, std::function<void()> handler, bool periodic = false);
+    Timer::id_t add_timer(type::Duration timeout, tools::Handler<void()> handler, bool periodic = false);
 
     /*!
      * @brief Remove an active timer from the global timer service.
@@ -122,7 +122,7 @@ namespace dots
      * @exception std::logic_error Thrown if there already is a handler
      * registered for the given file descriptor.
      */
-    void add_fd_handler(int fileDescriptor, std::function<void()> handler);
+    void add_fd_handler(int fileDescriptor, tools::Handler<void()> handler);
 
     /*!
      * @brief Remove an active file descriptor handler from the global file
