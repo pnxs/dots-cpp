@@ -51,7 +51,10 @@ namespace dots::tools
         HandlerBase(Invocable&& invocable, BindHead&& bindHead, BindTail&&... bindTail) :
             m_handler{ [invocable{ std::forward<Invocable>(invocable) }, bindTuple = std::make_tuple(std::forward<BindHead>(bindHead), std::forward<BindTail>(bindTail)...)](Args... args) -> R
             {
-                return std::apply(invocable, std::tuple_cat(bindTuple, std::forward_as_tuple(args...)));
+                return std::apply([&](auto&&... bindArgs)
+                {
+                    return std::invoke(invocable, std::forward<decltype(bindArgs)>(bindArgs)..., std::forward<Args>(args)...);
+                }, bindTuple);
             } }
         {
             /* do nothing */
@@ -59,9 +62,12 @@ namespace dots::tools
 
         template <typename Invocable, typename BindHead, typename... BindTail, std::enable_if_t<is_mutable_compatible<Invocable, BindHead, BindTail...>::value, int> = 0>
         HandlerBase(Invocable&& invocable, BindHead&& bindHead, BindTail&&... bindTail) :
-            m_handler{ [invocable{ std::forward<Invocable>(invocable) }, bindTuple = std::make_tuple(std::forward<BindHead>(bindHead), std::forward<BindTail>(bindTail)...)](Args... args) mutable  -> R
+            m_handler{ [invocable{ std::forward<Invocable>(invocable) }, bindTuple = std::make_tuple(std::forward<BindHead>(bindHead), std::forward<BindTail>(bindTail)...)](Args... args) mutable -> R
             {
-                return std::apply(invocable, std::tuple_cat(bindTuple, std::forward_as_tuple(args...)));
+                return std::apply([&](auto&&... bindArgs)
+                {
+                    return std::invoke(invocable, std::forward<decltype(bindArgs)>(bindArgs)..., std::forward<Args>(args)...);
+                }, bindTuple);
             } }
         {
             /* do nothing */
