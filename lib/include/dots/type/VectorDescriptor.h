@@ -68,7 +68,7 @@ namespace dots::type
 
             if (valueDescriptor().usesDynamicMemory())
             {
-                for (const T& value : lhs)
+                for (const auto& value : lhs)
                 {
                     dynMemUsage += valueDescriptor().dynamicMemoryUsage(value);
                 }
