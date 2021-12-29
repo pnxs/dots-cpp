@@ -83,17 +83,17 @@ TEST(TestDispatcher, addEventHandler_AllowsUsageOfVariousHandlerTypes)
     sut.addEventHandler<DotsTestStruct>(Foobar::StaticEventHandler);
 
     // non-static member function
-    sut.addEventHandler<DotsTestStruct>(&Foobar::NonStaticEventHandler, this_);
+    sut.addEventHandler<DotsTestStruct>({ &Foobar::NonStaticEventHandler, this_ });
 
     // non-static const member function
-    sut.addEventHandler<DotsTestStruct>(&Foobar::NonStaticEventHandlerConst, this_);
+    sut.addEventHandler<DotsTestStruct>({ &Foobar::NonStaticEventHandlerConst, this_ });
 
     // function pointer
     auto fPtr = &Foobar::StaticEventHandler;
     sut.addEventHandler<DotsTestStruct>(fPtr);
 
     // handler with bindings
-    sut.addEventHandler<DotsTestStruct>(&Foobar::NonStaticEventHandlerWithBindings, this_, 5, 2.3f);
+    sut.addEventHandler<DotsTestStruct>({ &Foobar::NonStaticEventHandlerWithBindings, this_, 5, 2.3f });
 
     sut.dispatch(dots::Transmission{ header, dts });
 

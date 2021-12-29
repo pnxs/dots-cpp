@@ -173,6 +173,60 @@ namespace dots
         Subscription subscribe(const type::StructDescriptor<>& descriptor, event_handler_t<> handler);
 
         /*!
+         * @brief Subscribe to events of a specific type.
+         *
+         * This will create a subscription to a given type and cause the given
+         * handler to be invoked asynchronously every time a corresponding DOTS
+         * event occurs. For cached types, events are created after the local
+         * Container has been updated.
+         *
+         * Note that the @p handler can be any compatible invocable object,
+         * including lambdas and class member functions:
+         *
+         * @code{.cpp}
+         * // subscribing to events of a DOTS struct type Foobar with lambda handler
+         * transceiver.subscribe<Foobar>([](const dots::Event<Foobar>& event)
+         * {
+         *     // ...
+         * });
+         *
+         * // subscribing to events of a DOTS struct type Foobar with member function
+         * transceiver.subscribe<Foobar>({ &SomeClass::handleFoobar, this });
+         * @endcode
+         *
+         * @tparam T The type to subscribe to.
+         *
+         * @param handler The handler to invoke asynchronously every time a
+         * corresponding DOTS event occurs. If the given type is a cached type
+         * and the corresponding Container is not empty, the given handler will
+         * also be invoked synchronously with create events for each contained
+         * instance before this function returns.
+         *
+         * @return Subscription The Subscription object that manages the state
+         * of the subscription. The subscription will stay active until the
+         * object is destroyed or Subscription::unsubscribe() is called
+         * manually.
+         */
+        template<typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
+        Subscription subscribe(event_handler_t<T> handler)
+        {
+            constexpr bool NotSubStructOnly = !T::_SubstructOnly;
+            static_assert(NotSubStructOnly, "it is not allowed to subscribe to a struct that is marked with 'sub-struct only'!");
+
+            if constexpr (NotSubStructOnly)
+            {
+                joinGroup(T::_Descriptor().name());
+                Dispatcher::id_t id = m_dispatcher.addEventHandler(std::move(handler));
+
+                return makeSubscription([&, id]{ m_dispatcher.removeEventHandler(T::_Descriptor(), id); });
+            }
+            else
+            {
+                return std::declval<Subscription>();
+            }
+        }
+
+        /*!
          * @brief Subscribe to transmissions of a specific type by name.
          *
          * This function is similar to the overload accepting a descriptor,
@@ -339,15 +393,11 @@ namespace dots
          * object is destroyed or Subscription::unsubscribe() is called
          * manually.
          */
-        template<typename T, typename EventHandler, typename... Args, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
+        template<typename T, typename EventHandler, typename... Args, std::enable_if_t<sizeof...(Args) >= 1 && std::is_base_of_v<type::Struct, T>, int> = 0>
+        [[deprecated("superseded by event_handler_t<T> overload")]]
         Subscription subscribe(EventHandler&& handler, Args&&... args)
         {
-            static_assert(!T::_SubstructOnly, "it is not allowed to subscribe to a struct that is marked with 'substruct_only'!");
-
-            joinGroup(T::_Descriptor().name());
-            Dispatcher::id_t id = m_dispatcher.addEventHandler<T>(std::forward<EventHandler>(handler), std::forward<Args>(args)...);
-
-            return makeSubscription([&, id]{ m_dispatcher.removeEventHandler(T::_Descriptor(), id); });
+            return subscribe(event_handler_t<T>{ std::forward<EventHandler>(handler), std::forward<Args>(args)... });
         }
 
         /*!

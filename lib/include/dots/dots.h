@@ -338,6 +338,57 @@ namespace dots
      * });
      *
      * // subscribing to events of a DOTS struct type Foobar member function
+     * dots::subscribe<Foobar>{ (&SomeClass::handleFoobar, this });
+     * @endcode
+     *
+     * @tparam T The type to subscribe to.
+     *
+     * @param handler The handler to invoke asynchronously every time a
+     * corresponding DOTS event occurs. If the given type is a cached type
+     * and the corresponding Container is not empty, the given handler will
+     * also be invoked synchronously with create events for each contained
+     * instance before this function returns.
+     *
+     * @return Subscription The Subscription object that manages the state
+     * of the subscription. The subscription will stay active until the
+     * object is destroyed or Subscription::unsubscribe() is called
+     * manually.
+     */
+    template<typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
+    Subscription subscribe(Transceiver::event_handler_t<T> handler)
+    {
+        io::register_global_subscribe_type<T>();
+        return transceiver().subscribe<T>(std::move(handler));
+    }
+
+    /*!
+     * @brief Subscribe to events of a specific type via the global
+     * transceiver.
+     *
+     * This will effectively call GuestTransceiver::subscribe() on the
+     * global transceiver returned by dots::transceiver().
+     *
+     * Calling this function will create a subscription to a given type and
+     * cause the given handler to be invoked asynchronously every time a
+     * corresponding DOTS event occurs. For cached types, events are
+     * created after the local Container has been updated.
+     *
+     * Instantiating this template will also register \p T as a global
+     * subscribe type. When using the dots::Application, this will result
+     * in the type's cache being preloaded while the connection is being
+     * established
+     *
+     * Note that the @p handler can be any compatible invocable object,
+     * including lambdas and class member functions:
+     *
+     * @code{.cpp}
+     * // subscribing to events of a DOTS struct type Foobar with lambda handler
+     * dots::subscribe<Foobar>([](const dots::Event<Foobar>& event)
+     * {
+     *     // ...
+     * });
+     *
+     * // subscribing to events of a DOTS struct type Foobar member function
      * dots::subscribe<Foobar>(&SomeClass::handleFoobar, this);
      * @endcode
      *
@@ -364,11 +415,11 @@ namespace dots
      * object is destroyed or Subscription::unsubscribe() is called
      * manually.
      */
-    template<typename T, typename EventHandler, typename... Args, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
+    template<typename T, typename EventHandler, typename... Args, std::enable_if_t<sizeof...(Args) >= 1 && std::is_base_of_v<type::Struct, T>, int> = 0>
+    [[deprecated("superseded by Transceiver::event_handler_t<T> overload")]]
     Subscription subscribe(EventHandler&& handler, Args&&... args)
     {
-        io::register_global_subscribe_type<T>();
-        return transceiver().subscribe<T>(std::forward<EventHandler>(handler), std::forward<Args>(args)...);
+        return subscribe<T>(Transceiver::event_handler_t<T>{ std::forward<EventHandler>(handler), std::forward<Args>(args)... });
     }
 
     /*!
