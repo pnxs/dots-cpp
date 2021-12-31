@@ -362,6 +362,53 @@ namespace dots
     }
 
     /*!
+     * @brief Subscribe to new types of a specific category via the global
+     * transceiver.
+     *
+     * This will effectively call GuestTransceiver::subscribe() on the
+     * global transceiver returned by dots::transceiver().
+     *
+     * Calling this will create a subscription to new types of a given
+     * category and cause the given handler to be invoked whenever a
+     * corresponding type is added to the registry.
+     *
+     * The descriptor category can be specified as a DOTS descriptor type.
+     * Additionally, @p handler can be any compatible invocable object.
+     *
+     * For example:
+     *
+     * @code{.cpp}
+     * // subscribing to new struct types with lambda handler
+     * dots::subscribe<dots::type::StructDescriptor<>>([](const auto& descriptor)
+     * {
+     *     // ...
+     * });
+     *
+     * // subscribing to new vector types with member function
+     * dots::subscribe<dots::type::VectorDescriptor>({ &SomeClass::handleNewVector, this });
+     * @endcode
+     *
+     * @tparam TDescriptor The descriptor type (e.g.
+     * dots::type::StructDescriptor<>).
+     *
+     * @param handler The handler to invoke asynchronously every time a
+     * type of the given category is added to the registry. If the registry
+     * already contains types of the given category, the given handler will
+     * also be invoked synchronously with all such currently known types
+     * before this function returns.
+     *
+     * @return Subscription The Subscription object that manages the state
+     * of the subscription. The subscription will stay active until the
+     * object is destroyed or Subscription::unsubscribe() is called
+     * manually.
+     */
+    template <typename TDescriptor, std::enable_if_t<std::is_base_of_v<type::Descriptor<>, TDescriptor>, int> = 0>
+    Subscription subscribe(Transceiver::new_type_handler_t<TDescriptor> handler)
+    {
+        return transceiver().subscribe<TDescriptor>(std::move(handler));
+    }
+
+    /*!
      * @brief Subscribe to events of a specific type via the global
      * transceiver.
      *
@@ -474,7 +521,8 @@ namespace dots
      * object is destroyed or Subscription::unsubscribe() is called
      * manually.
      */
-    template <typename... TDescriptors, typename TypeHandler, typename... Args, std::enable_if_t<sizeof...(TDescriptors) >= 1 && std::conjunction_v<std::is_base_of<type::Descriptor<>, TDescriptors>...>, int> = 0>
+    template <typename... TDescriptors, typename TypeHandler, typename... Args, std::enable_if_t<sizeof...(Args) >= 1 && sizeof...(TDescriptors) >= 1 && std::conjunction_v<std::is_base_of<type::Descriptor<>, TDescriptors>...>, int> = 0>
+    [[deprecated("superseded by new_type_handler_t<T> overload")]]
     Subscription subscribe(TypeHandler&& handler, Args&&... args)
     {
         return transceiver().subscribe<TDescriptors...>(std::forward<TypeHandler>(handler), std::forward<Args>(args)...);

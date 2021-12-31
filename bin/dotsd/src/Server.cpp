@@ -36,7 +36,7 @@ namespace dots
             m_hostTransceiver.listen(std::move(listener));
         }
 
-        m_descriptorSubscription.emplace(m_hostTransceiver.subscribe<type::StructDescriptor<>>(&Server::handleNewStructType, this));
+        m_descriptorSubscription.emplace(m_hostTransceiver.subscribe<type::StructDescriptor<>>({ &Server::handleNewStructType, this }));
         m_hostTransceiver.setAuthManager<io::LegacyAuthManager>();
     }
 

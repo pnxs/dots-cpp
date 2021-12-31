@@ -29,7 +29,8 @@ namespace dots
         template <typename T = type::Struct>
         using event_handler_t = Dispatcher::event_handler_t<T>;
 
-        using new_type_handler_t = type::Registry::new_type_handler_t;
+        template <typename TDescriptor = type::Descriptor<>>
+        using new_type_handler_t = tools::Handler<void(const TDescriptor&)>;
 
         /*!
          * @brief Construct a new Transceiver object.
@@ -305,7 +306,58 @@ namespace dots
          * object is destroyed or Subscription::unsubscribe() is called
          * manually.
          */
-        Subscription subscribe(new_type_handler_t handler);
+        Subscription subscribe(new_type_handler_t<> handler);
+
+        /*!
+         * @brief Subscribe to new types of a specific category.
+         *
+         * This will create a subscription to new types of a given category and
+         * cause the given handler to be invoked whenever a corresponding type
+         * is added to the registry.
+         *
+         * The descriptor category can be specified as a DOTS descriptor type.
+         * Additionally, @p handler can be any compatible invocable object.
+         *
+         * For example:
+         *
+         * @code{.cpp}
+         * // subscribing to new struct types with lambda handler
+         * transceiver.subscribe<dots::type::StructDescriptor<>>([](const auto& descriptor)
+         * {
+         *     // ...
+         * });
+         *
+         * // subscribing to new vector types with member function
+         * transceiver.subscribe<dots::type::VectorDescriptor>({ &SomeClass::handleNewVector, this });
+         * @endcode
+         *
+         * @tparam TDescriptor The descriptor type (e.g.
+         * dots::type::StructDescriptor<>).
+         *
+         * @param handler The handler to invoke asynchronously every time a
+         * type of the given category is added to the registry. If the registry
+         * already contains types of the given category, the given handler will
+         * also be invoked synchronously with all such currently known types
+         * before this function returns.
+         *
+         * @return Subscription The Subscription object that manages the state
+         * of the subscription. The subscription will stay active until the
+         * object is destroyed or Subscription::unsubscribe() is called
+         * manually.
+         */
+        template <typename TDescriptor, std::enable_if_t<std::is_base_of_v<type::Descriptor<>, TDescriptor>, int> = 0>
+        Subscription subscribe(new_type_handler_t<TDescriptor> handler)
+        {
+            return subscribe(new_type_handler_t<>{
+                [handler{ std::move(handler) }](const type::Descriptor<>& descriptor)
+                {
+                    if (auto* wantedDescriptor = descriptor.as<TDescriptor>(); wantedDescriptor != nullptr)
+                    {
+                        std::invoke(handler, *wantedDescriptor);
+                    }
+                }
+            });
+        }
 
         /*!
          * @brief Publish an instance of a DOTS struct type.
@@ -447,7 +499,8 @@ namespace dots
          * object is destroyed or Subscription::unsubscribe() is called
          * manually.
          */
-        template <typename... TDescriptors, typename TypeHandler, typename... Args, std::enable_if_t<sizeof...(TDescriptors) >= 1 && std::conjunction_v<std::is_base_of<type::Descriptor<>, TDescriptors>...>, int> = 0>
+        template <typename... TDescriptors, typename TypeHandler, typename... Args, std::enable_if_t<sizeof...(Args) >= 1 && sizeof...(TDescriptors) >= 1 && std::conjunction_v<std::is_base_of<type::Descriptor<>, TDescriptors>...>, int> = 0>
+        [[deprecated("superseded by new_type_handler_t<T> overload")]]
         Subscription subscribe(TypeHandler&& handler, Args&&... args)
         {
             constexpr bool IsTypeHandler = std::conjunction_v<std::is_invocable<TypeHandler, Args&..., const TDescriptors&>...>;
@@ -455,7 +508,7 @@ namespace dots
 
             if constexpr (IsTypeHandler)
             {
-                return subscribe(new_type_handler_t{
+                return subscribe(new_type_handler_t<>{
                     [handler{ std::forward<TypeHandler>(handler) }] (Args&... args, const type::Descriptor<>& descriptor) mutable
                     {
                         auto handle_type = [&](const auto* wantedDescriptor)
@@ -487,7 +540,7 @@ namespace dots
     private:
 
         using id_t = uint64_t;
-        using new_type_handlers_t = std::map<id_t, new_type_handler_t, std::greater<>>;
+        using new_type_handlers_t = std::map<id_t, new_type_handler_t<>, std::greater<>>;
 
         virtual void joinGroup(std::string_view name) = 0;
         virtual void leaveGroup(std::string_view name) = 0;
