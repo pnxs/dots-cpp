@@ -3,7 +3,8 @@
 namespace dots::io
 {
     TimerService::TimerService(boost::asio::execution_context& executionContext) :
-        boost::asio::execution_context::service(executionContext)
+        boost::asio::execution_context::service(executionContext),
+        m_lastTimerId(0)
     {
         /* do nothing */
     }

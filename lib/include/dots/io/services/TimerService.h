@@ -26,7 +26,7 @@ namespace dots::io
 
         void shutdown() noexcept override;
 
-        inline static Timer::id_t m_lastTimerId = 0;
+        Timer::id_t m_lastTimerId;
         std::map<Timer::id_t, Timer> m_timers;
     };
 }
