@@ -104,6 +104,9 @@ namespace dots::tools
         using HandlerBase<R>::HandlerBase;
     };
 
+    struct static_argument_cast_tag{};
+    constexpr static_argument_cast_tag static_argument_cast;
+
     template <typename R, typename Arg>
     struct Handler<R(Arg)> : HandlerBase<R, Arg>
     {
@@ -116,11 +119,11 @@ namespace dots::tools
         using HandlerBase<R, Arg>::HandlerBase;
 
         template <typename ArgOther, std::enable_if_t<is_compatible_by_argument<ArgOther>::value, int> = 0>
-        explicit Handler(Handler<R(ArgOther)>&& other)
+        Handler(static_argument_cast_tag, Handler<R(ArgOther)>&& other)
         {
-            HandlerBase<R, Arg>::m_handler = [invocable{ std::move(other.m_handler)}](Arg arg) -> R
+            HandlerBase<R, Arg>::m_handler = [handler{ std::move(other.m_handler)}](Arg arg) -> R
             {
-                return std::invoke(invocable, static_cast<ArgOther>(arg));
+                return std::invoke(handler, static_cast<ArgOther>(arg));
             };
         }
 

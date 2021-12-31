@@ -171,7 +171,7 @@ namespace dots
 
             if constexpr (IsTopLevelStruct)
             {
-                return addEventHandler(T::_Descriptor(), event_handler_t<>{ std::move(handler) });
+                return addEventHandler(T::_Descriptor(), event_handler_t<>{ tools::static_argument_cast, std::move(handler) });
             }
             else
             {
