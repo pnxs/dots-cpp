@@ -11,69 +11,41 @@ namespace dots::tools
         using args_t = std::tuple<Args...>;
 
         template <typename Invocable>
-        using is_compatible_invocable = std::conjunction<
+        static constexpr bool is_compatible_v = std::conjunction_v<
             std::negation<std::is_same<std::decay_t<Invocable>, HandlerBase>>,
             std::is_invocable_r<R, std::decay_t<Invocable>, Args...>
         >;
-
-        template <typename Invocable, typename... BindArgs>
-        using is_const_compatible_invocable = std::conjunction<
-            std::negation<std::is_member_function_pointer<std::decay_t<Invocable>>>,
-            std::is_invocable_r<R, const std::decay_t<Invocable>, const std::decay_t<BindArgs>&..., Args...>
-        >;
         
         template <typename Invocable, typename... BindArgs>
-        using is_mutable_compatible_invocable = std::conjunction<
+        static constexpr bool is_bind_compatible_v = std::conjunction_v<
             std::negation<std::is_member_function_pointer<std::decay_t<Invocable>>>,
             std::is_invocable_r<R, std::decay_t<Invocable>, std::decay_t<BindArgs>&..., Args...>
         >;
 
         template <typename MemFn, typename Obj, typename... BindArgs>
-        using is_const_compatible_member_function = std::conjunction<
+        static constexpr bool is_bind_compatible_member_function_v = std::conjunction_v<
             std::is_member_function_pointer<std::decay_t<MemFn>>,
             std::is_pointer<std::decay_t<Obj>>,
-            std::is_invocable_r<R, const std::decay_t<MemFn>, const std::remove_pointer_t<std::decay_t<Obj>>*, const std::decay_t<BindArgs>&..., Args...>
+            std::is_invocable_r<R, std::decay_t<MemFn>, std::decay_t<Obj>, std::decay_t<BindArgs>&..., Args...>
         >;
 
-        template <typename MemFn, typename Obj, typename... BindArgs>
-        using is_mutable_compatible_member_function = std::conjunction<
-            std::is_member_function_pointer<std::decay_t<MemFn>>,
-            std::is_pointer<std::decay_t<Obj>>,
-            std::negation<std::is_invocable_r<R, std::decay_t<MemFn>, const std::remove_pointer_t<std::decay_t<Obj>>*, const BindArgs&..., Args...>>,
-            std::is_invocable_r<R, std::decay_t<MemFn>, std::remove_pointer_t<std::decay_t<Obj>>*, std::decay_t<BindArgs>&..., Args...>
-        >;
-
-        template <typename Invocable, std::enable_if_t<is_compatible_invocable<Invocable>::value, int> = 0>
+        template <typename Invocable, std::enable_if_t<is_compatible_v<Invocable>, int> = 0>
         HandlerBase(Invocable&& invocable) :
             m_handler{ std::forward<Invocable>(invocable) }
         {
             /* do nothing */
         }
 
-        template <typename Invocable, typename... BindArgs, std::enable_if_t<is_const_compatible_invocable<Invocable, BindArgs...>::value, int> = 0>
+        template <typename Invocable, typename... BindArgs, std::enable_if_t<is_bind_compatible_v<Invocable, BindArgs...>, int> = 0>
         HandlerBase(Invocable&& invocable, BindArgs&&... bindArgs) :
-            m_handler{ wrapConstInvocable(std::forward<Invocable>(invocable), std::forward<BindArgs>(bindArgs)...) }
+            m_handler{ wrapInvocable(std::forward<Invocable>(invocable), std::forward<BindArgs>(bindArgs)...) }
         {
             /* do nothing */
         }
 
-        template <typename Invocable, typename... BindArgs, std::enable_if_t<is_mutable_compatible_invocable<Invocable, BindArgs...>::value, int> = 0>
-        HandlerBase(Invocable&& invocable, BindArgs&&... bindArgs) :
-            m_handler{ wrapMutableInvocable(std::forward<Invocable>(invocable), std::forward<BindArgs>(bindArgs)...) }
-        {
-            /* do nothing */
-        }
-
-        template <typename MemFn, typename Obj, typename... BindArgs, std::enable_if_t<is_const_compatible_member_function<MemFn, Obj, BindArgs...>::value, int> = 0>
+        template <typename MemFn, typename Obj, typename... BindArgs, std::enable_if_t<is_bind_compatible_member_function_v<MemFn, Obj, BindArgs...>, int> = 0>
         HandlerBase(MemFn&& memFn, Obj&& obj, BindArgs&&... bindArgs) :
-            m_handler{ wrapConstInvocable(std::forward<MemFn>(memFn), std::forward<Obj>(obj), std::forward<BindArgs>(bindArgs)...) }
-        {
-            /* do nothing */
-        }
-
-        template <typename MemFn, typename Obj, typename... BindArgs, std::enable_if_t<is_mutable_compatible_member_function<MemFn, Obj, BindArgs...>::value, int> = 0>
-        HandlerBase(MemFn&& memFn, Obj&& obj, BindArgs&&... bindArgs) :
-            m_handler{ wrapMutableInvocable(std::forward<MemFn>(memFn), std::forward<Obj>(obj), std::forward<BindArgs>(bindArgs)...) }
+            m_handler{ wrapInvocable(std::forward<MemFn>(memFn), std::forward<Obj>(obj), std::forward<BindArgs>(bindArgs)...) }
         {
             /* do nothing */
         }
@@ -99,7 +71,16 @@ namespace dots::tools
     private:
 
         template <typename Invocable, typename... BindArgs>
-        auto wrapConstInvocable(Invocable&& invocable, BindArgs&&... bindArgs)
+        using is_const_wrappable = std::is_invocable_r<R, std::decay_t<Invocable>, const std::decay_t<BindArgs>&..., Args...>;
+
+        template <typename Invocable, typename... BindArgs>
+        using is_mutable_wrappable = std::conjunction<
+            std::negation<is_const_wrappable<Invocable, BindArgs...>>,
+            std::is_invocable_r<R, std::decay_t<Invocable>, std::decay_t<BindArgs>&..., Args...>
+        >;
+
+        template <typename Invocable, typename... BindArgs, std::enable_if_t<is_const_wrappable<Invocable, BindArgs...>::value, int> = 0>
+        auto wrapInvocable(Invocable&& invocable, BindArgs&&... bindArgs)
         {
             return [invocable{ std::forward<Invocable>(invocable) }, bindTuple = std::make_tuple(std::forward<BindArgs>(bindArgs)...)](Args... args) -> R
             {
@@ -110,8 +91,8 @@ namespace dots::tools
             };
         }
 
-        template <typename Invocable, typename... BindArgs>
-        auto wrapMutableInvocable(Invocable&& invocable, BindArgs&&... bindArgs)
+        template <typename Invocable, typename... BindArgs, std::enable_if_t<is_mutable_wrappable<Invocable, BindArgs...>::value, int> = 0>
+        auto wrapInvocable(Invocable&& invocable, BindArgs&&... bindArgs)
         {
             return [invocable{ std::forward<Invocable>(invocable) }, bindTuple = std::make_tuple(std::forward<BindArgs>(bindArgs)...)](Args... args) mutable -> R
             {
