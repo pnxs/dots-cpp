@@ -58,7 +58,7 @@ namespace dots::tools
              */
             template <typename Invocable, std::enable_if_t<is_compatible_v<Invocable>, int> = 0>
             HandlerBase(Invocable&& invocable) :
-                m_handler{ std::forward<Invocable>(invocable) }
+                m_invocable{ std::forward<Invocable>(invocable) }
             {
                 /* do nothing */
             }
@@ -78,7 +78,7 @@ namespace dots::tools
              */
             template <typename MemFn, typename Obj, std::enable_if_t<is_compatible_member_function_v<MemFn, Obj>, int> = 0>
             HandlerBase(MemFn&& memFn, Obj&& obj) :
-                m_handler{ wrapInvocable(std::forward<MemFn>(memFn), std::forward<Obj>(obj)) }
+                m_invocable{ wrapInvocable(std::forward<MemFn>(memFn), std::forward<Obj>(obj)) }
             {
                 /* do nothing */
             }
@@ -102,7 +102,7 @@ namespace dots::tools
              */
             template <typename Invocable, typename... BindArgs, std::enable_if_t<is_bind_compatible_v<Invocable, BindArgs...>, int> = 0>
             HandlerBase(Invocable&& invocable, BindArgs&&... bindArgs) :
-                m_handler{ wrapInvocable(std::forward<Invocable>(invocable), std::forward<BindArgs>(bindArgs)...) }
+                m_invocable{ wrapInvocable(std::forward<Invocable>(invocable), std::forward<BindArgs>(bindArgs)...) }
             {
                 /* do nothing */
             }
@@ -128,7 +128,7 @@ namespace dots::tools
              */
             template <typename MemFn, typename Obj, typename... BindArgs, std::enable_if_t<is_bind_compatible_member_function_v<MemFn, Obj, BindArgs...>, int> = 0>
             HandlerBase(MemFn&& memFn, Obj&& obj, BindArgs&&... bindArgs) :
-                m_handler{ wrapInvocable(std::forward<MemFn>(memFn), std::forward<Obj>(obj), std::forward<BindArgs>(bindArgs)...) }
+                m_invocable{ wrapInvocable(std::forward<MemFn>(memFn), std::forward<Obj>(obj), std::forward<BindArgs>(bindArgs)...) }
             {
                 /* do nothing */
             }
@@ -151,14 +151,14 @@ namespace dots::tools
              */
             R operator () (Args... args) const
             {
-                return m_handler(std::forward<Args>(args)...);
+                return m_invocable(std::forward<Args>(args)...);
             }
 
         protected:
 
             HandlerBase() = default;
 
-            std::function<R(Args...)> m_handler;
+            std::function<R(Args...)> m_invocable;
 
         private:
 
@@ -283,7 +283,7 @@ namespace dots::tools
         Handler(static_argument_cast_tag tag, Handler<R(ArgOther)>&& other)
         {
             (void)tag;
-            details::HandlerBase<R, Arg>::m_handler = [handler{ std::move(other.m_handler)}](Arg arg) -> R
+            details::HandlerBase<R, Arg>::m_invocable = [handler{ std::move(other.m_invocable)}](Arg arg) -> R
             {
                 return std::invoke(handler, static_cast<ArgOther>(arg));
             };
