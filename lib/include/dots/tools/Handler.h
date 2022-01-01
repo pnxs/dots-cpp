@@ -23,6 +23,13 @@ namespace dots::tools
             std::negation<std::is_same<std::decay_t<Invocable>, HandlerBase>>,
             std::is_invocable_r<R, std::decay_t<Invocable>, Args...>
         >;
+
+        template <typename MemFn, typename Obj>
+        static constexpr bool is_compatible_member_function_v = std::conjunction_v<
+            std::is_member_function_pointer<std::decay_t<MemFn>>,
+            std::is_pointer<std::decay_t<Obj>>,
+            std::is_invocable_r<R, std::decay_t<MemFn>, std::decay_t<Obj>, Args...>
+        >;
         
         template <typename Invocable, typename... BindArgs>
         static constexpr bool is_bind_compatible_v = std::conjunction_v<
@@ -50,6 +57,26 @@ namespace dots::tools
         template <typename Invocable, std::enable_if_t<is_compatible_v<Invocable>, int> = 0>
         HandlerBase(Invocable&& invocable) :
             m_handler{ std::forward<Invocable>(invocable) }
+        {
+            /* do nothing */
+        }
+
+        /*!
+         * @brief Construct a new Handler from a specific member function.
+         *
+         * @tparam MemFn The type of the member function to use as a handler.
+         *
+         * @tparam Obj The class of the member function.
+         *
+         * @param memFn A pointer to the member function to use as a handler.
+         * This can be any function that is compatible with the signature
+         * \p R(Args...) .
+         *
+         * @param obj The object to invoke the member function on.
+         */
+        template <typename MemFn, typename Obj, std::enable_if_t<is_compatible_member_function_v<MemFn, Obj>, int> = 0>
+        HandlerBase(MemFn&& memFn, Obj&& obj) :
+            m_handler{ wrapInvocable(std::forward<MemFn>(memFn), std::forward<Obj>(obj)) }
         {
             /* do nothing */
         }
