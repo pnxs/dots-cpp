@@ -16,28 +16,31 @@ namespace dots::tools
             std::is_invocable_r<R, std::decay_t<Invocable>, Args...>
         >;
 
-        template <typename Invocable, typename BindHead, typename... BindTail>
-        using is_const_compatible_member_function = std::conjunction<
-            std::is_member_function_pointer<std::decay_t<Invocable>>,
-            std::is_invocable_r<R, std::decay_t<Invocable>, const BindHead&, BindTail&..., Args...>
-        >;
-
-        template <typename Invocable, typename BindHead, typename... BindTail>
+        template <typename Invocable, typename... BindArgs>
         using is_const_compatible_invocable = std::conjunction<
             std::negation<std::is_member_function_pointer<std::decay_t<Invocable>>>,
-            std::is_invocable_r<R, const std::decay_t<Invocable>, BindHead&, BindTail&..., Args...>
+            std::is_invocable_r<R, const std::decay_t<Invocable>, const std::decay_t<BindArgs>&..., Args...>
+        >;
+        
+        template <typename Invocable, typename... BindArgs>
+        using is_mutable_compatible_invocable = std::conjunction<
+            std::negation<std::is_member_function_pointer<std::decay_t<Invocable>>>,
+            std::is_invocable_r<R, std::decay_t<Invocable>, std::decay_t<BindArgs>&..., Args...>
         >;
 
-        template <typename Invocable, typename BindHead, typename... BindTail>
-        using is_const_compatible = std::disjunction<
-            is_const_compatible_member_function<Invocable, BindHead, BindTail...>,
-            is_const_compatible_invocable<Invocable, BindHead, BindTail...>
+        template <typename MemFn, typename Obj, typename... BindArgs>
+        using is_const_compatible_member_function = std::conjunction<
+            std::is_member_function_pointer<std::decay_t<MemFn>>,
+            std::is_pointer<std::decay_t<Obj>>,
+            std::is_invocable_r<R, const std::decay_t<MemFn>, const std::remove_pointer_t<std::decay_t<Obj>>*, const std::decay_t<BindArgs>&..., Args...>
         >;
 
-        template <typename Invocable, typename BindHead, typename... BindTail>
-        using is_mutable_compatible = std::conjunction<
-            std::negation<is_const_compatible<Invocable, BindHead, BindTail...>>,
-            std::is_invocable_r<R, std::decay_t<Invocable>, BindHead&, BindTail&..., Args...>
+        template <typename MemFn, typename Obj, typename... BindArgs>
+        using is_mutable_compatible_member_function = std::conjunction<
+            std::is_member_function_pointer<std::decay_t<MemFn>>,
+            std::is_pointer<std::decay_t<Obj>>,
+            std::negation<std::is_invocable_r<R, std::decay_t<MemFn>, const std::remove_pointer_t<std::decay_t<Obj>>*, const BindArgs&..., Args...>>,
+            std::is_invocable_r<R, std::decay_t<MemFn>, std::remove_pointer_t<std::decay_t<Obj>>*, std::decay_t<BindArgs>&..., Args...>
         >;
 
         template <typename Invocable, std::enable_if_t<is_compatible_invocable<Invocable>::value, int> = 0>
@@ -47,28 +50,30 @@ namespace dots::tools
             /* do nothing */
         }
 
-        template <typename Invocable, typename BindHead, typename... BindTail, std::enable_if_t<is_const_compatible<Invocable, BindHead, BindTail...>::value, int> = 0>
-        HandlerBase(Invocable&& invocable, BindHead&& bindHead, BindTail&&... bindTail) :
-            m_handler{ [invocable{ std::forward<Invocable>(invocable) }, bindTuple = std::make_tuple(std::forward<BindHead>(bindHead), std::forward<BindTail>(bindTail)...)](Args... args) -> R
-            {
-                return std::apply([&](auto&&... bindArgs)
-                {
-                    return std::invoke(invocable, std::forward<decltype(bindArgs)>(bindArgs)..., std::forward<Args>(args)...);
-                }, bindTuple);
-            } }
+        template <typename Invocable, typename... BindArgs, std::enable_if_t<is_const_compatible_invocable<Invocable, BindArgs...>::value, int> = 0>
+        HandlerBase(Invocable&& invocable, BindArgs&&... bindArgs) :
+            m_handler{ wrapConstInvocable(std::forward<Invocable>(invocable), std::forward<BindArgs>(bindArgs)...) }
         {
             /* do nothing */
         }
 
-        template <typename Invocable, typename BindHead, typename... BindTail, std::enable_if_t<is_mutable_compatible<Invocable, BindHead, BindTail...>::value, int> = 0>
-        HandlerBase(Invocable&& invocable, BindHead&& bindHead, BindTail&&... bindTail) :
-            m_handler{ [invocable{ std::forward<Invocable>(invocable) }, bindTuple = std::make_tuple(std::forward<BindHead>(bindHead), std::forward<BindTail>(bindTail)...)](Args... args) mutable -> R
-            {
-                return std::apply([&](auto&&... bindArgs)
-                {
-                    return std::invoke(invocable, std::forward<decltype(bindArgs)>(bindArgs)..., std::forward<Args>(args)...);
-                }, bindTuple);
-            } }
+        template <typename Invocable, typename... BindArgs, std::enable_if_t<is_mutable_compatible_invocable<Invocable, BindArgs...>::value, int> = 0>
+        HandlerBase(Invocable&& invocable, BindArgs&&... bindArgs) :
+            m_handler{ wrapMutableInvocable(std::forward<Invocable>(invocable), std::forward<BindArgs>(bindArgs)...) }
+        {
+            /* do nothing */
+        }
+
+        template <typename MemFn, typename Obj, typename... BindArgs, std::enable_if_t<is_const_compatible_member_function<MemFn, Obj, BindArgs...>::value, int> = 0>
+        HandlerBase(MemFn&& memFn, Obj&& obj, BindArgs&&... bindArgs) :
+            m_handler{ wrapConstInvocable(std::forward<MemFn>(memFn), std::forward<Obj>(obj), std::forward<BindArgs>(bindArgs)...) }
+        {
+            /* do nothing */
+        }
+
+        template <typename MemFn, typename Obj, typename... BindArgs, std::enable_if_t<is_mutable_compatible_member_function<MemFn, Obj, BindArgs...>::value, int> = 0>
+        HandlerBase(MemFn&& memFn, Obj&& obj, BindArgs&&... bindArgs) :
+            m_handler{ wrapMutableInvocable(std::forward<MemFn>(memFn), std::forward<Obj>(obj), std::forward<BindArgs>(bindArgs)...) }
         {
             /* do nothing */
         }
@@ -90,6 +95,32 @@ namespace dots::tools
         HandlerBase() = default;
 
         std::function<R(Args...)> m_handler;
+
+    private:
+
+        template <typename Invocable, typename... BindArgs>
+        auto wrapConstInvocable(Invocable&& invocable, BindArgs&&... bindArgs)
+        {
+            return [invocable{ std::forward<Invocable>(invocable) }, bindTuple = std::make_tuple(std::forward<BindArgs>(bindArgs)...)](Args... args) -> R
+            {
+                return std::apply([&](auto&&... bindArgs)
+                {
+                    return std::invoke(invocable, std::forward<decltype(bindArgs)>(bindArgs)..., std::forward<Args>(args)...);
+                }, bindTuple);
+            };
+        }
+
+        template <typename Invocable, typename... BindArgs>
+        auto wrapMutableInvocable(Invocable&& invocable, BindArgs&&... bindArgs)
+        {
+            return [invocable{ std::forward<Invocable>(invocable) }, bindTuple = std::make_tuple(std::forward<BindArgs>(bindArgs)...)](Args... args) mutable -> R
+            {
+                return std::apply([&](auto&&... bindArgs)
+                {
+                    return std::invoke(invocable, std::forward<decltype(bindArgs)>(bindArgs)..., std::forward<Args>(args)...);
+                }, bindTuple);
+            };
+        }
     };
 
     template <typename T>
