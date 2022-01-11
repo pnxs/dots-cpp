@@ -481,6 +481,7 @@ namespace dots::io
         {
             if constexpr (TransmissionFormat == TransmissionFormat::Legacy)
             {
+                m_transportHeader = {};
                 m_serializer.deserialize(m_transportHeader);
 
                 if (!m_transportHeader.payloadSize.isValid())
