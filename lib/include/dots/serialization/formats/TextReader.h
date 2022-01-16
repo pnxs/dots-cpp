@@ -5,6 +5,7 @@
 #include <dots/serialization/formats/Reader.h>
 #include <dots/serialization/formats/TextFormat.h>
 #include <dots/tools/string_tools.h>
+#include <dots/tools/type_traits.h>
 
 namespace dots::serialization
 {
@@ -275,7 +276,8 @@ namespace dots::serialization
 
         using nesting_t = std::pair<State, bool>;
 
-        void read(bool& value)
+        template <typename T, std::enable_if_t<std::is_same_v<std::decay_t<T>, bool>, int> = 0>
+        void read(T& value)
         {
             consumeWhitespace();
 
@@ -292,7 +294,7 @@ namespace dots::serialization
                     return;
                 }
             }
-            else
+            else if constexpr (format_t::BooleanFormat == TextFormat::BooleanFormat::Literal)
             {
                 if (tryConsumeToken("true"))
                 {
@@ -305,11 +307,30 @@ namespace dots::serialization
                     return;
                 }
             }
+            else if constexpr (format_t::BooleanFormat == TextFormat::BooleanFormat::String)
+            {
+                std::string_view token = readQuotedString();
+
+                if (token == "true")
+                {
+                    value = true;
+                    return;
+                }
+                else if (token == "false")
+                {
+                    value = false;
+                    return;
+                }
+            }
+            else
+            {
+                static_assert(tools::always_false_v<T>, "unsupported boolean format");
+            }
 
             throw makeTokenError("<boolean-string>");
         }
 
-        template <typename T, std::enable_if_t<std::is_integral_v<T>, int> = 0>
+        template <typename T, std::enable_if_t<!std::is_same_v<std::decay_t<T>, bool> && std::is_integral_v<T>, int> = 0>
         void read(T& value)
         {
             int base = 10;

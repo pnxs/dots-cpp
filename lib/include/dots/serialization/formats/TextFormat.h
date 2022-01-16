@@ -44,7 +44,8 @@ namespace dots::serialization
         enum struct BooleanFormat : uint8_t
         {
             Integer,
-            Literal
+            Literal,
+            String
         };
     };
 

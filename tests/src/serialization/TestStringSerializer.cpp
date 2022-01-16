@@ -52,9 +52,9 @@ struct StringSerializerTestDataEncoded : SerializerTestDataEncoded<dots::seriali
     data_t float64Positive{ "3.14159265359" };
     data_t float64Negative{ "-2.71828182846" };
 
-    data_t propertySetNone{ "0b00000000000000000000000000000000" };
-    data_t propertySetAll{ "0b11111111111111111111111111111111" };
-    data_t propertySetMixed1{ "0b10101010111111110000000001010101" };
+    data_t propertySetNone{ "0b0u" };
+    data_t propertySetAll{ "0b11111111111111111111111111111111u" };
+    data_t propertySetMixed1{ "0b10101010111111110000000001010101u" };
 
     data_t timePoint1{ "\"" + dots::timepoint_t::FromString("2020-03-11T21:07:57.500+00:00").toString() + "\"" };
     data_t steadyTimePoint1{ "324702.125" };

@@ -5,6 +5,7 @@
 #include <dots/serialization/Serializer.h>
 #include <dots/serialization/formats/TextReader.h>
 #include <dots/serialization/formats/TextWriter.h>
+#include <dots/tools/type_traits.h>
 
 namespace dots::serialization
 {
@@ -25,7 +26,9 @@ namespace dots::serialization
         enum struct EnumFormat : uint8_t
         {
             Tag,
+            Value,
             Identifier,
+            String
         };
     };
 
@@ -115,9 +118,21 @@ namespace dots::serialization
             {
                 writer().write(descriptor.enumeratorFromValue(value).tag());
             }
-            else
+            else if constexpr (format_t::EnumFormat == TextSerializerFormat::EnumFormat::Value)
+            {
+                writer().write(type::Typeless::From(value).template to<int32_t>());
+            }
+            else if constexpr (format_t::EnumFormat == TextSerializerFormat::EnumFormat::Identifier)
             {
                 writer().writeIdentifierString(descriptor.name(), "::", descriptor.enumeratorFromValue(value).name());
+            }
+            else if constexpr (format_t::EnumFormat == TextSerializerFormat::EnumFormat::String)
+            {
+                writer().writeQuotedString(descriptor.enumeratorFromValue(value).name());
+            }
+            else
+            {
+                static_assert(tools::always_false_v<T>, "unsupported enum format");
             }
         }
 
@@ -132,11 +147,15 @@ namespace dots::serialization
             {
                 if constexpr (format_t::PropertySetFormat == TextSerializerFormat::PropertySetFormat::DecimalValue)
                 {
-                    writer().write(value.toValue());
+                    writer().write(value.toValue(), 10);
+                }
+                else if constexpr (format_t::PropertySetFormat == TextSerializerFormat::PropertySetFormat::BinaryValue)
+                {
+                    writer().write(value.toValue(), 2);
                 }
                 else
                 {
-                    writer().writeString("0b", value.toString());
+                    static_assert(tools::always_false_v<T>, "unsupported property set format");
                 }
             }
             else if constexpr (std::is_same_v<T, timepoint_t>)
@@ -145,9 +164,13 @@ namespace dots::serialization
                 {
                     writer().write(value.duration().toFractionalSeconds());
                 }
-                else
+                else if constexpr (format_t::TimepointFormat == TextSerializerFormat::TimepointFormat::ISO8601String)
                 {
                     writer().writeQuotedString(value.toString());
+                }
+                else
+                {
+                    static_assert(tools::always_false_v<T>, "unsupported timepoint format");
                 }
             }
             else if constexpr (std::is_same_v<T, steady_timepoint_t>)
@@ -250,10 +273,24 @@ namespace dots::serialization
             {
                 descriptor.construct(value, descriptor.enumeratorFromTag(reader().template read<uint32_t>()).value());
             }
-            else
+            else if constexpr (format_t::EnumFormat == TextSerializerFormat::EnumFormat::Value)
+            {
+                auto underlyingValue = reader().template read<uint32_t>();
+                descriptor.construct(value, descriptor.enumeratorFromValue(type::Typeless::From(underlyingValue)).value());
+            }
+            else if constexpr (format_t::EnumFormat == TextSerializerFormat::EnumFormat::Identifier)
             {
                 std::string_view identifier = reader().readIdentifierString(descriptor.name(), "::");
                 descriptor.construct(value, descriptor.enumeratorFromName(identifier).value());
+            }
+            else if constexpr (format_t::EnumFormat == TextSerializerFormat::EnumFormat::String)
+            {
+                std::string_view identifier = reader().readQuotedString();
+                descriptor.construct(value, descriptor.enumeratorFromName(identifier).value());
+            }
+            else
+            {
+                static_assert(tools::always_false_v<T>, "unsupported enum format");
             }
         }
 
@@ -266,7 +303,14 @@ namespace dots::serialization
             }
             else if constexpr(std::is_same_v<T, property_set_t>)
             {
-                value = property_set_t{ reader().template read<uint32_t>() };
+                if constexpr (format_t::PropertySetFormat == TextSerializerFormat::PropertySetFormat::DecimalValue || format_t::PropertySetFormat == TextSerializerFormat::PropertySetFormat::BinaryValue)
+                {
+                    value = property_set_t{ reader().template read<uint32_t>() };
+                }
+                else
+                {
+                    static_assert(tools::always_false_v<T>, "unsupported property set format");
+                }
             }
             else if constexpr (std::is_same_v<T, timepoint_t>)
             {
@@ -274,9 +318,13 @@ namespace dots::serialization
                 {
                     value = T{ duration_t{ reader().template read<float64_t>() } };
                 }
-                else
+                else if constexpr (format_t::TimepointFormat == TextSerializerFormat::TimepointFormat::ISO8601String)
                 {
                     value = timepoint_t::FromString(reader().readQuotedString());
+                }
+                else
+                {
+                    static_assert(tools::always_false_v<T>, "unsupported timepoint format");
                 }
             }
             else if constexpr (std::is_same_v<T, steady_timepoint_t> || std::is_same_v<T, duration_t>)

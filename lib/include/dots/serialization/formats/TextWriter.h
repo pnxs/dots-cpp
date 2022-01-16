@@ -3,6 +3,7 @@
 #include <stack>
 #include <dots/serialization/formats/Writer.h>
 #include <dots/serialization/formats/TextFormat.h>
+#include <dots/tools/type_traits.h>
 
 namespace dots::serialization
 {
@@ -113,19 +114,28 @@ namespace dots::serialization
             append(format_t::NullValue);
         }
 
-        void write(bool value)
+        template <typename T, std::enable_if_t<std::is_same_v<std::decay_t<T>, bool>, int> = 0>
+        void write(T value)
         {
             if constexpr (format_t::BooleanFormat == TextFormat::BooleanFormat::Integer)
             {
                 write(static_cast<uint8_t>(value));
             }
-            else
+            else if constexpr (format_t::BooleanFormat == TextFormat::BooleanFormat::Literal)
             {
                 writeString(value ? "true" : "false");
             }
+            else if constexpr (format_t::BooleanFormat == TextFormat::BooleanFormat::String)
+            {
+                writeQuotedString(value ? "true" : "false");
+            }
+            else
+            {
+                static_assert(tools::always_false_v<T>, "unsupported boolean format");
+            }
         }
 
-        template <typename T, std::enable_if_t<std::is_integral_v<T>, int> = 0>
+        template <typename T, std::enable_if_t<!std::is_same_v<std::decay_t<T>, bool> && std::is_integral_v<T>, int> = 0>
         void write(T value, int base = 10)
         {
             initiateWrite();
@@ -142,7 +152,7 @@ namespace dots::serialization
             }
 
             char buffer[32];
-            auto [last, ec] = std::to_chars(buffer, buffer + sizeof(buffer), value);
+            auto [last, ec] = std::to_chars(buffer, buffer + sizeof(buffer), value, base);
             append(std::string_view{ buffer, static_cast<size_t>(last - buffer) });
 
             if constexpr (format_t::IntegerFormat == TextFormat::IntegerFormat::WithSignSuffix && std::is_unsigned_v<T>)
