@@ -3,7 +3,7 @@
 #include <serialization/TestSerializer.h>
 #include <serialization/TestTextSerializer.h>
 
-struct JsonSerializerTestDataEncoded : SerializerTestDataEncoded<dots::serialization::JsonSerializer<>>
+struct JsonSerializerTestDataEncoded : SerializerTestDataEncoded<dots::serialization::JsonSerializer>
 {
     //
     // fundamental

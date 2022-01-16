@@ -3,7 +3,7 @@
 #include <serialization/TestSerializer.h>
 #include <serialization/TestTextSerializer.h>
 
-struct StringSerializerTestDataEncoded : SerializerTestDataEncoded<dots::serialization::StringSerializer<>>
+struct StringSerializerTestDataEncoded : SerializerTestDataEncoded<dots::serialization::StringSerializer>
 {
     //
     // fundamental

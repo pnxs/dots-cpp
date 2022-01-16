@@ -49,10 +49,9 @@ namespace dots::serialization
         static constexpr bool FloatSizeSuffix = false;
     };
 
-    template <typename Derived = void>
-    struct JsonSerializer : TextSerializer<std::conditional_t<std::is_same_v<Derived, void>, JsonSerializer<void>, Derived>, JsonSerializerTraits>
+    struct JsonSerializer : TextSerializer<JsonSerializer, JsonSerializerTraits>
     {
-        using base_t = TextSerializer<std::conditional_t<std::is_same_v<Derived, void>, JsonSerializer<void>, Derived>, JsonSerializerTraits>;
+        using base_t = TextSerializer<JsonSerializer, JsonSerializerTraits>;
         using data_t = std::string;
 
         using base_t::base_t;
@@ -70,24 +69,24 @@ namespace dots
     template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
     std::string to_json(const T& instance, const property_set_t& includedProperties, serialization::StringSerializerOptions options = {})
     {
-        return serialization::JsonSerializer<>::Serialize(instance, includedProperties, options);
+        return serialization::JsonSerializer::Serialize(instance, includedProperties, options);
     }
 
     template <typename T>
     std::string to_json(const T& value, serialization::StringSerializerOptions options = {})
     {
-        return serialization::JsonSerializer<>::Serialize(value, options);
+        return serialization::JsonSerializer::Serialize(value, options);
     }
 
     template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
     size_t from_json(const std::string& data, T& value)
     {
-        return serialization::JsonSerializer<>::Deserialize(data, value);
+        return serialization::JsonSerializer::Deserialize(data, value);
     }
 
     template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
     T from_json(const std::string& data)
     {
-        return serialization::JsonSerializer<>::Deserialize<T>(data);
+        return serialization::JsonSerializer::Deserialize<T>(data);
     }
 }

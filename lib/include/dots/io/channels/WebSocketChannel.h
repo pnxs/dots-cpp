@@ -31,6 +31,6 @@ namespace dots::io
 
         ws_stream_t m_stream;
         boost::beast::flat_buffer m_buffer;
-        serialization::JsonSerializer<> m_serializer;
+        serialization::JsonSerializer m_serializer;
     };
 }
