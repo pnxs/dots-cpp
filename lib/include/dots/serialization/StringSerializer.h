@@ -1,12 +1,12 @@
 #pragma once
-#include <dots/serialization/StringSerializerBase.h>
+#include <dots/serialization/TextSerializer.h>
 
 namespace dots::serialization
 {
     template <typename Derived = void>
-    struct StringSerializer : StringSerializerBase<std::conditional_t<std::is_same_v<Derived, void>, StringSerializer<void>, Derived>, StringSerializerTraits>
+    struct StringSerializer : TextSerializer<std::conditional_t<std::is_same_v<Derived, void>, StringSerializer<void>, Derived>, StringSerializerTraits>
     {
-        using base_t = StringSerializerBase<std::conditional_t<std::is_same_v<Derived, void>, StringSerializer<void>, Derived>, StringSerializerTraits>;
+        using base_t = TextSerializer<std::conditional_t<std::is_same_v<Derived, void>, StringSerializer<void>, Derived>, StringSerializerTraits>;
         using data_t = std::string;
 
         using base_t::base_t;

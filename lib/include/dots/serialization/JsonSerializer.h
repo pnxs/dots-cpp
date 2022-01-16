@@ -1,6 +1,6 @@
 #pragma once
 #include <string_view>
-#include <dots/serialization/StringSerializerBase.h>
+#include <dots/serialization/TextSerializer.h>
 
 namespace dots::serialization
 {
@@ -50,9 +50,9 @@ namespace dots::serialization
     };
 
     template <typename Derived = void>
-    struct JsonSerializer : StringSerializerBase<std::conditional_t<std::is_same_v<Derived, void>, JsonSerializer<void>, Derived>, JsonSerializerTraits>
+    struct JsonSerializer : TextSerializer<std::conditional_t<std::is_same_v<Derived, void>, JsonSerializer<void>, Derived>, JsonSerializerTraits>
     {
-        using base_t = StringSerializerBase<std::conditional_t<std::is_same_v<Derived, void>, JsonSerializer<void>, Derived>, JsonSerializerTraits>;
+        using base_t = TextSerializer<std::conditional_t<std::is_same_v<Derived, void>, JsonSerializer<void>, Derived>, JsonSerializerTraits>;
         using data_t = std::string;
 
         using base_t::base_t;

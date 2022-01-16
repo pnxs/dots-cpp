@@ -1,7 +1,7 @@
 #include <dots/testing/gtest/gtest.h>
 #include <dots/serialization/JsonSerializer.h>
 #include <serialization/TestSerializerBase.h>
-#include <serialization/TestStringSerializerBase.h>
+#include <serialization/TestTextSerializer.h>
 
 struct JsonSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::serialization::JsonSerializer<>>
 {
@@ -236,4 +236,4 @@ struct JsonSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::seria
 };
 
 INSTANTIATE_TYPED_TEST_SUITE_P(TestJsonSerializer, TestSerializerBase, JsonSerializerTestDataEncoded);
-INSTANTIATE_TYPED_TEST_SUITE_P(TestJsonSerializer, TestStringSerializerBase, JsonSerializerTestDataEncoded);
+INSTANTIATE_TYPED_TEST_SUITE_P(TestJsonSerializer, TestTextSerializer, JsonSerializerTestDataEncoded);

@@ -80,24 +80,24 @@ namespace dots::serialization
     };
 
     template <typename Derived, typename Traits>
-    struct StringSerializerBase : SerializerBase<std::string, Derived>
+    struct TextSerializer : SerializerBase<std::string, Derived>
     {
         using serializer_base_t = SerializerBase<std::string, Derived>;
 
         using traits_t = Traits;
         using data_t = typename serializer_base_t::data_t;
 
-        StringSerializerBase(StringSerializerOptions options = {}) :
+        TextSerializer(StringSerializerOptions options = {}) :
             m_options{ options }
         {
             /* do nothing */
         }
-        StringSerializerBase(const StringSerializerBase& other) = default;
-        StringSerializerBase(StringSerializerBase&& other) = default;
-        ~StringSerializerBase() = default;
+        TextSerializer(const TextSerializer& other) = default;
+        TextSerializer(TextSerializer&& other) = default;
+        ~TextSerializer() = default;
 
-        StringSerializerBase& operator = (const StringSerializerBase& rhs) = default;
-        StringSerializerBase& operator = (StringSerializerBase&& rhs) = default;
+        TextSerializer& operator = (const TextSerializer& rhs) = default;
+        TextSerializer& operator = (TextSerializer&& rhs) = default;
 
         using serializer_base_t::output;
         using serializer_base_t::lastSerializeSize;

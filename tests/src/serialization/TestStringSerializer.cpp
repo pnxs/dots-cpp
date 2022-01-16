@@ -1,7 +1,7 @@
 #include <dots/testing/gtest/gtest.h>
 #include <dots/serialization/StringSerializer.h>
 #include <serialization/TestSerializerBase.h>
-#include <serialization/TestStringSerializerBase.h>
+#include <serialization/TestTextSerializer.h>
 
 struct StringSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::serialization::StringSerializer<>>
 {
@@ -236,4 +236,4 @@ struct StringSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::ser
 };
 
 INSTANTIATE_TYPED_TEST_SUITE_P(TestStringSerializer, TestSerializerBase, StringSerializerTestDataEncoded);
-INSTANTIATE_TYPED_TEST_SUITE_P(TestStringSerializer, TestStringSerializerBase, StringSerializerTestDataEncoded);
+INSTANTIATE_TYPED_TEST_SUITE_P(TestStringSerializer, TestTextSerializer, StringSerializerTestDataEncoded);

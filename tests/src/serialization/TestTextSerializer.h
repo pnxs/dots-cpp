@@ -5,15 +5,15 @@
 using dots::serialization::StringSerializerOptions;
 
 template <typename TEncoded>
-struct TestStringSerializerBase : TestSerializerBase<TEncoded>
+struct TestTextSerializer : TestSerializerBase<TEncoded>
 {
 };
 
-TYPED_TEST_SUITE_P(TestStringSerializerBase);
+TYPED_TEST_SUITE_P(TestTextSerializer);
 
-TYPED_TEST_P(TestStringSerializerBase, deserialize_FromUnescapedStringArgument)
+TYPED_TEST_P(TestTextSerializer, deserialize_FromUnescapedStringArgument)
 {
-    using base_t = TestStringSerializerBase<TypeParam>;
+    using base_t = TestTextSerializer<TypeParam>;
     EXPECT_EQ(base_t::serializer_t::template Deserialize<dots::string_t>(base_t::Encoded().string5Unescaped), base_t::Decoded().string5);
 
     SerializationStructSimple structSimple1;
@@ -24,9 +24,9 @@ TYPED_TEST_P(TestStringSerializerBase, deserialize_FromUnescapedStringArgument)
     EXPECT_THROW(base_t::serializer_t::template Deserialize(base_t::Encoded().structSimple_String5Unescaped, structSimple2), std::runtime_error);
 }
 
-TYPED_TEST_P(TestStringSerializerBase, serialize_WithOutputStyle)
+TYPED_TEST_P(TestTextSerializer, serialize_WithOutputStyle)
 {
-    using base_t = TestStringSerializerBase<TypeParam>;
+    using base_t = TestTextSerializer<TypeParam>;
 
     EXPECT_EQ(base_t::serializer_t::template Serialize(base_t::Decoded().structComplex1, StringSerializerOptions{ StringSerializerOptions::Minimal }), base_t::Encoded().structComplex_MinimalStyle);
     EXPECT_EQ(base_t::serializer_t::template Serialize(base_t::Decoded().structComplex1, StringSerializerOptions{ StringSerializerOptions::Compact }), base_t::Encoded().structComplex_CompactStyle);
@@ -34,9 +34,9 @@ TYPED_TEST_P(TestStringSerializerBase, serialize_WithOutputStyle)
     EXPECT_EQ(base_t::serializer_t::template Serialize(base_t::Decoded().structComplex1, StringSerializerOptions{ StringSerializerOptions::MultiLine }), base_t::Encoded().structComplex_MultiLineStyle);
 }
 
-TYPED_TEST_P(TestStringSerializerBase, deserialize_WithInputPolicy)
+TYPED_TEST_P(TestTextSerializer, deserialize_WithInputPolicy)
 {
-    using base_t = TestStringSerializerBase<TypeParam>;
+    using base_t = TestTextSerializer<TypeParam>;
     using serializer_traits_t = typename base_t::serializer_t::traits_t;
 
     if constexpr (serializer_traits_t::UserTypeNames)
@@ -74,7 +74,7 @@ TYPED_TEST_P(TestStringSerializerBase, deserialize_WithInputPolicy)
     }
 }
 
-REGISTER_TYPED_TEST_SUITE_P(TestStringSerializerBase,
+REGISTER_TYPED_TEST_SUITE_P(TestTextSerializer,
     deserialize_FromUnescapedStringArgument,
     serialize_WithOutputStyle,
     deserialize_WithInputPolicy
