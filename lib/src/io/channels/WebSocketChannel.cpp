@@ -13,7 +13,7 @@ namespace dots::io
     WebSocketChannel::WebSocketChannel(Channel::key_t key, boost::asio::io_context& ioContext, std::string_view host, std::string_view port) :
         Channel(key),
         m_stream{ ioContext },
-        m_serializer{ { serialization::StringSerializerOptions::Minimal } }
+        m_serializer{ { serialization::TextOptions::Minimal } }
     {
         try
         {
@@ -72,12 +72,12 @@ namespace dots::io
                 verifyErrorCode(ec);
 
                 m_serializer.setInput(static_cast<const char*>(m_buffer.cdata().data()), m_buffer.size());
-                m_serializer.deserializeTupleBegin();
+                m_serializer.reader().readArrayBegin();
                 DotsHeader header;
                 m_serializer.deserialize(header);
                 type::AnyStruct instance{ registry().getStructType(*header.typeName) };
                 m_serializer.deserialize(*instance);
-                m_serializer.deserializeTupleEnd();
+                m_serializer.reader().tryReadArrayEnd();
 
                 processReceive(Transmission{ std::move(header), std::move(instance) });
             }
@@ -90,10 +90,10 @@ namespace dots::io
 
     void WebSocketChannel::transmitImpl(const DotsHeader& header, const type::Struct& instance)
     {
-        m_serializer.serializeTupleBegin();
+        m_serializer.writer().writeArrayBegin();
         m_serializer.serialize(header);
         m_serializer.serialize(instance);
-        m_serializer.serializeTupleEnd();
+        m_serializer.writer().writeArrayBegin();
 
         m_stream.write(boost::asio::buffer(m_serializer.output()));
         m_serializer.output().clear();

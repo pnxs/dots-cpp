@@ -2,34 +2,30 @@
 #include <vector>
 #include <stdexcept>
 #include <string>
-#include <dots/serialization/CborSerializerBase.h>
-#include <dots/type/TypeVisitor.h>
+#include <dots/serialization/Serializer.h>
+#include <dots/serialization/formats/CborReader.h>
+#include <dots/serialization/formats/CborWriter.h>
 
 namespace dots::serialization
 {
-    struct ExperimentalCborSerializer : CborSerializerBase<ExperimentalCborSerializer>
+    struct ExperimentalCborSerializerFormat
     {
-        using data_t = std::vector<uint8_t>;
+        using reader_t = CborReader;
+        using writer_t = CborWriter;
+    };
 
-        ExperimentalCborSerializer() = default;
-        ExperimentalCborSerializer(const ExperimentalCborSerializer& other) = default;
-        ExperimentalCborSerializer(ExperimentalCborSerializer&& other) = default;
-        ~ExperimentalCborSerializer() = default;
-
-        ExperimentalCborSerializer& operator = (const ExperimentalCborSerializer& rhs) = default;
-        ExperimentalCborSerializer& operator = (ExperimentalCborSerializer&& rhs) = default;
-
+    struct ExperimentalCborSerializer : Serializer<ExperimentalCborSerializerFormat, ExperimentalCborSerializer>
+    {
     protected:
 
         friend TypeVisitor<ExperimentalCborSerializer>;
-        friend serializer_base_t;
 
         template <typename T>
         bool visitStructBeginDerived(const T& instance, property_set_t& includedProperties)
         {
             includedProperties ^= instance._validProperties();
-            writeHead(Cbor::MajorType::Array, includedProperties.count());
-            write(includedProperties.toValue());
+            writer().writeArraySize(includedProperties.count());
+            writer().write(includedProperties.toValue());
 
             return true;
         }
@@ -43,42 +39,46 @@ namespace dots::serialization
         template <typename T>
         bool visitVectorBeginDerived(const vector_t<T>& vector, const type::Descriptor<vector_t<T>>&/* descriptor*/)
         {
-            writeHead(Cbor::MajorType::Array, vector.typelessSize());
+            writer().writeArraySize(vector.typelessSize());
             return true;
         }
 
         template <typename T>
         void visitEnumDerived(const T& value, const type::EnumDescriptor<T>& descriptor)
         {
-            write(descriptor.enumeratorFromValue(value).tag());
+            writer().write(descriptor.enumeratorFromValue(value).tag());
         }
 
         template <typename T>
         void visitFundamentalTypeDerived(const T& value, const type::Descriptor<T>&/* descriptor*/)
         {
-            if constexpr(std::is_arithmetic_v<T>)
+            if constexpr(std::is_floating_point_v<T>)
             {
-                write(value);
+                writer().write<T, CborWriter::FloatFormat::UseFloat16Zeroes>(value);
+            }
+            else if constexpr(std::is_integral_v<T>)
+            {
+                writer().write(value);
             }
             else if constexpr(std::is_same_v<T, property_set_t>)
             {
-                write(value.toValue());
+                writer().write(value.toValue());
             }
             else if constexpr (std::is_same_v<T, timepoint_t> || std::is_same_v<T, steady_timepoint_t>)
             {
-                write(value.duration().toFractionalSeconds());
+                writer().write<double, CborWriter::FloatFormat::UseFloat16Zeroes>(value.duration().toFractionalSeconds());
             }
             else if constexpr (std::is_same_v<T, duration_t>)
             {
-                write(value.toFractionalSeconds());
+                writer().write<double, CborWriter::FloatFormat::UseFloat16Zeroes>(value.toFractionalSeconds());
             }
             else if constexpr (std::is_same_v<T, uuid_t>)
             {
-                write(value.data());
+                writer().write(value.data());
             }
             else if constexpr (std::is_same_v<T, string_t>)
             {
-                write(value);
+                writer().write(value);
             }
             else
             {
@@ -86,21 +86,11 @@ namespace dots::serialization
             }
         }
 
-        void serializeTupleBeginDerived()
-        {
-            writeHead(Cbor::MajorType::IndefiniteArray);
-        }
-
-        void serializeTupleEndDerived()
-        {
-            writeHead(Cbor::MajorType::IndefiniteArrayBreak);
-        }
-
         template <typename T>
         bool visitStructBeginDerived(T&/* instance*/, property_set_t& includedProperties)
         {
-            size_t numProperties = readHead<size_t>(Cbor::MajorType::Array);
-            includedProperties = property_set_t{ read<uint32_t>() };
+            size_t numProperties = reader().readArraySize();
+            includedProperties = property_set_t{ reader().read<uint32_t>() };
 
             if (size_t numValidProperties = includedProperties.count(); numValidProperties != numProperties)
             {
@@ -120,14 +110,14 @@ namespace dots::serialization
         template <typename T>
         bool visitVectorBeginDerived(vector_t<T>& vector, const type::Descriptor<vector_t<T>>& descriptor)
         {
-            descriptor.fill(vector, readHead<size_t>(Cbor::MajorType::Array));
+            descriptor.fill(vector, reader().readArraySize());
             return true;
         }
 
         template <typename T>
         void visitEnumDerived(T& value, const type::EnumDescriptor<T>& descriptor)
         {
-            descriptor.construct(value, descriptor.enumeratorFromTag(read<uint32_t>()).value());
+            descriptor.construct(value, descriptor.enumeratorFromTag(reader().read<uint32_t>()).value());
         }
 
         template <typename T>
@@ -135,38 +125,28 @@ namespace dots::serialization
         {
             if constexpr(std::is_arithmetic_v<T>)
             {
-                value = read<T>();
+                value = reader().read<T>();
             }
             else if constexpr(std::is_same_v<T, property_set_t>)
             {
-                value = property_set_t{ read<uint32_t>() };
+                value = property_set_t{ reader().read<uint32_t>() };
             }
             else if constexpr (std::is_same_v<T, timepoint_t> || std::is_same_v<T, steady_timepoint_t> || std::is_same_v<T, duration_t>)
             {
-                value = T{ duration_t{ read<float64_t>() } };
+                value = T{ duration_t{ reader().read<float64_t>() } };
             }
             else if constexpr (std::is_same_v<T, uuid_t>)
             {
-                value = uuid_t{ read<uuid_t::value_t>() };
+                value = uuid_t{ reader().read<uuid_t::value_t>() };
             }
             else if constexpr (std::is_same_v<T, string_t>)
             {
-                read(value);
+                reader().read(value);
             }
             else
             {
                 static_assert(!std::is_same_v<T, T>, "type not supported");
             }
-        }
-
-        void deserializeTupleBeginDerived()
-        {
-            readHead(Cbor::MajorType::IndefiniteArray);
-        }
-
-        void deserializeTupleEndDerived()
-        {
-            readHead(Cbor::MajorType::IndefiniteArrayBreak);
         }
     };
 }

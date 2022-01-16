@@ -536,14 +536,14 @@ TYPED_TEST_P(TestSerializer, serialize_TupleToContinuousInternalBuffer)
     using base_t = TestSerializer<TypeParam>;
     typename base_t::serializer_t sut;
 
-    sut.serializeTupleBegin();
+    sut.writer().writeArrayBegin();
     {
         sut.serialize(base_t::Decoded().string1);
         sut.serialize(base_t::Decoded().enum1);
         sut.serialize(base_t::Decoded().vectorBool);
         sut.serialize(base_t::Decoded().structSimple1);
     }
-    sut.serializeTupleEnd();
+    sut.writer().writeArrayEnd();
 
     EXPECT_EQ(sut.output(), base_t::Encoded().serializationTuple1);
 }
@@ -556,14 +556,14 @@ TYPED_TEST_P(TestSerializer, deserialize_TupleFromContinuousExternalBuffer)
     sut.setInput(base_t::Encoded().serializationTuple1);
     EXPECT_TRUE(sut.inputAvailable());
 
-    sut.deserializeTupleBegin();
+    sut.reader().readArrayBegin();
     {
         EXPECT_EQ(sut.template deserialize<std::string>(), base_t::Decoded().string1);
         EXPECT_EQ(sut.template deserialize<SerializationEnum>(), base_t::Decoded().enum1);
         EXPECT_EQ(sut.template deserialize<dots::vector_t<dots::bool_t>>(), base_t::Decoded().vectorBool);
         EXPECT_EQ(sut.template deserialize<SerializationStructSimple>(), base_t::Decoded().structSimple1);
     }
-    sut.deserializeTupleEnd();
+    sut.reader().readArrayEnd();
 
     EXPECT_FALSE(sut.inputAvailable());
 }
