@@ -1,8 +1,8 @@
 #include <dots/testing/gtest/gtest.h>
 #include <dots/serialization/CborSerializer.h>
-#include <serialization/TestSerializerBase.h>
+#include <serialization/TestSerializer.h>
 
-struct CborSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::serialization::CborSerializer>
+struct CborSerializerTestDataEncoded : SerializerTestDataEncoded<dots::serialization::CborSerializer>
 {
     //
     // fundamental
@@ -176,4 +176,4 @@ struct CborSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::seria
     );
 };
 
-INSTANTIATE_TYPED_TEST_SUITE_P(TestCborSerializer, TestSerializerBase, CborSerializerTestDataEncoded);
+INSTANTIATE_TYPED_TEST_SUITE_P(TestCborSerializer, TestSerializer, CborSerializerTestDataEncoded);

@@ -1,9 +1,9 @@
 #include <dots/testing/gtest/gtest.h>
 #include <dots/serialization/JsonSerializer.h>
-#include <serialization/TestSerializerBase.h>
+#include <serialization/TestSerializer.h>
 #include <serialization/TestTextSerializer.h>
 
-struct JsonSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::serialization::JsonSerializer<>>
+struct JsonSerializerTestDataEncoded : SerializerTestDataEncoded<dots::serialization::JsonSerializer<>>
 {
     //
     // fundamental
@@ -235,5 +235,5 @@ struct JsonSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::seria
     data_t structComplex_StrictPolicy3 = Concat("{ \"uint32Property\": ", uint32Positive1, " }");
 };
 
-INSTANTIATE_TYPED_TEST_SUITE_P(TestJsonSerializer, TestSerializerBase, JsonSerializerTestDataEncoded);
+INSTANTIATE_TYPED_TEST_SUITE_P(TestJsonSerializer, TestSerializer, JsonSerializerTestDataEncoded);
 INSTANTIATE_TYPED_TEST_SUITE_P(TestJsonSerializer, TestTextSerializer, JsonSerializerTestDataEncoded);

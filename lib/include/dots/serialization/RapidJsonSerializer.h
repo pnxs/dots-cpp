@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include <dots/serialization/SerializerBase.h>
+#include <dots/serialization/Serializer.h>
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
 

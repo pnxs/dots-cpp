@@ -6,7 +6,7 @@
 
 using namespace dots::type::literals;
 
-struct TestSerializerBaseDataDecoded
+struct TestSerializerDataDecoded
 {
     //
     // fundamental
@@ -145,7 +145,7 @@ struct TestSerializerBaseDataDecoded
 };
 
 template <typename Serializer>
-struct SerializerBaseTestDataEncoded
+struct SerializerTestDataEncoded
 {
     using serializer_t = Serializer;
     using data_t = typename serializer_t::data_t;
@@ -190,11 +190,11 @@ struct SerializerBaseTestDataEncoded
 };
 
 template <typename TEncoded>
-struct TestSerializerBase : ::testing::Test
+struct TestSerializer : ::testing::Test
 {
 protected:
 
-    using decoded_t = TestSerializerBaseDataDecoded;
+    using decoded_t = TestSerializerDataDecoded;
     using encoded_t = TEncoded;
 
     using serializer_t = typename encoded_t::serializer_t;
@@ -215,11 +215,11 @@ protected:
     }
 };
 
-TYPED_TEST_SUITE_P(TestSerializerBase);
+TYPED_TEST_SUITE_P(TestSerializer);
 
-TYPED_TEST_P(TestSerializerBase, serialize_TypedArgument)
+TYPED_TEST_P(TestSerializer, serialize_TypedArgument)
 {
-    using base_t = TestSerializerBase<TypeParam>;
+    using base_t = TestSerializer<TypeParam>;
 
     EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().boolFalse), base_t::Encoded().boolFalse);
     EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().boolTrue), base_t::Encoded().boolTrue);
@@ -285,9 +285,9 @@ TYPED_TEST_P(TestSerializerBase, serialize_TypedArgument)
     EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().enum1), base_t::Encoded().enum1);
 }
 
-TYPED_TEST_P(TestSerializerBase, deserialize_TypedArgument)
+TYPED_TEST_P(TestSerializer, deserialize_TypedArgument)
 {
-    using base_t = TestSerializerBase<TypeParam>;
+    using base_t = TestSerializer<TypeParam>;
 
     EXPECT_EQ(base_t::serializer_t::template Deserialize<dots::bool_t>(base_t::Encoded().boolFalse), base_t::Decoded().boolFalse);
     EXPECT_EQ(base_t::serializer_t::template Deserialize<dots::bool_t>(base_t::Encoded().boolTrue), base_t::Decoded().boolTrue);
@@ -354,18 +354,18 @@ TYPED_TEST_P(TestSerializerBase, deserialize_TypedArgument)
     EXPECT_EQ(base_t::serializer_t::template Deserialize<SerializationEnum>(base_t::Encoded().enum1), base_t::Decoded().enum1);
 }
 
-TYPED_TEST_P(TestSerializerBase, serialize_PropertyArgument)
+TYPED_TEST_P(TestSerializer, serialize_PropertyArgument)
 {
-    using base_t = TestSerializerBase<TypeParam>;
+    using base_t = TestSerializer<TypeParam>;
 
     EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().structSimple1_int32Property), base_t::Encoded().int32Positive);
     EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().structSimple1_stringProperty), base_t::Encoded().string1);
     EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().structSimple1_float32Property), base_t::Encoded().float32Positive);
 }
 
-TYPED_TEST_P(TestSerializerBase, deserialize_PropertyArgument)
+TYPED_TEST_P(TestSerializer, deserialize_PropertyArgument)
 {
-    using base_t = TestSerializerBase<TypeParam>;
+    using base_t = TestSerializer<TypeParam>;
 
     SerializationStructSimple serializationProperties;
     base_t::serializer_t::Deserialize(base_t::Encoded().int32Positive, serializationProperties.int32Property);
@@ -377,9 +377,9 @@ TYPED_TEST_P(TestSerializerBase, deserialize_PropertyArgument)
     EXPECT_EQ(serializationProperties.float32Property, base_t::Decoded().structSimple1_float32Property);
 }
 
-TYPED_TEST_P(TestSerializerBase, serialize_VectorArgument)
+TYPED_TEST_P(TestSerializer, serialize_VectorArgument)
 {
-    using base_t = TestSerializerBase<TypeParam>;
+    using base_t = TestSerializer<TypeParam>;
 
     EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().vectorBool), base_t::Encoded().vectorBool);
     EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().vectorFloat), base_t::Encoded().vectorFloat);
@@ -387,9 +387,9 @@ TYPED_TEST_P(TestSerializerBase, serialize_VectorArgument)
     EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().vectorEmpty), base_t::Encoded().vectorEmpty);
 }
 
-TYPED_TEST_P(TestSerializerBase, deserialize_VectorArgument)
+TYPED_TEST_P(TestSerializer, deserialize_VectorArgument)
 {
-    using base_t = TestSerializerBase<TypeParam>;
+    using base_t = TestSerializer<TypeParam>;
 
     {
         dots::vector_t<dots::bool_t> vectorBool;
@@ -416,9 +416,9 @@ TYPED_TEST_P(TestSerializerBase, deserialize_VectorArgument)
     }
 }
 
-TYPED_TEST_P(TestSerializerBase, serialize_SimpleStructArgument)
+TYPED_TEST_P(TestSerializer, serialize_SimpleStructArgument)
 {
-    using base_t = TestSerializerBase<TypeParam>;
+    using base_t = TestSerializer<TypeParam>;
     
     EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().structSimple1), base_t::Encoded().structSimple1_Valid);
     EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().structSimple1, dots::property_set_t::All), base_t::Encoded().structSimple1_All);
@@ -426,9 +426,9 @@ TYPED_TEST_P(TestSerializerBase, serialize_SimpleStructArgument)
     EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().structSimple1, dots::property_set_t::None), base_t::Encoded().structSimple1_None);
 }
 
-TYPED_TEST_P(TestSerializerBase, deserialize_SimpleStructArgument)
+TYPED_TEST_P(TestSerializer, deserialize_SimpleStructArgument)
 {
-    using base_t = TestSerializerBase<TypeParam>;
+    using base_t = TestSerializer<TypeParam>;
 
     {
         SerializationStructSimple structSimple;
@@ -449,9 +449,9 @@ TYPED_TEST_P(TestSerializerBase, deserialize_SimpleStructArgument)
     }
 }
 
-TYPED_TEST_P(TestSerializerBase, serialize_ComplexStructArgument)
+TYPED_TEST_P(TestSerializer, serialize_ComplexStructArgument)
 {
-    using base_t = TestSerializerBase<TypeParam>;
+    using base_t = TestSerializer<TypeParam>;
     
     EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().structComplex1), base_t::Encoded().structComplex1_Valid);
     EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().structComplex1, SerializationStructComplex::timepointProperty_p + SerializationStructComplex::propertySetProperty_p), base_t::Encoded().structComplex1_Specific);
@@ -460,9 +460,9 @@ TYPED_TEST_P(TestSerializerBase, serialize_ComplexStructArgument)
     EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().structComplex2, SerializationStructComplex::enumProperty_p + SerializationStructComplex::durationVectorProperty_p), base_t::Encoded().structComplex2_Specific);
 }
 
-TYPED_TEST_P(TestSerializerBase, deserialize_ComplexStructArgument)
+TYPED_TEST_P(TestSerializer, deserialize_ComplexStructArgument)
 {
-    using base_t = TestSerializerBase<TypeParam>;
+    using base_t = TestSerializer<TypeParam>;
 
     {
         SerializationStructComplex structComplex;
@@ -489,9 +489,9 @@ TYPED_TEST_P(TestSerializerBase, deserialize_ComplexStructArgument)
     }
 }
 
-TYPED_TEST_P(TestSerializerBase, serialize_ConsecutiveArgumentsToContinuousInternalBuffer)
+TYPED_TEST_P(TestSerializer, serialize_ConsecutiveArgumentsToContinuousInternalBuffer)
 {
-    using base_t = TestSerializerBase<TypeParam>;
+    using base_t = TestSerializer<TypeParam>;
 
     typename base_t::serializer_t sut;
     
@@ -505,9 +505,9 @@ TYPED_TEST_P(TestSerializerBase, serialize_ConsecutiveArgumentsToContinuousInter
     EXPECT_EQ(sut.output(), base_t::Encoded().consecutiveTypes1);
 }
 
-TYPED_TEST_P(TestSerializerBase, deserialize_ConsecutiveArgumentsFromContinuousExternalBuffer)
+TYPED_TEST_P(TestSerializer, deserialize_ConsecutiveArgumentsFromContinuousExternalBuffer)
 {
-    using base_t = TestSerializerBase<TypeParam>;
+    using base_t = TestSerializer<TypeParam>;
 
     typename base_t::serializer_t sut;
     sut.setInput(base_t::Encoded().consecutiveTypes1);
@@ -531,9 +531,9 @@ TYPED_TEST_P(TestSerializerBase, deserialize_ConsecutiveArgumentsFromContinuousE
     EXPECT_FALSE(sut.inputAvailable());
 }
 
-TYPED_TEST_P(TestSerializerBase, serialize_TupleToContinuousInternalBuffer)
+TYPED_TEST_P(TestSerializer, serialize_TupleToContinuousInternalBuffer)
 {
-    using base_t = TestSerializerBase<TypeParam>;
+    using base_t = TestSerializer<TypeParam>;
     typename base_t::serializer_t sut;
 
     sut.serializeTupleBegin();
@@ -548,9 +548,9 @@ TYPED_TEST_P(TestSerializerBase, serialize_TupleToContinuousInternalBuffer)
     EXPECT_EQ(sut.output(), base_t::Encoded().serializationTuple1);
 }
 
-TYPED_TEST_P(TestSerializerBase, deserialize_TupleFromContinuousExternalBuffer)
+TYPED_TEST_P(TestSerializer, deserialize_TupleFromContinuousExternalBuffer)
 {
-    using base_t = TestSerializerBase<TypeParam>;
+    using base_t = TestSerializer<TypeParam>;
     typename base_t::serializer_t sut;
 
     sut.setInput(base_t::Encoded().serializationTuple1);
@@ -568,7 +568,7 @@ TYPED_TEST_P(TestSerializerBase, deserialize_TupleFromContinuousExternalBuffer)
     EXPECT_FALSE(sut.inputAvailable());
 }
 
-REGISTER_TYPED_TEST_SUITE_P(TestSerializerBase, 
+REGISTER_TYPED_TEST_SUITE_P(TestSerializer, 
     serialize_TypedArgument,
     deserialize_TypedArgument,
     serialize_PropertyArgument,

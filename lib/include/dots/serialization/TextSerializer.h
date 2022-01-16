@@ -2,7 +2,7 @@
 #include <string>
 #include <stack>
 #include <vector>
-#include <dots/serialization/SerializerBase.h>
+#include <dots/serialization/Serializer.h>
 #include <dots/tools/string_tools.h>
 
 namespace dots::serialization
@@ -80,9 +80,9 @@ namespace dots::serialization
     };
 
     template <typename Derived, typename Traits>
-    struct TextSerializer : SerializerBase<std::string, Derived>
+    struct TextSerializer : Serializer<std::string, Derived>
     {
-        using serializer_base_t = SerializerBase<std::string, Derived>;
+        using serializer_base_t = Serializer<std::string, Derived>;
 
         using traits_t = Traits;
         using data_t = typename serializer_base_t::data_t;

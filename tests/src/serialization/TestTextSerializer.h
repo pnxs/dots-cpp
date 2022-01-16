@@ -1,11 +1,11 @@
 #pragma once
 #include <dots/testing/gtest/gtest.h>
-#include <serialization/TestSerializerBase.h>
+#include <serialization/TestSerializer.h>
 
 using dots::serialization::StringSerializerOptions;
 
 template <typename TEncoded>
-struct TestTextSerializer : TestSerializerBase<TEncoded>
+struct TestTextSerializer : TestSerializer<TEncoded>
 {
 };
 

@@ -5,18 +5,18 @@
 namespace dots::serialization
 {
     template <typename Data, typename Derived, bool Static = true>
-    struct SerializerBase : type::TypeVisitor<std::conditional_t<Static, Derived, void>>
+    struct Serializer : type::TypeVisitor<std::conditional_t<Static, Derived, void>>
     {
         using data_t = Data;
         using value_t = typename data_t::value_type;
 
-        SerializerBase() = default;
-        SerializerBase(const SerializerBase& other) = default;
-        SerializerBase(SerializerBase&& other) = default;
-        ~SerializerBase() = default;
+        Serializer() = default;
+        Serializer(const Serializer& other) = default;
+        Serializer(Serializer&& other) = default;
+        ~Serializer() = default;
 
-        SerializerBase& operator = (const SerializerBase& rhs) = default;
-        SerializerBase& operator = (SerializerBase&& rhs) = default;
+        Serializer& operator = (const Serializer& rhs) = default;
+        Serializer& operator = (Serializer&& rhs) = default;
 
         const data_t& output() const
         {

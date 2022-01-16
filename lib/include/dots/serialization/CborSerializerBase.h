@@ -6,14 +6,14 @@
 #include <cstring>
 #include <cmath>
 #include <dots/type/TypeVisitor.h>
-#include <dots/serialization/SerializerBase.h>
+#include <dots/serialization/Serializer.h>
 
 namespace dots::serialization
 {
     template <typename Derived, bool UseFloat16Zero = true>
-    struct CborSerializerBase : SerializerBase<std::vector<uint8_t>, Derived>
+    struct CborSerializerBase : Serializer<std::vector<uint8_t>, Derived>
     {
-        using serializer_base_t = SerializerBase<std::vector<uint8_t>, Derived>;
+        using serializer_base_t = Serializer<std::vector<uint8_t>, Derived>;
 
         CborSerializerBase() = default;
         CborSerializerBase(const CborSerializerBase& other) = default;

@@ -1,9 +1,9 @@
 #include <dots/testing/gtest/gtest.h>
 #include <dots/serialization/StringSerializer.h>
-#include <serialization/TestSerializerBase.h>
+#include <serialization/TestSerializer.h>
 #include <serialization/TestTextSerializer.h>
 
-struct StringSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::serialization::StringSerializer<>>
+struct StringSerializerTestDataEncoded : SerializerTestDataEncoded<dots::serialization::StringSerializer<>>
 {
     //
     // fundamental
@@ -235,5 +235,5 @@ struct StringSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::ser
     data_t structComplex_StrictPolicy3 = Concat("SerializationStructComplex{ .uint32Property = ", int32Positive, " }");
 };
 
-INSTANTIATE_TYPED_TEST_SUITE_P(TestStringSerializer, TestSerializerBase, StringSerializerTestDataEncoded);
+INSTANTIATE_TYPED_TEST_SUITE_P(TestStringSerializer, TestSerializer, StringSerializerTestDataEncoded);
 INSTANTIATE_TYPED_TEST_SUITE_P(TestStringSerializer, TestTextSerializer, StringSerializerTestDataEncoded);

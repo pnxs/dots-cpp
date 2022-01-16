@@ -1,8 +1,8 @@
 #include <dots/testing/gtest/gtest.h>
 #include <dots/serialization/RapidJsonSerializer.h>
-#include <serialization/TestSerializerBase.h>
+#include <serialization/TestSerializer.h>
 
-struct RapidJsonSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::serialization::RapidJsonSerializer<>>
+struct RapidJsonSerializerTestDataEncoded : SerializerTestDataEncoded<dots::serialization::RapidJsonSerializer<>>
 {
     //
     // fundamental
@@ -191,11 +191,11 @@ struct RapidJsonSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::
     );
 };
 
-struct TestRapidJsonSerializer : TestSerializerBase<RapidJsonSerializerTestDataEncoded>
+struct TestRapidJsonSerializer : TestSerializer<RapidJsonSerializerTestDataEncoded>
 {
 protected:
 
-    using base_t = TestSerializerBase<RapidJsonSerializerTestDataEncoded>;
+    using base_t = TestSerializer<RapidJsonSerializerTestDataEncoded>;
     using data_t = std::string;
     using buffer_t = rapidjson::StringBuffer;
     using writer_t = rapidjson::Writer<buffer_t>;
