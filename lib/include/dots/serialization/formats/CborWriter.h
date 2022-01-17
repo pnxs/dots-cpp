@@ -91,12 +91,12 @@ namespace dots::serialization
             UseFloat16Zeroes
         };
 
-        template <typename T, FloatFormat FloatFormat = FloatFormat::NativeSizeOnly, std::enable_if_t<std::is_floating_point_v<T>, int> = 0>
+        template <typename T, FloatFormat Format = FloatFormat::NativeSizeOnly, std::enable_if_t<std::is_floating_point_v<T>, int> = 0>
         void write(T value)
         {
             static_assert(std::is_same_v<T, float> || std::is_same_v<T, double>, "type not supported");
 
-            if constexpr (FloatFormat == FloatFormat::UseFloat16Zeroes)
+            if constexpr (Format == FloatFormat::UseFloat16Zeroes)
             {
                 if (value == static_cast<T>(0))
                 {
