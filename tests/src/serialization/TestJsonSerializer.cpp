@@ -1,7 +1,9 @@
 #include <dots/testing/gtest/gtest.h>
 #include <dots/serialization/JsonSerializer.h>
 #include <serialization/TestSerializer.h>
-#include <serialization/TestTextSerializer.h>
+#include <serialization/TestSerializer.h>
+
+using dots::serialization::TextOptions;
 
 struct JsonSerializerTestDataEncoded : SerializerTestDataEncoded<dots::serialization::JsonSerializer>
 {
@@ -195,45 +197,74 @@ struct JsonSerializerTestDataEncoded : SerializerTestDataEncoded<dots::serializa
         " }",
         " ]"
     );
-
-    //
-    // unescaped string
-    //
-
-    data_t string5Unescaped = u8"foo\\ \u0062\u0061\u0072\u00A9\n b\\az";
-    data_t structSimple_String5Unescaped = Concat("{ \"stringProperty\": ", string5Unescaped, " }");
-
-    //
-    // output style
-    //
-
-    data_t structComplex_MinimalStyle = Concat("{\"enumProperty\":", enum1, ",\"float64Property\":", float64Negative, ",\"timepointProperty\":", timePoint1, ",\"structSimpleProperty\":{\"boolProperty\":", boolFalse, "}}");
-    data_t structComplex_CompactStyle = Concat("{ \"enumProperty\": ", enum1, ", \"float64Property\": ", float64Negative, ", \"timepointProperty\": " + timePoint1, ", \"structSimpleProperty\": { \"boolProperty\": ", boolFalse, " } }");
-    data_t structComplex_SingleLineStyle = Concat("{ \"enumProperty\": ", enum1, ", \"float64Property\": ", float64Negative, ", \"timepointProperty\": ", timePoint1, ", \"structSimpleProperty\": { \"boolProperty\": ", boolFalse, " } }");
-
-    data_t structComplex_MultiLineStyle = Concat(
-        "{\n",
-        "    \"enumProperty\": ", enum1, ",\n",
-        "    \"float64Property\": ", float64Negative, ",\n",
-        "    \"timepointProperty\": ", timePoint1, ",\n",
-        "    \"structSimpleProperty\": {\n",
-        "        \"boolProperty\": ", boolFalse, "\n",
-        "    }\n",
-        "}"
-    );
-
-    //
-    // input policy
-    //
-
-    data_t structComplex_RelaxedPolicy1 = Concat("{ \"enumProperty\": ", enum1, " }");
-    data_t structComplex_RelaxedPolicy2 = Concat("{ \"enumProperty\": ", enum1, " }");
-    data_t structComplex_RelaxedPolicy3 = Concat("{ \"uint32Property\": ", uint32Positive1, " }");
-    data_t structComplex_RelaxedPolicy4 = Concat("{ \"uint32Property\": ", uint32Positive1, " }");
-    data_t structComplex_StrictPolicy1 = Concat("{ \"enumProperty\": ", enum1, " }");
-    data_t structComplex_StrictPolicy2 = Concat("{ \"enumProperty\": ", enum1, " }");
-    data_t structComplex_StrictPolicy3 = Concat("{ \"uint32Property\": ", uint32Positive1, " }");
 };
 
 INSTANTIATE_TYPED_TEST_SUITE_P(TestJsonSerializer, TestSerializer, JsonSerializerTestDataEncoded);
-INSTANTIATE_TYPED_TEST_SUITE_P(TestJsonSerializer, TestTextSerializer, JsonSerializerTestDataEncoded);
+
+struct TestJsonSerializer : ::testing::Test
+{
+    using sut_t = dots::serialization::JsonSerializer;
+};
+
+TEST_F(TestJsonSerializer, deserialize_PermitTopLevelUnescapedStringArgument)
+{
+    std::string input = u8"foo\\ \u0062\u0061\u0072\u00A9\n b\\az";
+    std::string expected = input;
+
+    {
+        EXPECT_EQ(sut_t::Deserialize<dots::string_t>(input), expected);
+    }
+
+    {
+        SerializationStructSimple actual;
+        sut_t::Deserialize(input, actual.stringProperty);
+        EXPECT_EQ(*actual.stringProperty, expected);
+    }
+}
+
+TEST_F(TestJsonSerializer, deserialize_RejectNonTopLevelUnescapedStringArgument)
+{
+    std::string input = "{ \"stringProperty\": foo\\ \u0062\u0061\u0072\u00A9\n b\\az }";
+
+    SerializationStructSimple actual;
+    EXPECT_THROW(sut_t::Deserialize(input, actual), std::runtime_error);
+}
+
+TEST_F(TestJsonSerializer, serialize_WithOutputStyle)
+{
+    SerializationStructComplex instance{
+        SerializationStructComplex::enumProperty_i{ SerializationEnum::baz },
+        SerializationStructComplex::float64Property_i{ -2.71828182846 },
+        SerializationStructComplex::structSimpleProperty_i{
+            SerializationStructSimple::boolProperty_i{ false }
+        }
+    };
+
+    {
+        std::string expected = R"({"enumProperty":5,"float64Property":-2.71828182846,"structSimpleProperty":{"boolProperty":false}})";
+        EXPECT_EQ(sut_t::Serialize(instance, TextOptions{ TextOptions::Minimal }), expected);
+    }
+
+    {
+        std::string expected = R"({ "enumProperty": 5, "float64Property": -2.71828182846, "structSimpleProperty": { "boolProperty": false } })";
+        EXPECT_EQ(sut_t::Serialize(instance, TextOptions{ TextOptions::Compact }), expected);
+    }
+
+    {
+        std::string expected = R"({ "enumProperty": 5, "float64Property": -2.71828182846, "structSimpleProperty": { "boolProperty": false } })";
+        EXPECT_EQ(sut_t::Serialize(instance, TextOptions{ TextOptions::SingleLine }), expected);
+    }
+
+    {
+        std::string expected = 
+            "{\n"
+            "    \"enumProperty\": 5,\n"
+            "    \"float64Property\": -2.71828182846,\n"
+            "    \"structSimpleProperty\": {\n"
+            "        \"boolProperty\": false\n"
+            "    }\n"
+            "}"
+       ;
+        EXPECT_EQ(sut_t::Serialize(instance, TextOptions{ TextOptions::MultiLine }), expected);
+    }
+}

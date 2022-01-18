@@ -1,7 +1,9 @@
 #include <dots/testing/gtest/gtest.h>
 #include <dots/serialization/StringSerializer.h>
 #include <serialization/TestSerializer.h>
-#include <serialization/TestTextSerializer.h>
+#include <serialization/TestSerializer.h>
+
+using dots::serialization::TextOptions;
 
 struct StringSerializerTestDataEncoded : SerializerTestDataEncoded<dots::serialization::StringSerializer>
 {
@@ -195,45 +197,142 @@ struct StringSerializerTestDataEncoded : SerializerTestDataEncoded<dots::seriali
         " }",
         " }"
     );
-
-    //
-    // unescaped string
-    //
-
-    data_t string5Unescaped = u8"foo\\ \u0062\u0061\u0072\u00A9\n b\\az";
-    data_t structSimple_String5Unescaped = Concat("SerializationStructSimple{ .stringProperty = ", string5Unescaped, " }");
-
-    //
-    // output style
-    //
-
-    data_t structComplex_MinimalStyle = Concat("{.enumProperty=", enum1, ",.float64Property=", float64Negative, ",.timepointProperty=", timePoint1, ",.structSimpleProperty={.boolProperty=", boolFalse, "}}");
-    data_t structComplex_CompactStyle = Concat("SerializationStructComplex{ .enumProperty = ", enum1, ", .float64Property = ", float64Negative, ", .timepointProperty = " + timePoint1, ", .structSimpleProperty = { .boolProperty = ", boolFalse, " } }");
-    data_t structComplex_SingleLineStyle = Concat("SerializationStructComplex{ .enumProperty = SerializationEnum::", enum1, ", .float64Property = ", float64Negative, ", .timepointProperty = ", timePoint1, ", .structSimpleProperty = SerializationStructSimple{ .boolProperty = ", boolFalse, " } }");
-
-    data_t structComplex_MultiLineStyle = Concat(
-        "SerializationStructComplex{\n",
-        "    .enumProperty = SerializationEnum::", enum1, ",\n",
-        "    .float64Property = ", float64Negative, ",\n",
-        "    .timepointProperty = ", timePoint1, ",\n",
-        "    .structSimpleProperty = SerializationStructSimple{\n",
-        "        .boolProperty = ", boolFalse, "\n",
-        "    }\n",
-        "}"
-    );
-
-    //
-    // input policy
-    //
-
-    data_t structComplex_RelaxedPolicy1 = Concat("{ .enumProperty = SerializationEnum::", enum1," }");
-    data_t structComplex_RelaxedPolicy2 = Concat("{ .enumProperty = ", enum1, " }");
-    data_t structComplex_RelaxedPolicy3 = Concat("{ .uint32Property = ", uint32Positive1, " }");
-    data_t structComplex_RelaxedPolicy4 = Concat("{ .uint32Property = ", int32Positive, " }");
-    data_t structComplex_StrictPolicy1 = Concat("{ .enumProperty = SerializationEnum::", enum1, " }");
-    data_t structComplex_StrictPolicy2 = Concat("SerializationStructComplex{ .enumProperty = ", enum1, " }");
-    data_t structComplex_StrictPolicy3 = Concat("SerializationStructComplex{ .uint32Property = ", int32Positive, " }");
 };
 
 INSTANTIATE_TYPED_TEST_SUITE_P(TestStringSerializer, TestSerializer, StringSerializerTestDataEncoded);
-INSTANTIATE_TYPED_TEST_SUITE_P(TestStringSerializer, TestTextSerializer, StringSerializerTestDataEncoded);
+
+struct TestStringSerializer : ::testing::Test
+{
+    using sut_t = dots::serialization::StringSerializer;
+};
+
+TEST_F(TestStringSerializer, deserialize_PermitTopLevelUnescapedStringArgument)
+{
+    std::string input = u8"foo\\ \u0062\u0061\u0072\u00A9\n b\\az";
+    std::string expected = input;
+
+    {
+        EXPECT_EQ(sut_t::Deserialize<dots::string_t>(input), expected);
+    }
+
+    {
+        SerializationStructSimple actual;
+        sut_t::Deserialize(input, actual.stringProperty);
+        EXPECT_EQ(*actual.stringProperty, expected);
+    }
+}
+
+TEST_F(TestStringSerializer, deserialize_RejectNonTopLevelUnescapedStringArgument)
+{
+    std::string input = "SerializationStructSimple{ .stringProperty = \"foo\\ \u0062\u0061\u0072\u00A9\n b\\az\" }";
+
+    SerializationStructSimple actual;
+    EXPECT_THROW(sut_t::Deserialize(input, actual), std::runtime_error);
+}
+
+TEST_F(TestStringSerializer, serialize_WithOutputStyle)
+{
+    SerializationStructComplex instance{
+        SerializationStructComplex::enumProperty_i{ SerializationEnum::baz },
+        SerializationStructComplex::float64Property_i{ -2.71828182846 },
+        SerializationStructComplex::structSimpleProperty_i{
+            SerializationStructSimple::boolProperty_i{ false }
+        }
+    };
+
+    {
+        std::string expected = "{.enumProperty=baz,.float64Property=-2.71828182846,.structSimpleProperty={.boolProperty=false}}";
+        EXPECT_EQ(sut_t::Serialize(instance, TextOptions{ TextOptions::Minimal }), expected);
+    }
+
+    {
+        std::string expected = "SerializationStructComplex{ .enumProperty = baz, .float64Property = -2.71828182846, .structSimpleProperty = { .boolProperty = false } }";
+        EXPECT_EQ(sut_t::Serialize(instance, TextOptions{ TextOptions::Compact }), expected);
+    }
+
+    {
+        std::string expected = "SerializationStructComplex{ .enumProperty = SerializationEnum::baz, .float64Property = -2.71828182846, .structSimpleProperty = SerializationStructSimple{ .boolProperty = false } }";
+        EXPECT_EQ(sut_t::Serialize(instance, TextOptions{ TextOptions::SingleLine }), expected);
+    }
+
+    {
+        std::string expected = 
+           "SerializationStructComplex{\n"
+           "    .enumProperty = SerializationEnum::baz,\n"
+           "    .float64Property = -2.71828182846,\n"
+           "    .structSimpleProperty = SerializationStructSimple{\n"
+           "        .boolProperty = false\n"
+           "    }\n"
+           "}"
+       ;
+        EXPECT_EQ(sut_t::Serialize(instance, TextOptions{ TextOptions::MultiLine }), expected);
+    }
+}
+
+TEST_F(TestStringSerializer, deserialize_EnumWithInputPolicy)
+{
+    TextOptions relaxedOptions{ TextOptions::SingleLine, TextOptions::Relaxed };
+    TextOptions strictOptions{ TextOptions::SingleLine, TextOptions::Strict };
+
+    SerializationStructComplex expected{
+        SerializationStructComplex::enumProperty_i{ SerializationEnum::baz }
+    };
+    
+    {
+        std::string input = "SerializationStructComplex{ .enumProperty = baz }";
+        SerializationStructComplex actual;
+        sut_t::Deserialize(input, actual, relaxedOptions);
+        EXPECT_THROW(sut_t::Deserialize(input, actual, strictOptions), std::runtime_error);
+        EXPECT_TRUE(actual._equal(expected));
+    }
+
+    {
+        std::string input = "{ .enumProperty = SerializationEnum::baz }";
+        SerializationStructComplex actual;
+        sut_t::Deserialize(input, actual, relaxedOptions);
+        EXPECT_THROW(sut_t::Deserialize(input, actual, strictOptions), std::runtime_error);
+        EXPECT_TRUE(actual._equal(expected));
+    }
+
+    {
+        std::string input = "{ .enumProperty = baz }";
+        SerializationStructComplex actual;
+        sut_t::Deserialize(input, actual, relaxedOptions);
+        EXPECT_THROW(sut_t::Deserialize(input, actual, strictOptions), std::runtime_error);
+        EXPECT_TRUE(actual._equal(expected));
+    }
+}
+
+TEST_F(TestStringSerializer, deserialize_UnsignedIntegerWithInputPolicy)
+{
+    TextOptions relaxedOptions{ TextOptions::SingleLine, TextOptions::Relaxed };
+    TextOptions strictOptions{ TextOptions::SingleLine, TextOptions::Strict };
+
+    SerializationStructComplex expected{
+        SerializationStructComplex::uint32Property_i{ 12345789u }
+    };
+
+    {
+        std::string input = "SerializationStructComplex{ .uint32Property = 12345789 }";
+        SerializationStructComplex actual;
+        sut_t::Deserialize(input, actual, relaxedOptions);
+        EXPECT_THROW(sut_t::Deserialize(input, actual, strictOptions), std::runtime_error);
+        EXPECT_TRUE(actual._equal(expected));
+    }
+
+    {
+        std::string input = "{ .uint32Property = 12345789u }";
+        SerializationStructComplex actual;
+        sut_t::Deserialize(input, actual, relaxedOptions);
+        EXPECT_THROW(sut_t::Deserialize(input, actual, strictOptions), std::runtime_error);
+        EXPECT_TRUE(actual._equal(expected));
+    }
+
+    {
+        std::string input = "{ .uint32Property = 12345789 }";
+        SerializationStructComplex actual;
+        sut_t::Deserialize(input, actual, relaxedOptions);
+        EXPECT_THROW(sut_t::Deserialize(input, actual, strictOptions), std::runtime_error);
+        EXPECT_TRUE(actual._equal(expected));
+    }
+}
