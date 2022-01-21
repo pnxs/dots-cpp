@@ -13,7 +13,7 @@ namespace dots::serialization
     };
 
     template <typename Writer = rapidjson::Writer<rapidjson::StringBuffer>, typename Traits = RapidJsonSerializerTraits>
-    struct RapidJsonSerializer : type::TypeVisitor<RapidJsonSerializer<Writer>>
+    struct RapidJsonSerializer : type::TypeVisitor<RapidJsonSerializer<Writer, Traits>>
     {
         using data_t = std::string;
         using value_t = data_t::value_type;
@@ -251,7 +251,7 @@ namespace dots::serialization
 
     protected:
 
-        using visitor_base_t = type::TypeVisitor<RapidJsonSerializer<Writer>>;
+        using visitor_base_t = type::TypeVisitor<RapidJsonSerializer<Writer, Traits>>;
         using visitor_base_t::visit;
 
         friend visitor_base_t;
