@@ -243,16 +243,11 @@ TEST_F(TestStringSerializer, serialize_WithOutputStyle)
 
     {
         std::string expected = "{.enumProperty=baz,.uint32Property=12345789u,.structSimpleProperty={.boolProperty=false,.float32Property=-2.7183f}}";
-        EXPECT_EQ(sut_t::Serialize(instance, TextOptions{ TextOptions::Minimal }), expected);
+        EXPECT_EQ(sut_t::Serialize(instance, TextOptions{ TextOptions::Minified }), expected);
     }
 
     {
         std::string expected = "SerializationStructComplex{ .enumProperty = baz, .uint32Property = 12345789u, .structSimpleProperty = { .boolProperty = false, .float32Property = -2.7183f } }";
-        EXPECT_EQ(sut_t::Serialize(instance, TextOptions{ TextOptions::Compact }), expected);
-    }
-
-    {
-        std::string expected = "SerializationStructComplex{ .enumProperty = SerializationEnum::baz, .uint32Property = 12345789u, .structSimpleProperty = SerializationStructSimple{ .boolProperty = false, .float32Property = -2.7183f } }";
         EXPECT_EQ(sut_t::Serialize(instance, TextOptions{ TextOptions::SingleLine }), expected);
     }
 

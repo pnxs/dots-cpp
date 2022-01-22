@@ -243,12 +243,7 @@ TEST_F(TestJsonSerializer, serialize_WithOutputStyle)
 
     {
         std::string expected = R"({"enumProperty":5,"uint32Property":12345789,"structSimpleProperty":{"boolProperty":false,"float32Property":-2.7183}})";
-        EXPECT_EQ(sut_t::Serialize(instance, TextOptions{ TextOptions::Minimal }), expected);
-    }
-
-    {
-        std::string expected = R"({ "enumProperty": 5, "uint32Property": 12345789, "structSimpleProperty": { "boolProperty": false, "float32Property": -2.7183 } })";
-        EXPECT_EQ(sut_t::Serialize(instance, TextOptions{ TextOptions::Compact }), expected);
+        EXPECT_EQ(sut_t::Serialize(instance, TextOptions{ TextOptions::Minified }), expected);
     }
 
     {

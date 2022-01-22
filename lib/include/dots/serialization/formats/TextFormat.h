@@ -59,13 +59,12 @@ namespace dots::serialization
         
         enum Style
         {
-            Minimal,
-            Compact,
+            Minified,
             SingleLine,
             MultiLine
         };
 
-        Style style = Compact;
+        Style style = SingleLine;
         Policy policy = Relaxed;
         size_t indentSize = 4;
     };

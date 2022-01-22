@@ -13,7 +13,7 @@ namespace dots::io
     WebSocketChannel::WebSocketChannel(Channel::key_t key, boost::asio::io_context& ioContext, std::string_view host, std::string_view port) :
         Channel(key),
         m_stream{ ioContext },
-        m_serializer{ { serialization::TextOptions::Minimal } }
+        m_serializer{ { serialization::TextOptions::Minified } }
     {
         try
         {

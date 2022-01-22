@@ -45,14 +45,14 @@ namespace dots::serialization
         {
             if constexpr (format_t::ObjectFormat == TextFormat::ObjectFormat::WithTypeName)
             {
-                if (m_options.style == TextOptions::Compact)
+                if (m_options.style == TextOptions::SingleLine)
                 {
                     if (m_nesting.empty())
                     {
                         writeString(objectTypeName);
                     }
                 }
-                else if (m_options.style >= TextOptions::SingleLine)
+                else if (m_options.style >= TextOptions::MultiLine)
                 {
                     writeString(objectTypeName);
                 }
@@ -93,7 +93,7 @@ namespace dots::serialization
 
             if constexpr (!format_t::ObjectMemberValueBegin.empty())
             {
-                if (m_options.style == TextOptions::Minimal)
+                if (m_options.style == TextOptions::Minified)
                 {
                     append(format_t::ObjectMemberValueBegin);
                 }
@@ -102,7 +102,7 @@ namespace dots::serialization
                     append(" ", format_t::ObjectMemberValueBegin, " ");
                 }
             }
-            else if (m_options.style >= TextOptions::Compact)
+            else if (m_options.style >= TextOptions::SingleLine)
             {
                 append(" ");
             }
@@ -219,7 +219,7 @@ namespace dots::serialization
 
             if constexpr (format_t::ObjectFormat == TextFormat::ObjectFormat::WithTypeName)
             {
-                if (m_options.style >= TextOptions::SingleLine)
+                if (m_options.style >= TextOptions::MultiLine)
                 {
                     append(std::forward<Ts>(prefixedIdentifier)...);
                     return;
@@ -314,7 +314,7 @@ namespace dots::serialization
                     append(" ");
                 }
             }
-            else if (m_options.style >= TextOptions::Compact)
+            else if (m_options.style >= TextOptions::SingleLine)
             {
                 append(" ");
             }
