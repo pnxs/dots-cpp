@@ -157,7 +157,10 @@ namespace dots::serialization
 
             if constexpr (format_t::IntegerFormat == TextFormat::IntegerFormat::WithSignSuffix && std::is_unsigned_v<T>)
             {
-                append("u");
+                if (m_options.style >= TextOptions::SingleLine)
+                {
+                    append("u");
+                }
             }
         }
 
@@ -194,7 +197,10 @@ namespace dots::serialization
 
             if constexpr (format_t::FloatFormat == TextFormat::FloatFormat::WithSizeSuffix && std::is_same_v<T, float>)
             {
-                append("f");
+                if (m_options.style >= TextOptions::SingleLine)
+                {
+                    append("f");
+                }
             }
         }
 
