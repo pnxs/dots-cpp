@@ -234,24 +234,25 @@ TEST_F(TestJsonSerializer, serialize_WithOutputStyle)
 {
     SerializationStructComplex instance{
         SerializationStructComplex::enumProperty_i{ SerializationEnum::baz },
-        SerializationStructComplex::float64Property_i{ -2.71828182846 },
+        SerializationStructComplex::uint32Property_i{ 12345789u },
         SerializationStructComplex::structSimpleProperty_i{
-            SerializationStructSimple::boolProperty_i{ false }
+            SerializationStructSimple::boolProperty_i{ false },
+            SerializationStructSimple::float32Property_i{ -2.7183f }
         }
     };
 
     {
-        std::string expected = R"({"enumProperty":5,"float64Property":-2.71828182846,"structSimpleProperty":{"boolProperty":false}})";
+        std::string expected = R"({"enumProperty":5,"uint32Property":12345789,"structSimpleProperty":{"boolProperty":false,"float32Property":-2.7183}})";
         EXPECT_EQ(sut_t::Serialize(instance, TextOptions{ TextOptions::Minimal }), expected);
     }
 
     {
-        std::string expected = R"({ "enumProperty": 5, "float64Property": -2.71828182846, "structSimpleProperty": { "boolProperty": false } })";
+        std::string expected = R"({ "enumProperty": 5, "uint32Property": 12345789, "structSimpleProperty": { "boolProperty": false, "float32Property": -2.7183 } })";
         EXPECT_EQ(sut_t::Serialize(instance, TextOptions{ TextOptions::Compact }), expected);
     }
 
     {
-        std::string expected = R"({ "enumProperty": 5, "float64Property": -2.71828182846, "structSimpleProperty": { "boolProperty": false } })";
+        std::string expected = R"({ "enumProperty": 5, "uint32Property": 12345789, "structSimpleProperty": { "boolProperty": false, "float32Property": -2.7183 } })";
         EXPECT_EQ(sut_t::Serialize(instance, TextOptions{ TextOptions::SingleLine }), expected);
     }
 
@@ -259,9 +260,10 @@ TEST_F(TestJsonSerializer, serialize_WithOutputStyle)
         std::string expected = 
             "{\n"
             "    \"enumProperty\": 5,\n"
-            "    \"float64Property\": -2.71828182846,\n"
+            "    \"uint32Property\": 12345789,\n"
             "    \"structSimpleProperty\": {\n"
-            "        \"boolProperty\": false\n"
+            "        \"boolProperty\": false,\n"
+            "        \"float32Property\": -2.7183\n"
             "    }\n"
             "}"
        ;
