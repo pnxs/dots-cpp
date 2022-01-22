@@ -18,11 +18,11 @@ using namespace dots::types::literals;
 namespace dots
 {
     Server::Server(std::string name, listeners_t listeners, boost::asio::io_context& ioContext/* = dots::io::global_io_context()*/) :
-        m_hostTransceiver{ std::move(name), ioContext, type::Registry::StaticTypePolicy::InternalOnly, [&](const Connection& connection){ handleTransition(connection); } },
+        m_hostTransceiver{ std::move(name), ioContext, type::Registry::StaticTypePolicy::InternalOnly, HostTransceiver::transition_handler_t{ &Server::handleTransition, this } },
         m_daemonStatus{ DotsDaemonStatus::serverName_i{ m_hostTransceiver.selfName() }, DotsDaemonStatus::startTime_i{ types::timepoint_t::Now() } }
     {
-        add_timer(1s, [&](){ updateServerStatus(); }, true);
-        add_timer(10s, [&](){ cleanUpClients(); }, true);
+        add_timer(1s, { &Server::updateServerStatus, this }, true);
+        add_timer(10s, { &Server::cleanUpClients, this }, true);
 
         // For backward compatibility: in the legacy version of DOTS,
         // DotsContinuousRecorderStatus and DotsDumpContinuousRecorder where internal-types.
@@ -36,7 +36,7 @@ namespace dots
             m_hostTransceiver.listen(std::move(listener));
         }
 
-        m_descriptorSubscription.emplace(m_hostTransceiver.subscribe<type::StructDescriptor<>>([&](const type::StructDescriptor<>& descriptor){ handleNewStructType(descriptor); }));
+        m_descriptorSubscription.emplace(m_hostTransceiver.subscribe<type::StructDescriptor<>>({ &Server::handleNewStructType, this }));
         m_hostTransceiver.setAuthManager<io::LegacyAuthManager>();
     }
 

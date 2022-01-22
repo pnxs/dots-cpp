@@ -122,7 +122,7 @@ namespace dots
         return subscribe(m_registry.getStructType(name), std::move(handler));
     }
 
-    Subscription Transceiver::subscribe(new_type_handler_t handler)
+    Subscription Transceiver::subscribe(new_type_handler_t<> handler)
     {
         const auto& [id, handler_] = *m_newTypeHandlers.try_emplace(m_nextId++, std::move(handler)).first;
         m_registry.forEach(handler_);

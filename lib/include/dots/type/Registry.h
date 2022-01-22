@@ -1,18 +1,19 @@
 #pragma once
 #include <memory>
-#include <functional>
+#include <optional>
 #include <type_traits>
 #include <dots/type/DescriptorMap.h>
 #include <dots/type/FundamentalTypes.h>
 #include <dots/type/EnumDescriptor.h>
 #include <dots/type/StructDescriptor.h>
+#include <dots/tools/Handler.h>
 
 namespace dots::type
 {
     struct Registry
     {
         using const_iterator_t = DescriptorMap::const_iterator_t;
-        using new_type_handler_t = std::function<void(const Descriptor<>&)>;
+        using new_type_handler_t = tools::Handler<void(const Descriptor<>&)>;
 
         enum class StaticTypePolicy {
             FundamentalOnly,
@@ -20,7 +21,7 @@ namespace dots::type
             All,
         };
 
-        Registry(new_type_handler_t newTypeHandler = nullptr, StaticTypePolicy staticTypePolicy = StaticTypePolicy::All);
+        Registry(std::optional<new_type_handler_t> newTypeHandler = std::nullopt, StaticTypePolicy staticTypePolicy = StaticTypePolicy::All);
         Registry(const Registry& other) = default;
         Registry(Registry&& other) noexcept = default;
         ~Registry() = default;
@@ -158,7 +159,7 @@ namespace dots::type
 
         static bool IsUserType(const Descriptor<>& descriptor);
 
-        new_type_handler_t m_newTypeHandler;
+        std::optional<new_type_handler_t> m_newTypeHandler;
         DescriptorMap m_types;
     };
 }

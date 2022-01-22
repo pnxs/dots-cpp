@@ -17,23 +17,23 @@ namespace dots::io
 
     void Listener::processAccept(channel_ptr_t channel)
     {
-        if (m_acceptHandler(*this, std::move(channel)))
+        if ((*m_acceptHandler)(*this, std::move(channel)))
         {
             asyncAcceptImpl();
         }
         else
         {
             m_asyncAcceptActive = false;
-            m_acceptHandler = nullptr;
-            m_errorHandler = nullptr;
+            m_acceptHandler = std::nullopt;
+            m_errorHandler = std::nullopt;
         }
     }
 
     void Listener::processError(std::exception_ptr ePtr)
     {
-        if (m_errorHandler != nullptr)
+        if (m_errorHandler != std::nullopt)
         {
-            m_errorHandler(*this, ePtr);
+            (*m_errorHandler)(*this, ePtr);
         }
     }
 

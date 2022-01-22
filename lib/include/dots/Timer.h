@@ -1,5 +1,6 @@
 #pragma once
 
+#include <dots/tools/Handler.h>
 #include <dots/type/Chrono.h>
 #include <boost/asio.hpp>
 
@@ -26,7 +27,7 @@ namespace dots
     struct Timer
     {
         using id_t = uint32_t;
-        using callback_t = std::function<void()>;
+        using callback_t = tools::Handler<void()>;
 
         /*!
          * @brief Construct a new Timer object.

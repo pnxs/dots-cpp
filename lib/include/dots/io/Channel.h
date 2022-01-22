@@ -4,6 +4,7 @@
 #include <type_traits>
 #include <set>
 #include <unordered_set>
+#include <dots/tools/Handler.h>
 #include <dots/io/Endpoint.h>
 #include <dots/io/Transmission.h>
 #include <dots/tools/shared_ptr_only.h>
@@ -19,8 +20,8 @@ namespace dots::io
     struct Channel : tools::shared_ptr_only, std::enable_shared_from_this<Channel>
     {
         using key_t = tools::shared_ptr_only::key_t;
-        using receive_handler_t = std::function<bool(Transmission)>;
-        using error_handler_t = std::function<void(std::exception_ptr)>;
+        using receive_handler_t = tools::Handler<bool(Transmission)>;
+        using error_handler_t = tools::Handler<void(std::exception_ptr)>;
 
         Channel(key_t key);
         Channel(const Channel& other) = delete;
@@ -72,8 +73,8 @@ namespace dots::io
         type::Registry* m_registry;
         std::optional<Endpoint> m_localEndpoint;
         std::optional<Endpoint> m_remoteEndpoint;
-        receive_handler_t m_receiveHandler;
-        error_handler_t m_errorHandler;
+        std::optional<receive_handler_t> m_receiveHandler;
+        std::optional<error_handler_t> m_errorHandler;
     };
 
     using channel_ptr_t = std::shared_ptr<Channel>;

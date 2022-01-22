@@ -9,7 +9,7 @@ namespace dots
     HostTransceiver::HostTransceiver(std::string selfName/* = "DotsHostTransceiver"*/,
                                      boost::asio::io_context& ioContext/* = global_io_context()*/,
                                      type::Registry::StaticTypePolicy staticTypePolicy /*= type::Registry::StaticTypePolicy::All*/,
-                                     transition_handler_t transitionHandler/* = nullpt*/) :
+                                     std::optional<transition_handler_t> transitionHandler/* = std::nullopt*/) :
         Transceiver(std::move(selfName), ioContext, staticTypePolicy),
         m_transitionHandler{ std::move(transitionHandler) }
     {
@@ -22,8 +22,8 @@ namespace dots
         m_listeners.emplace(listenerPtr, std::move(listener));
 
         listenerPtr->asyncAccept(
-            [this](io::Listener& listener, io::channel_ptr_t channel){ return handleListenAccept(listener, std::move(channel)); },
-            [this](io::Listener& listener, std::exception_ptr ePtr){ handleListenError(listener, ePtr); }
+            { &HostTransceiver::handleListenAccept, this },
+            { &HostTransceiver::handleListenError, this }
         );
 
         return *listenerPtr;
@@ -109,8 +109,8 @@ namespace dots
     {
         auto connection = std::make_shared<Connection>(std::move(channel), true);
         connection->asyncReceive(registry(), m_authManager.get(), selfName(),
-            [this](Connection& connection, io::Transmission transmission) { return handleTransmission(connection, std::move(transmission)); },
-            [this](Connection& connection, std::exception_ptr ePtr) { handleTransition(connection, ePtr); }
+            { &HostTransceiver::handleTransmission, this },
+            { &HostTransceiver::handleTransition, this }
         );
         m_guestConnections.emplace(connection.get(), connection);
 
@@ -176,7 +176,7 @@ namespace dots
         {
             try
             {
-                m_transitionHandler(connection);
+                (*m_transitionHandler)(connection);
             }
             catch (const std::exception& e)
             {

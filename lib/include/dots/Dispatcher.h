@@ -6,6 +6,7 @@
 #include <dots/Event.h>
 #include <dots/ContainerPool.h>
 #include <dots/io/Transmission.h>
+#include <dots/tools/Handler.h>
 
 namespace dots
 {
@@ -31,9 +32,9 @@ namespace dots
     struct Dispatcher
     {
         using id_t = uint64_t;
-        using transmission_handler_t = std::function<void(const io::Transmission&)>;
+        using transmission_handler_t = tools::Handler<void(const io::Transmission&)>;
         template <typename T = type::Struct>
-        using event_handler_t = std::function<void(const Event<T>&)>;
+        using event_handler_t = tools::Handler<void(const Event<T>&)>;
 
         Dispatcher() = default;
         Dispatcher(const Dispatcher& other) = delete;
@@ -127,6 +128,56 @@ namespace dots
          * Dispatcher::removeEventHandler().
          */
         id_t addEventHandler(const type::StructDescriptor<>& descriptor, event_handler_t<> handler);
+
+        /*!
+         * @brief Add an event handler for a specific type.
+         *
+         * This will add a handler for events of a given type and cause it to
+         * be invoked every time a corresponding transmission is dispatched.
+         * For cached types, events are created after the local Container has
+         * been updated.
+         *
+         * Note that the @p handler can be any compatible invocable object,
+         * including lambdas and class member functions:
+         *
+         * @code{.cpp}
+         * // adding event handler for events of a DOTS struct type Foobar with lambda handler
+         * dispatcher.addEventHandler<Foobar>([](const dots::Event<Foobar>& event)
+         * {
+         *     // ...
+         * });
+         *
+         * // adding event handler for events a DOTS struct type Foobar member function
+         * dispatcher.addEventHandler<Foobar>({ &SomeClass::handleFoobar, this });
+         * @endcode
+         *
+         * @tparam T The type to subscribe to.
+         *
+         * @param handler The handler to invoke every time a corresponding
+         * transmission is dispatched. If the given type is a cached type and
+         * the corresponding Container is not empty, the given handler will
+         * also be invoked with create events for each contained instance
+         * before this function returns.
+         *
+         * @return id_t The unique id of the handler. The id can be used to
+         * remove the event handler by calling
+         * Dispatcher::removeEventHandler().
+         */
+        template<typename T>
+        id_t addEventHandler(event_handler_t<T> handler)
+        {
+            constexpr bool IsTopLevelStruct = std::conjunction_v<std::is_base_of<type::Struct, T>, std::negation<std::bool_constant<T::_SubstructOnly>>>;
+            static_assert(IsTopLevelStruct, "T has to be a top-level DOTS struct type");
+
+            if constexpr (IsTopLevelStruct)
+            {
+                return addEventHandler(T::_Descriptor(), event_handler_t<>{ tools::static_argument_cast, std::move(handler) });
+            }
+            else
+            {
+                return 0;
+            }
+        }
 
         /*!
          * @brief Remove a specific transmission handler.
@@ -250,40 +301,16 @@ namespace dots
          * remove the event handler by calling
          * Dispatcher::removeEventHandler().
          */
-        template<typename T, typename EventHandler, typename... Args>
+        template<typename T, typename EventHandler, typename... Args, std::enable_if_t<sizeof...(Args) >= 1, int> = 0>
+        [[deprecated("superseded by event_handler_t<T> overload")]]
         id_t addEventHandler(EventHandler&& handler, Args&&... args)
         {
-            constexpr bool IsTopLevelStruct = std::conjunction_v<std::is_base_of<type::Struct, T>, std::negation<std::bool_constant<T::_SubstructOnly>>>;
-            constexpr bool IsEventHandler = std::is_invocable_v<EventHandler, Args&..., const Event<T>&>;
-
-            static_assert(IsTopLevelStruct, "T has to be a top-level DOTS struct type");
+            constexpr bool IsEventHandler = std::is_constructible_v<event_handler_t<T>, EventHandler, Args...>;
             static_assert(IsEventHandler, "EventHandler has to be a valid DOTS event handler type and be invocable with Args");
 
-            if constexpr (IsTopLevelStruct && IsEventHandler)
+            if constexpr (IsEventHandler)
             {
-                auto handle_event = [](auto& handler, auto& argsTuple, const Event<>& e)
-                {
-                    std::apply([&](auto&... args)
-                    {
-                        std::invoke(handler, args..., e.as<T>());
-                    }, argsTuple);
-                };
-
-                // note that the two branches are intentionally identical except for the mutability of the outer lambda
-                if constexpr (std::is_const_v<EventHandler>)
-                {
-                    return addEventHandler(T::_Descriptor(), [handler{ std::forward<EventHandler>(handler) }, argsTuple = std::make_tuple(std::forward<Args>(args)...), &handle_event](const Event<>& e)
-                    {
-                        handle_event(handler, argsTuple, e);
-                    });
-                }
-                else
-                {
-                    return addEventHandler(T::_Descriptor(), [handler{ std::forward<EventHandler>(handler) }, argsTuple = std::make_tuple(std::forward<Args>(args)...), &handle_event](const Event<>& e) mutable
-                    {
-                        handle_event(handler, argsTuple, e);
-                    });
-                }
+                return addEventHandler(event_handler_t<T>{ std::forward<EventHandler>(handler), std::forward<Args>(args)... });
             }
             else
             {

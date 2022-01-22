@@ -66,7 +66,7 @@ target_sources(${TARGET_NAME}
         src/io/channels/TcpChannel.cpp
         src/io/channels/UdsChannel.cpp
         src/io/channels/UdsListener.cpp
-        src/io/channels/VirtualChannel.cpp
+
         src/io/channels/WebSocketChannel.cpp
         src/io/channels/WebSocketListener.cpp
         src/io/channels/LocalChannel.cpp

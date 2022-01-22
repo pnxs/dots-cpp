@@ -1,13 +1,5 @@
 #include <dots/io/auth/Digest.h>
-#if (defined _MSC_VER)
-// suppress warnings for implicit 'possible loss of data' conversions
-#pragma warning(push)
-#pragma warning(disable: 4244)
 #include <PicoSHA2/picosha2.h>
-#pragma warning(pop)
-#else
-#include <PicoSHA2/picosha2.h>
-#endif
 #include <boost/algorithm/hex.hpp>
 
 namespace dots::io

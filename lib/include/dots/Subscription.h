@@ -1,5 +1,6 @@
 #pragma once
-#include <functional>
+#include <optional>
+#include <dots/tools/Handler.h>
 
 namespace dots
 {
@@ -24,7 +25,7 @@ namespace dots
      */
     struct [[nodiscard]] Subscription
     {
-        using unsubscribe_handler_t = std::function<void()>;
+        using unsubscribe_handler_t = tools::Handler<void()>;
 
         /*!
          * @brief Construct a new Subscription object.
@@ -116,6 +117,6 @@ namespace dots
 
     private:
 
-        unsubscribe_handler_t m_handler;
+        std::optional<unsubscribe_handler_t> m_handler;
     };
 }

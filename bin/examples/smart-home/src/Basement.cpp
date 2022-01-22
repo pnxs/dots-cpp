@@ -5,7 +5,7 @@ namespace examples
 {
     Basement::Basement(dots::duration_t lightTimeout) :
         m_lightTimeout(lightTimeout),
-        m_switchSubscription{ dots::subscribe<Switch>(&Basement::handleSwitch, this) }
+        m_switchSubscription{ dots::subscribe<Switch>({ &Basement::handleSwitch, this }) }
     {
         /* do nothing */
     }

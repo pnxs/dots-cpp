@@ -1,7 +1,7 @@
 #pragma once
 #include <unordered_map>
 #include <unordered_set>
-#include <functional>
+#include <dots/tools/Handler.h>
 #include <dots/Connection.h>
 #include <dots/Transceiver.h>
 #include <dots/io/Listener.h>
@@ -36,7 +36,7 @@ namespace dots
      */
     struct HostTransceiver : Transceiver
     {
-        using transition_handler_t = std::function<void(const Connection&)>;
+        using transition_handler_t = tools::Handler<void(const Connection&)>;
 
         /*!
          * @brief Construct a new HostTransceiver object.
@@ -49,8 +49,8 @@ namespace dots
          *
          * @param ioContext The ASIO IO context (i.e. the "event loop") to use.
          *
-         * @param staticUserTypes Specifies whether static struct types will
-         * automatically be known by the registry.
+         * @param staticTypePolicy Specifies the static type policy of the
+         * transceiver's registry.
          *
          * @param transitionHandler The handler to invoke every time the a
          * Connection transitions to a different connection state.
@@ -58,7 +58,7 @@ namespace dots
         HostTransceiver(std::string selfName = "DotsHostTransceiver",
                         boost::asio::io_context& ioContext = io::global_io_context(),
                         type::Registry::StaticTypePolicy staticTypePolicy = type::Registry::StaticTypePolicy::All,
-                        transition_handler_t transitionHandler = nullptr);
+                        std::optional<transition_handler_t> transitionHandler = std::nullopt);
         HostTransceiver(const HostTransceiver& other) = delete;
         HostTransceiver(HostTransceiver&& other) = default;
         ~HostTransceiver() override = default;
@@ -178,7 +178,7 @@ namespace dots
 
         void transmitContainer(Connection& connection, const Container<>& container);
 
-        transition_handler_t m_transitionHandler;
+        std::optional<transition_handler_t> m_transitionHandler;
         listener_map_t m_listeners;
         connection_map_t m_guestConnections;
         group_map_t m_groups;

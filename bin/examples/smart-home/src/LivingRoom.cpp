@@ -5,7 +5,7 @@ namespace examples
 {
     LivingRoom::LivingRoom()
     {
-        m_subscriptions.emplace_back(dots::subscribe<Dimmer>(&LivingRoom::handleDimmer, this));
+        m_subscriptions.emplace_back(dots::subscribe<Dimmer>({ &LivingRoom::handleDimmer, this }));
     }
 
     void LivingRoom::handleDimmer(const dots::Event<Dimmer>& event)

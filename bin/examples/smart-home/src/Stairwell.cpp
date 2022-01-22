@@ -4,7 +4,7 @@
 namespace examples
 {
     Stairwell::Stairwell() :
-        m_statelessSwitchSubscription(dots::subscribe<StatelessSwitch>(&Stairwell::handleStatelessSwitch, this))
+        m_statelessSwitchSubscription(dots::subscribe<StatelessSwitch>({ &Stairwell::handleStatelessSwitch, this }))
     {
         /* do nothing */
     }
