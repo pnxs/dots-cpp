@@ -64,14 +64,13 @@ struct JsonSerializerTestDataEncoded : SerializerTestDataEncoded<dots::serializa
     data_t duration1{ "123.456" };
     data_t duration2{ "342.073" };
 
-    data_t uuid1{ "\"8c96148e-58bd-11eb-ae93-0242ac130002\"" };
+    data_t uuid1{ "8c96148e-58bd-11eb-ae93-0242ac130002" };
 
-    data_t string1{ "\"foobar\"" };
-    data_t string2{ "\"\\\"foo\\\" bar baz\"" };
-    data_t string3{ "\"foo \\\"bar\\\" baz\"" };
-    data_t string4{ "\"foo bar \\\"baz\\\"\"" };
-    data_t string5{ u8"\"foo\\\\ \u0062\u0061\u0072\u00A9\\n b\\\\az\"" };
-    data_t stringInvalid{ "\"fo\\obar\"" };
+    data_t string1{ "foobar" };
+    data_t string2{ "\"foo\" bar baz" };
+    data_t string3{ "foo \"bar\" baz" };
+    data_t string4{ "foo bar \"baz\"" };
+    data_t string5{ u8"foo\\ \u0062\u0061\u0072\u00A9\n b\\az" };
 
     //
     // enum
@@ -84,7 +83,7 @@ struct JsonSerializerTestDataEncoded : SerializerTestDataEncoded<dots::serializa
     //
 
     data_t structSimple1_int32Property = Concat("\"int32Property\": ", int32Positive);
-    data_t structSimple1_stringProperty = Concat("\"stringProperty\": ", string1);
+    data_t structSimple1_stringProperty = Concat("\"stringProperty\": \"", string1, "\"");
     data_t structSimple1_boolProperty = Concat("\"boolProperty\": null");
     data_t structSimple1_float32Property = Concat("\"float32Property\": ", float32Positive);
 
@@ -95,7 +94,7 @@ struct JsonSerializerTestDataEncoded : SerializerTestDataEncoded<dots::serializa
 
     data_t structComplex2_propertySetProperty = Concat("\"propertySetProperty\": ", propertySetMixed1);
     data_t structComplex2_durationVectorProperty = Concat("\"durationVectorProperty\": [ ", duration1, ", ", duration2, " ]");
-    data_t structComplex2_uuidProperty = Concat("\"uuidProperty\": ", uuid1);
+    data_t structComplex2_uuidProperty = Concat("\"uuidProperty\": \"", uuid1, "\"");
 
     //
     // vector
@@ -175,10 +174,10 @@ struct JsonSerializerTestDataEncoded : SerializerTestDataEncoded<dots::serializa
     //
 
     data_t consecutiveTypes1 = Concat(
-        string1,
-        enum1,
+        structSimple1_Valid,
+        structComplex1_Valid,
         vectorBool,
-        structSimple1_Valid
+        structComplex2_Valid
     );
 
     //
@@ -187,7 +186,7 @@ struct JsonSerializerTestDataEncoded : SerializerTestDataEncoded<dots::serializa
 
     data_t serializationTuple1 = Concat(
         "[ ",
-        string1, ", ",
+        "\"", string1, "\", ",
         enum1, ", ",
         vectorBool, ", ",
         "{ ",
@@ -205,6 +204,72 @@ struct TestJsonSerializer : ::testing::Test
 {
     using sut_t = dots::serialization::JsonSerializer;
 };
+
+TEST_F(TestJsonSerializer, serialize_EscapedString)
+{
+    {
+        SerializationStructSimple instance{
+            SerializationStructSimple::stringProperty_i{ "\"foo\" bar baz" }
+        };
+        EXPECT_EQ(sut_t::Serialize(instance), "{ \"stringProperty\": \"\\\"foo\\\" bar baz\" }");
+    }
+
+    {
+        SerializationStructSimple instance{
+            SerializationStructSimple::stringProperty_i{ "foo \"bar\" baz" }
+        };
+        EXPECT_EQ(sut_t::Serialize(instance), "{ \"stringProperty\": \"foo \\\"bar\\\" baz\" }");
+    }
+
+    {
+        SerializationStructSimple instance{
+            SerializationStructSimple::stringProperty_i{ "foo bar \"baz\"" }
+        };
+        EXPECT_EQ(sut_t::Serialize(instance), "{ \"stringProperty\": \"foo bar \\\"baz\\\"\" }");
+    }
+
+    {
+        SerializationStructSimple instance{
+            SerializationStructSimple::stringProperty_i{ "foo\\ \u0062\u0061\u0072\u00A9\n b\\az" }
+        };
+        EXPECT_EQ(sut_t::Serialize(instance), "{ \"stringProperty\": \"foo\\\\ \u0062\u0061\u0072\u00A9\\n b\\\\az\" }");
+    }
+}
+
+TEST_F(TestJsonSerializer, deserialize_EscapedString)
+{
+    {
+        std::string input = "{ \"stringProperty\": \"\\\"foo\\\" bar baz\" }";
+        SerializationStructSimple expected{
+            SerializationStructSimple::stringProperty_i{ "\"foo\" bar baz" }
+        };
+        EXPECT_EQ(sut_t::Deserialize<SerializationStructSimple>(input), expected);
+    }
+
+    {
+        std::string input = "{ \"stringProperty\": \"foo \\\"bar\\\" baz\" }";
+        SerializationStructSimple expected{
+            SerializationStructSimple::stringProperty_i{ "foo \"bar\" baz" }
+        };
+        EXPECT_EQ(sut_t::Deserialize<SerializationStructSimple>(input), expected);
+    }
+
+    {
+        std::string input = "{ \"stringProperty\": \"foo bar \\\"baz\\\"\" }";
+        SerializationStructSimple expected{
+            SerializationStructSimple::stringProperty_i{ "foo bar \"baz\"" }
+        };
+        EXPECT_EQ(sut_t::Deserialize<SerializationStructSimple>(input), expected);
+    }
+
+    {
+        std::string input = "{ \"stringProperty\": \"foo\\\\ \u0062\u0061\u0072\u00A9\\n b\\\\az\" }";
+        SerializationStructSimple expected{
+            SerializationStructSimple::stringProperty_i{ "foo\\ \u0062\u0061\u0072\u00A9\n b\\az" }
+        };
+        EXPECT_EQ(sut_t::Deserialize<SerializationStructSimple>(input), expected);
+    }
+}
 
 TEST_F(TestJsonSerializer, deserialize_PermitTopLevelUnescapedStringArgument)
 {

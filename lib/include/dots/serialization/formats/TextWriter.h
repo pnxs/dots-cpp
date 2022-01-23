@@ -157,7 +157,7 @@ namespace dots::serialization
 
             if constexpr (format_t::IntegerFormat == TextFormat::IntegerFormat::WithSignSuffix && std::is_unsigned_v<T>)
             {
-                if (m_options.style >= TextOptions::SingleLine)
+                if (!m_nesting.empty() && m_options.style >= TextOptions::SingleLine)
                 {
                     append("u");
                 }
@@ -197,7 +197,7 @@ namespace dots::serialization
 
             if constexpr (format_t::FloatFormat == TextFormat::FloatFormat::WithSizeSuffix && std::is_same_v<T, float>)
             {
-                if (m_options.style >= TextOptions::SingleLine)
+                if (!m_nesting.empty() && m_options.style >= TextOptions::SingleLine)
                 {
                     append("f");
                 }
@@ -225,7 +225,7 @@ namespace dots::serialization
 
             if constexpr (format_t::ObjectFormat == TextFormat::ObjectFormat::WithTypeName)
             {
-                if (m_options.style >= TextOptions::MultiLine)
+                if (!m_nesting.empty() && m_options.style >= TextOptions::MultiLine)
                 {
                     append(std::forward<Ts>(prefixedIdentifier)...);
                     return;
@@ -239,39 +239,56 @@ namespace dots::serialization
         void writeQuotedString(const std::string& str)
         {
             initiateWrite();
-            append(format_t::StringDelimiter, str, format_t::StringDelimiter);
+
+            if (m_nesting.empty())
+            {
+                append(str);
+            }
+            else
+            {
+                append(format_t::StringDelimiter, str, format_t::StringDelimiter);
+            }
         }
 
         void writeEscapedString(const std::string& str)
         {
             initiateWrite();
-            append(format_t::StringDelimiter);
 
+            if (m_nesting.empty())
             {
-                std::string_view strRemaining = str;
+                append(str);
+            }
+            else
+            {
+                append(format_t::StringDelimiter);
 
-                while (!strRemaining.empty())
                 {
-                    auto it = std::find_if(format_t::StringEscapeMapping.begin(), format_t::StringEscapeMapping.end(), [&strRemaining](const auto& escapeMapping)
-                    {
-                        return tools::starts_with(strRemaining, escapeMapping.from);
-                    });
+                    std::string_view strRemaining = str;
 
-                    if (it == format_t::StringEscapeMapping.end())
+                    while (!strRemaining.empty())
                     {
-                        append(strRemaining.substr(0, 1));
-                        strRemaining.remove_prefix(1);
-                    }
-                    else
-                    {
-                        const auto& [from, to] = *it;
-                        append(to);
-                        strRemaining.remove_prefix(from.size());
+                        auto it = std::find_if(format_t::StringEscapeMapping.begin(), format_t::StringEscapeMapping.end(), [&strRemaining](const auto& escapeMapping)
+                        {
+                            return tools::starts_with(strRemaining, escapeMapping.from);
+                        });
+
+                        if (it == format_t::StringEscapeMapping.end())
+                        {
+                            append(strRemaining.substr(0, 1));
+                            strRemaining.remove_prefix(1);
+                        }
+                        else
+                        {
+                            const auto& [from, to] = *it;
+                            append(to);
+                            strRemaining.remove_prefix(from.size());
+                        }
                     }
                 }
+
+                append(format_t::StringDelimiter);
             }
 
-            append(format_t::StringDelimiter);
         }
 
     private:

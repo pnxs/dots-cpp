@@ -148,12 +148,10 @@ namespace dots::serialization
 
         std::string readEscapedString()
         {
-            consumeWhitespace();
-            bool stringDelimited = tryConsumeToken(format_t::StringDelimiter);
-
-            if (m_nesting.empty() && !stringDelimited)
+            if (m_nesting.empty())
             {
-                std::string token = std::string{ input() };
+                consumeWhitespace();
+                std::string token = std::string{ inputData(), inputAvailable() };
                 inputAdvance(input().size());
                 finalizeRead();
 
@@ -161,6 +159,7 @@ namespace dots::serialization
             }
             else
             {
+                consumeTokenAfterWhitespace(format_t::StringDelimiter);
                 std::string token;
 
                 while (!input().empty())
@@ -199,27 +198,39 @@ namespace dots::serialization
 
         std::string_view readQuotedString()
         {
-            constexpr std::string_view Delimiter = format_t::StringDelimiter;
-
-            consumeTokenAfterWhitespace(Delimiter);
-            std::string_view tokenInput = input();
-
-            while (!tokenInput.empty())
+            if (m_nesting.empty())
             {
-                if (tools::starts_with(tokenInput, Delimiter))
-                {
-                    std::string_view value = input().substr(0, static_cast<size_t>(tokenInput.data() - input().data()));
-                    tokenInput.remove_prefix(Delimiter.size());
-                    inputAdvance(tokenInput.data() - input().data());
-                    finalizeRead();
+                consumeWhitespace();
+                std::string_view token{ inputData(), inputAvailable() };
+                inputAdvance(input().size());
+                finalizeRead();
 
-                    return value;
+                return token;
+            }
+            else
+            {
+                constexpr std::string_view Delimiter = format_t::StringDelimiter;
+
+                consumeTokenAfterWhitespace(Delimiter);
+                std::string_view tokenInput = input();
+
+                while (!tokenInput.empty())
+                {
+                    if (tools::starts_with(tokenInput, Delimiter))
+                    {
+                        std::string_view value = input().substr(0, static_cast<size_t>(tokenInput.data() - input().data()));
+                        tokenInput.remove_prefix(Delimiter.size());
+                        inputAdvance(tokenInput.data() - input().data());
+                        finalizeRead();
+
+                        return value;
+                    }
+
+                    tokenInput.remove_prefix(1);
                 }
 
-                tokenInput.remove_prefix(1);
+                throw makeTokenError(Delimiter);
             }
-
-            throw makeTokenError(Delimiter);
         }
 
         std::string_view readIdentifierString()
@@ -250,7 +261,7 @@ namespace dots::serialization
         {
             consumeWhitespace();
 
-            if (m_options.policy == TextOptions::Strict)
+            if (!m_nesting.empty() && m_options.policy == TextOptions::Strict)
             {
                 consumeToken(std::forward<T>(prefixHead));
                 (consumeToken(std::forward<Ts>(prefixTail)), ...);
@@ -358,11 +369,11 @@ namespace dots::serialization
 
             if constexpr (format_t::IntegerFormat == TextFormat::IntegerFormat::WithSignSuffix && std::is_unsigned_v<T>)
             {
-                if (m_options.policy == TextOptions::Strict)
+                if (!m_nesting.empty() && m_options.policy == TextOptions::Strict)
                 {
                     consumeToken("u");
                 }
-                else if (m_options.policy == TextOptions::Relaxed)
+                else
                 {
                     tryConsumeToken("u");
                 }
@@ -413,7 +424,14 @@ namespace dots::serialization
 
             if constexpr (format_t::FloatFormat == TextFormat::FloatFormat::WithSizeSuffix && std::is_same_v<T, float>)
             {
-                tryConsumeToken("f");
+                if (!m_nesting.empty() && m_options.policy == TextOptions::Strict)
+                {
+                    consumeToken("f");
+                }
+                else
+                {
+                    tryConsumeToken("f");
+                }
             }
         }
 

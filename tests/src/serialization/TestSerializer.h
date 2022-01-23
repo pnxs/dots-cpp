@@ -349,7 +349,6 @@ TYPED_TEST_P(TestSerializer, deserialize_TypedArgument)
     EXPECT_EQ(base_t::serializer_t::template Deserialize<dots::string_t>(base_t::Encoded().string3), base_t::Decoded().string3);
     EXPECT_EQ(base_t::serializer_t::template Deserialize<dots::string_t>(base_t::Encoded().string4), base_t::Decoded().string4);
     EXPECT_EQ(base_t::serializer_t::template Deserialize<dots::string_t>(base_t::Encoded().string5), base_t::Decoded().string5);
-    EXPECT_ANY_THROW(base_t::serializer_t::template Deserialize<dots::string_t>(base_t::Encoded().stringInvalid));
 
     EXPECT_EQ(base_t::serializer_t::template Deserialize<SerializationEnum>(base_t::Encoded().enum1), base_t::Decoded().enum1);
 }
@@ -496,10 +495,10 @@ TYPED_TEST_P(TestSerializer, serialize_ConsecutiveArgumentsToContinuousInternalB
     typename base_t::serializer_t sut;
     
     {
-        EXPECT_EQ(sut.serialize(base_t::Decoded().string1), base_t::Encoded().string1.size());
-        EXPECT_EQ(sut.serialize(base_t::Decoded().enum1), base_t::Encoded().enum1.size());
-        EXPECT_EQ(sut.serialize(base_t::Decoded().vectorBool), base_t::Encoded().vectorBool.size());
         EXPECT_EQ(sut.serialize(base_t::Decoded().structSimple1), base_t::Encoded().structSimple1_Valid.size());
+        EXPECT_EQ(sut.serialize(base_t::Decoded().structComplex1), base_t::Encoded().structComplex1_Valid.size());
+        EXPECT_EQ(sut.serialize(base_t::Decoded().vectorBool), base_t::Encoded().vectorBool.size());
+        EXPECT_EQ(sut.serialize(base_t::Decoded().structComplex2), base_t::Encoded().structComplex2_Valid.size());
     }
 
     EXPECT_EQ(sut.output(), base_t::Encoded().consecutiveTypes1);
@@ -515,17 +514,17 @@ TYPED_TEST_P(TestSerializer, deserialize_ConsecutiveArgumentsFromContinuousExter
     EXPECT_TRUE(sut.inputAvailable());
     
     {
-        EXPECT_EQ(sut.template deserialize<std::string>(), base_t::Decoded().string1);
-        EXPECT_EQ(sut.lastDeserializeSize(), base_t::Encoded().string1.size());
+        EXPECT_EQ(sut.template deserialize<SerializationStructSimple>(), base_t::Decoded().structSimple1);
+        EXPECT_EQ(sut.lastDeserializeSize(), base_t::Encoded().structSimple1_Valid.size());
 
-        EXPECT_EQ(sut.template deserialize<SerializationEnum>(), base_t::Decoded().enum1);
-        EXPECT_EQ(sut.lastDeserializeSize(), base_t::Encoded().enum1.size());
+        EXPECT_EQ(sut.template deserialize<SerializationStructComplex>(), base_t::Decoded().structComplex1);
+        EXPECT_EQ(sut.lastDeserializeSize(), base_t::Encoded().structComplex1_Valid.size());
 
         EXPECT_EQ(sut.template deserialize<dots::vector_t<dots::bool_t>>(), base_t::Decoded().vectorBool);
         EXPECT_EQ(sut.lastDeserializeSize(), base_t::Encoded().vectorBool.size());
 
-        EXPECT_EQ(sut.template deserialize<SerializationStructSimple>(), base_t::Decoded().structSimple1);
-        EXPECT_EQ(sut.lastDeserializeSize(), base_t::Encoded().structSimple1_Valid.size());
+        EXPECT_EQ(sut.template deserialize<SerializationStructComplex>(), base_t::Decoded().structComplex2);
+        EXPECT_EQ(sut.lastDeserializeSize(), base_t::Encoded().structComplex2_Valid.size());
     }
 
     EXPECT_FALSE(sut.inputAvailable());
