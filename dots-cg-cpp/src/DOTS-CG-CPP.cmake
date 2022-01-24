@@ -1,6 +1,6 @@
 # helper variables
 if (WIN32)
-    find_package(Python3 3.7 REQUIRED COMPONENTS Interpreter)
+    find_package(Python3 3.8 REQUIRED COMPONENTS Interpreter)
     execute_process(COMMAND ${Python3_EXECUTABLE} -m site --user-site
         OUTPUT_VARIABLE Python3_SITEUSER
         RESULT_VARIABLE rv
