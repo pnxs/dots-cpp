@@ -196,6 +196,32 @@ struct JsonSerializerTestDataEncoded : SerializerTestDataEncoded<dots::serializa
         " }",
         " ]"
     );
+
+    //
+    // unknown properties
+    //
+
+    data_t structSimple1_unknownProperty = Concat("\"unknownProperty\": ", string5);
+    data_t structComplex1_unknownProperty = Concat("\"unknownProperty\": ", structComplex2_Valid);
+
+    data_t structSimple1_Unknown = Concat(
+        "{ ",
+        structSimple1_int32Property, ", ",
+        structSimple1_stringProperty, ", ",
+        structSimple1_float32Property, ", ",
+        structSimple1_unknownProperty,
+        " }"
+    );
+
+    data_t structComplex1_Unknown = Concat(
+        "{ ",
+        structComplex1_enumProperty, ", ",
+        structComplex1_float64Property, ", ",
+        structComplex1_unknownProperty, ", ",
+        structComplex1_timepointProperty, ", ",
+        structComplex1_structSimpleProperty,
+        " }"
+    );
 };
 
 INSTANTIATE_TYPED_TEST_SUITE_P(TestJsonSerializer, TestSerializer, JsonSerializerTestDataEncoded);

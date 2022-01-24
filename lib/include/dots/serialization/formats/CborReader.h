@@ -168,6 +168,103 @@ namespace dots::serialization
             }
         }
 
+        void skip()
+        {
+            assertInputAvailable(1);
+            uint8_t initialByte = readByte();
+            uint8_t majorType = initialByte & cbor_t::MajorType::Mask;
+            uint8_t additionalInformation = initialByte & cbor_t::AdditionalInformation::Mask;
+
+            auto any_of = [majorType](auto... majorTypes)
+            {
+                return (... || (majorType == majorTypes));
+            };
+
+            auto consume = [&](size_t numBytes)
+            {
+                assertInputAvailable(numBytes);
+                inputData() += numBytes;
+            };
+
+            auto get_num_bytes = [&]() -> uint8_t
+            {
+                if (additionalInformation <= cbor_t::AdditionalInformation::MaxInplaceValue)
+                {
+                    return 0;
+                }
+                else
+                {
+                    if (additionalInformation > cbor_t::AdditionalInformation::FollowingBytes8)
+                    {
+                        throw std::runtime_error{ "encountered unsupported additional information value: " + std::to_string(additionalInformation) };
+                    }
+
+                    uint8_t numBytes = 1 << (additionalInformation - cbor_t::AdditionalInformation::FollowingBytes1);
+                    return numBytes;
+                }
+            };
+
+            auto read_size = [&]
+            {
+                size_t value;
+                uint8_t numBytes = get_num_bytes();
+
+                if (additionalInformation <= cbor_t::AdditionalInformation::MaxInplaceValue)
+                {
+                    value = additionalInformation;
+                }
+                else
+                {
+                    value = 0;
+
+                    for (int16_t i = numBytes - 1; i >= 0; --i)
+                    {
+                        value |= static_cast<uint64_t>(readByte()) << i * 8;
+                    }
+                }
+
+                consume(numBytes);
+
+                return value;
+            };
+
+            if (any_of(cbor_t::MajorType::UnsignedInt, cbor_t::MajorType::SignedInt, cbor_t::MajorType::SimpleOrFloat))
+            {
+                size_t numBytes = get_num_bytes();
+                consume(numBytes);
+            }
+            else if (any_of(cbor_t::MajorType::ByteString, cbor_t::MajorType::TextString))
+            {
+                size_t size = read_size();
+                consume(size);
+            }
+            else if (any_of(cbor_t::MajorType::Array))
+            {
+                size_t size = read_size();
+
+                if (size > 0)
+                {
+                    while (size--)
+                    {
+                        skip();
+                    }
+                }
+            }
+            else if (any_of(cbor_t::MajorType::Map))
+            {
+                size_t size = read_size();
+
+                if (size > 0)
+                {
+                    while (size--)
+                    {
+                        skip();
+                        skip();
+                    }
+                }
+            }
+        }
+
     private:
 
         void assertInputAvailable(size_t size)

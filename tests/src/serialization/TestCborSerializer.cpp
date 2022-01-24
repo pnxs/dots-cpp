@@ -173,6 +173,30 @@ struct CborSerializerTestDataEncoded : SerializerTestDataEncoded<dots::serializa
         structSimple1_Valid,
         0xFF
     );
+
+    //
+    // unknown properties
+    //
+
+    data_t structSimple1_unknownProperty = Concat(0x05, string5);
+    data_t structComplex1_unknownProperty = Concat(0x05, structComplex2_Valid);
+
+    data_t structSimple1_Unknown = Concat(
+        0xA4,
+        structSimple1_int32Property,
+        structSimple1_stringProperty,
+        structSimple1_float32Property,
+        structSimple1_unknownProperty
+    );
+
+    data_t structComplex1_Unknown = Concat(
+        0xA5,
+        structComplex1_enumProperty,
+        structComplex1_float64Property,
+        structComplex1_unknownProperty,
+        structComplex1_timepointProperty,
+        structComplex1_structSimpleProperty
+    );
 };
 
 INSTANTIATE_TYPED_TEST_SUITE_P(TestCborSerializer, TestSerializer, CborSerializerTestDataEncoded);

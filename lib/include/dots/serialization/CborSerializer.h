@@ -102,6 +102,10 @@ namespace dots::serialization
                     type::ProxyProperty<> property{ instance, propertyDescriptor };
                     visit(property);
                 }
+                else
+                {
+                    reader().skip();
+                }
             }
 
             return false;

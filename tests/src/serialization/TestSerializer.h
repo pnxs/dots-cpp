@@ -567,6 +567,23 @@ TYPED_TEST_P(TestSerializer, deserialize_TupleFromContinuousExternalBuffer)
     EXPECT_FALSE(sut.inputAvailable());
 }
 
+TYPED_TEST_P(TestSerializer, deserialize_UnknownProperties)
+{
+    using base_t = TestSerializer<TypeParam>;
+
+    {
+        SerializationStructSimple structSimple;
+        base_t::serializer_t::Deserialize(base_t::Encoded().structSimple1_Unknown, structSimple);
+        EXPECT_EQ(structSimple, base_t::Decoded().structSimple1);
+    }
+
+    {
+        SerializationStructComplex structComplex;
+        base_t::serializer_t::Deserialize(base_t::Encoded().structComplex1_Unknown, structComplex);
+        EXPECT_EQ(structComplex, base_t::Decoded().structComplex1);
+    }
+}
+
 REGISTER_TYPED_TEST_SUITE_P(TestSerializer, 
     serialize_TypedArgument,
     deserialize_TypedArgument,
@@ -581,5 +598,6 @@ REGISTER_TYPED_TEST_SUITE_P(TestSerializer,
     serialize_ConsecutiveArgumentsToContinuousInternalBuffer,
     deserialize_ConsecutiveArgumentsFromContinuousExternalBuffer,
     serialize_TupleToContinuousInternalBuffer,
-    deserialize_TupleFromContinuousExternalBuffer
+    deserialize_TupleFromContinuousExternalBuffer,
+    deserialize_UnknownProperties
 );

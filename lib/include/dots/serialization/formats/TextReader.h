@@ -277,6 +277,61 @@ namespace dots::serialization
             return readIdentifierString();
         }
 
+        void skip()
+        {
+            consumeWhitespace();
+
+            while (inputAvailable())
+            {
+                if (tools::starts_with(input(), format_t::StringDelimiter))
+                {
+                    readEscapedString();
+                    break;
+                }
+                else if (tools::starts_with(input(), format_t::ArrayBegin))
+                {
+                    readArrayBegin();
+
+                    while (!tryReadArrayEnd())
+                    {
+                        skip();
+                    }
+
+                    break;
+                }
+                else if (tools::starts_with(input(), format_t::ObjectBegin))
+                {
+                    readObjectBegin();
+
+                    while (!tryReadObjectEnd())
+                    {
+                        readObjectMemberName();
+                        skip();
+                    }
+
+                    break;
+                }
+                else if (tools::starts_with(input(), format_t::ArrayElementSeparator))
+                {
+                    consumeToken(format_t::ArrayElementSeparator);
+                    break;
+                }
+                else if (tools::starts_with(input(), format_t::ObjectMemberValueEnd))
+                {
+                    consumeToken(format_t::ObjectMemberValueEnd);
+                    break;
+                }
+                else if (tools::starts_with(input(), format_t::ArrayEnd) || tools::starts_with(input(), format_t::ObjectEnd))
+                {
+                    break;
+                }
+                else
+                {
+                    inputAdvance(1);
+                }
+            }
+        }
+
     private:
 
         enum struct State : uint8_t
