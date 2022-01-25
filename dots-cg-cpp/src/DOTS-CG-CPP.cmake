@@ -1,17 +1,27 @@
 # helper variables
-find_package(Python3 3.7 REQUIRED COMPONENTS Interpreter)
-execute_process(COMMAND ${Python3_EXECUTABLE} -m site --user-site
-    OUTPUT_VARIABLE Python3_SITEUSER
-    RESULT_VARIABLE rv
-)
-if (${rv} GREATER 2)
-    message(FATAL_ERROR "Could not determine Python3 user site-package location: ${rv}")
-endif()
-string(REPLACE "\n" "" Python3_SITEUSER ${Python3_SITEUSER})
-find_program(DOTS-CG NAMES dcg.py PATHS ${Python3_SITEARCH} ${Python3_SITEUSER} PATH_SUFFIXES bin)
-if(${DOTS-CG} STREQUAL DOTS-CG-NOTFOUND)
-    message(FATAL_ERROR "Could not find DOTS code generator")
-endif()
+if (WIN32)
+    find_package(Python3 3.8 REQUIRED COMPONENTS Interpreter)
+    execute_process(COMMAND ${Python3_EXECUTABLE} -m site --user-site
+        OUTPUT_VARIABLE Python3_SITEUSER
+        RESULT_VARIABLE rv
+    )
+    if (${rv} GREATER 2)
+        message(FATAL_ERROR "Could not determine Python3 user site-package location: ${rv}")
+    endif()
+    string(REPLACE "\n" "" Python3_SITEUSER ${Python3_SITEUSER})
+    find_program(DOTS-CG NAMES dcg.py PATHS ${Python3_SITEARCH} ${Python3_SITEUSER} PATH_SUFFIXES bin)
+    if(${DOTS-CG} STREQUAL DOTS-CG-NOTFOUND)
+        message(FATAL_ERROR "Could not find DOTS code generator")
+    else()
+        set(DOTS-CG ${Python3_EXECUTABLE} ${DOTS-CG})
+    endif()
+else()
+    find_program(DOTS-CG NAMES dcg.py)
+    if(${DOTS-CG} STREQUAL DOTS-CG-NOTFOUND)
+        message(FATAL_ERROR "Could not find DOTS code generator")
+    endif()
+endif (WIN32)
+
 if(NOT DEFINED DOTS-CG-CPP_DIR)
     message(FATAL_ERROR "DOTS-CG-CPP_DIR variable is not set")
 endif()
@@ -24,7 +34,7 @@ set(DOTS-CG_TEMPLATE_LIST
     CACHE INTERNAL "Internal helper variable containing the C++ code generation templates"
 )
 set(DOTS-CG-CPP-GENERATE_CMD 
-    ${Python3_EXECUTABLE} ${DOTS-CG} --config=${DOTS-CG-CPP_DIR}/${DOTS-CG_CONFIG}.py --templatePath=${DOTS-CG_TEMPLATE_DIR}
+    ${DOTS-CG} --config=${DOTS-CG-CPP_DIR}/${DOTS-CG_CONFIG}.py --templatePath=${DOTS-CG_TEMPLATE_DIR}
     CACHE INTERNAL "Internal helper variable containing the DOTS-CG generate command"
 )
 

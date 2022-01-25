@@ -14,7 +14,7 @@ add_compile_definitions(
 add_definitions(-DENABLE_LOG_DEBUG -DENABLE_LOG_DATA -DBOOST_ERROR_CODE_HEADER_ONLY -DBOOST_SYSTEM_NO_DEPRECATED)
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set(DOTS_TEMPLATE_PATH ${CMAKE_SOURCE_DIR}/model/template)
-set(Boost_USE_STATIC_LIBS ON)
+option(Boost_USE_STATIC_LIBS "Use static Boost libraries" ON)
 option(BUILD_TZ_LIB "" ON)
 option(DOTS_BUILD_EXAMPLES "Build the examples" ON)
 option(BUILD_UNIT_TESTS "Build the unit tests" ON)
