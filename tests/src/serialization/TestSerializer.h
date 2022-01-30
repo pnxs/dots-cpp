@@ -567,20 +567,66 @@ TYPED_TEST_P(TestSerializer, deserialize_TupleFromContinuousExternalBuffer)
     EXPECT_FALSE(sut.inputAvailable());
 }
 
+namespace dots::serialization
+{
+    struct ExperimentalCborSerializer;
+}
+
 TYPED_TEST_P(TestSerializer, deserialize_UnknownProperties)
 {
     using base_t = TestSerializer<TypeParam>;
+    using serializer_t = typename base_t::serializer_t;
 
+    // ATTENTION: The experimental CBOR serializer cannot be implemented to
+    // skip properties until properties sorted by tag value are available.
+    if constexpr (!std::is_same_v<serializer_t, dots::serialization::ExperimentalCborSerializer>)
     {
-        SerializationStructSimple structSimple;
-        base_t::serializer_t::Deserialize(base_t::Encoded().structSimple1_Unknown, structSimple);
-        EXPECT_EQ(structSimple, base_t::Decoded().structSimple1);
+        {
+            SerializationStructSimple structSimple;
+            serializer_t::Deserialize(base_t::Encoded().structSimple1_Unknown, structSimple);
+            EXPECT_EQ(structSimple, base_t::Decoded().structSimple1);
+        }
+
+        {
+            SerializationStructComplex structComplex;
+            serializer_t::Deserialize(base_t::Encoded().structComplex1_Unknown, structComplex);
+            EXPECT_EQ(structComplex, base_t::Decoded().structComplex1);
+        }
     }
+}
 
+TYPED_TEST_P(TestSerializer, deserialize_SpecificProperties)
+{
+    using base_t = TestSerializer<TypeParam>;
+    using serializer_t = typename base_t::serializer_t;
+
+    // ATTENTION: The experimental CBOR serializer cannot be implemented to
+    // skip properties until properties sorted by tag value are available.
+    if constexpr (!std::is_same_v<serializer_t, dots::serialization::ExperimentalCborSerializer>)
     {
-        SerializationStructComplex structComplex;
-        base_t::serializer_t::Deserialize(base_t::Encoded().structComplex1_Unknown, structComplex);
-        EXPECT_EQ(structComplex, base_t::Decoded().structComplex1);
+        {
+            serializer_t sut;
+            sut.setInput(base_t::Encoded().structSimple1_Valid);
+
+            SerializationStructSimple structSimple;
+            dots::property_set_t deserializerProperties = SerializationStructSimple::boolProperty_p + SerializationStructSimple::float32Property_p;
+            sut.deserialize(structSimple, deserializerProperties);
+
+            EXPECT_EQ(structSimple._validProperties(), deserializerProperties - SerializationStructSimple::boolProperty_p);
+            EXPECT_TRUE(structSimple._equal(base_t::Decoded().structSimple1, deserializerProperties));
+        }
+
+        {
+            serializer_t sut;
+            sut.setInput(base_t::Encoded().structComplex1_Valid);
+
+            SerializationStructComplex structComplex;
+            dots::property_set_t deserializerProperties = SerializationStructComplex::enumProperty_p + SerializationStructComplex::structSimpleProperty_p;
+            sut.deserialize(structComplex, deserializerProperties);
+
+            EXPECT_EQ(structComplex._validProperties(), deserializerProperties);
+            EXPECT_TRUE(structComplex._equal(base_t::Decoded().structComplex1, deserializerProperties));
+        }
     }
 }
 
@@ -599,5 +645,6 @@ REGISTER_TYPED_TEST_SUITE_P(TestSerializer,
     deserialize_ConsecutiveArgumentsFromContinuousExternalBuffer,
     serialize_TupleToContinuousInternalBuffer,
     deserialize_TupleFromContinuousExternalBuffer,
-    deserialize_UnknownProperties
+    deserialize_UnknownProperties,
+    deserialize_SpecificProperties
 );

@@ -173,15 +173,6 @@ struct ExperimentalCborSerializerTestDataEncoded : SerializerTestDataEncoded<dot
         structSimple1_Valid,
         0xFF
     );
-
-    //
-    // unknown properties
-    //
-
-    // ATTENTION: The experimental CBOR serializer cannot be implemented to
-    // skip properties until properties sorted by tag value are available.
-    data_t structSimple1_Unknown = structSimple1_Valid;
-    data_t structComplex1_Unknown = structComplex1_Valid;
 };
 
 INSTANTIATE_TYPED_TEST_SUITE_P(TestExperimentalCborSerializer, TestSerializer, ExperimentalCborSerializerTestDataEncoded);

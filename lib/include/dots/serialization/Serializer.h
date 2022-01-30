@@ -133,6 +133,13 @@ namespace dots::serialization
             return lastSerializeSize();
         }
 
+        template <typename T, std::enable_if_t<!std::is_const_v<T> && std::is_base_of_v<type::Struct, T>, int> = 0>
+        size_t deserialize(T& instance, const property_set_t& includedProperties = property_set_t::All)
+        {
+            visit(instance, includedProperties);
+            return lastDeserializeSize();
+        }
+
         template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
         size_t deserialize(T& value, const type::Descriptor<T>& descriptor)
         {
@@ -140,7 +147,7 @@ namespace dots::serialization
             return lastDeserializeSize();
         }
 
-        template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
+        template <typename T, std::enable_if_t<!std::is_const_v<T> && !std::is_base_of_v<type::Struct, T>, int> = 0>
         size_t deserialize(T& value)
         {
             visit(value);
