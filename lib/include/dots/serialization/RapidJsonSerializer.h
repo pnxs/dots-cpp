@@ -155,13 +155,19 @@ namespace dots::serialization
             visit(value);
         }
 
+        template <typename T, std::enable_if_t<!std::is_const_v<T> && std::is_base_of_v<type::Struct, T>, int> = 0>
+        void deserialize(T& instance, const property_set_t& includedProperties = property_set_t::All)
+        {
+            visit(instance, includedProperties);
+        }
+
         template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
         void deserialize(T& value, const type::Descriptor<T>& descriptor)
         {
             visit(value, descriptor);
         }
 
-        template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
+        template <typename T, std::enable_if_t<!std::is_const_v<T> && !std::is_base_of_v<type::Struct, T>, int> = 0>
         void deserialize(T& value)
         {
             visit(value);
@@ -391,7 +397,7 @@ namespace dots::serialization
         //
 
         template <typename T>
-        bool visitStructBeginDerived(T& instance, property_set_t&/* includedProperties*/)
+        bool visitStructBeginDerived(T& instance, property_set_t& includedProperties)
         {
             const type::StructDescriptor<>& descriptor = instance._descriptor();
             const type::property_descriptor_container_t& propertyDescriptors = descriptor.propertyDescriptors();
@@ -400,9 +406,19 @@ namespace dots::serialization
 
             while (!m_reader.tryReadObjectEnd())
             {
+                auto find_property = [&propertyDescriptors](std::string_view propertyName)
+                {
+                    return std::find_if(propertyDescriptors.begin(), propertyDescriptors.end(), [propertyName](const auto& p) { return p.name() == propertyName; });
+                };
+
                 std::string_view propertyName = m_reader.readObjectMemberName();
 
-                if (auto it = std::find_if(propertyDescriptors.begin(), propertyDescriptors.end(), [propertyName](const auto& p) { return p.name() == propertyName; }); it != propertyDescriptors.end())
+                if (visitor_base_t::template visitingLevel<false>() > 0)
+                {
+                    includedProperties = property_set_t::All;
+                }
+
+                if (auto it = find_property(propertyName); it != propertyDescriptors.end() && it->set() <= includedProperties)
                 {
                     const type::PropertyDescriptor& propertyDescriptor = *it;
                     type::ProxyProperty<> property{ instance, propertyDescriptor };

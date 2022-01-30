@@ -531,3 +531,30 @@ TEST_F(TestRapidJsonSerializer, deserialize_UnknownProperties)
         EXPECT_EQ(structComplex, Decoded().structComplex1);
     }
 }
+
+TEST_F(TestRapidJsonSerializer, deserialize_SpecificProperties)
+{
+    {
+        serializer_t sut;
+        sut.setInput(Encoded().structSimple1_Valid);
+
+        SerializationStructSimple structSimple;
+        dots::property_set_t deserializerProperties = SerializationStructSimple::boolProperty_p + SerializationStructSimple::float32Property_p;
+        sut.deserialize(structSimple, deserializerProperties);
+
+        EXPECT_EQ(structSimple._validProperties(), deserializerProperties - SerializationStructSimple::boolProperty_p);
+        EXPECT_TRUE(structSimple._equal(Decoded().structSimple1, deserializerProperties));
+    }
+
+    {
+        serializer_t sut;
+        sut.setInput(Encoded().structComplex1_Valid);
+
+        SerializationStructComplex structComplex;
+        dots::property_set_t deserializerProperties = SerializationStructComplex::enumProperty_p + SerializationStructComplex::structSimpleProperty_p;
+        sut.deserialize(structComplex, deserializerProperties);
+
+        EXPECT_EQ(structComplex._validProperties(), deserializerProperties);
+        EXPECT_TRUE(structComplex._equal(Decoded().structComplex1, deserializerProperties));
+    }
+}
