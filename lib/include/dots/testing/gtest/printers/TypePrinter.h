@@ -7,6 +7,7 @@ namespace dots::type
     {
         template <typename T>
         constexpr bool is_gtest_printable_v = std::disjunction_v<
+            std::is_same<T, property_set_t>,
             std::is_same<T, uuid_t>,
             std::is_same<T, timepoint_t>,
             std::is_same<T, steady_timepoint_t>,
