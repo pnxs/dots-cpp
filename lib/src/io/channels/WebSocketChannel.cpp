@@ -77,7 +77,7 @@ namespace dots::io
                 m_serializer.deserialize(header);
                 type::AnyStruct instance{ registry().getStructType(*header.typeName) };
                 m_serializer.deserialize(*instance);
-                m_serializer.reader().tryReadArrayEnd();
+                m_serializer.reader().readArrayEnd();
 
                 processReceive(Transmission{ std::move(header), std::move(instance) });
             }
@@ -93,7 +93,7 @@ namespace dots::io
         m_serializer.writer().writeArrayBegin();
         m_serializer.serialize(header);
         m_serializer.serialize(instance);
-        m_serializer.writer().writeArrayBegin();
+        m_serializer.writer().writeArrayEnd();
 
         m_stream.write(boost::asio::buffer(m_serializer.output()));
         m_serializer.output().clear();
