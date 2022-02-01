@@ -222,7 +222,7 @@ namespace dots::tools
 
     LogFrontend& loggingFrontend()
     {
-        static auto* s_frontend = new LogFrontend;
+        static auto s_frontend = std::make_unique<LogFrontend>();
         return *s_frontend;
     }
 

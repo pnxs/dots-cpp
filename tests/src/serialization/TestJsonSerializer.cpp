@@ -1,9 +1,11 @@
 #include <dots/testing/gtest/gtest.h>
 #include <dots/serialization/JsonSerializer.h>
-#include <serialization/TestSerializerBase.h>
-#include <serialization/TestStringSerializerBase.h>
+#include <serialization/TestSerializer.h>
+#include <serialization/TestSerializer.h>
 
-struct JsonSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::serialization::JsonSerializer<>>
+using dots::serialization::TextOptions;
+
+struct JsonSerializerTestDataEncoded : SerializerTestDataEncoded<dots::serialization::JsonSerializer>
 {
     //
     // fundamental
@@ -62,14 +64,13 @@ struct JsonSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::seria
     data_t duration1{ "123.456" };
     data_t duration2{ "342.073" };
 
-    data_t uuid1{ "\"8c96148e-58bd-11eb-ae93-0242ac130002\"" };
+    data_t uuid1{ "8c96148e-58bd-11eb-ae93-0242ac130002" };
 
-    data_t string1{ "\"foobar\"" };
-    data_t string2{ "\"\\\"foo\\\" bar baz\"" };
-    data_t string3{ "\"foo \\\"bar\\\" baz\"" };
-    data_t string4{ "\"foo bar \\\"baz\\\"\"" };
-    data_t string5{ u8"\"foo\\\\ \u0062\u0061\u0072\u00A9\\n b\\\\az\"" };
-    data_t stringInvalid{ "\"fo\\obar\"" };
+    data_t string1{ "foobar" };
+    data_t string2{ "\"foo\" bar baz" };
+    data_t string3{ "foo \"bar\" baz" };
+    data_t string4{ "foo bar \"baz\"" };
+    data_t string5{ u8"foo\\ \u0062\u0061\u0072\u00A9\n b\\az" };
 
     //
     // enum
@@ -82,7 +83,7 @@ struct JsonSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::seria
     //
 
     data_t structSimple1_int32Property = Concat("\"int32Property\": ", int32Positive);
-    data_t structSimple1_stringProperty = Concat("\"stringProperty\": ", string1);
+    data_t structSimple1_stringProperty = Concat("\"stringProperty\": \"", string1, "\"");
     data_t structSimple1_boolProperty = Concat("\"boolProperty\": null");
     data_t structSimple1_float32Property = Concat("\"float32Property\": ", float32Positive);
 
@@ -93,7 +94,7 @@ struct JsonSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::seria
 
     data_t structComplex2_propertySetProperty = Concat("\"propertySetProperty\": ", propertySetMixed1);
     data_t structComplex2_durationVectorProperty = Concat("\"durationVectorProperty\": [ ", duration1, ", ", duration2, " ]");
-    data_t structComplex2_uuidProperty = Concat("\"uuidProperty\": ", uuid1);
+    data_t structComplex2_uuidProperty = Concat("\"uuidProperty\": \"", uuid1, "\"");
 
     //
     // vector
@@ -173,10 +174,10 @@ struct JsonSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::seria
     //
 
     data_t consecutiveTypes1 = Concat(
-        string1,
-        enum1,
+        structSimple1_Valid,
+        structComplex1_Valid,
         vectorBool,
-        structSimple1_Valid
+        structComplex2_Valid
     );
 
     //
@@ -185,7 +186,7 @@ struct JsonSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::seria
 
     data_t serializationTuple1 = Concat(
         "[ ",
-        string1, ", ",
+        "\"", string1, "\", ",
         enum1, ", ",
         vectorBool, ", ",
         "{ ",
@@ -197,43 +198,161 @@ struct JsonSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::seria
     );
 
     //
-    // unescaped string
+    // unknown properties
     //
 
-    data_t string5Unescaped = u8"foo\\ \u0062\u0061\u0072\u00A9\n b\\az";
-    data_t structSimple_String5Unescaped = Concat("{ \"stringProperty\": ", string5Unescaped, " }");
+    data_t structSimple1_unknownProperty = Concat("\"unknownProperty\": ", string5);
+    data_t structComplex1_unknownProperty = Concat("\"unknownProperty\": ", structComplex2_Valid);
 
-    //
-    // output style
-    //
-
-    data_t structComplex_MinimalStyle = Concat("{\"enumProperty\":", enum1, ",\"float64Property\":", float64Negative, ",\"timepointProperty\":", timePoint1, ",\"structSimpleProperty\":{\"boolProperty\":", boolFalse, "}}");
-    data_t structComplex_CompactStyle = Concat("{ \"enumProperty\": ", enum1, ", \"float64Property\": ", float64Negative, ", \"timepointProperty\": " + timePoint1, ", \"structSimpleProperty\": { \"boolProperty\": ", boolFalse, " } }");
-    data_t structComplex_SingleLineStyle = Concat("{ \"enumProperty\": ", enum1, ", \"float64Property\": ", float64Negative, ", \"timepointProperty\": ", timePoint1, ", \"structSimpleProperty\": { \"boolProperty\": ", boolFalse, " } }");
-
-    data_t structComplex_MultiLineStyle = Concat(
-        "{\n",
-        "    \"enumProperty\": ", enum1, ",\n",
-        "    \"float64Property\": ", float64Negative, ",\n",
-        "    \"timepointProperty\": ", timePoint1, ",\n",
-        "    \"structSimpleProperty\": {\n",
-        "        \"boolProperty\": ", boolFalse, "\n",
-        "    }\n",
-        "}"
+    data_t structSimple1_Unknown = Concat(
+        "{ ",
+        structSimple1_int32Property, ", ",
+        structSimple1_stringProperty, ", ",
+        structSimple1_float32Property, ", ",
+        structSimple1_unknownProperty,
+        " }"
     );
 
-    //
-    // input policy
-    //
-
-    data_t structComplex_RelaxedPolicy1 = Concat("{ \"enumProperty\": ", enum1, " }");
-    data_t structComplex_RelaxedPolicy2 = Concat("{ \"enumProperty\": ", enum1, " }");
-    data_t structComplex_RelaxedPolicy3 = Concat("{ \"uint32Property\": ", uint32Positive1, " }");
-    data_t structComplex_RelaxedPolicy4 = Concat("{ \"uint32Property\": ", uint32Positive1, " }");
-    data_t structComplex_StrictPolicy1 = Concat("{ \"enumProperty\": ", enum1, " }");
-    data_t structComplex_StrictPolicy2 = Concat("{ \"enumProperty\": ", enum1, " }");
-    data_t structComplex_StrictPolicy3 = Concat("{ \"uint32Property\": ", uint32Positive1, " }");
+    data_t structComplex1_Unknown = Concat(
+        "{ ",
+        structComplex1_enumProperty, ", ",
+        structComplex1_float64Property, ", ",
+        structComplex1_unknownProperty, ", ",
+        structComplex1_timepointProperty, ", ",
+        structComplex1_structSimpleProperty,
+        " }"
+    );
 };
 
-INSTANTIATE_TYPED_TEST_SUITE_P(TestJsonSerializer, TestSerializerBase, JsonSerializerTestDataEncoded);
-INSTANTIATE_TYPED_TEST_SUITE_P(TestJsonSerializer, TestStringSerializerBase, JsonSerializerTestDataEncoded);
+INSTANTIATE_TYPED_TEST_SUITE_P(TestJsonSerializer, TestSerializer, JsonSerializerTestDataEncoded);
+
+struct TestJsonSerializer : ::testing::Test
+{
+    using sut_t = dots::serialization::JsonSerializer;
+};
+
+TEST_F(TestJsonSerializer, serialize_EscapedString)
+{
+    {
+        SerializationStructSimple instance{
+            SerializationStructSimple::stringProperty_i{ "\"foo\" bar baz" }
+        };
+        EXPECT_EQ(sut_t::Serialize(instance), "{ \"stringProperty\": \"\\\"foo\\\" bar baz\" }");
+    }
+
+    {
+        SerializationStructSimple instance{
+            SerializationStructSimple::stringProperty_i{ "foo \"bar\" baz" }
+        };
+        EXPECT_EQ(sut_t::Serialize(instance), "{ \"stringProperty\": \"foo \\\"bar\\\" baz\" }");
+    }
+
+    {
+        SerializationStructSimple instance{
+            SerializationStructSimple::stringProperty_i{ "foo bar \"baz\"" }
+        };
+        EXPECT_EQ(sut_t::Serialize(instance), "{ \"stringProperty\": \"foo bar \\\"baz\\\"\" }");
+    }
+
+    {
+        SerializationStructSimple instance{
+            SerializationStructSimple::stringProperty_i{ "foo\\ \u0062\u0061\u0072\u00A9\n b\\az" }
+        };
+        EXPECT_EQ(sut_t::Serialize(instance), "{ \"stringProperty\": \"foo\\\\ \u0062\u0061\u0072\u00A9\\n b\\\\az\" }");
+    }
+}
+
+TEST_F(TestJsonSerializer, deserialize_EscapedString)
+{
+    {
+        std::string input = "{ \"stringProperty\": \"\\\"foo\\\" bar baz\" }";
+        SerializationStructSimple expected{
+            SerializationStructSimple::stringProperty_i{ "\"foo\" bar baz" }
+        };
+        EXPECT_EQ(sut_t::Deserialize<SerializationStructSimple>(input), expected);
+    }
+
+    {
+        std::string input = "{ \"stringProperty\": \"foo \\\"bar\\\" baz\" }";
+        SerializationStructSimple expected{
+            SerializationStructSimple::stringProperty_i{ "foo \"bar\" baz" }
+        };
+        EXPECT_EQ(sut_t::Deserialize<SerializationStructSimple>(input), expected);
+    }
+
+    {
+        std::string input = "{ \"stringProperty\": \"foo bar \\\"baz\\\"\" }";
+        SerializationStructSimple expected{
+            SerializationStructSimple::stringProperty_i{ "foo bar \"baz\"" }
+        };
+        EXPECT_EQ(sut_t::Deserialize<SerializationStructSimple>(input), expected);
+    }
+
+    {
+        std::string input = "{ \"stringProperty\": \"foo\\\\ \u0062\u0061\u0072\u00A9\\n b\\\\az\" }";
+        SerializationStructSimple expected{
+            SerializationStructSimple::stringProperty_i{ "foo\\ \u0062\u0061\u0072\u00A9\n b\\az" }
+        };
+        EXPECT_EQ(sut_t::Deserialize<SerializationStructSimple>(input), expected);
+    }
+}
+
+TEST_F(TestJsonSerializer, deserialize_PermitTopLevelUnescapedStringArgument)
+{
+    std::string input = u8"foo\\ \u0062\u0061\u0072\u00A9\n b\\az";
+    std::string expected = input;
+
+    {
+        EXPECT_EQ(sut_t::Deserialize<dots::string_t>(input), expected);
+    }
+
+    {
+        SerializationStructSimple actual;
+        sut_t::Deserialize(input, actual.stringProperty);
+        EXPECT_EQ(*actual.stringProperty, expected);
+    }
+}
+
+TEST_F(TestJsonSerializer, deserialize_RejectNonTopLevelUnescapedStringArgument)
+{
+    std::string input = "{ \"stringProperty\": foo\\ \u0062\u0061\u0072\u00A9\n b\\az }";
+
+    SerializationStructSimple actual;
+    EXPECT_THROW(sut_t::Deserialize(input, actual), std::runtime_error);
+}
+
+TEST_F(TestJsonSerializer, serialize_WithOutputStyle)
+{
+    SerializationStructComplex instance{
+        SerializationStructComplex::enumProperty_i{ SerializationEnum::baz },
+        SerializationStructComplex::uint32Property_i{ 12345789u },
+        SerializationStructComplex::structSimpleProperty_i{
+            SerializationStructSimple::boolProperty_i{ false },
+            SerializationStructSimple::float32Property_i{ -2.7183f }
+        }
+    };
+
+    {
+        std::string expected = R"({"enumProperty":5,"uint32Property":12345789,"structSimpleProperty":{"boolProperty":false,"float32Property":-2.7183}})";
+        EXPECT_EQ(sut_t::Serialize(instance, TextOptions{ TextOptions::Minified }), expected);
+    }
+
+    {
+        std::string expected = R"({ "enumProperty": 5, "uint32Property": 12345789, "structSimpleProperty": { "boolProperty": false, "float32Property": -2.7183 } })";
+        EXPECT_EQ(sut_t::Serialize(instance, TextOptions{ TextOptions::SingleLine }), expected);
+    }
+
+    {
+        std::string expected = 
+            "{\n"
+            "    \"enumProperty\": 5,\n"
+            "    \"uint32Property\": 12345789,\n"
+            "    \"structSimpleProperty\": {\n"
+            "        \"boolProperty\": false,\n"
+            "        \"float32Property\": -2.7183\n"
+            "    }\n"
+            "}"
+       ;
+        EXPECT_EQ(sut_t::Serialize(instance, TextOptions{ TextOptions::MultiLine }), expected);
+    }
+}

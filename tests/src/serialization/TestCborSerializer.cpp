@@ -1,8 +1,8 @@
 #include <dots/testing/gtest/gtest.h>
 #include <dots/serialization/CborSerializer.h>
-#include <serialization/TestSerializerBase.h>
+#include <serialization/TestSerializer.h>
 
-struct CborSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::serialization::CborSerializer>
+struct CborSerializerTestDataEncoded : SerializerTestDataEncoded<dots::serialization::CborSerializer>
 {
     //
     // fundamental
@@ -68,7 +68,6 @@ struct CborSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::seria
     data_t string3{ 0x6D, 0x66, 0x6F, 0x6F, 0x20, 0x22, 0x62, 0x61, 0x72, 0x22, 0x20, 0x62, 0x61, 0x7A };
     data_t string4{ 0x6D, 0x66, 0x6F, 0x6F, 0x20, 0x62, 0x61, 0x72, 0x20, 0x22, 0x62, 0x61, 0x7A, 0x22 };
     data_t string5{ 0x70, 0x66, 0x6F, 0x6F, 0x5C, 0x20, 0x62, 0x61, 0x72, 0xC2, 0xA9, 0x0A, 0x20, 0x62, 0x5C, 0x61, 0x7A };
-    data_t stringInvalid{ 0x67, 0x66, 0x6F, 0x6F, 0x62, 0x61, 0x72 };
 
     //
     // enum
@@ -156,10 +155,10 @@ struct CborSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::seria
     //
 
     data_t consecutiveTypes1 = Concat(
-        string1,
-        enum1,
+        structSimple1_Valid,
+        structComplex1_Valid,
         vectorBool,
-        structSimple1_Valid
+        structComplex2_Valid
     );
 
     //
@@ -174,6 +173,30 @@ struct CborSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::seria
         structSimple1_Valid,
         0xFF
     );
+
+    //
+    // unknown properties
+    //
+
+    data_t structSimple1_unknownProperty = Concat(0x05, string5);
+    data_t structComplex1_unknownProperty = Concat(0x05, structComplex2_Valid);
+
+    data_t structSimple1_Unknown = Concat(
+        0xA4,
+        structSimple1_int32Property,
+        structSimple1_stringProperty,
+        structSimple1_float32Property,
+        structSimple1_unknownProperty
+    );
+
+    data_t structComplex1_Unknown = Concat(
+        0xA5,
+        structComplex1_enumProperty,
+        structComplex1_float64Property,
+        structComplex1_unknownProperty,
+        structComplex1_timepointProperty,
+        structComplex1_structSimpleProperty
+    );
 };
 
-INSTANTIATE_TYPED_TEST_SUITE_P(TestCborSerializer, TestSerializerBase, CborSerializerTestDataEncoded);
+INSTANTIATE_TYPED_TEST_SUITE_P(TestCborSerializer, TestSerializer, CborSerializerTestDataEncoded);

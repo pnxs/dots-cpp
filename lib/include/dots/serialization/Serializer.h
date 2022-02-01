@@ -1,39 +1,68 @@
 #pragma once
-#include <stack>
 #include <dots/type/TypeVisitor.h>
 
 namespace dots::serialization
 {
-    template <typename Data, typename Derived, bool Static = true>
-    struct SerializerBase : type::TypeVisitor<std::conditional_t<Static, Derived, void>>
+    template <typename Format, typename Derived, bool Static = true>
+    struct Serializer : type::TypeVisitor<std::conditional_t<Static, Derived, void>>
     {
-        using data_t = Data;
+        using format_t = Format;
+        using reader_t = typename Format::reader_t;
+        using writer_t = typename Format::writer_t;
+
+        using data_t = typename reader_t::data_t;
         using value_t = typename data_t::value_type;
 
-        SerializerBase() = default;
-        SerializerBase(const SerializerBase& other) = default;
-        SerializerBase(SerializerBase&& other) = default;
-        ~SerializerBase() = default;
+        Serializer() = default;
 
-        SerializerBase& operator = (const SerializerBase& rhs) = default;
-        SerializerBase& operator = (SerializerBase&& rhs) = default;
+        Serializer(reader_t reader, writer_t writer) :
+            m_serializeOffset(0),
+            m_reader{ std::move(reader) },
+            m_writer{ std::move(writer)}
+        {
+            /* do nothing */
+        }
+
+        Serializer(const Serializer& other) = default;
+        Serializer(Serializer&& other) = default;
+        ~Serializer() = default;
+
+        Serializer& operator = (const Serializer& rhs) = default;
+        Serializer& operator = (Serializer&& rhs) = default;
+
+        const reader_t& reader() const
+        {
+            return m_reader;
+        }
+
+        reader_t& reader()
+        {
+            return m_reader;
+        }
+
+        const writer_t& writer() const
+        {
+            return m_writer;
+        }
+
+        writer_t& writer()
+        {
+            return m_writer;
+        }
 
         const data_t& output() const
         {
-            return m_output;
+            return m_writer.output();
         }
 
         data_t& output()
         {
-            return m_output;
+            return m_writer.output();
         }
 
         void setInput(const value_t* inputData, size_t inputDataSize)
         {
-            m_inputData = inputData;
-            m_inputDataEnd = m_inputData + inputDataSize;
-            m_inputDataBegin = m_inputData;
-            derived().setInputDerived();
+            m_reader.setInput(inputData, inputDataSize);
         }
 
         void setInput(const data_t& input)
@@ -45,37 +74,42 @@ namespace dots::serialization
 
         const value_t* inputData() const
         {
-            return m_inputData;
+            return m_reader.inputData();
+        }
+
+        const value_t*& inputData()
+        {
+            return m_reader.inputData();
         }
 
         const value_t* inputDataBegin() const
         {
-            return m_inputDataBegin;
+            return m_reader.inputDataBegin();
         }
 
         const value_t* inputDataEnd() const
         {
-            return m_inputDataEnd;
+            return m_reader.inputDataEnd();
         }
 
         size_t inputOffset() const
         {
-            return m_inputData - m_inputDataBegin;
+            return m_reader.inputOffset();
         }
 
         size_t lastSerializeSize() const
         {
-            return m_output.size() - m_outputSizeBegin;
+            return m_writer.output().size() - m_serializeOffset;
         }
 
         size_t lastDeserializeSize() const
         {
-            return static_cast<size_t>(m_inputData - m_inputDataBegin);
+            return static_cast<size_t>(m_reader.inputData() - m_reader.inputDataBegin());
         }
 
         size_t inputAvailable() const
         {
-            return m_inputDataEnd - m_inputData;
+            return m_reader.inputDataEnd() - m_reader.inputData();
         }
 
         template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
@@ -99,6 +133,13 @@ namespace dots::serialization
             return lastSerializeSize();
         }
 
+        template <typename T, std::enable_if_t<!std::is_const_v<T> && std::is_base_of_v<type::Struct, T>, int> = 0>
+        size_t deserialize(T& instance, const property_set_t& includedProperties = property_set_t::All)
+        {
+            visit(instance, includedProperties);
+            return lastDeserializeSize();
+        }
+
         template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
         size_t deserialize(T& value, const type::Descriptor<T>& descriptor)
         {
@@ -106,7 +147,7 @@ namespace dots::serialization
             return lastDeserializeSize();
         }
 
-        template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
+        template <typename T, std::enable_if_t<!std::is_const_v<T> && !std::is_base_of_v<type::Struct, T>, int> = 0>
         size_t deserialize(T& value)
         {
             visit(value);
@@ -120,56 +161,6 @@ namespace dots::serialization
             deserialize(value);
 
             return value;
-        }
-
-        size_t serializeTupleBegin()
-        {
-            derived().template visitBeginDerived<true, false>();
-            derived().serializeTupleBeginDerived();
-            derived().template visitEndDerived<true, false>();
-            m_outputTupleInfo.push(true);
-
-            return lastSerializeSize();
-        }
-
-        size_t serializeTupleEnd()
-        {
-            if (m_outputTupleInfo.empty())
-            {
-                throw std::logic_error{ "attempt to serialize tuple end without previous begin" };
-            }
-
-            m_outputTupleInfo.pop();
-            derived().template visitBeginDerived<true, false>();
-            derived().serializeTupleEndDerived();
-            derived().template visitEndDerived<true, false>();
-
-            return lastSerializeSize();
-        }
-
-        size_t deserializeTupleBegin()
-        {
-            derived().template visitBeginDerived<false, false>();
-            derived().deserializeTupleBeginDerived();
-            derived().template visitEndDerived<false, false>();
-            m_inputTupleInfo.push(true);
-
-            return lastDeserializeSize();
-        }
-
-        size_t deserializeTupleEnd()
-        {
-            if (m_inputTupleInfo.empty())
-            {
-                throw std::logic_error{ "attempt to deserialize tuple end without previous begin" };
-            }
-
-            m_inputTupleInfo.pop();
-            derived().template visitBeginDerived<false, false>();
-            derived().deserializeTupleEndDerived();
-            derived().template visitEndDerived<false, false>();
-
-            return lastDeserializeSize();
         }
 
         template <typename T, typename... Args, typename D = Derived, std::enable_if_t<std::is_constructible_v<D, Args...> && std::is_base_of_v<type::Struct, T>, int> = 0>
@@ -251,142 +242,33 @@ namespace dots::serialization
 
         friend visitor_base_t;
 
-        template <bool Const, bool ConsiderTupleValue = true>
+        template <bool Const>
         void visitBeginDerived()
         {
             if constexpr (Const)
             {
-                m_outputSizeBegin = m_output.size();
-
-                if constexpr (ConsiderTupleValue)
-                {
-                    if (!m_outputTupleInfo.empty())
-                    {
-                        derived().serializeTupleValueBeginDerived(m_outputTupleInfo.top());
-                    }
-                }
+                m_serializeOffset = m_writer.output().size();
             }
             else
             {
-                if (m_inputData >= m_inputDataEnd)
+                if (m_reader.inputData() >= m_reader.inputDataEnd())
                 {
                     throw std::logic_error{ "attempt to deserialize from invalid or empty input buffer" };
                 }
 
-                m_inputDataBegin = m_inputData;
-
-                if constexpr (ConsiderTupleValue)
-                {
-                    if (!m_inputTupleInfo.empty())
-                    {
-                        derived().deserializeTupleValueBeginDerived(m_inputTupleInfo.top());
-                    }
-                }
+                m_reader.inputDataBegin() = m_reader.inputData();
             }
-        }
-
-        template <bool Const, bool ConsiderTupleValue = true>
-        void visitEndDerived()
-        {
-            if constexpr (Const)
-            {
-                if constexpr (ConsiderTupleValue)
-                {
-                    if (!m_outputTupleInfo.empty())
-                    {
-                        m_outputTupleInfo.top() = false;
-                        derived().serializeTupleValueEndDerived();
-                    }
-                }
-            }
-            else
-            {
-                if constexpr (ConsiderTupleValue)
-                {
-                    if (!m_inputTupleInfo.empty())
-                    {
-                        m_inputTupleInfo.top() = false;
-                        derived().deserializeTupleValueEndDerived();
-                    }
-                }
-            }
-        }
-
-        const value_t*& inputData()
-        {
-            return m_inputData;
-        }
-
-        size_t serializeLevel() const
-        {
-            return visitor_base_t::template visitingLevel<true>() + m_outputTupleInfo.size();
-        }
-
-        size_t deserializeLevel() const
-        {
-            return visitor_base_t::template visitingLevel<false>() + m_inputTupleInfo.size();
-        }
-
-        void serializeTupleBeginDerived()
-        {
-            /* do nothing */
-        }
-
-        void serializeTupleValueBeginDerived(bool/* first*/)
-        {
-            /* do nothing */
-        }
-
-        void serializeTupleValueEndDerived()
-        {
-            /* do nothing */
-        }
-
-        void serializeTupleEndDerived()
-        {
-            /* do nothing */
-        }
-
-        void deserializeTupleBeginDerived()
-        {
-            /* do nothing */
-        }
-
-        void deserializeTupleValueBeginDerived(bool/* first*/)
-        {
-            /* do nothing */
-        }
-
-        void deserializeTupleValueEndDerived()
-        {
-            /* do nothing */
-        }
-
-        void deserializeTupleEndDerived()
-        {
-            /* do nothing */
-        }
-
-        void setInputDerived()
-        {
-            /* do nothing */
         }
 
     private:
-
-        using tuple_info_t = std::stack<bool, std::vector<bool>>;
 
         Derived& derived()
         {
             return static_cast<Derived&>(*this);
         }
 
-        data_t m_output;
-        size_t m_outputSizeBegin = 0;
-        const value_t* m_inputData = nullptr;
-        const value_t* m_inputDataBegin = nullptr;
-        const value_t* m_inputDataEnd = nullptr;
-        tuple_info_t m_outputTupleInfo;
-        tuple_info_t m_inputTupleInfo;
+        size_t m_serializeOffset;
+        reader_t m_reader;
+        writer_t m_writer;
     };
 }

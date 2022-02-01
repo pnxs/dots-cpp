@@ -1,8 +1,8 @@
 #include <dots/testing/gtest/gtest.h>
 #include <dots/serialization/RapidJsonSerializer.h>
-#include <serialization/TestSerializerBase.h>
+#include <serialization/TestSerializer.h>
 
-struct RapidJsonSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::serialization::RapidJsonSerializer<>>
+struct RapidJsonSerializerTestDataEncoded : SerializerTestDataEncoded<dots::serialization::RapidJsonSerializer<>>
 {
     //
     // fundamental
@@ -189,17 +189,44 @@ struct RapidJsonSerializerTestDataEncoded : SerializerBaseTestDataEncoded<dots::
         "}",
         "]"
     );
+
+    //
+    // unknown properties
+    //
+
+    data_t structSimple1_unknownProperty = Concat("\"unknownProperty\": ", string5);
+    data_t structComplex1_unknownProperty = Concat("\"unknownProperty\": ", structComplex2_Valid);
+
+    data_t structSimple1_Unknown = Concat(
+        "{ ",
+        structSimple1_int32Property, ", ",
+        structSimple1_stringProperty, ", ",
+        structSimple1_float32Property, ", ",
+        structSimple1_unknownProperty,
+        " }"
+    );
+
+    data_t structComplex1_Unknown = Concat(
+        "{ ",
+        structComplex1_enumProperty, ", ",
+        structComplex1_float64Property, ", ",
+        structComplex1_unknownProperty, ", ",
+        structComplex1_timepointProperty, ", ",
+        structComplex1_structSimpleProperty,
+        " }"
+    );
 };
 
-struct TestRapidJsonSerializer : TestSerializerBase<RapidJsonSerializerTestDataEncoded>
+struct TestRapidJsonSerializer : TestSerializer<RapidJsonSerializerTestDataEncoded>
 {
 protected:
 
-    using base_t = TestSerializerBase<RapidJsonSerializerTestDataEncoded>;
+    using base_t = TestSerializer<RapidJsonSerializerTestDataEncoded>;
     using data_t = std::string;
     using buffer_t = rapidjson::StringBuffer;
     using writer_t = rapidjson::Writer<buffer_t>;
-    using serializer_t = dots::serialization::RapidJsonSerializer<writer_t>;
+    using format_t = dots::serialization::RapidJsonSerializerFormat<writer_t>;
+    using serializer_t = dots::serialization::RapidJsonSerializer<format_t>;
 };
 
 TEST_F(TestRapidJsonSerializer, serialize_TypedArgument)
@@ -460,14 +487,14 @@ TEST_F(TestRapidJsonSerializer, serialize_TupleToContinuousInternalBuffer)
     writer_t writer{ buffer };
     serializer_t sut{ writer };
 
-    sut.serializeTupleBegin();
+    sut.writer().writeArrayBegin();
     {
         sut.serialize(Decoded().string1);
         sut.serialize(Decoded().enum1);
         sut.serialize(Decoded().vectorBool);
         sut.serialize(Decoded().structSimple1);
     }
-    sut.serializeTupleEnd();
+    sut.writer().writeArrayEnd();
 
     EXPECT_EQ(buffer.GetString(), Encoded().serializationTuple1);
 }
@@ -476,16 +503,58 @@ TEST_F(TestRapidJsonSerializer, deserialize_TupleFromContinuousExternalBuffer)
 {
     serializer_t sut{ Encoded().serializationTuple1 };
 
-    EXPECT_TRUE(sut.hasInputValue());
+    EXPECT_TRUE(sut.hasInput());
 
-    sut.deserializeTupleBegin();
+    sut.reader().readArrayBegin();
     {
         EXPECT_EQ(sut.deserialize<std::string>(), Decoded().string1);
         EXPECT_EQ(sut.deserialize<SerializationEnum>(), Decoded().enum1);
         EXPECT_EQ(sut.deserialize<dots::vector_t<dots::bool_t>>(), Decoded().vectorBool);
         EXPECT_EQ(sut.deserialize<SerializationStructSimple>(), Decoded().structSimple1);
     }
-    sut.deserializeTupleEnd();
+    sut.reader().readArrayEnd();
 
-    EXPECT_FALSE(sut.hasInputValue());
+    EXPECT_FALSE(sut.hasInput());
+}
+
+TEST_F(TestRapidJsonSerializer, deserialize_UnknownProperties)
+{
+    {
+        SerializationStructSimple structSimple;
+        serializer_t::Deserialize(Encoded().structSimple1_Unknown, structSimple);
+        EXPECT_EQ(structSimple, Decoded().structSimple1);
+    }
+
+    {
+        SerializationStructComplex structComplex;
+        serializer_t::Deserialize(Encoded().structComplex1_Unknown, structComplex);
+        EXPECT_EQ(structComplex, Decoded().structComplex1);
+    }
+}
+
+TEST_F(TestRapidJsonSerializer, deserialize_SpecificProperties)
+{
+    {
+        serializer_t sut;
+        sut.setInput(Encoded().structSimple1_Valid);
+
+        SerializationStructSimple structSimple;
+        dots::property_set_t deserializerProperties = SerializationStructSimple::boolProperty_p + SerializationStructSimple::float32Property_p;
+        sut.deserialize(structSimple, deserializerProperties);
+
+        EXPECT_EQ(structSimple._validProperties(), deserializerProperties - SerializationStructSimple::boolProperty_p);
+        EXPECT_TRUE(structSimple._equal(Decoded().structSimple1, deserializerProperties));
+    }
+
+    {
+        serializer_t sut;
+        sut.setInput(Encoded().structComplex1_Valid);
+
+        SerializationStructComplex structComplex;
+        dots::property_set_t deserializerProperties = SerializationStructComplex::enumProperty_p + SerializationStructComplex::structSimpleProperty_p;
+        sut.deserialize(structComplex, deserializerProperties);
+
+        EXPECT_EQ(structComplex._validProperties(), deserializerProperties);
+        EXPECT_TRUE(structComplex._equal(Decoded().structComplex1, deserializerProperties));
+    }
 }

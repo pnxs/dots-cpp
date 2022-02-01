@@ -45,7 +45,7 @@ namespace dots::type
 
     Uuid Uuid::FromString(std::string_view value)
     {
-        auto uuid = boost::uuids::string_generator{}(value.data());
+        auto uuid = boost::uuids::string_generator{}(value.begin(), value.end());
         value_t data;
         std::memcpy(data.data(), uuid.data, data.size());
 

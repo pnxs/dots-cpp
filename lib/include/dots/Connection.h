@@ -327,7 +327,7 @@ namespace dots
 
         using system_type_t = std::tuple<const type::StructDescriptor<>*, types::property_set_t, std::optional<tools::Handler<void(const type::Struct&)>>>;
 
-        static constexpr serialization::StringSerializerOptions StringOptions = { serialization::StringSerializerOptions::MultiLine };
+        static constexpr serialization::TextOptions StringOptions = { serialization::TextOptions::MultiLine };
 
         bool handleReceive(io::Transmission transmission);
         void handleClose(std::exception_ptr ePtr);
