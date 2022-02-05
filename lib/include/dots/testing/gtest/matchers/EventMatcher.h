@@ -103,7 +103,7 @@ namespace dots::testing
     ::testing::Matcher<const Event<>&> EventEqual(T&& instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false, bool isFromMyself = false)
     {
         using decayed_t = std::decay_t<T>;
-        constexpr bool IsStruct = std::is_base_of_v<dots::type::Struct, decayed_t>;
+        constexpr bool IsStruct = std::is_base_of_v<type::Struct, decayed_t>;
         static_assert(IsStruct, "instance type T has to be a DOTS struct type");
 
         if constexpr (IsStruct)

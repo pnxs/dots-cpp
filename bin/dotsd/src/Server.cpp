@@ -177,7 +177,7 @@ namespace dots
      * @param td the structdescriptor from which the flags should be processed.
      * @return short string containing the flags.
      */
-    std::string Server::flags2String(const dots::type::StructDescriptor<>* td)
+    std::string Server::flags2String(const type::StructDescriptor<>* td)
     {
         std::string ret = ".....";
         if (td->cached()) ret[0] = 'C';

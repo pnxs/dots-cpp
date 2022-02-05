@@ -10,7 +10,7 @@ namespace dots::io
 
     void LocalListener::accept(LocalChannel& peer)
     {
-        boost::asio::post(m_ioContext.get(), [&]()
+        boost::asio::post(m_ioContext.get(), [&]
         {
             auto channel = make_channel<LocalChannel>(static_cast<boost::asio::io_context&>(m_ioContext));
             peer.link(*channel);

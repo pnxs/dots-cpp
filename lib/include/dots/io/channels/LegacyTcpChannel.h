@@ -5,7 +5,7 @@ namespace dots::io
 {
     struct LegacyTcpChannel : AsyncStreamChannel<boost::asio::ip::tcp::socket, serialization::CborSerializer, TransmissionFormat::Legacy>
     {
-        LegacyTcpChannel(Channel::key_t key, boost::asio::io_context& ioContext, const Endpoint& endpoint);
+        LegacyTcpChannel(key_t key, boost::asio::io_context& ioContext, const Endpoint& endpoint);
 
         /**
          * Connect channel synchronously.
@@ -14,7 +14,7 @@ namespace dots::io
          * @param host
          * @param port
          */
-        LegacyTcpChannel(Channel::key_t key, boost::asio::io_context& ioContext, std::string_view host, std::string_view port);
+        LegacyTcpChannel(key_t key, boost::asio::io_context& ioContext, std::string_view host, std::string_view port);
 
         /**
          * Connect channel asynchronously.
@@ -24,14 +24,14 @@ namespace dots::io
          * @param port
          * @param onConnect
          */
-        LegacyTcpChannel(Channel::key_t key, boost::asio::io_context& ioContext, std::string_view host, std::string_view port, std::function<void(const boost::system::error_code& error)> onConnect);
+        LegacyTcpChannel(key_t key, boost::asio::io_context& ioContext, std::string_view host, std::string_view port, std::function<void(const boost::system::error_code& error)> onConnect);
 
         /**
          * Construct channel with an already connected socket.
          * @param key
          * @param socket
          */
-        LegacyTcpChannel(Channel::key_t key, boost::asio::ip::tcp::socket&& socket, payload_cache_t* payloadCache);
+        LegacyTcpChannel(key_t key, boost::asio::ip::tcp::socket&& socket, payload_cache_t* payloadCache);
         LegacyTcpChannel(const LegacyTcpChannel& other) = delete;
         LegacyTcpChannel(LegacyTcpChannel&& other) = delete;
         ~LegacyTcpChannel() override = default;

@@ -27,13 +27,13 @@ namespace dots::type
         template <typename... Args, std::enable_if_t<sizeof...(Args) >= 1 && !is_single_same_property_v<Args...>, int> = 0>
         Property(Args&&... args)
         {
-            Property<T, Derived>::template construct<false>(std::forward<Args>(args)...);
+            Property<T, Derived>::construct<false>(std::forward<Args>(args)...);
         }
 
         template <typename U, std::enable_if_t<std::is_constructible_v<T, std::initializer_list<U>>, int> = 0>
         Property(std::initializer_list<U> init)
         {
-            Property<T, Derived>::template construct<false>(init);
+            Property<T, Derived>::construct<false>(init);
         }
 
         template <typename U, std::enable_if_t<!is_same_property_v<U>, int> = 0>

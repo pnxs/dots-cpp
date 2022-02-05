@@ -5,14 +5,14 @@
 
 namespace dots::io
 {
-    LocalChannel::LocalChannel(Channel::key_t key, boost::asio::io_context& ioContext) :
+    LocalChannel::LocalChannel(key_t key, boost::asio::io_context& ioContext) :
         Channel(key),
         m_ioContext{ std::ref(ioContext) }
     {
         initEndpoints(Endpoint{ "local:/" }, Endpoint{ "local:/" });
     }
 
-    LocalChannel::LocalChannel(Channel::key_t key, boost::asio::io_context& ioContext, LocalListener& peer) :
+    LocalChannel::LocalChannel(key_t key, boost::asio::io_context& ioContext, LocalListener& peer) :
         LocalChannel(key, ioContext)
     {
         peer.accept(*this);

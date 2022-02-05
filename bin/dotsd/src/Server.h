@@ -10,7 +10,7 @@ namespace dots
     {
         using listeners_t = std::vector<io::listener_ptr_t>;
 
-        Server(std::string name, listeners_t listeners, boost::asio::io_context& ioContext = dots::io::global_io_context());
+        Server(std::string name, listeners_t listeners, boost::asio::io_context& ioContext = io::global_io_context());
         Server(const Server& other) = delete;
         Server(Server&& other) = delete;
         ~Server() = default;
@@ -34,7 +34,7 @@ namespace dots
         DotsStatistics receiveStatistics() const;
         DotsCacheStatus cacheStatus() const;
 
-        static std::string flags2String(const dots::type::StructDescriptor<>* td);
+        static std::string flags2String(const type::StructDescriptor<>* td);
 
         HostTransceiver m_hostTransceiver;
         DotsDaemonStatus m_daemonStatus;

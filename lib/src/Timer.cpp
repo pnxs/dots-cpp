@@ -64,7 +64,7 @@ namespace dots
             }
             else
             {
-                boost::asio::use_service<io::TimerService>(static_cast<boost::asio::execution_context&>(m_timer.get_executor().context())).removeTimer(m_id);
+                boost::asio::use_service<io::TimerService>(m_timer.get_executor().context()).removeTimer(m_id);
             }
         });
     }

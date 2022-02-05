@@ -5,13 +5,13 @@
 
 namespace dots::io::posix
 {
-    UdsChannel::UdsChannel(Channel::key_t key, boost::asio::io_context& ioContext, const Endpoint& endpoint) :
+    UdsChannel::UdsChannel(key_t key, boost::asio::io_context& ioContext, const Endpoint& endpoint) :
         UdsChannel(key, ioContext, endpoint.path())
     {
         /* do nothing */
     }
 
-    UdsChannel::UdsChannel(Channel::key_t key, boost::asio::io_context& ioContext, std::string_view path) :
+    UdsChannel::UdsChannel(key_t key, boost::asio::io_context& ioContext, std::string_view path) :
         AsyncStreamChannel(key, stream_t{ ioContext }, nullptr)
     {
         try
@@ -27,7 +27,7 @@ namespace dots::io::posix
         IgnorePipeSignals();
     }
 
-    UdsChannel::UdsChannel(Channel::key_t key, boost::asio::local::stream_protocol::socket&& socket_, payload_cache_t* payloadCache) :
+    UdsChannel::UdsChannel(key_t key, boost::asio::local::stream_protocol::socket&& socket_, payload_cache_t* payloadCache) :
         AsyncStreamChannel(key, std::move(socket_), payloadCache)
     {
         IgnorePipeSignals();

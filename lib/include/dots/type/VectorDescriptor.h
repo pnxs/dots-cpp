@@ -104,7 +104,7 @@ namespace dots::type
         {
             auto& vector = static_cast<Vector<T>&>(typelessVector);
             vector.clear();
-            Descriptor<Vector<T>>::resize(typelessVector, size);
+            resize(typelessVector, size);
         }
 
         const Descriptor<T>& valueDescriptor() const

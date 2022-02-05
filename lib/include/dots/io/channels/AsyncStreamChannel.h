@@ -95,7 +95,7 @@ namespace dots::io
          * the channel.
          */
         template <typename S = Stream, std::enable_if_t<std::is_constructible_v<S, boost::asio::io_context&>, int> = 0>
-        AsyncStreamChannel(Channel::key_t key, boost::asio::io_context& ioContext) :
+        AsyncStreamChannel(key_t key, boost::asio::io_context& ioContext) :
             AsyncStreamChannel(key, stream_t{ ioContext }, nullptr)
         {
             /* do nothing */
@@ -119,7 +119,7 @@ namespace dots::io
          * AsyncStreamChannel::serializeTransmission(Transmission::id_t, const
          * DotsHeader&, const type::Struct&)).
          */
-        AsyncStreamChannel(Channel::key_t key, stream_t&& stream, payload_cache_t* payloadCache) :
+        AsyncStreamChannel(key_t key, stream_t&& stream, payload_cache_t* payloadCache) :
             Channel(key),
             m_asyncWriting(false),
             m_readDispatching(false),
@@ -625,7 +625,7 @@ namespace dots::io
          * @brief Serialize a transmission into the current write buffer.
          *
          * If a payload cache was provided in
-         * AsyncStreamChannel(Channel::key_t, stream_t&&, payload_cache_t*),
+         * AsyncStreamChannel(key_t, stream_t&&, payload_cache_t*),
          * the function will attempt to retrieve the payload from the cache
          * based on the id of the given transmission.
          *

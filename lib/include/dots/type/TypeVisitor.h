@@ -25,7 +25,7 @@ namespace dots::type
         template <bool Const>
         size_t visitingLevel() const
         {
-            size_t visitingLevel = [this]()
+            size_t visitingLevel = [this]
             {
                 if constexpr (Const)
                 {

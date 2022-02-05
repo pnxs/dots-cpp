@@ -95,7 +95,7 @@ namespace dots::tools
 
         FILE * const dst = stderr;
         fprintf(dst, "%s%-*s:%s ", levelColor, MaxLengthLevel, level2string(level), allOff);
-        fprintf(dst, "%s[%s]%s ", dark, dots::type::TimePoint::Now().toString().c_str(), allOff);
+        fprintf(dst, "%s[%s]%s ", dark, type::TimePoint::Now().toString().c_str(), allOff);
         fprintf(dst, "%s", text);
         fprintf(dst, " %s(%s:%d (%s))%s\n", dark, flf.file.data(), flf.line, flf.func.data(), allOff);
         fflush(dst);

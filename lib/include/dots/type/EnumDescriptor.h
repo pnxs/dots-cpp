@@ -83,7 +83,7 @@ namespace dots::type
 
         Descriptor<underlying_type_t>& underlyingDescriptor() override
         {
-            return m_underlyingDescriptor;;
+            return m_underlyingDescriptor;
         }
 
         const Typeless& valueTypeless() const override

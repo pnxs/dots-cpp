@@ -11,7 +11,7 @@ namespace dots::io
 
     boost::asio::execution_context& global_execution_context()
     {
-        return static_cast<boost::asio::execution_context&>(global_io_context());
+        return global_io_context();
     }
 
     boost::asio::executor global_executor()

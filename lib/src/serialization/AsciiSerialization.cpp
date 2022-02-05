@@ -25,7 +25,7 @@ struct Printer {
     virtual void EndHightlight() = 0;
 };
 
-struct PrettyPrinter: public Printer
+struct PrettyPrinter: Printer
 {
     enum class write_mode { plain, object_key, object_value, array };
 
@@ -146,7 +146,7 @@ private:
     std::string m_buffer;
 };
 
-struct SingleLinePrinter: public Printer
+struct SingleLinePrinter: Printer
 {
     enum class write_mode { plain, object_key, object_value, array };
 
@@ -286,7 +286,7 @@ private:
     bool enumAsTag = false;
 };
 
-static void to_ascii_recursive(const dots::type::StructDescriptor<>& td, const void *data, types::property_set_t what, Printer& writer, types::property_set_t highlight);
+static void to_ascii_recursive(const type::StructDescriptor<>& td, const void *data, types::property_set_t what, Printer& writer, types::property_set_t highlight);
 static void write_array_to_ascii(const type::VectorDescriptor& vd, const type::Vector<>& data, Printer& writer);
 
 static void write_atomic_types_to_ascii(const type::Descriptor<>& td, const void* data, Printer& writer)
@@ -324,7 +324,7 @@ static void write_atomic_types_to_ascii(const type::Descriptor<>& td, const void
 }
 
 
-static inline void write_ascii(const type::Descriptor<>& td, const void* data, Printer& writer)
+static void write_ascii(const type::Descriptor<>& td, const void* data, Printer& writer)
 {
     if (td.type() == type::Type::Vector)
     {
@@ -350,7 +350,7 @@ static void write_array_to_ascii(const type::VectorDescriptor& vd, const type::V
 
     for (unsigned int i = 0; i < data.typelessSize(); ++i)
     {
-        write_ascii(vd.valueDescriptor(), reinterpret_cast<const void*>(&data.typelessAt(i)), writer);
+        write_ascii(vd.valueDescriptor(), &data.typelessAt(i), writer);
     }
 
     writer.EndArray();

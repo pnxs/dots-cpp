@@ -13,8 +13,8 @@ protected:
     template <typename T>
     struct TestProperty : Property<T, TestProperty<T>>
     {
-        TestProperty(const dots::type::PropertyArea& area, std::string name, uint32_t tag) :
-            m_descriptor{ dots::type::PropertyDescriptor{ Descriptor<T>::Instance(), std::move(name), tag, false, PropertyOffset{ std::in_place, static_cast<uint32_t>(reinterpret_cast<char*>(this) - reinterpret_cast<const char*>(&area)) } } } {}
+        TestProperty(const PropertyArea& area, std::string name, uint32_t tag) :
+            m_descriptor{ PropertyDescriptor{ Descriptor<T>::Instance(), std::move(name), tag, false, PropertyOffset{ std::in_place, static_cast<uint32_t>(reinterpret_cast<char*>(this) - reinterpret_cast<const char*>(&area)) } } } {}
         TestProperty(const TestProperty& other) = delete;
         TestProperty(TestProperty&& other) = delete;
         ~TestProperty() { Property<T, TestProperty<T>>::destroy(); }
@@ -34,7 +34,7 @@ protected:
         const PropertyDescriptor m_descriptor;
     };
 
-    struct TestPropertyArea : dots::type::PropertyArea
+    struct TestPropertyArea : PropertyArea
     {
         TestPropertyArea() : intProperty{ *this, "intProperty", 1 }, stringProperty{ *this, "stringProperty", 2 } {}
         TestProperty<int> intProperty;

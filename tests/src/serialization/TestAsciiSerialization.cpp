@@ -91,7 +91,7 @@ TEST(TestAsciiSerialization, serializeSingleLineWithEnums)
     DotsTestStruct ts;
     ts.indKeyfField(42);
     ts.enumField(DotsTestEnum::value3);
-    ts.tp(dots::type::TimePoint());
+    ts.tp(TimePoint());
     ts.uuid(dots::types::uuid_t{ dots::types::uuid_t::value_t{} });
 
     dots::ToAsciiOptions options;
@@ -105,14 +105,14 @@ TEST(TestAsciiSerialization, serializeSingleLineWithEnums)
     EXPECT_EQ(dots::to_ascii(&ts._Descriptor(), &ts, PropertySet::All, options), expectedOutput);
 }
 
-struct TraceColorSchema: public dots::ToAsciiColorSchema
+struct TraceColorSchema: dots::ToAsciiColorSchema
 {
-    const char* string() const override { return "\33[1;35m"; };
-    const char* integer() const override { return "\33[1;31m"; };
-    const char* floatingPoint() const override { return "\33[1;31m"; };
-    const char* enumValue() const override { return "\33[1;33m"; };
-    const char* attribute() const override { return "\33[0;37m"; };
-    const char* typeName() const override { return "\33[1;34m"; };
+    const char* string() const override { return "\33[1;35m"; }
+    const char* integer() const override { return "\33[1;31m"; }
+    const char* floatingPoint() const override { return "\33[1;31m"; }
+    const char* enumValue() const override { return "\33[1;33m"; }
+    const char* attribute() const override { return "\33[0;37m"; }
+    const char* typeName() const override { return "\33[1;34m"; }
     const char* allOff() const override { return "\33[0m"; }
     const char* create() const override { return "\33[1;32m"; }
     const char* update() const override { return "\33[1;33m"; }

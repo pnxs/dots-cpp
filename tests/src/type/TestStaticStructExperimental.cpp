@@ -22,7 +22,7 @@ namespace dots::types
         struct p1_pt : type::StaticProperty<bool_t, p1_pt>
         {
             using StaticProperty::StaticProperty;
-            inline static constexpr auto Metadata = []()
+            inline static constexpr auto Metadata = []
             { 
                 constexpr auto protoTestSubStruct = details::ProtoTestSubStruct{};
                 return type::StaticPropertyMetadata{ "p1", 1, true, type::StaticPropertyOffset::MakeOffset(&protoTestSubStruct._propertyArea, &protoTestSubStruct.p1) };
@@ -32,7 +32,7 @@ namespace dots::types
         struct p2_pt : type::StaticProperty<bool_t, p2_pt>
         {
             using StaticProperty::StaticProperty;
-            inline static constexpr auto Metadata = []()
+            inline static constexpr auto Metadata = []
             { 
                 constexpr auto protoTestSubStruct = details::ProtoTestSubStruct{};
                 return type::StaticPropertyMetadata{ "p2", 2, false, type::StaticPropertyOffset::MakeOffset(&protoTestSubStruct._propertyArea, &protoTestSubStruct.p2) };
@@ -42,7 +42,7 @@ namespace dots::types
         struct p3_pt : type::StaticProperty<float64_t, p3_pt>
         {
             using StaticProperty::StaticProperty;
-            inline static constexpr auto Metadata = []()
+            inline static constexpr auto Metadata = []
             { 
                 constexpr auto protoTestSubStruct = details::ProtoTestSubStruct{};
                 return type::StaticPropertyMetadata{ "p3", 3, false, type::StaticPropertyOffset::MakeOffset(&protoTestSubStruct._propertyArea, &protoTestSubStruct.p3) };
@@ -76,7 +76,7 @@ namespace dots::types
         template <typename P>
         P& _getProperty()
         {
-            return const_cast<P&>(std::as_const(*this).template _getProperty<P>());
+            return const_cast<P&>(std::as_const(*this)._getProperty<P>());
         }
 
         p1_pt p1;
@@ -118,7 +118,7 @@ namespace dots::types
         struct intProperty_pt : type::StaticProperty<int32_t, intProperty_pt>
         {
             using StaticProperty::StaticProperty;
-            inline static constexpr auto Metadata = []()
+            inline static constexpr auto Metadata = []
             { 
                 constexpr auto protoTestStruct = details::ProtoTestStruct{};
                 return type::StaticPropertyMetadata{ "intProperty", 1, true, type::StaticPropertyOffset::MakeOffset(&protoTestStruct._propertyArea, &protoTestStruct.intProperty) };
@@ -128,7 +128,7 @@ namespace dots::types
         struct stringProperty_pt : type::StaticProperty<string_t, stringProperty_pt>
         {
             using StaticProperty::StaticProperty;
-            inline static constexpr auto Metadata = []()
+            inline static constexpr auto Metadata = []
             { 
                 constexpr auto protoTestStruct = details::ProtoTestStruct{};
                 return type::StaticPropertyMetadata{ "stringProperty", 2, false, type::StaticPropertyOffset::MakeOffset(&protoTestStruct._propertyArea, &protoTestStruct.stringProperty) };
@@ -138,7 +138,7 @@ namespace dots::types
         struct boolProperty_pt : type::StaticProperty<bool_t, boolProperty_pt>
         {
             using StaticProperty::StaticProperty;
-            inline static constexpr auto Metadata = []()
+            inline static constexpr auto Metadata = []
             { 
                 constexpr auto protoTestStruct = details::ProtoTestStruct{};
                 return type::StaticPropertyMetadata{ "boolProperty", 3, false, type::StaticPropertyOffset::MakeOffset(&protoTestStruct._propertyArea, &protoTestStruct.boolProperty) };
@@ -148,7 +148,7 @@ namespace dots::types
         struct floatVectorProperty_pt : type::StaticProperty<vector_t<float32_t>, floatVectorProperty_pt>
         {
             using StaticProperty::StaticProperty;
-            inline static constexpr auto Metadata = []()
+            inline static constexpr auto Metadata = []
             { 
                 constexpr auto protoTestStruct = details::ProtoTestStruct{};
                 return type::StaticPropertyMetadata{ "floatVectorProperty", 4, false, type::StaticPropertyOffset::MakeOffset(&protoTestStruct._propertyArea, &protoTestStruct.floatVectorProperty) };
@@ -158,7 +158,7 @@ namespace dots::types
         struct subStruct_pt : type::StaticProperty<TestSubStruct, subStruct_pt>
         {
             using StaticProperty::StaticProperty;
-            inline static constexpr auto Metadata = []()
+            inline static constexpr auto Metadata = []
             { 
                 constexpr auto protoTestStruct = details::ProtoTestStruct{};
                 return type::StaticPropertyMetadata{ "subStruct", 5, false, type::StaticPropertyOffset::MakeOffset(&protoTestStruct._propertyArea, &protoTestStruct.subStruct) };
@@ -200,7 +200,7 @@ namespace dots::types
         template <typename P>
         P& _getProperty()
         {
-            return const_cast<P&>(std::as_const(*this).template _getProperty<P>());
+            return const_cast<P&>(std::as_const(*this)._getProperty<P>());
         }
 
         intProperty_pt intProperty;

@@ -109,7 +109,7 @@ namespace dots::io
 
         size_t size = type::PropertyOffset::Next(alignment, last->offset(), last->valueDescriptor().size());
 
-        return m_registry.get().registerType<type::Descriptor<type::DynamicStruct>>(structData.name, flags, propertyDescriptors, sizeof(type::DynamicStruct) + size);;
+        return m_registry.get().registerType<type::Descriptor<type::DynamicStruct>>(structData.name, flags, propertyDescriptors, sizeof(type::DynamicStruct) + size);
     }
 
     types::EnumDescriptorData DescriptorConverter::operator () (const type::EnumDescriptor<>& enumDescriptor)

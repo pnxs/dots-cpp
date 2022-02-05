@@ -8,8 +8,8 @@ namespace dots::io
 
     struct LocalChannel : Channel
     {
-        LocalChannel(Channel::key_t key, boost::asio::io_context& ioContext);
-        LocalChannel(Channel::key_t key, boost::asio::io_context& ioContext, LocalListener& peer);
+        LocalChannel(key_t key, boost::asio::io_context& ioContext);
+        LocalChannel(key_t key, boost::asio::io_context& ioContext, LocalListener& peer);
         LocalChannel(const LocalChannel& other) = delete;
         LocalChannel(LocalChannel&& other) = delete;
         ~LocalChannel() override = default;

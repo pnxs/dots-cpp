@@ -48,7 +48,7 @@ int main(int argc, char* argv[])
     signals.add(SIGINT);
     signals.add(SIGTERM);
 
-    std::vector<string> listenEndpointUris = [&vm]()
+    std::vector<string> listenEndpointUris = [&vm]
     {
         if (vm.count("listen"))
         {

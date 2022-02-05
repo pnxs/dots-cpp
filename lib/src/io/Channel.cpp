@@ -169,7 +169,7 @@ namespace dots::io
             if (bool isNewSharedType = m_sharedTypeNames.count(structDescriptorData->name) == 0; isNewSharedType)
             {
                 m_sharedTypeNames.emplace(structDescriptorData->name);
-                const type::StructDescriptor<>& descriptor = io::DescriptorConverter{ registry() }(*structDescriptorData);
+                const type::StructDescriptor<>& descriptor = DescriptorConverter{ registry() }(*structDescriptorData);
                 m_sharedTypeDescriptors.emplace(&descriptor);
             }
         }
@@ -178,7 +178,7 @@ namespace dots::io
             if (bool isNewSharedType = m_sharedTypeNames.count(enumDescriptorData->name) == 0; isNewSharedType)
             {
                 m_sharedTypeNames.emplace(enumDescriptorData->name);
-                const type::EnumDescriptor<>& descriptor = io::DescriptorConverter{ registry() }(*enumDescriptorData);
+                const type::EnumDescriptor<>& descriptor = DescriptorConverter{ registry() }(*enumDescriptorData);
                 m_sharedTypeDescriptors.emplace(&descriptor);
             }
         }
@@ -197,7 +197,7 @@ namespace dots::io
             else if (const auto* enumDescriptor = descriptor.as<type::EnumDescriptor<>>(); enumDescriptor != nullptr)
             {
                 exportDependencies(enumDescriptor->underlyingDescriptor());
-                transmit(io::DescriptorConverter{ registry() }(*enumDescriptor));
+                transmit(DescriptorConverter{ registry() }(*enumDescriptor));
             }
             else if (const auto* structDescriptor = descriptor.as<type::StructDescriptor<>>(); structDescriptor != nullptr)
             {
@@ -208,7 +208,7 @@ namespace dots::io
                         exportDependencies(propertyDescriptor.valueDescriptor());
                     }
 
-                    transmit(io::DescriptorConverter{ registry() }(*structDescriptor));
+                    transmit(DescriptorConverter{ registry() }(*structDescriptor));
                 }
             }
         }

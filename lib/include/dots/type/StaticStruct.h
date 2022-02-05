@@ -15,7 +15,7 @@ namespace dots::type
     template <typename Derived>
     struct StaticStruct : Struct
     {
-        using Cbd = dots::Event<Derived>;
+        using Cbd = Event<Derived>;
 
         StaticStruct() : Struct(_Descriptor())
         {

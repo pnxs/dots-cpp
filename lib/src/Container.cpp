@@ -4,7 +4,7 @@
 
 namespace dots
 {
-    Container<type::Struct>::key_compare::key_compare(const dots::type::StructDescriptor<>& descriptor)
+    Container<type::Struct>::key_compare::key_compare(const type::StructDescriptor<>& descriptor)
     {
         for (const type::PropertyDescriptor& propertyDescriptor : descriptor.propertyDescriptors())
         {

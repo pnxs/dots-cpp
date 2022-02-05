@@ -2,13 +2,13 @@
 
 namespace dots::io
 {
-    TcpChannel::TcpChannel(Channel::key_t key, boost::asio::io_context& ioContext, const Endpoint& endpoint) :
+    TcpChannel::TcpChannel(key_t key, boost::asio::io_context& ioContext, const Endpoint& endpoint) :
         TcpChannel(key, ioContext, endpoint.host(), endpoint.port())
     {
         /* do nothing */
     }
 
-    TcpChannel::TcpChannel(Channel::key_t key, boost::asio::io_context& ioContext, std::string_view host, std::string_view port) :
+    TcpChannel::TcpChannel(key_t key, boost::asio::io_context& ioContext, std::string_view host, std::string_view port) :
         TcpChannel(key, boost::asio::ip::tcp::socket{ ioContext }, nullptr)
     {
         auto endpoints = m_resolver.resolve(boost::asio::ip::tcp::socket::protocol_type::v4(), host, port, boost::asio::ip::resolver_query_base::numeric_service);
@@ -32,7 +32,7 @@ namespace dots::io
         throw std::runtime_error{ "could not open TCP connection: " + std::string{ host } + ":" + std::string{ port } };
     }
 
-    TcpChannel::TcpChannel(Channel::key_t key, boost::asio::io_context& ioContext, std::string_view host, std::string_view port, std::function<void(const boost::system::error_code& error)> onConnect) :
+    TcpChannel::TcpChannel(key_t key, boost::asio::io_context& ioContext, std::string_view host, std::string_view port, std::function<void(const boost::system::error_code& error)> onConnect) :
         TcpChannel(key, boost::asio::ip::tcp::socket{ ioContext }, nullptr)
     {
         asyncResolveEndpoint(host, port, [this, host, port, onConnect{ std::move(onConnect) }](auto& error, auto endpoint) {
@@ -57,7 +57,7 @@ namespace dots::io
         });
     }
 
-    TcpChannel::TcpChannel(Channel::key_t key, boost::asio::ip::tcp::socket&& socket_, payload_cache_t* payloadCache) :
+    TcpChannel::TcpChannel(key_t key, boost::asio::ip::tcp::socket&& socket_, payload_cache_t* payloadCache) :
         AsyncStreamChannel(key, std::move(socket_), payloadCache),
         m_resolver( stream().get_executor())
     {

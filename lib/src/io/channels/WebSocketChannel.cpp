@@ -4,13 +4,13 @@
 
 namespace dots::io
 {
-    WebSocketChannel::WebSocketChannel(Channel::key_t key, boost::asio::io_context& ioContext, const Endpoint& endpoint) :
+    WebSocketChannel::WebSocketChannel(key_t key, boost::asio::io_context& ioContext, const Endpoint& endpoint) :
         WebSocketChannel(key, ioContext, endpoint.host(), endpoint.port())
     {
         /* do nothing */
     }
 
-    WebSocketChannel::WebSocketChannel(Channel::key_t key, boost::asio::io_context& ioContext, std::string_view host, std::string_view port) :
+    WebSocketChannel::WebSocketChannel(key_t key, boost::asio::io_context& ioContext, std::string_view host, std::string_view port) :
         Channel(key),
         m_stream{ ioContext },
         m_serializer{ { serialization::TextOptions::Minified } }
@@ -50,7 +50,7 @@ namespace dots::io
         }
     }
 
-    WebSocketChannel::WebSocketChannel(Channel::key_t key, ws_stream_t&& stream) :
+    WebSocketChannel::WebSocketChannel(key_t key, ws_stream_t&& stream) :
         Channel(key),
         m_stream(std::move(stream))
     {

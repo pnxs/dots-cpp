@@ -48,7 +48,7 @@ namespace dots::testing
          * @param ioContext The ASIO IO context (i.e. the "event loop") to
          * use.
          */
-        MockChannel(Channel::key_t key, boost::asio::io_context& ioContext) :
+        MockChannel(key_t key, boost::asio::io_context& ioContext) :
             Channel(key),
             m_ioContext{ std::ref(ioContext) }
         {
@@ -256,7 +256,7 @@ namespace dots::testing
 
         void transmitImpl(const io::Transmission& transmission) override
         {
-            boost::asio::post(m_ioContext.get(), [this, transmission = io::Transmission{ transmission.header(), transmission.instance() }]()
+            boost::asio::post(m_ioContext.get(), [this, transmission = io::Transmission{ transmission.header(), transmission.instance() }]
             {
                 m_transmitMock.AsStdFunction()(transmission);
             });
