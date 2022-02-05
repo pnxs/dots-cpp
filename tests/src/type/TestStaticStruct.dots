@@ -1,0 +1,13 @@
+struct TestSubStruct {
+    1: [key] bool p1;
+    2: bool p2;
+    3: float64 p3;
+}
+
+struct TestStruct {
+    1: [key] int32 intProperty;
+    2: string stringProperty;
+    3: bool boolProperty;
+    4: vector<float32> floatVectorProperty;
+    5: TestSubStruct subStruct;
+}

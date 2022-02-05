@@ -13,6 +13,7 @@ add_executable(${TARGET_NAME} src/TestContainer.cpp)
 # properties [dots-unittests]
 target_dots_model(${TARGET_NAME}
     src/serialization/serialization.dots
+    src/type/TestStaticStruct.dots
 )
 target_sources(${TARGET_NAME}
     PRIVATE
@@ -82,8 +83,12 @@ add_executable(${TARGET_NAME_EXPERIMENTAL} src/type/TestStaticStructExperimental
 #target_sources(${TARGET_NAME_EXPERIMENTAL}
 #    PRIVATE
 #)
+target_dots_model(${TARGET_NAME_EXPERIMENTAL}
+    src/type/TestStaticStruct.dots
+)
 target_include_directories(${TARGET_NAME_EXPERIMENTAL}
     PRIVATE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
         ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 target_compile_options(${TARGET_NAME_EXPERIMENTAL}
