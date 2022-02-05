@@ -59,7 +59,7 @@ namespace dots::testing
          *
          * @param hostName The name the host will use to identify itself.
          */
-        ChannelTestBase(boost::asio::io_context& ioContext = io::global_io_context(), std::string hostName = "dots-test-host") :
+        ChannelTestBase(asio::io_context& ioContext = io::global_io_context(), std::string hostName = "dots-test-host") :
             m_ioContext(ioContext),
             m_mockChannel{ dots::io::make_channel<MockChannel>(ioContext) },
             m_hostName{ std::move(hostName) }
@@ -102,10 +102,10 @@ namespace dots::testing
          * Note that this is the same IO context that was given in
          * ChannelTestBase().
          *
-         * @return const boost::asio::io_context& A reference to the currently
+         * @return const asio::io_context& A reference to the currently
          * used IO context.
          */
-        const boost::asio::io_context& ioContext() const
+        const asio::io_context& ioContext() const
         {
             return m_ioContext;
         }
@@ -116,10 +116,10 @@ namespace dots::testing
          * Note that this is the same IO context that was given in
          * ChannelTestBase().
          *
-         * @return boost::asio::io_context& A reference to the currently used
+         * @return asio::io_context& A reference to the currently used
          * IO context.
          */
-        boost::asio::io_context& ioContext()
+        asio::io_context& ioContext()
         {
             return m_ioContext;
         }
@@ -176,8 +176,8 @@ namespace dots::testing
          * This function will never block and in particular not wait for any
          * active timers to end.
          *
-         * Technically, this effectively calls boost::asio::io_context::poll()
-         * followed by a boost::asio::io_context::restart().
+         * Technically, this effectively calls asio::io_context::poll()
+         * followed by a asio::io_context::restart().
          *
          */
         void processEvents()
@@ -198,8 +198,8 @@ namespace dots::testing
          * block up to the given duration and wait for the timers to end.
          *
          * Technically, this effectively calls
-         * boost::asio::io_context::run_for() followed by a
-         * boost::asio::io_context::restart().
+         * asio::io_context::run_for() followed by a
+         * asio::io_context::restart().
          *
          * @tparam Rep An arithmetic type representing the number of ticks.
          *
@@ -219,7 +219,7 @@ namespace dots::testing
 
         inline static Connection::id_t M_nextGuestId = SpoofId + 1;
 
-        boost::asio::io_context& m_ioContext;
+        asio::io_context& m_ioContext;
         std::shared_ptr<MockChannel> m_mockChannel;
         std::string m_hostName;
     };

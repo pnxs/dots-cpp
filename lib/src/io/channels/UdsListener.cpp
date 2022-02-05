@@ -1,16 +1,16 @@
-#include <boost/asio.hpp>
+#include <dots/asio.h>
 #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
 #include <dots/io/channels/UdsListener.h>
 
 namespace dots::io::posix
 {
-    UdsListener::UdsListener(boost::asio::io_context& ioContext, const Endpoint& endpoint, std::optional<int> backlog/* = std::nullopt*/) :
+    UdsListener::UdsListener(asio::io_context& ioContext, const Endpoint& endpoint, std::optional<int> backlog/* = std::nullopt*/) :
         UdsListener(ioContext, endpoint.path(), backlog)
     {
         /* do nothing */
     }
 
-    UdsListener::UdsListener(boost::asio::io_context& ioContext, std::string_view path, std::optional<int> backlog/* = std::nullopt*/) :
+    UdsListener::UdsListener(asio::io_context& ioContext, std::string_view path, std::optional<int> backlog/* = std::nullopt*/) :
         m_endpoint{ path.data() },
         m_acceptor{ ioContext },
         m_socket{ ioContext },
@@ -19,7 +19,7 @@ namespace dots::io::posix
         try
         {
             m_acceptor.open(m_endpoint.protocol());
-            m_acceptor.set_option(boost::asio::local::stream_protocol::acceptor::reuse_address(true));
+            m_acceptor.set_option(asio::local::stream_protocol::acceptor::reuse_address(true));
             m_acceptor.bind(m_endpoint);
 
             if (backlog == std::nullopt)
@@ -62,12 +62,12 @@ namespace dots::io::posix
                 m_socket.non_blocking(true);
 
                 constexpr int MinimumSendBufferSize = 1024 * 1024;
-                boost::asio::socket_base::send_buffer_size sendBufferSize;
+                asio::socket_base::send_buffer_size sendBufferSize;
                 m_socket.get_option(sendBufferSize);
 
                 if (sendBufferSize.value() < MinimumSendBufferSize)
                 {
-                    m_socket.set_option(boost::asio::socket_base::send_buffer_size(MinimumSendBufferSize));
+                    m_socket.set_option(asio::socket_base::send_buffer_size(MinimumSendBufferSize));
                 }
 
                 // note: this move is explicitly allowed according to the ASIO v1.72 documentation of the socket
@@ -79,7 +79,7 @@ namespace dots::io::posix
                 {
                     processError(std::string{ "failed to configure UDS socket -> " } + e.what());
 
-                    m_socket.shutdown(boost::asio::local::stream_protocol::socket::shutdown_both);
+                    m_socket.shutdown(asio::local::stream_protocol::socket::shutdown_both);
                     m_socket.close();
                 }
                 catch (const std::exception& e)

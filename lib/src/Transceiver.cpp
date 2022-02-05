@@ -5,7 +5,7 @@
 
 namespace dots
 {
-    Transceiver::Transceiver(std::string selfName, boost::asio::io_context& ioContext/* = global_io_context()*/, type::Registry::StaticTypePolicy staticTypePolicy/* = StaticTypePolicy::All*/) :
+    Transceiver::Transceiver(std::string selfName, asio::io_context& ioContext/* = global_io_context()*/, type::Registry::StaticTypePolicy staticTypePolicy/* = StaticTypePolicy::All*/) :
         m_nextId(0),
         m_this(std::make_shared<Transceiver*>(this)),
         m_registry{ [&](const type::Descriptor<>& descriptor){ handleNewType(descriptor); }, staticTypePolicy },
@@ -51,12 +51,12 @@ namespace dots
         return m_selfName;
     }
 
-    const boost::asio::io_context& Transceiver::ioContext() const
+    const asio::io_context& Transceiver::ioContext() const
     {
         return m_ioContext;
     }
 
-    boost::asio::io_context& Transceiver::ioContext()
+    asio::io_context& Transceiver::ioContext()
     {
         return m_ioContext;
     }

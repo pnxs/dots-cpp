@@ -1,6 +1,6 @@
 #pragma once
 #include <string_view>
-#include <boost/asio.hpp>
+#include <dots/asio.h>
 #include <boost/beast.hpp>
 #include <dots/io/Channel.h>
 #include <dots/serialization/JsonSerializer.h>
@@ -12,8 +12,8 @@ namespace dots::io
         using ws_stream_t = boost::beast::websocket::stream<boost::beast::tcp_stream>;
         static constexpr char Subprotocol[] = "dots-json";
 
-        WebSocketChannel(key_t key, boost::asio::io_context& ioContext, const Endpoint& endpoint);
-        WebSocketChannel(key_t key, boost::asio::io_context& ioContext, std::string_view host, std::string_view port);
+        WebSocketChannel(key_t key, asio::io_context& ioContext, const Endpoint& endpoint);
+        WebSocketChannel(key_t key, asio::io_context& ioContext, std::string_view host, std::string_view port);
         WebSocketChannel(key_t key, ws_stream_t&& stream);
         WebSocketChannel(const WebSocketChannel& other) = delete;
         WebSocketChannel(WebSocketChannel&& other) = delete;

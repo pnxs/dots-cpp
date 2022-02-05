@@ -45,7 +45,7 @@ namespace dots
          * @param staticTypePolicy Specifies the static type policy of the
          * transceiver's registry.
          */
-        GuestTransceiver(std::string selfName, boost::asio::io_context& ioContext = io::global_io_context(), type::Registry::StaticTypePolicy staticTypePolicy = type::Registry::StaticTypePolicy::All);
+        GuestTransceiver(std::string selfName, asio::io_context& ioContext = io::global_io_context(), type::Registry::StaticTypePolicy staticTypePolicy = type::Registry::StaticTypePolicy::All);
         GuestTransceiver(const GuestTransceiver& other) = delete;
         GuestTransceiver(GuestTransceiver&& other) = default;
         ~GuestTransceiver() override = default;

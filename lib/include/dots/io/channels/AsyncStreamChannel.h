@@ -3,7 +3,7 @@
 #define DOTS_ACKNOWLEDGE_DEPRECATION_OF_DotsTransportHeader_nameSpace
 #define DOTS_ACKNOWLEDGE_DEPRECATION_OF_DotsTransportHeader_destinationClientId
 #include <optional>
-#include <boost/asio.hpp>
+#include <dots/asio.h>
 #include <dots/type/Registry.h>
 #include <dots/io/Channel.h>
 #include <dots/serialization/CborSerializer.h>
@@ -80,7 +80,7 @@ namespace dots::io
          * This will initialize the channel from a given Asio IO context.
          *
          * Note that the overload is only available if @p Stream is
-         * constructible from boost::asio::io_context&.
+         * constructible from asio::io_context&.
          *
          * @attention Channels cannot be constructed manually and must always
          * be obtained via dots::io::make_channel().
@@ -94,8 +94,8 @@ namespace dots::io
          * @param ioContext The IO context (i.e. event loop) to associate with
          * the channel.
          */
-        template <typename S = Stream, std::enable_if_t<std::is_constructible_v<S, boost::asio::io_context&>, int> = 0>
-        AsyncStreamChannel(key_t key, boost::asio::io_context& ioContext) :
+        template <typename S = Stream, std::enable_if_t<std::is_constructible_v<S, asio::io_context&>, int> = 0>
+        AsyncStreamChannel(key_t key, asio::io_context& ioContext) :
             AsyncStreamChannel(key, stream_t{ ioContext }, nullptr)
         {
             /* do nothing */
@@ -172,7 +172,7 @@ namespace dots::io
          *
          * In that case, the subsequent processing of the next transmission
          * will be performed as a continuation of the call via
-         * boost::asio::dispatch() and may occur synchronously before this
+         * asio::dispatch() and may occur synchronously before this
          * function returns.
          *
          * This process will be repeated until the read buffer has too little
@@ -316,7 +316,7 @@ namespace dots::io
          *
          * If the required amount of data is already present in the read buffer
          * from a previous operation, the read will be performed as a
-         * continuation of the call via boost::asio::dispatch(), which may
+         * continuation of the call via asio::dispatch(), which may
          * invoke the @p handler synchronously before this function returns.
          *
          * This process will be repeated until the read buffer has too little
@@ -338,7 +338,7 @@ namespace dots::io
             {
                 m_readDispatching = true;
 
-                boost::asio::dispatch(m_stream.get_executor(), [this, this_{ weak_from_this() }, handler{ std::forward<Handler>(handler) }]
+                asio::dispatch(m_stream.get_executor(), [this, this_{ weak_from_this() }, handler{ std::forward<Handler>(handler) }]
                 {
                     try
                     {
@@ -375,7 +375,7 @@ namespace dots::io
                 uint8_t* readBufferBegin = m_readBuffer.data() + availableBytes;
                 uint8_t* readBufferEnd = m_readBuffer.data() + m_readBuffer.size();
 
-                m_stream.async_read_some(boost::asio::buffer(readBufferBegin, readBufferEnd - readBufferBegin), [this, this_{ weak_from_this() }, requiredBytes, handler{ std::forward<Handler>(handler)}](boost::system::error_code ec, size_t bytesRead)
+                m_stream.async_read_some(asio::buffer(readBufferBegin, readBufferEnd - readBufferBegin), [this, this_{ weak_from_this() }, requiredBytes, handler{ std::forward<Handler>(handler)}](boost::system::error_code ec, size_t bytesRead)
                 {
                     try
                     {
@@ -428,7 +428,7 @@ namespace dots::io
             }
             else
             {
-                boost::asio::async_write(m_stream, boost::asio::buffer(m_writeBuffer.data(), m_writeBuffer.size()), [&, this_{ weak_from_this() }](boost::system::error_code ec, size_t/* numBytes*/)
+                asio::async_write(m_stream, asio::buffer(m_writeBuffer.data(), m_writeBuffer.size()), [&, this_{ weak_from_this() }](boost::system::error_code ec, size_t/* numBytes*/)
                 {
                     try
                     {

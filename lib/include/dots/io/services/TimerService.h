@@ -1,17 +1,17 @@
 #pragma once
 #include <map>
-#include <boost/asio.hpp>
+#include <dots/asio.h>
 #include <dots/tools/Handler.h>
 #include <dots/Timer.h>
 
 namespace dots::io
 {
-    struct TimerService : boost::asio::execution_context::service
+    struct TimerService : asio::execution_context::service
     {
         using key_type = TimerService;
         using callback_t = tools::Handler<void()>;
 
-        explicit TimerService(boost::asio::execution_context& executionContext);
+        explicit TimerService(asio::execution_context& executionContext);
         TimerService(const TimerService& other) = delete;
         TimerService(TimerService&& other) noexcept(false) = delete;
         ~TimerService() = default;

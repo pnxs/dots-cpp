@@ -17,7 +17,7 @@ using namespace dots::types::literals;
 
 namespace dots
 {
-    Server::Server(std::string name, listeners_t listeners, boost::asio::io_context& ioContext/* = dots::io::global_io_context()*/) :
+    Server::Server(std::string name, listeners_t listeners, asio::io_context& ioContext/* = dots::io::global_io_context()*/) :
         m_hostTransceiver{ std::move(name), ioContext, type::Registry::StaticTypePolicy::InternalOnly, HostTransceiver::transition_handler_t{ &Server::handleTransition, this } },
         m_daemonStatus{ DotsDaemonStatus::serverName_i{ m_hostTransceiver.selfName() }, DotsDaemonStatus::startTime_i{ types::timepoint_t::Now() } }
     {
@@ -40,12 +40,12 @@ namespace dots
         m_hostTransceiver.setAuthManager<io::LegacyAuthManager>();
     }
 
-    const boost::asio::io_context& Server::ioContext() const
+    const asio::io_context& Server::ioContext() const
     {
         return m_hostTransceiver.ioContext();
     }
 
-    boost::asio::io_context& Server::ioContext()
+    asio::io_context& Server::ioContext()
     {
         return m_hostTransceiver.ioContext();
     }

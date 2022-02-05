@@ -3,9 +3,9 @@
 
 namespace dots::io
 {
-    struct TcpChannel : AsyncStreamChannel<boost::asio::ip::tcp::socket>
+    struct TcpChannel : AsyncStreamChannel<asio::ip::tcp::socket>
     {
-        TcpChannel(key_t key, boost::asio::io_context& ioContext, const Endpoint& endpoint);
+        TcpChannel(key_t key, asio::io_context& ioContext, const Endpoint& endpoint);
 
         /**
          * Connect channel synchronously.
@@ -14,7 +14,7 @@ namespace dots::io
          * @param host
          * @param port
          */
-        TcpChannel(key_t key, boost::asio::io_context& ioContext, std::string_view host, std::string_view port);
+        TcpChannel(key_t key, asio::io_context& ioContext, std::string_view host, std::string_view port);
 
         /**
          * Connect channel asynchronously.
@@ -24,14 +24,14 @@ namespace dots::io
          * @param port
          * @param onConnect
          */
-        TcpChannel(key_t key, boost::asio::io_context& ioContext, std::string_view host, std::string_view port, std::function<void(const boost::system::error_code& error)> onConnect);
+        TcpChannel(key_t key, asio::io_context& ioContext, std::string_view host, std::string_view port, std::function<void(const boost::system::error_code& error)> onConnect);
 
         /**
          * Construct channel with an already connected socket.
          * @param key
          * @param socket
          */
-        TcpChannel(key_t key, boost::asio::ip::tcp::socket&& socket, payload_cache_t* payloadCache);
+        TcpChannel(key_t key, asio::ip::tcp::socket&& socket, payload_cache_t* payloadCache);
         TcpChannel(const TcpChannel& other) = delete;
         TcpChannel(TcpChannel&& other) = delete;
         ~TcpChannel() override = default;
@@ -41,7 +41,7 @@ namespace dots::io
 
     private:
 
-        using resolve_handler_t = std::function<void(const boost::system::error_code& error, std::optional<boost::asio::ip::tcp::endpoint>)>;
+        using resolve_handler_t = std::function<void(const boost::system::error_code& error, std::optional<asio::ip::tcp::endpoint>)>;
 
         void asyncResolveEndpoint(std::string_view host, std::string_view port, resolve_handler_t handler);
         void verifyErrorCode(const boost::system::error_code& ec);
@@ -50,6 +50,6 @@ namespace dots::io
         std::optional<receive_handler_t> m_cb;
         std::optional<error_handler_t> m_ecb;
 
-        boost::asio::ip::tcp::resolver m_resolver;
+        asio::ip::tcp::resolver m_resolver;
     };
 }

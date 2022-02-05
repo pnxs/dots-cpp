@@ -1,5 +1,5 @@
 #pragma once
-#include <boost/asio.hpp>
+#include <dots/asio.h>
 #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
 #include <string_view>
 #include <optional>
@@ -10,8 +10,8 @@ namespace dots::io::posix
 {
     struct UdsListener : Listener
     {
-        UdsListener(boost::asio::io_context& ioContext, const Endpoint& endpoint, std::optional<int> backlog = std::nullopt);
-        UdsListener(boost::asio::io_context& ioContext, std::string_view path, std::optional<int> backlog = std::nullopt);
+        UdsListener(asio::io_context& ioContext, const Endpoint& endpoint, std::optional<int> backlog = std::nullopt);
+        UdsListener(asio::io_context& ioContext, std::string_view path, std::optional<int> backlog = std::nullopt);
         UdsListener(const UdsListener& other) = delete;
         UdsListener(UdsListener&& other) = delete;
         ~UdsListener();
@@ -25,9 +25,9 @@ namespace dots::io::posix
 
     private:
 
-        boost::asio::local::stream_protocol::endpoint m_endpoint;
-        boost::asio::local::stream_protocol::acceptor m_acceptor;
-        boost::asio::local::stream_protocol::socket m_socket;
+        asio::local::stream_protocol::endpoint m_endpoint;
+        asio::local::stream_protocol::acceptor m_acceptor;
+        asio::local::stream_protocol::socket m_socket;
         UdsChannel::payload_cache_t m_payloadCache;
     };
 }

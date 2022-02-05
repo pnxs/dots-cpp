@@ -4,21 +4,21 @@
 
 namespace dots::io
 {
-    WebSocketChannel::WebSocketChannel(key_t key, boost::asio::io_context& ioContext, const Endpoint& endpoint) :
+    WebSocketChannel::WebSocketChannel(key_t key, asio::io_context& ioContext, const Endpoint& endpoint) :
         WebSocketChannel(key, ioContext, endpoint.host(), endpoint.port())
     {
         /* do nothing */
     }
 
-    WebSocketChannel::WebSocketChannel(key_t key, boost::asio::io_context& ioContext, std::string_view host, std::string_view port) :
+    WebSocketChannel::WebSocketChannel(key_t key, asio::io_context& ioContext, std::string_view host, std::string_view port) :
         Channel(key),
         m_stream{ ioContext },
         m_serializer{ { serialization::TextOptions::Minified } }
     {
         try
         {
-            boost::asio::ip::tcp::resolver resolver{ m_stream.get_executor() };
-            auto endpoints = resolver.resolve(boost::asio::ip::tcp::socket::protocol_type::v4(), host, port, boost::asio::ip::resolver_query_base::numeric_service);
+            asio::ip::tcp::resolver resolver{ m_stream.get_executor() };
+            auto endpoints = resolver.resolve(asio::ip::tcp::socket::protocol_type::v4(), host, port, asio::ip::resolver_query_base::numeric_service);
             auto& tcpStream = m_stream.next_layer();
             tcpStream.connect(endpoints.begin(), endpoints.end());
             initEndpoints(Endpoint{ "ws", m_stream.next_layer().socket().local_endpoint() }, Endpoint{ "ws", m_stream.next_layer().socket().remote_endpoint() });
@@ -95,7 +95,7 @@ namespace dots::io
         m_serializer.serialize(instance);
         m_serializer.writer().writeArrayEnd();
 
-        m_stream.write(boost::asio::buffer(m_serializer.output()));
+        m_stream.write(asio::buffer(m_serializer.output()));
         m_serializer.output().clear();
     }
 }

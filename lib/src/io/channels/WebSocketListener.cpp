@@ -4,13 +4,13 @@
 
 namespace dots::io
 {
-    WebSocketListener::WebSocketListener(boost::asio::io_context& ioContext, const Endpoint& endpoint, std::optional<int> backlog/* = std::nullopt*/) :
+    WebSocketListener::WebSocketListener(asio::io_context& ioContext, const Endpoint& endpoint, std::optional<int> backlog/* = std::nullopt*/) :
         WebSocketListener(ioContext, std::string{ endpoint.host() }, std::string{ endpoint.port() }, backlog)
     {
         /* do nothing */
     }
 
-    WebSocketListener::WebSocketListener(boost::asio::io_context& ioContext, std::string address, std::string port, std::optional<int> backlog/* = std::nullopt*/) :
+    WebSocketListener::WebSocketListener(asio::io_context& ioContext, std::string address, std::string port, std::optional<int> backlog/* = std::nullopt*/) :
         m_address{ std::move(address) },
         m_port{ std::move(port) },
         m_acceptor{ ioContext },
@@ -22,7 +22,7 @@ namespace dots::io
             boost::beast::net::ip::tcp::endpoint endpoint = *resolver.resolve({ m_address, m_port });
 
             m_acceptor.open(endpoint.protocol());
-            m_acceptor.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
+            m_acceptor.set_option(asio::ip::tcp::acceptor::reuse_address(true));
             m_acceptor.bind(endpoint);
 
             if (backlog == std::nullopt)
@@ -77,7 +77,7 @@ namespace dots::io
                 {
                     processError(std::string{ "failed to configure WebSocket stream -> " } + e.what());
 
-                    m_socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
+                    m_socket.shutdown(asio::ip::tcp::socket::shutdown_both);
                     m_socket.close();
                 }
                 catch (const std::exception& e)

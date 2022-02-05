@@ -1,18 +1,18 @@
-#include <boost/asio.hpp>
+#include <dots/asio.h>
 #if defined(BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR)
 #include <dots/io/services/FdHandlerService.h>
 
 namespace dots::io::posix
 {
-    FdHandlerService::FdHandlerService(boost::asio::execution_context& executionContext) :
-        boost::asio::execution_context::service(executionContext)
+    FdHandlerService::FdHandlerService(asio::execution_context& executionContext) :
+        asio::execution_context::service(executionContext)
     {
         /* do nothing */
     }
 
     void FdHandlerService::addInEventHandler(int fileDescriptor, callback_t callback)
     {
-        bool emplaced = m_inEventHandlers.try_emplace(fileDescriptor, static_cast<boost::asio::io_context&>(context()), fileDescriptor, std::move(callback)).second;
+        bool emplaced = m_inEventHandlers.try_emplace(fileDescriptor, static_cast<asio::io_context&>(context()), fileDescriptor, std::move(callback)).second;
 
         if (!emplaced)
         {

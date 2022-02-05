@@ -1,21 +1,21 @@
 #pragma once
 #include <functional>
-#include <boost/asio.hpp>
+#include <dots/asio.h>
 
 namespace dots::io
 {
-    boost::asio::io_context& global_io_context();
-    boost::asio::execution_context& global_execution_context();
-    boost::asio::executor global_executor();
+    asio::io_context& global_io_context();
+    asio::execution_context& global_execution_context();
+    asio::executor global_executor();
 
     template <typename Service>
     Service& global_service()
     {
-        return boost::asio::use_service<Service>(global_execution_context());
+        return asio::use_service<Service>(global_execution_context());
     }
 
     template <typename Handler>
-    auto post_and_promise_result(boost::asio::io_context& ioContext, Handler&& handler)
+    auto post_and_promise_result(asio::io_context& ioContext, Handler&& handler)
     {
         using handler_t = std::decay_t<Handler>;
 
@@ -29,7 +29,7 @@ namespace dots::io
             std::promise<return_t> promise;
             std::future<return_t> future = promise.get_future();
 
-            boost::asio::post(ioContext, [promise{ std::move(promise) }, handler{ std::forward<Handler>(handler) }]() mutable 
+            asio::post(ioContext, [promise{ std::move(promise) }, handler{ std::forward<Handler>(handler) }]() mutable 
             {
                 if constexpr (std::is_same_v<return_t, void>)
                 {

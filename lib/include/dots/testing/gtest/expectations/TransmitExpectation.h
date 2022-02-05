@@ -1,5 +1,5 @@
 #pragma once
-#include <boost/asio.hpp>
+#include <dots/asio.h>
 #include <dots/testing/gtest/gtest.h>
 #include <dots/io/Channel.h>
 #include <dots/Connection.h>
@@ -48,7 +48,7 @@ namespace dots::testing
          * @param ioContext The ASIO IO context (i.e. the "event loop") to
          * use.
          */
-        MockChannel(key_t key, boost::asio::io_context& ioContext) :
+        MockChannel(key_t key, asio::io_context& ioContext) :
             Channel(key),
             m_ioContext{ std::ref(ioContext) }
         {
@@ -67,10 +67,10 @@ namespace dots::testing
          * Note that this is the same IO context that was given in
          * MockChannel().
          *
-         * @return const boost::asio::io_context& A reference to the
+         * @return const asio::io_context& A reference to the
          * currently used IO context.
          */
-        const boost::asio::io_context& ioContext() const
+        const asio::io_context& ioContext() const
         {
             return m_ioContext;
         }
@@ -81,10 +81,10 @@ namespace dots::testing
          * Note that this is the same IO context that was given in
          * MockChannel().
          *
-         * @return const boost::asio::io_context& A reference to the
+         * @return const asio::io_context& A reference to the
          * currently used IO context.
          */
-        boost::asio::io_context& ioContext()
+        asio::io_context& ioContext()
         {
             return m_ioContext;
         }
@@ -144,7 +144,7 @@ namespace dots::testing
          */
         void spoof(const DotsHeader& header, const type::Struct& instance)
         {
-            boost::asio::post(m_ioContext.get(), [this, this_{ weak_from_this() }, header = header, instance = type::AnyStruct{ instance }]() mutable
+            asio::post(m_ioContext.get(), [this, this_{ weak_from_this() }, header = header, instance = type::AnyStruct{ instance }]() mutable
             {
                 try
                 {
@@ -256,7 +256,7 @@ namespace dots::testing
 
         void transmitImpl(const io::Transmission& transmission) override
         {
-            boost::asio::post(m_ioContext.get(), [this, transmission = io::Transmission{ transmission.header(), transmission.instance() }]
+            asio::post(m_ioContext.get(), [this, transmission = io::Transmission{ transmission.header(), transmission.instance() }]
             {
                 m_transmitMock.AsStdFunction()(transmission);
             });
@@ -264,7 +264,7 @@ namespace dots::testing
 
     private:
 
-        std::reference_wrapper<boost::asio::io_context> m_ioContext;
+        std::reference_wrapper<asio::io_context> m_ioContext;
         transmit_mock_t m_transmitMock;
     };
 }

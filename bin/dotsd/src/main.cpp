@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
 
     auto serverName = vm["server-name"].as<string>();
 
-   boost::asio::io_context& io_context = dots::io::global_io_context();
+    boost::asio::io_context& io_context = dots::io::global_io_context();
 
     LOG_NOTICE_S("dotsd server");
 

@@ -18,7 +18,7 @@ namespace dots::testing
     {
         using mock_subscription_handler_t = ::testing::MockFunction<void(const io::Transmission&)>;
 
-        PublishTestBase(boost::asio::io_context& ioContext = io::global_io_context(), std::string hostName = "dots-test-host") :
+        PublishTestBase(asio::io_context& ioContext = io::global_io_context(), std::string hostName = "dots-test-host") :
             m_host{ std::move(hostName), ioContext },
             m_globalGuest(nullptr),
             m_spoofGuest(std::nullopt),
@@ -55,12 +55,12 @@ namespace dots::testing
 
         using mock_subscription_handlers_t = std::map<const type::Descriptor<>*, mock_subscription_handler_t>;
 
-        const boost::asio::io_context& ioContext() const
+        const asio::io_context& ioContext() const
         {
             return m_host.ioContext();
         }
 
-        boost::asio::io_context& ioContext()
+        asio::io_context& ioContext()
         {
             return m_host.ioContext();
         }
@@ -141,7 +141,7 @@ namespace dots::testing
                     // ensures that if a user has specified a reactive action, they are
                     // able to post the creation of a depending stimulus or expectation
                     // "behind" the self update.
-                    boost::asio::post(ioContext(), [mockHandler, transmission = io::Transmission{ transmission.header(), transmission.instance() }]
+                    asio::post(ioContext(), [mockHandler, transmission = io::Transmission{ transmission.header(), transmission.instance() }]
                     {
                         (*mockHandler).AsStdFunction()(transmission);
                     });

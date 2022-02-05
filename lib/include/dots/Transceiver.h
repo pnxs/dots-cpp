@@ -43,7 +43,7 @@ namespace dots
          * @param staticTypePolicy Specifies the static type policy of the
          * transceiver's registry.
          */
-        Transceiver(std::string selfName, boost::asio::io_context& ioContext = io::global_io_context(), type::Registry::StaticTypePolicy staticTypePolicy = type::Registry::StaticTypePolicy::All);
+        Transceiver(std::string selfName, asio::io_context& ioContext = io::global_io_context(), type::Registry::StaticTypePolicy staticTypePolicy = type::Registry::StaticTypePolicy::All);
         Transceiver(const Transceiver& other) = delete;
         Transceiver(Transceiver&& other) noexcept;
         virtual ~Transceiver() = default;
@@ -59,10 +59,10 @@ namespace dots
          * Note that this is the same IO context that was given in
          * Transceiver().
          *
-         * @return const boost::asio::io_context& A reference to the currently
+         * @return const asio::io_context& A reference to the currently
          * used IO context.
          */
-        const boost::asio::io_context& ioContext() const;
+        const asio::io_context& ioContext() const;
 
         /*!
          * @brief Get the currently used IO context.
@@ -70,10 +70,10 @@ namespace dots
          * Note that this is the same IO context that was given in
          * Transceiver().
          *
-         * @return boost::asio::io_context& A reference to the currently used
+         * @return asio::io_context& A reference to the currently used
          * IO context.
          */
-        boost::asio::io_context& ioContext();
+        asio::io_context& ioContext();
 
         /*!
          * @brief Get the type registry.
@@ -557,7 +557,7 @@ namespace dots
         type::Registry m_registry;
         Dispatcher m_dispatcher;
         std::string m_selfName;
-        std::reference_wrapper<boost::asio::io_context> m_ioContext;
+        std::reference_wrapper<asio::io_context> m_ioContext;
         new_type_handlers_t m_newTypeHandlers;
     };
 
