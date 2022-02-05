@@ -1,6 +1,4 @@
 #pragma once
-#include <string_view>
-#include <functional>
 #include <type_traits>
 #include <dots/type/PropertyContainer.h>
 #include <dots/type/StructDescriptor.h>

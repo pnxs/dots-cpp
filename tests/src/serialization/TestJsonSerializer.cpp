@@ -1,7 +1,6 @@
 #include <dots/testing/gtest/gtest.h>
 #include <dots/serialization/JsonSerializer.h>
 #include <serialization/TestSerializer.h>
-#include <serialization/TestSerializer.h>
 
 using dots::serialization::TextOptions;
 

@@ -1,7 +1,5 @@
 #pragma once
-#include <string_view>
 #include <type_traits>
-#include <iostream>
 #include <cstddef>
 #include <dots/type/PropertyArea.h>
 #include <dots/type/PropertyDescriptor.h>

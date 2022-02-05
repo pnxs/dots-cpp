@@ -1,5 +1,4 @@
 #pragma once
-#include <iostream>
 #include <boost/asio.hpp>
 #include <dots/io/Channel.h>
 
