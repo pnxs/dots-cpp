@@ -96,7 +96,7 @@ namespace dots::testing
      * Google Test matcher.
      */
     template <typename T>
-    ::testing::Matcher<const io::Transmission&> TransmissionEqual(T&& instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false, bool isFromMyself = false)
+    ::testing::Matcher<const io::Transmission&> TransmissionEqual(T&& instance, std::optional<property_set_t> includedProperties = std::nullopt, bool remove = false, bool isFromMyself = false)
     {
         using decayed_t = std::decay_t<T>;
         constexpr bool IsStruct = std::is_base_of_v<type::Struct, decayed_t>;

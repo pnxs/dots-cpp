@@ -256,7 +256,7 @@ namespace dots
          *
          * @param remove Specifies whether the transmit is a remove.
          */
-        void transmit(const type::Struct& instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false);
+        void transmit(const type::Struct& instance, std::optional<property_set_t> includedProperties = std::nullopt, bool remove = false);
 
         /*!
          * @brief Transmit a specific header and instance.
@@ -325,7 +325,7 @@ namespace dots
 
     private:
 
-        using system_type_t = std::tuple<const type::StructDescriptor<>*, types::property_set_t, std::optional<tools::Handler<void(const type::Struct&)>>>;
+        using system_type_t = std::tuple<const type::StructDescriptor<>*, property_set_t, std::optional<tools::Handler<void(const type::Struct&)>>>;
 
         static constexpr serialization::TextOptions StringOptions = { serialization::TextOptions::MultiLine };
 
@@ -344,7 +344,7 @@ namespace dots
         void setConnectionState(DotsConnectionState state, std::exception_ptr e = nullptr);
 
         template <typename T>
-        void expectSystemType(types::property_set_t expectedAttributes, void(Connection::* handler)(const T&));
+        void expectSystemType(property_set_t expectedAttributes, void(Connection::* handler)(const T&));
 
         inline static id_t M_nextGuestId = FirstGuestId;
 

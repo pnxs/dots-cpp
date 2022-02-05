@@ -6,7 +6,7 @@ namespace dots::type
     static void ensureDescriptor()
     {
         Descriptor<T>::Instance();
-        Descriptor<types::vector_t<T>>::Instance();
+        Descriptor<vector_t<T>>::Instance();
     }
 
 
@@ -15,28 +15,28 @@ namespace dots::type
     {
         // ensure fundamental types are instantiated and added to static descriptor map
         // ensure fundamental vector types are instantiated and added to static descriptor map
-        ensureDescriptor<types::bool_t>();
+        ensureDescriptor<bool_t>();
 
-        ensureDescriptor<types::int8_t>();
-        ensureDescriptor<types::uint8_t>();
-        ensureDescriptor<types::int16_t>();
-        ensureDescriptor<types::uint16_t>();
-        ensureDescriptor<types::int32_t>();
-        ensureDescriptor<types::uint32_t>();
-        ensureDescriptor<types::int64_t>();
-        ensureDescriptor<types::uint64_t>();
+        ensureDescriptor<int8_t>();
+        ensureDescriptor<uint8_t>();
+        ensureDescriptor<int16_t>();
+        ensureDescriptor<uint16_t>();
+        ensureDescriptor<int32_t>();
+        ensureDescriptor<uint32_t>();
+        ensureDescriptor<int64_t>();
+        ensureDescriptor<uint64_t>();
 
-        ensureDescriptor<types::float32_t>();
-        ensureDescriptor<types::float64_t>();
+        ensureDescriptor<float32_t>();
+        ensureDescriptor<float64_t>();
 
-        ensureDescriptor<types::property_set_t>();
+        ensureDescriptor<property_set_t>();
 
-        ensureDescriptor<types::timepoint_t>();
-        ensureDescriptor<types::steady_timepoint_t>();
-        ensureDescriptor<types::duration_t>();
+        ensureDescriptor<timepoint_t>();
+        ensureDescriptor<steady_timepoint_t>();
+        ensureDescriptor<duration_t>();
 
-        ensureDescriptor<types::uuid_t>();
-        ensureDescriptor<types::string_t>();
+        ensureDescriptor<uuid_t>();
+        ensureDescriptor<string_t>();
 
         switch (staticTypePolicy)
         {

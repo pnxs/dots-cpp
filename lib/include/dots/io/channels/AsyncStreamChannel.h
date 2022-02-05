@@ -568,7 +568,7 @@ namespace dots::io
                     // set mandatory sent time if not valid
                     if (!transportHeader.dotsHeader->sentTime.isValid())
                     {
-                        transportHeader.dotsHeader->sentTime(types::timepoint_t::Now());
+                        transportHeader.dotsHeader->sentTime(timepoint_t::Now());
                     }
 
                     // set mandatory sender if not valid. note that a fixed server id for the sender can be used here because

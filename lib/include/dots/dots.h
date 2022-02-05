@@ -47,7 +47,7 @@ namespace dots
      * duration:
      *
      * @code{.cpp}
-     * using namespace dots::types::literals;
+     * using namespace dots::literals;
      *
      * dots::add_timer(500ms, []
      * {
@@ -198,7 +198,7 @@ namespace dots
      * @exception std::runtime_error Thrown if no host connection has been
      * established when the function is called.
      */
-    void publish(const type::Struct& instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false);
+    void publish(const type::Struct& instance, std::optional<property_set_t> includedProperties = std::nullopt, bool remove = false);
 
     /*!
      * @brief Remove an instance of a DOTS struct type via the global
@@ -240,7 +240,7 @@ namespace dots
      * established when the function is called.
      */
     template<typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
-    void publish(const T& instance, std::optional<types::property_set_t> includedProperties/* = std::nullopt*/, bool remove/* = false*/)
+    void publish(const T& instance, std::optional<property_set_t> includedProperties/* = std::nullopt*/, bool remove/* = false*/)
     {
         static_assert(!T::_SubstructOnly, "it is not allowed to publish to a struct that is marked with 'substruct_only'!");
         io::register_global_publish_type<T>();

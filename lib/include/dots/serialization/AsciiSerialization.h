@@ -30,11 +30,11 @@ struct ToAsciiOptions
     ToAsciiColorSchema* cs = nullptr;
     bool singleLine = false;
     bool enumAsTag = false;
-    types::property_set_t highlightAttributes;
+    property_set_t highlightAttributes;
 };
 
 
-std::string to_ascii(const type::StructDescriptor<>* td, const void* data, types::property_set_t properties = types::property_set_t::All, const ToAsciiOptions& cs = {});
+std::string to_ascii(const type::StructDescriptor<>* td, const void* data, property_set_t properties = property_set_t::All, const ToAsciiOptions& cs = {});
 
 }
 

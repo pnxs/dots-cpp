@@ -187,7 +187,7 @@ namespace dots
          * @exception std::runtime_error Thrown if no host connection has been
          * established when the function is called.
          */
-        void publish(const type::Struct& instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false) override;
+        void publish(const type::Struct& instance, std::optional<property_set_t> includedProperties = std::nullopt, bool remove = false) override;
 
     private:
 

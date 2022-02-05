@@ -191,7 +191,7 @@ namespace dots::testing
          * @param remove Specifies whether the remove flag in the header
          * will be set.
          */
-        void spoof(uint32_t sender, const type::Struct& instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false)
+        void spoof(uint32_t sender, const type::Struct& instance, std::optional<property_set_t> includedProperties = std::nullopt, bool remove = false)
         {
             if (includedProperties == std::nullopt)
             {
@@ -204,7 +204,7 @@ namespace dots::testing
 
             spoof(DotsHeader{
                 DotsHeader::typeName_i{ instance._descriptor().name() },
-                DotsHeader::sentTime_i{ types::timepoint_t::Now() },
+                DotsHeader::sentTime_i{ timepoint_t::Now() },
                 DotsHeader::attributes_i{ *includedProperties },
                 DotsHeader::sender_i{ sender },
                 DotsHeader::removeObj_i{ remove }
@@ -237,7 +237,7 @@ namespace dots::testing
          * @param remove Specifies whether the remove flag in the header
          * will be set.
          */
-        void spoof(const type::Struct& instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false)
+        void spoof(const type::Struct& instance, std::optional<property_set_t> includedProperties = std::nullopt, bool remove = false)
         {
             spoof(Connection::HostId, instance, includedProperties, remove);
         }
@@ -270,7 +270,7 @@ namespace dots::testing
 }
 
 #define IMPL_EXPECT_DOTS_TRANSMIT_AT_CHANNEL                                                                                                                        \
-[](dots::testing::MockChannel& mockChannel, auto&& instance, std::optional<dots::types::property_set_t> includedProperties, bool remove) -> auto&                   \
+[](dots::testing::MockChannel& mockChannel, auto&& instance, std::optional<dots::property_set_t> includedProperties, bool remove) -> auto&                          \
 {                                                                                                                                                                   \
     return EXPECT_CALL(mockChannel.transmitMock(), Call(dots::testing::TransmissionEqual(std::forward<decltype(instance)>(instance), includedProperties, remove))); \
 }
@@ -307,10 +307,10 @@ namespace dots::testing
  *
  * @return auto& A reference to the created Google Test expectation.
  */
-#define EXPECT_DOTS_TRANSMIT_AT_CHANNEL                                                                                                             \
-[](dots::testing::MockChannel& mockChannel, auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto& \
-{                                                                                                                                                   \
-    return IMPL_EXPECT_DOTS_TRANSMIT_AT_CHANNEL(mockChannel, std::forward<decltype(instance)>(instance), includedProperties, false);                \
+#define EXPECT_DOTS_TRANSMIT_AT_CHANNEL                                                                                                      \
+[](dots::testing::MockChannel& mockChannel, auto&& instance, std::optional<dots::property_set_t> includedProperties = std::nullopt) -> auto& \
+{                                                                                                                                            \
+    return IMPL_EXPECT_DOTS_TRANSMIT_AT_CHANNEL(mockChannel, std::forward<decltype(instance)>(instance), includedProperties, false);         \
 }
 
 /*!
@@ -345,8 +345,8 @@ namespace dots::testing
  *
  * @return auto& A reference to the created Google Test expectation.
  */
-#define EXPECT_DOTS_REMOVE_TRANSMIT_AT_CHANNEL                                                                                                      \
-[](dots::testing::MockChannel& mockChannel, auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto& \
-{                                                                                                                                                   \
-    return IMPL_EXPECT_DOTS_TRANSMIT_AT_CHANNEL(mockChannel, std::forward<decltype(instance)>(instance), includedProperties, true);                 \
+#define EXPECT_DOTS_REMOVE_TRANSMIT_AT_CHANNEL                                                                                               \
+[](dots::testing::MockChannel& mockChannel, auto&& instance, std::optional<dots::property_set_t> includedProperties = std::nullopt) -> auto& \
+{                                                                                                                                            \
+    return IMPL_EXPECT_DOTS_TRANSMIT_AT_CHANNEL(mockChannel, std::forward<decltype(instance)>(instance), includedProperties, true);          \
 }

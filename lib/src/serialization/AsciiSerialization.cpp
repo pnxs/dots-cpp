@@ -286,7 +286,7 @@ private:
     bool enumAsTag = false;
 };
 
-static void to_ascii_recursive(const type::StructDescriptor<>& td, const void *data, types::property_set_t what, Printer& writer, types::property_set_t highlight);
+static void to_ascii_recursive(const type::StructDescriptor<>& td, const void *data, property_set_t what, Printer& writer, property_set_t highlight);
 static void write_array_to_ascii(const type::VectorDescriptor& vd, const type::Vector<>& data, Printer& writer);
 
 static void write_atomic_types_to_ascii(const type::Descriptor<>& td, const void* data, Printer& writer)
@@ -306,11 +306,11 @@ static void write_atomic_types_to_ascii(const type::Descriptor<>& td, const void
         case type::Type::float32:         writer.Double(*static_cast<const float*>(data));break;
         case type::Type::float64:         writer.Double(*static_cast<const double*>(data));break;
         case type::Type::string:          writer.String(*static_cast<const std::string*>(data));break;
-        case type::Type::property_set:    writer.Int(static_cast<const dots::types::property_set_t*>(data)->toValue()); break;
+        case type::Type::property_set:    writer.Int(static_cast<const dots::property_set_t*>(data)->toValue()); break;
         case type::Type::timepoint:       writer.Double(static_cast<const type::TimePoint*>(data)->duration().toFractionalSeconds()); break;
         case type::Type::steady_timepoint:writer.Double(static_cast<const type::SteadyTimePoint*>(data)->duration().toFractionalSeconds()); break;
         case type::Type::duration:        writer.Double(static_cast<const type::Duration*>(data)->toFractionalSeconds()); break;
-        case type::Type::uuid:            writer.String(static_cast<const dots::types::uuid_t*>(data)->toString()); break;
+        case type::Type::uuid:            writer.String(static_cast<const dots::uuid_t*>(data)->toString()); break;
         case type::Type::Enum:
         {
             writer.Enum(data, static_cast<const type::EnumDescriptor<>*>(&td));
@@ -336,7 +336,7 @@ static void write_ascii(const type::Descriptor<>& td, const void* data, Printer&
     }
     else if (td.type() == type::Type::Struct) // object
     {
-        to_ascii_recursive(static_cast<const type::StructDescriptor<>&>(td), data, types::property_set_t::All, writer, types::property_set_t::None);
+        to_ascii_recursive(static_cast<const type::StructDescriptor<>&>(td), data, property_set_t::All, writer, property_set_t::None);
     }
     else
     {
@@ -356,12 +356,12 @@ static void write_array_to_ascii(const type::VectorDescriptor& vd, const type::V
     writer.EndArray();
 }
 
-static void to_ascii_recursive(const type::StructDescriptor<>& td, const void *data, types::property_set_t what, Printer& writer, types::property_set_t highlight)
+static void to_ascii_recursive(const type::StructDescriptor<>& td, const void *data, property_set_t what, Printer& writer, property_set_t highlight)
 {
-    types::property_set_t validProperties = td.propertyArea(*static_cast<const type::Struct*>(data)).validProperties();
+    property_set_t validProperties = td.propertyArea(*static_cast<const type::Struct*>(data)).validProperties();
 
     /// attributes which should be serialized 'and' are valid
-    const types::property_set_t serializePropertySet = (what ^ validProperties);
+    const property_set_t serializePropertySet = (what ^ validProperties);
 
     //size_t nrElements = serializePropertySet.count();
 
@@ -389,7 +389,7 @@ static void to_ascii_recursive(const type::StructDescriptor<>& td, const void *d
 }
 
 
-std::string to_ascii(const type::StructDescriptor<>* td, const void* data, types::property_set_t properties/* = types::property_set_t::All*/, const ToAsciiOptions& cs/* = {}*/)
+std::string to_ascii(const type::StructDescriptor<>* td, const void* data, property_set_t properties/* = property_set_t::All*/, const ToAsciiOptions& cs/* = {}*/)
 {
     std::unique_ptr<Printer> printer;
 

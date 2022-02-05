@@ -17,8 +17,8 @@ namespace dots::types
 
     struct TestEnumGeneric : vector_t<string_t>
     {
-        using underlying_type_t = types::vector_t<string_t>;
-        using types::vector_t<string_t>::vector_t;
+        using underlying_type_t = dots::vector_t<string_t>;
+        using dots::vector_t<string_t>::vector_t;
     };
 }
 

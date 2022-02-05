@@ -125,7 +125,7 @@ namespace dots
          * @exception std::runtime_error Thrown if a key property of the
          * instance is invalid.
          */
-        void publish(const type::Struct& instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false) override;
+        void publish(const type::Struct& instance, std::optional<property_set_t> includedProperties = std::nullopt, bool remove = false) override;
 
         /*!
          * @brief Set the io::AuthManager instance to use for accepted

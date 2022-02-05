@@ -372,7 +372,7 @@ namespace dots
          *
          * @param remove Specifies whether the publish is a remove.
          */
-        virtual void publish(const type::Struct& instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false) = 0;
+        virtual void publish(const type::Struct& instance, std::optional<property_set_t> includedProperties = std::nullopt, bool remove = false) = 0;
 
         /*!
          * @brief Remove an instance of a DOTS struct type.

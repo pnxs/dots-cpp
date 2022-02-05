@@ -13,13 +13,13 @@
 #include <DotsStatistics.dots.h>
 #include <DotsCacheStatus.dots.h>
 
-using namespace dots::types::literals;
+using namespace dots::literals;
 
 namespace dots
 {
     Server::Server(std::string name, listeners_t listeners, asio::io_context& ioContext/* = dots::io::global_io_context()*/) :
         m_hostTransceiver{ std::move(name), ioContext, type::Registry::StaticTypePolicy::InternalOnly, HostTransceiver::transition_handler_t{ &Server::handleTransition, this } },
-        m_daemonStatus{ DotsDaemonStatus::serverName_i{ m_hostTransceiver.selfName() }, DotsDaemonStatus::startTime_i{ types::timepoint_t::Now() } }
+        m_daemonStatus{ DotsDaemonStatus::serverName_i{ m_hostTransceiver.selfName() }, DotsDaemonStatus::startTime_i{ timepoint_t::Now() } }
     {
         add_timer(1s, { &Server::updateServerStatus, this }, true);
         add_timer(10s, { &Server::cleanUpClients, this }, true);

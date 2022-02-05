@@ -435,7 +435,7 @@ namespace dots::testing
 }
 
 #define IMPL_EXPECT_DOTS_PUBLISH_AT_TRANSCEIVER                                                                                                                          \
-[this](dots::Transceiver& transceiver, auto instance, std::optional<dots::types::property_set_t> includedProperties, bool remove, bool isFromMyself) -> auto&            \
+[this](dots::Transceiver& transceiver, auto instance, std::optional<dots::property_set_t> includedProperties, bool remove, bool isFromMyself) -> auto&                   \
 {                                                                                                                                                                        \
     return IMPL_EXPECT_DOTS_PUBLISH_AT_SUBSCRIBER(EventTestBase::getMockSubscriptionHandler(transceiver, instance), instance, includedProperties, remove, isFromMyself); \
 }
@@ -476,7 +476,7 @@ namespace dots::testing
  * @return auto& A reference to the created Google Test expectation.
  */
 #define EXPECT_DOTS_PUBLISH_AT_TRANSCEIVER                                                                                                     \
-[this](dots::Transceiver& transceiver, auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto& \
+[this](dots::Transceiver& transceiver, auto&& instance, std::optional<dots::property_set_t> includedProperties = std::nullopt) -> auto&        \
 {                                                                                                                                              \
     return IMPL_EXPECT_DOTS_PUBLISH_AT_TRANSCEIVER(transceiver, std::forward<decltype(instance)>(instance), includedProperties, false, false); \
 }
@@ -517,7 +517,7 @@ namespace dots::testing
  * @return auto& A reference to the created Google Test expectation.
  */
 #define EXPECT_DOTS_REMOVE_AT_TRANSCEIVER                                                                                                      \
-[this](dots::Transceiver& transceiver, auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto& \
+[this](dots::Transceiver& transceiver, auto&& instance, std::optional<dots::property_set_t> includedProperties = std::nullopt) -> auto&        \
 {                                                                                                                                              \
     return IMPL_EXPECT_DOTS_PUBLISH_AT_TRANSCEIVER(transceiver, std::forward<decltype(instance)>(instance), includedProperties, true, false);  \
 }
@@ -554,10 +554,10 @@ namespace dots::testing
  *
  * @return auto& A reference to the created Google Test expectation.
  */
-#define EXPECT_DOTS_SELF_PUBLISH_AT_TRANSCEIVER                                                                                                \
-[this](dots::Transceiver& transceiver, auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto& \
-{                                                                                                                                              \
-    return IMPL_EXPECT_DOTS_PUBLISH_AT_TRANSCEIVER(transceiver, std::forward<decltype(instance)>(instance), includedProperties, false, true);  \
+#define EXPECT_DOTS_SELF_PUBLISH_AT_TRANSCEIVER                                                                                               \
+[this](dots::Transceiver& transceiver, auto&& instance, std::optional<dots::property_set_t> includedProperties = std::nullopt) -> auto&       \
+{                                                                                                                                             \
+    return IMPL_EXPECT_DOTS_PUBLISH_AT_TRANSCEIVER(transceiver, std::forward<decltype(instance)>(instance), includedProperties, false, true); \
 }
 
 /*!
@@ -592,11 +592,10 @@ namespace dots::testing
  *
  * @return auto& A reference to the created Google Test expectation.
  */
-#define EXPECT_DOTS_SELF_REMOVE_AT_TRANSCEIVER                                                                                                 \
-[this](dots::Transceiver& transceiver, auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto& \
-{                                                                                                                                              \
-    return IMPL_EXPECT_DOTS_PUBLISH_AT_TRANSCEIVER(transceiver, std::forward<decltype(instance)>(instance), includedProperties, true, true);   \
-}
+#define EXPECT_DOTS_SELF_REMOVE_AT_TRANSCEIVER                                                                                               \
+[this](dots::Transceiver& transceiver, auto&& instance, std::optional<dots::property_set_t> includedProperties = std::nullopt) -> auto&      \
+{                                                                                                                                            \
+    return IMPL_EXPECT_DOTS_PUBLISH_AT_TRANSCEIVER(transceiver, std::forward<decltype(instance)>(instance), includedProperties, true, true); \
 
 /*!
  * @brief Create a Google Test expectation for a DOTS publish event.
@@ -634,7 +633,7 @@ namespace dots::testing
  * @return auto& A reference to the created Google Test expectation.
  */
 #define EXPECT_DOTS_PUBLISH                                                                                                           \
-[this](auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto&                        \
+[this](auto&& instance, std::optional<dots::property_set_t> includedProperties = std::nullopt) -> auto&                               \
 {                                                                                                                                     \
     return EXPECT_DOTS_PUBLISH_AT_TRANSCEIVER(EventTestBase::host(), std::forward<decltype(instance)>(instance), includedProperties); \
 }
@@ -675,7 +674,7 @@ namespace dots::testing
  * @return auto& A reference to the created Google Test expectation.
  */
 #define EXPECT_DOTS_REMOVE                                                                                                           \
-[this](auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto&                       \
+[this](auto&& instance, std::optional<dots::property_set_t> includedProperties = std::nullopt) -> auto&                              \
 {                                                                                                                                    \
     return EXPECT_DOTS_REMOVE_AT_TRANSCEIVER(EventTestBase::host(), std::forward<decltype(instance)>(instance), includedProperties); \
 }
@@ -721,7 +720,7 @@ namespace dots::testing
  * @return auto& A reference to the created Google Test expectation.
  */
 #define EXPECT_DOTS_SELF_PUBLISH                                                                                                                  \
-[this](auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto&                                    \
+[this](auto&& instance, std::optional<dots::property_set_t> includedProperties = std::nullopt) -> auto&                                           \
 {                                                                                                                                                 \
     return EXPECT_DOTS_SELF_PUBLISH_AT_TRANSCEIVER(EventTestBase::globalGuest(), std::forward<decltype(instance)>(instance), includedProperties); \
 }
@@ -767,13 +766,13 @@ namespace dots::testing
  * @return auto& A reference to the created Google Test expectation.
  */
 #define EXPECT_DOTS_SELF_REMOVE                                                                                                                  \
-[this](auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto&                                   \
+[this](auto&& instance, std::optional<dots::property_set_t> includedProperties = std::nullopt) -> auto&                                          \
 {                                                                                                                                                \
     return EXPECT_DOTS_SELF_REMOVE_AT_TRANSCEIVER(EventTestBase::globalGuest(), std::forward<decltype(instance)>(instance), includedProperties); \
 }
 
 #define IMPL_SPOOF_DOTS_PUBLISH                                                                                                       \
-[this](auto instance, std::optional<dots::types::property_set_t> includedProperties, bool remove)                                     \
+[this](auto instance, std::optional<dots::property_set_t> includedProperties, bool remove)                                            \
 {                                                                                                                                     \
     constexpr bool IsStruct = std::is_base_of_v<dots::type::Struct, std::decay_t<decltype(instance)>>;                                \
     static_assert(IsStruct, "DOTS publish spoof has to be an instance of a DOTS struct type");                                        \
@@ -823,10 +822,10 @@ namespace dots::testing
  * key properties. If no set is given, the valid property set of
  * @p instance will be used.
  */
-#define SPOOF_DOTS_PUBLISH                                                                            \
-[this](auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) \
-{                                                                                                     \
-    IMPL_SPOOF_DOTS_PUBLISH(std::forward<decltype(instance)>(instance), includedProperties, false);   \
+#define SPOOF_DOTS_PUBLISH                                                                          \
+[this](auto&& instance, std::optional<dots::property_set_t> includedProperties = std::nullopt)      \
+{                                                                                                   \
+    IMPL_SPOOF_DOTS_PUBLISH(std::forward<decltype(instance)>(instance), includedProperties, false); \
 }
 
 /*!
@@ -856,8 +855,8 @@ namespace dots::testing
  * key properties. If no set is given, the valid property set of
  * @p instance will be used.
  */
-#define SPOOF_DOTS_REMOVE                                                                             \
-[this](auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) \
-{                                                                                                     \
-    IMPL_SPOOF_DOTS_PUBLISH(std::forward<decltype(instance)>(instance), includedProperties, true);    \
+#define SPOOF_DOTS_REMOVE                                                                          \
+[this](auto&& instance, std::optional<dots::property_set_t> includedProperties = std::nullopt)     \
+{                                                                                                  \
+    IMPL_SPOOF_DOTS_PUBLISH(std::forward<decltype(instance)>(instance), includedProperties, true); \
 }

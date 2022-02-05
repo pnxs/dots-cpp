@@ -166,7 +166,6 @@ namespace dots::type
     };
 }
 
-#ifndef DOTS_NOT_USE_FUNDAMENTAL_TYPES
 namespace dots
 {
     using types::bool_t;
@@ -193,5 +192,9 @@ namespace dots
     using types::string_t;
 
     using types::vector_t;
+
+    namespace literals
+    {
+        using namespace type::literals;
+    }
 }
-#endif

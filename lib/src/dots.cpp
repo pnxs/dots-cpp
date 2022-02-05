@@ -43,7 +43,7 @@ namespace dots
         return *GlobalTransceiver;
     }
 
-    void publish(const type::Struct& instance, std::optional<types::property_set_t> includedProperties/* = std::nullopt*/, bool remove/* = false*/)
+    void publish(const type::Struct& instance, std::optional<property_set_t> includedProperties/* = std::nullopt*/, bool remove/* = false*/)
     {
         transceiver().publish(instance, includedProperties, remove);
     }

@@ -11,9 +11,9 @@ namespace dots::types
     {
         struct ProtoTestSubStruct : type::details::ProtoStaticStruct
         {
-            type::details::ProtoStaticProperty<types::bool_t> p1;
-            type::details::ProtoStaticProperty<types::bool_t> p2;
-            type::details::ProtoStaticProperty<types::float64_t> p3;
+            type::details::ProtoStaticProperty<bool_t> p1;
+            type::details::ProtoStaticProperty<bool_t> p2;
+            type::details::ProtoStaticProperty<float64_t> p3;
         };
     }
 
@@ -105,10 +105,10 @@ namespace dots::types
     {
         struct ProtoTestStruct : type::details::ProtoStaticStruct
         {
-            type::details::ProtoStaticProperty<types::int32_t> intProperty;
-            type::details::ProtoStaticProperty<types::string_t> stringProperty;
-            type::details::ProtoStaticProperty<types::bool_t> boolProperty;
-            type::details::ProtoStaticProperty<types::vector_t<float32_t>> floatVectorProperty;
+            type::details::ProtoStaticProperty<int32_t> intProperty;
+            type::details::ProtoStaticProperty<string_t> stringProperty;
+            type::details::ProtoStaticProperty<bool_t> boolProperty;
+            type::details::ProtoStaticProperty<vector_t<float32_t>> floatVectorProperty;
             type::details::ProtoStaticProperty<types::TestSubStruct> subStruct;
         };
     }

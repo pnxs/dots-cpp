@@ -29,7 +29,7 @@ namespace dots
         return *listenerPtr;
     }
 
-    void HostTransceiver::publish(const type::Struct& instance, std::optional<types::property_set_t> includedProperties/* = std::nullopt*/, bool remove/* = false*/)
+    void HostTransceiver::publish(const type::Struct& instance, std::optional<property_set_t> includedProperties/* = std::nullopt*/, bool remove/* = false*/)
     {
         if (const type::StructDescriptor<>& descriptor = instance._descriptor(); descriptor.substructOnly())
         {
@@ -53,8 +53,8 @@ namespace dots
 
         DotsHeader header{
             DotsHeader::typeName_i{ instance._descriptor().name() },
-            DotsHeader::sentTime_i{ types::timepoint_t::Now() },
-            DotsHeader::serverSentTime_i{ types::timepoint_t::Now() },
+            DotsHeader::sentTime_i{ timepoint_t::Now() },
+            DotsHeader::serverSentTime_i{ timepoint_t::Now() },
             DotsHeader::attributes_i{ *includedProperties },
             DotsHeader::sender_i{ Connection::HostId },
             DotsHeader::removeObj_i{ remove },
@@ -270,8 +270,8 @@ namespace dots
 
     void HostTransceiver::handleDescriptorRequest(Connection& connection, const DotsDescriptorRequest& descriptorRequest)
     {
-        const types::vector_t<types::string_t>& whiteList = descriptorRequest.whitelist.isValid() ? *descriptorRequest.whitelist : types::vector_t<types::string_t>{};
-        const types::vector_t<types::string_t>& blacklist = descriptorRequest.blacklist.isValid() ? *descriptorRequest.blacklist : types::vector_t<types::string_t>{};
+        const vector_t<string_t>& whiteList = descriptorRequest.whitelist.isValid() ? *descriptorRequest.whitelist : vector_t<string_t>{};
+        const vector_t<string_t>& blacklist = descriptorRequest.blacklist.isValid() ? *descriptorRequest.blacklist : vector_t<string_t>{};
 
         registry().forEach<type::StructDescriptor<>>([&](const auto& descriptor) 
         {
@@ -299,7 +299,7 @@ namespace dots
     void HostTransceiver::handleClearCache(Connection&/* connection*/, const DotsClearCache& clearCache)
     {
         clearCache._assertHasProperties(DotsClearCache::typeNames_p);
-        const types::vector_t<types::string_t>& typeNames = clearCache.typeNames;
+        const vector_t<string_t>& typeNames = clearCache.typeNames;
 
         for (auto& [descriptor, container] : pool())
         {
@@ -347,7 +347,7 @@ namespace dots
         for (const auto& [instance, cloneInfo] : container)
         {
             header.sentTime = *cloneInfo.modified;
-            header.serverSentTime = types::timepoint_t::Now();
+            header.serverSentTime = timepoint_t::Now();
             header.attributes = instance->_validProperties();
             header.sender = *cloneInfo.lastUpdateFrom;
             --*header.fromCache;
