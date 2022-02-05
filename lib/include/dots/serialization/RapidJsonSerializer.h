@@ -85,11 +85,11 @@ namespace dots::serialization
             /* do nothing */
         }
 
-        RapidJsonSerializer(const RapidJsonSerializer& other) = default;
+        RapidJsonSerializer(const RapidJsonSerializer& other) = delete;
         RapidJsonSerializer(RapidJsonSerializer&& other) = default;
         ~RapidJsonSerializer() = default;
 
-        RapidJsonSerializer& operator = (const RapidJsonSerializer& rhs) = default;
+        RapidJsonSerializer& operator = (const RapidJsonSerializer& rhs) = delete;
         RapidJsonSerializer& operator = (RapidJsonSerializer&& rhs) = default;
 
         const reader_t& reader() const
