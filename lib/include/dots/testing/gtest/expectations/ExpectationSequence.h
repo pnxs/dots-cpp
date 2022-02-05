@@ -124,7 +124,7 @@ namespace dots::testing::details
                 {
                     std::apply([action{ std::forward<Action>(action) }](auto& expectation)
                     {
-                        expectation.WillOnce(::testing::DoAll(std::move(action)));
+                        expectation.WillOnce(::testing::DoAll(std::move(action))).RetiresOnSaturation();
                     }, m_expectations);
                 }
             }
@@ -149,7 +149,7 @@ namespace dots::testing::details
                         {
                             if (!expectation.cardinality().IsSaturatedByCallCount(0))
                             {
-                                expectation.WillOnce(::testing::DoAll(deferred_action));
+                                expectation.WillOnce(::testing::DoAll(deferred_action)).RetiresOnSaturation();
                             }
                         };
 
