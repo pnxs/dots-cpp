@@ -31,14 +31,6 @@ namespace dots
         using value_t = pool_t::value_type;
         using node_t = pool_t::node_type;
 
-        ContainerPool() = default;
-        ContainerPool(const ContainerPool& other) = default;
-        ContainerPool(ContainerPool&& other) = default;
-        ~ContainerPool() = default;
-
-        ContainerPool& operator = (const ContainerPool& rhs) = default;
-        ContainerPool& operator = (ContainerPool&& rhs) = default;
-
         /*!
          * @brief Get a constant iterator to the beginning of the
          * ContainerPool.

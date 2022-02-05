@@ -69,12 +69,6 @@ namespace dots::type
         {
             /* do nothing */
         }
-        EnumeratorDescriptor(const EnumeratorDescriptor& other) = default;
-        EnumeratorDescriptor(EnumeratorDescriptor&& other) = default;
-        ~EnumeratorDescriptor() override = default;
-
-        EnumeratorDescriptor& operator = (const EnumeratorDescriptor& rhs) = default;
-        EnumeratorDescriptor& operator = (EnumeratorDescriptor&& rhs) = default;
 
         const Descriptor<underlying_type_t>& underlyingDescriptor() const override
         {

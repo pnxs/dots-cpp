@@ -13,13 +13,6 @@ namespace dots::type::libc
         {
         }
 
-        constexpr Tm(const Tm& other) = default;
-        constexpr Tm(Tm&& other) noexcept = default;
-        ~Tm() = default;
-
-        constexpr Tm& operator = (const Tm& rhs) = default;
-        constexpr Tm& operator = (Tm&& rhs) noexcept = default;
-
         constexpr operator const std::tm* () const
         {
             return &m_tm;
@@ -65,12 +58,6 @@ namespace dots::type::libc
             m_timespec{}
         {
         }
-        constexpr Timespec(const Timespec& other) = default;
-        constexpr Timespec(Timespec&& other) noexcept = default;
-        ~Timespec() = default;
-
-        constexpr Timespec& operator = (const Timespec& rhs) = default;
-        constexpr Timespec& operator = (Timespec&& rhs) noexcept = default;
 
         constexpr Timespec(const timespec& val) :
             m_timespec{ val }

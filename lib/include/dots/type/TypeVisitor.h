@@ -12,14 +12,6 @@ namespace dots::type
     template <typename Derived>
     struct TypeVisitor<Derived>
     {
-        TypeVisitor() = default;
-        TypeVisitor(const TypeVisitor& other) = default;
-        TypeVisitor(TypeVisitor&& other) = default;
-        virtual ~TypeVisitor() = default;
-
-        TypeVisitor& operator = (const TypeVisitor& rhs) = default;
-        TypeVisitor& operator = (TypeVisitor&& rhs) = default;
-
     protected:
 
         template <bool Const>

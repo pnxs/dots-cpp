@@ -32,12 +32,6 @@ namespace dots::type
         {
             /* do nothing */
         }
-        PropertyPairIterator(const PropertyPairIterator& other) = default;
-        PropertyPairIterator(PropertyPairIterator&& other) = default;
-        ~PropertyPairIterator() = default;
-
-        PropertyPairIterator& operator = (const PropertyPairIterator& rhs) = default;
-        PropertyPairIterator& operator = (PropertyPairIterator&& rhs) = default;
 
         void swap(PropertyPairIterator& other) noexcept
         {
@@ -130,12 +124,6 @@ namespace dots::type
         {
             /* do nothing */
         }
-        PropertyPairRange(const PropertyPairRange& other) = default;
-        PropertyPairRange(PropertyPairRange&& other) = default;
-        ~PropertyPairRange() = default;
-
-        PropertyPairRange& operator = (const PropertyPairRange& rhs) = default;
-        PropertyPairRange& operator = (PropertyPairRange&& rhs) = default;
 
         Iterator begin() const
         {

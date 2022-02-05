@@ -21,12 +21,6 @@ namespace dots::serialization
         using data_t = std::string;
 
         using base_t::base_t;
-        JsonSerializer(const JsonSerializer& other) = default;
-        JsonSerializer(JsonSerializer&& other) = default;
-        ~JsonSerializer() = default;
-
-        JsonSerializer& operator = (const JsonSerializer& rhs) = default;
-        JsonSerializer& operator = (JsonSerializer&& rhs) = default;
     };
 }
 

@@ -6,13 +6,6 @@ namespace dots::tools
     template <typename Derived>
     struct key
     {
-        key(const key& other) = default;
-        key(key&& other) = default;
-        ~key() = default;
-
-        key& operator = (const key& rhs) = default;
-        key& operator = (key&& rhs) = default;
-
     private:
 
         friend Derived;

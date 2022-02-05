@@ -35,13 +35,6 @@ namespace dots::type
             return StaticPropertyOffset{ static_cast<size_t>(property - propertyArea) };
         }
 
-        StaticPropertyOffset(const StaticPropertyOffset& other) = default;
-        StaticPropertyOffset(StaticPropertyOffset&& other) = default;
-        ~StaticPropertyOffset() = default;
-
-        StaticPropertyOffset& operator = (const StaticPropertyOffset& rhs) = default;
-        StaticPropertyOffset& operator = (StaticPropertyOffset&& rhs) = default;
-
     private:
 
         constexpr StaticPropertyOffset(size_t offset) :

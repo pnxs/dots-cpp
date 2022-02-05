@@ -18,12 +18,6 @@ namespace dots::testing
             {
                 /* do nothing */
             }
-            TransmissionEqualMatcher(const TransmissionEqualMatcher& other) = default;
-            TransmissionEqualMatcher(TransmissionEqualMatcher&& other) = default;
-            ~TransmissionEqualMatcher() = default;
-
-            TransmissionEqualMatcher& operator = (const TransmissionEqualMatcher& rhs) = default;
-            TransmissionEqualMatcher& operator = (TransmissionEqualMatcher&& rhs) = default;
 
             bool MatchAndExplain(const io::Transmission& transmission, std::ostream* os) const
             {

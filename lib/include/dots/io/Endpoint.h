@@ -40,13 +40,6 @@ namespace dots::io
             /* do nothing */
         }
 
-        Endpoint(const Endpoint& other) = default;
-        Endpoint(Endpoint&& other) = default;
-        ~Endpoint() = default;
-
-        Endpoint& operator = (const Endpoint& rhs) = default;
-        Endpoint& operator = (Endpoint&& rhs) = default;
-
         void setPath(const std::filesystem::path& path);
         void setPath(const boost::filesystem::path& path);
     };

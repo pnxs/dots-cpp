@@ -21,12 +21,6 @@ namespace dots::serialization
         using data_t = std::string;
 
         using base_t::base_t;
-        StringSerializer(const StringSerializer& other) = default;
-        StringSerializer(StringSerializer&& other) = default;
-        ~StringSerializer() = default;
-
-        StringSerializer& operator = (const StringSerializer& rhs) = default;
-        StringSerializer& operator = (StringSerializer&& rhs) = default;
     };
 }
 

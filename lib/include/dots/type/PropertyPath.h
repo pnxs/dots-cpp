@@ -27,13 +27,6 @@ namespace dots::type
             /* do nothing */
         }
 
-        PropertyPath(const PropertyPath& other) = default;
-        PropertyPath(PropertyPath&& other) = default;
-        ~PropertyPath() = default;
-
-        PropertyPath& operator = (const PropertyPath& rhs) = default;
-        PropertyPath& operator = (PropertyPath&& rhs) = default;
-
         const elements_t& elements() const
         {
             return m_elements;

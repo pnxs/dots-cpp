@@ -20,12 +20,6 @@ namespace dots::tools
         IpNetwork(const std::string& address, prefix_length_t prefixLength);
         IpNetwork(const std::string& network);
         IpNetwork(const boost::asio::ip::address& address);
-        IpNetwork(const IpNetwork& other) = default;
-        IpNetwork(IpNetwork&& other) = default;
-        ~IpNetwork() = default;
-
-        IpNetwork& operator = (const IpNetwork& rhs) = default;
-        IpNetwork& operator = (IpNetwork&& rhs) = default;
 
         bool isIpv4() const;
         bool isIpv6() const;

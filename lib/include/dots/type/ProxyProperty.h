@@ -54,12 +54,6 @@ namespace dots::type
         {
             /* do nothing */
         }
-        ProxyProperty(const ProxyProperty& other) = default;
-        ProxyProperty(ProxyProperty&& other) = default;
-        ~ProxyProperty() = default;
-
-        ProxyProperty& operator = (const ProxyProperty& rhs) = default;
-        ProxyProperty& operator = (ProxyProperty&& rhs) = default;
 
         template <typename U>
         bool is() const

@@ -11,13 +11,6 @@ namespace dots::type
             /* do nothing */
         }
 
-        PropertyOffset(const PropertyOffset& other) = default;
-        PropertyOffset(PropertyOffset&& other) = default;
-        ~PropertyOffset() = default;
-
-        PropertyOffset& operator = (const PropertyOffset& rhs) = default;
-        PropertyOffset& operator = (PropertyOffset&& rhs) = default;
-
         constexpr operator size_t() const
         {
             return m_offset;

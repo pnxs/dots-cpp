@@ -20,12 +20,6 @@ namespace dots::io
         Digest(std::string_view stringValue);
         Digest(Nonce nonce, std::string_view cnonce, std::string_view userName, std::string_view secret);
         Digest(Nonce nonce, Nonce cnonce, std::string_view userName, std::string_view secret);
-        Digest(const Digest& other) = default;
-        Digest(Digest&& other) = default;
-        ~Digest() = default;
-
-        Digest& operator = (const Digest& rhs) = default;
-        Digest& operator = (Digest&& rhs) = default;
 
         const value_t& value() const;
         std::string toString() const;

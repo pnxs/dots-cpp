@@ -17,12 +17,6 @@ namespace dots::testing
             {
                 /* do nothing */
             }
-            EventEqualMatcher(const EventEqualMatcher& other) = default;
-            EventEqualMatcher(EventEqualMatcher&& other) = default;
-            ~EventEqualMatcher() = default;
-
-            EventEqualMatcher& operator = (const EventEqualMatcher& rhs) = default;
-            EventEqualMatcher& operator = (EventEqualMatcher&& rhs) = default;
 
             bool MatchAndExplain(const Event<>& event, std::ostream* os) const
             {

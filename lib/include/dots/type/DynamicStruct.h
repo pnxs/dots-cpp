@@ -16,12 +16,6 @@ namespace dots::type
     {
         DynamicPropertyInitializer(std::string_view name, const T& value) : name(name), value(value) {}
         DynamicPropertyInitializer(std::string_view name, T&& value) : name(name), value(std::move(value)) {}
-        DynamicPropertyInitializer(const DynamicPropertyInitializer& other) = default;
-        DynamicPropertyInitializer(DynamicPropertyInitializer&& other) = default;
-        ~DynamicPropertyInitializer() = default;
-
-        DynamicPropertyInitializer& operator = (const DynamicPropertyInitializer& rhs) = default;
-        DynamicPropertyInitializer& operator = (DynamicPropertyInitializer&& rhs) = default;
 
         std::string_view name;
         T value;

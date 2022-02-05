@@ -8,12 +8,6 @@ namespace dots::type
     struct Struct : PropertyContainer<Struct>
     {
         explicit Struct(const StructDescriptor<>& descriptor);
-        Struct(const Struct& other) = default;
-        Struct(Struct&& other) noexcept = default;
-        ~Struct() = default;
-
-        Struct& operator = (const Struct& rhs) = default;
-        Struct& operator = (Struct&& rhs) noexcept = default;
 
         const StructDescriptor<>& _descriptor() const;
 

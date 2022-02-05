@@ -471,7 +471,6 @@ namespace dots::type
         constexpr Property& operator = (const Property& rhs) = default;
         constexpr Property& operator = (Property&& rhs) = default;
 
-
     private:
 
         size_t offset() const

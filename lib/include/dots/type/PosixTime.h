@@ -52,12 +52,6 @@ namespace dots::type::posix
         {
             (utc ? ::gmtime_r : ::localtime_r)(&time, *this);
         }
-        constexpr PosixTm(const PosixTm& other) = default;
-        constexpr PosixTm(PosixTm&& other) noexcept = default;
-        ~PosixTm() = default;
-
-        constexpr PosixTm& operator = (const PosixTm& rhs) = default;
-        constexpr PosixTm& operator = (PosixTm&& rhs) noexcept = default;
 
         time_t mktime(bool utc)
         {
@@ -94,12 +88,6 @@ namespace dots::type::posix
             m_timeval{}
         {
         }
-        constexpr Timeval(const Timeval& other) = default;
-        constexpr Timeval(Timeval&& other) noexcept = default;
-        ~Timeval() = default;
-
-        constexpr Timeval& operator = (const Timeval& rhs) = default;
-        constexpr Timeval& operator = (Timeval&& rhs) noexcept = default;
 
         constexpr Timeval(const timeval& val) :
             m_timeval{ val }

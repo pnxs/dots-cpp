@@ -38,12 +38,6 @@ namespace dots::type
                 }
             }
         }
-        PropertyIterator(const PropertyIterator& other) = default;
-        PropertyIterator(PropertyIterator&& other) = default;
-        ~PropertyIterator() = default;
-
-        PropertyIterator& operator = (const PropertyIterator& rhs) = default;
-        PropertyIterator& operator = (PropertyIterator&& rhs) = default;
 
         void swap(PropertyIterator& other) noexcept
         {
@@ -208,12 +202,6 @@ namespace dots::type
         {
             /* do nothing */
         }
-        PropertyRange(const PropertyRange& other) = default;
-        PropertyRange(PropertyRange&& other) = default;
-        ~PropertyRange() = default;
-
-        PropertyRange& operator = (const PropertyRange& rhs) = default;
-        PropertyRange& operator = (PropertyRange&& rhs) = default;
 
         Iterator begin() const
         {
