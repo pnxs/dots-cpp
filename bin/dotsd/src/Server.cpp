@@ -50,7 +50,7 @@ namespace dots
         return m_hostTransceiver.ioContext();
     }
 
-    void Server::handleTransition(const Connection& connection)
+    void Server::handleTransition(const Connection& connection, std::exception_ptr/* ePtr*/)
     {
         m_hostTransceiver.publish(DotsClient{
             DotsClient::id_i{ connection.peerId() },

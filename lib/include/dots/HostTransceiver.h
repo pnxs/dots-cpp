@@ -36,8 +36,6 @@ namespace dots
      */
     struct HostTransceiver : Transceiver
     {
-        using transition_handler_t = tools::Handler<void(const Connection&)>;
-
         /*!
          * @brief Construct a new HostTransceiver object.
          *
@@ -53,7 +51,8 @@ namespace dots
          * transceiver's registry.
          *
          * @param transitionHandler The handler to invoke every time the a
-         * Connection transitions to a different connection state.
+         * Connection transitions to a different connection state or an error
+         * occurs.
          */
         HostTransceiver(std::string selfName = "DotsHostTransceiver",
                         asio::io_context& ioContext = io::global_io_context(),
@@ -169,7 +168,7 @@ namespace dots
         void handleListenError(io::Listener& listener, std::exception_ptr ePtr);
 
         bool handleTransmission(Connection& connection, io::Transmission transmission);
-        void handleTransition(Connection& connection, std::exception_ptr ePtr) noexcept;
+        void handleTransitionImpl(Connection& connection, std::exception_ptr ePtr) noexcept override;
 
         void handleMemberMessage(Connection& connection, const DotsMember& member);
         void handleDescriptorRequest(Connection& connection, const DotsDescriptorRequest& descriptorRequest);
@@ -178,7 +177,6 @@ namespace dots
 
         void transmitContainer(Connection& connection, const Container<>& container);
 
-        std::optional<transition_handler_t> m_transitionHandler;
         listener_map_t m_listeners;
         connection_map_t m_guestConnections;
         group_map_t m_groups;

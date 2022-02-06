@@ -44,8 +44,16 @@ namespace dots
          *
          * @param staticTypePolicy Specifies the static type policy of the
          * transceiver's registry.
+         *
+         * @param transitionHandler The handler to invoke every time the a
+         * Connection transitions to a different connection state or an error
+         * occurs.
          */
-        GuestTransceiver(std::string selfName, asio::io_context& ioContext = io::global_io_context(), type::Registry::StaticTypePolicy staticTypePolicy = type::Registry::StaticTypePolicy::All);
+        GuestTransceiver(std::string selfName,
+                         asio::io_context& ioContext = io::global_io_context(),
+                         type::Registry::StaticTypePolicy staticTypePolicy = type::Registry::StaticTypePolicy::All,
+                         std::optional<transition_handler_t> transitionHandler = std::nullopt
+        );
         GuestTransceiver(const GuestTransceiver& other) = delete;
         GuestTransceiver(GuestTransceiver&& other) = default;
         ~GuestTransceiver() override = default;
@@ -195,7 +203,7 @@ namespace dots
         void leaveGroup(std::string_view name) override;
 
         bool handleTransmission(Connection& connection, io::Transmission transmission);
-        void handleTransition(Connection& connection, std::exception_ptr ePtr) noexcept;
+        void handleTransitionImpl(Connection& connection, std::exception_ptr ePtr) noexcept override;
 
         std::optional<Connection> m_hostConnection;
         type::DescriptorMap m_preloadPublishTypes;

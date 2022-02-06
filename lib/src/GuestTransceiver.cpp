@@ -8,8 +8,9 @@ namespace dots
 {
     GuestTransceiver::GuestTransceiver(std::string selfName,
                                        asio::io_context& ioContext/* = global_io_context()*/,
-                                       type::Registry::StaticTypePolicy staticTypePolicy /*= type::Registry::StaticTypePolicy::All*/) :
-        Transceiver(std::move(selfName), ioContext, staticTypePolicy)
+                                       type::Registry::StaticTypePolicy staticTypePolicy /*= type::Registry::StaticTypePolicy::All*/,
+                                       std::optional<transition_handler_t> transitionHandler/* = std::nullopt*/) :
+        Transceiver(std::move(selfName), ioContext, staticTypePolicy, std::move(transitionHandler))
     {
         type::Descriptor<DotsCacheInfo>::Instance();
     }
@@ -110,7 +111,7 @@ namespace dots
         return true;
     }
 
-    void GuestTransceiver::handleTransition(Connection& connection, std::exception_ptr/* e*/) noexcept
+    void GuestTransceiver::handleTransitionImpl(Connection& connection, std::exception_ptr/* e*/) noexcept
     {
         try
         {

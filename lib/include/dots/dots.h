@@ -161,8 +161,11 @@ namespace dots
      *
      * @return GuestTransceiver& A reference to the global guest
      * transceiver.
+     *
+     * @param transitionHandler The handler to invoke every time the a
+     * Connection transitions to a different connection state.
      */
-    GuestTransceiver& set_transceiver(std::string_view name = "dots-transceiver");
+    GuestTransceiver& set_transceiver(std::string_view name = "dots-transceiver", std::optional<GuestTransceiver::transition_handler_t> transitionHandler = std::nullopt);
 
     /*!
      * @brief Get the global guest transceiver.

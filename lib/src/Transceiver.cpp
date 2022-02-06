@@ -5,12 +5,16 @@
 
 namespace dots
 {
-    Transceiver::Transceiver(std::string selfName, asio::io_context& ioContext/* = global_io_context()*/, type::Registry::StaticTypePolicy staticTypePolicy/* = StaticTypePolicy::All*/) :
+    Transceiver::Transceiver(std::string selfName, 
+                             asio::io_context& ioContext/* = global_io_context()*/, 
+                             type::Registry::StaticTypePolicy staticTypePolicy/* = StaticTypePolicy::All*/, 
+                             std::optional<transition_handler_t> transitionHandler/* = std::nullopt*/) :
         m_nextId(0),
         m_this(std::make_shared<Transceiver*>(this)),
         m_registry{ [&](const type::Descriptor<>& descriptor){ handleNewType(descriptor); }, staticTypePolicy },
         m_selfName{ std::move(selfName) },
-        m_ioContext(std::ref(ioContext))
+        m_ioContext(std::ref(ioContext)),
+        m_transitionHandler{ std::move(transitionHandler) }
     {
         /* do nothing */
     }
@@ -24,6 +28,7 @@ namespace dots
         m_dispatcher{ std::move(other.m_dispatcher) },
         m_selfName{ std::move(other.m_selfName) },
         m_ioContext{ other.m_ioContext },
+        m_transitionHandler{ std::move(other.m_transitionHandler) },
         m_newTypeHandlers{ std::move(other.m_newTypeHandlers) }
     {
         /* do nothing */
@@ -39,6 +44,7 @@ namespace dots
         m_dispatcher = std::move(rhs.m_dispatcher);
         m_selfName = std::move(rhs.m_selfName);
         m_ioContext = rhs.m_ioContext;
+        m_transitionHandler = std::move(rhs.m_transitionHandler);
         m_newTypeHandlers = std::move(rhs.m_newTypeHandlers);
 
         *m_this = this;
@@ -74,6 +80,23 @@ namespace dots
     Dispatcher& Transceiver::dispatcher()
     {
         return m_dispatcher;
+    }
+
+    void Transceiver::handleTransition(Connection& connection, std::exception_ptr ePtr) noexcept
+    {
+        if (m_transitionHandler)
+        {
+            try
+            {
+                (*m_transitionHandler)(connection, ePtr);
+            }
+            catch (const std::exception& e)
+            {
+                LOG_ERROR_S("error in transition handler for " << connection.peerDescription() << " -> " << e.what());
+            }
+        }
+
+        handleTransitionImpl(connection, ePtr);
     }
 
     const ContainerPool& Transceiver::pool() const

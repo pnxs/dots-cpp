@@ -25,7 +25,7 @@ namespace dots
 
         inline static uint32_t M_nextTypeId = 0;
 
-        void handleTransition(const Connection& connection);
+        void handleTransition(const Connection& connection, std::exception_ptr ePtr);
         void handleNewStructType(const type::StructDescriptor<>& descriptor);
         void cleanUpClients();
 

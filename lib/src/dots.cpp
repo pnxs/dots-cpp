@@ -33,9 +33,9 @@ namespace dots
     }
     #endif
 
-    GuestTransceiver& set_transceiver(std::string_view name/* = "dots-transceiver"*/)
+    GuestTransceiver& set_transceiver(std::string_view name/* = "dots-transceiver"*/, std::optional<GuestTransceiver::transition_handler_t> transitionHandler/* = std::nullopt*/)
     {
-        return GlobalTransceiver.emplace(std::string{ name });
+        return GlobalTransceiver.emplace(std::string{ name }, io::global_io_context(), type::Registry::StaticTypePolicy::All, std::move(transitionHandler));
     }
 
     GuestTransceiver& transceiver()

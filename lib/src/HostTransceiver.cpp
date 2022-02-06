@@ -10,8 +10,7 @@ namespace dots
                                      asio::io_context& ioContext/* = global_io_context()*/,
                                      type::Registry::StaticTypePolicy staticTypePolicy /*= type::Registry::StaticTypePolicy::All*/,
                                      std::optional<transition_handler_t> transitionHandler/* = std::nullopt*/) :
-        Transceiver(std::move(selfName), ioContext, staticTypePolicy),
-        m_transitionHandler{ std::move(transitionHandler) }
+        Transceiver(std::move(selfName), ioContext, staticTypePolicy, std::move(transitionHandler))
     {
         /* do nothing */
     }
@@ -170,20 +169,8 @@ namespace dots
         return !connection.closed();
     }
 
-    void HostTransceiver::handleTransition(Connection& connection, std::exception_ptr/* e*/) noexcept
+    void HostTransceiver::handleTransitionImpl(Connection& connection, std::exception_ptr/* e*/) noexcept
     {
-        if (m_transitionHandler)
-        {
-            try
-            {
-                (*m_transitionHandler)(connection);
-            }
-            catch (const std::exception& e)
-            {
-                LOG_ERROR_S("error in transition handler for " << connection.peerDescription() << " -> " << e.what());
-            }
-        }
-
         try
         {
             if (connection.state() == DotsConnectionState::closed)
