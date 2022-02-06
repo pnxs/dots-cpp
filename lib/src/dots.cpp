@@ -33,14 +33,21 @@ namespace dots
     }
     #endif
 
-    GuestTransceiver& transceiver(std::string_view name/* = "dots-transceiver"*/, bool reset/* = false*/)
+    GuestTransceiver& set_transceiver(std::string_view name/* = "dots-transceiver"*/)
     {
-        if (GlobalTransceiver == std::nullopt || reset)
-        {
-            GlobalTransceiver.emplace(std::string{ name });
-        }
+        return GlobalTransceiver.emplace(std::string{ name });
+    }
 
-        return *GlobalTransceiver;
+    GuestTransceiver& transceiver()
+    {
+        if (GlobalTransceiver == std::nullopt)
+        {
+            return set_transceiver();
+        }
+        else
+        {
+            return *GlobalTransceiver;
+        }
     }
 
     void publish(const type::Struct& instance, std::optional<property_set_t> includedProperties/* = std::nullopt*/, bool remove/* = false*/)

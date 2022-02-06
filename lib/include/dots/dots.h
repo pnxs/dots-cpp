@@ -145,11 +145,10 @@ namespace dots
     #ifndef DOTS_NO_GLOBAL_TRANSCEIVER
 
     /*!
-     * @brief Get the global guest transceiver.
+     * @brief Set the global guest transceiver.
      *
-     * This retrieves the current instance of the global GuestTransceiver.
-     * If no instance exists or the reset flag is given as true, a new
-     * GuestTransceiver instance will automatically be created.
+     * This sets the global GuestTransceiver, replacing the current
+     * instance if it exists.
      *
      * After construction, the transceiver will be inactive until a
      * connection is created via GuestTransceiver::open().
@@ -160,13 +159,26 @@ namespace dots
      *
      * @param name The name the transceiver will use to identify itself.
      *
-     * @param reset Specifies whether the global transceiver instance will
-     * be reset (i.e. recreated), even if one already exists.
+     * @return GuestTransceiver& A reference to the global guest
+     * transceiver.
+     */
+    GuestTransceiver& set_transceiver(std::string_view name = "dots-transceiver");
+
+    /*!
+     * @brief Get the global guest transceiver.
+     *
+     * This retrieves the current instance of the global GuestTransceiver.
+     *
+     * If no instance exists, a new GuestTransceiver instance will
+     * automatically be created by calling dots::set_transceiver().
+     *
+     * After construction, the transceiver will be inactive until a
+     * connection is created via GuestTransceiver::open().
      *
      * @return GuestTransceiver& A reference to the global guest
      * transceiver.
      */
-    GuestTransceiver& transceiver(std::string_view name = "dots-transceiver", bool reset = false);
+    GuestTransceiver& transceiver();
 
     /*!
      * @brief Publish an instance of a DOTS struct type via the global

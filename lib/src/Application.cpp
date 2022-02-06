@@ -21,7 +21,7 @@ namespace dots
         // Start Transceiver
         // Connect to dotsd
 
-        GuestTransceiver& globalGuestTransceiver = transceiver(m_openEndpoint->userName().empty() ? name : m_openEndpoint->userName());
+        GuestTransceiver& globalGuestTransceiver = set_transceiver(m_openEndpoint->userName().empty() ? name : m_openEndpoint->userName());
         const Connection& connection = [&]() -> auto&
         {
             if (m_openEndpoint->scheme() == "tcp")

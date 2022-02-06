@@ -105,7 +105,7 @@ namespace dots::testing
         {
             if (m_globalGuest != nullptr)
             {
-                transceiver("dots-test-guest", true);
+                set_transceiver("dots-test-guest");
                 m_globalGuest = nullptr;
             }
         }
@@ -286,7 +286,7 @@ namespace dots::testing
         {
             if (m_globalGuest == nullptr)
             {
-                m_globalGuest = &transceiver("dots-global-guest", true);
+                m_globalGuest = &set_transceiver("dots-global-guest");
                 connectGuest(*m_globalGuest, io::global_publish_types(), io::global_subscribe_types(), std::optional<std::string>{ std::nullopt });
                 processEvents();
             }
