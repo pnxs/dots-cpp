@@ -164,6 +164,5 @@ namespace dots
         inline static Application* m_instance = nullptr;
         int m_exitCode;
         std::optional<io::Endpoint> m_openEndpoint;
-        std::optional<std::string> m_authSecret;
     };
 }

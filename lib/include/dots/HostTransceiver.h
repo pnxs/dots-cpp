@@ -99,6 +99,19 @@ namespace dots
         }
 
         /*!
+         * @brief Asynchronously accept incoming connections on specific
+         * endpoints.
+         *
+         * @param listenEndpoints The endpoints to use to create listeners and
+         * asynchronously accept connections from. The listener types will be
+         * determined by the endpoint schemes.
+         *
+         * @exception std::runtime_error Thrown if an endpoint has an
+         * unsupported URI scheme.
+         */
+        void listen(std::vector<io::Endpoint> listenEndpoints);
+
+        /*!
          * @brief Publish an instance of a DOTS struct type.
          *
          * This will create a corresponding io::Transmission for the publish

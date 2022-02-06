@@ -17,7 +17,7 @@ using namespace dots::literals;
 
 namespace dots
 {
-    Server::Server(std::string name, listeners_t listeners, asio::io_context& ioContext/* = dots::io::global_io_context()*/) :
+    Server::Server(std::string name, asio::io_context& ioContext, std::vector<io::Endpoint> listenEndpoints) :
         m_hostTransceiver{ std::move(name), ioContext, type::Registry::StaticTypePolicy::InternalOnly, HostTransceiver::transition_handler_t{ &Server::handleTransition, this } },
         m_daemonStatus{ DotsDaemonStatus::serverName_i{ m_hostTransceiver.selfName() }, DotsDaemonStatus::startTime_i{ timepoint_t::Now() } }
     {
@@ -31,10 +31,7 @@ namespace dots
         type::Descriptor<DotsContinuousRecorderStatus>::Instance();
         type::Descriptor<DotsDumpContinuousRecorder>::Instance();
 
-        for (io::listener_ptr_t& listener : listeners)
-        {
-            m_hostTransceiver.listen(std::move(listener));
-        }
+        m_hostTransceiver.listen(std::move(listenEndpoints));
 
         m_descriptorSubscription.emplace(m_hostTransceiver.subscribe<type::StructDescriptor<>>({ &Server::handleNewStructType, this }));
         m_hostTransceiver.setAuthManager<io::LegacyAuthManager>();

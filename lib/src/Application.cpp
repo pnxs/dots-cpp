@@ -2,12 +2,6 @@
 #include <dots/Application.h>
 #include <boost/program_options.hpp>
 #include <dots/io/Io.h>
-#include <dots/io/channels/TcpChannel.h>
-#include <dots/io/channels/LegacyTcpChannel.h>
-#include <dots/io/channels/WebSocketChannel.h>
-#if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
-#include <dots/io/channels/UdsChannel.h>
-#endif
 #include <dots/tools/logging.h>
 #include <DotsClient.dots.h>
 
@@ -22,32 +16,7 @@ namespace dots
         // Connect to dotsd
 
         GuestTransceiver& globalGuestTransceiver = set_transceiver(m_openEndpoint->userName().empty() ? name : m_openEndpoint->userName());
-        const Connection& connection = [&]() -> auto&
-        {
-            if (m_openEndpoint->scheme() == "tcp")
-            {
-                return globalGuestTransceiver.open<io::TcpChannel>(io::global_publish_types(), io::global_subscribe_types(), std::move(m_authSecret), *m_openEndpoint);
-            }
-            else if (m_openEndpoint->scheme() == "tcp-legacy")
-            {
-                return globalGuestTransceiver.open<io::LegacyTcpChannel>(io::global_publish_types(), io::global_subscribe_types(), std::move(m_authSecret), *m_openEndpoint);
-            }
-            else if (m_openEndpoint->scheme() == "ws")
-            {
-                return globalGuestTransceiver.open<io::WebSocketChannel>(io::global_publish_types(), io::global_subscribe_types(), std::move(m_authSecret), *m_openEndpoint);
-            }
-            #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
-            else if (m_openEndpoint->scheme() == "uds")
-            {
-                return globalGuestTransceiver.open<io::posix::UdsChannel>(io::global_publish_types(), io::global_subscribe_types(), std::move(m_authSecret), *m_openEndpoint);
-            }
-            #endif
-            else
-            {
-                throw std::runtime_error{ "unknown or unsupported URI scheme: '" + std::string{ m_openEndpoint->scheme() } + "'" };
-            }
-        }();
-
+        const Connection& connection = globalGuestTransceiver.open(io::global_publish_types(), io::global_subscribe_types(), *m_openEndpoint);
 
         LOG_DEBUG_S("run until state connected...");
         while (!connection.connected())
@@ -106,8 +75,7 @@ namespace dots
         po::store(po::basic_command_line_parser<char>(argc, argv).options(desc).allow_unregistered().run(), vm);
         po::notify(vm);
 
-        const po::variable_value& openEndpoint = vm["dots-open"];
-        m_openEndpoint.emplace(openEndpoint.as<std::string>());
+        m_openEndpoint.emplace(vm["dots-open"].as<std::string>());
 
         if (m_openEndpoint->scheme() == "tcp" && m_openEndpoint->port().empty())
         {
@@ -116,11 +84,11 @@ namespace dots
 
         if (auto it = vm.find("dots-auth-secret"); it != vm.end())
         {
-            m_authSecret = it->second.as<std::string>();
+            m_openEndpoint->setUserPassword(it->second.as<std::string>());
         }
         else if (const char* dotsAuthSecret = ::getenv("DOTS_AUTH_SECRET"); dotsAuthSecret != nullptr)
         {
-            m_authSecret = dotsAuthSecret;
+            m_openEndpoint->setUserPassword(dotsAuthSecret);
         }
     }
 }

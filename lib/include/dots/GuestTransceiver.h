@@ -175,6 +175,48 @@ namespace dots
         }
 
         /*!
+         * @brief Start to asynchronously open and establish a host connection
+         * via a specific endpoint.
+         *
+         * @param preloadPublishTypes The publish types to preload.
+         *
+         * @param preloadSubscribeTypes The subscribe types to preload.
+         *
+         * @param endpoint The endpoint to use to create a channel and
+         * asynchronously open and establish a host connection. The channel
+         * type will be determined by the endpoint's scheme. 
+         *
+         * @return const Connection& A reference to the host connection after
+         * asynchronous receiving has started.
+         *
+         * @exception std::logic_error Thrown if another host connection has
+         * already been opened.
+         *
+         * @exception std::runtime_error Thrown if the endpoint has an
+         * unsupported URI scheme.
+         */
+        const Connection& open(type::DescriptorMap preloadPublishTypes, type::DescriptorMap preloadSubscribeTypes, io::Endpoint endpoint);
+
+        /*!
+         * @brief Asynchronously open and establish a host connection via a
+         * specific endpoint.
+         *
+         * @param endpoint The endpoint to use to create a channel and
+         * asynchronously open and establish a host connection. The channel
+         * type will be determined by the endpoint's scheme. 
+         *
+         * @return const Connection& A reference to the host connection after
+         * asynchronous receiving has started.
+         *
+         * @exception std::logic_error Thrown if another host connection has
+         * already been opened.
+         *
+         * @exception std::runtime_error Thrown if the endpoint has an
+         * unsupported URI scheme.
+         */
+        const Connection& open(io::Endpoint endpoint);
+
+        /*!
          * @brief Close the current host connection.
          *
          * This will have no effect if no connection has been opened.

@@ -343,3 +343,48 @@ namespace dots
         }
     }
 }
+
+#include <boost/program_options.hpp>
+#include <dots/io/channels/TcpListener.h>
+#include <dots/io/channels/LegacyTcpListener.h>
+#include <dots/io/channels/WebSocketListener.h>
+#if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
+#include <dots/io/channels/UdsListener.h>
+#endif
+
+namespace dots
+{
+    void HostTransceiver::listen(std::vector<io::Endpoint> listenEndpoints)
+    {
+        for (io::Endpoint& listenEndpoint : listenEndpoints)
+        {
+            if (std::string_view scheme = listenEndpoint.scheme(); scheme == "tcp")
+            {
+                if (listenEndpoint.port().empty())
+                {
+                    listenEndpoint.setPort("11234");
+                }
+
+                listen<io::TcpListener>(listenEndpoint);
+            }
+            else if (scheme == "tcp-legacy")
+            {
+                listen<io::LegacyTcpListener>(listenEndpoint);
+            }
+            else if (scheme == "ws")
+            {
+                listen<io::WebSocketListener>(listenEndpoint);
+            }
+            #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
+            else if (scheme == "uds")
+            {
+                listen<dots::io::posix::UdsListener>(listenEndpoint);
+            }
+            #endif
+            else
+            {
+                throw std::runtime_error{ "unknown or unsupported endpoint scheme: '" + std::string{ scheme } + "'" };
+            }
+        }
+    }
+}

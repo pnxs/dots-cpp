@@ -1,9 +1,4 @@
-#include <dots/io/channels/TcpListener.h>
-#include <dots/io/channels/LegacyTcpListener.h>
-#include <dots/io/channels/WebSocketListener.h>
-#if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
-#include <dots/io/channels/UdsListener.h>
-#endif
+
 #include <dots/tools/logging.h>
 #include <dots/io/Endpoint.h>
 #include "Server.h"
@@ -46,64 +41,26 @@ int main(int argc, char* argv[])
     signals.add(SIGINT);
     signals.add(SIGTERM);
 
-    std::vector<string> listenEndpointUris = [&vm]
+    std::vector<dots::io::Endpoint> listenEndpoints = [&vm]
     {
         if (vm.count("dots-listen"))
         {
-            return vm["dots-listen"].as<std::vector<std::string>>();
+            std::vector<dots::io::Endpoint> listenEndpoints;
+
+            for (const std::string& listenEndpointUri : vm["dots-listen"].as<std::vector<std::string>>())
+            {
+                listenEndpoints.emplace_back(listenEndpointUri);
+            }
+
+            return listenEndpoints;
         }
         else
         {
-            return std::vector<std::string>{ "tcp://127.0.0.1" };
+            return std::vector{ dots::io::Endpoint{ "tcp://127.0.0.1" } };
         }
     }();
-
-    dots::Server::listeners_t listeners;
-
-    for (const string& listenEndpointUri : listenEndpointUris)
-    {
-        try
-        {
-            dots::io::Endpoint listenEndpoint{ listenEndpointUri };
-
-            if (listenEndpoint.scheme() == "tcp")
-            {
-                if (listenEndpoint.port().empty())
-                {
-                    listenEndpoint.setPort("11234");
-                }
-
-                listeners.emplace_back(std::make_unique<dots::io::TcpListener>(io_context, listenEndpoint)); 
-            }
-            else if (listenEndpoint.scheme() == "tcp-legacy")
-            {
-                listeners.emplace_back(std::make_unique<dots::io::LegacyTcpListener>(io_context, listenEndpoint)); 
-            }
-            else if (listenEndpoint.scheme() == "ws")
-            {
-                listeners.emplace_back(std::make_unique<dots::io::WebSocketListener>(io_context, listenEndpoint)); 
-            }
-            #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
-            else if (listenEndpoint.scheme() == "uds")
-            {
-                listeners.emplace_back(std::make_unique<dots::io::posix::UdsListener>(io_context, listenEndpoint));
-            }
-            #endif
-            else
-            {
-                throw std::runtime_error{ "unknown or unsupported endpoint scheme: '" + std::string{ listenEndpoint.scheme() } + "'" };
-            }
-
-            LOG_NOTICE_S("listening on local endpoint '" << listenEndpoint.uriStr() << "'");
-        }
-        catch (const std::exception& e)
-        {
-            LOG_CRIT_S("error creating listener for endpoint argument '" << listenEndpointUri << "' -> " << e.what());
-            return 1;
-        }
-    }
     
-    std::optional<dots::Server> server{ std::in_place, std::move(serverName), std::move(listeners), io_context };
+    std::optional<dots::Server> server{ std::in_place, std::move(serverName), io_context, std::move(listenEndpoints) };
 
     signals.async_wait([&](auto /*ec*/, int /*signo*/) {
         LOG_NOTICE_S("stopping server");

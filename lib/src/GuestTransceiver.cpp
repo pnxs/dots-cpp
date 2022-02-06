@@ -164,3 +164,51 @@ namespace dots
         }
     }
 }
+
+#include <dots/io/channels/TcpChannel.h>
+#include <dots/io/channels/LegacyTcpChannel.h>
+#include <dots/io/channels/WebSocketChannel.h>
+#if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
+#include <dots/io/channels/UdsChannel.h>
+#endif
+
+namespace dots
+{
+    const Connection& GuestTransceiver::open(type::DescriptorMap preloadPublishTypes, type::DescriptorMap preloadSubscribeTypes, io::Endpoint endpoint)
+    {
+        std::optional<std::string> authSecret;
+
+        if (!endpoint.userPassword().empty())
+        {
+            authSecret = endpoint.userPassword();
+        }
+
+        if (std::string_view scheme = endpoint.scheme(); scheme == "tcp")
+        {
+            return open<io::TcpChannel>(std::move(preloadPublishTypes), std::move(preloadSubscribeTypes), std::move(authSecret), std::move(endpoint));
+        }
+        else if (scheme == "tcp-legacy")
+        {
+            return open<io::LegacyTcpChannel>(std::move(preloadPublishTypes), std::move(preloadSubscribeTypes), std::move(authSecret), std::move(endpoint));
+        }
+        else if (scheme == "ws")
+        {
+            return open<io::WebSocketChannel>(std::move(preloadPublishTypes), std::move(preloadSubscribeTypes), std::move(authSecret), std::move(endpoint));
+        }
+        #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
+        else if (scheme == "uds")
+        {
+            return open<io::posix::UdsChannel>(std::move(preloadPublishTypes), std::move(preloadSubscribeTypes), std::move(authSecret), std::move(endpoint));
+        }
+        #endif
+        else
+        {
+            throw std::runtime_error{ "unknown or unsupported URI scheme: '" + std::string{ scheme } + "'" };
+        }
+    }
+
+    const Connection& GuestTransceiver::open(io::Endpoint endpoint)
+    {
+        return open({}, {}, std::move(endpoint));
+    }
+}

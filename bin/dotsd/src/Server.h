@@ -10,7 +10,7 @@ namespace dots
     {
         using listeners_t = std::vector<io::listener_ptr_t>;
 
-        Server(std::string name, listeners_t listeners, asio::io_context& ioContext = io::global_io_context());
+        Server(std::string name, asio::io_context& ioContext, std::vector<io::Endpoint> listenEndpoints);
         Server(const Server& other) = delete;
         Server(Server&& other) = delete;
         ~Server() = default;
