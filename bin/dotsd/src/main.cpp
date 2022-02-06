@@ -1,53 +1,44 @@
 
-#include <dots/tools/logging.h>
-#include <dots/io/Endpoint.h>
-#include "Server.h"
 #include <boost/program_options.hpp>
 #include <iostream>
 #include <optional>
+#include <dots/tools/logging.h>
+#include <dots/io/Endpoint.h>
+#include <Server.h>
 
 namespace po = boost::program_options;
-using std::string;
 
 int main(int argc, char* argv[])
 {
-    po::options_description desc("Allowed options");
-    desc.add_options()
+    po::options_description options("Allowed options");
+    options.add_options()
             ("help", "display help message")
-            ("server-name,n", po::value<string>()->default_value("dotsd"), "set servername")
-            ("dots-listen", po::value<std::vector<string>>(), "local endpoint URI to listen on for incoming guest connections (e.g. tcp://127.0.0.1:11234, ws://127.0.0.1, uds:/tmp/dots_uds.socket")
+            ("server-name,n", po::value<std::string>()->default_value("dotsd"), "set servername")
+            ("dots-listen", po::value<std::vector<std::string>>(), "local endpoint URI to listen on for incoming guest connections (e.g. tcp://127.0.0.1:11234, ws://127.0.0.1, uds:/tmp/dots_uds.socket")
             #ifdef __linux__
             ("daemon,d", "daemonize")
             #endif
-            ;
+    ;
 
-    po::variables_map vm;
-    po::store(po::parse_command_line(argc, argv, desc), vm);
-    po::notify(vm);
+    po::variables_map args;
+    po::store(po::parse_command_line(argc, argv, options), args);
+    po::notify(args);
 
-    if(vm.count("help")) {
-        std::cout << desc << "\n";
-        return 1;
+    if(args.count("help")) 
+    {
+        std::cout << options << "\n";
+        return EXIT_SUCCESS;
     }
 
-    auto serverName = vm["server-name"].as<string>();
+    LOG_NOTICE_S("starting dotsd...");
 
-    boost::asio::io_context& io_context = dots::io::global_io_context();
-
-    LOG_NOTICE_S("dotsd server");
-
-    boost::asio::signal_set signals(io_context);
-
-    signals.add(SIGINT);
-    signals.add(SIGTERM);
-
-    std::vector<dots::io::Endpoint> listenEndpoints = [&vm]
+    std::vector<dots::io::Endpoint> listenEndpoints = [&args]
     {
-        if (vm.count("dots-listen"))
+        if (args.count("dots-listen"))
         {
             std::vector<dots::io::Endpoint> listenEndpoints;
 
-            for (const std::string& listenEndpointUri : vm["dots-listen"].as<std::vector<std::string>>())
+            for (const std::string& listenEndpointUri : args["dots-listen"].as<std::vector<std::string>>())
             {
                 listenEndpoints.emplace_back(listenEndpointUri);
             }
@@ -59,27 +50,24 @@ int main(int argc, char* argv[])
             return std::vector{ dots::io::Endpoint{ "tcp://127.0.0.1" } };
         }
     }();
-    
-    std::optional<dots::Server> server{ std::in_place, std::move(serverName), io_context, std::move(listenEndpoints) };
 
+    boost::asio::io_context& io_context = dots::io::global_io_context();
+    std::optional<dots::Server> server{ std::in_place, args["server-name"].as<std::string>(), io_context, std::move(listenEndpoints) };
+
+    boost::asio::signal_set signals{ io_context, SIGINT, SIGTERM };
     signals.async_wait([&](auto /*ec*/, int /*signo*/) {
-        LOG_NOTICE_S("stopping server");
         dots::io::global_io_context().stop();
         server.reset();
     });
 
     #ifdef __linux__
-    if (vm.count("daemon"))
+    if (args.count("daemon") && daemon(0, 0) == -1)
     {
-        if (daemon(0, 0) == -1)
-        {
-            LOG_CRIT_S("could not start daemon: " << errno);
-            return EXIT_FAILURE;
-        }
+        LOG_CRIT_S("could not daemonize dotsd application: " << errno);
+        return EXIT_FAILURE;
     }
     #endif
 
-    LOG_DEBUG_S("run mainloop");
     io_context.run();
-    return 0;
+    return EXIT_SUCCESS;
 }

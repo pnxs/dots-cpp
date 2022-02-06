@@ -2,14 +2,12 @@
 #include <vector>
 #include <optional>
 #include <dots/HostTransceiver.h>
-#include "DotsDaemonStatus.dots.h"
+#include <DotsDaemonStatus.dots.h>
 
 namespace dots
 {
     struct Server
     {
-        using listeners_t = std::vector<io::listener_ptr_t>;
-
         Server(std::string name, asio::io_context& ioContext, std::vector<io::Endpoint> listenEndpoints);
         Server(const Server& other) = delete;
         Server(Server&& other) = delete;
@@ -18,26 +16,14 @@ namespace dots
         Server& operator = (const Server& rhs) = delete;
         Server& operator = (Server&& rhs) = delete;
 
-        const asio::io_context& ioContext() const;
-        asio::io_context& ioContext();
-
     private:
 
-        inline static uint32_t M_nextTypeId = 0;
-
         void handleTransition(const Connection& connection, std::exception_ptr ePtr);
-        void handleNewStructType(const type::StructDescriptor<>& descriptor);
         void cleanUpClients();
 
         void updateServerStatus();
 
-        DotsStatistics receiveStatistics() const;
-        DotsCacheStatus cacheStatus() const;
-
-        static std::string flags2String(const type::StructDescriptor<>* td);
-
         HostTransceiver m_hostTransceiver;
         DotsDaemonStatus m_daemonStatus;
-        std::optional<Subscription> m_descriptorSubscription;
     };
 }

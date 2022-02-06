@@ -6,9 +6,9 @@
 #include <dots/dots.h>
 #include <dots/tools/logging.h>
 #include <dots/io/auth/LegacyAuthManager.h>
-#include "DotsClient.dots.h"
-#include "DotsContinuousRecorderStatus.dots.h"
-#include "DotsDumpContinuousRecorder.dots.h"
+#include <DotsClient.dots.h>
+#include <DotsContinuousRecorderStatus.dots.h>
+#include <DotsDumpContinuousRecorder.dots.h>
 #include <StructDescriptorData.dots.h>
 #include <DotsStatistics.dots.h>
 #include <DotsCacheStatus.dots.h>
@@ -32,19 +32,7 @@ namespace dots
         type::Descriptor<DotsDumpContinuousRecorder>::Instance();
 
         m_hostTransceiver.listen(std::move(listenEndpoints));
-
-        m_descriptorSubscription.emplace(m_hostTransceiver.subscribe<type::StructDescriptor<>>({ &Server::handleNewStructType, this }));
         m_hostTransceiver.setAuthManager<io::LegacyAuthManager>();
-    }
-
-    const asio::io_context& Server::ioContext() const
-    {
-        return m_hostTransceiver.ioContext();
-    }
-
-    asio::io_context& Server::ioContext()
-    {
-        return m_hostTransceiver.ioContext();
     }
 
     void Server::handleTransition(const Connection& connection, std::exception_ptr/* ePtr*/)
@@ -54,11 +42,6 @@ namespace dots
             DotsClient::name_i{ connection.peerName() },
             DotsClient::connectionState_i{ connection.state() }
         });
-    }
-
-    void Server::handleNewStructType(const type::StructDescriptor<>& descriptor)
-    {
-        LOG_DEBUG_S("onNewType name=" << descriptor.name() << " flags:" << flags2String(&descriptor));
     }
 
     void Server::cleanUpClients()
@@ -100,9 +83,7 @@ namespace dots
     {
         try
         {
-            DotsDaemonStatus ds(m_daemonStatus);
-
-            ds.received = receiveStatistics();
+            DotsDaemonStatus ds{ m_daemonStatus };
 
             if (m_daemonStatus._diffProperties(ds))
             {
@@ -126,7 +107,10 @@ namespace dots
                     DotsResourceUsage::nrInvoluntaryContextSwitches_i{ static_cast<int32_t>(usage.ru_nivcsw) }
                 };
                 #endif
-                ds.cache = cacheStatus();
+                ds.cache = DotsCacheStatus{
+                    DotsCacheStatus::nrTypes_i{ static_cast<uint32_t>(m_hostTransceiver.pool().size()) },
+                    DotsCacheStatus::size_i{ static_cast<uint32_t>(m_hostTransceiver.pool().totalMemoryUsage()) }
+                };
 
                 m_hostTransceiver.publish(ds);
                 m_daemonStatus = ds;
@@ -136,52 +120,5 @@ namespace dots
         {
             LOG_ERROR_S("exception in updateServerStatus: " << e.what());
         }
-    }
-
-    DotsStatistics Server::receiveStatistics() const
-    {
-        //return m_dispatcher.statistics();
-        // TODO: determine if still necessary
-        return DotsStatistics{};
-    }
-
-    DotsCacheStatus Server::cacheStatus() const
-    {
-        DotsCacheStatus cs;
-
-        auto& pool = m_hostTransceiver.pool();
-
-        cs.nrTypes(static_cast<uint32_t>(pool.size()));
-        cs.size(pool.totalMemoryUsage());
-        return cs;
-    }
-
-    /*!
-     * Returns a short string-representation of the DotsStructFlags.
-     * The String consists of 5 chars (5 flags). Every flag has a static place in
-     * this string:
-     * @code
-     * "....." No flags are set.
-     * Flags:
-     * "CIPcL"
-     *  ||||\- local (L)
-     *  |||\-- cleanup (c)
-     *  ||\--- persistent (P)
-     *  |\---- internal (I)
-     *  \----- cached (C)
-     * @endcode
-     *
-     * @param td the structdescriptor from which the flags should be processed.
-     * @return short string containing the flags.
-     */
-    std::string Server::flags2String(const type::StructDescriptor<>* td)
-    {
-        std::string ret = ".....";
-        if (td->cached()) ret[0] = 'C';
-        if (td->internal()) ret[1] = 'I';
-        if (td->persistent()) ret[2] = 'P';
-        if (td->cleanup()) ret[3] = 'c';
-        if (td->local()) ret[4] = 'L';
-        return ret;
     }
 }
