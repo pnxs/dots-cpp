@@ -87,7 +87,7 @@ namespace dots
          * @exception std::exception Thrown if no connection could be
          * established based on the given arguments.
          */
-        Application(const std::string& name, int& argc, char* argv[]);
+        Application(const std::string& name, int argc, char* argv[]);
 
         /*!
          * @brief Destroy the Application object.
@@ -144,7 +144,7 @@ namespace dots
          * @param exitCode The exit code to return in Application::exec() and
          * Application::execOne().
          */
-        virtual void exit(int exitCode = 0);
+        virtual void exit(int exitCode = EXIT_SUCCESS);
 
         /*!
          * @brief Get the most recent Application instance.
