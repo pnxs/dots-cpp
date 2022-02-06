@@ -10,7 +10,6 @@ namespace dots
     Application::Application(const std::string& name, int argc, char* argv[]) :
         m_exitCode(EXIT_SUCCESS)
     {
-        m_instance = this;
         parseProgramOptions(argc, argv);
 
         GuestTransceiver& globalGuestTransceiver = set_transceiver(m_openEndpoint->userName().empty() ? name : m_openEndpoint->userName());
@@ -49,11 +48,6 @@ namespace dots
     {
         m_exitCode = exitCode;
         io::global_io_context().stop();
-    }
-
-    Application* Application::instance()
-    {
-        return m_instance;
     }
 
     void Application::parseProgramOptions(int argc, char* argv[])

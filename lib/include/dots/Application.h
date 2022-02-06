@@ -146,22 +146,10 @@ namespace dots
          */
         virtual void exit(int exitCode = EXIT_SUCCESS);
 
-        /*!
-         * @brief Get the most recent Application instance.
-         *
-         * Note that this is not a singleton accessor. Instead, it provides a
-         * pointer to the most recently constructed Application instance.
-         *
-         * @return Application* A pointer to most recently Application
-         * instance. Will be nullptr if no Application was yet constructed.
-         */
-        static Application* instance();
-
     private:
 
         void parseProgramOptions(int argc, char* argv[]);
 
-        inline static Application* m_instance = nullptr;
         int m_exitCode;
         std::optional<io::Endpoint> m_openEndpoint;
     };
