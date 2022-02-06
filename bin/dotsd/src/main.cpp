@@ -4,7 +4,7 @@
 #include <optional>
 #include <dots/tools/logging.h>
 #include <dots/io/Endpoint.h>
-#include <Server.h>
+#include <DotsDaemon.h>
 
 namespace po = boost::program_options;
 
@@ -52,12 +52,12 @@ int main(int argc, char* argv[])
     }();
 
     boost::asio::io_context& io_context = dots::io::global_io_context();
-    std::optional<dots::Server> server{ std::in_place, args["server-name"].as<std::string>(), io_context, std::move(listenEndpoints) };
+    std::optional<dots::DotsDaemon> dotsDaemon{ std::in_place, args["server-name"].as<std::string>(), io_context, std::move(listenEndpoints) };
 
     boost::asio::signal_set signals{ io_context, SIGINT, SIGTERM };
     signals.async_wait([&](auto /*ec*/, int /*signo*/) {
         dots::io::global_io_context().stop();
-        server.reset();
+        dotsDaemon.reset();
     });
 
     #ifdef __linux__

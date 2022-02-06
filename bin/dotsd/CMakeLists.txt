@@ -11,7 +11,7 @@ add_executable(${TARGET_NAME} src/main.cpp)
 # properties
 target_sources(${TARGET_NAME}
     PRIVATE
-        src/Server.cpp
+        src/DotsDaemon.cpp
 )
 target_include_directories(${TARGET_NAME}
     PRIVATE

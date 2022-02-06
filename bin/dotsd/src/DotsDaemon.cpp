@@ -1,4 +1,4 @@
-#include "Server.h"
+#include <DotsDaemon.h>
 #ifdef __unix__
 #include <sys/resource.h>
 #include <dots/type/PosixTime.h>
@@ -17,12 +17,12 @@ using namespace dots::literals;
 
 namespace dots
 {
-    Server::Server(std::string name, asio::io_context& ioContext, std::vector<io::Endpoint> listenEndpoints) :
-        m_hostTransceiver{ std::move(name), ioContext, type::Registry::StaticTypePolicy::InternalOnly, HostTransceiver::transition_handler_t{ &Server::handleTransition, this } },
+    DotsDaemon::DotsDaemon(std::string name, asio::io_context& ioContext, std::vector<io::Endpoint> listenEndpoints) :
+        m_hostTransceiver{ std::move(name), ioContext, type::Registry::StaticTypePolicy::InternalOnly, HostTransceiver::transition_handler_t{ &DotsDaemon::handleTransition, this } },
         m_daemonStatus{ DotsDaemonStatus::serverName_i{ m_hostTransceiver.selfName() }, DotsDaemonStatus::startTime_i{ timepoint_t::Now() } }
     {
-        add_timer(1s, { &Server::updateServerStatus, this }, true);
-        add_timer(10s, { &Server::cleanUpClients, this }, true);
+        add_timer(1s, { &DotsDaemon::updateServerStatus, this }, true);
+        add_timer(10s, { &DotsDaemon::cleanUpClients, this }, true);
 
         // For backward compatibility: in the legacy version of DOTS,
         // DotsContinuousRecorderStatus and DotsDumpContinuousRecorder where internal-types.
@@ -35,7 +35,7 @@ namespace dots
         m_hostTransceiver.setAuthManager<io::LegacyAuthManager>();
     }
 
-    void Server::handleTransition(const Connection& connection, std::exception_ptr/* ePtr*/)
+    void DotsDaemon::handleTransition(const Connection& connection, std::exception_ptr/* ePtr*/)
     {
         m_hostTransceiver.publish(DotsClient{
             DotsClient::id_i{ connection.peerId() },
@@ -44,7 +44,7 @@ namespace dots
         });
     }
 
-    void Server::cleanUpClients()
+    void DotsDaemon::cleanUpClients()
     {
         std::set<Connection::id_t> expiredClients;
 
@@ -79,7 +79,7 @@ namespace dots
         }
     }
 
-    void Server::updateServerStatus()
+    void DotsDaemon::updateServerStatus()
     {
         try
         {

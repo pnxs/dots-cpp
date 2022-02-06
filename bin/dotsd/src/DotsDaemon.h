@@ -6,15 +6,15 @@
 
 namespace dots
 {
-    struct Server
+    struct DotsDaemon
     {
-        Server(std::string name, asio::io_context& ioContext, std::vector<io::Endpoint> listenEndpoints);
-        Server(const Server& other) = delete;
-        Server(Server&& other) = delete;
-        ~Server() = default;
+        DotsDaemon(std::string name, asio::io_context& ioContext, std::vector<io::Endpoint> listenEndpoints);
+        DotsDaemon(const DotsDaemon& other) = delete;
+        DotsDaemon(DotsDaemon&& other) = delete;
+        ~DotsDaemon() = default;
 
-        Server& operator = (const Server& rhs) = delete;
-        Server& operator = (Server&& rhs) = delete;
+        DotsDaemon& operator = (const DotsDaemon& rhs) = delete;
+        DotsDaemon& operator = (DotsDaemon&& rhs) = delete;
 
     private:
 
