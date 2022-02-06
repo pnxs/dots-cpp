@@ -1,43 +1,62 @@
 #undef DOTS_NO_GLOBAL_TRANSCEIVER
 #include <dots/Application.h>
 #include <boost/program_options.hpp>
-#include <dots/io/Io.h>
 #include <dots/tools/logging.h>
 #include <DotsClient.dots.h>
 
 namespace dots
 {
-    Application::Application(const std::string& name, int argc, char* argv[], bool handleExitSignals/* = true*/) :
-        m_exitCode(EXIT_SUCCESS)
+    Application::Application(const std::string& name, int argc, char* argv[], std::optional<GuestTransceiver> transceiver/* = std::nullopt*/, bool handleExitSignals/* = true*/) :
+        m_exitCode(EXIT_SUCCESS),
+        m_transceiver(nullptr),
+        m_transceiverStorage{ std::move(transceiver) }
     {
+        parseProgramOptions(argc, argv);
+
+        if (m_transceiverStorage == std::nullopt || &*m_transceiverStorage == &dots::transceiver())
+        {
+            m_transceiver = &set_transceiver(m_openEndpoint->userName().empty() ? name : m_openEndpoint->userName());
+            m_transceiver->open(io::global_publish_types(), io::global_subscribe_types(), *m_openEndpoint);
+        }
+        else
+        {
+            m_transceiver = &*m_transceiverStorage;
+            m_transceiver->open(*m_openEndpoint);
+        }
+
         if (handleExitSignals)
         {
-            m_signals.emplace(io::global_io_context(), SIGINT, SIGTERM);
+            m_signals.emplace(ioContext(), SIGINT, SIGTERM);
             m_signals->async_wait([this](boost::system::error_code/* error*/, int/* signalNumber*/){ exit(); });
         }
 
-        parseProgramOptions(argc, argv);
-
-        GuestTransceiver& globalGuestTransceiver = set_transceiver(m_openEndpoint->userName().empty() ? name : m_openEndpoint->userName());
-        const Connection& connection = globalGuestTransceiver.open(io::global_publish_types(), io::global_subscribe_types(), *m_openEndpoint);
-
-        while (!connection.connected())
+        while (!m_transceiver->connected())
         {
-            io::global_io_context().run_one();
+            ioContext().run_one();
         }
 
-        globalGuestTransceiver.publish(DotsClient{ DotsClient::id_i{ connection.selfId() }, DotsClient::running_i{ true } });
+        m_transceiver->publish(DotsClient{ DotsClient::id_i{ m_transceiver->connection().selfId() }, DotsClient::running_i{ true } });
     }
 
     Application::~Application()
     {
-        io::global_io_context().stop();
+        ioContext().stop();
+    }
+
+    const Transceiver& Application::transceiver() const
+    {
+        return *m_transceiver;
+    }
+
+    Transceiver& Application::transceiver()
+    {
+        return *m_transceiver;
     }
 
     int Application::exec()
     {
         m_exitCode = EXIT_SUCCESS;
-        io::global_io_context().run();
+        ioContext().run();
 
         return m_exitCode;
     }
@@ -45,7 +64,7 @@ namespace dots
     int Application::execOne(const std::chrono::milliseconds& timeout)
     {
         m_exitCode = EXIT_SUCCESS;
-        io::global_io_context().run_one_for(timeout);
+        ioContext().run_one_for(timeout);
 
         return m_exitCode;
     }
@@ -53,7 +72,17 @@ namespace dots
     void Application::exit(int exitCode)
     {
         m_exitCode = exitCode;
-        io::global_io_context().stop();
+        ioContext().stop();
+    }
+
+    const asio::io_context& Application::ioContext() const
+    {
+        return m_transceiver->ioContext();
+    }
+
+    asio::io_context& Application::ioContext()
+    {
+        return m_transceiver->ioContext();
     }
 
     void Application::parseProgramOptions(int argc, char* argv[])
