@@ -19,8 +19,6 @@ int main(int argc, char* argv[])
     po::options_description desc("Allowed options");
     desc.add_options()
             ("help", "display help message")
-            ("dots-address", po::value<string>(), "address to bind to")
-            ("dots-port", po::value<string>(), "port to bind to")
             ("server-name,n", po::value<string>()->default_value("dotsd"), "set servername")
             ("listen,l", po::value<std::vector<string>>(), "local endpoint URI to listen on for incoming guest connections (e.g. tcp://127.0.0.1:11234, ws://127.0.0.1, uds:/tmp/dots_uds.socket")
             #ifdef __linux__
@@ -52,39 +50,11 @@ int main(int argc, char* argv[])
     {
         if (vm.count("listen"))
         {
-            auto warn_about_argument_ignore = [](std::string argName, std::string argValue)
-            {
-                LOG_WARN_S("ignoring legacy argument '" << argName << "=" << argValue << "' because a listen endpoint argument was specified");
-            };
-
-            if (auto it = vm.find("dots-address"); it != vm.end())
-            {
-                warn_about_argument_ignore("dots-address", it->second.as<std::string>());
-            }
-
-            if (auto it = vm.find("dots-port"); it != vm.end())
-            {
-                warn_about_argument_ignore("dots-port", it->second.as<std::string>());
-            }
-
             return vm["listen"].as<std::vector<std::string>>();
         }
         else
         {
-            string authority = "127.0.0.1";
-
-            if (auto it = vm.find("dots-address"); it != vm.end())
-            {
-                authority = it->second.as<std::string>();
-            }
-
-            if (auto it = vm.find("dots-port"); it != vm.end())
-            {
-                authority += ':';
-                authority += it->second.as<std::string>();
-            }
-            
-            return std::vector<std::string>{ "tcp://" + authority };
+            return std::vector<std::string>{ "tcp://127.0.0.1" };
         }
     }();
 
