@@ -102,6 +102,19 @@ namespace dots
         return m_connectionState == DotsConnectionState::closed;
     }
 
+    bool Connection::close()
+    {
+        if (closed())
+        {
+            return false;
+        }
+        else
+        {
+            handleClose(nullptr);
+            return true;
+        }
+    }
+
     std::string Connection::peerDescription() const
     {
         return (m_selfId == HostId ? "guest '" : "host '") + m_peerName + " [" + std::to_string(m_peerId) + "]'";

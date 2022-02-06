@@ -15,9 +15,14 @@ namespace dots
         type::Descriptor<DotsCacheInfo>::Instance();
     }
 
-    const std::optional<Connection>& GuestTransceiver::connection() const
+    bool GuestTransceiver::connected() const
     {
-        return m_hostConnection;
+        return m_hostConnection != std::nullopt && m_hostConnection->connected();
+    }
+
+    const Connection& GuestTransceiver::connection() const
+    {
+        return *m_hostConnection;
     }
 
     const Connection& GuestTransceiver::open(type::DescriptorMap preloadPublishTypes, type::DescriptorMap preloadSubscribeTypes, std::optional<std::string> authSecret, io::channel_ptr_t channel)
@@ -42,6 +47,18 @@ namespace dots
     const Connection& GuestTransceiver::open(io::channel_ptr_t channel)
     {
         return open({}, {}, std::nullopt, std::move(channel));
+    }
+
+    bool GuestTransceiver::close()
+    {
+        if (m_hostConnection == std::nullopt)
+        {
+            return false;
+        }
+        else
+        {
+            return m_hostConnection->close();
+        }
     }
 
     void GuestTransceiver::publish(const type::Struct& instance, std::optional<property_set_t> includedProperties/* = std::nullopt*/, bool remove/* = false*/)

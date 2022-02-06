@@ -177,6 +177,16 @@ namespace dots
         bool closed() const;
 
         /*!
+         * @brief Close the connection.
+         *
+         * This will have no effect if the connection is already closed.
+         *
+         * @return true If the connection was actually closed.
+         * @return false Else.
+         */
+        bool close();
+
+        /*!
          * @brief Get a description of the remote peer of this connection.
          *
          * This will construct a textual representation of the current peer
