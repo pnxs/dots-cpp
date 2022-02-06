@@ -15,18 +15,18 @@ The dotsd can use a variety of transport protocols, which can be configured by p
 ```sh
 # listen only on TCP endpoint at localhost address using the default port
 dotsd
-dotsd --listen=tcp://127.0.0.1
-dotsd --listen=tcp://127.0.0.1:11234
+dotsd --dots-listen=tcp://127.0.0.1
+dotsd --dots-listen=tcp://127.0.0.1:11234
 
 # listen only on UNIX domain socket endpoint at path "/tmp/dots.socket"
 # (requires corresponding OS support)
-dotsd --listen=uds:/tmp/dots.socket
+dotsd --dots-listen=uds:/tmp/dots.socket
 
 # listen only on WebSocket endpoint at localhost address using custom port
-dotsd --listen=ws://127.0.0.1:11235
+dotsd --dots-listen=ws://127.0.0.1:11235
 
 # listen on multiple endpoints simultaneously
-dotsd --listen=tcp://127.0.0.1:11234 --listen=uds:/tmp/dots.socket
+dotsd --dots-listen=tcp://127.0.0.1:11234 --dots-listen=uds:/tmp/dots.socket
 ```
 
 If a guest application is based on the `dots::Application` class of the dots-cpp library, it can connect to the dotsd (or any DOTS host) by providing the corresponding host endpoint as an argument:
@@ -34,13 +34,13 @@ If a guest application is based on the `dots::Application` class of the dots-cpp
 ```sh
 # open host connection via TCP endpoint at localhost address using the default port
 some-app
-some-app --open=tcp://127.0.0.1
-some-app --open=tcp://127.0.0.1:11234
+some-app --dots-open=tcp://127.0.0.1
+some-app --dots-open=tcp://127.0.0.1:11234
 
 # open host connection via UNIX domain socket endpoint at path "/tmp/dots.socket"
 # (requires corresponding OS support)
-some-app --open=uds:/tmp/dots.socket
+some-app --dots-open=uds:/tmp/dots.socket
 
 # open host connection via WebSocket endpoint at remote address using custom port
-some-app --open=ws://192.168.0.42:11235
+some-app --dots-open=ws://192.168.0.42:11235
 ```

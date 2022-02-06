@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
     desc.add_options()
             ("help", "display help message")
             ("server-name,n", po::value<string>()->default_value("dotsd"), "set servername")
-            ("listen,l", po::value<std::vector<string>>(), "local endpoint URI to listen on for incoming guest connections (e.g. tcp://127.0.0.1:11234, ws://127.0.0.1, uds:/tmp/dots_uds.socket")
+            ("dots-listen", po::value<std::vector<string>>(), "local endpoint URI to listen on for incoming guest connections (e.g. tcp://127.0.0.1:11234, ws://127.0.0.1, uds:/tmp/dots_uds.socket")
             #ifdef __linux__
             ("daemon,d", "daemonize")
             #endif
@@ -48,9 +48,9 @@ int main(int argc, char* argv[])
 
     std::vector<string> listenEndpointUris = [&vm]
     {
-        if (vm.count("listen"))
+        if (vm.count("dots-listen"))
         {
-            return vm["listen"].as<std::vector<std::string>>();
+            return vm["dots-listen"].as<std::vector<std::string>>();
         }
         else
         {

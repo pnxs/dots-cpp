@@ -47,8 +47,8 @@ namespace dots
          *
          * This will parse the given command line arguments and attempt to
          * establish a connection via the global transceiver using the endpoint
-         * given by either the '-o' or '--open' option. If no endpoint is
-         * specified, "tcp://127.0.0.1:11234" will be used as a default.
+         * given by the '--dots-open' option. If no endpoint is specified,
+         * "tcp://127.0.0.1:11234" will be used as a default.
          *
          * If any of the statically typed versions of dots::subscribe<T>() or
          * dots::container<T>() of the global DOTS API are used (see dots.h),

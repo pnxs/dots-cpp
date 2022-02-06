@@ -98,15 +98,15 @@ namespace dots
         // define and parse command line options
         po::options_description desc("Allowed options");
         desc.add_options()
-            ("auth-secret", po::value<std::string>(), "secret used during authentication")
-            ("open,o", po::value<std::string>()->default_value("tcp://127.0.0.1:11234"), "remote endpoint URI to open for host connection (e.g. tcp://127.0.0.1:11234, ws://127.0.0.1, uds:/tmp/dots_uds.socket")
+            ("dots-auth-secret", po::value<std::string>(), "secret used during authentication (this can also be given as part of the --dots-open endpoint)")
+            ("dots-open", po::value<std::string>()->default_value("tcp://127.0.0.1:11234"), "remote endpoint URI to open for host connection (e.g. tcp://127.0.0.1:11234, ws://127.0.0.1, uds:/tmp/dots_uds.socket")
             ;
 
         po::variables_map vm;
         po::store(po::basic_command_line_parser<char>(argc, argv).options(desc).allow_unregistered().run(), vm);
         po::notify(vm);
 
-        const po::variable_value& openEndpoint = vm["open"];
+        const po::variable_value& openEndpoint = vm["dots-open"];
         m_openEndpoint.emplace(openEndpoint.as<std::string>());
 
         if (m_openEndpoint->scheme() == "tcp" && m_openEndpoint->port().empty())
@@ -114,7 +114,7 @@ namespace dots
             m_openEndpoint->setPort("11234");
         }
 
-        if (auto it = vm.find("auth-secret"); it != vm.end())
+        if (auto it = vm.find("dots-auth-secret"); it != vm.end())
         {
             m_authSecret = it->second.as<std::string>();
         }
