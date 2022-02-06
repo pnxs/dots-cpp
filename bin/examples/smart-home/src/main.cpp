@@ -13,8 +13,7 @@ int main(int argc, char* argv[])
     try
     {
         // create application
-        static dots::Application App(AppName, argc, argv);
-        std::signal(SIGINT, [](int) { App.exit(); });
+        dots::Application app(AppName, argc, argv);
 
         LOG_INFO_S("started " << AppName);
 
@@ -23,7 +22,7 @@ int main(int argc, char* argv[])
         examples::Stairwell stairwell;
 
         // execute event loop of application 
-        return App.exec();
+        return app.exec();
     }
     catch (const std::exception& e)
     {

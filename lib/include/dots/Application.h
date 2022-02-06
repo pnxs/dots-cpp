@@ -84,10 +84,13 @@ namespace dots
          * @param argv The command line arguments as given in the main()
          * function of the application.
          *
+         * @param handleExitSignals Indicates whether the application should
+         * exit on SIGINT and SIGTERM signals.
+         *
          * @exception std::exception Thrown if no connection could be
          * established based on the given arguments.
          */
-        Application(const std::string& name, int argc, char* argv[]);
+        Application(const std::string& name, int argc, char* argv[], bool handleExitSignals = true);
 
         /*!
          * @brief Destroy the Application object.
@@ -150,7 +153,8 @@ namespace dots
 
         void parseProgramOptions(int argc, char* argv[]);
 
-        int m_exitCode;
         std::optional<io::Endpoint> m_openEndpoint;
+        std::optional<asio::signal_set> m_signals;
+        int m_exitCode;
     };
 }

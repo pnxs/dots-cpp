@@ -7,9 +7,15 @@
 
 namespace dots
 {
-    Application::Application(const std::string& name, int argc, char* argv[]) :
+    Application::Application(const std::string& name, int argc, char* argv[], bool handleExitSignals/* = true*/) :
         m_exitCode(EXIT_SUCCESS)
     {
+        if (handleExitSignals)
+        {
+            m_signals.emplace(io::global_io_context(), SIGINT, SIGTERM);
+            m_signals->async_wait([this](boost::system::error_code/* error*/, int/* signalNumber*/){ exit(); });
+        }
+
         parseProgramOptions(argc, argv);
 
         GuestTransceiver& globalGuestTransceiver = set_transceiver(m_openEndpoint->userName().empty() ? name : m_openEndpoint->userName());
