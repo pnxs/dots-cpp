@@ -61,14 +61,6 @@ namespace dots
         return m_exitCode;
     }
 
-    int Application::execOne(const std::chrono::milliseconds& timeout)
-    {
-        m_exitCode = EXIT_SUCCESS;
-        ioContext().run_one_for(timeout);
-
-        return m_exitCode;
-    }
-
     void Application::exit(int exitCode)
     {
         m_exitCode = exitCode;

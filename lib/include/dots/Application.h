@@ -139,24 +139,6 @@ namespace dots
         virtual int exec();
 
         /*!
-         * @brief Execute at most one handler of the application until a
-         * specific timeout.
-         *
-         * This function is similar to Application::exec() except that it will
-         * only at most execute one ready handler before returning.
-         *
-         * If no handler is ready when this function is called, the function
-         * will block and wait at most for the given amount of time.
-         *
-         * @param timeout The maximum amount of time to block and wait for one
-         * handler to become ready.
-         *
-         * @return int The exit code of the application as passed in
-         * Application::exit().
-         */
-        virtual int execOne(const std::chrono::milliseconds& timeout);
-
-        /*!
          * @brief Exit the application.
          *
          * This will send an exit signal to the application and set a given
