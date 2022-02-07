@@ -3,6 +3,7 @@
 #include <optional>
 #include <dots/dots.h>
 #include <dots/GuestTransceiver.h>
+#include <dots/HostTransceiver.h>
 #include <dots/io/Endpoint.h>
 
 namespace dots
@@ -42,9 +43,9 @@ namespace dots
          * @brief Construct a new Application object.
          *
          * This will parse the given command line arguments and attempt to
-         * establish a connection via the given transceiver using the endpoint
-         * given by the '--dots-open' option. If no endpoint is specified,
-         * "tcp://127.0.0.1:11234" will be used as a default.
+         * establish a connection via the given guest transceiver using the
+         * endpoint given by the '--dots-open' option. If no endpoint is
+         * specified, "tcp://127.0.0.1:11234" will be used as a default.
          *
          * If no transceiver is given (i.e. the global transceiver is used) and
          * any of the statically typed versions of dots::subscribe<T>() or
@@ -72,7 +73,7 @@ namespace dots
          * // ...
          * @endcode
          *
-         * @param name The name that will be used by the Transceiver to
+         * @param name The name that will be used by the GuestTransceiver to
          * identify itself.
          *
          * @param argc The number of command line arguments as given in the
@@ -81,8 +82,9 @@ namespace dots
          * @param argv The command line arguments as given in the main()
          * function of the application.
          *
-         * @param transceiver The transceiver the application will operate on.
-         * If none is given, the global guest transceiver will be used.
+         * @param guestTransceiver The guest transceiver the application will
+         * operate on. If none is given, the global guest transceiver will be
+         * used.
          *
          * @param handleExitSignals Indicates whether the application should
          * exit on SIGINT and SIGTERM signals.
@@ -90,7 +92,35 @@ namespace dots
          * @exception std::exception Thrown if no connection could be
          * established based on the given arguments.
          */
-        Application(const std::string& name, int argc, char* argv[], std::optional<GuestTransceiver> transceiver = std::nullopt, bool handleExitSignals = true);
+        Application(const std::string& name, int argc, char* argv[], std::optional<GuestTransceiver> guestTransceiver = std::nullopt, bool handleExitSignals = true);
+
+        /*!
+         * @brief Construct a new Application object.
+         *
+         * This will parse the given command line arguments and attempt to
+         * listen for incoming connections via the given host transceiver using
+         * the endpoints given by the '--dots-listen' options. If no endpoints
+         * are specified, "tcp://127.0.0.1:11234" will be used as a default.
+         *
+         * @param name The name that will be used by the HostTransceiver to
+         * identify itself.
+         *
+         * @param argc The number of command line arguments as given in the
+         * main() function of the application.
+         *
+         * @param argv The command line arguments as given in the main()
+         * function of the application.
+         *
+         * @param hostTransceiver The host transceiver the application will
+         * operate on.
+         *
+         * @param handleExitSignals Indicates whether the application should
+         * exit on SIGINT and SIGTERM signals.
+         *
+         * @exception std::exception Thrown if no connection could be
+         * established based on the given arguments.
+         */
+        Application(int argc, char* argv[], HostTransceiver hostTransceiver, bool handleExitSignals = true);
 
         Application(const Application& other) = delete;
         Application(Application&& other) = delete;
@@ -162,12 +192,15 @@ namespace dots
         const asio::io_context& ioContext() const;
         asio::io_context& ioContext();
 
-        void parseProgramOptions(int argc, char* argv[]);
+        void parseGuestTransceiverArgs(int argc, char* argv[]);
+        void parseHostTransceiverArgs(int argc, char* argv[]);
 
         std::optional<io::Endpoint> m_openEndpoint;
+        std::vector<io::Endpoint> m_listenEndpoints;
         std::optional<asio::signal_set> m_signals;
         int m_exitCode;
-        GuestTransceiver* m_transceiver;
-        std::optional<GuestTransceiver> m_transceiverStorage;
+        Transceiver* m_transceiver;
+        std::optional<GuestTransceiver> m_guestTransceiverStorage;
+        std::optional<HostTransceiver> m_hostTransceiverStorage;
     };
 }

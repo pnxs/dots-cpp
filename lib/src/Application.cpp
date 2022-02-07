@@ -6,23 +6,26 @@
 
 namespace dots
 {
-    Application::Application(const std::string& name, int argc, char* argv[], std::optional<GuestTransceiver> transceiver/* = std::nullopt*/, bool handleExitSignals/* = true*/) :
+    Application::Application(const std::string& name, int argc, char* argv[], std::optional<GuestTransceiver> guestTransceiver/* = std::nullopt*/, bool handleExitSignals/* = true*/) :
         m_exitCode(EXIT_SUCCESS),
         m_transceiver(nullptr),
-        m_transceiverStorage{ std::move(transceiver) }
+        m_guestTransceiverStorage{ std::move(guestTransceiver) }
     {
-        parseProgramOptions(argc, argv);
+        parseGuestTransceiverArgs(argc, argv);
+        GuestTransceiver* transceiver;
 
-        if (m_transceiverStorage == std::nullopt || &*m_transceiverStorage == &dots::transceiver())
+        if (m_guestTransceiverStorage == std::nullopt || &*m_guestTransceiverStorage == &dots::transceiver())
         {
-            m_transceiver = &set_transceiver(m_openEndpoint->userName().empty() ? name : m_openEndpoint->userName());
-            m_transceiver->open(io::global_publish_types(), io::global_subscribe_types(), *m_openEndpoint);
+            transceiver = &set_transceiver(m_openEndpoint->userName().empty() ? name : m_openEndpoint->userName());
+            transceiver->open(io::global_publish_types(), io::global_subscribe_types(), *m_openEndpoint);
         }
         else
         {
-            m_transceiver = &*m_transceiverStorage;
-            m_transceiver->open(*m_openEndpoint);
+            transceiver = &*m_guestTransceiverStorage;
+            transceiver->open(*m_openEndpoint);
         }
+
+        m_transceiver = transceiver;
 
         if (handleExitSignals)
         {
@@ -30,12 +33,28 @@ namespace dots
             m_signals->async_wait([this](boost::system::error_code/* error*/, int/* signalNumber*/){ exit(); });
         }
 
-        while (!m_transceiver->connected())
+        while (!transceiver->connected())
         {
             ioContext().run_one();
         }
 
-        m_transceiver->publish(DotsClient{ DotsClient::id_i{ m_transceiver->connection().selfId() }, DotsClient::running_i{ true } });
+        transceiver->publish(DotsClient{ DotsClient::id_i{ transceiver->connection().selfId() }, DotsClient::running_i{ true } });
+    }
+
+    Application::Application(int argc, char* argv[], HostTransceiver hostTransceiver, bool handleExitSignals) :
+        m_exitCode(EXIT_SUCCESS),
+        m_transceiver(nullptr),
+        m_hostTransceiverStorage{ std::move(hostTransceiver) }
+    {
+        parseHostTransceiverArgs(argc, argv);
+        m_transceiver = &*m_hostTransceiverStorage;
+        m_hostTransceiverStorage->listen(m_listenEndpoints);
+
+        if (handleExitSignals)
+        {
+            m_signals.emplace(ioContext(), SIGINT, SIGTERM);
+            m_signals->async_wait([this](boost::system::error_code/* error*/, int/* signalNumber*/){ exit(); });
+        }
     }
 
     Application::~Application()
@@ -77,7 +96,7 @@ namespace dots
         return m_transceiver->ioContext();
     }
 
-    void Application::parseProgramOptions(int argc, char* argv[])
+    void Application::parseGuestTransceiverArgs(int argc, char* argv[])
     {
         namespace po = boost::program_options;
         
@@ -106,5 +125,38 @@ namespace dots
         {
             m_openEndpoint->setUserPassword(dotsAuthSecret);
         }
+    }
+
+    void Application::parseHostTransceiverArgs(int argc, char* argv[])
+    {
+        namespace po = boost::program_options;
+        
+        po::options_description options{ "Allowed options" };
+        options.add_options()
+            ("dots-listen", po::value<std::vector<std::string>>(), "local endpoint URI to listen on for incoming guest connections (e.g. tcp://127.0.0.1:11234, ws://127.0.0.1, uds:/tmp/dots_uds.socket")
+        ;
+
+        po::variables_map args;
+        po::store(po::basic_command_line_parser<char>(argc, argv).options(options).allow_unregistered().run(), args);
+        po::notify(args);
+        
+        m_listenEndpoints = [&args]
+        {
+            if (args.count("dots-listen"))
+            {
+                std::vector<dots::io::Endpoint> listenEndpoints;
+
+                for (const std::string& listenEndpointUri : args["dots-listen"].as<std::vector<std::string>>())
+                {
+                    listenEndpoints.emplace_back(listenEndpointUri);
+                }
+
+                return listenEndpoints;
+            }
+            else
+            {
+                return std::vector{ io::Endpoint{ "tcp://127.0.0.1" } };
+            }
+        }();
     }
 }
