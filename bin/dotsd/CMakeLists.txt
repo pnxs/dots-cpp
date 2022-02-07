@@ -22,6 +22,10 @@ target_compile_options(${TARGET_NAME}
         $<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-O2 -Wall -Wextra -Wpedantic -Werror>>
         $<$<CXX_COMPILER_ID:MSVC>:/W4>
 )
+target_compile_definitions(${TARGET_NAME}
+    PRIVATE
+        DOTS_NO_GLOBAL_TRANSCEIVER
+)
 target_compile_features(${TARGET_NAME}
     PRIVATE
         cxx_std_17

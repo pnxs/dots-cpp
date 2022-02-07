@@ -1,14 +1,14 @@
 #pragma once
 #include <vector>
 #include <optional>
-#include <dots/HostTransceiver.h>
+#include <dots/Application.h>
 #include <DotsDaemonStatus.dots.h>
 
 namespace dots
 {
-    struct DotsDaemon
+    struct DotsDaemon : Application
     {
-        DotsDaemon(std::string name, asio::io_context& ioContext, std::vector<io::Endpoint> listenEndpoints);
+        DotsDaemon(std::string name, int argc, char* argv[]);
         DotsDaemon(const DotsDaemon& other) = delete;
         DotsDaemon(DotsDaemon&& other) = delete;
         ~DotsDaemon() = default;
@@ -23,7 +23,6 @@ namespace dots
 
         void updateServerStatus();
 
-        HostTransceiver m_hostTransceiver;
         DotsDaemonStatus m_daemonStatus;
     };
 }

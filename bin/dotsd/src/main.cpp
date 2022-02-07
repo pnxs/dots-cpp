@@ -10,64 +10,49 @@ namespace po = boost::program_options;
 
 int main(int argc, char* argv[])
 {
-    po::options_description options("Allowed options");
-    options.add_options()
+    try
+    {
+        po::options_description options("Allowed options");
+        options.add_options()
             ("help", "display help message")
-            ("server-name,n", po::value<std::string>()->default_value("dotsd"), "set servername")
-            ("dots-listen", po::value<std::vector<std::string>>(), "local endpoint URI to listen on for incoming guest connections (e.g. tcp://127.0.0.1:11234, ws://127.0.0.1, uds:/tmp/dots_uds.socket")
+            ("daemon-name,n", po::value<std::string>()->default_value("dotsd"), "the name hat will be used by the host transceiver to identify itself")
             #ifdef __linux__
-            ("daemon,d", "daemonize")
+            ("daemonize,d", "indicates whether to use the Linux 'daemon' syscall to detach the application from the controlling terminal")
             #endif
-    ;
+        ;
 
-    po::variables_map args;
-    po::store(po::parse_command_line(argc, argv, options), args);
-    po::notify(args);
+        po::variables_map args;
+        po::store(po::basic_command_line_parser<char>(argc, argv).options(options).allow_unregistered().run(), args);
+        po::notify(args);
 
-    if(args.count("help")) 
-    {
-        std::cout << options << "\n";
-        return EXIT_SUCCESS;
+        if (args.count("help")) 
+        {
+            std::cout << options << "\n";
+            return EXIT_SUCCESS;
+        }
+
+        LOG_NOTICE_S("starting dotsd...");
+        
+        dots::DotsDaemon dotsDaemon{ args["daemon-name"].as<std::string>(), argc, argv };
+
+        #ifdef __linux__
+        if (args.count("daemonize") && ::daemon(0, 0) == -1)
+        {
+            LOG_CRIT_S("could not daemonize dotsd application: " << strerror(errno));
+            return EXIT_FAILURE;
+        }
+        #endif
+        
+        return dotsDaemon.exec();
     }
-
-    LOG_NOTICE_S("starting dotsd...");
-
-    std::vector<dots::io::Endpoint> listenEndpoints = [&args]
+    catch (const std::exception& e)
     {
-        if (args.count("dots-listen"))
-        {
-            std::vector<dots::io::Endpoint> listenEndpoints;
-
-            for (const std::string& listenEndpointUri : args["dots-listen"].as<std::vector<std::string>>())
-            {
-                listenEndpoints.emplace_back(listenEndpointUri);
-            }
-
-            return listenEndpoints;
-        }
-        else
-        {
-            return std::vector{ dots::io::Endpoint{ "tcp://127.0.0.1" } };
-        }
-    }();
-
-    boost::asio::io_context& io_context = dots::io::global_io_context();
-    std::optional<dots::DotsDaemon> dotsDaemon{ std::in_place, args["server-name"].as<std::string>(), io_context, std::move(listenEndpoints) };
-
-    boost::asio::signal_set signals{ io_context, SIGINT, SIGTERM };
-    signals.async_wait([&](auto /*ec*/, int /*signo*/) {
-        dots::io::global_io_context().stop();
-        dotsDaemon.reset();
-    });
-
-    #ifdef __linux__
-    if (args.count("daemon") && daemon(0, 0) == -1)
-    {
-        LOG_CRIT_S("could not daemonize dotsd application: " << errno);
+        LOG_ERROR_S("ERROR running dotsd -> " << e.what());
         return EXIT_FAILURE;
     }
-    #endif
-
-    io_context.run();
-    return EXIT_SUCCESS;
+    catch (...)
+    {
+        LOG_ERROR_S("ERROR running dotsd -> <unknown exception>");
+        return EXIT_FAILURE;
+    }
 }

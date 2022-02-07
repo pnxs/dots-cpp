@@ -17,9 +17,9 @@ using namespace dots::literals;
 
 namespace dots
 {
-    DotsDaemon::DotsDaemon(std::string name, asio::io_context& ioContext, std::vector<io::Endpoint> listenEndpoints) :
-        m_hostTransceiver{ std::move(name), ioContext, type::Registry::StaticTypePolicy::InternalOnly, HostTransceiver::transition_handler_t{ &DotsDaemon::handleTransition, this } },
-        m_daemonStatus{ DotsDaemonStatus::serverName_i{ m_hostTransceiver.selfName() }, DotsDaemonStatus::startTime_i{ timepoint_t::Now() } }
+    DotsDaemon::DotsDaemon(std::string name, int argc, char* argv[]) :
+        Application(argc, argv, HostTransceiver{ std::move(name), io::global_io_context(), type::Registry::StaticTypePolicy::InternalOnly, HostTransceiver::transition_handler_t{&DotsDaemon::handleTransition, this}}),
+        m_daemonStatus{ DotsDaemonStatus::serverName_i{ transceiver().selfName() }, DotsDaemonStatus::startTime_i{ timepoint_t::Now() } }
     {
         add_timer(1s, { &DotsDaemon::updateServerStatus, this }, true);
         add_timer(10s, { &DotsDaemon::cleanUpClients, this }, true);
@@ -31,13 +31,12 @@ namespace dots
         type::Descriptor<DotsContinuousRecorderStatus>::Instance();
         type::Descriptor<DotsDumpContinuousRecorder>::Instance();
 
-        m_hostTransceiver.listen(std::move(listenEndpoints));
-        m_hostTransceiver.setAuthManager<io::LegacyAuthManager>();
+        static_cast<HostTransceiver&>(transceiver()).setAuthManager<io::LegacyAuthManager>();
     }
 
     void DotsDaemon::handleTransition(const Connection& connection, std::exception_ptr/* ePtr*/)
     {
-        m_hostTransceiver.publish(DotsClient{
+        transceiver().publish(DotsClient{
             DotsClient::id_i{ connection.peerId() },
             DotsClient::name_i{ connection.peerName() },
             DotsClient::connectionState_i{ connection.state() }
@@ -48,13 +47,13 @@ namespace dots
     {
         std::set<Connection::id_t> expiredClients;
 
-        for (auto& element : m_hostTransceiver.pool().get<DotsClient>())
+        for (auto& element : transceiver().pool().get<DotsClient>())
         {
             const auto& client = element.first.to<DotsClient>();
 
             if (client.connectionState == DotsConnectionState::closed)
             {
-                for (const auto& [descriptor, container] : m_hostTransceiver.pool())
+                for (const auto& [descriptor, container] : transceiver().pool())
                 {
                     (void)descriptor;
 
@@ -75,7 +74,7 @@ namespace dots
 
         for (Connection::id_t id : expiredClients)
         {
-            m_hostTransceiver.remove(DotsClient{ DotsClient::id_i{ id } });
+            transceiver().remove(DotsClient{ DotsClient::id_i{ id } });
         }
     }
 
@@ -108,11 +107,11 @@ namespace dots
                 };
                 #endif
                 ds.cache = DotsCacheStatus{
-                    DotsCacheStatus::nrTypes_i{ static_cast<uint32_t>(m_hostTransceiver.pool().size()) },
-                    DotsCacheStatus::size_i{ static_cast<uint32_t>(m_hostTransceiver.pool().totalMemoryUsage()) }
+                    DotsCacheStatus::nrTypes_i{ static_cast<uint32_t>(transceiver().pool().size()) },
+                    DotsCacheStatus::size_i{ static_cast<uint32_t>(transceiver().pool().totalMemoryUsage()) }
                 };
 
-                m_hostTransceiver.publish(ds);
+                transceiver().publish(ds);
                 m_daemonStatus = ds;
             }
         }
