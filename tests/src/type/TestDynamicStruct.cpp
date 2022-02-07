@@ -115,7 +115,7 @@ protected:
         m_testDynamicStructDescriptor = static_cast<Descriptor<DynamicStruct>*>(&m_descriptorConverter(testDynamicStructData));
     }
 
-    dots::type::Registry m_registry;
+    Registry m_registry;
     dots::io::DescriptorConverter m_descriptorConverter;
     Descriptor<DynamicStruct>* m_testDynamicSubSubStructDescriptor;
     Descriptor<DynamicStruct>* m_testDynamicSubStructDescriptor;

@@ -5,14 +5,14 @@
 
 namespace dots::io
 {
-    LocalChannel::LocalChannel(Channel::key_t key, boost::asio::io_context& ioContext) :
+    LocalChannel::LocalChannel(key_t key, asio::io_context& ioContext) :
         Channel(key),
         m_ioContext{ std::ref(ioContext) }
     {
         initEndpoints(Endpoint{ "local:/" }, Endpoint{ "local:/" });
     }
 
-    LocalChannel::LocalChannel(Channel::key_t key, boost::asio::io_context& ioContext, LocalListener& peer) :
+    LocalChannel::LocalChannel(key_t key, asio::io_context& ioContext, LocalListener& peer) :
         LocalChannel(key, ioContext)
     {
         peer.accept(*this);
@@ -42,7 +42,7 @@ namespace dots::io
             throw std::runtime_error{ "local channel is not linked or expired unexpectedly" };
         }
 
-        boost::asio::post(other->m_ioContext.get(), [peer = m_peer, header = header, data = to_cbor(instance, *header.attributes)]() mutable
+        asio::post(other->m_ioContext.get(), [peer = m_peer, header = header, data = to_cbor(instance, *header.attributes)]() mutable
         {
             auto other = peer.lock();
 

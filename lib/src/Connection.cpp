@@ -36,7 +36,7 @@
 namespace dots
 {
     Connection::Connection(io::channel_ptr_t channel, bool host, std::optional<std::string> authSecret/* = std::nullopt*/) :
-        m_expectedSystemType{ &DotsMsgError::_Descriptor(), types::property_set_t::None, std::nullopt },
+        m_expectedSystemType{ &DotsMsgError::_Descriptor(), property_set_t::None, std::nullopt },
         m_connectionState(DotsConnectionState::suspended),
         m_selfId(host ? HostId : UninitializedId),
         m_peerId(host ? M_nextGuestId++ : HostId),
@@ -157,7 +157,7 @@ namespace dots
         }
     }
 
-    void Connection::transmit(const type::Struct& instance, std::optional<types::property_set_t> includedProperties/* = std::nullopt*/, bool remove/* = false*/)
+    void Connection::transmit(const type::Struct& instance, std::optional<property_set_t> includedProperties/* = std::nullopt*/, bool remove/* = false*/)
     {
         if (includedProperties == std::nullopt)
         {
@@ -170,7 +170,7 @@ namespace dots
 
         transmit(DotsHeader{
             DotsHeader::typeName_i{ instance._descriptor().name() },
-            DotsHeader::sentTime_i{ types::timepoint_t::Now() },
+            DotsHeader::sentTime_i{ timepoint_t::Now() },
             DotsHeader::attributes_i{ *includedProperties },
             DotsHeader::removeObj_i{ remove }
         }, instance);
@@ -260,7 +260,7 @@ namespace dots
                 {
                     header.sender = m_peerId;
 
-                    header.serverSentTime = types::timepoint_t::Now();
+                    header.serverSentTime = timepoint_t::Now();
 
                     if (!header.sentTime.isValid())
                     {
@@ -274,7 +274,7 @@ namespace dots
                 {
                     if (!header.sentTime.isValid())
                     {
-                        header.sentTime(types::timepoint_t::Now());
+                        header.sentTime(timepoint_t::Now());
                     }
 
                     if (header.sender.isValid())
@@ -300,7 +300,7 @@ namespace dots
     void Connection::handleClose(std::exception_ptr ePtr)
     {
         m_receiveHandler = std::nullopt;
-        expectSystemType<DotsMsgError>(types::property_set_t::None, nullptr);
+        expectSystemType<DotsMsgError>(property_set_t::None, nullptr);
         setConnectionState(DotsConnectionState::closed, ePtr);
     }
 
@@ -472,7 +472,7 @@ namespace dots
     }
 
     template <typename T>
-    void Connection::expectSystemType(types::property_set_t expectedAttributes, void(Connection::* handler)(const T&))
+    void Connection::expectSystemType(property_set_t expectedAttributes, void(Connection::* handler)(const T&))
     {
         m_expectedSystemType = { &T::_Descriptor(), expectedAttributes, [this, handler](const type::Struct& instance){ (this->*handler)(instance._to<T>()); } };
     }

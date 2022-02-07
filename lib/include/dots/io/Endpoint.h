@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <filesystem>
-#include <boost/asio.hpp>
+#include <dots/asio.h>
 #include <boost/filesystem/path.hpp>
 #include <dots/tools/Uri.h>
 
@@ -14,18 +14,18 @@ namespace dots::io
         Endpoint(const std::string& scheme, const boost::filesystem::path& path);
 
         template <typename InternetProtocol>
-        Endpoint(const std::string& scheme, const boost::asio::ip::basic_endpoint<InternetProtocol>& endpoint) :
+        Endpoint(const std::string& scheme, const asio::ip::basic_endpoint<InternetProtocol>& endpoint) :
             Endpoint(scheme, endpoint.address().to_string(), endpoint.port())
         {
             /* do nothing */
         }
 
         template <typename InternetProtocol>
-        Endpoint(const boost::asio::ip::basic_endpoint<InternetProtocol>& endpoint) :
+        Endpoint(const asio::ip::basic_endpoint<InternetProtocol>& endpoint) :
             Endpoint([]() -> std::string
             {
-                constexpr bool IsTcp = std::is_same_v<InternetProtocol, boost::asio::ip::tcp>;
-                static_assert(std::is_same_v<InternetProtocol, boost::asio::ip::tcp>, "unsupported IP endpoint protocol");
+                constexpr bool IsTcp = std::is_same_v<InternetProtocol, asio::ip::tcp>;
+                static_assert(std::is_same_v<InternetProtocol, asio::ip::tcp>, "unsupported IP endpoint protocol");
 
                 if constexpr (IsTcp)
                 {
@@ -39,13 +39,6 @@ namespace dots::io
         {
             /* do nothing */
         }
-
-        Endpoint(const Endpoint& other) = default;
-        Endpoint(Endpoint&& other) = default;
-        ~Endpoint() = default;
-
-        Endpoint& operator = (const Endpoint& rhs) = default;
-        Endpoint& operator = (Endpoint&& rhs) = default;
 
         void setPath(const std::filesystem::path& path);
         void setPath(const boost::filesystem::path& path);

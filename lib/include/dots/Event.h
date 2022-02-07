@@ -218,10 +218,10 @@ namespace dots
          * an instance, these might refer to properties that are not valid in
          * Event<>::transmitted().
          *
-         * @return types::property_set_t The property set contained in the
+         * @return property_set_t The property set contained in the
          * transmission that triggered this event.
          */
-        types::property_set_t newProperties() const { return header().attributes; }
+        property_set_t newProperties() const { return header().attributes; }
 
         /*!
          * @brief Get the updated properties.
@@ -232,9 +232,9 @@ namespace dots
          * Note that this does not include properties that were invalidated by
          * the transmission.
          *
-         * @return types::property_set_t 
+         * @return property_set_t 
          */
-        types::property_set_t updatedProperties() const { return newProperties() ^ updated()._validProperties(); }
+        property_set_t updatedProperties() const { return newProperties() ^ updated()._validProperties(); }
 
         /*!
          * @brief Safely cast the Event<> to the explicitly typed version.

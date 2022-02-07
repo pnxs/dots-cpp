@@ -15,13 +15,6 @@ namespace dots::type
         {
             /* do nothing */
         }
-        
-        constexpr StaticPropertyMetadata(const StaticPropertyMetadata& other) = default;
-        constexpr StaticPropertyMetadata(StaticPropertyMetadata&& other) = default;
-        ~StaticPropertyMetadata() = default;
-
-        constexpr StaticPropertyMetadata& operator = (const StaticPropertyMetadata& rhs) = default;
-        constexpr StaticPropertyMetadata& operator = (StaticPropertyMetadata&& rhs) = default;
 
         constexpr std::string_view name() const
         {

@@ -45,7 +45,7 @@ namespace dots
          * @param staticTypePolicy Specifies the static type policy of the
          * transceiver's registry.
          */
-        GuestTransceiver(std::string selfName, boost::asio::io_context& ioContext = io::global_io_context(), type::Registry::StaticTypePolicy staticTypePolicy = type::Registry::StaticTypePolicy::All);
+        GuestTransceiver(std::string selfName, asio::io_context& ioContext = io::global_io_context(), type::Registry::StaticTypePolicy staticTypePolicy = type::Registry::StaticTypePolicy::All);
         GuestTransceiver(const GuestTransceiver& other) = delete;
         GuestTransceiver(GuestTransceiver&& other) = default;
         ~GuestTransceiver() override = default;
@@ -187,7 +187,7 @@ namespace dots
          * @exception std::runtime_error Thrown if no host connection has been
          * established when the function is called.
          */
-        void publish(const type::Struct& instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false) override;
+        void publish(const type::Struct& instance, std::optional<property_set_t> includedProperties = std::nullopt, bool remove = false) override;
 
     private:
 

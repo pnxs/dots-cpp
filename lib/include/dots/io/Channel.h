@@ -19,7 +19,7 @@ namespace dots::io
 {
     struct Channel : tools::shared_ptr_only, std::enable_shared_from_this<Channel>
     {
-        using key_t = tools::shared_ptr_only::key_t;
+        using key_t = key_t;
         using receive_handler_t = tools::Handler<bool(Transmission)>;
         using error_handler_t = tools::Handler<void(std::exception_ptr)>;
 

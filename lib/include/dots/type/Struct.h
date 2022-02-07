@@ -1,6 +1,4 @@
 #pragma once
-#include <string_view>
-#include <functional>
 #include <type_traits>
 #include <dots/type/PropertyContainer.h>
 #include <dots/type/StructDescriptor.h>
@@ -10,12 +8,6 @@ namespace dots::type
     struct Struct : PropertyContainer<Struct>
     {
         explicit Struct(const StructDescriptor<>& descriptor);
-        Struct(const Struct& other) = default;
-        Struct(Struct&& other) noexcept = default;
-        ~Struct() = default;
-
-        Struct& operator = (const Struct& rhs) = default;
-        Struct& operator = (Struct&& rhs) noexcept = default;
 
         const StructDescriptor<>& _descriptor() const;
 

@@ -16,13 +16,6 @@ namespace dots::type
         constexpr Duration(const base_t& duration) : base_t(duration){}
         constexpr explicit Duration(rep count) : base_t(count){}
 
-        constexpr Duration(const Duration& other) = default;
-        constexpr Duration(Duration&& other) noexcept = default;
-        ~Duration() = default;
-
-        constexpr Duration& operator = (const Duration& rhs) = default;
-        constexpr Duration& operator = (Duration&& rhs) = default;
-
         using base_t::operator++;
         using base_t::operator--;
 
@@ -63,13 +56,6 @@ namespace dots::type
         using base_t::base_t;
         constexpr TimePointImpl() = default;
         constexpr TimePointImpl(const base_t& baseTimePoint) : base_t(baseTimePoint){}
-
-        constexpr TimePointImpl(const TimePointImpl& other) = default;
-        constexpr TimePointImpl(TimePointImpl&& other) noexcept = default;
-        ~TimePointImpl() = default;
-
-        constexpr TimePointImpl& operator = (const TimePointImpl& rhs) = default;
-        constexpr TimePointImpl& operator = (TimePointImpl&& rhs) = default;
 
         using base_t::operator+=;
         using base_t::operator-=;

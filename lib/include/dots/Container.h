@@ -70,12 +70,6 @@ namespace dots
          * @param descriptor The DOTS struct type of the Container.
          */
         Container(const type::StructDescriptor<>& descriptor);
-        Container(const Container& other) = default;
-        Container(Container&& other) = default;
-        ~Container() = default;
-
-        Container& operator = (const Container& rhs) = default;
-        Container& operator = (Container&& rhs) = default;
 
         /*!
          * @brief Get the DOTS struct type of the Container.
@@ -461,12 +455,6 @@ namespace dots
         {
             /* do nothing */
         }
-        Container(const Container& other) = default;
-        Container(Container&& other) = default;
-        ~Container() = default;
-
-        Container& operator = (const Container& rhs) = default;
-        Container& operator = (Container&& rhs) = default;
 
         /*!
          * @brief Try to find the single clone instance.

@@ -1,3 +1,4 @@
+#include <iostream>
 #include <dots/Application.h>
 #include <dots/tools/logging.h>
 #include <DotsDescriptorRequest.dots.h>

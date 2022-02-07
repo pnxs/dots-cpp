@@ -52,7 +52,7 @@ namespace dots::type
             return *M_descriptorStorage; 
         }
 
-        inline static const type::PropertyDescriptor& Descriptor = InitDescriptor();
+        inline static const PropertyDescriptor& Descriptor = InitDescriptor();
 
     protected:
 
@@ -146,7 +146,7 @@ namespace dots::type
             return Set() <= derivedValidProperties();
         }
 
-        inline static std::optional<type::PropertyDescriptor> M_descriptorStorage;
+        inline static std::optional<PropertyDescriptor> M_descriptorStorage;
         std::aligned_storage_t<sizeof(T), alignof(T)> m_storage;
     };
 }

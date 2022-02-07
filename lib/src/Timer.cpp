@@ -4,7 +4,7 @@
 
 namespace dots
 {
-    Timer::Timer(boost::asio::io_context& ioContext, id_t id, type::Duration interval, callback_t cb, bool periodic) :
+    Timer::Timer(asio::io_context& ioContext, id_t id, type::Duration interval, callback_t cb, bool periodic) :
         m_this{ std::make_shared<Timer*>(this) },
         m_timer(ioContext),
         m_cb(std::move(cb)),
@@ -51,7 +51,7 @@ namespace dots
     {
         m_timer.async_wait([this, this_{ std::weak_ptr<Timer*>(m_this) }](boost::system::error_code error)
         {
-            if (this_.expired() || error == boost::asio::error::operation_aborted)
+            if (this_.expired() || error == asio::error::operation_aborted)
             {
                 return;
             }
@@ -64,7 +64,7 @@ namespace dots
             }
             else
             {
-                boost::asio::use_service<io::TimerService>(static_cast<boost::asio::execution_context&>(m_timer.get_executor().context())).removeTimer(m_id);
+                asio::use_service<io::TimerService>(m_timer.get_executor().context()).removeTimer(m_id);
             }
         });
     }

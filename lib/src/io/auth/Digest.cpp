@@ -13,7 +13,7 @@ namespace dots::io
     }
 
      Digest::Digest(std::string_view stringValue) :
-        Digest([&]()
+        Digest([&]
         {
             value_t value = {};
             boost::algorithm::unhex(stringValue, value.begin());
@@ -25,7 +25,7 @@ namespace dots::io
     }
 
      Digest::Digest(Nonce nonce, std::string_view cnonce, std::string_view userName, std::string_view secret) :
-        Digest([&]()
+        Digest([&]
         {
             picosha2::hash256_one_by_one a1;
             update(a1, userName);

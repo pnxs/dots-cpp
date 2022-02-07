@@ -10,7 +10,7 @@ namespace dots::io
         /* do nothing */
     }
 
-    type::EnumDescriptor<>& DescriptorConverter::operator () (const types::EnumDescriptorData& enumData) const
+    type::EnumDescriptor<>& DescriptorConverter::operator () (const EnumDescriptorData& enumData) const
     {
         if (type::EnumDescriptor<>* descriptor = m_registry.get().findEnumType(*enumData.name); descriptor != nullptr)
         {
@@ -27,7 +27,7 @@ namespace dots::io
         return m_registry.get().registerType<type::Descriptor<type::DynamicEnum>>(enumData.name, std::move(enumerators));
     }
 
-    type::StructDescriptor<>& DescriptorConverter::operator () (const types::StructDescriptorData& structData) const
+    type::StructDescriptor<>& DescriptorConverter::operator () (const StructDescriptorData& structData) const
     {
         if (type::StructDescriptor<>* descriptor = m_registry.get().findStructType(*structData.name); descriptor != nullptr)
         {
@@ -74,7 +74,7 @@ namespace dots::io
                 if (valueTypeDescriptor->type() == type::Type::Enum)
                 {
                     auto& enumDescriptor = static_cast<type::Descriptor<type::DynamicEnum>&>(*valueTypeDescriptor);
-                    descriptor = &m_registry.get().registerType<type::Descriptor<types::vector_t<type::DynamicEnum>>>(enumDescriptor);
+                    descriptor = &m_registry.get().registerType<type::Descriptor<vector_t<type::DynamicEnum>>>(enumDescriptor);
                 }
                 else if (valueTypeDescriptor->type() == type::Type::Struct)
                 {
@@ -82,11 +82,11 @@ namespace dots::io
                     {
                         const auto& staticStructDescriptor = valueTypeDescriptor->to<type::StructDescriptor<>>();
                         auto dynStructDescriptor_ = type::make_descriptor<type::Descriptor<type::DynamicStruct>>(staticStructDescriptor.name(), staticStructDescriptor.flags(), staticStructDescriptor.propertyDescriptors(), staticStructDescriptor.size());
-                        descriptor = &m_registry.get().registerType<type::Descriptor<types::vector_t<type::DynamicStruct>>>(*dynStructDescriptor_, false);
+                        descriptor = &m_registry.get().registerType<type::Descriptor<vector_t<type::DynamicStruct>>>(*dynStructDescriptor_, false);
                     }
                     else
                     {
-                        descriptor = &m_registry.get().registerType<type::Descriptor<types::vector_t<type::DynamicStruct>>>(*dynStructDescriptor, false);
+                        descriptor = &m_registry.get().registerType<type::Descriptor<vector_t<type::DynamicStruct>>>(*dynStructDescriptor, false);
                     }
                 }
                 else
@@ -109,13 +109,13 @@ namespace dots::io
 
         size_t size = type::PropertyOffset::Next(alignment, last->offset(), last->valueDescriptor().size());
 
-        return m_registry.get().registerType<type::Descriptor<type::DynamicStruct>>(structData.name, flags, propertyDescriptors, sizeof(type::DynamicStruct) + size);;
+        return m_registry.get().registerType<type::Descriptor<type::DynamicStruct>>(structData.name, flags, propertyDescriptors, sizeof(type::DynamicStruct) + size);
     }
 
-    types::EnumDescriptorData DescriptorConverter::operator () (const type::EnumDescriptor<>& enumDescriptor)
+    EnumDescriptorData DescriptorConverter::operator () (const type::EnumDescriptor<>& enumDescriptor)
     {
         EnumDescriptorData enumData{ EnumDescriptorData::name_i{ enumDescriptor.name() } };
-        types::vector_t<types::EnumElementDescriptor>& enumeratorData = enumData.elements.construct();
+        vector_t<EnumElementDescriptor>& enumeratorData = enumData.elements.construct();
 
         for (const type::EnumeratorDescriptor<>& enumeratorDescriptor : enumDescriptor.enumeratorsTypeless())
         {
@@ -128,7 +128,7 @@ namespace dots::io
         return enumData;
     }
 
-    types::StructDescriptorData DescriptorConverter::operator () (const type::StructDescriptor<>& structDescriptor)
+    StructDescriptorData DescriptorConverter::operator () (const type::StructDescriptor<>& structDescriptor)
     {
         StructDescriptorData structData;
         structData.name(structDescriptor.name());

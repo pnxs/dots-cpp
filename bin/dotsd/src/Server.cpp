@@ -13,13 +13,13 @@
 #include <DotsStatistics.dots.h>
 #include <DotsCacheStatus.dots.h>
 
-using namespace dots::types::literals;
+using namespace dots::literals;
 
 namespace dots
 {
-    Server::Server(std::string name, listeners_t listeners, boost::asio::io_context& ioContext/* = dots::io::global_io_context()*/) :
+    Server::Server(std::string name, listeners_t listeners, asio::io_context& ioContext/* = dots::io::global_io_context()*/) :
         m_hostTransceiver{ std::move(name), ioContext, type::Registry::StaticTypePolicy::InternalOnly, HostTransceiver::transition_handler_t{ &Server::handleTransition, this } },
-        m_daemonStatus{ DotsDaemonStatus::serverName_i{ m_hostTransceiver.selfName() }, DotsDaemonStatus::startTime_i{ types::timepoint_t::Now() } }
+        m_daemonStatus{ DotsDaemonStatus::serverName_i{ m_hostTransceiver.selfName() }, DotsDaemonStatus::startTime_i{ timepoint_t::Now() } }
     {
         add_timer(1s, { &Server::updateServerStatus, this }, true);
         add_timer(10s, { &Server::cleanUpClients, this }, true);
@@ -40,12 +40,12 @@ namespace dots
         m_hostTransceiver.setAuthManager<io::LegacyAuthManager>();
     }
 
-    const boost::asio::io_context& Server::ioContext() const
+    const asio::io_context& Server::ioContext() const
     {
         return m_hostTransceiver.ioContext();
     }
 
-    boost::asio::io_context& Server::ioContext()
+    asio::io_context& Server::ioContext()
     {
         return m_hostTransceiver.ioContext();
     }
@@ -177,7 +177,7 @@ namespace dots
      * @param td the structdescriptor from which the flags should be processed.
      * @return short string containing the flags.
      */
-    std::string Server::flags2String(const dots::type::StructDescriptor<>* td)
+    std::string Server::flags2String(const type::StructDescriptor<>* td)
     {
         std::string ret = ".....";
         if (td->cached()) ret[0] = 'C';

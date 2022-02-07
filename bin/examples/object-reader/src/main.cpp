@@ -1,3 +1,4 @@
+#include <iostream>
 #include <dots/Application.h>
 #include <dots/type/AnyStruct.h>
 #include <dots/tools/logging.h>

@@ -1,5 +1,5 @@
 #pragma once
-#include <boost/asio.hpp>
+#include <dots/asio.h>
 #include <dots/testing/gtest/gtest.h>
 #include <dots/io/Channel.h>
 #include <dots/Connection.h>
@@ -48,7 +48,7 @@ namespace dots::testing
          * @param ioContext The ASIO IO context (i.e. the "event loop") to
          * use.
          */
-        MockChannel(Channel::key_t key, boost::asio::io_context& ioContext) :
+        MockChannel(key_t key, asio::io_context& ioContext) :
             Channel(key),
             m_ioContext{ std::ref(ioContext) }
         {
@@ -67,10 +67,10 @@ namespace dots::testing
          * Note that this is the same IO context that was given in
          * MockChannel().
          *
-         * @return const boost::asio::io_context& A reference to the
+         * @return const asio::io_context& A reference to the
          * currently used IO context.
          */
-        const boost::asio::io_context& ioContext() const
+        const asio::io_context& ioContext() const
         {
             return m_ioContext;
         }
@@ -81,10 +81,10 @@ namespace dots::testing
          * Note that this is the same IO context that was given in
          * MockChannel().
          *
-         * @return const boost::asio::io_context& A reference to the
+         * @return const asio::io_context& A reference to the
          * currently used IO context.
          */
-        boost::asio::io_context& ioContext()
+        asio::io_context& ioContext()
         {
             return m_ioContext;
         }
@@ -144,7 +144,7 @@ namespace dots::testing
          */
         void spoof(const DotsHeader& header, const type::Struct& instance)
         {
-            boost::asio::post(m_ioContext.get(), [this, this_{ weak_from_this() }, header = header, instance = type::AnyStruct{ instance }]() mutable
+            asio::post(m_ioContext.get(), [this, this_{ weak_from_this() }, header = header, instance = type::AnyStruct{ instance }]() mutable
             {
                 try
                 {
@@ -191,7 +191,7 @@ namespace dots::testing
          * @param remove Specifies whether the remove flag in the header
          * will be set.
          */
-        void spoof(uint32_t sender, const type::Struct& instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false)
+        void spoof(uint32_t sender, const type::Struct& instance, std::optional<property_set_t> includedProperties = std::nullopt, bool remove = false)
         {
             if (includedProperties == std::nullopt)
             {
@@ -204,7 +204,7 @@ namespace dots::testing
 
             spoof(DotsHeader{
                 DotsHeader::typeName_i{ instance._descriptor().name() },
-                DotsHeader::sentTime_i{ types::timepoint_t::Now() },
+                DotsHeader::sentTime_i{ timepoint_t::Now() },
                 DotsHeader::attributes_i{ *includedProperties },
                 DotsHeader::sender_i{ sender },
                 DotsHeader::removeObj_i{ remove }
@@ -237,7 +237,7 @@ namespace dots::testing
          * @param remove Specifies whether the remove flag in the header
          * will be set.
          */
-        void spoof(const type::Struct& instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false)
+        void spoof(const type::Struct& instance, std::optional<property_set_t> includedProperties = std::nullopt, bool remove = false)
         {
             spoof(Connection::HostId, instance, includedProperties, remove);
         }
@@ -256,7 +256,7 @@ namespace dots::testing
 
         void transmitImpl(const io::Transmission& transmission) override
         {
-            boost::asio::post(m_ioContext.get(), [this, transmission = io::Transmission{ transmission.header(), transmission.instance() }]()
+            asio::post(m_ioContext.get(), [this, transmission = io::Transmission{ transmission.header(), transmission.instance() }]
             {
                 m_transmitMock.AsStdFunction()(transmission);
             });
@@ -264,13 +264,13 @@ namespace dots::testing
 
     private:
 
-        std::reference_wrapper<boost::asio::io_context> m_ioContext;
+        std::reference_wrapper<asio::io_context> m_ioContext;
         transmit_mock_t m_transmitMock;
     };
 }
 
 #define IMPL_EXPECT_DOTS_TRANSMIT_AT_CHANNEL                                                                                                                        \
-[](dots::testing::MockChannel& mockChannel, auto&& instance, std::optional<dots::types::property_set_t> includedProperties, bool remove) -> auto&                   \
+[](dots::testing::MockChannel& mockChannel, auto&& instance, std::optional<dots::property_set_t> includedProperties, bool remove) -> auto&                          \
 {                                                                                                                                                                   \
     return EXPECT_CALL(mockChannel.transmitMock(), Call(dots::testing::TransmissionEqual(std::forward<decltype(instance)>(instance), includedProperties, remove))); \
 }
@@ -307,10 +307,10 @@ namespace dots::testing
  *
  * @return auto& A reference to the created Google Test expectation.
  */
-#define EXPECT_DOTS_TRANSMIT_AT_CHANNEL                                                                                                             \
-[](dots::testing::MockChannel& mockChannel, auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto& \
-{                                                                                                                                                   \
-    return IMPL_EXPECT_DOTS_TRANSMIT_AT_CHANNEL(mockChannel, std::forward<decltype(instance)>(instance), includedProperties, false);                \
+#define EXPECT_DOTS_TRANSMIT_AT_CHANNEL                                                                                                      \
+[](dots::testing::MockChannel& mockChannel, auto&& instance, std::optional<dots::property_set_t> includedProperties = std::nullopt) -> auto& \
+{                                                                                                                                            \
+    return IMPL_EXPECT_DOTS_TRANSMIT_AT_CHANNEL(mockChannel, std::forward<decltype(instance)>(instance), includedProperties, false);         \
 }
 
 /*!
@@ -345,8 +345,8 @@ namespace dots::testing
  *
  * @return auto& A reference to the created Google Test expectation.
  */
-#define EXPECT_DOTS_REMOVE_TRANSMIT_AT_CHANNEL                                                                                                      \
-[](dots::testing::MockChannel& mockChannel, auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto& \
-{                                                                                                                                                   \
-    return IMPL_EXPECT_DOTS_TRANSMIT_AT_CHANNEL(mockChannel, std::forward<decltype(instance)>(instance), includedProperties, true);                 \
+#define EXPECT_DOTS_REMOVE_TRANSMIT_AT_CHANNEL                                                                                               \
+[](dots::testing::MockChannel& mockChannel, auto&& instance, std::optional<dots::property_set_t> includedProperties = std::nullopt) -> auto& \
+{                                                                                                                                            \
+    return IMPL_EXPECT_DOTS_TRANSMIT_AT_CHANNEL(mockChannel, std::forward<decltype(instance)>(instance), includedProperties, true);          \
 }

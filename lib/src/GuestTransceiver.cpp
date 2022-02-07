@@ -7,7 +7,7 @@
 namespace dots
 {
     GuestTransceiver::GuestTransceiver(std::string selfName,
-                                       boost::asio::io_context& ioContext/* = global_io_context()*/,
+                                       asio::io_context& ioContext/* = global_io_context()*/,
                                        type::Registry::StaticTypePolicy staticTypePolicy /*= type::Registry::StaticTypePolicy::All*/) :
         Transceiver(std::move(selfName), ioContext, staticTypePolicy)
     {
@@ -43,7 +43,7 @@ namespace dots
         return open({}, {}, std::nullopt, std::move(channel));
     }
 
-    void GuestTransceiver::publish(const type::Struct& instance, std::optional<types::property_set_t> includedProperties/* = std::nullopt*/, bool remove/* = false*/)
+    void GuestTransceiver::publish(const type::Struct& instance, std::optional<property_set_t> includedProperties/* = std::nullopt*/, bool remove/* = false*/)
     {
         if (const type::StructDescriptor<>& descriptor = instance._descriptor(); descriptor.substructOnly())
         {

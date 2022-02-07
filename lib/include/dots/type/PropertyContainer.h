@@ -10,14 +10,6 @@ namespace dots::type
     template <typename Derived>
     struct PropertyContainer
     {
-        PropertyContainer() = default;
-        PropertyContainer(const PropertyContainer& other) = default;
-        PropertyContainer(PropertyContainer&& other) = default;
-        ~PropertyContainer() = default;
-
-        PropertyContainer& operator = (const PropertyContainer& rhs) = default;
-        PropertyContainer& operator = (PropertyContainer&& rhs) noexcept = default;
-
         const_property_iterator operator [] (PropertySet::index_t tag) const
         {
             return _find(tag);

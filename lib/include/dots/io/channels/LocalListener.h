@@ -1,7 +1,7 @@
 #pragma once
 #include <functional>
 #include <optional>
-#include <boost/asio.hpp>
+#include <dots/asio.h>
 #include <dots/io/Listener.h>
 #include <dots/io/channels/LocalChannel.h>
 
@@ -9,7 +9,7 @@ namespace dots::io
 {
     struct LocalListener : Listener
     {
-        LocalListener(boost::asio::io_context& ioContext);
+        LocalListener(asio::io_context& ioContext);
         LocalListener(const LocalListener& other) = delete;
         LocalListener(LocalListener&& other) = delete;
         ~LocalListener() override = default;
@@ -25,6 +25,6 @@ namespace dots::io
 
     private:
 
-        std::reference_wrapper<boost::asio::io_context> m_ioContext;
+        std::reference_wrapper<asio::io_context> m_ioContext;
     };
 }

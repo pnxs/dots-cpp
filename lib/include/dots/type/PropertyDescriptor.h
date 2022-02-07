@@ -12,12 +12,6 @@ namespace dots::type
     struct PropertyDescriptor
     {
         PropertyDescriptor(Descriptor<>& descriptor, std::string name, uint32_t tag, bool isKey, PropertyOffset offset);
-        PropertyDescriptor(const PropertyDescriptor& other) = default;
-        PropertyDescriptor(PropertyDescriptor&& other) = default;
-        ~PropertyDescriptor() = default;
-
-        PropertyDescriptor& operator = (const PropertyDescriptor& rhs) = default;
-        PropertyDescriptor& operator = (PropertyDescriptor&& rhs) = default;
 
         const Descriptor<>& valueDescriptor() const
         {

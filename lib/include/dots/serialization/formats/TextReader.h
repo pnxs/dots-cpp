@@ -235,7 +235,7 @@ namespace dots::serialization
 
         std::string_view readIdentifierString()
         {
-            static /*constexpr */std::vector<bool> IdentifierSymbols = []()
+            static /*constexpr */std::vector<bool> IdentifierSymbols = []
             {
                 std::vector<bool> identifierSymbols(2 << (sizeof(char) * 8 - 1), false);
                 for (char c = '0'; c <= '9'; ++c){ identifierSymbols[static_cast<size_t>(c)] = true; }

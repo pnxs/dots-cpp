@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <map>
-#include <boost/asio.hpp>
+#include <dots/asio.h>
 #include <dots/io/auth/AuthManager.h>
 #include <dots/Subscription.h>
 #include <DotsMsgConnect.dots.h>
@@ -29,10 +29,10 @@ namespace dots::io
         const rules_t& rules() const;
         const std::optional<bool>& defaultPolicy() const;
 
-        bool requiresAuthentication(const boost::asio::ip::address& address);
-        bool verifyResponse(const boost::asio::ip::address& address, uint64_t authNonce, const DotsMsgConnect& msgConnect);
+        bool requiresAuthentication(const asio::ip::address& address);
+        bool verifyResponse(const asio::ip::address& address, uint64_t authNonce, const DotsMsgConnect& msgConnect);
 
-        std::vector<DotsAuthentication> findMatchingRules(const boost::asio::ip::address& address, const std::string& clientName);
+        std::vector<DotsAuthentication> findMatchingRules(const asio::ip::address& address, const std::string& clientName);
 
     private:
 

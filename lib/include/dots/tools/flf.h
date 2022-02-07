@@ -15,13 +15,6 @@ namespace dots::tools
             func(fun)
         {}
 
-        constexpr Flf(const Flf& other) = default;
-        constexpr Flf(Flf&& other) = default;
-        ~Flf() = default;
-
-        Flf& operator = (const Flf& rhs) = default;
-        Flf& operator = (Flf&& rhs) = default;
-
         std::string_view file;
         const int line;
         std::string_view func;

@@ -17,12 +17,6 @@ namespace dots::testing
             {
                 /* do nothing */
             }
-            EventEqualMatcher(const EventEqualMatcher& other) = default;
-            EventEqualMatcher(EventEqualMatcher&& other) = default;
-            ~EventEqualMatcher() = default;
-
-            EventEqualMatcher& operator = (const EventEqualMatcher& rhs) = default;
-            EventEqualMatcher& operator = (EventEqualMatcher&& rhs) = default;
 
             bool MatchAndExplain(const Event<>& event, std::ostream* os) const
             {
@@ -100,10 +94,10 @@ namespace dots::testing
      * matcher.
      */
     template <typename T>
-    ::testing::Matcher<const Event<>&> EventEqual(T&& instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false, bool isFromMyself = false)
+    ::testing::Matcher<const Event<>&> EventEqual(T&& instance, std::optional<property_set_t> includedProperties = std::nullopt, bool remove = false, bool isFromMyself = false)
     {
         using decayed_t = std::decay_t<T>;
-        constexpr bool IsStruct = std::is_base_of_v<dots::type::Struct, decayed_t>;
+        constexpr bool IsStruct = std::is_base_of_v<type::Struct, decayed_t>;
         static_assert(IsStruct, "instance type T has to be a DOTS struct type");
 
         if constexpr (IsStruct)

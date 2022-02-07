@@ -20,22 +20,16 @@ namespace dots::io
         Digest(std::string_view stringValue);
         Digest(Nonce nonce, std::string_view cnonce, std::string_view userName, std::string_view secret);
         Digest(Nonce nonce, Nonce cnonce, std::string_view userName, std::string_view secret);
-        Digest(const Digest& other) = default;
-        Digest(Digest&& other) = default;
-        ~Digest() = default;
-
-        Digest& operator = (const Digest& rhs) = default;
-        Digest& operator = (Digest&& rhs) = default;
 
         const value_t& value() const;
         std::string toString() const;
 
     private:
 
-        template<typename T> struct is_contiguous_container: public std::false_type {};
-        template<typename T, std::size_t N> struct is_contiguous_container<std::array<T, N>>: public std::true_type {};
-        template<typename T> struct is_contiguous_container<std::vector<T>>: public std::true_type {};
-        template<typename T> struct is_contiguous_container<std::basic_string<T>>: public std::true_type {};
+        template<typename T> struct is_contiguous_container: std::false_type {};
+        template<typename T, std::size_t N> struct is_contiguous_container<std::array<T, N>>: std::true_type {};
+        template<typename T> struct is_contiguous_container<std::vector<T>>: std::true_type {};
+        template<typename T> struct is_contiguous_container<std::basic_string<T>>: std::true_type {};
 
         void update(picosha2::hash256_one_by_one& hasher, std::string_view data);
         void update(picosha2::hash256_one_by_one& hasher, const uint8_t* data, size_t len);

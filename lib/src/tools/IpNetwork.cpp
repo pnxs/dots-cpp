@@ -11,13 +11,13 @@ namespace dots::tools
     IpNetwork::IpNetwork(const std::string& address, prefix_length_t prefixLength) :
         IpNetwork([&]() -> network_t
         {
-            if (auto address_ = boost::asio::ip::make_address(address); address_.is_v4())
+            if (auto address_ = asio::ip::make_address(address); address_.is_v4())
             {
-                return boost::asio::ip::make_network_v4(address_.to_v4(), prefixLength);
+                return asio::ip::make_network_v4(address_.to_v4(), prefixLength);
             }
             else
             {
-                return boost::asio::ip::make_network_v6(address_.to_v6(), prefixLength);
+                return asio::ip::make_network_v6(address_.to_v6(), prefixLength);
             }
         }())
     {
@@ -31,20 +31,20 @@ namespace dots::tools
 
             if (std::string::size_type pos = network.find_last_of("/"); pos == std::string::npos)
             {
-                if (auto address = boost::asio::ip::make_address(network); address.is_v4())
+                if (auto address = asio::ip::make_address(network); address.is_v4())
                 {
-                    return boost::asio::ip::make_network_v4(address.to_v4(), DefaultV4PrefixLength);
+                    return asio::ip::make_network_v4(address.to_v4(), DefaultV4PrefixLength);
                 }
                 else
                 {
-                    return boost::asio::ip::make_network_v6(address.to_v6(), DefaultV6PrefixLength);
+                    return asio::ip::make_network_v6(address.to_v6(), DefaultV6PrefixLength);
                 }
             }
-            else if (auto networkV4 = boost::asio::ip::make_network_v4(network, ec); !ec.failed())
+            else if (auto networkV4 = asio::ip::make_network_v4(network, ec); !ec.failed())
             {
                 return networkV4;
             }
-            else if (auto networkV6 = boost::asio::ip::make_network_v6(network, ec); !ec.failed())
+            else if (auto networkV6 = asio::ip::make_network_v6(network, ec); !ec.failed())
             {
                 return networkV6;
             }
@@ -57,16 +57,16 @@ namespace dots::tools
         /* do nothing */
     }
 
-    IpNetwork::IpNetwork(const boost::asio::ip::address& address) :
+    IpNetwork::IpNetwork(const asio::ip::address& address) :
         IpNetwork([&]() -> network_t
         {
             if (address.is_v4())
             {
-                return boost::asio::ip::make_network_v4(address.to_v4(), DefaultV4PrefixLength);
+                return asio::ip::make_network_v4(address.to_v4(), DefaultV4PrefixLength);
             }
             else
             {
-                return boost::asio::ip::make_network_v6(address.to_v6(), DefaultV6PrefixLength);
+                return asio::ip::make_network_v6(address.to_v6(), DefaultV6PrefixLength);
             }
         }())
     {

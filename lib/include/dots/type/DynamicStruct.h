@@ -16,12 +16,6 @@ namespace dots::type
     {
         DynamicPropertyInitializer(std::string_view name, const T& value) : name(name), value(value) {}
         DynamicPropertyInitializer(std::string_view name, T&& value) : name(name), value(std::move(value)) {}
-        DynamicPropertyInitializer(const DynamicPropertyInitializer& other) = default;
-        DynamicPropertyInitializer(DynamicPropertyInitializer&& other) = default;
-        ~DynamicPropertyInitializer() = default;
-
-        DynamicPropertyInitializer& operator = (const DynamicPropertyInitializer& rhs) = default;
-        DynamicPropertyInitializer& operator = (DynamicPropertyInitializer&& rhs) = default;
 
         std::string_view name;
         T value;
@@ -55,14 +49,14 @@ namespace dots::type
         DynamicStruct(const Descriptor<DynamicStruct>& descriptor);
         DynamicStruct(const Descriptor<DynamicStruct>& descriptor, PropertyArea* propertyArea);
 
-        template <typename... DynamicPropertyInitializers, std::enable_if_t<sizeof...(DynamicPropertyInitializers) >= 1 && std::conjunction_v<type::is_dynamic_property_initializer_t<std::remove_pointer_t<std::decay_t<DynamicPropertyInitializers>>>...>, int> = 0>
+        template <typename... DynamicPropertyInitializers, std::enable_if_t<sizeof...(DynamicPropertyInitializers) >= 1 && std::conjunction_v<is_dynamic_property_initializer_t<std::remove_pointer_t<std::decay_t<DynamicPropertyInitializers>>>...>, int> = 0>
         DynamicStruct(const Descriptor<DynamicStruct>& descriptor, DynamicPropertyInitializers&&... dynamicPropertyInitializers) :
             DynamicStruct(descriptor)
         {
             (this->operator[](dynamicPropertyInitializers.name)->template construct<false>(Typeless::From(std::forward<decltype(dynamicPropertyInitializers)>(dynamicPropertyInitializers).value)), ...);
         }
 
-        template <typename... DynamicPropertyInitializers, std::enable_if_t<sizeof...(DynamicPropertyInitializers) >= 1 && std::conjunction_v<type::is_dynamic_property_initializer_t<std::remove_pointer_t<std::decay_t<DynamicPropertyInitializers>>>...>, int> = 0>
+        template <typename... DynamicPropertyInitializers, std::enable_if_t<sizeof...(DynamicPropertyInitializers) >= 1 && std::conjunction_v<is_dynamic_property_initializer_t<std::remove_pointer_t<std::decay_t<DynamicPropertyInitializers>>>...>, int> = 0>
         DynamicStruct(const Descriptor<DynamicStruct>& descriptor, PropertyArea* propertyArea, DynamicPropertyInitializers&&... dynamicPropertyInitializers) :
             DynamicStruct(descriptor, propertyArea)
         {

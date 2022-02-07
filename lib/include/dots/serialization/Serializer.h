@@ -23,13 +23,6 @@ namespace dots::serialization
             /* do nothing */
         }
 
-        Serializer(const Serializer& other) = default;
-        Serializer(Serializer&& other) = default;
-        ~Serializer() = default;
-
-        Serializer& operator = (const Serializer& rhs) = default;
-        Serializer& operator = (Serializer&& rhs) = default;
-
         const reader_t& reader() const
         {
             return m_reader;

@@ -2,13 +2,13 @@
 
 namespace dots::io
 {
-    LegacyTcpListener::LegacyTcpListener(boost::asio::io_context& ioContext, const Endpoint& endpoint, std::optional<int> backlog/* = std::nullopt*/) :
+    LegacyTcpListener::LegacyTcpListener(asio::io_context& ioContext, const Endpoint& endpoint, std::optional<int> backlog/* = std::nullopt*/) :
         LegacyTcpListener(ioContext, std::string{ endpoint.host() }, std::string{ endpoint.port() }, backlog)
     {
         /* do nothing */
     }
 
-    LegacyTcpListener::LegacyTcpListener(boost::asio::io_context& ioContext, std::string address, std::string port, std::optional<int> backlog/* = std::nullopt*/) :
+    LegacyTcpListener::LegacyTcpListener(asio::io_context& ioContext, std::string address, std::string port, std::optional<int> backlog/* = std::nullopt*/) :
         m_address{ std::move(address) },
         m_port{ std::move(port) },
         m_acceptor{ ioContext },
@@ -17,11 +17,11 @@ namespace dots::io
     {
         try
         {
-            boost::asio::ip::tcp::resolver resolver{ ioContext };
-            boost::asio::ip::tcp::endpoint endpoint = *resolver.resolve({ m_address, m_port });
+            asio::ip::tcp::resolver resolver{ ioContext };
+            asio::ip::tcp::endpoint endpoint = *resolver.resolve({ m_address, m_port });
 
             m_acceptor.open(endpoint.protocol());
-            m_acceptor.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
+            m_acceptor.set_option(asio::ip::tcp::acceptor::reuse_address(true));
             m_acceptor.bind(endpoint);
 
             if (backlog == std::nullopt)
@@ -57,16 +57,16 @@ namespace dots::io
             try
             {
                 m_socket.non_blocking(true);
-                m_socket.set_option(boost::asio::ip::tcp::no_delay(true));
-                m_socket.set_option(boost::asio::ip::tcp::socket::keep_alive(true));
+                m_socket.set_option(asio::ip::tcp::no_delay(true));
+                m_socket.set_option(asio::ip::tcp::socket::keep_alive(true));
 
                 constexpr int MinimumSendBufferSize = 1024 * 1024;
-                boost::asio::socket_base::send_buffer_size sendBufferSize;
+                asio::socket_base::send_buffer_size sendBufferSize;
                 m_socket.get_option(sendBufferSize);
 
                 if (sendBufferSize.value() < MinimumSendBufferSize)
                 {
-                    m_socket.set_option(boost::asio::socket_base::send_buffer_size(MinimumSendBufferSize));
+                    m_socket.set_option(asio::socket_base::send_buffer_size(MinimumSendBufferSize));
                 }
 
                 // note: this move is explicitly allowed according to the Boost ASIO v1.72 documentation of the socket
@@ -78,7 +78,7 @@ namespace dots::io
                 {
                     processError(std::string{ "failed to configure TCP socket -> " } + e.what());
 
-                    m_socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
+                    m_socket.shutdown(asio::ip::tcp::socket::shutdown_both);
                     m_socket.close();
                 }
                 catch (const std::exception& e)

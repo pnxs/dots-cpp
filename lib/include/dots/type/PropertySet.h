@@ -47,13 +47,6 @@ namespace dots::type
             /* do nothing */
         }
 
-        constexpr PropertySet(const PropertySet& other) = default;
-        constexpr PropertySet(PropertySet&& other) noexcept = default;
-        ~PropertySet() = default;
-
-        constexpr PropertySet& operator = (const PropertySet& rhs) = default;
-        constexpr PropertySet& operator = (PropertySet&& rhs) noexcept = default;
-
         explicit constexpr operator bool () const
         {
             return !empty();

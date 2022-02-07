@@ -10,14 +10,6 @@ namespace dots::type
         using underlying_map_t = std::map<std::string_view, std::shared_ptr<Descriptor<>>>;
         using const_iterator_t = underlying_map_t::const_iterator;
 
-        DescriptorMap() = default;
-        DescriptorMap(const DescriptorMap& other) = default;
-        DescriptorMap(DescriptorMap&& other) noexcept = default;
-        ~DescriptorMap() = default;
-
-        DescriptorMap& operator = (const DescriptorMap& rhs) = default;
-        DescriptorMap& operator = (DescriptorMap&& rhs) noexcept = default;
-
         const_iterator_t begin() const;
         const_iterator_t cbegin() const;
 

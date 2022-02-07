@@ -133,13 +133,6 @@ namespace dots::tools
                 /* do nothing */
             }
 
-            HandlerBase(const HandlerBase& other) = default;
-            HandlerBase(HandlerBase&& other) = default;
-            ~HandlerBase() = default;
-
-            HandlerBase& operator = (const HandlerBase& rhs) = default;
-            HandlerBase& operator = (HandlerBase&& rhs) = default;
-
             /*!
              * @brief Invoke the handler.
              *

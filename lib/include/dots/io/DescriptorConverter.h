@@ -8,12 +8,6 @@ namespace dots::io
     struct DescriptorConverter
     {
         DescriptorConverter(type::Registry& registry);
-        DescriptorConverter(const DescriptorConverter& other) = default;
-        DescriptorConverter(DescriptorConverter&& other) noexcept = default;
-        ~DescriptorConverter() = default;
-
-        DescriptorConverter& operator = (const DescriptorConverter& rhs) = default;
-        DescriptorConverter& operator = (DescriptorConverter&& rhs) noexcept = default;
 
         type::EnumDescriptor<>& operator () (const types::EnumDescriptorData& enumData) const;
         type::StructDescriptor<>& operator () (const types::StructDescriptorData& structData) const;

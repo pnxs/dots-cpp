@@ -24,7 +24,7 @@ TEST_F(TestLegacyAuthManager, testAddUpdateRemoveRules)
 {
     ASSERT_EQ(m_sut.rules().size(), 0);
 
-    auto make_rule = [](dots::types::uint16_t priority, std::optional<bool> accept = std::nullopt)
+    auto make_rule = [](dots::uint16_t priority, std::optional<bool> accept = std::nullopt)
     {
         DotsAuthentication rule{
             DotsAuthentication::nameSpace_i{ "" },

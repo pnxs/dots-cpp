@@ -18,7 +18,7 @@ namespace dots::io
     {
         if (remoteEndpoint.scheme() == "tcp" || remoteEndpoint.scheme() == "ws")
         {
-            if (requiresAuthentication(boost::asio::ip::address::from_string(std::string{ remoteEndpoint.host() })))
+            if (requiresAuthentication(asio::ip::address::from_string(std::string{ remoteEndpoint.host() })))
             {
                 return Nonce{};
             }
@@ -59,7 +59,7 @@ namespace dots::io
                 DotsMsgConnect::cnonce_i{ cnonce }
             };
 
-            return verifyResponse(boost::asio::ip::address::from_string(std::string{ remoteEndpoint.host() }), nonce.value(), connect);
+            return verifyResponse(asio::ip::address::from_string(std::string{ remoteEndpoint.host() }), nonce.value(), connect);
         }
         else if (remoteEndpoint.scheme() == "uds")
         {
@@ -81,7 +81,7 @@ namespace dots::io
         return m_defaultAcceptPolicy;
     }
 
-    bool LegacyAuthManager::verifyResponse(const boost::asio::ip::address& address, uint64_t authNonce, const DotsMsgConnect& msgConnect)
+    bool LegacyAuthManager::verifyResponse(const asio::ip::address& address, uint64_t authNonce, const DotsMsgConnect& msgConnect)
     {
         std::optional<bool> accept;
 
@@ -128,7 +128,7 @@ namespace dots::io
         return accept.value_or(true);
     }
 
-    bool LegacyAuthManager::requiresAuthentication(const boost::asio::ip::address& address)
+    bool LegacyAuthManager::requiresAuthentication(const asio::ip::address& address)
     {
         for (const DotsAuthentication& authentication : findMatchingRules(address, {}))
         {
@@ -141,7 +141,7 @@ namespace dots::io
         return false;
     }
 
-    std::vector<DotsAuthentication> LegacyAuthManager::findMatchingRules(const boost::asio::ip::address& address, const std::string& clientName)
+    std::vector<DotsAuthentication> LegacyAuthManager::findMatchingRules(const asio::ip::address& address, const std::string& clientName)
     {
         tools::IpNetwork network{ address };
 

@@ -18,7 +18,7 @@ namespace dots::io
     }
 
     Nonce::Nonce(std::string_view stringValue) :
-        Nonce([&]()
+        Nonce([&]
         {
             value_t value;
             std::istringstream iss{ stringValue.data() };

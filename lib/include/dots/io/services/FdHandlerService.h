@@ -1,5 +1,5 @@
 #pragma once
-#include <boost/asio.hpp>
+#include <dots/asio.h>
 #if defined(BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR)
 #include <functional>
 #include <map>
@@ -8,12 +8,12 @@
 
 namespace dots::io::posix
 {
-    struct FdHandlerService : boost::asio::execution_context::service
+    struct FdHandlerService : asio::execution_context::service
     {
         using key_type = FdHandlerService;
         using callback_t = tools::Handler<void()>;
 
-        explicit FdHandlerService(boost::asio::execution_context& executionContext);
+        explicit FdHandlerService(asio::execution_context& executionContext);
         FdHandlerService(const FdHandlerService& other) = delete;
         FdHandlerService(FdHandlerService&& other) noexcept(false) = delete;
         ~FdHandlerService() = default;

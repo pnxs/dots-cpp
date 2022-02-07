@@ -56,7 +56,7 @@ namespace dots
          * Connection transitions to a different connection state.
          */
         HostTransceiver(std::string selfName = "DotsHostTransceiver",
-                        boost::asio::io_context& ioContext = io::global_io_context(),
+                        asio::io_context& ioContext = io::global_io_context(),
                         type::Registry::StaticTypePolicy staticTypePolicy = type::Registry::StaticTypePolicy::All,
                         std::optional<transition_handler_t> transitionHandler = std::nullopt);
         HostTransceiver(const HostTransceiver& other) = delete;
@@ -125,7 +125,7 @@ namespace dots
          * @exception std::runtime_error Thrown if a key property of the
          * instance is invalid.
          */
-        void publish(const type::Struct& instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false) override;
+        void publish(const type::Struct& instance, std::optional<property_set_t> includedProperties = std::nullopt, bool remove = false) override;
 
         /*!
          * @brief Set the io::AuthManager instance to use for accepted

@@ -59,7 +59,7 @@ namespace dots::testing
          *
          * @param hostName The name the host will use to identify itself.
          */
-        ChannelTestBase(boost::asio::io_context& ioContext = io::global_io_context(), std::string hostName = "dots-test-host") :
+        ChannelTestBase(asio::io_context& ioContext = io::global_io_context(), std::string hostName = "dots-test-host") :
             m_ioContext(ioContext),
             m_mockChannel{ dots::io::make_channel<MockChannel>(ioContext) },
             m_hostName{ std::move(hostName) }
@@ -102,10 +102,10 @@ namespace dots::testing
          * Note that this is the same IO context that was given in
          * ChannelTestBase().
          *
-         * @return const boost::asio::io_context& A reference to the currently
+         * @return const asio::io_context& A reference to the currently
          * used IO context.
          */
-        const boost::asio::io_context& ioContext() const
+        const asio::io_context& ioContext() const
         {
             return m_ioContext;
         }
@@ -116,10 +116,10 @@ namespace dots::testing
          * Note that this is the same IO context that was given in
          * ChannelTestBase().
          *
-         * @return boost::asio::io_context& A reference to the currently used
+         * @return asio::io_context& A reference to the currently used
          * IO context.
          */
-        boost::asio::io_context& ioContext()
+        asio::io_context& ioContext()
         {
             return m_ioContext;
         }
@@ -176,8 +176,8 @@ namespace dots::testing
          * This function will never block and in particular not wait for any
          * active timers to end.
          *
-         * Technically, this effectively calls boost::asio::io_context::poll()
-         * followed by a boost::asio::io_context::restart().
+         * Technically, this effectively calls asio::io_context::poll()
+         * followed by a asio::io_context::restart().
          *
          */
         void processEvents()
@@ -198,8 +198,8 @@ namespace dots::testing
          * block up to the given duration and wait for the timers to end.
          *
          * Technically, this effectively calls
-         * boost::asio::io_context::run_for() followed by a
-         * boost::asio::io_context::restart().
+         * asio::io_context::run_for() followed by a
+         * asio::io_context::restart().
          *
          * @tparam Rep An arithmetic type representing the number of ticks.
          *
@@ -219,15 +219,15 @@ namespace dots::testing
 
         inline static Connection::id_t M_nextGuestId = SpoofId + 1;
 
-        boost::asio::io_context& m_ioContext;
+        asio::io_context& m_ioContext;
         std::shared_ptr<MockChannel> m_mockChannel;
         std::string m_hostName;
     };
 }
 
-#define IMPL_EXPECT_DOTS_TRANSMIT                                                                                                                                        \
-[this](auto&& instance, std::optional<dots::types::property_set_t> includedProperties, bool remove) -> auto&                                                             \
-{                                                                                                                                                                        \
+#define IMPL_EXPECT_DOTS_TRANSMIT                                                                                                                                       \
+[this](auto&& instance, std::optional<dots::property_set_t> includedProperties, bool remove) -> auto&                                                                   \
+{                                                                                                                                                                       \
     return IMPL_EXPECT_DOTS_TRANSMIT_AT_CHANNEL(dots::testing::ChannelTestBase::mockChannel(), std::forward<decltype(instance)>(instance), includedProperties, remove); \
 }
 
@@ -265,10 +265,10 @@ namespace dots::testing
  *
  * @return auto& A reference to the created Google Test expectation.
  */
-#define EXPECT_DOTS_TRANSMIT                                                                                   \
-[this](auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto& \
-{                                                                                                              \
-    return IMPL_EXPECT_DOTS_TRANSMIT(std::forward<decltype(instance)>(instance), includedProperties, false);   \
+#define EXPECT_DOTS_TRANSMIT                                                                                 \
+[this](auto&& instance, std::optional<dots::property_set_t> includedProperties = std::nullopt) -> auto&      \
+{                                                                                                            \
+    return IMPL_EXPECT_DOTS_TRANSMIT(std::forward<decltype(instance)>(instance), includedProperties, false); \
 }
 
 /*!
@@ -306,22 +306,22 @@ namespace dots::testing
  *
  * @return auto& A reference to the created Google Test expectation.
  */
-#define EXPECT_DOTS_REMOVE_TRANSMIT                                                                            \
-[this](auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) -> auto& \
-{                                                                                                              \
-    return IMPL_EXPECT_DOTS_TRANSMIT(std::forward<decltype(instance)>(instance), includedProperties, true);    \
+#define EXPECT_DOTS_REMOVE_TRANSMIT                                                                         \
+[this](auto&& instance, std::optional<dots::property_set_t> includedProperties = std::nullopt) -> auto&     \
+{                                                                                                           \
+    return IMPL_EXPECT_DOTS_TRANSMIT(std::forward<decltype(instance)>(instance), includedProperties, true); \
 }
 
-#define IMPL_SPOOF_DOTS_TRANSMIT                                                                                                                 \
-[this](auto&& instance, std::optional<dots::types::property_set_t> includedProperties, bool remove, uint32_t sender = ChannelTestBase::SpoofId) \
-{                                                                                                                                                \
-    constexpr bool IsStruct = std::is_base_of_v<dots::type::Struct, std::decay_t<decltype(instance)>>;                                           \
-    static_assert(IsStruct, "DOTS transmit spoof has to be an instance of a DOTS struct type");                                                  \
-                                                                                                                                                 \
-    if constexpr (IsStruct)                                                                                                                      \
-    {                                                                                                                                            \
-        ChannelTestBase::mockChannel().spoof(sender, std::forward<decltype(instance)>(instance), includedProperties, remove);                   \
-    }                                                                                                                                            \
+#define IMPL_SPOOF_DOTS_TRANSMIT                                                                                                         \
+[this](auto&& instance, std::optional<dots::property_set_t> includedProperties, bool remove, uint32_t sender = ChannelTestBase::SpoofId) \
+{                                                                                                                                        \
+    constexpr bool IsStruct = std::is_base_of_v<dots::type::Struct, std::decay_t<decltype(instance)>>;                                   \
+    static_assert(IsStruct, "DOTS transmit spoof has to be an instance of a DOTS struct type");                                          \
+                                                                                                                                         \
+    if constexpr (IsStruct)                                                                                                              \
+    {                                                                                                                                    \
+        ChannelTestBase::mockChannel().spoof(sender, std::forward<decltype(instance)>(instance), includedProperties, remove);            \
+    }                                                                                                                                    \
 }
 
 /*!
@@ -352,10 +352,10 @@ namespace dots::testing
  * If no set is given, the valid property set of
  * @p instance will be used.
  */
-#define SPOOF_DOTS_TRANSMIT                                                                           \
-[this](auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) \
-{                                                                                                     \
-    IMPL_SPOOF_DOTS_TRANSMIT(std::forward<decltype(instance)>(instance), includedProperties, false);  \
+#define SPOOF_DOTS_TRANSMIT                                                                          \
+[this](auto&& instance, std::optional<dots::property_set_t> includedProperties = std::nullopt)       \
+{                                                                                                    \
+    IMPL_SPOOF_DOTS_TRANSMIT(std::forward<decltype(instance)>(instance), includedProperties, false); \
 }
 
 /*!
@@ -384,10 +384,10 @@ namespace dots::testing
  * @param remove Specifies whether the remove flag in the header will
  * be set.
  */
-#define SPOOF_DOTS_TRANSMIT_FROM_SENDER                                                                                                     \
-[this](uint32_t sender, auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt, bool remove = false) \
-{                                                                                                                                           \
-    IMPL_SPOOF_DOTS_TRANSMIT(std::forward<decltype(instance)>(instance), includedProperties, remove, sender);                               \
+#define SPOOF_DOTS_TRANSMIT_FROM_SENDER                                                                                              \
+[this](uint32_t sender, auto&& instance, std::optional<dots::property_set_t> includedProperties = std::nullopt, bool remove = false) \
+{                                                                                                                                    \
+    IMPL_SPOOF_DOTS_TRANSMIT(std::forward<decltype(instance)>(instance), includedProperties, remove, sender);                        \
 }
 
 /*!
@@ -419,8 +419,8 @@ namespace dots::testing
  * If no set is given, the valid property set of
  * @p instance will be used.
  */
-#define SPOOF_DOTS_REMOVE_TRANSMIT                                                                    \
-[this](auto&& instance, std::optional<dots::types::property_set_t> includedProperties = std::nullopt) \
-{                                                                                                     \
-    IMPL_SPOOF_DOTS_TRANSMIT(std::forward<decltype(instance)>(instance), includedProperties, true);   \
+#define SPOOF_DOTS_REMOVE_TRANSMIT                                                                  \
+[this](auto&& instance, std::optional<dots::property_set_t> includedProperties = std::nullopt)      \
+{                                                                                                   \
+    IMPL_SPOOF_DOTS_TRANSMIT(std::forward<decltype(instance)>(instance), includedProperties, true); \
 }

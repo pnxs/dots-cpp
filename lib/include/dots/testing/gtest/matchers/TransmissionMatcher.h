@@ -18,12 +18,6 @@ namespace dots::testing
             {
                 /* do nothing */
             }
-            TransmissionEqualMatcher(const TransmissionEqualMatcher& other) = default;
-            TransmissionEqualMatcher(TransmissionEqualMatcher&& other) = default;
-            ~TransmissionEqualMatcher() = default;
-
-            TransmissionEqualMatcher& operator = (const TransmissionEqualMatcher& rhs) = default;
-            TransmissionEqualMatcher& operator = (TransmissionEqualMatcher&& rhs) = default;
 
             bool MatchAndExplain(const io::Transmission& transmission, std::ostream* os) const
             {
@@ -102,10 +96,10 @@ namespace dots::testing
      * Google Test matcher.
      */
     template <typename T>
-    ::testing::Matcher<const io::Transmission&> TransmissionEqual(T&& instance, std::optional<types::property_set_t> includedProperties = std::nullopt, bool remove = false, bool isFromMyself = false)
+    ::testing::Matcher<const io::Transmission&> TransmissionEqual(T&& instance, std::optional<property_set_t> includedProperties = std::nullopt, bool remove = false, bool isFromMyself = false)
     {
         using decayed_t = std::decay_t<T>;
-        constexpr bool IsStruct = std::is_base_of_v<dots::type::Struct, decayed_t>;
+        constexpr bool IsStruct = std::is_base_of_v<type::Struct, decayed_t>;
         static_assert(IsStruct, "instance type T has to be a DOTS struct type");
 
         if constexpr (IsStruct)

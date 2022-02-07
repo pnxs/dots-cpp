@@ -17,7 +17,7 @@ namespace
         {
             return DotsHeader{
                 DotsHeader::typeName_i{ instance._descriptor().name() },
-                DotsHeader::sentTime_i{ dots::types::timepoint_t::Now() },
+                DotsHeader::sentTime_i{ dots::timepoint_t::Now() },
                 DotsHeader::attributes_i{ instance._validProperties() },
                 DotsHeader::sender_i{ sender },
                 DotsHeader::removeObj_i{ remove },
@@ -129,7 +129,7 @@ TEST(TestDispatcher, dispatch_CreateEventWhenAddedHandlerForCachedType)
             ASSERT_EQ(e.cloneInfo().modified, e.cloneInfo().created);
 
             ASSERT_GE(*e.cloneInfo().localUpdateTime, *header.sentTime);
-            ASSERT_LE(*e.cloneInfo().localUpdateTime, dots::types::timepoint_t::Now());
+            ASSERT_LE(*e.cloneInfo().localUpdateTime, dots::timepoint_t::Now());
         }
     });
     (void)id;
@@ -181,7 +181,7 @@ TEST(TestDispatcher, dispatch_UpdateEventWhenAddedHandlerForCachedType)
             ASSERT_EQ(e.cloneInfo().modified, *header2.sentTime);
 
             ASSERT_GE(*e.cloneInfo().localUpdateTime, *header2.sentTime);
-            ASSERT_LE(*e.cloneInfo().localUpdateTime, dots::types::timepoint_t::Now());
+            ASSERT_LE(*e.cloneInfo().localUpdateTime, dots::timepoint_t::Now());
         }
     });
     (void)id;
@@ -238,7 +238,7 @@ TEST(TestDispatcher, dispatch_RemoveEventWhenAddedHandlerForCachedType)
             ASSERT_EQ(e.cloneInfo().modified, *header3.sentTime);
 
             ASSERT_GE(*e.cloneInfo().localUpdateTime, *header3.sentTime);
-            ASSERT_LE(*e.cloneInfo().localUpdateTime, dots::types::timepoint_t::Now());
+            ASSERT_LE(*e.cloneInfo().localUpdateTime, dots::timepoint_t::Now());
         }
     });
     (void)id;
@@ -279,7 +279,7 @@ TEST(TestDispatcher, dispatch_CreateEventWhenDynamicallyAddedHandlerForCachedTyp
             ASSERT_EQ(e.cloneInfo().modified, e.cloneInfo().created);
 
             ASSERT_GE(*e.cloneInfo().localUpdateTime, *header.sentTime);
-            ASSERT_LE(*e.cloneInfo().localUpdateTime, dots::types::timepoint_t::Now());
+            ASSERT_LE(*e.cloneInfo().localUpdateTime, dots::timepoint_t::Now());
         }
     });
     (void)id;
@@ -331,7 +331,7 @@ TEST(TestDispatcher, dispatch_UpdateEventWhenDynamicallAddedHandlerForCachedType
             ASSERT_EQ(e.cloneInfo().modified, *header2.sentTime);
 
             ASSERT_GE(*e.cloneInfo().localUpdateTime, *header2.sentTime);
-            ASSERT_LE(*e.cloneInfo().localUpdateTime, dots::types::timepoint_t::Now());
+            ASSERT_LE(*e.cloneInfo().localUpdateTime, dots::timepoint_t::Now());
         }
     });
     (void)id;
@@ -388,7 +388,7 @@ TEST(TestDispatcher, dispatch_RemoveEventWhenDynamicallAddedHandlerForCachedType
             ASSERT_EQ(e.cloneInfo().modified, *header3.sentTime);
 
             ASSERT_GE(*e.cloneInfo().localUpdateTime, *header3.sentTime);
-            ASSERT_LE(*e.cloneInfo().localUpdateTime, dots::types::timepoint_t::Now());
+            ASSERT_LE(*e.cloneInfo().localUpdateTime, dots::timepoint_t::Now());
         }
     });
     (void)id;
@@ -438,7 +438,7 @@ TEST(TestDispatcher, dispatch_CreateEventFromCacheWhenAddedHandlerForCachedType)
             ASSERT_EQ(e.cloneInfo().modified, e.cloneInfo().created);
 
             ASSERT_GE(*e.cloneInfo().localUpdateTime, *header.sentTime);
-            ASSERT_LE(*e.cloneInfo().localUpdateTime, dots::types::timepoint_t::Now());
+            ASSERT_LE(*e.cloneInfo().localUpdateTime, dots::timepoint_t::Now());
         }
     });
     (void)id2;
@@ -482,7 +482,7 @@ TEST(TestDispatcher, dispatch_CreateEventWhenAddedHandlerForUncachedType)
             ASSERT_FALSE(e.cloneInfo().modified.isValid());
 
             ASSERT_GE(*e.cloneInfo().localUpdateTime, *header2.sentTime);
-            ASSERT_LE(*e.cloneInfo().localUpdateTime, dots::types::timepoint_t::Now());
+            ASSERT_LE(*e.cloneInfo().localUpdateTime, dots::timepoint_t::Now());
         }
     });
     (void)id;

@@ -30,11 +30,11 @@ namespace dots::serialization
             }
         }
 
-        RapidJsonReader(const RapidJsonReader& other) = default;
+        RapidJsonReader(const RapidJsonReader& other) = delete;
         RapidJsonReader(RapidJsonReader&& other) = default;
         ~RapidJsonReader() = default;
 
-        RapidJsonReader& operator = (const RapidJsonReader& rhs) = default;
+        RapidJsonReader& operator = (const RapidJsonReader& rhs) = delete;
         RapidJsonReader& operator = (RapidJsonReader&& rhs) = default;
 
         void setInput(const document_t::ValueType& inputValue)

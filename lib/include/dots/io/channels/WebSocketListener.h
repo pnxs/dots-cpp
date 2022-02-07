@@ -1,5 +1,5 @@
 #pragma once
-#include <boost/asio.hpp>
+#include <dots/asio.h>
 #include <boost/beast.hpp>
 #include <dots/io/Listener.h>
 
@@ -7,8 +7,8 @@ namespace dots::io
 {
     struct WebSocketListener : Listener
     {
-        WebSocketListener(boost::asio::io_context& ioContext, const Endpoint& endpoint, std::optional<int> backlog = std::nullopt);
-        WebSocketListener(boost::asio::io_context& ioContext, std::string address, std::string port, std::optional<int> backlog = std::nullopt);
+        WebSocketListener(asio::io_context& ioContext, const Endpoint& endpoint, std::optional<int> backlog = std::nullopt);
+        WebSocketListener(asio::io_context& ioContext, std::string address, std::string port, std::optional<int> backlog = std::nullopt);
         WebSocketListener(const WebSocketListener& other) = delete;
         WebSocketListener(WebSocketListener&& other) = delete;
         ~WebSocketListener() override = default;
@@ -24,7 +24,7 @@ namespace dots::io
 
         std::string m_address;
         std::string m_port;
-        boost::asio::ip::tcp::acceptor m_acceptor;
-        boost::asio::ip::tcp::socket m_socket;
+        asio::ip::tcp::acceptor m_acceptor;
+        asio::ip::tcp::socket m_socket;
     };
 }

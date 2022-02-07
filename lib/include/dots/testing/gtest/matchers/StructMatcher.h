@@ -17,12 +17,6 @@ namespace dots::testing
             {
                 /* do nothing */
             }
-            StructEqualMatcher(const StructEqualMatcher& other) = default;
-            StructEqualMatcher(StructEqualMatcher&& other) = default;
-            ~StructEqualMatcher() = default;
-
-            StructEqualMatcher& operator = (const StructEqualMatcher& rhs) = default;
-            StructEqualMatcher& operator = (StructEqualMatcher&& rhs) = default;
 
             template <typename Actual>
             bool MatchAndExplain(const Actual& actual, std::ostream* os) const

@@ -137,7 +137,7 @@ namespace dots::testing::details
                 {
                     std::apply([cardinality, action{ std::forward<Action>(action) }](auto&... expectations)
                     {
-                        auto deferred_action = [cardinality, actionData{ std::make_shared<std::pair<Action, int>>(std::move(action), 0) }]()
+                        auto deferred_action = [cardinality, actionData{ std::make_shared<std::pair<Action, int>>(std::move(action), 0) }]
                         {
                             if (auto& [action, callCount] = *actionData; ++callCount == cardinality)
                             {

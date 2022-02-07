@@ -43,12 +43,6 @@ namespace dots::serialization
         {
             /* do nothing */
         }
-        TextSerializer(const TextSerializer& other) = default;
-        TextSerializer(TextSerializer&& other) = default;
-        ~TextSerializer() = default;
-
-        TextSerializer& operator = (const TextSerializer& rhs) = default;
-        TextSerializer& operator = (TextSerializer&& rhs) = default;
 
         using serializer_t::reader;
         using serializer_t::writer;

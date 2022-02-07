@@ -22,12 +22,6 @@ namespace dots::type
         };
 
         Registry(std::optional<new_type_handler_t> newTypeHandler = std::nullopt, StaticTypePolicy staticTypePolicy = StaticTypePolicy::All);
-        Registry(const Registry& other) = default;
-        Registry(Registry&& other) noexcept = default;
-        ~Registry() = default;
-
-        Registry& operator = (const Registry& rhs) = default;
-        Registry& operator = (Registry&& rhs) noexcept = default;
 
         /*!
          * @brief Get a constant iterator to the beginning of the Registry.

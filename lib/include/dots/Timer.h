@@ -2,7 +2,7 @@
 
 #include <dots/tools/Handler.h>
 #include <dots/type/Chrono.h>
-#include <boost/asio.hpp>
+#include <dots/asio.h>
 
 namespace dots
 {
@@ -48,7 +48,7 @@ namespace dots
          * @param periodic Specifies whether the timer will be restarted after
          * it ran out and @p cb was invoked.
          */
-        Timer(boost::asio::io_context& ioContext, id_t id, type::Duration interval, callback_t cb, bool periodic = false);
+        Timer(asio::io_context& ioContext, id_t id, type::Duration interval, callback_t cb, bool periodic = false);
         Timer(const Timer& other) = delete;
         Timer(Timer&& other) = delete;
 
@@ -75,7 +75,7 @@ namespace dots
 
     private:
 
-        using timer_t = boost::asio::steady_timer;
+        using timer_t = asio::steady_timer;
         using duration_t = timer_t::clock_type::duration;
 
         void startRelative(type::Duration duration);

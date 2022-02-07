@@ -1,15 +1,15 @@
 #pragma once
-#include <boost/asio.hpp>
+#include <dots/asio.h>
 #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
 #include <dots/io/channels/AsyncStreamChannel.h>
 
 namespace dots::io::posix
 {
-    struct UdsChannel : AsyncStreamChannel<boost::asio::local::stream_protocol::socket>
+    struct UdsChannel : AsyncStreamChannel<asio::local::stream_protocol::socket>
     {
-        UdsChannel(Channel::key_t key, boost::asio::io_context& ioContext, const Endpoint& endpoint);
-        UdsChannel(Channel::key_t key, boost::asio::io_context& ioContext, std::string_view path);
-        UdsChannel(Channel::key_t key, boost::asio::local::stream_protocol::socket&& socket, payload_cache_t* payloadCache);
+        UdsChannel(key_t key, asio::io_context& ioContext, const Endpoint& endpoint);
+        UdsChannel(key_t key, asio::io_context& ioContext, std::string_view path);
+        UdsChannel(key_t key, asio::local::stream_protocol::socket&& socket, payload_cache_t* payloadCache);
         UdsChannel(const UdsChannel& other) = delete;
         UdsChannel(UdsChannel&& other) = delete;
         virtual ~UdsChannel() noexcept = default;
