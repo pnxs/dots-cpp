@@ -11,7 +11,7 @@ namespace dots
                              std::optional<transition_handler_t> transitionHandler/* = std::nullopt*/) :
         m_nextId(0),
         m_this(std::make_shared<Transceiver*>(this)),
-        m_registry{ [&](const type::Descriptor<>& descriptor){ handleNewType(descriptor); }, staticTypePolicy },
+        m_registry{ [this_{ m_this }](const type::Descriptor<>& descriptor){ (*this_)->handleNewType(descriptor); }, staticTypePolicy },
         m_selfName{ std::move(selfName) },
         m_ioContext(std::ref(ioContext)),
         m_transitionHandler{ std::move(transitionHandler) }
@@ -31,7 +31,7 @@ namespace dots
         m_transitionHandler{ std::move(other.m_transitionHandler) },
         m_newTypeHandlers{ std::move(other.m_newTypeHandlers) }
     {
-        /* do nothing */
+        *m_this = this;
     }
 
     Transceiver& Transceiver::operator = (Transceiver&& rhs) noexcept
