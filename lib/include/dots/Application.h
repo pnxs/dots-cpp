@@ -129,7 +129,11 @@ namespace dots
          * @brief Destroy the Application object.
          *
          * If the application is still running, this will stop the event loop
-         * as if Application::exit() were called.
+         * as if Application::exit() were called and gracefully close all open
+         * connections.
+         *
+         * @attention If the application is managing the global guest
+         * transceiver, it will be reset when the object is destroyed.
          */
         virtual ~Application();
 

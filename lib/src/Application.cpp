@@ -60,6 +60,22 @@ namespace dots
     Application::~Application()
     {
         ioContext().stop();
+
+        if (m_hostTransceiverStorage != std::nullopt)
+        {
+            m_hostTransceiverStorage = std::nullopt;
+        }
+        else if (m_guestTransceiverStorage != std::nullopt)
+        {
+            m_guestTransceiverStorage = std::nullopt;
+        }
+        else
+        {
+            set_transceiver();
+        }
+
+        ioContext().restart();
+        ioContext().poll();
     }
 
     const Transceiver& Application::transceiver() const
