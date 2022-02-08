@@ -15,6 +15,13 @@ namespace dots
         /* do nothing */
     }
 
+    HostTransceiver::~HostTransceiver()
+    {
+        m_groups.clear();
+        connection_map_t guestConnections = std::move(m_guestConnections);
+        guestConnections.clear();
+    }
+
     io::Listener& HostTransceiver::listen(io::listener_ptr_t&& listener)
     {
         io::Listener* listenerPtr = listener.get();

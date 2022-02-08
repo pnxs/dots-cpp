@@ -73,11 +73,11 @@ namespace dots
          */
         Connection(io::channel_ptr_t channel, bool host, std::optional<std::string> authSecret = std::nullopt);
         Connection(const Connection& other) = delete;
-        Connection(Connection&& other) = default;
+        Connection(Connection&& other) = delete;
         ~Connection() noexcept;
 
         Connection& operator = (const Connection& rhs) = delete;
-        Connection& operator = (Connection&& rhs) = default;
+        Connection& operator = (Connection&& rhs) = delete;
 
         /*!
          * @brief Get the local endpoint of the channel used by this
@@ -175,16 +175,6 @@ namespace dots
          * @return false Else.
          */
         bool closed() const;
-
-        /*!
-         * @brief Close the connection.
-         *
-         * This will have no effect if the connection is already closed.
-         *
-         * @return true If the connection was actually closed.
-         * @return false Else.
-         */
-        bool close();
 
         /*!
          * @brief Get a description of the remote peer of this connection.

@@ -15,9 +15,17 @@ namespace dots
         type::Descriptor<DotsCacheInfo>::Instance();
     }
 
+    GuestTransceiver::~GuestTransceiver()
+    {
+        if (m_hostConnection != nullptr)
+        {
+            auto hostConnection = std::move(m_hostConnection);
+        }
+    }
+
     bool GuestTransceiver::connected() const
     {
-        return m_hostConnection != std::nullopt && m_hostConnection->connected();
+        return m_hostConnection != nullptr && m_hostConnection->connected();
     }
 
     const Connection& GuestTransceiver::connection() const
@@ -27,7 +35,7 @@ namespace dots
 
     const Connection& GuestTransceiver::open(type::DescriptorMap preloadPublishTypes, type::DescriptorMap preloadSubscribeTypes, std::optional<std::string> authSecret, io::channel_ptr_t channel)
     {
-        if (m_hostConnection != std::nullopt)
+        if (m_hostConnection != nullptr)
         {
             throw std::logic_error{ "attempt to open connection while already connected" };
         }
@@ -35,7 +43,7 @@ namespace dots
         m_preloadPublishTypes = std::move(preloadPublishTypes);
         m_preloadSubscribeTypes = std::move(preloadSubscribeTypes);
 
-        m_hostConnection.emplace(std::move(channel), false, std::move(authSecret));
+        m_hostConnection = std::make_unique<Connection>(std::move(channel), false, std::move(authSecret));
         m_hostConnection->asyncReceive(registry(), nullptr, selfName(),
             { &GuestTransceiver::handleTransmission, this },
             { &GuestTransceiver::handleTransition, this }
@@ -47,18 +55,6 @@ namespace dots
     const Connection& GuestTransceiver::open(io::channel_ptr_t channel)
     {
         return open({}, {}, std::nullopt, std::move(channel));
-    }
-
-    bool GuestTransceiver::close()
-    {
-        if (m_hostConnection == std::nullopt)
-        {
-            return false;
-        }
-        else
-        {
-            return m_hostConnection->close();
-        }
     }
 
     void GuestTransceiver::publish(const type::Struct& instance, std::optional<property_set_t> includedProperties/* = std::nullopt*/, bool remove/* = false*/)
@@ -83,7 +79,7 @@ namespace dots
             *includedProperties ^= instance._properties();
         }
 
-        if (m_hostConnection == std::nullopt)
+        if (m_hostConnection == nullptr)
         {
             throw std::runtime_error{ "attempt to publish on closed connection" };
         }
@@ -151,16 +147,16 @@ namespace dots
             }
             else if (connection.state() == DotsConnectionState::closed)
             {
-                if (m_hostConnection != std::nullopt)
+                if (m_hostConnection != nullptr)
                 {
-                    m_hostConnection = std::nullopt;
+                    m_hostConnection = nullptr;
                 }
             }
         }
         catch (const std::exception& e)
         {
             LOG_ERROR_S("error while handling transition for connection " << connection.peerDescription() << " -> " << e.what());
-            m_hostConnection = std::nullopt;
+            m_hostConnection = nullptr;
         }
     }
 }

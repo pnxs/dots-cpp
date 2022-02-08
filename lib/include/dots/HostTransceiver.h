@@ -60,7 +60,13 @@ namespace dots
                         std::optional<transition_handler_t> transitionHandler = std::nullopt);
         HostTransceiver(const HostTransceiver& other) = delete;
         HostTransceiver(HostTransceiver&& other) = default;
-        ~HostTransceiver() override = default;
+
+        /*!
+         * @brief Destroy the HostTransceiver object.
+         *
+         * Note that this will gracefully close all open guest connections.
+         */
+        ~HostTransceiver() override;
 
         HostTransceiver& operator = (const HostTransceiver& rhs) = delete;
         HostTransceiver& operator = (HostTransceiver&& rhs) = default;

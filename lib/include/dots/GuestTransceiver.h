@@ -56,7 +56,13 @@ namespace dots
         );
         GuestTransceiver(const GuestTransceiver& other) = delete;
         GuestTransceiver(GuestTransceiver&& other) = default;
-        ~GuestTransceiver() override = default;
+
+        /*!
+         * @brief Destroy the GuestTransceiver object.
+         *
+         * Note that this will gracefully close the host connection if open.
+         */
+        ~GuestTransceiver() override;
 
         GuestTransceiver& operator = (const GuestTransceiver& rhs) = delete;
         GuestTransceiver& operator = (GuestTransceiver&& rhs) = default;
@@ -217,16 +223,6 @@ namespace dots
         const Connection& open(io::Endpoint endpoint);
 
         /*!
-         * @brief Close the current host connection.
-         *
-         * This will have no effect if no connection has been opened.
-         *
-         * @return true If a connection was actually closed.
-         * @return false Else.
-         */
-        bool close();
-
-        /*!
          * @brief Publish an instance of a DOTS struct type.
          *
          * This will create a corresponding io::Transmission for the publish
@@ -265,7 +261,7 @@ namespace dots
         bool handleTransmission(Connection& connection, io::Transmission transmission);
         void handleTransitionImpl(Connection& connection, std::exception_ptr ePtr) noexcept override;
 
-        std::optional<Connection> m_hostConnection;
+        std::unique_ptr<Connection> m_hostConnection;
         type::DescriptorMap m_preloadPublishTypes;
         type::DescriptorMap m_preloadSubscribeTypes;
         std::set<std::string> m_joinedGroups;

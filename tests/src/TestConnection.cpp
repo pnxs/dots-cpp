@@ -7,6 +7,12 @@
 #include <dots/testing/gtest/ChannelTestBase.h>
 #include <DotsTestStruct.dots.h>
 
+#define EXPECT_TRANSITION                                                                                                  \
+[this](DotsConnectionState state) -> auto&                                                                                 \
+{                                                                                                                          \
+    return EXPECT_CALL(m_mockTransitionHandler, Call(::testing::Property(&dots::Connection::state, state), ::testing::_)); \
+}
+
 struct TestConnectionBase : dots::testing::ChannelTestBase
 {
     TestConnectionBase(bool host) :
@@ -24,6 +30,8 @@ struct TestConnectionBase : dots::testing::ChannelTestBase
                 DotsMsgError::errorCode_i{ 0 }
             });
         }
+
+        EXPECT_TRANSITION(DotsConnectionState::closed).Times(::testing::AnyNumber());
 
         m_sut.reset();
         processEvents();
@@ -79,12 +87,6 @@ namespace std
 
         *os << "'>";
     }
-}
-
-#define EXPECT_TRANSITION                                                                                                  \
-[this](DotsConnectionState state) -> auto&                                                                                 \
-{                                                                                                                          \
-    return EXPECT_CALL(m_mockTransitionHandler, Call(::testing::Property(&dots::Connection::state, state), ::testing::_)); \
 }
 
 TEST_F(TestConnectionAsHost, HandshakeWithoutAuthenticationWithoutPreloading)

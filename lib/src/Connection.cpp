@@ -49,15 +49,20 @@ namespace dots
 
     Connection::~Connection() noexcept
     {
-        if (m_connectionState == DotsConnectionState::connected)
+        if (m_connectionState != DotsConnectionState::closed)
         {
             try
             {
-                transmit(DotsMsgError{ DotsMsgError::errorCode_i{ 0 } });
+                if (m_connectionState == DotsConnectionState::connected)
+                {
+                    transmit(DotsMsgError{ DotsMsgError::errorCode_i{ 0 } });
+                }
+
+                handleClose(nullptr);
             }
-            catch (const std::exception&/* e*/)
+            catch (...)
             {
-                /* do nothing */
+                handleClose(std::current_exception());
             }
         }
     }
@@ -100,19 +105,6 @@ namespace dots
     bool Connection::closed() const
     {
         return m_connectionState == DotsConnectionState::closed;
-    }
-
-    bool Connection::close()
-    {
-        if (closed())
-        {
-            return false;
-        }
-        else
-        {
-            handleClose(nullptr);
-            return true;
-        }
     }
 
     std::string Connection::peerDescription() const
