@@ -43,7 +43,7 @@ namespace dots::io
     {
         m_acceptor.async_accept(m_socket, [this](const boost::system::error_code& error)
         {
-            if (!m_acceptor.is_open())
+            if (error == asio::error::operation_aborted || !m_acceptor.is_open())
             {
                 return;
             }
