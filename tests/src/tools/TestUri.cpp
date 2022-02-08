@@ -47,7 +47,7 @@ TEST_F(TestUri, ctor_PartialUriString)
 TEST_F(TestUri, ctor_NoAuthorityUriString)
 {
     {
-        dots::tools::Uri sut{ "uds:/tmp/dots_uds.socket" };
+        dots::tools::Uri sut{ "uds:/run/dots.socket" };
 
         EXPECT_EQ(std::string{ sut.scheme() }, "uds");
         EXPECT_EQ(std::string{ sut.authority() }, "");
@@ -55,11 +55,11 @@ TEST_F(TestUri, ctor_NoAuthorityUriString)
         EXPECT_EQ(std::string{ sut.userPassword() }, "");
         EXPECT_EQ(std::string{ sut.host() }, "");
         EXPECT_EQ(std::string{ sut.port() }, "");
-        EXPECT_EQ(std::string{ sut.path() }, "/tmp/dots_uds.socket");
+        EXPECT_EQ(std::string{ sut.path() }, "/run/dots.socket");
     }
 
     {
-        dots::tools::Uri sut{ "uds:///tmp/dots_uds.socket" };
+        dots::tools::Uri sut{ "uds:///run/dots.socket" };
 
         EXPECT_EQ(std::string{ sut.scheme() }, "uds");
         EXPECT_EQ(std::string{ sut.authority() }, "");
@@ -67,7 +67,7 @@ TEST_F(TestUri, ctor_NoAuthorityUriString)
         EXPECT_EQ(std::string{ sut.userPassword() }, "");
         EXPECT_EQ(std::string{ sut.host() }, "");
         EXPECT_EQ(std::string{ sut.port() }, "");
-        EXPECT_EQ(std::string{ sut.path() }, "/tmp/dots_uds.socket");
+        EXPECT_EQ(std::string{ sut.path() }, "/run/dots.socket");
     }
 }
 

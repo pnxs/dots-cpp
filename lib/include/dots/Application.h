@@ -102,9 +102,6 @@ namespace dots
          * the endpoints given by the '--dots-listen' options. If no endpoints
          * are specified, "tcp://127.0.0.1:11234" will be used as a default.
          *
-         * @param name The name that will be used by the HostTransceiver to
-         * identify itself.
-         *
          * @param argc The number of command line arguments as given in the
          * main() function of the application.
          *

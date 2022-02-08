@@ -119,7 +119,7 @@ namespace dots
         po::options_description options("Allowed options");
         options.add_options()
             ("dots-auth-secret", po::value<std::string>(), "secret used during authentication (this can also be given as part of the --dots-open endpoint)")
-            ("dots-open", po::value<std::string>()->default_value("tcp://127.0.0.1:11234"), "remote endpoint URI to open for host connection (e.g. tcp://127.0.0.1:11234, ws://127.0.0.1, uds:/tmp/dots.socket")
+            ("dots-open", po::value<std::string>()->default_value("tcp://127.0.0.1:11234"), "remote endpoint URI to open for host connection (e.g. tcp://127.0.0.1:11234, ws://127.0.0.1, uds:/run/dots.socket")
         ;
 
         po::variables_map args;
@@ -149,7 +149,7 @@ namespace dots
         
         po::options_description options{ "Allowed options" };
         options.add_options()
-            ("dots-listen", po::value<std::vector<std::string>>(), "local endpoint URI to listen on for incoming guest connections (e.g. tcp://127.0.0.1:11234, ws://127.0.0.1, uds:/tmp/dots_uds.socket")
+            ("dots-listen", po::value<std::vector<std::string>>(), "local endpoint URI to listen on for incoming guest connections (e.g. tcp://127.0.0.1:11234, ws://127.0.0.1, uds:/run/dots.socket")
         ;
 
         po::variables_map args;
