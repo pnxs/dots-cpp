@@ -237,7 +237,7 @@ namespace dots
         {
             if (auto [it, emplaced] = m_groups[groupName].emplace(&connection); emplaced)
             {
-                LOG_INFO_S(connection.peerDescription() << " is now a member of group '" << groupName << "'");
+                LOG_DEBUG_S(connection.peerDescription() << " is now a member of group '" << groupName << "'");
             }
             else
             {

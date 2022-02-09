@@ -86,8 +86,6 @@ namespace dots
 
             if (m_daemonStatus._diffProperties(ds))
             {
-                LOG_DEBUG_S("updateServerStatus");
-
                 #ifdef __unix__
                 struct rusage usage;
                 ::getrusage(RUSAGE_SELF, &usage);
