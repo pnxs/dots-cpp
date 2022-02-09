@@ -118,15 +118,15 @@ namespace dots
         
         po::options_description options("Allowed options");
         options.add_options()
-            ("dots-auth-secret", po::value<std::string>(), "secret used during authentication (this can also be given as part of the --dots-open endpoint)")
-            ("dots-open", po::value<std::string>()->default_value("tcp://127.0.0.1:11234"), "remote endpoint URI to open for host connection (e.g. tcp://127.0.0.1:11234, ws://127.0.0.1, uds:/run/dots.socket")
+            ("dots-auth-secret", po::value<std::string>(), "secret used during authentication (this can also be given as part of the --dots-endpoint argument)")
+            ("dots-endpoint", po::value<std::string>()->default_value("tcp://127.0.0.1:11234"), "remote endpoint URI to open for host connection (e.g. tcp://127.0.0.1:11234, ws://127.0.0.1, uds:/run/dots.socket")
         ;
 
         po::variables_map args;
         po::store(po::basic_command_line_parser<char>(argc, argv).options(options).allow_unregistered().run(), args);
         po::notify(args);
 
-        m_openEndpoint.emplace(args["dots-open"].as<std::string>());
+        m_openEndpoint.emplace(args["dots-endpoint"].as<std::string>());
 
         if (m_openEndpoint->scheme() == "tcp" && m_openEndpoint->port().empty())
         {
@@ -149,7 +149,7 @@ namespace dots
         
         po::options_description options{ "Allowed options" };
         options.add_options()
-            ("dots-listen", po::value<std::vector<std::string>>(), "local endpoint URI to listen on for incoming guest connections (e.g. tcp://127.0.0.1:11234, ws://127.0.0.1, uds:/run/dots.socket")
+            ("dots-endpoint", po::value<std::vector<std::string>>(), "local endpoint URI to listen on for incoming guest connections (e.g. tcp://127.0.0.1:11234, ws://127.0.0.1, uds:/run/dots.socket")
         ;
 
         po::variables_map args;
@@ -158,11 +158,11 @@ namespace dots
         
         m_listenEndpoints = [&args]
         {
-            if (args.count("dots-listen"))
+            if (args.count("dots-endpoint"))
             {
                 std::vector<dots::io::Endpoint> listenEndpoints;
 
-                for (const std::string& listenEndpointUri : args["dots-listen"].as<std::vector<std::string>>())
+                for (const std::string& listenEndpointUri : args["dots-endpoint"].as<std::vector<std::string>>())
                 {
                     listenEndpoints.emplace_back(listenEndpointUri);
                 }

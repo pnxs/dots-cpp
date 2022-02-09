@@ -44,7 +44,7 @@ namespace dots
          *
          * This will parse the given command line arguments and attempt to
          * establish a connection via the given guest transceiver using the
-         * endpoint given by the '--dots-open' option. If no endpoint is
+         * endpoint given by the '--dots-endpoint' option. If no endpoint is
          * specified, "tcp://127.0.0.1:11234" will be used as a default.
          *
          * If no transceiver is given (i.e. the global transceiver is used) and
@@ -99,7 +99,7 @@ namespace dots
          *
          * This will parse the given command line arguments and attempt to
          * listen for incoming connections via the given host transceiver using
-         * the endpoints given by the '--dots-listen' options. If no endpoints
+         * the endpoints given by the '--dots-endpoint' option. If no endpoints
          * are specified, "tcp://127.0.0.1:11234" will be used as a default.
          *
          * @param argc The number of command line arguments as given in the
