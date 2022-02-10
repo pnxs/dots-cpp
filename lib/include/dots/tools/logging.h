@@ -73,6 +73,7 @@ namespace dots::tools
     public:
         LogFrontend();
         void setLogLevel(Level level);
+        void setLogLevel(int level);
         [[nodiscard]] Level getLogLevel() const;
         [[nodiscard]] bool shouldLog(Level level) const;
         static void log_p(Level level, const Flf &flf, const char* text);

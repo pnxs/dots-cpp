@@ -25,6 +25,18 @@ namespace dots::tools
         m_level = level;
     }
 
+    void LogFrontend::setLogLevel(int levelValue)
+    {
+        std::optional<Level> level = nr2level(levelValue);
+
+        if (level == std::nullopt)
+        {
+            throw std::runtime_error{ "invalid log level number: '" + std::to_string(levelValue) + "' (data=1, debug=2, info=3, notice=4, warn=5, error=6, crit=7, emerg=8)" };
+        }
+
+        setLogLevel(*level);
+    }
+
     Level LogFrontend::getLogLevel() const
     {
         return m_level;
