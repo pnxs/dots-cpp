@@ -242,6 +242,28 @@ namespace dots::tools
         }
     }
 
+    std::vector<Uri> Uri::FromStrings(const std::string& uriStrs)
+    {
+        auto trim = [](std::string_view sv)
+        {
+            while (!sv.empty() && sv.front() == ' ')
+            {
+                sv.remove_prefix(1);
+            }
+
+            return sv;
+        };
+
+        std::vector<Uri> uris;
+
+        for (auto [head, tail] = split_left_at_first_of(trim(uriStrs), " ", false); !head.empty(); std::tie(head, tail) = split_left_at_first_of(trim(tail), " ", false))
+        {
+            uris.emplace_back(std::string{ head });
+        }
+
+        return uris;
+    }
+
     void Uri::replace(std::string_view part, std::string_view replacement)
     {
         m_uriStr.replace(static_cast<size_t>(part.data() - m_uriStr.data()), part.size(), replacement);

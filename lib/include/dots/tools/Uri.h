@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <string_view>
+#include <vector>
 
 namespace dots::tools
 {
@@ -39,6 +40,8 @@ namespace dots::tools
 
         std::string_view path() const;
         void setPath(const std::string& path);
+
+        static std::vector<Uri> FromStrings(const std::string& uriStrs);
 
     private:
 
