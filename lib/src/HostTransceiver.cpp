@@ -367,11 +367,6 @@ namespace dots
         {
             if (std::string_view scheme = listenEndpoint.scheme(); scheme == "tcp")
             {
-                if (listenEndpoint.port().empty())
-                {
-                    listenEndpoint.setPort("11234");
-                }
-
                 listen<io::TcpListener>(listenEndpoint);
             }
             else if (scheme == "tcp-legacy")

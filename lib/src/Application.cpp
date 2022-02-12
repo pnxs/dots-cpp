@@ -190,6 +190,14 @@ namespace dots
             m_listenEndpoints.emplace_back("tcp://127.0.0.1:11234");
         }
 
+        for (io::Endpoint& listenEndpoint : m_listenEndpoints)
+        {
+            if (listenEndpoint.scheme() == "tcp" && listenEndpoint.port().empty())
+            {
+                listenEndpoint.setPort("11234");
+            }
+        }
+
         if (auto it = args.find("dots-log-level"); it != args.end())
         {
             tools::loggingFrontend().setLogLevel(it->second.as<int>());
