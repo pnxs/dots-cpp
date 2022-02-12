@@ -29,20 +29,20 @@
  * LOG_INFO_S("Hello world, here is a " << steamable-object << "!")
  * LOG_INFO_P("Hello wordd, here is a #%d %s syntax!", 1, "printf")
  *
- * Select loglevel on application-start using environment variable LOGGING_LEVEL:
+ * Select loglevel on application-start using environment variable DOTS_LOG_LEVEL:
  *
  * Example:
- * LOGGING_LEVEL=1 (set loglevel to DATA)
- * LOGGING_LEVEL=4 (set loglevel to NOTICE)
+ * DOTS_LOG_LEVEL=1 (set loglevel to DATA)
+ * DOTS_LOG_LEVEL=4 (set loglevel to NOTICE)
  *
- * Select log loggingBackend using environment variable LOGGING_BACKEND:
+ * Select log loggingBackend using environment variable DOTS_LOG_BACKEND:
  * Logging is written to console by default.
  *
  * Example:
- * LOGGING_BACKEND=syslog (log to syslog)
+ * DOTS_LOG_BACKEND=syslog (log to syslog)
  *
  * When logging to console, you can disable colors by setting
- * DISABLE_LOGGING_COLORS=1
+ * DOTS_DISABLE_LOG_COLORS=1
  * unset variable to enable colors again.
  */
 
