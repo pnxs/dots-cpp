@@ -119,7 +119,7 @@ namespace dots
         po::options_description options("Allowed options");
         options.add_options()
             ("dots-auth-secret", po::value<std::string>(), "secret used during authentication (this can also be given as part of the --dots-endpoint argument)")
-            ("dots-endpoint", po::value<std::string>()->default_value("tcp://127.0.0.1:11234"), "remote endpoint URI to open for host connection (e.g. tcp://127.0.0.1:11234, ws://127.0.0.1, uds:/run/dots.socket")
+            ("dots-endpoint", po::value<std::string>(), "remote endpoint URI to open for host connection (e.g. tcp://127.0.0.1, ws://127.0.0.1:11235, uds:/run/dots.socket")
             ("dots-log-level", po::value<int>(), "log level to use (data = 1, debug = 2, info = 3, notice = 4, warn = 5, error = 6, crit = 7, emerg = 8)")
         ;
 
@@ -127,7 +127,18 @@ namespace dots
         po::store(po::basic_command_line_parser<char>(argc, argv).options(options).allow_unregistered().run(), args);
         po::notify(args);
 
-        m_openEndpoint.emplace(args["dots-endpoint"].as<std::string>());
+        if (auto it = args.find("dots-endpoint"); it != args.end())
+        {
+            m_openEndpoint.emplace(it->second.as<std::string>());
+        }
+        else if (const char* openEndpointUri = ::getenv("DOTS_ENDPOINT"); openEndpointUri != nullptr)
+        {
+            m_openEndpoint.emplace(openEndpointUri);
+        }
+        else
+        {
+             m_openEndpoint.emplace("tcp://127.0.0.1:11234");
+        }
 
         if (m_openEndpoint->scheme() == "tcp" && m_openEndpoint->port().empty())
         {
@@ -155,7 +166,7 @@ namespace dots
         
         po::options_description options{ "Allowed options" };
         options.add_options()
-            ("dots-endpoint", po::value<std::vector<std::string>>(), "local endpoint URI to listen on for incoming guest connections (e.g. tcp://127.0.0.1:11234, ws://127.0.0.1, uds:/run/dots.socket")
+            ("dots-endpoint", po::value<std::vector<std::string>>(), "local endpoint URI to listen on for incoming guest connections (e.g. tcp://127.0.0.1, ws://127.0.0.1:11235, uds:/run/dots.socket")
             ("dots-log-level", po::value<int>(), "log level to use (data = 1, debug = 2, info = 3, notice = 4, warn = 5, error = 6, crit = 7, emerg = 8)")
         ;
 
@@ -163,24 +174,21 @@ namespace dots
         po::store(po::basic_command_line_parser<char>(argc, argv).options(options).allow_unregistered().run(), args);
         po::notify(args);
         
-        m_listenEndpoints = [&args]
+        if (auto it = args.find("dots-endpoint"); it != args.end())
         {
-            if (args.count("dots-endpoint"))
+            for (const std::string& listenEndpointUri : it->second.as<std::vector<std::string>>())
             {
-                std::vector<dots::io::Endpoint> listenEndpoints;
-
-                for (const std::string& listenEndpointUri : args["dots-endpoint"].as<std::vector<std::string>>())
-                {
-                    listenEndpoints.emplace_back(listenEndpointUri);
-                }
-
-                return listenEndpoints;
+                m_listenEndpoints.emplace_back(listenEndpointUri);
             }
-            else
-            {
-                return std::vector{ io::Endpoint{ "tcp://127.0.0.1" } };
-            }
-        }();
+        }
+        else if (const char* listenEndpointUris = ::getenv("DOTS_ENDPOINT"); listenEndpointUris != nullptr)
+        {
+            m_listenEndpoints = io::Endpoint::FromStrings(listenEndpointUris);
+        }
+        else
+        {
+            m_listenEndpoints.emplace_back("tcp://127.0.0.1:11234");
+        }
 
         if (auto it = args.find("dots-log-level"); it != args.end())
         {
