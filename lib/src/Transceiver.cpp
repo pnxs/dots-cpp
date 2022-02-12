@@ -12,6 +12,7 @@ namespace dots
         m_nextId(0),
         m_this(std::make_shared<Transceiver*>(this)),
         m_registry{ [this_{ m_this }](const type::Descriptor<>& descriptor){ (*this_)->handleNewType(descriptor); }, staticTypePolicy },
+        m_dispatcher{ [this_{ m_this }](const type::StructDescriptor<>& descriptor, std::exception_ptr ePtr){ (*this_)->handleDispatchError(descriptor, ePtr); } },
         m_selfName{ std::move(selfName) },
         m_ioContext(std::ref(ioContext)),
         m_transitionHandler{ std::move(transitionHandler) }
@@ -191,5 +192,21 @@ namespace dots
         }
 
         m_removeIds.clear();
+    }
+
+    void Transceiver::handleDispatchError(const type::StructDescriptor<>& descriptor, std::exception_ptr ePtr) noexcept
+    {
+        try
+        {
+            std::rethrow_exception(ePtr);
+        }
+        catch (const std::exception& e)
+        {
+            LOG_ERROR_S("error in subscription handler for type '" << descriptor.name() << "' -> '" << e.what() << "'");
+        }
+        catch (...)
+        {
+            LOG_ERROR_S("error in subscription handler for type '" << descriptor.name() << "' -> '<unknown>'");
+        }
     }
 }

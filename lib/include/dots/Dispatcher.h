@@ -32,11 +32,19 @@ namespace dots
     struct Dispatcher
     {
         using id_t = uint64_t;
+        using error_handler_t = tools::Handler<void(const type::StructDescriptor<>&, std::exception_ptr)>;
         using transmission_handler_t = tools::Handler<void(const io::Transmission&)>;
         template <typename T = type::Struct>
         using event_handler_t = tools::Handler<void(const Event<T>&)>;
 
-        Dispatcher() = default;
+        /*!
+         * @brief Construct a new Dispatcher object.
+         *
+         * @param handler When transmission or event handlers throw an
+         * exception, this handler will be invoked with the corresponding
+         * error.
+         */
+        Dispatcher(error_handler_t handler);
         Dispatcher(const Dispatcher& other) = delete;
         Dispatcher(Dispatcher&& other) noexcept = default;
         ~Dispatcher() = default;
@@ -333,13 +341,14 @@ namespace dots
         void dispatchEvent(const DotsHeader& header, const type::AnyStruct& instance);
 
         template <typename Handlers, typename Dispatchable>
-        void dispatchToHandlers(Handlers& handlers, const Dispatchable& dispatchable);
+        void dispatchToHandlers(const type::StructDescriptor<>& descriptor, Handlers& handlers, const Dispatchable& dispatchable);
 
-        id_t m_nextId = 0;
         std::optional<id_t> m_currentlyDispatchingId;
         std::vector<id_t> m_removeIds;
         ContainerPool m_containerPool;
         transmission_handler_pool_t m_transmissionHandlerPool;
         event_handler_pool_t m_eventHandlerPool;
+        id_t m_nextId;
+        error_handler_t m_errorHandler;
     };
 }

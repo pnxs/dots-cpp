@@ -39,6 +39,13 @@ namespace
 
 struct TestDispatcher : ::testing::Test
 {
+    TestDispatcher() :
+        m_sut{ m_mockErrorHandler.AsStdFunction() }
+    {
+        /* do nothing */
+    }
+
+    ::testing::MockFunction<void(const dots::type::StructDescriptor<>&, std::exception_ptr)> m_mockErrorHandler;
     dots::Dispatcher m_sut;
 };
 
@@ -684,9 +691,34 @@ TEST_F(TestDispatcher, dispatch_RemoveOtherEventHandlerDuringDispatch)
     ASSERT_EQ(i, 4);
 }
 
+TEST_F(TestDispatcher, dispatch_ExecptionInvokesErrorHandler)
+{
+    DotsTestStruct dts{ DotsTestStruct::indKeyfField_i{ 1 } };
+
+    m_sut.addEventHandler<DotsTestStruct>([i{ 0 }](const dots::Event<DotsTestStruct>&/* e*/) mutable
+    {
+        if (++i == 2)
+        {
+            throw std::runtime_error{ "foobar" };
+        }
+    });
+
+    EXPECT_CALL(m_mockErrorHandler, Call(::testing::Ref(DotsTestStruct::_Descriptor()), ::testing::_)).Times(0);
+    DotsHeader header1 = test_helpers::make_header(dts, 42);
+    m_sut.dispatch(dots::Transmission{ header1, dts });
+
+    EXPECT_CALL(m_mockErrorHandler, Call(::testing::Ref(DotsTestStruct::_Descriptor()), ::testing::_)).Times(1);
+    DotsHeader header2 = test_helpers::make_header(dts, 42);
+    m_sut.dispatch(dots::Transmission{ header2, dts });
+
+    EXPECT_CALL(m_mockErrorHandler, Call(::testing::Ref(DotsTestStruct::_Descriptor()), ::testing::_)).Times(0);
+    DotsHeader header3 = test_helpers::make_header(dts, 42);
+    m_sut.dispatch(dots::Transmission{ header3, dts });
+}
+
 TEST_F(TestDispatcher, moveCtor_CreateEventAfterMoveContructWhenAddedHandlerForCachedType)
 {
-    dots::Dispatcher dispatcher;
+    dots::Dispatcher dispatcher{ [](auto&&...){} };
     DotsTestStruct dts{ DotsTestStruct::indKeyfField_i{ 1 } };
     DotsHeader header = test_helpers::make_header(dts, 42);
 

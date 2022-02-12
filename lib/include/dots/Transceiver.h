@@ -561,6 +561,7 @@ namespace dots
         Subscription makeSubscription(UnsubscribeHandler&& unsubscribeHandler);
 
         void handleNewType(const type::Descriptor<>& descriptor) noexcept;
+        void handleDispatchError(const type::StructDescriptor<>& descriptor, std::exception_ptr ePtr) noexcept;
 
         id_t m_nextId;
         std::optional<id_t> m_currentlyDispatchingId;
