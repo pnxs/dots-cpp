@@ -392,6 +392,8 @@ namespace dots
             {
                 throw std::runtime_error{ "unknown or unsupported endpoint scheme: '" + std::string{ scheme } + "'" };
             }
+
+            LOG_NOTICE_S("listening on endpoint '" << listenEndpoint.uriStr() << "'");
         }
     }
 }
