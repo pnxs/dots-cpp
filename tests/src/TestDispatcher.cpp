@@ -26,7 +26,7 @@ namespace
     }
 }
 
-//TEST(TestDispatcher, dispatch_ThrowWhenNotSubscribed)
+//TEST_F(TestDispatcher, dispatch_ThrowWhenNotSubscribed)
 //{
 //    dots::Dispatcher sut;
 //    DotsTestStruct dts{
@@ -34,12 +34,16 @@ namespace
 //    };
 //    DotsHeader header = test_helpers::make_header(dts, 42);
 //
-//    ASSERT_THROW(sut.dispatch(header, dts), std::logic_error);
+//    ASSERT_THROW(m_sut.dispatch(header, dts), std::logic_error);
 //}
 
-TEST(TestDispatcher, addEventHandler_AllowsUsageOfVariousHandlerTypes)
+struct TestDispatcher : ::testing::Test
 {
-    dots::Dispatcher sut;
+    dots::Dispatcher m_sut;
+};
+
+TEST_F(TestDispatcher, addEventHandler_AllowsUsageOfVariousHandlerTypes)
+{
     DotsTestStruct dts{ DotsTestStruct::indKeyfField_i{ 1 } };
     DotsHeader header = test_helpers::make_header(dts, 42);
 
@@ -74,41 +78,40 @@ TEST(TestDispatcher, addEventHandler_AllowsUsageOfVariousHandlerTypes)
     Foobar* this_ = &foobar;
 
     // lambda
-    sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/){ ++I; });
+    m_sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/){ ++I; });
 
     // mutable lambda
-    sut.addEventHandler<DotsTestStruct>([&, i = 0](const dots::Event<DotsTestStruct>&/* e*/) mutable { ++I; I += ++i; }); 
+    m_sut.addEventHandler<DotsTestStruct>([&, i = 0](const dots::Event<DotsTestStruct>&/* e*/) mutable { ++I; I += ++i; }); 
 
     // static member function
-    sut.addEventHandler<DotsTestStruct>(Foobar::StaticEventHandler);
+    m_sut.addEventHandler<DotsTestStruct>(Foobar::StaticEventHandler);
 
     // non-static member function
-    sut.addEventHandler<DotsTestStruct>({ &Foobar::NonStaticEventHandler, this_ });
+    m_sut.addEventHandler<DotsTestStruct>({ &Foobar::NonStaticEventHandler, this_ });
 
     // non-static const member function
-    sut.addEventHandler<DotsTestStruct>({ &Foobar::NonStaticEventHandlerConst, this_ });
+    m_sut.addEventHandler<DotsTestStruct>({ &Foobar::NonStaticEventHandlerConst, this_ });
 
     // function pointer
     auto fPtr = &Foobar::StaticEventHandler;
-    sut.addEventHandler<DotsTestStruct>(fPtr);
+    m_sut.addEventHandler<DotsTestStruct>(fPtr);
 
     // handler with bindings
-    sut.addEventHandler<DotsTestStruct>({ &Foobar::NonStaticEventHandlerWithBindings, this_, 5, 2.3f });
+    m_sut.addEventHandler<DotsTestStruct>({ &Foobar::NonStaticEventHandlerWithBindings, this_, 5, 2.3f });
 
-    sut.dispatch(dots::Transmission{ header, dts });
+    m_sut.dispatch(dots::Transmission{ header, dts });
 
     ASSERT_EQ(I, 15);
 }
 
-TEST(TestDispatcher, dispatch_CreateEventWhenAddedHandlerForCachedType)
+TEST_F(TestDispatcher, dispatch_CreateEventWhenAddedHandlerForCachedType)
 {
-    dots::Dispatcher sut;
     DotsTestStruct dts{ DotsTestStruct::indKeyfField_i{ 1 } };
     DotsHeader header = test_helpers::make_header(dts, 42);
 
     size_t i = 0;
 
-    dots::Dispatcher::id_t id = sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>& e)
+    dots::Dispatcher::id_t id = m_sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>& e)
     {
         ++i;
 
@@ -134,14 +137,13 @@ TEST(TestDispatcher, dispatch_CreateEventWhenAddedHandlerForCachedType)
     });
     (void)id;
 
-    sut.dispatch(dots::Transmission{ header, dts });
+    m_sut.dispatch(dots::Transmission{ header, dts });
 
     ASSERT_EQ(i, 1);
 }
 
-TEST(TestDispatcher, dispatch_UpdateEventWhenAddedHandlerForCachedType)
+TEST_F(TestDispatcher, dispatch_UpdateEventWhenAddedHandlerForCachedType)
 {
-    dots::Dispatcher sut;
     DotsTestStruct dts1{
         DotsTestStruct::indKeyfField_i{ 1 },
         DotsTestStruct::stringField_i{ "foo" }
@@ -160,7 +162,7 @@ TEST(TestDispatcher, dispatch_UpdateEventWhenAddedHandlerForCachedType)
 
     size_t i = 0;
 
-    dots::Dispatcher::id_t id = sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>& e)
+    dots::Dispatcher::id_t id = m_sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>& e)
     {
         ++i;
 
@@ -186,15 +188,14 @@ TEST(TestDispatcher, dispatch_UpdateEventWhenAddedHandlerForCachedType)
     });
     (void)id;
 
-    sut.dispatch(dots::Transmission{ header1, dts1 });
-    sut.dispatch(dots::Transmission{ header2, dts2 });
+    m_sut.dispatch(dots::Transmission{ header1, dts1 });
+    m_sut.dispatch(dots::Transmission{ header2, dts2 });
 
     ASSERT_EQ(i, 2);
 }
 
-TEST(TestDispatcher, dispatch_RemoveEventWhenAddedHandlerForCachedType)
+TEST_F(TestDispatcher, dispatch_RemoveEventWhenAddedHandlerForCachedType)
 {
-    dots::Dispatcher sut;
     DotsTestStruct dts1{
         DotsTestStruct::indKeyfField_i{ 1 },
         DotsTestStruct::stringField_i{ "foo" }
@@ -217,7 +218,7 @@ TEST(TestDispatcher, dispatch_RemoveEventWhenAddedHandlerForCachedType)
 
     size_t i = 0;
 
-    dots::Dispatcher::id_t id = sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>& e)
+    dots::Dispatcher::id_t id = m_sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>& e)
     {
         ++i;
 
@@ -243,22 +244,21 @@ TEST(TestDispatcher, dispatch_RemoveEventWhenAddedHandlerForCachedType)
     });
     (void)id;
 
-    sut.dispatch(dots::Transmission{ header1, dts1 });
-    sut.dispatch(dots::Transmission{ header2, dts2 });
-    sut.dispatch(dots::Transmission{ header3, dts3 });
+    m_sut.dispatch(dots::Transmission{ header1, dts1 });
+    m_sut.dispatch(dots::Transmission{ header2, dts2 });
+    m_sut.dispatch(dots::Transmission{ header3, dts3 });
 
     ASSERT_EQ(i, 3);
 }
 
-TEST(TestDispatcher, dispatch_CreateEventWhenDynamicallyAddedHandlerForCachedType)
+TEST_F(TestDispatcher, dispatch_CreateEventWhenDynamicallyAddedHandlerForCachedType)
 {
-    dots::Dispatcher sut;
     DotsTestStruct dts{ DotsTestStruct::indKeyfField_i{ 1 } };
     DotsHeader header = test_helpers::make_header(dts, 42);
 
     size_t i = 0;
 
-    dots::Dispatcher::id_t id = sut.addEventHandler(DotsTestStruct::_Descriptor(), [&](const dots::Event<>& e)
+    dots::Dispatcher::id_t id = m_sut.addEventHandler(DotsTestStruct::_Descriptor(), [&](const dots::Event<>& e)
     {
         ++i;
 
@@ -284,14 +284,13 @@ TEST(TestDispatcher, dispatch_CreateEventWhenDynamicallyAddedHandlerForCachedTyp
     });
     (void)id;
 
-    sut.dispatch(dots::Transmission{ header, dts });
+    m_sut.dispatch(dots::Transmission{ header, dts });
 
     ASSERT_EQ(i, 1);
 }
 
-TEST(TestDispatcher, dispatch_UpdateEventWhenDynamicallAddedHandlerForCachedType)
+TEST_F(TestDispatcher, dispatch_UpdateEventWhenDynamicallAddedHandlerForCachedType)
 {
-    dots::Dispatcher sut;
     DotsTestStruct dts1{
         DotsTestStruct::indKeyfField_i{ 1 },
         DotsTestStruct::stringField_i{ "foo" }
@@ -310,7 +309,7 @@ TEST(TestDispatcher, dispatch_UpdateEventWhenDynamicallAddedHandlerForCachedType
 
     size_t i = 0;
 
-    dots::Dispatcher::id_t id = sut.addEventHandler(DotsTestStruct::_Descriptor(), [&](const dots::Event<>& e)
+    dots::Dispatcher::id_t id = m_sut.addEventHandler(DotsTestStruct::_Descriptor(), [&](const dots::Event<>& e)
     {
         ++i;
 
@@ -336,15 +335,14 @@ TEST(TestDispatcher, dispatch_UpdateEventWhenDynamicallAddedHandlerForCachedType
     });
     (void)id;
 
-    sut.dispatch(dots::Transmission{ header1, dts1 });
-    sut.dispatch(dots::Transmission{ header2, dts2 });
+    m_sut.dispatch(dots::Transmission{ header1, dts1 });
+    m_sut.dispatch(dots::Transmission{ header2, dts2 });
 
     ASSERT_EQ(i, 2);
 }
 
-TEST(TestDispatcher, dispatch_RemoveEventWhenDynamicallAddedHandlerForCachedType)
+TEST_F(TestDispatcher, dispatch_RemoveEventWhenDynamicallAddedHandlerForCachedType)
 {
-    dots::Dispatcher sut;
     DotsTestStruct dts1{
         DotsTestStruct::indKeyfField_i{ 1 },
         DotsTestStruct::stringField_i{ "foo" }
@@ -367,7 +365,7 @@ TEST(TestDispatcher, dispatch_RemoveEventWhenDynamicallAddedHandlerForCachedType
 
     size_t i = 0;
 
-    dots::Dispatcher::id_t id = sut.addEventHandler(DotsTestStruct::_Descriptor(), [&](const dots::Event<>& e)
+    dots::Dispatcher::id_t id = m_sut.addEventHandler(DotsTestStruct::_Descriptor(), [&](const dots::Event<>& e)
     {
         ++i;
 
@@ -393,31 +391,30 @@ TEST(TestDispatcher, dispatch_RemoveEventWhenDynamicallAddedHandlerForCachedType
     });
     (void)id;
 
-    sut.dispatch(dots::Transmission{ header1, dts1 });
-    sut.dispatch(dots::Transmission{ header2, dts2 });
-    sut.dispatch(dots::Transmission{ header3, dts3 });
+    m_sut.dispatch(dots::Transmission{ header1, dts1 });
+    m_sut.dispatch(dots::Transmission{ header2, dts2 });
+    m_sut.dispatch(dots::Transmission{ header3, dts3 });
 
     ASSERT_EQ(i, 3);
 }
 
-TEST(TestDispatcher, dispatch_CreateEventFromCacheWhenAddedHandlerForCachedType)
+TEST_F(TestDispatcher, dispatch_CreateEventFromCacheWhenAddedHandlerForCachedType)
 {
-    dots::Dispatcher sut;
     DotsTestStruct dts{ DotsTestStruct::indKeyfField_i{ 1 } };
     DotsHeader header = test_helpers::make_header(dts, 42);
 
     size_t i = 0;
 
-    dots::Dispatcher::id_t id1 = sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
+    dots::Dispatcher::id_t id1 = m_sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
     {
         /* do nothing */
     });
     (void)id1;
 
-    sut.dispatch(dots::Transmission{ header, dts });
-    sut.dispatch(dots::Transmission{ header, dts });
+    m_sut.dispatch(dots::Transmission{ header, dts });
+    m_sut.dispatch(dots::Transmission{ header, dts });
 
-    dots::Dispatcher::id_t id2 = sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>& e)
+    dots::Dispatcher::id_t id2 = m_sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>& e)
     {
         ++i;
 
@@ -446,9 +443,8 @@ TEST(TestDispatcher, dispatch_CreateEventFromCacheWhenAddedHandlerForCachedType)
     ASSERT_EQ(i, 1);
 }
 
-TEST(TestDispatcher, dispatch_CreateEventWhenAddedHandlerForUncachedType)
+TEST_F(TestDispatcher, dispatch_CreateEventWhenAddedHandlerForUncachedType)
 {
-    dots::Dispatcher sut;
     DotsUncachedTestStruct dts1{
         DotsUncachedTestStruct::intKeyfField_i{ 1 },
         DotsUncachedTestStruct::value_i{ "foo" },
@@ -461,7 +457,7 @@ TEST(TestDispatcher, dispatch_CreateEventWhenAddedHandlerForUncachedType)
 
     size_t i = 0;
 
-    dots::Dispatcher::id_t id = sut.addEventHandler<DotsUncachedTestStruct>([&](const dots::Event<DotsUncachedTestStruct>& e)
+    dots::Dispatcher::id_t id = m_sut.addEventHandler<DotsUncachedTestStruct>([&](const dots::Event<DotsUncachedTestStruct>& e)
     {
         ++i;
 
@@ -487,24 +483,23 @@ TEST(TestDispatcher, dispatch_CreateEventWhenAddedHandlerForUncachedType)
     });
     (void)id;
 
-    sut.dispatch(dots::Transmission{ header1, dts1 });
-    sut.dispatch(dots::Transmission{ header2, dts2 });
+    m_sut.dispatch(dots::Transmission{ header1, dts1 });
+    m_sut.dispatch(dots::Transmission{ header2, dts2 });
 
     ASSERT_EQ(i, 2);
 }
 
-TEST(TestDispatcher, dispatch_NoEventAfterRedundantRemoveForCachedType)
+TEST_F(TestDispatcher, dispatch_NoEventAfterRedundantRemoveForCachedType)
 {
-    dots::Dispatcher sut;
     DotsTestStruct dts{ DotsTestStruct::indKeyfField_i{ 1 } };
     DotsHeader headerCreate = test_helpers::make_header(dts, 42);
     DotsHeader headerRemove = test_helpers::make_header(dts, 42, true);
 
-    sut.dispatch(dots::Transmission{ headerCreate, dts });
+    m_sut.dispatch(dots::Transmission{ headerCreate, dts });
 
     size_t i = 0;
 
-    dots::Dispatcher::id_t id = sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>& e)
+    dots::Dispatcher::id_t id = m_sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>& e)
     {
         if (e.isRemove())
         {
@@ -513,77 +508,73 @@ TEST(TestDispatcher, dispatch_NoEventAfterRedundantRemoveForCachedType)
     });
     (void)id;
 
-    sut.dispatch(dots::Transmission{ headerRemove, dts });
-    sut.dispatch(dots::Transmission{ headerRemove, dts });
+    m_sut.dispatch(dots::Transmission{ headerRemove, dts });
+    m_sut.dispatch(dots::Transmission{ headerRemove, dts });
 
     ASSERT_EQ(i, 1);
 }
 
-TEST(TestDispatcher, dispatch_ThrowWhenRemovingUncachedType)
+TEST_F(TestDispatcher, dispatch_ThrowWhenRemovingUncachedType)
 {
-    dots::Dispatcher sut;
     DotsUncachedTestStruct duts{
         DotsUncachedTestStruct::intKeyfField_i{ 1 }
     };
     DotsHeader header = test_helpers::make_header(duts, 42, true);
 
-    dots::Dispatcher::id_t id1 = sut.addEventHandler<DotsUncachedTestStruct>([&](const dots::Event<DotsUncachedTestStruct>&/* e*/)
+    dots::Dispatcher::id_t id1 = m_sut.addEventHandler<DotsUncachedTestStruct>([&](const dots::Event<DotsUncachedTestStruct>&/* e*/)
     {
         /* do nothing */
     });
     (void)id1;
 
-    ASSERT_THROW(sut.dispatch(dots::Transmission{ header, duts }), std::logic_error);
+    ASSERT_THROW(m_sut.dispatch(dots::Transmission{ header, duts }), std::logic_error);
 }
 
-TEST(TestDispatcher, dispatch_NoEventWhenNotAddedHandlerForType)
+TEST_F(TestDispatcher, dispatch_NoEventWhenNotAddedHandlerForType)
 {
-    dots::Dispatcher sut;
     DotsUncachedTestStruct duts{ DotsUncachedTestStruct::intKeyfField_i{ 1 } };
     DotsHeader header = test_helpers::make_header(duts, 42);
 
     size_t i = 0;
 
-    dots::Dispatcher::id_t id1 = sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
+    dots::Dispatcher::id_t id1 = m_sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
     {
         ++i;
     });
-    dots::Dispatcher::id_t id2 = sut.addEventHandler<DotsUncachedTestStruct>([&](const dots::Event<DotsUncachedTestStruct>&/* e*/)
+    dots::Dispatcher::id_t id2 = m_sut.addEventHandler<DotsUncachedTestStruct>([&](const dots::Event<DotsUncachedTestStruct>&/* e*/)
     {
         /* do nothing */
     });
     (void)id1;
     (void)id2;
 
-    sut.dispatch(dots::Transmission{ header, duts });
+    m_sut.dispatch(dots::Transmission{ header, duts });
 
     ASSERT_EQ(i, 0);
 }
 
-TEST(TestDispatcher, dispatch_NoEventAfterExplicitRemoveHandlerForType)
+TEST_F(TestDispatcher, dispatch_NoEventAfterExplicitRemoveHandlerForType)
 {
-    dots::Dispatcher sut;
     DotsTestStruct dts{ DotsTestStruct::indKeyfField_i{ 1 } };
     DotsHeader header1 = test_helpers::make_header(dts, 42);
     DotsHeader header2 = test_helpers::make_header(dts, 42);
 
     size_t i = 0;
 
-    dots::Dispatcher::id_t id = sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
+    dots::Dispatcher::id_t id = m_sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
     {
         ++i;
     });
 
-    sut.dispatch(dots::Transmission{ header1, dts });
-    sut.removeEventHandler(DotsTestStruct::_Descriptor(), id);
-    sut.dispatch(dots::Transmission{ header2, dts });
+    m_sut.dispatch(dots::Transmission{ header1, dts });
+    m_sut.removeEventHandler(DotsTestStruct::_Descriptor(), id);
+    m_sut.dispatch(dots::Transmission{ header2, dts });
 
     ASSERT_EQ(i, 1);
 }
 
-TEST(TestDispatcher, dispatch_AddEventHandlerDuringDispatch)
+TEST_F(TestDispatcher, dispatch_AddEventHandlerDuringDispatch)
 {
-    dots::Dispatcher sut;
     DotsTestStruct dts{ DotsTestStruct::indKeyfField_i{ 1 } };
     DotsHeader header = test_helpers::make_header(dts, 42);
 
@@ -591,15 +582,15 @@ TEST(TestDispatcher, dispatch_AddEventHandlerDuringDispatch)
 
     for (size_t j = 0; j < 10; ++j)
     {
-        sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
+        m_sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
         {
             ++i;
         });
     }
 
-    sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
+    m_sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
     {
-        sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
+        m_sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
         {
             ++i;
         });
@@ -607,20 +598,19 @@ TEST(TestDispatcher, dispatch_AddEventHandlerDuringDispatch)
 
     for (size_t j = 0; j < 10; ++j)
     {
-        sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
+        m_sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
         {
             ++i;
         });
     }
 
-    sut.dispatch(dots::Transmission{ header, dts });
+    m_sut.dispatch(dots::Transmission{ header, dts });
 
     ASSERT_EQ(i, 21);
 }
 
-TEST(TestDispatcher, dispatch_RemoveCurrentEventHandlerDuringDispatch)
+TEST_F(TestDispatcher, dispatch_RemoveCurrentEventHandlerDuringDispatch)
 {
-    dots::Dispatcher sut;
     DotsTestStruct dts{ DotsTestStruct::indKeyfField_i{ 1 } };
     DotsHeader header = test_helpers::make_header(dts, 42);
 
@@ -629,33 +619,32 @@ TEST(TestDispatcher, dispatch_RemoveCurrentEventHandlerDuringDispatch)
 
     for (size_t j = 0; j < 10; ++j)
     {
-        sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
+        m_sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
         {
             ++i;
         });
     }
 
-    id = sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
+    id = m_sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
     {
-        sut.removeEventHandler(DotsTestStruct::_Descriptor(), id);
+        m_sut.removeEventHandler(DotsTestStruct::_Descriptor(), id);
     });
 
     for (size_t j = 0; j < 10; ++j)
     {
-        sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
+        m_sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
         {
             ++i;
         });
     }
 
-    sut.dispatch(dots::Transmission{ header, dts });
+    m_sut.dispatch(dots::Transmission{ header, dts });
 
     ASSERT_EQ(i, 20);
 }
 
-TEST(TestDispatcher, dispatch_RemoveOtherEventHandlerDuringDispatch)
+TEST_F(TestDispatcher, dispatch_RemoveOtherEventHandlerDuringDispatch)
 {
-    dots::Dispatcher sut;
     DotsTestStruct dts{ DotsTestStruct::indKeyfField_i{ 1 } };
     DotsHeader header = test_helpers::make_header(dts, 42);
 
@@ -663,39 +652,39 @@ TEST(TestDispatcher, dispatch_RemoveOtherEventHandlerDuringDispatch)
     dots::Dispatcher::id_t id1;
     dots::Dispatcher::id_t id5;
 
-    id1 = sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
+    id1 = m_sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
     {
         ++i;
     });
 
-    sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
+    m_sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
     {
         ++i;
-        sut.removeEventHandler(DotsTestStruct::_Descriptor(), id1);
+        m_sut.removeEventHandler(DotsTestStruct::_Descriptor(), id1);
     });
 
-    sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
-    {
-        ++i;
-    });
-
-    sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
-    {
-        ++i;
-        sut.removeEventHandler(DotsTestStruct::_Descriptor(), id5);
-    });
-
-    id5 = sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
+    m_sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
     {
         ++i;
     });
 
-    sut.dispatch(dots::Transmission{ header, dts });
+    m_sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
+    {
+        ++i;
+        m_sut.removeEventHandler(DotsTestStruct::_Descriptor(), id5);
+    });
+
+    id5 = m_sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/)
+    {
+        ++i;
+    });
+
+    m_sut.dispatch(dots::Transmission{ header, dts });
 
     ASSERT_EQ(i, 4);
 }
 
-TEST(TestDispatcher, moveCtor_CreateEventAfterMoveContructWhenAddedHandlerForCachedType)
+TEST_F(TestDispatcher, moveCtor_CreateEventAfterMoveContructWhenAddedHandlerForCachedType)
 {
     dots::Dispatcher dispatcher;
     DotsTestStruct dts{ DotsTestStruct::indKeyfField_i{ 1 } };
