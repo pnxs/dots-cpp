@@ -16,7 +16,8 @@ namespace dots
 
         if (m_guestTransceiverStorage == std::nullopt || &*m_guestTransceiverStorage == &dots::transceiver())
         {
-            transceiver = &set_transceiver(m_openEndpoint->userName().empty() ? name : m_openEndpoint->userName());
+            using transition_handler_t = GuestTransceiver::transition_handler_t;
+            transceiver = &set_transceiver(m_openEndpoint->userName().empty() ? name : m_openEndpoint->userName(), transition_handler_t{ &Application::handleGuestTransceiverTransition, this });
             transceiver->open(io::global_publish_types(), io::global_subscribe_types(), *m_openEndpoint);
         }
         else
@@ -110,6 +111,14 @@ namespace dots
     asio::io_context& Application::ioContext()
     {
         return m_transceiver->ioContext();
+    }
+
+    void Application::handleGuestTransceiverTransition(const Connection& connection, std::exception_ptr/* ePtr*/)
+    {
+        if (connection.closed())
+        {
+            exit();
+        }
     }
 
     void Application::parseGuestTransceiverArgs(int argc, char* argv[])

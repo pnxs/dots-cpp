@@ -193,6 +193,8 @@ namespace dots
         const asio::io_context& ioContext() const;
         asio::io_context& ioContext();
 
+        void handleGuestTransceiverTransition(const Connection& connection, std::exception_ptr ePtr);
+
         void parseGuestTransceiverArgs(int argc, char* argv[]);
         void parseHostTransceiverArgs(int argc, char* argv[]);
 
