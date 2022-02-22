@@ -10,10 +10,16 @@ namespace dots
                                      asio::io_context& ioContext/* = global_io_context()*/,
                                      type::Registry::StaticTypePolicy staticTypePolicy /*= type::Registry::StaticTypePolicy::All*/,
                                      std::optional<transition_handler_t> transitionHandler/* = std::nullopt*/) :
-        Transceiver(std::move(selfName), ioContext, staticTypePolicy),
-        m_transitionHandler{ std::move(transitionHandler) }
+        Transceiver(std::move(selfName), ioContext, staticTypePolicy, std::move(transitionHandler))
     {
         /* do nothing */
+    }
+
+    HostTransceiver::~HostTransceiver()
+    {
+        m_groups.clear();
+        connection_map_t guestConnections = std::move(m_guestConnections);
+        guestConnections.clear();
     }
 
     io::Listener& HostTransceiver::listen(io::listener_ptr_t&& listener)
@@ -170,20 +176,8 @@ namespace dots
         return !connection.closed();
     }
 
-    void HostTransceiver::handleTransition(Connection& connection, std::exception_ptr/* e*/) noexcept
+    void HostTransceiver::handleTransitionImpl(Connection& connection, std::exception_ptr/* e*/) noexcept
     {
-        if (m_transitionHandler)
-        {
-            try
-            {
-                (*m_transitionHandler)(connection);
-            }
-            catch (const std::exception& e)
-            {
-                LOG_ERROR_S("error in transition handler for " << connection.peerDescription() << " -> " << e.what());
-            }
-        }
-
         try
         {
             if (connection.state() == DotsConnectionState::closed)
@@ -243,7 +237,7 @@ namespace dots
         {
             if (auto [it, emplaced] = m_groups[groupName].emplace(&connection); emplaced)
             {
-                LOG_INFO_S(connection.peerDescription() << " is now a member of group '" << groupName << "'");
+                LOG_DEBUG_S(connection.peerDescription() << " is now a member of group '" << groupName << "'");
             }
             else
             {
@@ -353,6 +347,48 @@ namespace dots
             --*header.fromCache;
 
             connection.transmit(header, instance);
+        }
+    }
+}
+
+#include <boost/program_options.hpp>
+#include <dots/io/channels/TcpListener.h>
+#include <dots/io/channels/LegacyTcpListener.h>
+#include <dots/io/channels/WebSocketListener.h>
+#if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
+#include <dots/io/channels/UdsListener.h>
+#endif
+
+namespace dots
+{
+    void HostTransceiver::listen(std::vector<io::Endpoint> listenEndpoints)
+    {
+        for (io::Endpoint& listenEndpoint : listenEndpoints)
+        {
+            if (std::string_view scheme = listenEndpoint.scheme(); scheme == "tcp")
+            {
+                listen<io::TcpListener>(listenEndpoint);
+            }
+            else if (scheme == "tcp-legacy")
+            {
+                listen<io::LegacyTcpListener>(listenEndpoint);
+            }
+            else if (scheme == "ws")
+            {
+                listen<io::WebSocketListener>(listenEndpoint);
+            }
+            #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
+            else if (scheme == "uds")
+            {
+                listen<dots::io::posix::UdsListener>(listenEndpoint);
+            }
+            #endif
+            else
+            {
+                throw std::runtime_error{ "unknown or unsupported endpoint scheme: '" + std::string{ scheme } + "'" };
+            }
+
+            LOG_NOTICE_S("listening on endpoint '" << listenEndpoint.uriStr() << "'");
         }
     }
 }

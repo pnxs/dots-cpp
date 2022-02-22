@@ -11,7 +11,7 @@ add_executable(${TARGET_NAME} src/main.cpp)
 # properties
 target_sources(${TARGET_NAME}
     PRIVATE
-        src/Server.cpp
+        src/DotsDaemon.cpp
 )
 target_include_directories(${TARGET_NAME}
     PRIVATE
@@ -21,6 +21,10 @@ target_compile_options(${TARGET_NAME}
     PRIVATE
         $<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-O2 -Wall -Wextra -Wpedantic -Werror>>
         $<$<CXX_COMPILER_ID:MSVC>:/W4>
+)
+target_compile_definitions(${TARGET_NAME}
+    PRIVATE
+        DOTS_NO_GLOBAL_TRANSCEIVER
 )
 target_compile_features(${TARGET_NAME}
     PRIVATE

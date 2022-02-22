@@ -2,6 +2,13 @@
 
 namespace dots
 {
+    Dispatcher::Dispatcher(error_handler_t handler) :
+        m_nextId(0),
+        m_errorHandler{ std::move(handler) }
+    {
+        /* do nothing */
+    }
+
     const ContainerPool& Dispatcher::pool() const
     {
         return m_containerPool;
@@ -111,7 +118,7 @@ namespace dots
         }
 
         transmission_handlers_t& handlers = itHandlers->second;
-        dispatchToHandlers(handlers, transmission);
+        dispatchToHandlers(descriptor, handlers, transmission);
     }
 
     void Dispatcher::dispatchEvent(const DotsHeader& header, const type::AnyStruct& instance)
@@ -127,13 +134,13 @@ namespace dots
             {
                 if (Container<>::node_t removed = container.remove(header, instance); !removed.empty())
                 {
-                    dispatchToHandlers(handlers, Event<>{ header, instance, removed.key(), removed.mapped() });
+                    dispatchToHandlers(descriptor, handlers, Event<>{ header, instance, removed.key(), removed.mapped() });
                 }
             }
             else
             {
                 const auto& [updated, cloneInfo] = container.insert(header, instance);
-                dispatchToHandlers(handlers, Event<>{ header, instance, updated, cloneInfo });
+                dispatchToHandlers(descriptor, handlers, Event<>{ header, instance, updated, cloneInfo });
             }
         }
         else
@@ -143,7 +150,7 @@ namespace dots
                 throw std::logic_error{ "cannot remove uncached instance for type: " + descriptor.name() };
             }
 
-            dispatchToHandlers(handlers, Event<>{ header, instance, instance,
+            dispatchToHandlers(descriptor, handlers, Event<>{ header, instance, instance,
                 DotsCloneInformation{
                     DotsCloneInformation::lastOperation_i{ DotsMt::create },
                     DotsCloneInformation::createdFrom_i{ header.sender },
@@ -155,7 +162,7 @@ namespace dots
     }
 
     template <typename Handlers, typename Dispatchable>
-    void Dispatcher::dispatchToHandlers(Handlers& handlers, const Dispatchable& dispatchable)
+    void Dispatcher::dispatchToHandlers(const type::StructDescriptor<>& descriptor, Handlers& handlers, const Dispatchable& dispatchable)
     {
         for (const auto& [id, handler] : handlers)
         {
@@ -166,7 +173,7 @@ namespace dots
             }
             catch (...)
             {
-                // TODO: logging?
+                m_errorHandler(descriptor, std::current_exception());
             }
 
             m_currentlyDispatchingId = std::nullopt;

@@ -63,7 +63,7 @@ namespace dots::testing
          *
          * @remark To reduce clutter in the test output, the constructor sets
          * the logging level to tools::Level::warn. This can be overridden by
-         * setting the LOGGING_LEVEL environment variable.
+         * setting the DOTS_LOG_LEVEL environment variable.
          *
          * @param ioContext The ASIO IO context (i.e. the "event loop") to use.
          *
@@ -78,7 +78,7 @@ namespace dots::testing
             EventTestBase::ioContext().restart();
 
             // disable verbose logging unless overriden by the user
-            if (::getenv("LOGGING_LEVEL") == nullptr)
+            if (::getenv("DOTS_LOG_LEVEL") == nullptr)
             {
                 tools::loggingFrontend().setLogLevel(tools::Level::warn);
             }
@@ -105,7 +105,7 @@ namespace dots::testing
         {
             if (m_globalGuest != nullptr)
             {
-                transceiver("dots-test-guest", true);
+                set_transceiver("dots-test-guest");
                 m_globalGuest = nullptr;
             }
         }
@@ -286,7 +286,7 @@ namespace dots::testing
         {
             if (m_globalGuest == nullptr)
             {
-                m_globalGuest = &transceiver("dots-global-guest", true);
+                m_globalGuest = &set_transceiver("dots-global-guest");
                 connectGuest(*m_globalGuest, io::global_publish_types(), io::global_subscribe_types(), std::optional<std::string>{ std::nullopt });
                 processEvents();
             }

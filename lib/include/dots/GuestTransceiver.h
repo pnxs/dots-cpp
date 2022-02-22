@@ -44,27 +44,49 @@ namespace dots
          *
          * @param staticTypePolicy Specifies the static type policy of the
          * transceiver's registry.
+         *
+         * @param transitionHandler The handler to invoke every time the a
+         * Connection transitions to a different connection state or an error
+         * occurs.
          */
-        GuestTransceiver(std::string selfName, asio::io_context& ioContext = io::global_io_context(), type::Registry::StaticTypePolicy staticTypePolicy = type::Registry::StaticTypePolicy::All);
+        GuestTransceiver(std::string selfName,
+                         asio::io_context& ioContext = io::global_io_context(),
+                         type::Registry::StaticTypePolicy staticTypePolicy = type::Registry::StaticTypePolicy::All,
+                         std::optional<transition_handler_t> transitionHandler = std::nullopt
+        );
         GuestTransceiver(const GuestTransceiver& other) = delete;
         GuestTransceiver(GuestTransceiver&& other) = default;
-        ~GuestTransceiver() override = default;
+
+        /*!
+         * @brief Destroy the GuestTransceiver object.
+         *
+         * Note that this will gracefully close the host connection if open.
+         */
+        ~GuestTransceiver() override;
 
         GuestTransceiver& operator = (const GuestTransceiver& rhs) = delete;
         GuestTransceiver& operator = (GuestTransceiver&& rhs) = default;
 
         /*!
+         * @brief Indicates whether the host connection is in the 'connected'
+         * state.
+         *
+         * @return true If a connection has been opened and is connected (i.e.
+         * Connection::connected() is true).
+         * @return false Else.
+         */
+        bool connected() const;
+
+        /*!
          * @brief Get current host connection.
          *
-         * @warning The state of the std::optional must always be checked
-         * before accessing the contained object, as the Connection object will
-         * be destroyed when the connection is closed.
+         * @return const Connection& A reference to the current host
+         * connection.
          *
-         * @return const std::optional<Connection>& A reference to the current
-         * host connection. Might be empty if no connection was opened by
-         * GuestTransceiver::open() or if it already has been closed.
+         * @exception std::runtime_error Thrown if no connection was opened by
+         * GuestTransceiver::open() or it already has been closed.
          */
-        const std::optional<Connection>& connection() const;
+        const Connection& connection() const;
 
         /*!
          * @brief Start to asynchronously open and establish a host connection
@@ -159,6 +181,48 @@ namespace dots
         }
 
         /*!
+         * @brief Start to asynchronously open and establish a host connection
+         * via a specific endpoint.
+         *
+         * @param preloadPublishTypes The publish types to preload.
+         *
+         * @param preloadSubscribeTypes The subscribe types to preload.
+         *
+         * @param endpoint The endpoint to use to create a channel and
+         * asynchronously open and establish a host connection. The channel
+         * type will be determined by the endpoint's scheme. 
+         *
+         * @return const Connection& A reference to the host connection after
+         * asynchronous receiving has started.
+         *
+         * @exception std::logic_error Thrown if another host connection has
+         * already been opened.
+         *
+         * @exception std::runtime_error Thrown if the endpoint has an
+         * unsupported URI scheme.
+         */
+        const Connection& open(type::DescriptorMap preloadPublishTypes, type::DescriptorMap preloadSubscribeTypes, io::Endpoint endpoint);
+
+        /*!
+         * @brief Asynchronously open and establish a host connection via a
+         * specific endpoint.
+         *
+         * @param endpoint The endpoint to use to create a channel and
+         * asynchronously open and establish a host connection. The channel
+         * type will be determined by the endpoint's scheme. 
+         *
+         * @return const Connection& A reference to the host connection after
+         * asynchronous receiving has started.
+         *
+         * @exception std::logic_error Thrown if another host connection has
+         * already been opened.
+         *
+         * @exception std::runtime_error Thrown if the endpoint has an
+         * unsupported URI scheme.
+         */
+        const Connection& open(io::Endpoint endpoint);
+
+        /*!
          * @brief Publish an instance of a DOTS struct type.
          *
          * This will create a corresponding io::Transmission for the publish
@@ -195,9 +259,9 @@ namespace dots
         void leaveGroup(std::string_view name) override;
 
         bool handleTransmission(Connection& connection, io::Transmission transmission);
-        void handleTransition(Connection& connection, std::exception_ptr ePtr) noexcept;
+        void handleTransitionImpl(Connection& connection, std::exception_ptr ePtr) noexcept override;
 
-        std::optional<Connection> m_hostConnection;
+        std::unique_ptr<Connection> m_hostConnection;
         type::DescriptorMap m_preloadPublishTypes;
         type::DescriptorMap m_preloadSubscribeTypes;
         std::set<std::string> m_joinedGroups;

@@ -73,11 +73,11 @@ namespace dots
          */
         Connection(io::channel_ptr_t channel, bool host, std::optional<std::string> authSecret = std::nullopt);
         Connection(const Connection& other) = delete;
-        Connection(Connection&& other) = default;
+        Connection(Connection&& other) = delete;
         ~Connection() noexcept;
 
         Connection& operator = (const Connection& rhs) = delete;
-        Connection& operator = (Connection&& rhs) = default;
+        Connection& operator = (Connection&& rhs) = delete;
 
         /*!
          * @brief Get the local endpoint of the channel used by this

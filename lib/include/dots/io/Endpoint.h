@@ -42,5 +42,7 @@ namespace dots::io
 
         void setPath(const std::filesystem::path& path);
         void setPath(const boost::filesystem::path& path);
+
+        static std::vector<Endpoint> FromStrings(const std::string& uriStrs);
     };
 }

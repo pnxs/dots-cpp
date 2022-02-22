@@ -1,158 +1,58 @@
-#include <dots/io/channels/TcpListener.h>
-#include <dots/io/channels/LegacyTcpListener.h>
-#include <dots/io/channels/WebSocketListener.h>
-#if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
-#include <dots/io/channels/UdsListener.h>
-#endif
-#include <dots/tools/logging.h>
-#include <dots/io/Endpoint.h>
-#include "Server.h"
+
 #include <boost/program_options.hpp>
 #include <iostream>
 #include <optional>
+#include <dots/tools/logging.h>
+#include <dots/io/Endpoint.h>
+#include <DotsDaemon.h>
 
 namespace po = boost::program_options;
-using std::string;
 
 int main(int argc, char* argv[])
 {
-    po::options_description desc("Allowed options");
-    desc.add_options()
+    try
+    {
+        po::options_description options("Allowed options");
+        options.add_options()
             ("help", "display help message")
-            ("dots-address", po::value<string>(), "address to bind to")
-            ("dots-port", po::value<string>(), "port to bind to")
-            ("server-name,n", po::value<string>()->default_value("dotsd"), "set servername")
-            ("listen,l", po::value<std::vector<string>>(), "local endpoint URI to listen on for incoming guest connections (e.g. tcp://127.0.0.1:11234, ws://127.0.0.1, uds:/tmp/dots_uds.socket")
+            ("daemon-name,n", po::value<std::string>()->default_value("dotsd"), "the name hat will be used by the host transceiver to identify itself")
             #ifdef __linux__
-            ("daemon,d", "daemonize")
+            ("daemonize,d", "indicates whether to use the Linux 'daemon' syscall to detach the application from the controlling terminal")
             #endif
-            ;
+        ;
 
-    po::variables_map vm;
-    po::store(po::parse_command_line(argc, argv, desc), vm);
-    po::notify(vm);
+        po::variables_map args;
+        po::store(po::basic_command_line_parser<char>(argc, argv).options(options).allow_unregistered().run(), args);
+        po::notify(args);
 
-    if(vm.count("help")) {
-        std::cout << desc << "\n";
-        return 1;
-    }
-
-    auto serverName = vm["server-name"].as<string>();
-
-    boost::asio::io_context& io_context = dots::io::global_io_context();
-
-    LOG_NOTICE_S("dotsd server");
-
-    boost::asio::signal_set signals(io_context);
-
-    signals.add(SIGINT);
-    signals.add(SIGTERM);
-
-    std::vector<string> listenEndpointUris = [&vm]
-    {
-        if (vm.count("listen"))
+        if (args.count("help")) 
         {
-            auto warn_about_argument_ignore = [](std::string argName, std::string argValue)
-            {
-                LOG_WARN_S("ignoring legacy argument '" << argName << "=" << argValue << "' because a listen endpoint argument was specified");
-            };
-
-            if (auto it = vm.find("dots-address"); it != vm.end())
-            {
-                warn_about_argument_ignore("dots-address", it->second.as<std::string>());
-            }
-
-            if (auto it = vm.find("dots-port"); it != vm.end())
-            {
-                warn_about_argument_ignore("dots-port", it->second.as<std::string>());
-            }
-
-            return vm["listen"].as<std::vector<std::string>>();
+            std::cout << options << "\n";
+            return EXIT_SUCCESS;
         }
-        else
+
+        LOG_NOTICE_S("starting dotsd...");
+        
+        dots::DotsDaemon dotsDaemon{ args["daemon-name"].as<std::string>(), argc, argv };
+
+        #ifdef __linux__
+        if (args.count("daemonize") && ::daemon(0, 0) == -1)
         {
-            string authority = "127.0.0.1";
-
-            if (auto it = vm.find("dots-address"); it != vm.end())
-            {
-                authority = it->second.as<std::string>();
-            }
-
-            if (auto it = vm.find("dots-port"); it != vm.end())
-            {
-                authority += ':';
-                authority += it->second.as<std::string>();
-            }
-            
-            return std::vector<std::string>{ "tcp://" + authority };
-        }
-    }();
-
-    dots::Server::listeners_t listeners;
-
-    for (const string& listenEndpointUri : listenEndpointUris)
-    {
-        try
-        {
-            dots::io::Endpoint listenEndpoint{ listenEndpointUri };
-
-            if (listenEndpoint.scheme() == "tcp")
-            {
-                if (listenEndpoint.port().empty())
-                {
-                    listenEndpoint.setPort("11234");
-                }
-
-                listeners.emplace_back(std::make_unique<dots::io::TcpListener>(io_context, listenEndpoint)); 
-            }
-            else if (listenEndpoint.scheme() == "tcp-legacy")
-            {
-                listeners.emplace_back(std::make_unique<dots::io::LegacyTcpListener>(io_context, listenEndpoint)); 
-            }
-            else if (listenEndpoint.scheme() == "ws")
-            {
-                listeners.emplace_back(std::make_unique<dots::io::WebSocketListener>(io_context, listenEndpoint)); 
-            }
-            #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
-            else if (listenEndpoint.scheme() == "uds")
-            {
-                listeners.emplace_back(std::make_unique<dots::io::posix::UdsListener>(io_context, listenEndpoint));
-            }
-            #endif
-            else
-            {
-                throw std::runtime_error{ "unknown or unsupported endpoint scheme: '" + std::string{ listenEndpoint.scheme() } + "'" };
-            }
-
-            LOG_NOTICE_S("listening on local endpoint '" << listenEndpoint.uriStr() << "'");
-        }
-        catch (const std::exception& e)
-        {
-            LOG_CRIT_S("error creating listener for endpoint argument '" << listenEndpointUri << "' -> " << e.what());
-            return 1;
-        }
-    }
-    
-    std::optional<dots::Server> server{ std::in_place, std::move(serverName), std::move(listeners), io_context };
-
-    signals.async_wait([&](auto /*ec*/, int /*signo*/) {
-        LOG_NOTICE_S("stopping server");
-        dots::io::global_io_context().stop();
-        server.reset();
-    });
-
-    #ifdef __linux__
-    if (vm.count("daemon"))
-    {
-        if (daemon(0, 0) == -1)
-        {
-            LOG_CRIT_S("could not start daemon: " << errno);
+            LOG_CRIT_S("could not daemonize dotsd application: " << strerror(errno));
             return EXIT_FAILURE;
         }
+        #endif
+        
+        return dotsDaemon.exec();
     }
-    #endif
-
-    LOG_DEBUG_S("run mainloop");
-    io_context.run();
-    return 0;
+    catch (const std::exception& e)
+    {
+        LOG_ERROR_S("ERROR running dotsd -> " << e.what());
+        return EXIT_FAILURE;
+    }
+    catch (...)
+    {
+        LOG_ERROR_S("ERROR running dotsd -> <unknown exception>");
+        return EXIT_FAILURE;
+    }
 }

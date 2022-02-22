@@ -25,6 +25,18 @@ namespace dots::tools
         m_level = level;
     }
 
+    void LogFrontend::setLogLevel(int levelValue)
+    {
+        std::optional<Level> level = nr2level(static_cast<uint8_t>(levelValue));
+
+        if (level == std::nullopt)
+        {
+            throw std::runtime_error{ "invalid log level number: '" + std::to_string(levelValue) + "' (data=1, debug=2, info=3, notice=4, warn=5, error=6, crit=7, emerg=8)" };
+        }
+
+        setLogLevel(*level);
+    }
+
     Level LogFrontend::getLogLevel() const
     {
         return m_level;
@@ -47,7 +59,7 @@ namespace dots::tools
 
     std::optional<Level> LogFrontend::get_loglevel_from_env()
     {
-        const char* env = getenv("LOGGING_LEVEL");
+        const char* env = getenv("DOTS_LOG_LEVEL");
 
         if (env == nullptr)
         {
@@ -62,7 +74,7 @@ namespace dots::tools
     Level LogFrontend::get_default_loglevel()
     {
         auto default_log_level = Level::info;
-        const char* env = getenv("LOGGING_DEFAULT_LEVEL");
+        const char* env = getenv("DOTS_LOG_DEFAULT_LEVEL");
 
         if (env) {
             auto level = nr2level(std::stoul(env) & 0xff);
@@ -76,7 +88,7 @@ namespace dots::tools
     // ConsoleLogBackend
     ConsoleLogBackend::ConsoleLogBackend()
     {
-        m_colorOut = getenv("DISABLE_LOGGING_COLORS") == nullptr;
+        m_colorOut = getenv("DOTS_DISABLE_LOG_COLORS") == nullptr;
     }
 
     void ConsoleLogBackend::log_p(Level level, const Flf &flf, const char* text)
@@ -197,7 +209,7 @@ namespace dots::tools
 
     static std::shared_ptr<LogBackend> createBackend()
     {
-        const char *env = getenv("LOGGING_BACKEND");
+        const char *env = getenv("DOTS_LOG_BACKEND");
 
         if (env)
         {

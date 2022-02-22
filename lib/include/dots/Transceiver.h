@@ -25,6 +25,8 @@ namespace dots
      */
     struct Transceiver
     {
+        using transition_handler_t = tools::Handler<void(const Connection&, std::exception_ptr)>;
+
         using transmission_handler_t = Dispatcher::transmission_handler_t;
         template <typename T = type::Struct>
         using event_handler_t = Dispatcher::event_handler_t<T>;
@@ -42,8 +44,16 @@ namespace dots
          *
          * @param staticTypePolicy Specifies the static type policy of the
          * transceiver's registry.
+         *
+         * @param transitionHandler The handler to invoke every time the a
+         * Connection transitions to a different connection state or an error
+         * occurs.
          */
-        Transceiver(std::string selfName, asio::io_context& ioContext = io::global_io_context(), type::Registry::StaticTypePolicy staticTypePolicy = type::Registry::StaticTypePolicy::All);
+        Transceiver(std::string selfName,
+                    asio::io_context& ioContext = io::global_io_context(),
+                    type::Registry::StaticTypePolicy staticTypePolicy = type::Registry::StaticTypePolicy::All,
+                    std::optional<transition_handler_t> transitionHandler = std::nullopt
+        );
         Transceiver(const Transceiver& other) = delete;
         Transceiver(Transceiver&& other) noexcept;
         virtual ~Transceiver() = default;
@@ -536,6 +546,7 @@ namespace dots
     protected:
 
         Dispatcher& dispatcher();
+        void handleTransition(Connection& connection, std::exception_ptr ePtr) noexcept;
 
     private:
 
@@ -544,11 +555,13 @@ namespace dots
 
         virtual void joinGroup(std::string_view name) = 0;
         virtual void leaveGroup(std::string_view name) = 0;
+        virtual void handleTransitionImpl(Connection& connection, std::exception_ptr ePtr) noexcept = 0;
 
         template <typename UnsubscribeHandler>
         Subscription makeSubscription(UnsubscribeHandler&& unsubscribeHandler);
 
         void handleNewType(const type::Descriptor<>& descriptor) noexcept;
+        void handleDispatchError(const type::StructDescriptor<>& descriptor, std::exception_ptr ePtr) noexcept;
 
         id_t m_nextId;
         std::optional<id_t> m_currentlyDispatchingId;
@@ -558,6 +571,7 @@ namespace dots
         Dispatcher m_dispatcher;
         std::string m_selfName;
         std::reference_wrapper<asio::io_context> m_ioContext;
+        std::optional<transition_handler_t> m_transitionHandler;
         new_type_handlers_t m_newTypeHandlers;
     };
 

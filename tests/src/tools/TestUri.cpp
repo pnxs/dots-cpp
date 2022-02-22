@@ -47,7 +47,7 @@ TEST_F(TestUri, ctor_PartialUriString)
 TEST_F(TestUri, ctor_NoAuthorityUriString)
 {
     {
-        dots::tools::Uri sut{ "uds:/tmp/dots_uds.socket" };
+        dots::tools::Uri sut{ "uds:/run/dots.socket" };
 
         EXPECT_EQ(std::string{ sut.scheme() }, "uds");
         EXPECT_EQ(std::string{ sut.authority() }, "");
@@ -55,11 +55,11 @@ TEST_F(TestUri, ctor_NoAuthorityUriString)
         EXPECT_EQ(std::string{ sut.userPassword() }, "");
         EXPECT_EQ(std::string{ sut.host() }, "");
         EXPECT_EQ(std::string{ sut.port() }, "");
-        EXPECT_EQ(std::string{ sut.path() }, "/tmp/dots_uds.socket");
+        EXPECT_EQ(std::string{ sut.path() }, "/run/dots.socket");
     }
 
     {
-        dots::tools::Uri sut{ "uds:///tmp/dots_uds.socket" };
+        dots::tools::Uri sut{ "uds:///run/dots.socket" };
 
         EXPECT_EQ(std::string{ sut.scheme() }, "uds");
         EXPECT_EQ(std::string{ sut.authority() }, "");
@@ -67,7 +67,7 @@ TEST_F(TestUri, ctor_NoAuthorityUriString)
         EXPECT_EQ(std::string{ sut.userPassword() }, "");
         EXPECT_EQ(std::string{ sut.host() }, "");
         EXPECT_EQ(std::string{ sut.port() }, "");
-        EXPECT_EQ(std::string{ sut.path() }, "/tmp/dots_uds.socket");
+        EXPECT_EQ(std::string{ sut.path() }, "/run/dots.socket");
     }
 }
 
@@ -96,6 +96,36 @@ TEST_F(TestUri, ctor_Ipv6UriString)
         EXPECT_EQ(std::string{ sut.port() }, "");
         EXPECT_EQ(std::string{ sut.path() }, "");
     }
+}
+
+TEST_F(TestUri, FromStrings_UrisSeparatedBySingleSpace)
+{
+    std::vector<dots::tools::Uri> uris;
+    EXPECT_NO_THROW(uris = dots::tools::Uri::FromStrings("tcp://127.0.0.1 uds:/run/dots.socket ws://user@localhost:12345"));
+    ASSERT_EQ(uris.size(), 3);
+    EXPECT_EQ(uris[0].uriStr(), "tcp://127.0.0.1");
+    EXPECT_EQ(uris[1].uriStr(), "uds:/run/dots.socket");
+    EXPECT_EQ(uris[2].uriStr(), "ws://user@localhost:12345");
+}
+
+TEST_F(TestUri, FromStrings_UrisSeparatedByMultipleSpaces)
+{
+    std::vector<dots::tools::Uri> uris;
+    EXPECT_NO_THROW(uris = dots::tools::Uri::FromStrings("tcp://127.0.0.1  uds:/run/dots.socket   ws://user@localhost:12345"));
+    ASSERT_EQ(uris.size(), 3);
+    EXPECT_EQ(uris[0].uriStr(), "tcp://127.0.0.1");
+    EXPECT_EQ(uris[1].uriStr(), "uds:/run/dots.socket");
+    EXPECT_EQ(uris[2].uriStr(), "ws://user@localhost:12345");
+}
+
+TEST_F(TestUri, FromStrings_UrisWithTrailingAndLeadingSpaces)
+{
+    std::vector<dots::tools::Uri> uris;
+    EXPECT_NO_THROW(uris = dots::tools::Uri::FromStrings(" tcp://127.0.0.1 uds:/run/dots.socket ws://user@localhost:12345 "));
+    ASSERT_EQ(uris.size(), 3);
+    EXPECT_EQ(uris[0].uriStr(), "tcp://127.0.0.1");
+    EXPECT_EQ(uris[1].uriStr(), "uds:/run/dots.socket");
+    EXPECT_EQ(uris[2].uriStr(), "ws://user@localhost:12345");
 }
 
 TEST_F(TestUri, setScheme)

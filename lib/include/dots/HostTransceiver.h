@@ -36,8 +36,6 @@ namespace dots
      */
     struct HostTransceiver : Transceiver
     {
-        using transition_handler_t = tools::Handler<void(const Connection&)>;
-
         /*!
          * @brief Construct a new HostTransceiver object.
          *
@@ -53,7 +51,8 @@ namespace dots
          * transceiver's registry.
          *
          * @param transitionHandler The handler to invoke every time the a
-         * Connection transitions to a different connection state.
+         * Connection transitions to a different connection state or an error
+         * occurs.
          */
         HostTransceiver(std::string selfName = "DotsHostTransceiver",
                         asio::io_context& ioContext = io::global_io_context(),
@@ -61,7 +60,13 @@ namespace dots
                         std::optional<transition_handler_t> transitionHandler = std::nullopt);
         HostTransceiver(const HostTransceiver& other) = delete;
         HostTransceiver(HostTransceiver&& other) = default;
-        ~HostTransceiver() override = default;
+
+        /*!
+         * @brief Destroy the HostTransceiver object.
+         *
+         * Note that this will gracefully close all open guest connections.
+         */
+        ~HostTransceiver() override;
 
         HostTransceiver& operator = (const HostTransceiver& rhs) = delete;
         HostTransceiver& operator = (HostTransceiver&& rhs) = default;
@@ -98,6 +103,19 @@ namespace dots
         {
             return static_cast<TListener&>(listen(std::make_unique<TListener>(ioContext(), std::forward<Args>(args)...)));
         }
+
+        /*!
+         * @brief Asynchronously accept incoming connections on specific
+         * endpoints.
+         *
+         * @param listenEndpoints The endpoints to use to create listeners and
+         * asynchronously accept connections from. The listener types will be
+         * determined by the endpoint schemes.
+         *
+         * @exception std::runtime_error Thrown if an endpoint has an
+         * unsupported URI scheme.
+         */
+        void listen(std::vector<io::Endpoint> listenEndpoints);
 
         /*!
          * @brief Publish an instance of a DOTS struct type.
@@ -169,7 +187,7 @@ namespace dots
         void handleListenError(io::Listener& listener, std::exception_ptr ePtr);
 
         bool handleTransmission(Connection& connection, io::Transmission transmission);
-        void handleTransition(Connection& connection, std::exception_ptr ePtr) noexcept;
+        void handleTransitionImpl(Connection& connection, std::exception_ptr ePtr) noexcept override;
 
         void handleMemberMessage(Connection& connection, const DotsMember& member);
         void handleDescriptorRequest(Connection& connection, const DotsDescriptorRequest& descriptorRequest);
@@ -178,7 +196,6 @@ namespace dots
 
         void transmitContainer(Connection& connection, const Container<>& container);
 
-        std::optional<transition_handler_t> m_transitionHandler;
         listener_map_t m_listeners;
         connection_map_t m_guestConnections;
         group_map_t m_groups;

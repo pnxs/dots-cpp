@@ -27,7 +27,7 @@ namespace dots::testing
             PublishTestBase::ioContext().restart();
 
             // disable verbose logging unless overriden by the user
-            if (::getenv("LOGGING_LEVEL") == nullptr)
+            if (::getenv("DOTS_LOG_LEVEL") == nullptr)
             {
                 tools::loggingFrontend().setLogLevel(tools::Level::warn);
             }

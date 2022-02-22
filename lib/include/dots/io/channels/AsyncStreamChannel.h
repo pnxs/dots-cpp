@@ -342,7 +342,7 @@ namespace dots::io
                 {
                     try
                     {
-                        if (this_.expired())
+                        if (this_.expired() || (this_.use_count() == 1 && m_asyncWriting))
                         {
                             return;
                         }
@@ -379,7 +379,7 @@ namespace dots::io
                 {
                     try
                     {
-                        if (this_.expired())
+                        if (this_.expired() || (this_.use_count() == 1 && m_asyncWriting))
                         {
                             return;
                         }
@@ -428,21 +428,19 @@ namespace dots::io
             }
             else
             {
-                asio::async_write(m_stream, asio::buffer(m_writeBuffer.data(), m_writeBuffer.size()), [&, this_{ weak_from_this() }](boost::system::error_code ec, size_t/* numBytes*/)
+                asio::async_write(m_stream, asio::buffer(m_writeBuffer.data(), m_writeBuffer.size()), [&, this_{ shared_from_this() }](boost::system::error_code ec, size_t/* numBytes*/)
                 {
                     try
                     {
-                        if (this_.expired())
-                        {
-                            return;
-                        }
-
                         verifyErrorCode(ec);
                         asyncWrite();
                     }
                     catch (...)
                     {
-                        processError(std::current_exception());
+                        if (this_.use_count() > 1)
+                        {
+                            processError(std::current_exception());
+                        }
                     }
                 });
                 

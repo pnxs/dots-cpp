@@ -46,7 +46,7 @@ namespace dots::io
         {
             try
             {
-                if (!m_acceptor.is_open())
+                if (error == asio::error::operation_aborted || !m_acceptor.is_open())
                 {
                     return;
                 }

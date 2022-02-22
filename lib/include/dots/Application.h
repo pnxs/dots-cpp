@@ -3,6 +3,7 @@
 #include <optional>
 #include <dots/dots.h>
 #include <dots/GuestTransceiver.h>
+#include <dots/HostTransceiver.h>
 #include <dots/io/Endpoint.h>
 
 namespace dots
@@ -15,11 +16,11 @@ namespace dots
      * handling of the event loop.
      *
      * It defines a set of default command line options that are used to
-     * initialize the global transceiver and open a connection based on the
+     * initialize a transceiver and open a connection based on the
      * arguments given.
      *
-     * This class is intended to be used in conjunction with the global
-     * DOTS API (see dots.h):
+     * This class is mostly intended to be used in conjunction with the
+     * global DOTS API (see dots.h):
      *
      * @code{.cpp}
      * #include <dots/Application.h>
@@ -35,10 +36,6 @@ namespace dots
      *     return app.exec();
      * }
      * @endcode
-     *
-     * @warning The Application is currently not designed to be created
-     * multiple times or used in scenarios other than in the example given
-     * above.
      */
     struct Application
     {
@@ -46,14 +43,15 @@ namespace dots
          * @brief Construct a new Application object.
          *
          * This will parse the given command line arguments and attempt to
-         * establish a connection via the global transceiver using the endpoint
-         * given by either the '-o' or '--open' option. If no endpoint is
+         * establish a connection via the given guest transceiver using the
+         * endpoint given by the '--dots-endpoint' option. If no endpoint is
          * specified, "tcp://127.0.0.1:11234" will be used as a default.
          *
-         * If any of the statically typed versions of dots::subscribe<T>() or
-         * dots::container<T>() of the global DOTS API are used (see dots.h),
-         * establishing the connection will include preloading of each type
-         * used to instantiate those templates.
+         * If no transceiver is given (i.e. the global transceiver is used) and
+         * any of the statically typed versions of dots::subscribe<T>() or
+         * dots::container<T>() of the global DOTS API were instantiated (see
+         * dots.h), establishing the connection will include preloading of each
+         * type used as arguments to those templates.
          *
          * This means that when the constructor returns, the cache (i.e. the
          * containers) of those types will have been updated to the latest
@@ -75,7 +73,7 @@ namespace dots
          * // ...
          * @endcode
          *
-         * @param name The name that will be used by the global Transceiver to
+         * @param name The name that will be used by the GuestTransceiver to
          * identify itself.
          *
          * @param argc The number of command line arguments as given in the
@@ -84,48 +82,92 @@ namespace dots
          * @param argv The command line arguments as given in the main()
          * function of the application.
          *
+         * @param guestTransceiver The guest transceiver the application will
+         * operate on. If none is given, the global guest transceiver will be
+         * used.
+         *
+         * @param handleExitSignals Indicates whether the application should
+         * exit on SIGINT and SIGTERM signals.
+         *
          * @exception std::exception Thrown if no connection could be
          * established based on the given arguments.
          */
-        Application(const std::string& name, int& argc, char* argv[]);
+        Application(const std::string& name, int argc, char* argv[], std::optional<GuestTransceiver> guestTransceiver = std::nullopt, bool handleExitSignals = true);
+
+        /*!
+         * @brief Construct a new Application object.
+         *
+         * This will parse the given command line arguments and attempt to
+         * listen for incoming connections via the given host transceiver using
+         * the endpoints given by the '--dots-endpoint' option. If no endpoints
+         * are specified, "tcp://127.0.0.1:11234" will be used as a default.
+         *
+         * @param argc The number of command line arguments as given in the
+         * main() function of the application.
+         *
+         * @param argv The command line arguments as given in the main()
+         * function of the application.
+         *
+         * @param hostTransceiver The host transceiver the application will
+         * operate on.
+         *
+         * @param handleExitSignals Indicates whether the application should
+         * exit on SIGINT and SIGTERM signals.
+         *
+         * @exception std::exception Thrown if no connection could be
+         * established based on the given arguments.
+         */
+        Application(int argc, char* argv[], HostTransceiver hostTransceiver, bool handleExitSignals = true);
+
+        Application(const Application& other) = delete;
+        Application(Application&& other) = delete;
 
         /*!
          * @brief Destroy the Application object.
          *
          * If the application is still running, this will stop the event loop
-         * as if Application::exit() were called.
+         * as if Application::exit() were called and gracefully close all open
+         * connections.
+         *
+         * @attention If the application is managing the global guest
+         * transceiver, it will be reset when the object is destroyed.
          */
         virtual ~Application();
+
+        Application& operator = (const Application& rhs) = delete;
+        Application& operator = (Application&& rhs) = delete;
+
+        /*!
+         * @brief Get the transceiver the application operates on.
+         *
+         * Note that this is the same transceiver that was specified in
+         * Application() or the global guest transceiver if none was provided.
+         *
+         * @return const Transceiver& A reference to the used transceiver.
+         */
+        const Transceiver& transceiver() const;
+
+        /*!
+         * @brief Get the transceiver the application operates on.
+         *
+         * Note that this is the same transceiver that was specified in
+         * Application() or the global guest transceiver if none was provided.
+         *
+         * @return Transceiver& A reference to the used transceiver.
+         */
+        Transceiver& transceiver();
 
         /*!
          * @brief Execute the application.
          *
-         * This will block and run the global event loop (i.e. run the global
-         * IO context) until the Application has exited (see
+         * This will block and run the event loop (i.e. run the IO context of
+         * the given transceiver) until the Application has exited (see
          * Application::exit()) or all work has finished.
          *
          * @return int The exit code of the application as passed in
          * Application::exit().
          */
         virtual int exec();
-
-        /*!
-         * @brief Execute at most one handler of the application until a
-         * specific timeout.
-         *
-         * This function is similar to Application::exec() except that it will
-         * only at most execute one ready handler before returning.
-         *
-         * If no handler is ready when this function is called, the function
-         * will block and wait at most for the given amount of time.
-         *
-         * @param timeout The maximum amount of time to block and wait for one
-         * handler to become ready.
-         *
-         * @return int The exit code of the application as passed in
-         * Application::exit().
-         */
-        virtual int execOne(const std::chrono::milliseconds& timeout);
 
         /*!
          * @brief Exit the application.
@@ -144,26 +186,24 @@ namespace dots
          * @param exitCode The exit code to return in Application::exec() and
          * Application::execOne().
          */
-        virtual void exit(int exitCode = 0);
-
-        /*!
-         * @brief Get the most recent Application instance.
-         *
-         * Note that this is not a singleton accessor. Instead, it provides a
-         * pointer to the most recently constructed Application instance.
-         *
-         * @return Application* A pointer to most recently Application
-         * instance. Will be nullptr if no Application was yet constructed.
-         */
-        static Application* instance();
+        virtual void exit(int exitCode = EXIT_SUCCESS);
 
     private:
+        
+        const asio::io_context& ioContext() const;
+        asio::io_context& ioContext();
 
-        void parseProgramOptions(int argc, char* argv[]);
+        void handleGuestTransceiverTransition(const Connection& connection, std::exception_ptr ePtr);
 
-        inline static Application* m_instance = nullptr;
-        int m_exitCode;
+        void parseGuestTransceiverArgs(int argc, char* argv[]);
+        void parseHostTransceiverArgs(int argc, char* argv[]);
+
         std::optional<io::Endpoint> m_openEndpoint;
-        std::optional<std::string> m_authSecret;
+        std::vector<io::Endpoint> m_listenEndpoints;
+        std::optional<asio::signal_set> m_signals;
+        int m_exitCode;
+        Transceiver* m_transceiver;
+        std::optional<GuestTransceiver> m_guestTransceiverStorage;
+        std::optional<HostTransceiver> m_hostTransceiverStorage;
     };
 }
