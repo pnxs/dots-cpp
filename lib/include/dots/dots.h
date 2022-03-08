@@ -165,14 +165,14 @@ namespace dots
      * @return std::optional<GuestTransceiver>& A reference to the global
      * guest transceiver.
      */
-    std::optional<GuestTransceiver>& transceiver();
+    std::optional<GuestTransceiver>& global_transceiver();
 
     /*!
      * @brief Publish an instance of a DOTS struct type via the global
      * transceiver.
      *
      * This will effectively call GuestTransceiver::publish() on the global
-     * transceiver returned by dots::transceiver().
+     * transceiver returned by dots::global_transceiver().
      *
      * Note that this will neither directly invoke any callbacks of local
      * subscribers nor have any effect on the local container. If the
@@ -281,7 +281,7 @@ namespace dots
      * transceiver.
      *
      * This will effectively call GuestTransceiver::subscribe() on the
-     * global transceiver returned by dots::transceiver().
+     * global transceiver returned by dots::global_transceiver().
      *
      * Calling this function will create a subscription to a given type and
      * cause the given handler to be invoked asynchronously every time a
@@ -314,7 +314,7 @@ namespace dots
      * transceiver.
      *
      * This will effectively call GuestTransceiver::subscribe() on the
-     * global transceiver returned by dots::transceiver().
+     * global transceiver returned by dots::global_transceiver().
      *
      * Calling this function will create a subscription to a given type and
      * cause the given handler to be invoked asynchronously every time a
@@ -357,7 +357,7 @@ namespace dots
     Subscription subscribe(Transceiver::event_handler_t<T> handler)
     {
         io::register_global_subscribe_type<T>();
-        return transceiver()->subscribe<T>(std::move(handler));
+        return global_transceiver()->subscribe<T>(std::move(handler));
     }
 
     /*!
@@ -365,7 +365,7 @@ namespace dots
      * transceiver.
      *
      * This will effectively call GuestTransceiver::subscribe() on the
-     * global transceiver returned by dots::transceiver().
+     * global transceiver returned by dots::global_transceiver().
      *
      * Calling this will create a subscription to new types of a given
      * category and cause the given handler to be invoked whenever a
@@ -404,7 +404,7 @@ namespace dots
     template <typename TDescriptor, std::enable_if_t<std::is_base_of_v<type::Descriptor<>, TDescriptor>, int> = 0>
     Subscription subscribe(Transceiver::new_type_handler_t<TDescriptor> handler)
     {
-        return transceiver()->subscribe<TDescriptor>(std::move(handler));
+        return global_transceiver()->subscribe<TDescriptor>(std::move(handler));
     }
 
     /*!
@@ -412,7 +412,7 @@ namespace dots
      * transceiver.
      *
      * This will effectively call GuestTransceiver::subscribe() on the
-     * global transceiver returned by dots::transceiver().
+     * global transceiver returned by dots::global_transceiver().
      *
      * Calling this function will create a subscription to a given type and
      * cause the given handler to be invoked asynchronously every time a
@@ -473,7 +473,7 @@ namespace dots
      * transceiver.
      *
      * This will effectively call GuestTransceiver::subscribe() on the
-     * global transceiver returned by dots::transceiver().
+     * global transceiver returned by dots::global_transceiver().
      *
      * Calling this function will create a subscription to new types of
      * given categories and cause the given handler to be invoked whenever
@@ -524,14 +524,14 @@ namespace dots
     [[deprecated("superseded by new_type_handler_t<T> overload")]]
     Subscription subscribe(TypeHandler&& handler, Args&&... args)
     {
-        return transceiver()->subscribe<TDescriptors...>(std::forward<TypeHandler>(handler), std::forward<Args>(args)...);
+        return global_transceiver()->subscribe<TDescriptors...>(std::forward<TypeHandler>(handler), std::forward<Args>(args)...);
     }
 
     /*!
      * @brief Get the container pool of the global transceiver.
      *
      * This will effectively call GuestTransceiver::pool() on the global
-     * transceiver returned by dots::transceiver().
+     * transceiver returned by dots::global_transceiver().
      *
      * @return const ContainerPool& A reference to the container pool.
      */
@@ -541,7 +541,7 @@ namespace dots
      * @brief Get a specific container of the global transceiver by type.
      *
      * This will effectively call GuestTransceiver::container() on the
-     * global transceiver returned by dots::transceiver().
+     * global transceiver returned by dots::global_transceiver().
      *
      * @param descriptor The type descriptor of the Container to get.
      *
@@ -556,7 +556,7 @@ namespace dots
      * @brief Get a specific container of the global transceiver by type.
      *
      * This will effectively call GuestTransceiver::container() on the
-     * global transceiver returned by dots::transceiver().
+     * global transceiver returned by dots::global_transceiver().
      *
      * Instantiating this template will also register \p T as a global
      * subscribe type. When using the dots::Application, this will result
@@ -571,7 +571,7 @@ namespace dots
     const Container<T>& container()
     {
         io::register_global_subscribe_type<T>();
-        return transceiver()->container<T>();
+        return global_transceiver()->container<T>();
     }
 
     #endif

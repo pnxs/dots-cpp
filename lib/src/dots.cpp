@@ -31,7 +31,7 @@ namespace dots
     }
     #endif
 
-    std::optional<GuestTransceiver>& transceiver()
+    std::optional<GuestTransceiver>& global_transceiver()
     {
         static std::optional<GuestTransceiver> Transceiver;
         return Transceiver;
@@ -39,7 +39,7 @@ namespace dots
 
     void publish(const type::Struct& instance, std::optional<property_set_t> includedProperties/* = std::nullopt*/, bool remove/* = false*/)
     {
-        transceiver()->publish(instance, includedProperties, remove);
+        global_transceiver()->publish(instance, includedProperties, remove);
     }
 
     void remove(const type::Struct& instance)
@@ -49,16 +49,16 @@ namespace dots
 
     Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::event_handler_t<> handler)
     {
-        return transceiver()->subscribe(descriptor, std::move(handler));
+        return global_transceiver()->subscribe(descriptor, std::move(handler));
     }
 
     const ContainerPool& pool()
     {
-        return transceiver()->pool();
+        return global_transceiver()->pool();
     }
 
     const Container<>& container(const type::StructDescriptor<>& descriptor)
     {
-        return transceiver()->container(descriptor);
+        return global_transceiver()->container(descriptor);
     }
 }
