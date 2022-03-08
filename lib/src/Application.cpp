@@ -47,6 +47,12 @@ namespace dots
         transceiver->publish(DotsClient{ DotsClient::id_i{ transceiver->connection().selfId() }, DotsClient::running_i{ true } });
     }
 
+    Application::Application(const std::string& name, std::optional<GuestTransceiver> guestTransceiver/* = std::nullopt*/, bool handleExitSignals/* = true*/) :
+        Application(name, 0, nullptr, std::move(guestTransceiver), handleExitSignals)
+    {
+        /* do nothing */
+    }
+
     Application::Application(int argc, char* argv[], HostTransceiver hostTransceiver, bool handleExitSignals) :
         m_exitCode(EXIT_SUCCESS),
         m_transceiver(nullptr),
@@ -61,6 +67,12 @@ namespace dots
             m_signals.emplace(ioContext(), SIGINT, SIGTERM);
             m_signals->async_wait([this](boost::system::error_code/* error*/, int/* signalNumber*/){ exit(); });
         }
+    }
+
+    Application::Application(HostTransceiver hostTransceiver, bool handleExitSignals/* = true*/) :
+        Application(0, nullptr, std::move(hostTransceiver), handleExitSignals)
+    {
+        /* do nothing */
     }
 
     Application::~Application()
@@ -138,8 +150,12 @@ namespace dots
         ;
 
         po::variables_map args;
-        po::store(po::basic_command_line_parser<char>(argc, argv).options(options).allow_unregistered().run(), args);
-        po::notify(args);
+
+        if (argc > 0 && argv != nullptr)
+        {
+            po::store(po::basic_command_line_parser<char>(argc, argv).options(options).allow_unregistered().run(), args);
+            po::notify(args);
+        }
 
         if (auto it = args.find("dots-endpoint"); it != args.end())
         {
@@ -185,8 +201,12 @@ namespace dots
         ;
 
         po::variables_map args;
-        po::store(po::basic_command_line_parser<char>(argc, argv).options(options).allow_unregistered().run(), args);
-        po::notify(args);
+
+        if (argc > 0 && argv != nullptr)
+        {
+            po::store(po::basic_command_line_parser<char>(argc, argv).options(options).allow_unregistered().run(), args);
+            po::notify(args);
+        }
         
         if (auto it = args.find("dots-endpoint"); it != args.end())
         {
