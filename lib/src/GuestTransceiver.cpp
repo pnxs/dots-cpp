@@ -162,7 +162,6 @@ namespace dots
 }
 
 #include <dots/io/channels/TcpChannel.h>
-#include <dots/io/channels/LegacyTcpChannel.h>
 #include <dots/io/channels/WebSocketChannel.h>
 #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
 #include <dots/io/channels/UdsChannel.h>
@@ -195,6 +194,10 @@ namespace dots
         else if (scheme == "uds")
         {
             return open<io::posix::UdsChannel>(std::move(preloadPublishTypes), std::move(preloadSubscribeTypes), std::move(authSecret), std::move(endpoint));
+        }
+        else if (scheme == "uds-legacy")
+        {
+            return open<io::posix::LegacyUdsChannel>(std::move(preloadPublishTypes), std::move(preloadSubscribeTypes), std::move(authSecret), std::move(endpoint));
         }
         #endif
         else

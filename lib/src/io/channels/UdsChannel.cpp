@@ -3,16 +3,18 @@
 #include <dots/io/channels/UdsChannel.h>
 #include <csignal>
 
-namespace dots::io::posix
+namespace dots::io::posix::details
 {
-    UdsChannel::UdsChannel(key_t key, asio::io_context& ioContext, const Endpoint& endpoint) :
-        UdsChannel(key, ioContext, endpoint.path())
+    template <typename Serializer, TransmissionFormat TransmissionFormat>
+    GenericUdsChannel<Serializer, TransmissionFormat>::GenericUdsChannel(key_t key, asio::io_context& ioContext, const Endpoint& endpoint) :
+        GenericUdsChannel(key, ioContext, endpoint.path())
     {
         /* do nothing */
     }
 
-    UdsChannel::UdsChannel(key_t key, asio::io_context& ioContext, std::string_view path) :
-        AsyncStreamChannel(key, stream_t{ ioContext }, nullptr)
+    template <typename Serializer, TransmissionFormat TransmissionFormat>
+    GenericUdsChannel<Serializer, TransmissionFormat>::GenericUdsChannel(key_t key, asio::io_context& ioContext, std::string_view path) :
+        base_t(key, stream_t{ ioContext }, nullptr)
     {
         try
         {
@@ -27,8 +29,9 @@ namespace dots::io::posix
         IgnorePipeSignals();
     }
 
-    UdsChannel::UdsChannel(key_t key, asio::local::stream_protocol::socket&& socket_, payload_cache_t* payloadCache) :
-        AsyncStreamChannel(key, std::move(socket_), payloadCache)
+    template <typename Serializer, TransmissionFormat TransmissionFormat>
+    GenericUdsChannel<Serializer, TransmissionFormat>::GenericUdsChannel(key_t key, asio::local::stream_protocol::socket&& socket_, payload_cache_t* payloadCache) :
+        base_t(key, std::move(socket_), payloadCache)
     {
         IgnorePipeSignals();
 
@@ -38,11 +41,15 @@ namespace dots::io::posix
         }
     }
 
-    void UdsChannel::IgnorePipeSignals()
+    template <typename Serializer, TransmissionFormat TransmissionFormat>
+    void GenericUdsChannel<Serializer, TransmissionFormat>::IgnorePipeSignals()
     {
         // ignores all pipe signals to prevent non-catchable application termination on broken pipes
         static auto IgnorePipesSignals = [](){ return std::signal(SIGPIPE, SIG_IGN); }();
         (void)IgnorePipesSignals;
     }
+
+    template struct GenericUdsChannel<serialization::CborSerializer, TransmissionFormat::Legacy>;
+    template struct GenericUdsChannel<serialization::CborSerializer, TransmissionFormat::Default>;
 }
 #endif

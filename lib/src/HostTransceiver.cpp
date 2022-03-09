@@ -353,7 +353,6 @@ namespace dots
 
 #include <boost/program_options.hpp>
 #include <dots/io/channels/TcpListener.h>
-#include <dots/io/channels/LegacyTcpListener.h>
 #include <dots/io/channels/WebSocketListener.h>
 #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
 #include <dots/io/channels/UdsListener.h>
@@ -380,7 +379,11 @@ namespace dots
             #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
             else if (scheme == "uds")
             {
-                listen<dots::io::posix::UdsListener>(listenEndpoint);
+                listen<io::posix::UdsListener>(listenEndpoint);
+            }
+            else if (scheme == "uds-legacy")
+            {
+                listen<io::posix::LegacyUdsListener>(listenEndpoint);
             }
             #endif
             else

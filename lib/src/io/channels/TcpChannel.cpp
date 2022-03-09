@@ -1,15 +1,17 @@
 #include <dots/io/channels/TcpChannel.h>
 
-namespace dots::io
+namespace dots::io::details
 {
-    TcpChannel::TcpChannel(key_t key, asio::io_context& ioContext, const Endpoint& endpoint) :
-        TcpChannel(key, ioContext, endpoint.host(), endpoint.port())
+    template <typename Serializer, TransmissionFormat TransmissionFormat>
+    GenericTcpChannel<Serializer, TransmissionFormat>::GenericTcpChannel(key_t key, asio::io_context& ioContext, const Endpoint& endpoint) :
+        GenericTcpChannel(key, ioContext, endpoint.host(), endpoint.port())
     {
         /* do nothing */
     }
 
-    TcpChannel::TcpChannel(key_t key, asio::io_context& ioContext, std::string_view host, std::string_view port) :
-        TcpChannel(key, asio::ip::tcp::socket{ ioContext }, nullptr)
+    template <typename Serializer, TransmissionFormat TransmissionFormat>
+    GenericTcpChannel<Serializer, TransmissionFormat>::GenericTcpChannel(key_t key, asio::io_context& ioContext, std::string_view host, std::string_view port) :
+        GenericTcpChannel(key, stream_t{ ioContext }, nullptr)
     {
         auto endpoints = m_resolver.resolve(asio::ip::tcp::socket::protocol_type::v4(), host, port, asio::ip::resolver_query_base::numeric_service);
 
@@ -32,8 +34,9 @@ namespace dots::io
         throw std::runtime_error{ "could not open TCP connection: " + std::string{ host } + ":" + std::string{ port } };
     }
 
-    TcpChannel::TcpChannel(key_t key, asio::io_context& ioContext, std::string_view host, std::string_view port, std::function<void(const boost::system::error_code& error)> onConnect) :
-        TcpChannel(key, asio::ip::tcp::socket{ ioContext }, nullptr)
+    template <typename Serializer, TransmissionFormat TransmissionFormat>
+    GenericTcpChannel<Serializer, TransmissionFormat>::GenericTcpChannel(key_t key, asio::io_context& ioContext, std::string_view host, std::string_view port, std::function<void(const boost::system::error_code& error)> onConnect) :
+        GenericTcpChannel(key, asio::ip::tcp::socket{ ioContext }, nullptr)
     {
         asyncResolveEndpoint(host, port, [this, host, port, onConnect{ std::move(onConnect) }](auto& error, auto endpoint) {
             if (error)
@@ -57,8 +60,9 @@ namespace dots::io
         });
     }
 
-    TcpChannel::TcpChannel(key_t key, asio::ip::tcp::socket&& socket_, payload_cache_t* payloadCache) :
-        AsyncStreamChannel(key, std::move(socket_), payloadCache),
+    template <typename Serializer, TransmissionFormat TransmissionFormat>
+    GenericTcpChannel<Serializer, TransmissionFormat>::GenericTcpChannel(key_t key, asio::ip::tcp::socket&& socket_, payload_cache_t* payloadCache) :
+        base_t(key, std::move(socket_), payloadCache),
         m_resolver( stream().get_executor())
     {
         if (stream().is_open())
@@ -67,14 +71,16 @@ namespace dots::io
         }
     }
 
-    void TcpChannel::setDefaultSocketOptions()
+    template <typename Serializer, TransmissionFormat TransmissionFormat>
+    void GenericTcpChannel<Serializer, TransmissionFormat>::setDefaultSocketOptions()
     {
         stream().set_option(asio::ip::tcp::no_delay(true));
         stream().set_option(asio::ip::tcp::socket::keep_alive(true));
         stream().set_option(asio::socket_base::linger(true, 10));
     }
 
-    void TcpChannel::asyncResolveEndpoint(std::string_view host, std::string_view port, resolve_handler_t handler)
+    template <typename Serializer, TransmissionFormat TransmissionFormat>
+    void GenericTcpChannel<Serializer, TransmissionFormat>::asyncResolveEndpoint(std::string_view host, std::string_view port, resolve_handler_t handler)
     {
         m_resolver.async_resolve(host, port, asio::ip::resolver_query_base::numeric_service, [handler{ std::move(handler) }](const boost::system::error_code& error, auto iter) {
             if (error)
@@ -100,7 +106,8 @@ namespace dots::io
         });
     }
 
-    void TcpChannel::verifyErrorCode(const boost::system::error_code& ec)
+    template <typename Serializer, TransmissionFormat TransmissionFormat>
+    void GenericTcpChannel<Serializer, TransmissionFormat>::verifyErrorCode(const boost::system::error_code& ec)
     {
         if (ec == asio::error::misc_errors::eof || ec == asio::error::basic_errors::bad_descriptor)
         {
@@ -111,4 +118,7 @@ namespace dots::io
             throw std::system_error{ ec };
         }
     }
+
+    template struct GenericTcpChannel<serialization::CborSerializer, TransmissionFormat::Legacy>;
+    template struct GenericTcpChannel<serialization::CborSerializer, TransmissionFormat::Default>;
 }
