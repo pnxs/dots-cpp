@@ -119,6 +119,6 @@ namespace dots::io::details
         }
     }
 
-    template struct GenericTcpChannel<serialization::CborSerializer, TransmissionFormat::Legacy>;
-    template struct GenericTcpChannel<serialization::CborSerializer, TransmissionFormat::Default>;
+    template struct GenericTcpChannel<serialization::CborSerializer, TransmissionFormat::v1>;
+    template struct GenericTcpChannel<serialization::CborSerializer, TransmissionFormat::v2>;
 }

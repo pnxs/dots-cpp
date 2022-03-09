@@ -49,7 +49,7 @@ namespace dots::io::posix::details
         (void)IgnorePipesSignals;
     }
 
-    template struct GenericUdsChannel<serialization::CborSerializer, TransmissionFormat::Legacy>;
-    template struct GenericUdsChannel<serialization::CborSerializer, TransmissionFormat::Default>;
+    template struct GenericUdsChannel<serialization::CborSerializer, TransmissionFormat::v1>;
+    template struct GenericUdsChannel<serialization::CborSerializer, TransmissionFormat::v2>;
 }
 #endif

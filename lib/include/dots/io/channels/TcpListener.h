@@ -34,12 +34,19 @@ namespace dots::io::details
         payload_cache_t m_payloadCache;
     };
 
-    extern template struct GenericTcpListener<LegacyTcpChannel>;
-    extern template struct GenericTcpListener<TcpChannel>;
+    extern template struct GenericTcpListener<v1::TcpChannel>;
+    extern template struct GenericTcpListener<v2::TcpChannel>;
 }
 
 namespace dots::io
 {
-    using LegacyTcpListener = details::GenericTcpListener<LegacyTcpChannel>;
-    using TcpListener = details::GenericTcpListener<TcpChannel>;
+    namespace v1
+    {
+        using TcpListener = details::GenericTcpListener<v1::TcpChannel>;
+    }
+
+    inline namespace v2
+    {
+        using TcpListener = details::GenericTcpListener<v2::TcpChannel>;
+    }
 }

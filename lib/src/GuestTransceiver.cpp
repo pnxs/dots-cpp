@@ -178,28 +178,38 @@ namespace dots
             authSecret = endpoint.userPassword();
         }
 
-        if (std::string_view scheme = endpoint.scheme(); scheme == "tcp")
+        std::string_view scheme = endpoint.scheme();
+
+        if (scheme == "tcp")
         {
             return open<io::TcpChannel>(std::move(preloadPublishTypes), std::move(preloadSubscribeTypes), std::move(authSecret), std::move(endpoint));
         }
-        else if (scheme == "tcp-legacy")
+        else if (scheme == "tcp-v2")
         {
-            return open<io::LegacyTcpChannel>(std::move(preloadPublishTypes), std::move(preloadSubscribeTypes), std::move(authSecret), std::move(endpoint));
+            return open<io::v2::TcpChannel>(std::move(preloadPublishTypes), std::move(preloadSubscribeTypes), std::move(authSecret), std::move(endpoint));
         }
-        else if (scheme == "ws")
+        else if (scheme == "tcp-v1")
         {
-            return open<io::WebSocketChannel>(std::move(preloadPublishTypes), std::move(preloadSubscribeTypes), std::move(authSecret), std::move(endpoint));
+            return open<io::v1::TcpChannel>(std::move(preloadPublishTypes), std::move(preloadSubscribeTypes), std::move(authSecret), std::move(endpoint));
         }
         #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
         else if (scheme == "uds")
         {
             return open<io::posix::UdsChannel>(std::move(preloadPublishTypes), std::move(preloadSubscribeTypes), std::move(authSecret), std::move(endpoint));
         }
-        else if (scheme == "uds-legacy")
+        else if (scheme == "uds-v2")
         {
-            return open<io::posix::LegacyUdsChannel>(std::move(preloadPublishTypes), std::move(preloadSubscribeTypes), std::move(authSecret), std::move(endpoint));
+            return open<io::posix::v2::UdsChannel>(std::move(preloadPublishTypes), std::move(preloadSubscribeTypes), std::move(authSecret), std::move(endpoint));
+        }
+        else if (scheme == "uds-v1")
+        {
+            return open<io::posix::v1::UdsChannel>(std::move(preloadPublishTypes), std::move(preloadSubscribeTypes), std::move(authSecret), std::move(endpoint));
         }
         #endif
+        else if (scheme == "ws")
+        {
+            return open<io::WebSocketChannel>(std::move(preloadPublishTypes), std::move(preloadSubscribeTypes), std::move(authSecret), std::move(endpoint));
+        }
         else
         {
             throw std::runtime_error{ "unknown or unsupported URI scheme: '" + std::string{ scheme } + "'" };

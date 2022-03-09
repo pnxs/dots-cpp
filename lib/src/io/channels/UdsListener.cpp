@@ -94,7 +94,7 @@ namespace dots::io::posix::details
         });
     }
 
-    template struct GenericUdsListener<LegacyUdsChannel>;
-    template struct GenericUdsListener<UdsChannel>;
+    template struct GenericUdsListener<v1::UdsChannel>;
+    template struct GenericUdsListener<v2::UdsChannel>;
 }
 #endif

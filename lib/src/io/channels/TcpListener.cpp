@@ -92,6 +92,6 @@ namespace dots::io::details
         });
     }
 
-    template struct GenericTcpListener<LegacyTcpChannel>;
-    template struct GenericTcpListener<TcpChannel>;
+    template struct GenericTcpListener<v1::TcpChannel>;
+    template struct GenericTcpListener<v2::TcpChannel>;
 }

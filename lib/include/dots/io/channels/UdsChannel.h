@@ -32,14 +32,21 @@ namespace dots::io::posix::details
         static void IgnorePipeSignals();
     };
 
-    extern template struct GenericUdsChannel<serialization::CborSerializer, TransmissionFormat::Legacy>;
-    extern template struct GenericUdsChannel<serialization::CborSerializer, TransmissionFormat::Default>;
+    extern template struct GenericUdsChannel<serialization::CborSerializer, TransmissionFormat::v1>;
+    extern template struct GenericUdsChannel<serialization::CborSerializer, TransmissionFormat::v2>;
 }
 
 namespace dots::io::posix
 {
-    using LegacyUdsChannel = details::GenericUdsChannel<serialization::CborSerializer, TransmissionFormat::Legacy>;
-    using UdsChannel = details::GenericUdsChannel<serialization::CborSerializer, TransmissionFormat::Default>;
+    namespace v1
+    {
+        using UdsChannel = details::GenericUdsChannel<serialization::CborSerializer, TransmissionFormat::v1>;
+    }
+
+    inline namespace v2
+    {
+        using UdsChannel = details::GenericUdsChannel<serialization::CborSerializer, TransmissionFormat::v2>;
+    }
 }
 
 #else

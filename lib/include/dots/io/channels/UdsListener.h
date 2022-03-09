@@ -35,14 +35,21 @@ namespace dots::io::posix::details
         payload_cache_t m_payloadCache;
     };
 
-    extern template struct GenericUdsListener<LegacyUdsChannel>;
-    extern template struct GenericUdsListener<UdsChannel>;
+    extern template struct GenericUdsListener<v1::UdsChannel>;
+    extern template struct GenericUdsListener<v2::UdsChannel>;
 }
 
 namespace dots::io::posix
 {
-    using LegacyUdsListener = details::GenericUdsListener<LegacyUdsChannel>;
-    using UdsListener = details::GenericUdsListener<UdsChannel>;
+    namespace v1
+    {
+        using UdsListener = details::GenericUdsListener<v1::UdsChannel>;
+    }
+
+    inline namespace v2
+    {
+        using UdsListener = details::GenericUdsListener<v2::UdsChannel>;
+    }
 }
 
 #else

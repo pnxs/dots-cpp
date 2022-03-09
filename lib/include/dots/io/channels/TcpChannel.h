@@ -64,12 +64,19 @@ namespace dots::io::details
         asio::ip::tcp::resolver m_resolver;
     };
 
-    extern template struct GenericTcpChannel<serialization::CborSerializer, TransmissionFormat::Legacy>;
-    extern template struct GenericTcpChannel<serialization::CborSerializer, TransmissionFormat::Default>;
+    extern template struct GenericTcpChannel<serialization::CborSerializer, TransmissionFormat::v1>;
+    extern template struct GenericTcpChannel<serialization::CborSerializer, TransmissionFormat::v2>;
 }
 
 namespace dots::io
 {
-    using LegacyTcpChannel = details::GenericTcpChannel<serialization::CborSerializer, TransmissionFormat::Legacy>;
-    using TcpChannel = details::GenericTcpChannel<serialization::CborSerializer, TransmissionFormat::Default>;
+    namespace v1
+    {
+        using TcpChannel = details::GenericTcpChannel<serialization::CborSerializer, TransmissionFormat::v1>;
+    }
+
+    inline namespace v2
+    {
+        using TcpChannel = details::GenericTcpChannel<serialization::CborSerializer, TransmissionFormat::v2>;
+    }
 }
