@@ -53,9 +53,6 @@ namespace dots::type
 
         bool equal(const Typeless& lhs, const Typeless& rhs) const override;
         bool less(const Typeless& lhs, const Typeless& rhs) const override;
-        bool lessEqual(const Typeless& lhs, const Typeless& rhs) const override;
-        bool greater(const Typeless& lhs, const Typeless& rhs) const override;
-        bool greaterEqual(const Typeless& lhs, const Typeless& rhs) const override;
 
         size_t areaOffset() const;
         size_t numSubStructs() const;
@@ -75,9 +72,9 @@ namespace dots::type
         virtual bool same(const Struct& lhs, const Struct& rhs) const;
 
         virtual bool less(const Struct& lhs, const Struct& rhs, PropertySet includedProperties) const;
-        virtual bool lessEqual(const Struct& lhs, const Struct& rhs, PropertySet includedProperties) const;
-        virtual bool greater(const Struct& lhs, const Struct& rhs, PropertySet includedProperties) const;
-        virtual bool greaterEqual(const Struct& lhs, const Struct& rhs, PropertySet includedProperties) const;
+        bool lessEqual(const Struct& lhs, const Struct& rhs, PropertySet includedProperties) const;
+        bool greater(const Struct& lhs, const Struct& rhs, PropertySet includedProperties) const;
+        bool greaterEqual(const Struct& lhs, const Struct& rhs, PropertySet includedProperties) const;
 
         virtual PropertySet diffProperties(const Struct& instance, const Struct& other, PropertySet includedProperties) const;
 
@@ -311,21 +308,6 @@ namespace dots::type
         bool less(const Struct& lhs, const Struct& rhs, PropertySet includedProperties) const override
         {
             return less(static_cast<const T&>(lhs), static_cast<const T&>(rhs), includedProperties);
-        }
-
-        bool lessEqual(const Struct& lhs, const Struct& rhs, PropertySet includedProperties) const override
-        {
-            return lessEqual(static_cast<const T&>(lhs), static_cast<const T&>(rhs), includedProperties);
-        }
-
-        bool greater(const Struct& lhs, const Struct& rhs, PropertySet includedProperties) const override
-        {
-            return greater(static_cast<const T&>(lhs), static_cast<const T&>(rhs), includedProperties);
-        }
-
-        bool greaterEqual(const Struct& lhs, const Struct& rhs, PropertySet includedProperties) const override
-        {
-            return greaterEqual(static_cast<const T&>(lhs), static_cast<const T&>(rhs), includedProperties);
         }
 
         PropertySet diffProperties(const Struct& instance, const Struct& other, PropertySet includedProperties) const override

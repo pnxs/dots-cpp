@@ -37,6 +37,21 @@ namespace dots::type
         return m_alignment;
     }
 
+    bool Descriptor<Typeless>::lessEqual(const Typeless& lhs, const Typeless& rhs) const
+    {
+        return !greater(lhs, rhs);
+    }
+
+    bool Descriptor<Typeless>::greater(const Typeless& lhs, const Typeless& rhs) const
+    {
+        return less(rhs, lhs);
+    }
+
+    bool Descriptor<Typeless>::greaterEqual(const Typeless& lhs, const Typeless& rhs) const
+    {
+        return !less(lhs, rhs);
+    }
+
     bool Descriptor<Typeless>::usesDynamicMemory() const
     {
         return false;

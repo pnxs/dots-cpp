@@ -172,21 +172,6 @@ namespace dots::type
             return underlyingDescriptor().less(lhs, rhs);
         }
 
-        bool lessEqual(const Typeless& lhs, const Typeless& rhs) const override
-        {
-            return underlyingDescriptor().lessEqual(lhs, rhs);
-        }
-
-        bool greater(const Typeless& lhs, const Typeless& rhs) const override
-        {
-            return underlyingDescriptor().greater(lhs, rhs);
-        }
-
-        bool greaterEqual(const Typeless& lhs, const Typeless& rhs) const override
-        {
-            return underlyingDescriptor().greaterEqual(lhs, rhs);
-        }
-
         size_t dynamicMemoryUsage(const Typeless& value) const override
         {
             return underlyingDescriptor().dynamicMemoryUsage(value);

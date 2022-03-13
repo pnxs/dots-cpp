@@ -78,9 +78,9 @@ namespace dots::type
 
         virtual bool equal(const Typeless& lhs, const Typeless& rhs) const = 0;
         virtual bool less(const Typeless& lhs, const Typeless& rhs) const = 0;
-        virtual bool lessEqual(const Typeless& lhs, const Typeless& rhs) const = 0;
-        virtual bool greater(const Typeless& lhs, const Typeless& rhs) const = 0;
-        virtual bool greaterEqual(const Typeless& lhs, const Typeless& rhs) const = 0;
+        bool lessEqual(const Typeless& lhs, const Typeless& rhs) const;
+        bool greater(const Typeless& lhs, const Typeless& rhs) const;
+        bool greaterEqual(const Typeless& lhs, const Typeless& rhs) const;
 
         virtual bool usesDynamicMemory() const;
         virtual size_t dynamicMemoryUsage(const Typeless& value) const;
