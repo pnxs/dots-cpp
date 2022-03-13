@@ -83,7 +83,7 @@ Intermediate examples:
 # Dependencies
 
 * CMake >= 3.12
-* Boost Libraries[^1] >= 1.71.0 (including filesystem, program-options and iostreams)
+* Boost Libraries[^1] >= 1.71.0 (including program-options)
 * Python >= 3.8
 * dots-code-generator >= 0.0.4 (https://github.com/pnxs/dots-code-generator, also available via pip (https://pypi.org/project/dots-code-generator))
 * C++ compiler supporting at least C++17 (such as GCC 8 or MSVC 19.14)
@@ -113,9 +113,7 @@ Install build dependencies:
 sudo apt-get update -yq && \
 sudo apt-get install -yq \
     libboost-dev=1.71.0.0ubuntu2 \
-    libboost-filesystem-dev=1.71.0.0ubuntu2 \
     libboost-program-options-dev=1.71.0.0ubuntu2 \
-    libboost-iostreams-dev=1.71.0.0ubuntu2 \
 && \
 pip3 install dots-code-generator
 ```

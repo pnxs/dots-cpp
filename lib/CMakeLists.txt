@@ -11,7 +11,7 @@ option(BUILD_DOTS_SHARED "Build DOTS as a shared instead of a static library" OF
 
 # dependencies
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
-find_package(Boost 1.71 REQUIRED COMPONENTS filesystem iostreams program_options)
+find_package(Boost 1.71 REQUIRED COMPONENTS program_options)
 find_package(RapidJSON REQUIRED MODULE)
 find_package(PicoSHA2 REQUIRED)
 
@@ -138,8 +138,6 @@ target_link_libraries(${TARGET_NAME}
     PUBLIC
         Boost::boost
         Boost::program_options
-        Boost::iostreams
-        Boost::filesystem
         # link pthread which is required for C++ threads on Linux and OSX
         $<$<OR:$<PLATFORM_ID:Linux>,$<PLATFORM_ID:Darwin>>:pthread>
         # link bcrypt which is required for certain Boost functionality on Windows
