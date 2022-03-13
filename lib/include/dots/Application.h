@@ -97,6 +97,50 @@ namespace dots
         /*!
          * @brief Construct a new Application object.
          *
+         * If no transceiver is given (i.e. the global transceiver is used) and
+         * any of the statically typed versions of dots::subscribe<T>() or
+         * dots::container<T>() of the global DOTS API were instantiated (see
+         * dots.h), establishing the connection will include preloading of each
+         * type used as arguments to those templates.
+         *
+         * This means that when the constructor returns, the cache (i.e. the
+         * containers) of those types will have been updated to the latest
+         * state known to the host.
+         *
+         * Note that creating the connection will be performed synchronously.
+         * In other words, the constructor will block and execute the event
+         * loop until the connection, including preloading, has been
+         * established:
+         *
+         * @code{.cpp}
+         * dots::Application app{ "<app-name>" };
+         * // cache for Foo and Bar will have been preloaded here
+         * dots::subscribe<Foo>([](const dots::Event<Foo>& event)
+         * {
+         *     auto& container = dots::container<Bar>();
+         *     // ...
+         * });
+         * // ...
+         * @endcode
+         *
+         * @param name The name that will be used by the GuestTransceiver to
+         * identify itself.
+         *
+         * @param guestTransceiver The guest transceiver the application will
+         * operate on. If none is given, the global guest transceiver will be
+         * used.
+         *
+         * @param handleExitSignals Indicates whether the application should
+         * exit on SIGINT and SIGTERM signals.
+         *
+         * @exception std::exception Thrown if no connection could be
+         * established based on the given arguments.
+         */
+        Application(const std::string& name, std::optional<GuestTransceiver> guestTransceiver = std::nullopt, bool handleExitSignals = true);
+
+        /*!
+         * @brief Construct a new Application object.
+         *
          * This will parse the given command line arguments and attempt to
          * listen for incoming connections via the given host transceiver using
          * the endpoints given by the '--dots-endpoint' option. If no endpoints
@@ -118,6 +162,20 @@ namespace dots
          * established based on the given arguments.
          */
         Application(int argc, char* argv[], HostTransceiver hostTransceiver, bool handleExitSignals = true);
+
+        /*!
+         * @brief Construct a new Application object.
+         *
+         * @param hostTransceiver The host transceiver the application will
+         * operate on.
+         *
+         * @param handleExitSignals Indicates whether the application should
+         * exit on SIGINT and SIGTERM signals.
+         *
+         * @exception std::exception Thrown if no connection could be
+         * established based on the given arguments.
+         */
+        Application(HostTransceiver hostTransceiver, bool handleExitSignals = true);
 
         Application(const Application& other) = delete;
         Application(Application&& other) = delete;

@@ -1,11 +1,16 @@
 #pragma once
 #include <dots/io/channels/AsyncStreamChannel.h>
 
-namespace dots::io
+namespace dots::io::details
 {
-    struct TcpChannel : AsyncStreamChannel<asio::ip::tcp::socket>
+    template <typename Serializer, TransmissionFormat TransmissionFormat>
+    struct GenericTcpChannel : AsyncStreamChannel<asio::ip::tcp::socket, Serializer, TransmissionFormat>
     {
-        TcpChannel(key_t key, asio::io_context& ioContext, const Endpoint& endpoint);
+        using base_t = AsyncStreamChannel<asio::ip::tcp::socket, Serializer, TransmissionFormat>;
+        using key_t = typename base_t::key_t;
+        using payload_cache_t = typename base_t::payload_cache_t;
+
+        GenericTcpChannel(key_t key, asio::io_context& ioContext, const Endpoint& endpoint);
 
         /**
          * Connect channel synchronously.
@@ -14,7 +19,7 @@ namespace dots::io
          * @param host
          * @param port
          */
-        TcpChannel(key_t key, asio::io_context& ioContext, std::string_view host, std::string_view port);
+        GenericTcpChannel(key_t key, asio::io_context& ioContext, std::string_view host, std::string_view port);
 
         /**
          * Connect channel asynchronously.
@@ -24,24 +29,30 @@ namespace dots::io
          * @param port
          * @param onConnect
          */
-        TcpChannel(key_t key, asio::io_context& ioContext, std::string_view host, std::string_view port, std::function<void(const boost::system::error_code& error)> onConnect);
+        GenericTcpChannel(key_t key, asio::io_context& ioContext, std::string_view host, std::string_view port, std::function<void(const boost::system::error_code& error)> onConnect);
 
         /**
          * Construct channel with an already connected socket.
          * @param key
          * @param socket
          */
-        TcpChannel(key_t key, asio::ip::tcp::socket&& socket, payload_cache_t* payloadCache);
-        TcpChannel(const TcpChannel& other) = delete;
-        TcpChannel(TcpChannel&& other) = delete;
-        ~TcpChannel() override = default;
+        GenericTcpChannel(key_t key, asio::ip::tcp::socket&& socket, payload_cache_t* payloadCache);
+        GenericTcpChannel(const GenericTcpChannel& other) = delete;
+        GenericTcpChannel(GenericTcpChannel&& other) = delete;
+        ~GenericTcpChannel() override = default;
 
-        TcpChannel& operator = (const TcpChannel& rhs) = delete;
-        TcpChannel& operator = (TcpChannel&& rhs) = delete;
+        GenericTcpChannel& operator = (const GenericTcpChannel& rhs) = delete;
+        GenericTcpChannel& operator = (GenericTcpChannel&& rhs) = delete;
 
     private:
 
+        using stream_t = typename base_t::stream_t;
+        using receive_handler_t = typename base_t::receive_handler_t;
+        using error_handler_t = typename base_t::error_handler_t;
         using resolve_handler_t = std::function<void(const boost::system::error_code& error, std::optional<asio::ip::tcp::endpoint>)>;
+
+        using base_t::stream;
+        using base_t::initEndpoints;
 
         void asyncResolveEndpoint(std::string_view host, std::string_view port, resolve_handler_t handler);
         void verifyErrorCode(const boost::system::error_code& ec);
@@ -52,4 +63,20 @@ namespace dots::io
 
         asio::ip::tcp::resolver m_resolver;
     };
+
+    extern template struct GenericTcpChannel<serialization::CborSerializer, TransmissionFormat::v1>;
+    extern template struct GenericTcpChannel<serialization::CborSerializer, TransmissionFormat::v2>;
+}
+
+namespace dots::io
+{
+    namespace v1
+    {
+        using TcpChannel = details::GenericTcpChannel<serialization::CborSerializer, TransmissionFormat::v1>;
+    }
+
+    inline namespace v2
+    {
+        using TcpChannel = details::GenericTcpChannel<serialization::CborSerializer, TransmissionFormat::v2>;
+    }
 }

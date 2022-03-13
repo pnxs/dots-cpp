@@ -105,7 +105,7 @@ namespace dots::testing
         {
             if (m_globalGuest != nullptr)
             {
-                set_transceiver("dots-test-guest");
+                global_transceiver().reset();
                 m_globalGuest = nullptr;
             }
         }
@@ -277,8 +277,8 @@ namespace dots::testing
          * @brief Get the global DOTS guest transceiver.
          *
          * @attention Using this function should always be preferred to
-         * dots::transceiver(), because it implicitly creates and connects the
-         * global guest.
+         * dots::global_transceiver(), because it implicitly creates and
+         * connects the global guest.
          *
          * @return GuestTransceiver& A reference to the DOTS test host.
          */
@@ -286,7 +286,7 @@ namespace dots::testing
         {
             if (m_globalGuest == nullptr)
             {
-                m_globalGuest = &set_transceiver("dots-global-guest");
+                m_globalGuest = &global_transceiver().emplace("dots-global-guest", io::global_io_context(), type::Registry::StaticTypePolicy::All);
                 connectGuest(*m_globalGuest, io::global_publish_types(), io::global_subscribe_types(), std::optional<std::string>{ std::nullopt });
                 processEvents();
             }

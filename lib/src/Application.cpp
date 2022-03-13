@@ -14,10 +14,15 @@ namespace dots
         parseGuestTransceiverArgs(argc, argv);
         GuestTransceiver* transceiver;
 
-        if (m_guestTransceiverStorage == std::nullopt || &*m_guestTransceiverStorage == &dots::transceiver())
+        if (m_guestTransceiverStorage == std::nullopt || &*m_guestTransceiverStorage == &*global_transceiver())
         {
             using transition_handler_t = GuestTransceiver::transition_handler_t;
-            transceiver = &set_transceiver(m_openEndpoint->userName().empty() ? name : m_openEndpoint->userName(), transition_handler_t{ &Application::handleGuestTransceiverTransition, this });
+            transceiver = &global_transceiver().emplace(
+                m_openEndpoint->userName().empty() ? name : std::string{ m_openEndpoint->userName() },
+                io::global_io_context(),
+                type::Registry::StaticTypePolicy::All,
+                transition_handler_t{ &Application::handleGuestTransceiverTransition, this }
+            );
             transceiver->open(io::global_publish_types(), io::global_subscribe_types(), *m_openEndpoint);
         }
         else
@@ -42,6 +47,12 @@ namespace dots
         transceiver->publish(DotsClient{ DotsClient::id_i{ transceiver->connection().selfId() }, DotsClient::running_i{ true } });
     }
 
+    Application::Application(const std::string& name, std::optional<GuestTransceiver> guestTransceiver/* = std::nullopt*/, bool handleExitSignals/* = true*/) :
+        Application(name, 0, nullptr, std::move(guestTransceiver), handleExitSignals)
+    {
+        /* do nothing */
+    }
+
     Application::Application(int argc, char* argv[], HostTransceiver hostTransceiver, bool handleExitSignals) :
         m_exitCode(EXIT_SUCCESS),
         m_transceiver(nullptr),
@@ -58,6 +69,12 @@ namespace dots
         }
     }
 
+    Application::Application(HostTransceiver hostTransceiver, bool handleExitSignals/* = true*/) :
+        Application(0, nullptr, std::move(hostTransceiver), handleExitSignals)
+    {
+        /* do nothing */
+    }
+
     Application::~Application()
     {
         ioContext().stop();
@@ -72,7 +89,7 @@ namespace dots
         }
         else
         {
-            set_transceiver();
+            global_transceiver().reset();
         }
 
         ioContext().restart();
@@ -133,8 +150,12 @@ namespace dots
         ;
 
         po::variables_map args;
-        po::store(po::basic_command_line_parser<char>(argc, argv).options(options).allow_unregistered().run(), args);
-        po::notify(args);
+
+        if (argc > 0 && argv != nullptr)
+        {
+            po::store(po::basic_command_line_parser<char>(argc, argv).options(options).allow_unregistered().run(), args);
+            po::notify(args);
+        }
 
         if (auto it = args.find("dots-endpoint"); it != args.end())
         {
@@ -180,8 +201,12 @@ namespace dots
         ;
 
         po::variables_map args;
-        po::store(po::basic_command_line_parser<char>(argc, argv).options(options).allow_unregistered().run(), args);
-        po::notify(args);
+
+        if (argc > 0 && argv != nullptr)
+        {
+            po::store(po::basic_command_line_parser<char>(argc, argv).options(options).allow_unregistered().run(), args);
+            po::notify(args);
+        }
         
         if (auto it = args.find("dots-endpoint"); it != args.end())
         {

@@ -353,7 +353,6 @@ namespace dots
 
 #include <boost/program_options.hpp>
 #include <dots/io/channels/TcpListener.h>
-#include <dots/io/channels/LegacyTcpListener.h>
 #include <dots/io/channels/WebSocketListener.h>
 #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
 #include <dots/io/channels/UdsListener.h>
@@ -365,24 +364,38 @@ namespace dots
     {
         for (io::Endpoint& listenEndpoint : listenEndpoints)
         {
-            if (std::string_view scheme = listenEndpoint.scheme(); scheme == "tcp")
+            std::string_view scheme = listenEndpoint.scheme();
+
+            if (scheme == "tcp")
             {
                 listen<io::TcpListener>(listenEndpoint);
             }
-            else if (scheme == "tcp-legacy")
+            else if (scheme == "tcp-v2")
             {
-                listen<io::LegacyTcpListener>(listenEndpoint);
+                listen<io::v2::TcpListener>(listenEndpoint);
             }
-            else if (scheme == "ws")
+            else if (scheme == "tcp-v1")
             {
-                listen<io::WebSocketListener>(listenEndpoint);
+                listen<io::v1::TcpListener>(listenEndpoint);
             }
             #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
             else if (scheme == "uds")
             {
-                listen<dots::io::posix::UdsListener>(listenEndpoint);
+                listen<io::posix::UdsListener>(listenEndpoint);
+            }
+            else if (scheme == "uds-v2")
+            {
+                listen<io::posix::v2::UdsListener>(listenEndpoint);
+            }
+            else if (scheme == "uds-v1")
+            {
+                listen<io::posix::v1::UdsListener>(listenEndpoint);
             }
             #endif
+            else if (scheme == "ws")
+            {
+                listen<io::WebSocketListener>(listenEndpoint);
+            }
             else
             {
                 throw std::runtime_error{ "unknown or unsupported endpoint scheme: '" + std::string{ scheme } + "'" };

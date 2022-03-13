@@ -3,25 +3,52 @@
 #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
 #include <dots/io/channels/AsyncStreamChannel.h>
 
-namespace dots::io::posix
+namespace dots::io::posix::details
 {
-    struct UdsChannel : AsyncStreamChannel<asio::local::stream_protocol::socket>
+    template <typename Serializer, TransmissionFormat TransmissionFormat>
+    struct GenericUdsChannel : AsyncStreamChannel<asio::local::stream_protocol::socket, Serializer, TransmissionFormat>
     {
-        UdsChannel(key_t key, asio::io_context& ioContext, const Endpoint& endpoint);
-        UdsChannel(key_t key, asio::io_context& ioContext, std::string_view path);
-        UdsChannel(key_t key, asio::local::stream_protocol::socket&& socket, payload_cache_t* payloadCache);
-        UdsChannel(const UdsChannel& other) = delete;
-        UdsChannel(UdsChannel&& other) = delete;
-        virtual ~UdsChannel() noexcept = default;
+        using base_t = AsyncStreamChannel<asio::local::stream_protocol::socket, Serializer, TransmissionFormat>;
+        using key_t = typename base_t::key_t;
+        using payload_cache_t = typename base_t::payload_cache_t;
 
-        UdsChannel& operator = (const UdsChannel& rhs) = delete;
-        UdsChannel& operator = (UdsChannel&& rhs) = delete;
+        GenericUdsChannel(key_t key, asio::io_context& ioContext, const Endpoint& endpoint);
+        GenericUdsChannel(key_t key, asio::io_context& ioContext, std::string_view path);
+        GenericUdsChannel(key_t key, asio::local::stream_protocol::socket&& socket, payload_cache_t* payloadCache);
+        GenericUdsChannel(const GenericUdsChannel& other) = delete;
+        GenericUdsChannel(GenericUdsChannel&& other) = delete;
+        virtual ~GenericUdsChannel() noexcept = default;
+
+        GenericUdsChannel& operator = (const GenericUdsChannel& rhs) = delete;
+        GenericUdsChannel& operator = (GenericUdsChannel&& rhs) = delete;
 
     private:
 
+        using stream_t = typename base_t::stream_t;
+
+        using base_t::stream;
+        using base_t::initEndpoints;
+
         static void IgnorePipeSignals();
     };
+
+    extern template struct GenericUdsChannel<serialization::CborSerializer, TransmissionFormat::v1>;
+    extern template struct GenericUdsChannel<serialization::CborSerializer, TransmissionFormat::v2>;
 }
+
+namespace dots::io::posix
+{
+    namespace v1
+    {
+        using UdsChannel = details::GenericUdsChannel<serialization::CborSerializer, TransmissionFormat::v1>;
+    }
+
+    inline namespace v2
+    {
+        using UdsChannel = details::GenericUdsChannel<serialization::CborSerializer, TransmissionFormat::v2>;
+    }
+}
+
 #else
 #error "Local sockets are not available on this platform"
 #endif

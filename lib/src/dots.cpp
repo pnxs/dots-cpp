@@ -9,8 +9,6 @@
 
 namespace dots
 {
-    inline std::optional<GuestTransceiver> GlobalTransceiver;
-
     Timer::id_t add_timer(type::Duration timeout, tools::Handler<void()> handler, bool periodic/* = false*/)
     {
         return io::global_service<io::TimerService>().addTimer(timeout, std::move(handler), periodic);
@@ -33,26 +31,15 @@ namespace dots
     }
     #endif
 
-    GuestTransceiver& set_transceiver(std::string_view name/* = "dots-transceiver"*/, std::optional<GuestTransceiver::transition_handler_t> transitionHandler/* = std::nullopt*/)
+    std::optional<GuestTransceiver>& global_transceiver()
     {
-        return GlobalTransceiver.emplace(std::string{ name }, io::global_io_context(), type::Registry::StaticTypePolicy::All, std::move(transitionHandler));
-    }
-
-    GuestTransceiver& transceiver()
-    {
-        if (GlobalTransceiver == std::nullopt)
-        {
-            return set_transceiver();
-        }
-        else
-        {
-            return *GlobalTransceiver;
-        }
+        static std::optional<GuestTransceiver> Transceiver;
+        return Transceiver;
     }
 
     void publish(const type::Struct& instance, std::optional<property_set_t> includedProperties/* = std::nullopt*/, bool remove/* = false*/)
     {
-        transceiver().publish(instance, includedProperties, remove);
+        global_transceiver()->publish(instance, includedProperties, remove);
     }
 
     void remove(const type::Struct& instance)
@@ -62,16 +49,16 @@ namespace dots
 
     Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::event_handler_t<> handler)
     {
-        return transceiver().subscribe(descriptor, std::move(handler));
+        return global_transceiver()->subscribe(descriptor, std::move(handler));
     }
 
     const ContainerPool& pool()
     {
-        return transceiver().pool();
+        return global_transceiver()->pool();
     }
 
     const Container<>& container(const type::StructDescriptor<>& descriptor)
     {
-        return transceiver().container(descriptor);
+        return global_transceiver()->container(descriptor);
     }
 }

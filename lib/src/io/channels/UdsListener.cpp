@@ -2,15 +2,17 @@
 #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
 #include <dots/io/channels/UdsListener.h>
 
-namespace dots::io::posix
+namespace dots::io::posix::details
 {
-    UdsListener::UdsListener(asio::io_context& ioContext, const Endpoint& endpoint, std::optional<int> backlog/* = std::nullopt*/) :
-        UdsListener(ioContext, endpoint.path(), backlog)
+    template <typename TChannel>
+    GenericUdsListener<TChannel>::GenericUdsListener(asio::io_context& ioContext, const Endpoint& endpoint, std::optional<int> backlog/* = std::nullopt*/) :
+        GenericUdsListener(ioContext, endpoint.path(), backlog)
     {
         /* do nothing */
     }
 
-    UdsListener::UdsListener(asio::io_context& ioContext, std::string_view path, std::optional<int> backlog/* = std::nullopt*/) :
+    template <typename TChannel>
+    GenericUdsListener<TChannel>::GenericUdsListener(asio::io_context& ioContext, std::string_view path, std::optional<int> backlog/* = std::nullopt*/) :
         m_endpoint{ path.data() },
         m_acceptor{ ioContext },
         m_socket{ ioContext },
@@ -37,12 +39,14 @@ namespace dots::io::posix
         }
     }
 
-    UdsListener::~UdsListener()
+    template <typename TChannel>
+    GenericUdsListener<TChannel>::~GenericUdsListener()
     {
         ::unlink(m_endpoint.path().data());
     }
 
-    void UdsListener::asyncAcceptImpl()
+    template <typename TChannel>
+    void GenericUdsListener<TChannel>::asyncAcceptImpl()
     {
         m_acceptor.async_accept(m_socket, [this](const boost::system::error_code& error)
         {
@@ -71,7 +75,7 @@ namespace dots::io::posix
                 }
 
                 // note: this move is explicitly allowed according to the ASIO v1.72 documentation of the socket
-                processAccept(make_channel<UdsChannel>(std::move(m_socket), &m_payloadCache));
+                processAccept(make_channel<TChannel>(std::move(m_socket), &m_payloadCache));
             }
             catch (const std::exception& e)
             {
@@ -89,5 +93,8 @@ namespace dots::io::posix
             }
         });
     }
+
+    template struct GenericUdsListener<v1::UdsChannel>;
+    template struct GenericUdsListener<v2::UdsChannel>;
 }
 #endif

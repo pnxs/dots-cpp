@@ -71,8 +71,6 @@ target_sources(${TARGET_NAME}
         src/io/channels/WebSocketListener.cpp
         src/io/channels/LocalChannel.cpp
         src/io/channels/LocalListener.cpp
-        src/io/channels/LegacyTcpListener.cpp
-        src/io/channels/LegacyTcpChannel.cpp
 
         src/io/services/FdHandlerService.cpp
         src/io/services/TimerService.cpp
