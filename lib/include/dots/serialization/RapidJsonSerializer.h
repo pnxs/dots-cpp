@@ -27,12 +27,15 @@ namespace dots::serialization
             Value,
             String
         };
-        
+    };
+    
+    struct DefaultRapidJsonSerializerFormat : RapidJsonSerializerFormat<>
+    {
         static constexpr TimepointFormat TimepointFormat = TimepointFormat::FractionalSeconds;
         static constexpr EnumFormat EnumFormat = EnumFormat::Tag;
     };
 
-    template <typename Format = RapidJsonSerializerFormat<>>
+    template <typename Format = DefaultRapidJsonSerializerFormat>
     struct RapidJsonSerializer : type::TypeVisitor<RapidJsonSerializer<Format>>
     {
         using data_t = std::string;
