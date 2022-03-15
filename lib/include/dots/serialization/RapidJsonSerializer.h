@@ -5,6 +5,7 @@
 #include <rapidjson/writer.h>
 #include <dots/serialization/formats/RapidJsonReader.h>
 #include <dots/serialization/formats/RapidJsonWriter.h>
+#include <dots/tools/type_traits.h>
 
 namespace dots::serialization
 {
