@@ -64,7 +64,7 @@ namespace dots::type::libc
         {
         }
 
-        constexpr Timespec(Duration duration) :
+        Timespec(Duration duration) :
             Timespec(timespec{
                 static_cast<std::time_t>(duration.toSeconds()),
                 static_cast<long>(::nearbyint((duration.toFractionalSeconds() - duration.toSeconds()) * NanosecondsPerSecond))
@@ -72,12 +72,12 @@ namespace dots::type::libc
         {
         }
 
-        constexpr Timespec(TimePoint timePoint) :
+        Timespec(TimePoint timePoint) :
             Timespec(timePoint.duration())
         {
         }
 
-        constexpr Timespec(SteadyTimePoint steadyTimePoint) :
+        Timespec(SteadyTimePoint steadyTimePoint) :
             Timespec(steadyTimePoint.duration())
         {
         }
@@ -102,12 +102,12 @@ namespace dots::type::libc
         timespec m_timespec;
     };
 
-    constexpr Timespec operator + (const Timespec& lhs, const Timespec& rhs)
+    Timespec operator + (const Timespec& lhs, const Timespec& rhs)
     {
         return Timespec{ Duration{ lhs } + Duration{ rhs } };
     }
 
-    constexpr Timespec operator - (const Timespec& lhs, const Timespec& rhs)
+    Timespec operator - (const Timespec& lhs, const Timespec& rhs)
     {
         return Timespec{ Duration{ lhs } - Duration{ rhs } };
     }
