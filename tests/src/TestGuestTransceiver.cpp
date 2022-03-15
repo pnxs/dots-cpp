@@ -14,7 +14,7 @@ protected:
 TEST_F(TestGuestTransceiver, IncrementPropertyOfCachedTypeOnSelfUpdate)
 {
     DOTS_EXPECTATION_SEQUENCE(
-        [this]
+        []
         {
             dots::publish(DotsTestStruct{
                 DotsTestStruct::indKeyfField_i{ 42 },
@@ -29,7 +29,7 @@ TEST_F(TestGuestTransceiver, IncrementPropertyOfCachedTypeOnSelfUpdate)
             DotsTestStruct::indKeyfField_i{ 42 },
             DotsTestStruct::int64Field_i{ 0 }
         }),
-        [this]
+        []
         {
             dots::publish(DotsTestStruct{
                 DotsTestStruct::indKeyfField_i{ 42 },
@@ -44,7 +44,7 @@ TEST_F(TestGuestTransceiver, IncrementPropertyOfCachedTypeOnSelfUpdate)
             DotsTestStruct::indKeyfField_i{ 42 },
             DotsTestStruct::int64Field_i{ 1 }
         }),
-        [this]
+        []
         {
             dots::publish(DotsTestStruct{
                 DotsTestStruct::indKeyfField_i{ 42 },

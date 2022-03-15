@@ -38,13 +38,13 @@ namespace dots::io::details
     GenericTcpChannel<Serializer, TransmissionFormat>::GenericTcpChannel(key_t key, asio::io_context& ioContext, std::string_view host, std::string_view port, std::function<void(const boost::system::error_code& error)> onConnect) :
         GenericTcpChannel(key, asio::ip::tcp::socket{ ioContext }, nullptr)
     {
-        asyncResolveEndpoint(host, port, [this, host, port, onConnect{ std::move(onConnect) }](auto& error, auto endpoint) {
+        asyncResolveEndpoint(host, port, [this, onConnect{ std::move(onConnect) }](auto& error, auto endpoint) {
             if (error)
             {
                 onConnect(error);
             }
 
-            stream().async_connect(*endpoint, [this, endpoint, onConnect{ std::move(onConnect) }, host, port](const boost::system::error_code& error) {
+            stream().async_connect(*endpoint, [this, endpoint, onConnect{ std::move(onConnect) }](const boost::system::error_code& error) {
                 if (error)
                 {
                     onConnect(error);

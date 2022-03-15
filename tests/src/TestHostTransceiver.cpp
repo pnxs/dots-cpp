@@ -13,7 +13,7 @@ TEST_F(TestHostTransceiver, HandleEchoRequest)
     dots::Subscription guestSubscription = dots::subscribe<DotsEcho>(mockGuestSubscriber.AsStdFunction());
 
     DOTS_EXPECTATION_SEQUENCE(
-        [this]
+        []
         {
             dots::publish(DotsEcho{
                 DotsEcho::request_i(true),
@@ -26,7 +26,7 @@ TEST_F(TestHostTransceiver, HandleEchoRequest)
             DotsEcho::identifier_i(42),
             DotsEcho::sequenceNumber_i(1)
         }),
-        [this]
+        []
         {
             dots::publish(DotsEcho{
                 DotsEcho::request_i(true),

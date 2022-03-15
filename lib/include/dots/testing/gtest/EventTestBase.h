@@ -369,7 +369,7 @@ namespace dots::testing
 
             if (emplacedSubscriptionHandler)
             {
-                m_subscriptions.emplace_back(transceiver.subscribe(descriptor, [this, mockHandler = &itSubscriptionHandler->second](const Event<>& event)
+                m_subscriptions.emplace_back(transceiver.subscribe(descriptor, [mockHandler = &itSubscriptionHandler->second](const Event<>& event)
                 {
                     try
                     {

@@ -35,7 +35,7 @@ namespace examples
             {
                 tryRemoveTimer();
 
-                m_timerId = dots::add_timer(m_lightTimeout, [this]
+                m_timerId = dots::add_timer(m_lightTimeout, []
                 {
                     dots::publish(LightControl{
                         LightControl::id_i{ Light },
