@@ -60,7 +60,7 @@ The dots-cpp library is a complete publish-subscribe IPC solution for both local
 ## Features: Library
 
 * Modern C++17/20 library with CMake support.
-* Portable with officially maintained support for Linux (with GCC 9.4.0) and Windows (with latest MSVC).
+* Portable with officially maintained support for Linux (with GCC 9.4.0 or Clang 10.0.0) and Windows (with latest MSVC).
 * Variety of available transport protocols (TCP, UNIX domain sockets, WebSocket) and serialization methods (CBOR, JSON).
 * Small base API that is sufficient for most common uses cases.
 * Modular design that allows advanced users to configure, extend or switch components, such as serializers and transport protocols.

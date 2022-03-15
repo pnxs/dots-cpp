@@ -250,7 +250,7 @@ namespace dots::type
                 {
                     if (strip_t<decltype(propertyThis)>::IsPartOf(includedProperties))
                     {
-                        return propertyThis == propertyOther;
+                        return propertyThis.equal(propertyOther);
                     }
                     else
                     {
@@ -275,7 +275,7 @@ namespace dots::type
                 {
                     auto equal = [&](auto& propertyThis, auto& propertyOther)
                     {
-                        return propertyThis == propertyOther;
+                        return propertyThis.equal(propertyOther);
                     };
                     (void)equal;
 
@@ -327,7 +327,7 @@ namespace dots::type
                     {
                         using property_t = strip_t<decltype(propertyThis)>;
 
-                        if (property_t::IsPartOf(intersection) && propertyThis != propertyOther)
+                        if (property_t::IsPartOf(intersection) && !propertyThis.equal(propertyOther))
                         {
                             symmetricDiff += property_t::Set();
                         }
@@ -363,7 +363,11 @@ namespace dots::type
 
         static constexpr PropertySet _KeyProperties()
         {
+            #ifdef __clang__
+            PropertySet KeyProperties = std::apply([](auto&&... args)
+            #else
             constexpr PropertySet KeyProperties = std::apply([](auto&&... args)
+            #endif
             {
                 if constexpr (sizeof...(args) == 0)
                 {
