@@ -43,7 +43,7 @@ namespace dots::testing
         {
             if (m_globalGuest != nullptr)
             {
-                transceiver("dots-test-guest", true);
+                global_transceiver().reset();
                 m_globalGuest = nullptr;
             }
         }
@@ -85,7 +85,7 @@ namespace dots::testing
         {
             if (m_globalGuest == nullptr)
             {
-                m_globalGuest = &transceiver("dots-global-guest", true);
+                m_globalGuest = &global_transceiver().emplace("dots-global-guest", io::global_io_context(), type::Registry::StaticTypePolicy::All);
                 m_globalGuest->open<io::LocalChannel>(io::global_publish_types(), io::global_subscribe_types(), std::optional<std::string>{ std::nullopt }, m_localListener);
                 processEvents();
             }
