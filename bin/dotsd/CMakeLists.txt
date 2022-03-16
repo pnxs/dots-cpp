@@ -19,8 +19,8 @@ target_include_directories(${TARGET_NAME}
 )
 target_compile_options(${TARGET_NAME}
     PRIVATE
-        $<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-O2 -Wall -Wextra -Wpedantic -Werror>>
-        $<$<CXX_COMPILER_ID:Clang>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-O2 -Wall -Wextra -Wpedantic -Werror>>
+        $<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-Wall -Wextra -Wpedantic -Werror>>
+        $<$<CXX_COMPILER_ID:Clang>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-Wall -Wextra -Wpedantic -Werror>>
         $<$<CXX_COMPILER_ID:MSVC>:/W4>
 )
 target_compile_definitions(${TARGET_NAME}
