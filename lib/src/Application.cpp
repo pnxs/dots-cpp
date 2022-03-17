@@ -39,9 +39,21 @@ namespace dots
             m_signals->async_wait([this](boost::system::error_code/* error*/, int/* signalNumber*/){ exit(); });
         }
 
-        while (!transceiver->connected())
+        for (;;)
         {
-            ioContext().run_one();
+            if (m_guestConnectionError != nullptr)
+            {
+                std::rethrow_exception(m_guestConnectionError);
+            }
+
+            if (transceiver->connected())
+            {
+                break;
+            }
+            else
+            {
+                ioContext().run_one();
+            }
         }
 
         transceiver->publish(DotsClient{ DotsClient::id_i{ transceiver->connection().selfId() }, DotsClient::running_i{ true } });
@@ -130,8 +142,10 @@ namespace dots
         return m_transceiver->ioContext();
     }
 
-    void Application::handleGuestTransceiverTransition(const Connection& connection, std::exception_ptr/* ePtr*/)
+    void Application::handleGuestTransceiverTransition(const Connection& connection, std::exception_ptr ePtr)
     {
+        m_guestConnectionError = ePtr;
+
         if (connection.closed())
         {
             exit();

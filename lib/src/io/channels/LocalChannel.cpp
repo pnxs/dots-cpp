@@ -2,6 +2,7 @@
 #include <dots/serialization/CborSerializer.h>
 #include <dots/type/Registry.h>
 #include <dots/io/channels/LocalListener.h>
+#include <DotsMsgError.dots.h>
 
 namespace dots::io
 {
@@ -39,7 +40,14 @@ namespace dots::io
 
         if (other == nullptr)
         {
-            throw std::runtime_error{ "local channel is not linked or expired unexpectedly" };
+            if (instance._is<DotsMsgError>())
+            {
+                return;
+            }
+            else
+            {
+                throw std::runtime_error{ "local channel is not linked or expired unexpectedly" };
+            }
         }
 
         asio::post(other->m_ioContext.get(), [peer = m_peer, header = header, data = to_cbor(instance, *header.attributes)]() mutable

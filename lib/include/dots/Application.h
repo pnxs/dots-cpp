@@ -263,5 +263,6 @@ namespace dots
         Transceiver* m_transceiver;
         std::optional<GuestTransceiver> m_guestTransceiverStorage;
         std::optional<HostTransceiver> m_hostTransceiverStorage;
+        std::exception_ptr m_guestConnectionError;
     };
 }

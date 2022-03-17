@@ -18,7 +18,7 @@
 #undef LOG_DEBUG_S
 #undef LOG_DATA_S
 
-#ifdef ENABLE_LOG_DATA
+#ifdef DOTS_ENABLE_LOG_DATA
 #define LOG_DATA_S(...)  LOG_S(data,  FLF, __VA_ARGS__)
 #define LOG_DATA_P(...)  LOG_P(data,  FLF, __VA_ARGS__)
 #else
@@ -26,7 +26,7 @@
 #define LOG_DATA_P(FSTR, ...)
 #endif
 
-#ifdef ENABLE_LOG_DEBUG
+#ifdef DOTS_ENABLE_LOG_DEBUG
 #define LOG_DEBUG_S(...) LOG_S(debug, FLF, __VA_ARGS__)
 #define LOG_DEBUG_P(...) LOG_P(debug, FLF, __VA_ARGS__)
 #else

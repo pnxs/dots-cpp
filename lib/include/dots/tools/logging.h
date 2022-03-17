@@ -147,9 +147,9 @@ if(loggingFrontend().shouldLog(Level::level)) \
 }
 
 /**
- * If you want to compile in data-level logs, you have to define ENABLE_LOG_DATA
+ * If you want to compile in data-level logs, you have to define DOTS_ENABLE_LOG_DATA
  */
-#ifdef ENABLE_LOG_DATA
+#ifdef DOTS_ENABLE_LOG_DATA
 #define LOG_DATA_S(...)  LOG_S(data,  FLF, __VA_ARGS__)
 #define LOG_DATA_P(...)  LOG_P(data,  FLF, __VA_ARGS__)
 #else
@@ -158,9 +158,9 @@ if(loggingFrontend().shouldLog(Level::level)) \
 #endif
 
 /**
- * If you want to compile in debug-level logs, you have to define ENABLE_LOG_DATA
+ * If you want to compile in debug-level logs, you have to define DOTS_ENABLE_LOG_DATA
  */
-#ifdef ENABLE_LOG_DEBUG
+#ifdef DOTS_ENABLE_LOG_DEBUG
 #define LOG_DEBUG_S(...) LOG_S(debug, FLF, __VA_ARGS__)
 #define LOG_DEBUG_P(...) LOG_P(debug, FLF, __VA_ARGS__)
 #else

@@ -215,7 +215,7 @@ namespace dots::io
                     }
                     else
                     {
-                        asyncRead(headerSize, [this, process_header]
+                        asyncRead(headerSize, [process_header]
                         {
                             process_header();
                         });

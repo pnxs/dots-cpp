@@ -13,8 +13,6 @@ RUN apt-get update -y && apt-get install -y \
     cmake \
     g++ \
     libboost-dev \
-    libboost-filesystem-dev \
-    libboost-iostreams-dev \
     libboost-program-options-dev \
     ninja-build \
     python3-pip

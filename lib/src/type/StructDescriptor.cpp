@@ -162,21 +162,6 @@ namespace dots::type
         return less(lhs.to<Struct>(), rhs.to<Struct>(), PropertySet::All);
     }
 
-    bool StructDescriptor<Typeless, false, void>::lessEqual(const Typeless& lhs, const Typeless& rhs) const
-    {
-        return lessEqual(lhs.to<Struct>(), rhs.to<Struct>(), PropertySet::All);
-    }
-
-    bool StructDescriptor<Typeless, false, void>::greater(const Typeless& lhs, const Typeless& rhs) const
-    {
-        return greater(lhs.to<Struct>(), rhs.to<Struct>(), PropertySet::All);
-    }
-
-    bool StructDescriptor<Typeless, false, void>::greaterEqual(const Typeless& lhs, const Typeless& rhs) const
-    {
-        return greaterEqual(lhs.to<Struct>(), rhs.to<Struct>(), PropertySet::All);
-    }
-
     size_t StructDescriptor<Typeless, false, void>::areaOffset() const
     {
         return m_areaOffset;

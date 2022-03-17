@@ -6,18 +6,25 @@ project(dots-cpp
 )
 
 # options
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    # use default build type if none was specified
+    set(DEFAULT_BUILD_TYPE "Release")
+    message(STATUS "Setting build type to '${DEFAULT_BUILD_TYPE}' as none was specified.")
+    set(CMAKE_BUILD_TYPE "${DEFAULT_BUILD_TYPE}" CACHE STRING "Choose the type of build." FORCE)
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+endif()
 add_compile_definitions(
     # force usage of uncaught_exceptions() in the date library because the corresponding C++17 handling
     # does not work properly for unknown reasons
     HAS_UNCAUGHT_EXCEPTIONS
 )
-add_definitions(-DENABLE_LOG_DEBUG -DENABLE_LOG_DATA -DBOOST_ERROR_CODE_HEADER_ONLY -DBOOST_SYSTEM_NO_DEPRECATED)
+add_definitions(-DDOTS_ENABLE_LOG_DEBUG -DDOTS_ENABLE_LOG_DATA -DBOOST_ERROR_CODE_HEADER_ONLY -DBOOST_SYSTEM_NO_DEPRECATED)
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set(DOTS_TEMPLATE_PATH ${CMAKE_SOURCE_DIR}/model/template)
 option(Boost_USE_STATIC_LIBS "Use static Boost libraries" ON)
 option(BUILD_TZ_LIB "" ON)
 option(DOTS_BUILD_EXAMPLES "Build the examples" ON)
-option(BUILD_UNIT_TESTS "Build the unit tests" ON)
+option(DOTS_BUILD_UNIT_TESTS "Build the unit tests" ON)
 if (UNIX)
     option(USE_SYSTEM_TZ_DB "" ON)
 else()
@@ -66,7 +73,7 @@ if (DOTS_BUILD_EXAMPLES)
     add_subdirectory(bin/examples/object-trace)
     add_subdirectory(bin/examples/object-reader)
 endif()
-if (BUILD_UNIT_TESTS)
+if (DOTS_BUILD_UNIT_TESTS)
     add_subdirectory(tests)
 endif()
 

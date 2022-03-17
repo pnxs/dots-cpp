@@ -257,10 +257,8 @@ namespace dots::type
                     {
                         instance._applyProperties([&](auto&... properties)
                         {
-                            // note: redundant explicit capture of this pointer is necessary here to resolve a
-                            // compiling issue with GCC 8.3.
                             bool first = true;
-                            auto visit_property = [&, this](auto& property)
+                            auto visit_property = [&](auto& property)
                             {
                                 if (std::decay_t<decltype(property)>::IsPartOf(includedProperties))
                                 {

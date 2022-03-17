@@ -578,7 +578,7 @@ namespace dots
     template <typename UnsubscribeHandler>
     Subscription Transceiver::makeSubscription(UnsubscribeHandler&& unsubscribeHandler)
     {
-        return Subscription{ [this, this_ = std::weak_ptr<Transceiver*>{ m_this }, unsubscribeHandler{ std::forward<UnsubscribeHandler>(unsubscribeHandler) }]
+        return Subscription{ [this_ = std::weak_ptr<Transceiver*>{ m_this }, unsubscribeHandler{ std::forward<UnsubscribeHandler>(unsubscribeHandler) }]
         {
             if (this_.lock())
             {

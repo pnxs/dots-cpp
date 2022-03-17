@@ -290,20 +290,5 @@ namespace dots::type
         {
             return less(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
         }
-
-        bool lessEqual(const Typeless& lhs, const Typeless& rhs) const override
-        {
-            return lessEqual(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
-        }
-
-        bool greater(const Typeless& lhs, const Typeless& rhs) const override
-        {
-            return greater(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
-        }
-
-        bool greaterEqual(const Typeless& lhs, const Typeless& rhs) const override
-        {
-            return greaterEqual(reinterpret_cast<const T&>(lhs), reinterpret_cast<const T&>(rhs));
-        }
     };
 }

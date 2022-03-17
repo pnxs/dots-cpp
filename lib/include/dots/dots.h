@@ -337,7 +337,7 @@ namespace dots
      * });
      *
      * // subscribing to events of a DOTS struct type Foobar member function
-     * dots::subscribe<Foobar>{ (&SomeClass::handleFoobar, this });
+     * dots::subscribe<Foobar>({ &SomeClass::handleFoobar, this });
      * @endcode
      *
      * @tparam T The type to subscribe to.
@@ -462,7 +462,7 @@ namespace dots
      * manually.
      */
     template<typename T, typename EventHandler, typename... Args, std::enable_if_t<sizeof...(Args) >= 1 && std::is_base_of_v<type::Struct, T>, int> = 0>
-    [[deprecated("superseded by Transceiver::event_handler_t<T> overload")]]
+    [[deprecated("superseded by dots::subscribe(Transceiver::event_handler_t<T>)")]]
     Subscription subscribe(EventHandler&& handler, Args&&... args)
     {
         return subscribe<T>(Transceiver::event_handler_t<T>{ std::forward<EventHandler>(handler), std::forward<Args>(args)... });
@@ -521,7 +521,7 @@ namespace dots
      * manually.
      */
     template <typename... TDescriptors, typename TypeHandler, typename... Args, std::enable_if_t<sizeof...(Args) >= 1 && sizeof...(TDescriptors) >= 1 && std::conjunction_v<std::is_base_of<type::Descriptor<>, TDescriptors>...>, int> = 0>
-    [[deprecated("superseded by new_type_handler_t<T> overload")]]
+    [[deprecated("superseded by dots::subscribe(Transceiver::new_type_handler_t<TDescriptor>)")]]
     Subscription subscribe(TypeHandler&& handler, Args&&... args)
     {
         return global_transceiver()->subscribe<TDescriptors...>(std::forward<TypeHandler>(handler), std::forward<Args>(args)...);

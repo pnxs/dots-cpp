@@ -94,7 +94,7 @@ namespace dots::type::posix
         {
         }
 
-        constexpr Timeval(Duration duration) :
+        Timeval(Duration duration) :
             Timeval(timeval{
                 static_cast<time_t>(duration.toSeconds()),
                 static_cast<suseconds_t>(::nearbyint((duration.toFractionalSeconds() - duration.toSeconds()) * MicrosecondsPerSecond))
@@ -122,12 +122,12 @@ namespace dots::type::posix
         timeval m_timeval;
     };
 
-    constexpr Timeval operator + (const Timeval& lhs, const Timeval& rhs)
+    Timeval operator + (const Timeval& lhs, const Timeval& rhs)
     {
         return Timeval{ Duration{ lhs } + Duration{ rhs } };
     }
 
-    constexpr Timeval operator - (const Timeval& lhs, const Timeval& rhs)
+    Timeval operator - (const Timeval& lhs, const Timeval& rhs)
     {
         return Timeval{ Duration{ lhs } - Duration{ rhs } };
     }

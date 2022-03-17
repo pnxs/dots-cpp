@@ -1,4 +1,5 @@
 #pragma once
+#include <stack>
 #include <rapidjson/document.h>
 
 namespace dots::serialization

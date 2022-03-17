@@ -88,7 +88,7 @@ namespace dots::testing::details
         template <typename Action>
         void willOnce(Action&& action) const
         {
-            int cardinality = std::apply([this](auto&... expectations)
+            int cardinality = std::apply([](auto&... expectations)
             {
                 auto get_cardinality = [](auto& expectation)
                 {

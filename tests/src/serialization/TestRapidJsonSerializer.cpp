@@ -225,7 +225,7 @@ protected:
     using data_t = std::string;
     using buffer_t = rapidjson::StringBuffer;
     using writer_t = rapidjson::Writer<buffer_t>;
-    using format_t = dots::serialization::RapidJsonSerializerFormat<writer_t>;
+    using format_t = dots::serialization::DefaultRapidJsonSerializerFormat;
     using serializer_t = dots::serialization::RapidJsonSerializer<format_t>;
 };
 

@@ -369,7 +369,7 @@ namespace dots::testing
 
             if (emplacedSubscriptionHandler)
             {
-                m_subscriptions.emplace_back(transceiver.subscribe(descriptor, [this, mockHandler = &itSubscriptionHandler->second](const Event<>& event)
+                m_subscriptions.emplace_back(transceiver.subscribe(descriptor, [mockHandler = &itSubscriptionHandler->second](const Event<>& event)
                 {
                     try
                     {
@@ -437,6 +437,8 @@ namespace dots::testing
 #define IMPL_EXPECT_DOTS_PUBLISH_AT_TRANSCEIVER                                                                                                                          \
 [this](dots::Transceiver& transceiver, auto instance, std::optional<dots::property_set_t> includedProperties, bool remove, bool isFromMyself) -> auto&                   \
 {                                                                                                                                                                        \
+    /* formally use 'this' pointer to suppress false 'unused capture' warning for clang-10 */                                                                            \
+    (void)this;                                                                                                                                                          \
     return IMPL_EXPECT_DOTS_PUBLISH_AT_SUBSCRIBER(EventTestBase::getMockSubscriptionHandler(transceiver, instance), instance, includedProperties, remove, isFromMyself); \
 }
 
