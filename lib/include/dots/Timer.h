@@ -20,7 +20,7 @@ namespace dots
      * Note that Timer objects can safely be destroyed prematurely, in
      * which case the timer will be cancelled without invoking the handler.
      */
-    struct Timer
+    struct [[nodiscard]] Timer
     {
         using id_t = uint32_t;
         using handler_t = tools::Handler<void()>;
@@ -57,6 +57,25 @@ namespace dots
 
         Timer& operator = (const Timer& rhs) = delete;
         Timer& operator = (Timer&& rhs) = delete;
+
+        /*!
+         * @brief Release management of the timer.
+         *
+         * Calling this function will decouple the timer from the Timer
+         * object's lifetime, without invoking the timeout handler. As a
+         * result, this Timer object will be empty when the function returns.
+         *
+         * Note that this will have no effect if the Timer object is already
+         * empty when the function is called.
+         *
+         * @warning Calling this function will make it impossible to manually
+         * cancel the timer.
+         *
+         * @remark This function is intended to cover simple use cases where
+         * the durations of timers are bound to an application's lifetime and
+         * management is not required.
+         */
+        void discard();
 
     private:
 

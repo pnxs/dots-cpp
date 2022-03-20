@@ -13,6 +13,7 @@ namespace dots
         type::Duration interval;
         type::SteadyTimePoint next;
         bool periodic;
+        bool discarded;
     };
 
     Timer::Timer(asio::io_context& ioContext, type::Duration interval, handler_t handler, bool periodic) :
@@ -21,7 +22,8 @@ namespace dots
             std::move(handler),
             interval,
             type::SteadyTimePoint::Now(),
-            periodic
+            periodic,
+            false
         } ) }
     {
         if (m_timerData->periodic)
@@ -38,11 +40,23 @@ namespace dots
     {
         try
         {
-            m_timerData->timer.cancel();
+            if (m_timerData != nullptr)
+            {
+                m_timerData->timer.cancel();
+            }
         }
         catch (...)
         {
             /* do nothing */
+        }
+    }
+
+    void Timer::discard()
+    {
+        if (m_timerData != nullptr)
+        {
+            m_timerData->discarded = true;
+            m_timerData = nullptr;
         }
     }
 
@@ -64,7 +78,7 @@ namespace dots
     {
         timerData->timer.async_wait([timerData](boost::system::error_code error)
         {
-            if (timerData.use_count() == 1 || error == asio::error::operation_aborted)
+            if ((timerData.use_count() == 1 && !timerData->discarded) || error == asio::error::operation_aborted)
             {
                 return;
             }
