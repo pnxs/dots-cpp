@@ -9,18 +9,16 @@ namespace dots
     struct Timer::timer_data
     {
         timer_t timer;
-        callback_t cb;
-        id_t id;
+        handler_t handler;
         type::Duration interval;
         type::SteadyTimePoint next;
         bool periodic;
     };
 
-    Timer::Timer(asio::io_context& ioContext, id_t id, type::Duration interval, callback_t cb, bool periodic) :
+    Timer::Timer(asio::io_context& ioContext, type::Duration interval, handler_t handler, bool periodic) :
         m_timerData{ std::make_shared<timer_data>(timer_data{
             timer_t{ ioContext },
-            std::move(cb),
-            id,
+            std::move(handler),
             interval,
             type::SteadyTimePoint::Now(),
             periodic
@@ -48,11 +46,6 @@ namespace dots
         }
     }
 
-    Timer::id_t Timer::id() const
-    {
-        return m_timerData->id;
-    }
-
     void Timer::startRelative(type::Duration duration)
     {
         m_timerData->timer.expires_after(std::chrono::duration_cast<duration_t>(duration));
@@ -74,15 +67,11 @@ namespace dots
                 return;
             }
 
-            m_timerData->cb();
+            m_timerData->handler();
 
             if (m_timerData->periodic)
             {
                 startAbsolute(m_timerData->next += m_timerData->interval);
-            }
-            else
-            {
-                asio::use_service<io::TimerService>(m_timerData->timer.get_executor().context()).removeTimer(m_timerData->id);
             }
         });
     }
