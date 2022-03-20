@@ -71,23 +71,16 @@ namespace dots
          *
          * @return id_t The id of the timer.
          */
-        id_t id() const { return m_id; }
+        id_t id() const;
 
     private:
 
-        using timer_t = asio::steady_timer;
-        using duration_t = timer_t::clock_type::duration;
+        struct timer_data;
 
         void startRelative(type::Duration duration);
         void startAbsolute(type::SteadyTimePoint timepoint);
         void asyncWait();
 
-        std::shared_ptr<Timer*> m_this;
-        timer_t m_timer;
-        callback_t m_cb;
-        id_t m_id;
-        type::Duration m_interval;
-        type::SteadyTimePoint m_next;
-        bool m_periodic;
+        std::shared_ptr<timer_data> m_timerData;
     };
 }

@@ -1,25 +1,38 @@
 #include <dots/Timer.h>
-#include <dots/tools/fun.h>
 #include <dots/io/services/TimerService.h>
 
 namespace dots
 {
-    Timer::Timer(asio::io_context& ioContext, id_t id, type::Duration interval, callback_t cb, bool periodic) :
-        m_this{ std::make_shared<Timer*>(this) },
-        m_timer(ioContext),
-        m_cb(std::move(cb)),
-        m_id(id),
-        m_interval(interval),
-        m_next(type::SteadyTimePoint::Now()),
-        m_periodic(periodic)
+    using timer_t = asio::steady_timer;
+    using duration_t = timer_t::clock_type::duration;
+
+    struct Timer::timer_data
     {
-        if (m_periodic)
+        timer_t timer;
+        callback_t cb;
+        id_t id;
+        type::Duration interval;
+        type::SteadyTimePoint next;
+        bool periodic;
+    };
+
+    Timer::Timer(asio::io_context& ioContext, id_t id, type::Duration interval, callback_t cb, bool periodic) :
+        m_timerData{ std::make_shared<timer_data>(timer_data{
+            timer_t{ ioContext },
+            std::move(cb),
+            id,
+            interval,
+            type::SteadyTimePoint::Now(),
+            periodic
+        } ) }
+    {
+        if (m_timerData->periodic)
         {
-            startAbsolute(m_next += m_interval);
+            startAbsolute(m_timerData->next += m_timerData->interval);
         }
         else
         {
-            startRelative(m_interval);
+            startRelative(m_timerData->interval);
         }
     }
 
@@ -27,7 +40,7 @@ namespace dots
     {
         try
         {
-            m_timer.cancel();
+            m_timerData->timer.cancel();
         }
         catch (...)
         {
@@ -35,36 +48,41 @@ namespace dots
         }
     }
 
+    Timer::id_t Timer::id() const
+    {
+        return m_timerData->id;
+    }
+
     void Timer::startRelative(type::Duration duration)
     {
-        m_timer.expires_after(std::chrono::duration_cast<duration_t>(duration));
+        m_timerData->timer.expires_after(std::chrono::duration_cast<duration_t>(duration));
         asyncWait();
     }
 
     void Timer::startAbsolute(type::SteadyTimePoint timepoint)
     {
-        m_timer.expires_at(std::chrono::time_point_cast<duration_t>(timepoint));
+        m_timerData->timer.expires_at(std::chrono::time_point_cast<duration_t>(timepoint));
         asyncWait();
     }
 
     void Timer::asyncWait()
     {
-        m_timer.async_wait([this, this_{ std::weak_ptr<Timer*>(m_this) }](boost::system::error_code error)
+        m_timerData->timer.async_wait([this, timerData{ m_timerData }](boost::system::error_code error)
         {
-            if (this_.expired() || error == asio::error::operation_aborted)
+            if (timerData.use_count() == 1 || error == asio::error::operation_aborted)
             {
                 return;
             }
 
-            m_cb();
+            m_timerData->cb();
 
-            if (m_periodic)
+            if (m_timerData->periodic)
             {
-                startAbsolute(m_next += m_interval);
+                startAbsolute(m_timerData->next += m_timerData->interval);
             }
             else
             {
-                asio::use_service<io::TimerService>(m_timer.get_executor().context()).removeTimer(m_id);
+                asio::use_service<io::TimerService>(m_timerData->timer.get_executor().context()).removeTimer(m_timerData->id);
             }
         });
     }
