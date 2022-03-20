@@ -62,9 +62,9 @@ namespace dots
 
         struct timer_data;
 
-        void startRelative(type::Duration duration);
-        void startAbsolute(type::SteadyTimePoint timepoint);
-        void asyncWait();
+        static void StartRelative(const std::shared_ptr<timer_data>& timerData);
+        static void StartAbsolute(const std::shared_ptr<timer_data>& timerData);
+        static void AsyncWait(const std::shared_ptr<timer_data>& timerData);
 
         std::shared_ptr<timer_data> m_timerData;
     };

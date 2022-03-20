@@ -26,11 +26,11 @@ namespace dots
     {
         if (m_timerData->periodic)
         {
-            startAbsolute(m_timerData->next += m_timerData->interval);
+            StartAbsolute(m_timerData);
         }
         else
         {
-            startRelative(m_timerData->interval);
+            StartRelative(m_timerData);
         }
     }
 
@@ -46,32 +46,34 @@ namespace dots
         }
     }
 
-    void Timer::startRelative(type::Duration duration)
+    void Timer::StartRelative(const std::shared_ptr<timer_data>& timerData)
     {
-        m_timerData->timer.expires_after(std::chrono::duration_cast<duration_t>(duration));
-        asyncWait();
+        type::Duration duration = timerData->interval;
+        timerData->timer.expires_after(std::chrono::duration_cast<duration_t>(duration));
+        AsyncWait(timerData);
     }
 
-    void Timer::startAbsolute(type::SteadyTimePoint timepoint)
+    void Timer::StartAbsolute(const std::shared_ptr<timer_data>& timerData)
     {
-        m_timerData->timer.expires_at(std::chrono::time_point_cast<duration_t>(timepoint));
-        asyncWait();
+        type::SteadyTimePoint timepoint = timerData->next += timerData->interval;
+        timerData->timer.expires_at(std::chrono::time_point_cast<duration_t>(timepoint));
+        AsyncWait(timerData);
     }
 
-    void Timer::asyncWait()
+    void Timer::AsyncWait(const std::shared_ptr<timer_data>& timerData)
     {
-        m_timerData->timer.async_wait([this, timerData{ m_timerData }](boost::system::error_code error)
+        timerData->timer.async_wait([timerData](boost::system::error_code error)
         {
             if (timerData.use_count() == 1 || error == asio::error::operation_aborted)
             {
                 return;
             }
 
-            m_timerData->handler();
+            timerData->handler();
 
-            if (m_timerData->periodic)
+            if (timerData->periodic)
             {
-                startAbsolute(m_timerData->next += m_timerData->interval);
+                StartAbsolute(timerData);
             }
         });
     }
