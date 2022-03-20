@@ -2,6 +2,7 @@
 #include <optional>
 #include <dots/dots.h>
 #include <dots/io/Io.h>
+#define DOTS_ACKNOWLEDGE_DEPRECATION_OF_TimerService
 #include <dots/io/services/TimerService.h>
 #if defined(BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR)
 #include <dots/io/services/FdHandlerService.h>
@@ -17,6 +18,11 @@ namespace dots
     void remove_timer(Timer::id_t id)
     {
         io::global_service<io::TimerService>().removeTimer(id);
+    }
+
+    Timer create_timer(type::Duration timeout, tools::Handler<void()> handler, bool periodic)
+    {
+        return Timer{ io::global_io_context(), timeout, std::move(handler), periodic };
     }
 
     #if defined(BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR)

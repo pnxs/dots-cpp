@@ -1,3 +1,4 @@
+#define DOTS_ACKNOWLEDGE_DEPRECATION_OF_TimerService
 #include <dots/io/services/TimerService.h>
 
 namespace dots::io

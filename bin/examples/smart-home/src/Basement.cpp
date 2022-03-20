@@ -10,11 +10,6 @@ namespace examples
         /* do nothing */
     }
 
-    Basement::~Basement()
-    {
-        tryRemoveTimer();
-    }
-
     void Basement::handleSwitch(const dots::Event<Switch>& event)
     {
         if (const Switch& switch_ = event(); switch_.id == MotionSwitch)
@@ -33,9 +28,7 @@ namespace examples
             }
             else if (existingBasementLight != nullptr && existingBasementLight->brightness != 0u)
             {
-                tryRemoveTimer();
-
-                m_timerId = dots::add_timer(m_lightTimeout, []
+                m_timer = dots::create_timer(m_lightTimeout, []
                 {
                     dots::publish(LightControl{
                         LightControl::id_i{ Light },
@@ -43,14 +36,6 @@ namespace examples
                     });
                 });
             }
-        }
-    }
-
-    void Basement::tryRemoveTimer()
-    {
-        if (m_timerId != std::nullopt)
-        {
-            dots::remove_timer(*m_timerId);
         }
     }
 }

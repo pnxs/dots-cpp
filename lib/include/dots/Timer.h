@@ -1,5 +1,4 @@
 #pragma once
-
 #include <dots/tools/Handler.h>
 #include <dots/type/Chrono.h>
 #include <dots/asio.h>
@@ -22,7 +21,9 @@ namespace dots
      */
     struct [[nodiscard]] Timer
     {
+        // DEPRECATED: only required for backwards compatibility
         using id_t = uint32_t;
+
         using handler_t = tools::Handler<void()>;
 
         /*!
@@ -44,7 +45,7 @@ namespace dots
          */
         Timer(asio::io_context& ioContext, type::Duration interval, handler_t handler, bool periodic = false);
         Timer(const Timer& other) = delete;
-        Timer(Timer&& other) = delete;
+        Timer(Timer&& other) = default;
 
         /*!
          * @brief Destroy the Timer object.
@@ -56,7 +57,7 @@ namespace dots
         ~Timer();
 
         Timer& operator = (const Timer& rhs) = delete;
-        Timer& operator = (Timer&& rhs) = delete;
+        Timer& operator = (Timer&& rhs) = default;
 
         /*!
          * @brief Release management of the timer.

@@ -6,7 +6,11 @@
 
 namespace dots::io
 {
-    struct TimerService : asio::execution_context::service
+    struct
+    #if (!defined DOTS_ACKNOWLEDGE_DEPRECATION_OF_TimerService)
+    [[deprecated("superseded by managed timers (see dots::Timer)")]]
+    #endif
+    TimerService : asio::execution_context::service
     {
         using key_type = TimerService;
         using callback_t = tools::Handler<void()>;

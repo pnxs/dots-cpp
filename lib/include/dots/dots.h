@@ -67,6 +67,7 @@ namespace dots
      * can be used to cancel the timer prematurely (see
      * dots::remove_timer()).
      */
+    [[deprecated("superseded by managed timers (see dots::create_timer())")]]
     Timer::id_t add_timer(type::Duration timeout, tools::Handler<void()> handler, bool periodic = false);
 
     /*!
@@ -81,7 +82,43 @@ namespace dots
      *
      * @param id The id of the timer to remove.
      */
+    [[deprecated("superseded by managed timers (see dots::create_timer())")]]
     void remove_timer(Timer::id_t id);
+
+    /*!
+     * @brief Create a global timer.
+     *
+     * This will create a dots::Timer associated with the global IO context
+     * (see dots::io::global_io_context()).
+     *
+     * The timer will be processed asynchronously when the global IO
+     * context is running and invoke the given handler after the given
+     * duration has passed.
+     *
+     * It is recommended to use the (DOTS) chrono literals to specify the
+     * duration:
+     *
+     * @code{.cpp} using namespace dots::literals;
+     *
+     * dots::Timer timer = dots::create_timer(500ms, []
+     * {
+     *     // ...
+     * });
+     * @endcode
+     *
+     * @param timeout The duration of the timer (e.g. 500ms).
+     *
+     * @param handler The handler to invoke asynchronously after the timer
+     * runs out.
+     *
+     * @param periodic Specifies whether the timer will be restarted after
+     * it ran out and @p handler was invoked.
+     *
+     * @return Timer The Timer object that manages the state of the timer.
+     * The timer will stay active until the object is destroyed or the
+     * timer runs out.
+     */
+    Timer create_timer(type::Duration timeout, tools::Handler<void()> handler, bool periodic = false);
 
     #if defined(BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR)
 

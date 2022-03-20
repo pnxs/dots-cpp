@@ -13,7 +13,7 @@ namespace examples
         Basement(dots::duration_t lightTimeout);
         Basement(const Basement& other) = delete;
         Basement(Basement&& other) = default;
-        ~Basement();
+        ~Basement() = default;
 
         Basement& operator = (const Basement& rhs) = delete;
         Basement& operator = (Basement&& rhs) = default;
@@ -21,9 +21,8 @@ namespace examples
     private:
 
         void handleSwitch(const dots::Event<Switch>& event);
-        void tryRemoveTimer();
 
-        std::optional<dots::Timer::id_t> m_timerId;
+        std::optional<dots::Timer> m_timer;
         dots::duration_t m_lightTimeout;
         dots::Subscription m_switchSubscription;
     };
