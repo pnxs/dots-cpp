@@ -120,65 +120,6 @@ namespace dots
      */
     Timer create_timer(type::Duration timeout, tools::Handler<void()> handler, bool periodic = false);
 
-    #if defined(BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR)
-
-    /*!
-     * @brief Add a file descriptor handler to the global file handler
-     * service.
-     *
-     * This will create and add a dots::io::FdHandler to the
-     * dots::io::FdHandlerService associated with the global IO context
-     * (see dots::io::global_io_context()).
-     *
-     * The file associated with the given file descriptor will be observed
-     * asynchronously when the global IO context is running and the given
-     * handler invoked whenever the state of the file changes.
-     *
-     * File descriptor handlers can for example be used to asynchronously
-     * wait for a file to change:
-     *
-     * @code{.cpp}
-     * int fd = ::open("/tmp/foobar", O_RDONLY);
-     * dots::add_fd_handler(fd, [&]
-     * {
-     *     int numBytes = ::read(fd, buffer, bufferSize);
-     *     // ...
-     * });
-     * @endcode
-     *
-     * Note that this function may not be available if the platform does
-     * not support POSIX stream descriptors. Support is usually present on
-     * UNIX-based systems but not on Windows.
-     *
-     * @param fileDescriptor The descriptor associated with the file to
-     * observe asynchronously.
-     *
-     * @param handler The handler to invoke asynchronously every time the
-     * file state changes.
-     *
-     * @exception std::logic_error Thrown if there already is a handler
-     * registered for the given file descriptor.
-     */
-    void add_fd_handler(int fileDescriptor, tools::Handler<void()> handler);
-
-    /*!
-     * @brief Remove an active file descriptor handler from the global file
-     * handler service.
-     *
-     * This will attempt to remove an active file descriptor handler from
-     * the dots::io::FdHandlerService associated with the global IO context
-     * (see dots::io::global_io_context()).
-     *
-     * Note that calling this function has no effect if no active handler
-     * for the given file descriptor exists.
-     *
-     * @param fileDescriptor The file descriptor associated with the active
-     * file handler to remove.
-     */
-    void remove_fd_handler(int fileDescriptor);
-
-    #endif
-
     #ifndef DOTS_NO_GLOBAL_TRANSCEIVER
 
     /*!

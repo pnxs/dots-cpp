@@ -4,9 +4,6 @@
 #include <dots/io/Io.h>
 #define DOTS_ACKNOWLEDGE_DEPRECATION_OF_TimerService
 #include <dots/io/services/TimerService.h>
-#if defined(BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR)
-#include <dots/io/services/FdHandlerService.h>
-#endif
 
 namespace dots
 {
@@ -24,18 +21,6 @@ namespace dots
     {
         return Timer{ io::global_io_context(), timeout, std::move(handler), periodic };
     }
-
-    #if defined(BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR)
-    void add_fd_handler(int fileDescriptor, tools::Handler<void()> handler)
-    {
-        io::global_service<io::posix::FdHandlerService>().addInEventHandler(fileDescriptor, std::move(handler));
-    }
-
-    void remove_fd_handler(int fileDescriptor)
-    {
-        io::global_service<io::posix::FdHandlerService>().removeInEventHandler(fileDescriptor);
-    }
-    #endif
 
     std::optional<GuestTransceiver>& global_transceiver()
     {
