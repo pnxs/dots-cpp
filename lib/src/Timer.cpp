@@ -1,5 +1,4 @@
 #include <dots/Timer.h>
-#include <dots/io/services/TimerService.h>
 
 namespace dots
 {

@@ -2,19 +2,62 @@
 #include <optional>
 #include <dots/dots.h>
 #include <dots/io/Io.h>
-#define DOTS_ACKNOWLEDGE_DEPRECATION_OF_TimerService
-#include <dots/io/services/TimerService.h>
 
 namespace dots
 {
+    namespace details
+    {
+        struct TimerService : asio::execution_context::service
+        {
+            using key_type = TimerService;
+            using callback_t = tools::Handler<void()>;
+
+            explicit TimerService(asio::execution_context& executionContext) :
+                asio::execution_context::service(executionContext),
+                m_lastTimerId(0)
+            {
+                /* do nothing */
+            }
+            TimerService(const TimerService& other) = delete;
+            TimerService(TimerService&& other) noexcept(false) = delete;
+            ~TimerService() = default;
+
+            TimerService& operator = (const TimerService& rhs) = delete;
+            TimerService& operator = (TimerService&& rhs) noexcept(false) = delete;
+
+            id_t addTimer(type::Duration timeout, callback_t cb, bool periodic)
+            {
+                Timer::id_t id = ++m_lastTimerId;
+                m_timers.try_emplace(id, static_cast<asio::io_context&>(context()), timeout, std::move(cb), periodic);
+
+                return id;
+            }
+
+            void removeTimer(unsigned id)
+            {
+                m_timers.erase(id);
+            }
+
+        private:
+
+            void shutdown() noexcept override
+            {
+                m_timers.clear();
+            }
+
+            Timer::id_t m_lastTimerId;
+            std::map<Timer::id_t, Timer> m_timers;
+        };
+    }
+
     Timer::id_t add_timer(type::Duration timeout, tools::Handler<void()> handler, bool periodic/* = false*/)
     {
-        return io::global_service<io::TimerService>().addTimer(timeout, std::move(handler), periodic);
+        return io::global_service<details::TimerService>().addTimer(timeout, std::move(handler), periodic);
     }
 
     void remove_timer(Timer::id_t id)
     {
-        io::global_service<io::TimerService>().removeTimer(id);
+        io::global_service<details::TimerService>().removeTimer(id);
     }
 
     Timer create_timer(type::Duration timeout, tools::Handler<void()> handler, bool periodic)

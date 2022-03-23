@@ -73,8 +73,6 @@ target_sources(${TARGET_NAME}
         src/io/channels/LocalChannel.cpp
         src/io/channels/LocalListener.cpp
 
-
-        src/io/services/TimerService.cpp
         src/io/Transmission.cpp
 
         src/io/DescriptorConverter.cpp
