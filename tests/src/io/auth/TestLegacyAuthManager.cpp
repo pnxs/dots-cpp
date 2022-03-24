@@ -1,8 +1,9 @@
 #include <optional>
-#include <dots/testing/gtest/gtest.h>
 #include <boost/algorithm/hex.hpp>
 #include <dots/HostTransceiver.h>
+#include <dots/testing/gtest/gtest.h>
 #include <dots/type/FundamentalTypes.h>
+#include <dots/io/Io.h>
 #include <dots/io/auth/LegacyAuthManager.h>
 #include <dots/io/auth/Digest.h>
 

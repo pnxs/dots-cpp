@@ -1,7 +1,8 @@
 #pragma once
+#include <memory>
 #include <dots/tools/Handler.h>
 #include <dots/type/Chrono.h>
-#include <dots/asio.h>
+#include <dots/asio_forward.h>
 
 namespace dots
 {

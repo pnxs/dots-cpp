@@ -1,5 +1,6 @@
 #undef DOTS_NO_GLOBAL_TRANSCEIVER
 #include <dots/Application.h>
+#include <dots/io/Io.h>
 #include <boost/program_options.hpp>
 #include <dots/tools/logging.h>
 #include <DotsClient.dots.h>
@@ -35,7 +36,7 @@ namespace dots
 
         if (handleExitSignals)
         {
-            m_signals.emplace(ioContext(), SIGINT, SIGTERM);
+            m_signals = std::make_unique<asio::signal_set>(ioContext(), SIGINT, SIGTERM);
             m_signals->async_wait([this](boost::system::error_code/* error*/, int/* signalNumber*/){ exit(); });
         }
 
@@ -76,7 +77,7 @@ namespace dots
 
         if (handleExitSignals)
         {
-            m_signals.emplace(ioContext(), SIGINT, SIGTERM);
+            m_signals = std::make_unique<asio::signal_set>(ioContext(), SIGINT, SIGTERM);
             m_signals->async_wait([this](boost::system::error_code/* error*/, int/* signalNumber*/){ exit(); });
         }
     }

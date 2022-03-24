@@ -2,7 +2,7 @@
 #include <string_view>
 #include <optional>
 #include <functional>
-#include <dots/io/Io.h>
+#include <dots/asio_forward.h>
 #include <dots/Connection.h>
 #include <dots/Dispatcher.h>
 #include <dots/Subscription.h>

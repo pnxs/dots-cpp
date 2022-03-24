@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include <dots/asio.h>
+#include <dots/asio_forward.h>
 #include <dots/tools/Uri.h>
 
 namespace dots::io

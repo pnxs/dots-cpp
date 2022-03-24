@@ -1,4 +1,5 @@
 #include <dots/Timer.h>
+#include <dots/asio.h>
 
 namespace dots
 {

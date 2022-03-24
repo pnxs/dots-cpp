@@ -1,5 +1,4 @@
 #pragma once
-#include <chrono>
 #include <optional>
 #include <dots/dots.h>
 #include <dots/GuestTransceiver.h>
@@ -258,7 +257,7 @@ namespace dots
 
         std::optional<io::Endpoint> m_openEndpoint;
         std::vector<io::Endpoint> m_listenEndpoints;
-        std::optional<asio::signal_set> m_signals;
+        std::unique_ptr<asio::signal_set> m_signals;
         int m_exitCode;
         Transceiver* m_transceiver;
         std::optional<GuestTransceiver> m_guestTransceiverStorage;

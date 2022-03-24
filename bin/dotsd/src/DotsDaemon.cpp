@@ -5,6 +5,7 @@
 #endif
 #include <dots/dots.h>
 #include <dots/tools/logging.h>
+#include <dots/io/Io.h>
 #include <dots/io/auth/LegacyAuthManager.h>
 #include <DotsClient.dots.h>
 #include <DotsContinuousRecorderStatus.dots.h>
