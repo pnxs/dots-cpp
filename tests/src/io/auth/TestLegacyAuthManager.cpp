@@ -11,6 +11,7 @@ struct TestLegacyAuthManager : ::testing::Test
 protected:
 
     TestLegacyAuthManager() :
+        m_transceiver{ "dots-test-host", dots::io::global_io_context() },
         m_sut{ m_transceiver }
     {
         /* do nothing */

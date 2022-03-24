@@ -50,7 +50,7 @@ namespace dots
          * occurs.
          */
         GuestTransceiver(std::string selfName,
-                         asio::io_context& ioContext = io::global_io_context(),
+                         asio::io_context& ioContext,
                          type::Registry::StaticTypePolicy staticTypePolicy = type::Registry::StaticTypePolicy::All,
                          std::optional<transition_handler_t> transitionHandler = std::nullopt
         );
