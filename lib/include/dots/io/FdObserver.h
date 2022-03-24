@@ -1,4 +1,5 @@
 #pragma once
+#include <exception>
 #include <dots/asio.h>
 #if defined(BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR)
 #include <dots/tools/Handler.h>
