@@ -25,7 +25,7 @@ namespace dots
             TimerService& operator = (const TimerService& rhs) = delete;
             TimerService& operator = (TimerService&& rhs) noexcept(false) = delete;
 
-            id_t addTimer(type::Duration timeout, callback_t cb, bool periodic)
+            Timer::id_t addTimer(type::Duration timeout, callback_t cb, bool periodic)
             {
                 Timer::id_t id = ++m_lastTimerId;
                 m_timers.try_emplace(id, static_cast<asio::io_context&>(context()), timeout, std::move(cb), periodic);
