@@ -246,6 +246,8 @@ namespace dots
         virtual void exit(int exitCode = EXIT_SUCCESS);
 
     private:
+
+        struct signal_set_storage;
         
         const asio::io_context& ioContext() const;
         asio::io_context& ioContext();
@@ -257,7 +259,7 @@ namespace dots
 
         std::optional<io::Endpoint> m_openEndpoint;
         std::vector<io::Endpoint> m_listenEndpoints;
-        std::unique_ptr<asio::signal_set> m_signals;
+        std::unique_ptr<signal_set_storage> m_signals;
         int m_exitCode;
         Transceiver* m_transceiver;
         std::optional<GuestTransceiver> m_guestTransceiverStorage;

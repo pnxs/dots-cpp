@@ -6,11 +6,6 @@ namespace boost::asio
     class execution_context;
     class executor;
 
-    template <typename Executor>
-    class basic_signal_set;
-
-    typedef basic_signal_set<executor> signal_set;
-
     namespace ip
     {
         template <typename InternetProtocol>

@@ -7,6 +7,12 @@
 
 namespace dots
 {
+    struct Application::signal_set_storage
+    {
+        signal_set_storage(asio::io_context& ioContext) : signalSet{ ioContext, SIGINT, SIGTERM } {}
+        asio::signal_set signalSet;
+    };
+
     Application::Application(const std::string& name, int argc, char* argv[], std::optional<GuestTransceiver> guestTransceiver/* = std::nullopt*/, bool handleExitSignals/* = true*/) :
         m_exitCode(EXIT_SUCCESS),
         m_transceiver(nullptr),
@@ -36,8 +42,8 @@ namespace dots
 
         if (handleExitSignals)
         {
-            m_signals = std::make_unique<asio::signal_set>(ioContext(), SIGINT, SIGTERM);
-            m_signals->async_wait([this](boost::system::error_code/* error*/, int/* signalNumber*/){ exit(); });
+            m_signals = std::make_unique<signal_set_storage>(ioContext());
+            m_signals->signalSet.async_wait([this](boost::system::error_code/* error*/, int/* signalNumber*/){ exit(); });
         }
 
         for (;;)
@@ -77,8 +83,8 @@ namespace dots
 
         if (handleExitSignals)
         {
-            m_signals = std::make_unique<asio::signal_set>(ioContext(), SIGINT, SIGTERM);
-            m_signals->async_wait([this](boost::system::error_code/* error*/, int/* signalNumber*/){ exit(); });
+            m_signals = std::make_unique<signal_set_storage>(ioContext());
+            m_signals->signalSet.async_wait([this](boost::system::error_code/* error*/, int/* signalNumber*/){ exit(); });
         }
     }
 
