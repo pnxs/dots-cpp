@@ -1,3 +1,5 @@
+#include <dots/asio.h>
+#if defined(BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR)
 #include <dots/io/FdObserver.h>
 
 namespace dots::io::posix
@@ -83,3 +85,4 @@ namespace dots::io::posix
         });
     }
 }
+#endif
