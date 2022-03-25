@@ -5,6 +5,7 @@
 #include <dots/testing/gtest/gtest.h>
 #include <dots/dots.h>
 #include <dots/HostTransceiver.h>
+#include <dots/io/Io.h>
 #include <dots/io/channels/LocalListener.h>
 #include <dots/testing/gtest/expectations/CallExpectation.h>
 #include <dots/testing/gtest/expectations/PublishExpectation.h>

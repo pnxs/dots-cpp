@@ -24,5 +24,7 @@ namespace dots
         void updateServerStatus();
 
         DotsDaemonStatus m_daemonStatus;
+        Timer m_updateServerStatusTimer;
+        Timer m_cleanUpClientsTimer;
     };
 }

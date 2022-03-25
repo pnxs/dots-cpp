@@ -2,34 +2,68 @@
 #include <optional>
 #include <dots/dots.h>
 #include <dots/io/Io.h>
-#include <dots/io/services/TimerService.h>
-#if defined(BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR)
-#include <dots/io/services/FdHandlerService.h>
-#endif
 
 namespace dots
 {
+    namespace details
+    {
+        struct TimerService : asio::execution_context::service
+        {
+            using key_type = TimerService;
+            using callback_t = tools::Handler<void()>;
+
+            explicit TimerService(asio::execution_context& executionContext) :
+                asio::execution_context::service(executionContext),
+                m_lastTimerId(0)
+            {
+                /* do nothing */
+            }
+            TimerService(const TimerService& other) = delete;
+            TimerService(TimerService&& other) noexcept(false) = delete;
+            ~TimerService() = default;
+
+            TimerService& operator = (const TimerService& rhs) = delete;
+            TimerService& operator = (TimerService&& rhs) noexcept(false) = delete;
+
+            Timer::id_t addTimer(type::Duration timeout, callback_t cb, bool periodic)
+            {
+                Timer::id_t id = ++m_lastTimerId;
+                m_timers.try_emplace(id, static_cast<asio::io_context&>(context()), timeout, std::move(cb), periodic);
+
+                return id;
+            }
+
+            void removeTimer(unsigned id)
+            {
+                m_timers.erase(id);
+            }
+
+        private:
+
+            void shutdown() noexcept override
+            {
+                m_timers.clear();
+            }
+
+            Timer::id_t m_lastTimerId;
+            std::map<Timer::id_t, Timer> m_timers;
+        };
+    }
+
     Timer::id_t add_timer(type::Duration timeout, tools::Handler<void()> handler, bool periodic/* = false*/)
     {
-        return io::global_service<io::TimerService>().addTimer(timeout, std::move(handler), periodic);
+        return io::global_service<details::TimerService>().addTimer(timeout, std::move(handler), periodic);
     }
 
     void remove_timer(Timer::id_t id)
     {
-        io::global_service<io::TimerService>().removeTimer(id);
+        io::global_service<details::TimerService>().removeTimer(id);
     }
 
-    #if defined(BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR)
-    void add_fd_handler(int fileDescriptor, tools::Handler<void()> handler)
+    Timer create_timer(type::Duration timeout, tools::Handler<void()> handler, bool periodic)
     {
-        io::global_service<io::posix::FdHandlerService>().addInEventHandler(fileDescriptor, std::move(handler));
+        return Timer{ io::global_io_context(), timeout, std::move(handler), periodic };
     }
-
-    void remove_fd_handler(int fileDescriptor)
-    {
-        io::global_service<io::posix::FdHandlerService>().removeInEventHandler(fileDescriptor);
-    }
-    #endif
 
     std::optional<GuestTransceiver>& global_transceiver()
     {

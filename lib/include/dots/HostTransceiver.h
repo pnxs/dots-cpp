@@ -54,8 +54,8 @@ namespace dots
          * Connection transitions to a different connection state or an error
          * occurs.
          */
-        HostTransceiver(std::string selfName = "DotsHostTransceiver",
-                        asio::io_context& ioContext = io::global_io_context(),
+        HostTransceiver(std::string selfName,
+                        asio::io_context& ioContext,
                         type::Registry::StaticTypePolicy staticTypePolicy = type::Registry::StaticTypePolicy::All,
                         std::optional<transition_handler_t> transitionHandler = std::nullopt);
         HostTransceiver(const HostTransceiver& other) = delete;

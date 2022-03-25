@@ -2,7 +2,7 @@
 #include <string_view>
 #include <optional>
 #include <functional>
-#include <dots/io/Io.h>
+#include <dots/asio_forward.h>
 #include <dots/Connection.h>
 #include <dots/Dispatcher.h>
 #include <dots/Subscription.h>
@@ -50,7 +50,7 @@ namespace dots
          * occurs.
          */
         Transceiver(std::string selfName,
-                    asio::io_context& ioContext = io::global_io_context(),
+                    asio::io_context& ioContext,
                     type::Registry::StaticTypePolicy staticTypePolicy = type::Registry::StaticTypePolicy::All,
                     std::optional<transition_handler_t> transitionHandler = std::nullopt
         );

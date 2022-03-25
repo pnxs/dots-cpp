@@ -1,6 +1,7 @@
 #pragma once
 #ifdef __unix__
 #include <string_view>
+#include <cmath>
 #include <dots/type/LibcTime.h>
 #include <dots/type/Chrono.h>
 

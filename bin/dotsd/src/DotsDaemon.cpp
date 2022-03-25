@@ -5,6 +5,7 @@
 #endif
 #include <dots/dots.h>
 #include <dots/tools/logging.h>
+#include <dots/io/Io.h>
 #include <dots/io/auth/LegacyAuthManager.h>
 #include <DotsClient.dots.h>
 #include <DotsContinuousRecorderStatus.dots.h>
@@ -19,11 +20,10 @@ namespace dots
 {
     DotsDaemon::DotsDaemon(std::string name, int argc, char* argv[]) :
         Application(argc, argv, HostTransceiver{ std::move(name), io::global_io_context(), type::Registry::StaticTypePolicy::InternalOnly, HostTransceiver::transition_handler_t{&DotsDaemon::handleTransition, this}}),
-        m_daemonStatus{ DotsDaemonStatus::serverName_i{ transceiver().selfName() }, DotsDaemonStatus::startTime_i{ timepoint_t::Now() } }
+        m_daemonStatus{ DotsDaemonStatus::serverName_i{ transceiver().selfName() }, DotsDaemonStatus::startTime_i{ timepoint_t::Now() } },
+        m_updateServerStatusTimer{ io::global_io_context(), 1s, { &DotsDaemon::updateServerStatus, this }, true },
+        m_cleanUpClientsTimer{ io::global_io_context(), 10s, { &DotsDaemon::cleanUpClients, this }, true }
     {
-        add_timer(1s, { &DotsDaemon::updateServerStatus, this }, true);
-        add_timer(10s, { &DotsDaemon::cleanUpClients, this }, true);
-
         // For backward compatibility: in the legacy version of DOTS,
         // DotsContinuousRecorderStatus and DotsDumpContinuousRecorder where internal-types.
         // The clients do not publish the StructDescriptors for internal-types.
