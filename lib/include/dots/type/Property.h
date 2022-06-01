@@ -11,6 +11,15 @@ namespace dots::type
         struct property_tag {};
     }
 
+    template <typename T>
+    using is_property = std::is_base_of<details::property_tag, T>;
+
+    template <typename T>
+    using is_property_t = typename is_property<T>::type;
+
+    template <typename T>
+    constexpr bool is_property_v = is_property_t<T>::value;
+
     template <typename T, typename Derived>
     struct Property : details::property_tag
     {
@@ -85,14 +94,14 @@ namespace dots::type
         }
 
         template <bool AssertInvalidity = true>
-        T& construct(const Derived& rhs)
+        T& construct(const Property& rhs)
         {
             construct<AssertInvalidity>(rhs.storage());
             return *this;
         }
 
         template <bool AssertInvalidity = true>
-        T& construct(Derived&& rhs)
+        T& construct(Property&& rhs)
         {
             construct<AssertInvalidity>(std::move(rhs.storage()));
             rhs.destroy();
@@ -100,7 +109,7 @@ namespace dots::type
             return *this;
         }
 
-        template <bool AssertInvalidity = true, typename... Args>
+        template <bool AssertInvalidity = true, typename... Args, std::enable_if_t<!std::disjunction_v<is_property<Args>...>, int> = 0>
         T& construct(Args&&... args)
         {
             if constexpr (AssertInvalidity)
@@ -189,14 +198,14 @@ namespace dots::type
         }
 
         template <bool AssertValidity = true>
-        T& assign(const Derived& rhs)
+        T& assign(const Property& rhs)
         {
             assign<AssertValidity>(rhs.storage());
             return *this;
         }
 
         template <bool AssertValidity = true>
-        T& assign(Derived&& rhs)
+        T& assign(Property&& rhs)
         {
             assign<AssertValidity>(std::move(rhs.storage()));
             rhs.destroy();
@@ -204,7 +213,7 @@ namespace dots::type
             return *this;
         }
 
-        template <bool AssertValidity = true, typename... Args>
+        template <bool AssertValidity = true, typename... Args, std::enable_if_t<!std::disjunction_v<is_property<Args>...>, int> = 0>
         T& assign(Args&&... args)
         {
             if constexpr (AssertValidity)
@@ -247,7 +256,7 @@ namespace dots::type
             }
         }
 
-        void swap(Derived& other)
+        void swap(Property& other)
         {
             if (isValid())
             {
@@ -280,7 +289,7 @@ namespace dots::type
             return *this == rhs;
         }
 
-        bool equal(const Derived& rhs) const
+        bool equal(const Property& rhs) const
         {
             return *this == rhs;
         }
@@ -290,7 +299,7 @@ namespace dots::type
             return *this < rhs;
         }
 
-        bool less(const Derived& rhs) const
+        bool less(const Property& rhs) const
         {
             return *this < rhs;
         }
@@ -300,7 +309,7 @@ namespace dots::type
             return *this <= rhs;
         }
 
-        bool lessEqual(const Derived& rhs) const
+        bool lessEqual(const Property& rhs) const
         {
             return *this <= rhs;
         }
@@ -310,7 +319,7 @@ namespace dots::type
             return *this > rhs;
         }
 
-        bool greater(const Derived& rhs) const
+        bool greater(const Property& rhs) const
         {
             return *this > rhs;
         }
@@ -320,7 +329,7 @@ namespace dots::type
             return *this >= rhs;
         }
 
-        bool greaterEqual(const Derived& rhs) const
+        bool greaterEqual(const Property& rhs) const
         {
             return *this >= rhs;
         }
@@ -412,15 +421,6 @@ namespace dots::type
             validProperties() -= descriptor().set();
         }
     };
-
-    template <typename T>
-    using is_property = std::is_base_of<details::property_tag, T>;
-
-    template <typename T>
-    using is_property_t = typename is_property<T>::type;
-
-    template <typename T>
-    constexpr bool is_property_v = is_property_t<T>::value;
 
     template <typename Lhs, typename Rhs, std::enable_if_t<std::disjunction_v<is_property<Lhs>, is_property<Rhs>>, int> = 0>
     bool operator == (const Lhs& lhs, const Rhs& rhs)
