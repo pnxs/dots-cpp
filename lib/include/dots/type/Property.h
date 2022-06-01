@@ -79,66 +79,6 @@ namespace dots::type
             return value();
         }
 
-        bool operator == (const T& rhs) const
-        {
-            return equal(rhs);
-        }
-
-        bool operator == (const Derived& rhs) const
-        {
-            return equal(rhs);
-        }
-
-        bool operator != (const T& rhs) const
-        {
-            return !(*this == rhs);
-        }
-
-        bool operator != (const Derived& rhs) const
-        {
-            return !(*this == rhs);
-        }
-
-        bool operator < (const T& rhs) const
-        {
-            return less(rhs);
-        }
-
-        bool operator < (const Derived& rhs) const
-        {
-            return less(rhs);
-        }
-
-        bool operator <= (const T& rhs) const
-        {
-            return lessEqual(rhs);
-        }
-
-        bool operator <= (const Derived& rhs) const
-        {
-            return lessEqual(rhs);
-        }
-
-        bool operator > (const T& rhs) const
-        {
-            return greater(rhs);
-        }
-
-        bool operator > (const Derived& rhs) const
-        {
-            return greater(rhs);
-        }
-
-        bool operator >= (const T& rhs) const
-        {
-            return greaterEqual(rhs);
-        }
-
-        bool operator >= (const Derived& rhs) const
-        {
-            return greaterEqual(rhs);
-        }
-
         bool isValid() const
         {
             return static_cast<const Derived&>(*this).derivedIsValid();
@@ -337,108 +277,52 @@ namespace dots::type
 
         bool equal(const T& rhs) const
         {
-            if (isValid())
-            {
-                if constexpr (IsTypeless)
-                {
-                    return descriptor().valueDescriptor().equal(storage(), rhs);
-                }
-                else
-                {
-                    return Descriptor<T>::equal(storage(), rhs);
-                }
-            }
-            else
-            {
-                return false;
-            }
+            return *this == rhs;
         }
 
         bool equal(const Derived& rhs) const
         {
-            if (rhs.isValid())
-            {
-                return equal(rhs.storage());
-            }
-            else
-            {
-                return !isValid();
-            }
+            return *this == rhs;
         }
 
         bool less(const T& rhs) const
         {
-            if (isValid())
-            {
-                if constexpr (IsTypeless)
-                {
-                    return descriptor().valueDescriptor().less(storage(), rhs);
-                }
-                else
-                {
-                    return Descriptor<T>::less(storage(), rhs);
-                }
-            }
-            else
-            {
-                return false;
-            }
+            return *this < rhs;
         }
 
         bool less(const Derived& rhs) const
         {
-            if (rhs.isValid())
-            {
-                return less(rhs.storage());
-            }
-            else
-            {
-                return isValid();
-            }
+            return *this < rhs;
         }
 
         bool lessEqual(const T& rhs) const
         {
-            return !greater(rhs);
+            return *this <= rhs;
         }
 
         bool lessEqual(const Derived& rhs) const
         {
-            return !greater(rhs);
+            return *this <= rhs;
         }
 
         bool greater(const T& rhs) const
         {
-            if (isValid())
-            {
-                if constexpr (IsTypeless)
-                {
-                    return descriptor().valueDescriptor().less(rhs, storage());
-                }
-                else
-                {
-                    return Descriptor<T>::less(rhs, storage());
-                }
-            }
-            else
-            {
-                return true;
-            }
+            return *this > rhs;
         }
 
         bool greater(const Derived& rhs) const
         {
-            return rhs.less(static_cast<const Derived&>(*this));
+            return *this > rhs;
         }
 
         bool greaterEqual(const T& rhs) const
         {
-            return !less(rhs);
+            return *this >= rhs;
         }
 
         bool greaterEqual(const Derived& rhs) const
         {
-            return !less(rhs);
+            return *this >= rhs;
         }
 
         constexpr const PropertyDescriptor& descriptor() const
@@ -537,4 +421,124 @@ namespace dots::type
 
     template <typename T>
     constexpr bool is_property_v = is_property_t<T>::value;
+
+    template <typename Lhs, typename Rhs, std::enable_if_t<std::disjunction_v<is_property<Lhs>, is_property<Rhs>>, int> = 0>
+    bool operator == (const Lhs& lhs, const Rhs& rhs)
+    {
+        auto equal = [](const auto& lhs, const auto& rhs)
+        {
+            using property_t = std::decay_t<decltype(lhs)>;
+
+            if (lhs.isValid())
+            {
+                if constexpr (property_t::IsTypeless)
+                {
+                    return lhs.descriptor().valueDescriptor().equal(lhs.storage(), rhs);
+                }
+                else
+                {
+                    return Descriptor<typename property_t::value_t>::equal(lhs.storage(), rhs);
+                }
+            }
+            else
+            {
+                return false;
+            }
+        };
+
+        if constexpr (is_property_v<Lhs>)
+        {
+            if constexpr (is_property_v<Rhs>)
+            {
+                if (rhs.isValid())
+                {
+                    return equal(lhs, rhs.storage());
+                }
+                else
+                {
+                    return !lhs.isValid();
+                }
+            }
+            else
+            {
+                return equal(lhs, rhs);
+            }
+        }
+        else
+        {
+            return equal(rhs, lhs);
+        }
+    }
+
+    template <typename Lhs, typename Rhs, std::enable_if_t<std::disjunction_v<is_property<Lhs>, is_property<Rhs>>, int> = 0>
+    bool operator != (const Lhs& lhs, const Rhs& rhs)
+    {
+        return !(lhs == rhs);
+    }
+
+    template <typename Lhs, typename Rhs, std::enable_if_t<std::disjunction_v<is_property<Lhs>, is_property<Rhs>>, int> = 0>
+    bool operator < (const Lhs& lhs, const Rhs& rhs)
+    {
+        auto less = [](const auto& lhs, const auto& rhs)
+        {
+            using property_t = std::decay_t<decltype(lhs)>;
+
+            if (lhs.isValid())
+            {
+                if constexpr (property_t::IsTypeless)
+                {
+                    return lhs.descriptor().valueDescriptor().less(lhs.storage(), rhs);
+                }
+                else
+                {
+                    return Descriptor<typename property_t::value_t>::less(lhs.storage(), rhs);
+                }
+            }
+            else
+            {
+                return false;
+            }
+        };
+
+        if constexpr (is_property_v<Lhs>)
+        {
+            if constexpr (is_property_v<Rhs>)
+            {
+                if (rhs.isValid())
+                {
+                    return less(lhs, rhs.storage());
+                }
+                else
+                {
+                    return lhs.isValid();
+                }
+            }
+            else
+            {
+                return less(lhs, rhs);
+            }
+        }
+        else
+        {
+            return less(rhs, lhs);
+        }
+    }
+
+    template <typename Lhs, typename Rhs, std::enable_if_t<std::disjunction_v<is_property<Lhs>, is_property<Rhs>>, int> = 0>
+    bool operator <= (const Lhs& lhs, const Rhs& rhs)
+    {
+        return !(lhs > rhs);
+    }
+
+    template <typename Lhs, typename Rhs, std::enable_if_t<std::disjunction_v<is_property<Lhs>, is_property<Rhs>>, int> = 0>
+    bool operator > (const Lhs& lhs, const Rhs& rhs)
+    {
+        return rhs < lhs;
+    }
+
+    template <typename Lhs, typename Rhs, std::enable_if_t<std::disjunction_v<is_property<Lhs>, is_property<Rhs>>, int> = 0>
+    bool operator >= (const Lhs& lhs, const Rhs& rhs)
+    {
+        return !(lhs < rhs);
+    }
 }
