@@ -156,7 +156,7 @@ namespace dots::type
             }
         }
 
-        T& value()
+        const T& value() const
         {
             if (!isValid())
             {
@@ -166,9 +166,9 @@ namespace dots::type
             return storage();
         }
 
-        const T& value() const
+        T& value()
         {
-            return const_cast<Property&>(*this).value();
+            return const_cast<T&>(std::as_const(*this).value());
         }
 
         template <typename... Args>
@@ -344,14 +344,14 @@ namespace dots::type
             return descriptor().set() <= propertySet;
         }
 
-        constexpr T& storage()
-        {
-            return static_cast<Derived&>(*this).derivedStorage();
-        }
-
         constexpr const T& storage() const
         {
-            return const_cast<Property&>(*this).storage();
+            return static_cast<const Derived&>(*this).derivedStorage();
+        }
+
+        constexpr T& storage()
+        {
+            return const_cast<T&>(std::as_const(*this).storage());
         }
 
     protected:
@@ -366,21 +366,6 @@ namespace dots::type
 
     private:
 
-        size_t offset() const
-        {
-            return static_cast<const Derived&>(*this).derivedOffset();
-        }
-
-        const PropertySet& validProperties() const
-        {
-            return static_cast<const Derived&>(*this).derivedValidProperties();
-        }
-
-        PropertySet& validProperties()
-        {
-            return const_cast<PropertySet&>(std::as_const(*this).validProperties());
-        }
-
         void setValid()
         {
             static_cast<Derived&>(*this).derivedSetValid();
@@ -389,36 +374,6 @@ namespace dots::type
         void setInvalid()
         {
             static_cast<Derived&>(*this).derivedSetInvalid();
-        }
-
-        size_t derivedOffset() const
-        {
-            return descriptor().offset();
-        }
-
-        const PropertySet& derivedValidProperties() const
-        {
-            return PropertyArea::GetArea(storage(), offset()).validProperties();
-        }
-
-        PropertySet& derivedValidProperties()
-        {
-            return const_cast<PropertySet&>(std::as_const(*this).derivedValidProperties());
-        }
-
-        bool derivedIsValid() const
-        {
-            return descriptor().set() <= validProperties();
-        }
-
-        void derivedSetValid()
-        {
-            validProperties() += descriptor().set();
-        }
-
-        void derivedSetInvalid()
-        {
-            validProperties() -= descriptor().set();
         }
     };
 

@@ -86,7 +86,7 @@ namespace dots::type
         template <typename P>
         static PropertyArea& GetArea(P& property)
         {
-            return const_cast<PropertyArea&>(GetProperty(std::as_const(property)));
+            return const_cast<PropertyArea&>(GetArea(std::as_const(property)));
         }
 
     private:

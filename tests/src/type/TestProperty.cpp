@@ -25,11 +25,18 @@ protected:
     private:
 
         friend struct Property<T, test_property_t<T>>;
-        T& derivedStorage()    { return m_value; }
-        const T& derivedStorage() const { return const_cast<test_property_t&>(*this).derivedStorage(); }
+
+        PropertySet validProperties() const { return PropertyArea::GetArea(*this, m_descriptor.offset()).validProperties(); }
+        PropertySet& validProperties() { return PropertyArea::GetArea(*this, m_descriptor.offset()).validProperties(); }
+
+        const T& derivedStorage() const { return m_value; }
         const PropertyDescriptor& derivedDescriptor() const { return m_descriptor; }
 
-        union {    T m_value; };
+        bool derivedIsValid() const { return m_descriptor.set() <= validProperties(); }
+        void derivedSetValid(){ validProperties() += derivedDescriptor().set(); }
+        void derivedSetInvalid(){ validProperties() -= derivedDescriptor().set(); }
+
+        union { T m_value; };
         const PropertyDescriptor m_descriptor;
     };
 
