@@ -54,7 +54,7 @@ namespace dots::serialization
         {
             if constexpr(std::is_floating_point_v<T>)
             {
-                writer().write<T, CborWriter::FloatFormat::UseFloat16Zeroes>(value);
+                writer().write<CborWriter::FloatFormat::UseFloat16Zeroes>(value);
             }
             else if constexpr(std::is_integral_v<T>)
             {
@@ -66,11 +66,11 @@ namespace dots::serialization
             }
             else if constexpr (std::is_same_v<T, timepoint_t> || std::is_same_v<T, steady_timepoint_t>)
             {
-                writer().write<double, CborWriter::FloatFormat::UseFloat16Zeroes>(value.duration().toFractionalSeconds());
+                writer().write<CborWriter::FloatFormat::UseFloat16Zeroes>(value.duration().toFractionalSeconds());
             }
             else if constexpr (std::is_same_v<T, duration_t>)
             {
-                writer().write<double, CborWriter::FloatFormat::UseFloat16Zeroes>(value.toFractionalSeconds());
+                writer().write<CborWriter::FloatFormat::UseFloat16Zeroes>(value.toFractionalSeconds());
             }
             else if constexpr (std::is_same_v<T, uuid_t>)
             {
