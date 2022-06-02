@@ -174,29 +174,6 @@ namespace dots::type
             }
         }
 
-        size_t determineOffset()
-        {
-            if (std::holds_alternative<const PropertyDescriptor*>(m_path))
-            {
-                return std::get<const PropertyDescriptor*>(m_path)->offset();
-            }
-            else
-            {
-                size_t offset = 0;
-                const auto& elements = std::get<const PropertyPath*>(m_path)->elements();
-
-                for (size_t i = 0; i < elements.size() - 1; ++i)
-                {
-                    const PropertyDescriptor& descriptor = elements[i];
-                    offset += descriptor.offset();
-                    offset += *descriptor.subAreaOffset();
-                }
-
-                offset += elements[elements.size() - 1].get().offset();
-                return offset;
-            }
-        }
-
         const T& derivedStorage() const
         {
             if (std::holds_alternative<const PropertyDescriptor*>(m_path))
