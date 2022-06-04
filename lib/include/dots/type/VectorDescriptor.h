@@ -5,7 +5,7 @@
 namespace dots::type
 {
     template <>
-    struct Descriptor<Vector<Typeless>> : Descriptor<Typeless>
+    struct Descriptor<Vector<>> : StaticDescriptor
     {
         Descriptor(key_t key, std::string name, Descriptor<>& valueDescriptor, size_t size, size_t alignment);
         Descriptor(const Descriptor& other) = delete;
@@ -27,28 +27,104 @@ namespace dots::type
     };
 
     template <typename T>
-    struct Descriptor<Vector<T>> : StaticDescriptor<Vector<T>, Descriptor<Vector<Typeless>>>
+    struct Descriptor<Vector<T>> : Descriptor<Vector<>>
     {
-        using key_t = typename StaticDescriptor<Vector<T>, Descriptor<Vector<Typeless>>>::key_t;
         static constexpr bool IsDynamic = is_dynamic_descriptor_v<Descriptor<T>>;
 
         template <bool IsDynamic = !IsDynamic, std::enable_if_t<IsDynamic, int> = 0>
         Descriptor(key_t key) :
-            StaticDescriptor<Vector<T>, Descriptor<Vector<Typeless>>>(key, "vector<" + Descriptor<T>::InitInstance().name() + ">", Descriptor<T>::InitInstance(), sizeof(Vector<T>), alignof(Vector<T>)),
-            m_valueDescriptor(Descriptor<T>::InitInstance().shared_from_this())
+            Descriptor<Vector<>>(key, "vector<" + Descriptor<T>::Instance().name() + ">", Descriptor<T>::Instance(), sizeof(Vector<T>), alignof(Vector<T>))
         {
             /* do nothing */
         }
 
         template <bool IsDynamic = IsDynamic, std::enable_if_t<IsDynamic, int> = 0>
         Descriptor(key_t key, Descriptor<T>& valueDescriptorOverride, bool checkSize = true) :
-            StaticDescriptor<Vector<T>, Descriptor<Vector<Typeless>>>(key, "vector<" + valueDescriptorOverride.name() + ">", valueDescriptorOverride, sizeof(Vector<T>), alignof(Vector<T>)),
-            m_valueDescriptor(valueDescriptorOverride.shared_from_this())
+            Descriptor<Vector<>>(key, "vector<" + valueDescriptorOverride.name() + ">", valueDescriptorOverride, sizeof(Vector<T>), alignof(Vector<T>))
         {
             if (checkSize && (valueDescriptorOverride.size() != sizeof(T) || valueDescriptorOverride.alignment() != alignof(T)))
             {
                 throw std::logic_error{ "attempt to create vector descriptor with incompatible value type" };
             }
+        }
+
+        using StaticDescriptor::construct;
+        using StaticDescriptor::constructInPlace;
+        using StaticDescriptor::destruct;
+        using StaticDescriptor::assign;
+        using StaticDescriptor::swap;
+        using StaticDescriptor::equal;
+        using StaticDescriptor::less;
+        using StaticDescriptor::lessEqual;
+        using StaticDescriptor::greater;
+        using StaticDescriptor::greaterEqual;
+        using StaticDescriptor::dynamicMemoryUsage;
+
+        Typeless& construct(Typeless& value) const override
+        {
+            if constexpr (std::is_default_constructible_v<T>)
+            {
+                return reinterpret_cast<Typeless&>(construct(reinterpret_cast<Vector<T>&>(value)));
+            }
+            else
+            {
+                throw std::logic_error{ "construct has to be overridden in sub-class because T is not default constructible" };
+            }
+        }
+
+        Typeless& construct(Typeless& value, const Typeless& other) const override
+        {
+            return reinterpret_cast<Typeless&>(construct(reinterpret_cast<Vector<T>&>(value), reinterpret_cast<const Vector<T>&>(other)));
+        }
+
+        Typeless& construct(Typeless& value, Typeless&& other) const override
+        {
+            return reinterpret_cast<Typeless&>(construct(reinterpret_cast<Vector<T>&>(value), reinterpret_cast<Vector<T>&&>(other)));
+        }
+
+        Typeless& constructInPlace(Typeless& value) const override
+        {
+            return construct(value);
+        }
+
+        Typeless& constructInPlace(Typeless& value, const Typeless& other) const override
+        {
+            return construct(value, other);
+        }
+
+        Typeless& constructInPlace(Typeless& value, Typeless&& other) const override
+        {
+            return construct(value, std::move(other));
+        }
+
+        void destruct(Typeless& value) const override
+        {
+            destruct(reinterpret_cast<Vector<T>&>(value));
+        }
+
+        Typeless& assign(Typeless& lhs, const Typeless& rhs) const override
+        {
+            return reinterpret_cast<Typeless&>(assign(reinterpret_cast<Vector<T>&>(lhs), reinterpret_cast<const Vector<T>&>(rhs)));
+        }
+
+        Typeless& assign(Typeless& lhs, Typeless&& rhs) const override
+        {
+            return reinterpret_cast<Typeless&>(assign(reinterpret_cast<Vector<T>&>(lhs), reinterpret_cast<Vector<T>&&>(rhs)));
+        }
+
+        void swap(Typeless& value, Typeless& other) const override
+        {
+            swap(reinterpret_cast<Vector<T>&>(value), reinterpret_cast<Vector<T>&>(other));
+        }
+
+        bool equal(const Typeless& lhs, const Typeless& rhs) const override
+        {
+            return equal(reinterpret_cast<const Vector<T>&>(lhs), reinterpret_cast<const Vector<T>&>(rhs));
+        }
+
+        bool less(const Typeless& lhs, const Typeless& rhs) const override
+        {
+            return less(reinterpret_cast<const Vector<T>&>(lhs), reinterpret_cast<const Vector<T>&>(rhs));
         }
 
         bool usesDynamicMemory() const override
@@ -109,7 +185,7 @@ namespace dots::type
 
         const Descriptor<T>& valueDescriptor() const
         {
-            return *m_valueDescriptor;
+            return static_cast<const Descriptor<T>&>(Descriptor<Vector<>>::valueDescriptor());
         }
 
         Descriptor<T>& valueDescriptor()
@@ -122,9 +198,10 @@ namespace dots::type
             return valueDescriptor().isFundamentalType();
         }
 
-    private:
-
-        std::shared_ptr<Descriptor<T>> m_valueDescriptor;
+        static auto& Instance()
+        {
+            return InitInstance<Vector<T>>();
+        }
     };
 
     template <typename TDescriptor>

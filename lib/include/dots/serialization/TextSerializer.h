@@ -106,7 +106,7 @@ namespace dots::serialization
         }
 
         template <typename T>
-        void visitEnumDerived(const T& value, const type::EnumDescriptor<T>& descriptor)
+        void visitEnumDerived(const T& value, const type::EnumDescriptor<>& descriptor)
         {
             if constexpr (format_t::EnumFormat == TextSerializerFormat::EnumFormat::Tag)
             {
@@ -275,11 +275,11 @@ namespace dots::serialization
         }
 
         template <typename T>
-        void visitEnumDerived(T& value, const type::EnumDescriptor<T>& descriptor)
+        void visitEnumDerived(T& value, const type::EnumDescriptor<>& descriptor)
         {
             if constexpr (format_t::EnumFormat == TextSerializerFormat::EnumFormat::Tag)
             {
-                descriptor.construct(value, descriptor.enumeratorFromTag(reader().template read<uint32_t>()).value());
+                descriptor.construct(value, descriptor.enumeratorFromTag(reader().template read<uint32_t>()).template value<T>());
             }
             else if constexpr (format_t::EnumFormat == TextSerializerFormat::EnumFormat::Value)
             {
@@ -289,12 +289,12 @@ namespace dots::serialization
             else if constexpr (format_t::EnumFormat == TextSerializerFormat::EnumFormat::Identifier)
             {
                 std::string_view identifier = reader().readIdentifierString(descriptor.name(), "::");
-                descriptor.construct(value, descriptor.enumeratorFromName(identifier).value());
+                descriptor.construct(value, descriptor.enumeratorFromName(identifier).value<T>());
             }
             else if constexpr (format_t::EnumFormat == TextSerializerFormat::EnumFormat::String)
             {
                 std::string_view identifier = reader().readQuotedString();
-                descriptor.construct(value, descriptor.enumeratorFromName(identifier).value());
+                descriptor.construct(value, descriptor.enumeratorFromName(identifier).value<T>());
             }
             else
             {

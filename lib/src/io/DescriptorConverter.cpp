@@ -17,7 +17,7 @@ namespace dots::io
             return *descriptor;
         }
 
-        std::vector<type::EnumeratorDescriptor<type::DynamicEnum>> enumerators;
+        std::vector<type::EnumeratorDescriptor> enumerators;
 
         for (const EnumElementDescriptor& enumeratorData : *enumData.elements)
         {
@@ -117,7 +117,7 @@ namespace dots::io
         EnumDescriptorData enumData{ EnumDescriptorData::name_i{ enumDescriptor.name() } };
         vector_t<EnumElementDescriptor>& enumeratorData = enumData.elements.construct();
 
-        for (const type::EnumeratorDescriptor<>& enumeratorDescriptor : enumDescriptor.enumeratorsTypeless())
+        for (const type::EnumeratorDescriptor& enumeratorDescriptor : enumDescriptor.enumeratorsTypeless())
         {
             enumeratorData.emplace_back(
                 EnumElementDescriptor::enum_value_i{ enumeratorDescriptor.valueTypeless().to<int32_t>() },

@@ -22,11 +22,11 @@ namespace dots::io
         template <typename Tag, typename T>
         struct global_type<Tag, T> : global_type<Tag, void>
         {
-            inline static const type::StructDescriptor<T>& Descriptor = static_cast<const type::StructDescriptor<T>&>(global_type<Tag, void>::Descriptors().emplace(type::Descriptor<T>::InitInstance()));
+            inline static const type::Descriptor<T>& Descriptor = static_cast<const type::Descriptor<T>&>(global_type<Tag, void>::Descriptors().emplace(type::Descriptor<T>::Instance()));
         };
 
         template <typename Tag, typename T>
-        const type::StructDescriptor<T>& register_global_type()
+        const type::Descriptor<T>& register_global_type()
         {
             return global_type<Tag, T>::Descriptor;
         }
@@ -36,7 +36,7 @@ namespace dots::io
     }
 
     template <typename T>
-    const type::StructDescriptor<T>& register_global_publish_type()
+    const type::Descriptor<T>& register_global_publish_type()
     {
         return details::register_global_type<details::global_publish_tag, T>();
     }
@@ -47,7 +47,7 @@ namespace dots::io
     }
 
     template <typename T>
-    const type::StructDescriptor<T>& register_global_subscribe_type()
+    const type::Descriptor<T>& register_global_subscribe_type()
     {
         return details::register_global_type<details::global_subscribe_tag, T>();
     }

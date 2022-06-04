@@ -4,8 +4,6 @@ namespace dots::type
 {
     struct Typeless
     {
-        static constexpr bool _UseStaticDescriptorOperations = false;
-
         Typeless() = delete;
         Typeless(const Typeless& other) = delete;
         Typeless(Typeless&& other) = delete;

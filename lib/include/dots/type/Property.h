@@ -319,7 +319,7 @@ namespace dots::type
                     }
                     else
                     {
-                        return Descriptor<T>::swap(storage(), other);
+                        return Descriptor<T>::swap(storage(), other.storage());
                     }
                 }
                 else

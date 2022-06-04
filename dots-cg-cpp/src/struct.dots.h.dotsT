@@ -67,12 +67,6 @@ namespace dots::types
         static constexpr uint8_t _Cleanup       = {% if options.cleanup %}true{% else %}false{% endif %};
         static constexpr uint8_t _Local         = {% if options.local %}true{% else %}false{% endif %};
         static constexpr uint8_t _SubstructOnly = {% if options.substruct_only %}true{% else %}false{% endif %};
-        
-        #if (defined DOTS_STRUCTS_USE_STATIC_DESCRIPTOR_OPERATIONS) || (defined DOTS_USE_STATIC_DESCRIPTOR_OPERATIONS_FOR_{{name}})
-        static constexpr bool _UseStaticDescriptorOperations = true;
-        #else
-        static constexpr bool _UseStaticDescriptorOperations = false;
-        #endif
 
 {% for property in attributes %}
         struct {{property.name}}_pt : type::StaticProperty<types::{{property.cxx_type}}, {{property.name}}_pt>
@@ -177,10 +171,35 @@ namespace dots::types
 namespace dots::type
 {
     template <>
-    struct Descriptor<types::{{name}}> : StructDescriptor<types::{{name}}>
+    struct Descriptor<types::{{name}}> : StructDescriptor<>
     {
         Descriptor(key_t key) :
-            StructDescriptor(key, std::string{ types::{{name}}::_Name }, {% if options.cached %}Cached{% else %}Uncached{% endif %}{% if options.internal %} | Internal{% endif %}{% if options.persistent %} | Persistent{% endif %}{% if options.cleanup %} | Cleanup{% endif %}{% if options.local %} | Local{% endif %}{% if options.substruct_only %} | SubstructOnly{% endif %}, types::{{name}}::_MakePropertyDescriptors()){}
+            StructDescriptor(key, std::string{ types::{{name}}::_Name }, {% if options.cached %}Cached{% else %}Uncached{% endif %}{% if options.internal %} | Internal{% endif %}{% if options.persistent %} | Persistent{% endif %}{% if options.cleanup %} | Cleanup{% endif %}{% if options.local %} | Local{% endif %}{% if options.substruct_only %} | SubstructOnly{% endif %}, types::{{name}}::_MakePropertyDescriptors(), sizeof(Descriptor<types::{{name}}>*), sizeof(types::{{name}}), alignof(types::{{name}})){}
+
+        const PropertyArea& propertyArea(const Struct& instance) const override
+        {
+            return StructDescriptor::propertyArea(static_cast<const types::{{name}}&>(instance));
+        }
+
+        PropertyArea& propertyArea(Struct& instance) const override
+        {
+            return StructDescriptor::propertyArea(static_cast<types::{{name}}&>(instance));
+        }
+
+        static const PropertyArea& propertyArea(const types::{{name}}& instance)
+        {
+            return instance._propertyArea();
+        }
+
+        static PropertyArea& propertyArea(types::{{name}}& instance)
+        {
+            return instance._propertyArea();
+        }
+
+        static auto& Instance()
+        {
+            return InitInstance<types::{{name}}>();
+        }
     };
 }
 

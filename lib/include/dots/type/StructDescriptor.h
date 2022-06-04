@@ -3,16 +3,17 @@
 #include <dots/type/StaticDescriptor.h>
 #include <dots/type/Property.h>
 #include <dots/type/PropertyPath.h>
+#include <dots/type/FundamentalDescriptor.h>
 
 namespace dots::type
 {
     struct Struct;
 
-    template <typename T = Typeless, bool = details::use_static_descriptor_operations_v<T>, typename = void>
+    template <typename = Typeless>
     struct StructDescriptor;
 
     template <>
-    struct StructDescriptor<Typeless> : Descriptor<Typeless>
+    struct StructDescriptor<> : StaticDescriptor
     {
         static const uint8_t Uncached      = 0b0000'0000;
         static const uint8_t Cached        = 0b0000'0001;
@@ -29,6 +30,18 @@ namespace dots::type
 
         StructDescriptor& operator = (const StructDescriptor& rhs) = delete;
         StructDescriptor& operator = (StructDescriptor&& rhs) = delete;
+
+        using StaticDescriptor::construct;
+        using StaticDescriptor::constructInPlace;
+        using StaticDescriptor::destruct;
+        using StaticDescriptor::assign;
+        using StaticDescriptor::swap;
+        using StaticDescriptor::equal;
+        using StaticDescriptor::less;
+        using StaticDescriptor::lessEqual;
+        using StaticDescriptor::greater;
+        using StaticDescriptor::greaterEqual;
+        using StaticDescriptor::dynamicMemoryUsage;
 
         Typeless& construct(Typeless& value) const override;
         Struct& construct(Struct& instance) const;
@@ -100,6 +113,96 @@ namespace dots::type
         PropertySet keyProperties() const;
         PropertySet dynamicMemoryProperties() const;
 
+        template <typename T, std::enable_if_t<!std::is_same_v<T, Struct>, int> = 0>
+        static T& assign(T& instance, const T& other, PropertySet includedProperties)
+        {
+            return instance._assign(other, includedProperties);
+        }
+
+        template <typename T, std::enable_if_t<!std::is_same_v<T, Struct>, int> = 0>
+        static T& assign(T& instance, T&& other, PropertySet includedProperties)
+        {
+            return instance._assign(std::move(other), includedProperties);
+        }
+
+        template <typename T, std::enable_if_t<!std::is_same_v<T, Struct>, int> = 0>
+        static T& copy(T& instance, const T& other, PropertySet includedProperties)
+        {
+            return instance._copy(other, includedProperties);
+        }
+
+        template <typename T, std::enable_if_t<!std::is_same_v<T, Struct>, int> = 0>
+        static T& merge(T& instance, const T& other, PropertySet includedProperties)
+        {
+            return instance._merge(other, includedProperties);
+        }
+
+        template <typename T, std::enable_if_t<!std::is_same_v<T, Struct>, int> = 0>
+        static void swap(T& instance, T& other, PropertySet includedProperties)
+        {
+            instance._swap(other, includedProperties);
+        }
+
+        template <typename T, std::enable_if_t<!std::is_same_v<T, Struct>, int> = 0>
+        static void clear(T& instance, PropertySet includedProperties)
+        {
+            instance._clear(includedProperties);
+        }
+
+        template <typename T, std::enable_if_t<!std::is_same_v<T, Struct>, int> = 0>
+        static bool equal(const T& lhs, const T& rhs, PropertySet includedProperties)
+        {
+            return lhs._equal(rhs, includedProperties);
+        }
+
+        template <typename T, std::enable_if_t<!std::is_same_v<T, Struct>, int> = 0>
+        static bool same(const T& lhs, const T& rhs)
+        {
+            return lhs._same(rhs);
+        }
+
+        template <typename T, std::enable_if_t<!std::is_same_v<T, Struct>, int> = 0>
+        static bool less(const T& lhs, const T& rhs, PropertySet includedProperties)
+        {
+            return lhs._less(rhs, includedProperties);
+        }
+
+        template <typename T, std::enable_if_t<!std::is_same_v<T, Struct>, int> = 0>
+        static bool lessEqual(const T& lhs, const T& rhs, PropertySet includedProperties)
+        {
+            return lhs._lessEqual(rhs, includedProperties);
+        }
+
+        template <typename T, std::enable_if_t<!std::is_same_v<T, Struct>, int> = 0>
+        static bool greater(const T& lhs, const T& rhs, PropertySet includedProperties)
+        {
+            return lhs._greater(rhs, includedProperties);
+        }
+
+        template <typename T, std::enable_if_t<!std::is_same_v<T, Struct>, int> = 0>
+        static bool greaterEqual(const T& lhs, const T& rhs, PropertySet includedProperties)
+        {
+            return lhs._greaterEqual(rhs, includedProperties);
+        }
+
+        template <typename T, std::enable_if_t<!std::is_same_v<T, Struct>, int> = 0>
+        static PropertySet diffProperties(const T& instance, const T& other, PropertySet includedProperties)
+        {
+            return instance._diffProperties(other, includedProperties);
+        }
+
+        template <typename T, std::enable_if_t<!std::is_same_v<T, Struct>, int> = 0>
+        static const PropertyArea& propertyArea(const T& instance)
+        {
+            return instance._propertyArea();
+        }
+
+        template <typename T, std::enable_if_t<!std::is_same_v<T, Struct>, int> = 0>
+        static PropertyArea& propertyArea(T& instance)
+        {
+            return instance._propertyArea();
+        }
+
     private:
 
         uint8_t m_flags;
@@ -110,210 +213,6 @@ namespace dots::type
         size_t m_numSubStructs;
         PropertySet m_dynamicMemoryProperties;
         mutable std::vector<PropertyPath> m_propertyPaths;
-    };
-
-    template <typename T>
-    struct StructDescriptor<T, false> : StaticDescriptor<T, StructDescriptor<Typeless>>
-    {
-        using key_t = typename StaticDescriptor<T, StructDescriptor<Typeless>>::key_t;
-        static_assert(std::is_base_of_v<Struct, T>);
-
-        StructDescriptor(key_t key, std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptor) :
-            StaticDescriptor<T, StructDescriptor<Typeless>>(key, std::move(name), flags, propertyDescriptor, sizeof(const StructDescriptor<>*), sizeof(T), alignof(T))
-        {
-            /* do nothing */
-        }
-        StructDescriptor(key_t key, std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptor, size_t areaOffset, size_t size, size_t alignment) :
-            StaticDescriptor<T, StructDescriptor<Typeless>>(key, std::move(name), flags, propertyDescriptor, areaOffset, size, alignment)
-        {
-            /* do nothing */
-        }
-        StructDescriptor(const StructDescriptor& other) = delete;
-        StructDescriptor(StructDescriptor&& other) = delete;
-        ~StructDescriptor() = default;
-
-        StructDescriptor& operator = (const StructDescriptor& rhs) = delete;
-        StructDescriptor& operator = (StructDescriptor&& rhs) = delete;
-
-        using StaticDescriptor<T, StructDescriptor<Typeless>>::assign;
-        using StaticDescriptor<T, StructDescriptor<Typeless>>::swap;
-        using StaticDescriptor<T, StructDescriptor<Typeless>>::equal;
-        using StaticDescriptor<T, StructDescriptor<Typeless>>::less;
-        using StaticDescriptor<T, StructDescriptor<Typeless>>::lessEqual;
-        using StaticDescriptor<T, StructDescriptor<Typeless>>::greater;
-        using StaticDescriptor<T, StructDescriptor<Typeless>>::greaterEqual;
-
-        const PropertyArea& propertyArea(const Struct& instance) const override
-        {
-            return StructDescriptor::propertyArea(static_cast<const T&>(instance));
-        }
-
-        PropertyArea& propertyArea(Struct& instance) const override
-        {
-            return StructDescriptor::propertyArea(static_cast<T&>(instance));
-        }
-
-        static T& assign(T& instance, const T& other, PropertySet includedProperties)
-        {
-            return instance._assign(other, includedProperties);
-        }
-
-        static T& assign(T& instance, T&& other, PropertySet includedProperties)
-        {
-            return instance._assign(std::move(other), includedProperties);
-        }
-
-        static T& copy(T& instance, const T& other, PropertySet includedProperties)
-        {
-            return instance._copy(other, includedProperties);
-        }
-
-        static T& merge(T& instance, const T& other, PropertySet includedProperties)
-        {
-            return instance._merge(other, includedProperties);
-        }
-
-        static void swap(T& instance, T& other, PropertySet includedProperties)
-        {
-            instance._swap(other, includedProperties);
-        }
-
-        static void clear(T& instance, PropertySet includedProperties)
-        {
-            instance._clear(includedProperties);
-        }
-
-        static bool equal(const T& lhs, const T& rhs, PropertySet includedProperties)
-        {
-            return lhs._equal(rhs, includedProperties);
-        }
-
-        static bool same(const T& lhs, const T& rhs)
-        {
-            return lhs._same(rhs);
-        }
-
-        static bool less(const T& lhs, const T& rhs, PropertySet includedProperties)
-        {
-            return lhs._less(rhs, includedProperties);
-        }
-
-        static bool lessEqual(const T& lhs, const T& rhs, PropertySet includedProperties)
-        {
-            return lhs._lessEqual(rhs, includedProperties);
-        }
-
-        static bool greater(const T& lhs, const T& rhs, PropertySet includedProperties)
-        {
-            return lhs._greater(rhs, includedProperties);
-        }
-
-        static bool greaterEqual(const T& lhs, const T& rhs, PropertySet includedProperties)
-        {
-            return lhs._greaterEqual(rhs, includedProperties);
-        }
-
-        static PropertySet diffProperties(const T& instance, const T& other, PropertySet includedProperties)
-        {
-            return instance._diffProperties(other, includedProperties);
-        }
-
-        static const PropertyArea& propertyArea(const T& instance)
-        {
-            return instance._propertyArea();
-        }
-
-        static PropertyArea& propertyArea(T& instance)
-        {
-            return instance._propertyArea();
-        }
-    };
-
-    template <typename T>
-    struct StructDescriptor<T, true> : StructDescriptor<T, false>
-    {
-        using key_t = typename StructDescriptor<T, false>::key_t;
-        static_assert(std::is_base_of_v<Struct, T>);
-
-        StructDescriptor(key_t key, std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptor) :
-            StructDescriptor<T, false>(key, std::move(name), flags, propertyDescriptor, sizeof(const StructDescriptor<>*), sizeof(T), alignof(T))
-        {
-            /* do nothing */
-        }
-        StructDescriptor(key_t key, std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptor, size_t areaOffset, size_t size, size_t alignment) :
-            StructDescriptor<T, false>(key, std::move(name), flags, propertyDescriptor, areaOffset, size, alignment)
-        {
-            /* do nothing */
-        }
-        StructDescriptor(const StructDescriptor& other) = delete;
-        StructDescriptor(StructDescriptor&& other) = delete;
-        ~StructDescriptor() = default;
-
-        StructDescriptor& operator = (const StructDescriptor& rhs) = delete;
-        StructDescriptor& operator = (StructDescriptor&& rhs) = delete;
-
-        using StructDescriptor<T, false>::assign;
-        using StructDescriptor<T, false>::copy;
-        using StructDescriptor<T, false>::merge;
-        using StructDescriptor<T, false>::swap;
-        using StructDescriptor<T, false>::clear;
-        using StructDescriptor<T, false>::equal;
-        using StructDescriptor<T, false>::same;
-        using StructDescriptor<T, false>::less;
-        using StructDescriptor<T, false>::lessEqual;
-        using StructDescriptor<T, false>::greater;
-        using StructDescriptor<T, false>::greaterEqual;
-        using StructDescriptor<T, false>::diffProperties;
-
-        Struct& assign(Struct& instance, const Struct& other, PropertySet includedProperties) const override
-        {
-            return assign(static_cast<T&>(instance), static_cast<const T&>(other), includedProperties);
-        }
-
-        Struct& assign(Struct& instance, Struct&& other, PropertySet includedProperties) const override
-        {
-            return assign(static_cast<T&>(instance), static_cast<T&&>(other), includedProperties);
-        }
-
-        Struct& copy(Struct& instance, const Struct& other, PropertySet includedProperties) const override
-        {
-            return copy(static_cast<T&>(instance), static_cast<const T&>(other), includedProperties);
-        }
-
-        Struct& merge(Struct& instance, const Struct& other, PropertySet includedProperties) const override
-        {
-            return merge(static_cast<T&>(instance), static_cast<const T&>(other), includedProperties);
-        }
-
-        void swap(Struct& instance, Struct& other, PropertySet includedProperties) const override
-        {
-            swap(static_cast<T&>(instance), static_cast<T&>(other), includedProperties);
-        }
-
-        void clear(Struct& instance, PropertySet includedProperties) const override
-        {
-            clear(static_cast<T&>(instance), includedProperties);
-        }
-
-        bool equal(const Struct& lhs, const Struct& rhs, PropertySet includedProperties) const override
-        {
-            return equal(static_cast<const T&>(lhs), static_cast<const T&>(rhs), includedProperties);
-        }
-
-        bool same(const Struct& lhs, const Struct& rhs) const override
-        {
-            return same(static_cast<const T&>(lhs), static_cast<const T&>(rhs));
-        }
-
-        bool less(const Struct& lhs, const Struct& rhs, PropertySet includedProperties) const override
-        {
-            return less(static_cast<const T&>(lhs), static_cast<const T&>(rhs), includedProperties);
-        }
-
-        PropertySet diffProperties(const Struct& instance, const Struct& other, PropertySet includedProperties) const override
-        {
-            return diffProperties(static_cast<const T&>(instance), static_cast<const T&>(other), includedProperties);
-        }
     };
 
     template <typename TDescriptor>
