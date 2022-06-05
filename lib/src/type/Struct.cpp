@@ -3,13 +3,13 @@
 
 namespace dots::type
 {
-    Struct::Struct(const StructDescriptor<>& descriptor) :
+    Struct::Struct(const StructDescriptor& descriptor) :
         _desc(&descriptor)
     {
         /* do nothing */
     }
 
-    const StructDescriptor<>& Struct::_descriptor() const
+    const StructDescriptor& Struct::_descriptor() const
     {
         return *_desc;
     }

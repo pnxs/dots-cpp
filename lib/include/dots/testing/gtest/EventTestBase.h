@@ -363,7 +363,7 @@ namespace dots::testing
          * @return  mock_subscription_handler_t& A reference to the mock
          * subscription handler.
          */
-        mock_subscription_handler_t& getMockSubscriptionHandler(Transceiver& transceiver, const type::StructDescriptor<>& descriptor)
+        mock_subscription_handler_t& getMockSubscriptionHandler(Transceiver& transceiver, const type::StructDescriptor& descriptor)
         {
             auto itTransceiver = m_mockSubscriptionHandlers.try_emplace(&transceiver).first;
             auto [itSubscriptionHandler, emplacedSubscriptionHandler] = itTransceiver->second.try_emplace(&descriptor);

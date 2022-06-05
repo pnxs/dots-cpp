@@ -66,11 +66,7 @@ namespace dots::type
         int32_t m_value;
     };
 
-    template <typename E = Typeless>
-    struct EnumDescriptor;
-
-    template <>
-    struct EnumDescriptor<> : StaticDescriptor
+    struct EnumDescriptor : StaticDescriptor
     {
         using enumerator_ref_t = std::reference_wrapper<EnumeratorDescriptor>;
 
@@ -146,7 +142,7 @@ namespace dots::type
     };
 
     template <typename TDescriptor>
-    struct type_category<TDescriptor, std::enable_if_t<std::is_same_v<EnumDescriptor<>, TDescriptor>>> : std::integral_constant<Type, Type::Enum> {};
+    struct type_category<TDescriptor, std::enable_if_t<std::is_same_v<EnumDescriptor, TDescriptor>>> : std::integral_constant<Type, Type::Enum> {};
 }
 
 namespace dots::type

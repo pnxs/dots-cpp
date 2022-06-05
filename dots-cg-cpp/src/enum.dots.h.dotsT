@@ -27,7 +27,7 @@ namespace dots::types
 namespace dots::type
 {
     template <>
-    struct Descriptor<types::{{name}}> : EnumDescriptor<>
+    struct Descriptor<types::{{name}}> : EnumDescriptor
     {
         using value_t = types::{{name}};
 

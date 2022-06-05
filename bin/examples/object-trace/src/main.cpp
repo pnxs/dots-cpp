@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
         // subscribe to all DOTS struct type descriptors
         dots::subscribe<StructDescriptorData>([](auto&){}).discard();
         dots::subscribe<EnumDescriptorData>([](auto&){}).discard();
-        dots::subscribe<dots::type::StructDescriptor<>>([](const dots::type::StructDescriptor<>& descriptor)
+        dots::subscribe<dots::type::StructDescriptor>([](const dots::type::StructDescriptor& descriptor)
         {
             // subscribe to non-internal top-level DOTS struct types
             if (!descriptor.internal() && !descriptor.substructOnly())

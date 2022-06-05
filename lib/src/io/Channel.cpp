@@ -169,7 +169,7 @@ namespace dots::io
             if (bool isNewSharedType = m_sharedTypeNames.count(structDescriptorData->name) == 0; isNewSharedType)
             {
                 m_sharedTypeNames.emplace(structDescriptorData->name);
-                const type::StructDescriptor<>& descriptor = DescriptorConverter{ registry() }(*structDescriptorData);
+                const type::StructDescriptor& descriptor = DescriptorConverter{ registry() }(*structDescriptorData);
                 m_sharedTypeDescriptors.emplace(&descriptor);
             }
         }
@@ -178,7 +178,7 @@ namespace dots::io
             if (bool isNewSharedType = m_sharedTypeNames.count(enumDescriptorData->name) == 0; isNewSharedType)
             {
                 m_sharedTypeNames.emplace(enumDescriptorData->name);
-                const type::EnumDescriptor<>& descriptor = DescriptorConverter{ registry() }(*enumDescriptorData);
+                const type::EnumDescriptor& descriptor = DescriptorConverter{ registry() }(*enumDescriptorData);
                 m_sharedTypeDescriptors.emplace(&descriptor);
             }
         }
@@ -194,12 +194,12 @@ namespace dots::io
             {
                 exportDependencies(vectorDescriptor->valueDescriptor());
             }
-            else if (const auto* enumDescriptor = descriptor.as<type::EnumDescriptor<>>(); enumDescriptor != nullptr)
+            else if (const auto* enumDescriptor = descriptor.as<type::EnumDescriptor>(); enumDescriptor != nullptr)
             {
                 exportDependencies(enumDescriptor->underlyingDescriptor());
                 transmit(DescriptorConverter{ registry() }(*enumDescriptor));
             }
-            else if (const auto* structDescriptor = descriptor.as<type::StructDescriptor<>>(); structDescriptor != nullptr)
+            else if (const auto* structDescriptor = descriptor.as<type::StructDescriptor>(); structDescriptor != nullptr)
             {
                 if (!structDescriptor->internal())
                 {

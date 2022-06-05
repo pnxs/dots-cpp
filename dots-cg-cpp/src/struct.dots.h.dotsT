@@ -171,7 +171,7 @@ namespace dots::types
 namespace dots::type
 {
     template <>
-    struct Descriptor<types::{{name}}> : StructDescriptor<>
+    struct Descriptor<types::{{name}}> : StructDescriptor
     {
         Descriptor(key_t key) :
             StructDescriptor(key, std::string{ types::{{name}}::_Name }, {% if options.cached %}Cached{% else %}Uncached{% endif %}{% if options.internal %} | Internal{% endif %}{% if options.persistent %} | Persistent{% endif %}{% if options.cleanup %} | Cleanup{% endif %}{% if options.local %} | Local{% endif %}{% if options.substruct_only %} | SubstructOnly{% endif %}, types::{{name}}::_MakePropertyDescriptors(), sizeof(Descriptor<types::{{name}}>*), sizeof(types::{{name}}), alignof(types::{{name}})){}

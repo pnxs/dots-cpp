@@ -34,7 +34,7 @@ struct ToAsciiOptions
 };
 
 
-std::string to_ascii(const type::StructDescriptor<>* td, const void* data, property_set_t properties = property_set_t::All, const ToAsciiOptions& cs = {});
+std::string to_ascii(const type::StructDescriptor* td, const void* data, property_set_t properties = property_set_t::All, const ToAsciiOptions& cs = {});
 
 }
 

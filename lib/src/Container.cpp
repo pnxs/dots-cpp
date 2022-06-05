@@ -4,7 +4,7 @@
 
 namespace dots
 {
-    Container<type::Struct>::key_compare::key_compare(const type::StructDescriptor<>& descriptor)
+    Container<type::Struct>::key_compare::key_compare(const type::StructDescriptor& descriptor)
     {
         for (const type::PropertyDescriptor& propertyDescriptor : descriptor.propertyDescriptors())
         {
@@ -56,7 +56,7 @@ namespace dots
         return (*this)(static_cast<const type::Struct&>(lhs), static_cast<const type::Struct&>(rhs));
     }
 
-    Container<type::Struct>::Container(const type::StructDescriptor<>& descriptor) :
+    Container<type::Struct>::Container(const type::StructDescriptor& descriptor) :
         m_descriptor(&descriptor),
         m_instances{ descriptor }
     {
@@ -69,7 +69,7 @@ namespace dots
         }
     }
 
-    const type::StructDescriptor<>& Container<type::Struct>::descriptor() const &
+    const type::StructDescriptor& Container<type::Struct>::descriptor() const &
     {
         return *m_descriptor;
     }

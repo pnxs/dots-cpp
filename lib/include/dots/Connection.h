@@ -307,7 +307,7 @@ namespace dots
          *
          * @param descriptor The descriptor of the type to transmit.
          */
-        void transmit(const type::StructDescriptor<>& descriptor);
+        void transmit(const type::StructDescriptor& descriptor);
 
         /*!
          * @brief Handle a specific error.
@@ -325,7 +325,7 @@ namespace dots
 
     private:
 
-        using system_type_t = std::tuple<const type::StructDescriptor<>*, property_set_t, std::optional<tools::Handler<void(const type::Struct&)>>>;
+        using system_type_t = std::tuple<const type::StructDescriptor*, property_set_t, std::optional<tools::Handler<void(const type::Struct&)>>>;
 
         static constexpr serialization::TextOptions StringOptions = { serialization::TextOptions::MultiLine };
 

@@ -44,7 +44,7 @@ namespace dots::serialization
         }
 
         template <typename T>
-        void visitEnumDerived(const T& value, const type::EnumDescriptor<>& descriptor)
+        void visitEnumDerived(const T& value, const type::EnumDescriptor& descriptor)
         {
             writer().write(descriptor.enumeratorFromValue(value).tag());
         }
@@ -115,7 +115,7 @@ namespace dots::serialization
         }
 
         template <typename T>
-        void visitEnumDerived(T& value, const type::EnumDescriptor<>& descriptor)
+        void visitEnumDerived(T& value, const type::EnumDescriptor& descriptor)
         {
             descriptor.construct(value, descriptor.enumeratorFromTag(reader().read<uint32_t>()).value<T>());
         }

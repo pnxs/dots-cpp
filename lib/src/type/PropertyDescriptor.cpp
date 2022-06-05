@@ -11,7 +11,7 @@ namespace dots::type
         m_set{ PropertySet::FromIndex(m_tag) },
         m_offset{ offset }
     {
-        if (const auto* structDescriptor = m_descriptor->as<StructDescriptor<>>(); structDescriptor != nullptr)
+        if (const auto* structDescriptor = m_descriptor->as<StructDescriptor>(); structDescriptor != nullptr)
         {
             m_subAreaOffset.emplace(std::in_place, structDescriptor->areaOffset());
         }

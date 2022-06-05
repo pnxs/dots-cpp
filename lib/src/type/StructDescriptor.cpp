@@ -5,7 +5,7 @@
 
 namespace dots::type
 {
-    StructDescriptor<>::StructDescriptor(key_t key, std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptors, size_t areaOffset, size_t size, size_t alignment) :
+    StructDescriptor::StructDescriptor(key_t key, std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptors, size_t areaOffset, size_t size, size_t alignment) :
         StaticDescriptor(key, Type::Struct, std::move(name), size, alignment),
         m_flags(flags),
         m_propertyDescriptors(propertyDescriptors),
@@ -33,12 +33,12 @@ namespace dots::type
         }
     }
 
-    Typeless& StructDescriptor<>::construct(Typeless& value) const
+    Typeless& StructDescriptor::construct(Typeless& value) const
     {
         return Typeless::From(construct(value.to<Struct>()));
     }
 
-    Struct& StructDescriptor<>::construct(Struct& instance) const
+    Struct& StructDescriptor::construct(Struct& instance) const
     {
         ::new(static_cast<void*>(::std::addressof(instance))) Struct{ *this };
         ::new(static_cast<void*>(::std::addressof(propertyArea(instance)))) PropertyArea{};
@@ -46,12 +46,12 @@ namespace dots::type
         return instance;
     }
 
-    Typeless& StructDescriptor<>::construct(Typeless& value, const Typeless& other) const
+    Typeless& StructDescriptor::construct(Typeless& value, const Typeless& other) const
     {
         return Typeless::From(construct(value.to<Struct>(), other.to<Struct>()));
     }
 
-    Struct& StructDescriptor<>::construct(Struct& instance, const Struct& other) const
+    Struct& StructDescriptor::construct(Struct& instance, const Struct& other) const
     {
         ::new(static_cast<void*>(::std::addressof(instance))) Struct{ other };
         ::new(static_cast<void*>(::std::addressof(propertyArea(instance)))) PropertyArea{};
@@ -64,12 +64,12 @@ namespace dots::type
         return instance;
     }
 
-    Typeless& StructDescriptor<>::construct(Typeless& value, Typeless&& other) const
+    Typeless& StructDescriptor::construct(Typeless& value, Typeless&& other) const
     {
         return Typeless::From(construct(value.to<Struct>(), other.to<Struct>()));
     }
 
-    Struct& StructDescriptor<>::construct(Struct& instance, Struct&& other) const
+    Struct& StructDescriptor::construct(Struct& instance, Struct&& other) const
     {
         ::new(static_cast<void*>(::std::addressof(instance))) Struct{ other };
         ::new(static_cast<void*>(::std::addressof(propertyArea(instance)))) PropertyArea{};
@@ -82,42 +82,42 @@ namespace dots::type
         return instance;
     }
 
-    Typeless& StructDescriptor<>::constructInPlace(Typeless& value) const
+    Typeless& StructDescriptor::constructInPlace(Typeless& value) const
     {
         return construct(value);
     }
 
-    Struct& StructDescriptor<>::constructInPlace(Struct& instance) const
+    Struct& StructDescriptor::constructInPlace(Struct& instance) const
     {
         return construct(instance);
     }
 
-    Typeless& StructDescriptor<>::constructInPlace(Typeless& value, const Typeless& other) const
+    Typeless& StructDescriptor::constructInPlace(Typeless& value, const Typeless& other) const
     {
         return construct(value, other);
     }
 
-    Struct& StructDescriptor<>::constructInPlace(Struct& instance, const Struct& other) const
+    Struct& StructDescriptor::constructInPlace(Struct& instance, const Struct& other) const
     {
         return construct(instance, other);
     }
 
-    Typeless& StructDescriptor<>::constructInPlace(Typeless& value, Typeless&& other) const
+    Typeless& StructDescriptor::constructInPlace(Typeless& value, Typeless&& other) const
     {
         return construct(value, std::move(other));
     }
 
-    Struct& StructDescriptor<>::constructInPlace(Struct& instance, Struct&& other) const
+    Struct& StructDescriptor::constructInPlace(Struct& instance, Struct&& other) const
     {
         return construct(instance, std::move(other));
     }
 
-    void StructDescriptor<>::destruct(Typeless& value) const
+    void StructDescriptor::destruct(Typeless& value) const
     {
         Typeless::From(destruct(value.to<Struct>()));
     }
 
-    Struct& StructDescriptor<>::destruct(Struct& instance) const
+    Struct& StructDescriptor::destruct(Struct& instance) const
     {
         PropertyArea& propertyArea = instance._propertyArea();
         PropertySet& validProperties = instance._propertyArea().validProperties();
@@ -137,52 +137,52 @@ namespace dots::type
         return instance;
     }
 
-    Typeless& StructDescriptor<>::assign(Typeless& lhs, const Typeless& rhs) const
+    Typeless& StructDescriptor::assign(Typeless& lhs, const Typeless& rhs) const
     {
         return Typeless::From(assign(lhs.to<Struct>(), rhs.to<Struct>(), PropertySet{ PropertySet::All }));
     }
 
-    Typeless& StructDescriptor<>::assign(Typeless& lhs, Typeless&& rhs) const
+    Typeless& StructDescriptor::assign(Typeless& lhs, Typeless&& rhs) const
     {
         return Typeless::From(assign(lhs.to<Struct>(), std::move(rhs).to<Struct>(), PropertySet{ PropertySet::All }));
     }
 
-    void StructDescriptor<>::swap(Typeless& value, Typeless& other) const
+    void StructDescriptor::swap(Typeless& value, Typeless& other) const
     {
         return swap(value.to<Struct>(), other.to<Struct>(), PropertySet{ PropertySet::All });
     }
 
-    bool StructDescriptor<>::equal(const Typeless& lhs, const Typeless& rhs) const
+    bool StructDescriptor::equal(const Typeless& lhs, const Typeless& rhs) const
     {
         return equal(lhs.to<Struct>(), rhs.to<Struct>(), PropertySet{ PropertySet::All });
     }
 
-    bool StructDescriptor<>::less(const Typeless& lhs, const Typeless& rhs) const
+    bool StructDescriptor::less(const Typeless& lhs, const Typeless& rhs) const
     {
         return less(lhs.to<Struct>(), rhs.to<Struct>(), PropertySet{ PropertySet::All });
     }
 
-    size_t StructDescriptor<>::areaOffset() const
+    size_t StructDescriptor::areaOffset() const
     {
         return m_areaOffset;
     }
 
-    size_t StructDescriptor<>::numSubStructs() const
+    size_t StructDescriptor::numSubStructs() const
     {
         return m_numSubStructs;
     }
 
-    bool StructDescriptor<>::usesDynamicMemory() const
+    bool StructDescriptor::usesDynamicMemory() const
     {
         return !m_dynamicMemoryProperties.empty();
     }
 
-    size_t StructDescriptor<>::dynamicMemoryUsage(const Typeless& instance) const
+    size_t StructDescriptor::dynamicMemoryUsage(const Typeless& instance) const
     {
         return dynamicMemoryUsage(instance.to<Struct>());
     }
 
-    size_t StructDescriptor<>::dynamicMemoryUsage(const Struct& instance) const
+    size_t StructDescriptor::dynamicMemoryUsage(const Struct& instance) const
     {
         if (usesDynamicMemory())
         {
@@ -201,7 +201,7 @@ namespace dots::type
         }
     }
 
-    Struct& StructDescriptor<>::assign(Struct& instance, const Struct& other, PropertySet includedProperties) const
+    Struct& StructDescriptor::assign(Struct& instance, const Struct& other, PropertySet includedProperties) const
     {
         PropertySet assignProperties = other._validProperties() ^ includedProperties;
 
@@ -220,7 +220,7 @@ namespace dots::type
         return instance;
     }
 
-    Struct& StructDescriptor<>::assign(Struct& instance, Struct&& other, PropertySet includedProperties) const
+    Struct& StructDescriptor::assign(Struct& instance, Struct&& other, PropertySet includedProperties) const
     {
         PropertySet assignProperties = other._validProperties() ^ includedProperties;
 
@@ -239,7 +239,7 @@ namespace dots::type
         return instance;
     }
 
-    Struct& StructDescriptor<>::copy(Struct& instance, const Struct& other, PropertySet includedProperties) const
+    Struct& StructDescriptor::copy(Struct& instance, const Struct& other, PropertySet includedProperties) const
     {
         PropertySet copyProperties = (instance._validProperties() + other._validProperties()) ^ includedProperties;
 
@@ -258,7 +258,7 @@ namespace dots::type
         return instance;
     }
 
-    Struct& StructDescriptor<>::merge(Struct& instance, const Struct& other, PropertySet includedProperties) const
+    Struct& StructDescriptor::merge(Struct& instance, const Struct& other, PropertySet includedProperties) const
     {
         PropertySet mergeProperties = other._validProperties() ^ includedProperties;
 
@@ -277,7 +277,7 @@ namespace dots::type
         return instance;
     }
 
-    void StructDescriptor<>::swap(Struct& instance, Struct& other, PropertySet includedProperties) const
+    void StructDescriptor::swap(Struct& instance, Struct& other, PropertySet includedProperties) const
     {
         for (auto&[propertyThis, propertyOther] : instance._propertyRange(other, includedProperties))
         {
@@ -285,7 +285,7 @@ namespace dots::type
         }
     }
 
-    void StructDescriptor<>::clear(Struct& instance, PropertySet includedProperties) const
+    void StructDescriptor::clear(Struct& instance, PropertySet includedProperties) const
     {
         for (auto& property : instance._propertyRange(includedProperties))
         {
@@ -293,7 +293,7 @@ namespace dots::type
         }
     }
 
-    bool StructDescriptor<>::equal(const Struct& lhs, const Struct& rhs, PropertySet includedProperties) const
+    bool StructDescriptor::equal(const Struct& lhs, const Struct& rhs, PropertySet includedProperties) const
     {
         for (const auto&[propertyThis, propertyOther] : lhs._propertyRange(rhs, includedProperties))
         {
@@ -306,12 +306,12 @@ namespace dots::type
         return true;
     }
 
-    bool StructDescriptor<>::same(const Struct& lhs, const Struct& rhs) const
+    bool StructDescriptor::same(const Struct& lhs, const Struct& rhs) const
     {
         return lhs._equal(rhs, lhs._keyProperties());
     }
 
-    bool StructDescriptor<>::less(const Struct& lhs, const Struct& rhs, PropertySet includedProperties) const
+    bool StructDescriptor::less(const Struct& lhs, const Struct& rhs, PropertySet includedProperties) const
     {
         if (includedProperties.empty())
         {
@@ -335,22 +335,22 @@ namespace dots::type
         }
     }
 
-    bool StructDescriptor<>::lessEqual(const Struct& lhs, const Struct& rhs, PropertySet includedProperties) const
+    bool StructDescriptor::lessEqual(const Struct& lhs, const Struct& rhs, PropertySet includedProperties) const
     {
         return !lhs._greater(rhs, includedProperties);
     }
 
-    bool StructDescriptor<>::greater(const Struct& lhs, const Struct& rhs, PropertySet includedProperties) const
+    bool StructDescriptor::greater(const Struct& lhs, const Struct& rhs, PropertySet includedProperties) const
     {
         return rhs._less(lhs, includedProperties);
     }
 
-    bool StructDescriptor<>::greaterEqual(const Struct& lhs, const Struct& rhs, PropertySet includedProperties) const
+    bool StructDescriptor::greaterEqual(const Struct& lhs, const Struct& rhs, PropertySet includedProperties) const
     {
         return !lhs._less(rhs, includedProperties);
     }
 
-    PropertySet StructDescriptor<>::diffProperties(const Struct& instance, const Struct& other, PropertySet includedProperties) const
+    PropertySet StructDescriptor::diffProperties(const Struct& instance, const Struct& other, PropertySet includedProperties) const
     {
         PropertySet symmetricDiff = instance._validProperties().symmetricDifference(other._validProperties()) ^ includedProperties;
         PropertySet intersection = instance._validProperties() ^ other._validProperties() ^ includedProperties;
@@ -369,47 +369,47 @@ namespace dots::type
         return symmetricDiff;
     }
 
-    uint8_t StructDescriptor<>::flags() const
+    uint8_t StructDescriptor::flags() const
     {
         return m_flags;
     }
 
-    bool StructDescriptor<>::cached() const
+    bool StructDescriptor::cached() const
     {
         return static_cast<bool>(m_flags & Cached);
     }
 
-    bool StructDescriptor<>::cleanup() const
+    bool StructDescriptor::cleanup() const
     {
         return static_cast<bool>(m_flags & Cleanup);
     }
 
-    bool StructDescriptor<>::local() const
+    bool StructDescriptor::local() const
     {
         return static_cast<bool>(m_flags & Local);
     }
 
-    bool StructDescriptor<>::persistent() const
+    bool StructDescriptor::persistent() const
     {
         return static_cast<bool>(m_flags & Persistent);
     }
 
-    bool StructDescriptor<>::internal() const
+    bool StructDescriptor::internal() const
     {
         return static_cast<bool>(m_flags & Internal);
     }
 
-    bool StructDescriptor<>::substructOnly() const
+    bool StructDescriptor::substructOnly() const
     {
         return static_cast<bool>(m_flags & SubstructOnly);
     }
 
-    const property_descriptor_container_t& StructDescriptor<>::propertyDescriptors() const
+    const property_descriptor_container_t& StructDescriptor::propertyDescriptors() const
     {
         return m_propertyDescriptors;
     }
 
-    partial_property_descriptor_container_t StructDescriptor<>::propertyDescriptors(PropertySet properties) const
+    partial_property_descriptor_container_t StructDescriptor::propertyDescriptors(PropertySet properties) const
     {
         partial_property_descriptor_container_t partialPropertyDescriptors;
 
@@ -424,12 +424,12 @@ namespace dots::type
         return partialPropertyDescriptors;
     }
 
-    property_descriptor_container_t& StructDescriptor<>::propertyDescriptors()
+    property_descriptor_container_t& StructDescriptor::propertyDescriptors()
     {
         return const_cast<property_descriptor_container_t&>(std::as_const(*this).propertyDescriptors());
     }
 
-    const std::vector<PropertyPath>& StructDescriptor<>::propertyPaths() const
+    const std::vector<PropertyPath>& StructDescriptor::propertyPaths() const
     {
         if (m_propertyPaths.empty())
         {
@@ -437,7 +437,7 @@ namespace dots::type
             {
                 m_propertyPaths.emplace_back(propertyDescriptor);
 
-                if (const auto* structDescriptor = propertyDescriptor.valueDescriptor().as<StructDescriptor<>>(); structDescriptor != nullptr)
+                if (const auto* structDescriptor = propertyDescriptor.valueDescriptor().as<StructDescriptor>(); structDescriptor != nullptr)
                 {
                     for (const PropertyPath& subPropertyPath : structDescriptor->propertyPaths())
                     {
@@ -453,17 +453,17 @@ namespace dots::type
         return m_propertyPaths;
     }
 
-    PropertySet StructDescriptor<>::properties() const
+    PropertySet StructDescriptor::properties() const
     {
         return m_properties;
     }
 
-    PropertySet StructDescriptor<>::keyProperties() const
+    PropertySet StructDescriptor::keyProperties() const
     {
         return m_keyProperties;
     }
 
-    PropertySet StructDescriptor<>::dynamicMemoryProperties() const
+    PropertySet StructDescriptor::dynamicMemoryProperties() const
     {
         return m_dynamicMemoryProperties;
     }

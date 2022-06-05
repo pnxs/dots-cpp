@@ -328,7 +328,7 @@ namespace dots::serialization
         }
 
         template <typename T>
-        void visitEnumDerived(const T& value, const type::EnumDescriptor<>& descriptor)
+        void visitEnumDerived(const T& value, const type::EnumDescriptor& descriptor)
         {
             if constexpr (format_t::EnumFormat == format_t::EnumFormat::Tag)
             {
@@ -403,7 +403,7 @@ namespace dots::serialization
         template <typename T>
         bool visitStructBeginDerived(T& instance, property_set_t& includedProperties)
         {
-            const type::StructDescriptor<>& descriptor = instance._descriptor();
+            const type::StructDescriptor& descriptor = instance._descriptor();
             const type::property_descriptor_container_t& propertyDescriptors = descriptor.propertyDescriptors();
 
             m_reader.readObjectBegin();
@@ -482,7 +482,7 @@ namespace dots::serialization
         }
 
         template <typename T>
-        void visitEnumDerived(T& value, const type::EnumDescriptor<>& descriptor)
+        void visitEnumDerived(T& value, const type::EnumDescriptor& descriptor)
         {
             if constexpr (format_t::EnumFormat == format_t::EnumFormat::Tag)
             {

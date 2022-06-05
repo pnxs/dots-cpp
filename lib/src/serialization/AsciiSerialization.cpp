@@ -19,7 +19,7 @@ struct Printer {
     virtual void Uint64(uint64_t i) = 0;
     virtual void Double(double d) = 0;
     virtual void Null() = 0;
-    virtual void Enum(const void* e, const type::EnumDescriptor<>* ed) = 0;
+    virtual void Enum(const void* e, const type::EnumDescriptor* ed) = 0;
     virtual std::string GetString() const = 0;
     virtual void BeginHighlight() = 0;
     virtual void EndHightlight() = 0;
@@ -92,7 +92,7 @@ struct PrettyPrinter: Printer
         writeValue("'null'");
     }
 
-    void Enum(const void* e, const type::EnumDescriptor<>* ed) override {
+    void Enum(const void* e, const type::EnumDescriptor* ed) override {
         //auto enumValue = enumDescriptor->to_int(data);
         //writer.Int(enumDescriptor->value2key(enumValue));
         writeValue(ed->enumeratorFromValue(*type::Typeless::From(e)).name());
@@ -226,7 +226,7 @@ struct SingleLinePrinter: Printer
         writeValue("'null'");
     }
 
-    void Enum(const void* e, const type::EnumDescriptor<>* ed) override {
+    void Enum(const void* e, const type::EnumDescriptor* ed) override {
         if (enumAsTag) {
             Int(ed->enumeratorFromValue(*type::Typeless::From(e)).tag());
         }
@@ -286,7 +286,7 @@ private:
     bool enumAsTag = false;
 };
 
-static void to_ascii_recursive(const type::StructDescriptor<>& td, const void *data, property_set_t what, Printer& writer, property_set_t highlight);
+static void to_ascii_recursive(const type::StructDescriptor& td, const void *data, property_set_t what, Printer& writer, property_set_t highlight);
 static void write_array_to_ascii(const type::VectorDescriptor& vd, const type::Vector<>& data, Printer& writer);
 
 static void write_atomic_types_to_ascii(const type::Descriptor<>& td, const void* data, Printer& writer)
@@ -313,7 +313,7 @@ static void write_atomic_types_to_ascii(const type::Descriptor<>& td, const void
         case type::Type::uuid:            writer.String(static_cast<const dots::uuid_t*>(data)->toString()); break;
         case type::Type::Enum:
         {
-            writer.Enum(data, static_cast<const type::EnumDescriptor<>*>(&td));
+            writer.Enum(data, static_cast<const type::EnumDescriptor*>(&td));
         }
             break;
         case type::Type::Vector:
@@ -336,7 +336,7 @@ static void write_ascii(const type::Descriptor<>& td, const void* data, Printer&
     }
     else if (td.type() == type::Type::Struct) // object
     {
-        to_ascii_recursive(static_cast<const type::StructDescriptor<>&>(td), data, property_set_t::All, writer, property_set_t::None);
+        to_ascii_recursive(static_cast<const type::StructDescriptor&>(td), data, property_set_t::All, writer, property_set_t::None);
     }
     else
     {
@@ -356,7 +356,7 @@ static void write_array_to_ascii(const type::VectorDescriptor& vd, const type::V
     writer.EndArray();
 }
 
-static void to_ascii_recursive(const type::StructDescriptor<>& td, const void *data, property_set_t what, Printer& writer, property_set_t highlight)
+static void to_ascii_recursive(const type::StructDescriptor& td, const void *data, property_set_t what, Printer& writer, property_set_t highlight)
 {
     property_set_t validProperties = td.propertyArea(*static_cast<const type::Struct*>(data)).validProperties();
 
@@ -389,7 +389,7 @@ static void to_ascii_recursive(const type::StructDescriptor<>& td, const void *d
 }
 
 
-std::string to_ascii(const type::StructDescriptor<>* td, const void* data, property_set_t properties/* = property_set_t::All*/, const ToAsciiOptions& cs/* = {}*/)
+std::string to_ascii(const type::StructDescriptor* td, const void* data, property_set_t properties/* = property_set_t::All*/, const ToAsciiOptions& cs/* = {}*/)
 {
     std::unique_ptr<Printer> printer;
 

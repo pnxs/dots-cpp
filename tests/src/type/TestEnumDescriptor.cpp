@@ -25,7 +25,7 @@ namespace dots::types
 namespace dots::type
 {
     template <>
-    struct Descriptor<types::TestEnumSimple> : EnumDescriptor<>
+    struct Descriptor<types::TestEnumSimple> : EnumDescriptor
     {
         Descriptor(key_t key) : EnumDescriptor(key, "TestEnumSimple", {
             EnumeratorDescriptor{ 2, "enumerator2", types::TestEnumSimple::enumerator2 },

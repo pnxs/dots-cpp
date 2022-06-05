@@ -45,7 +45,7 @@ struct TestDispatcher : ::testing::Test
         /* do nothing */
     }
 
-    ::testing::MockFunction<void(const dots::type::StructDescriptor<>&, std::exception_ptr)> m_mockErrorHandler;
+    ::testing::MockFunction<void(const dots::type::StructDescriptor&, std::exception_ptr)> m_mockErrorHandler;
     dots::Dispatcher m_sut;
 };
 

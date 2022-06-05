@@ -3,17 +3,12 @@
 #include <dots/type/StaticDescriptor.h>
 #include <dots/type/Property.h>
 #include <dots/type/PropertyPath.h>
-#include <dots/type/FundamentalDescriptor.h>
 
 namespace dots::type
 {
     struct Struct;
 
-    template <typename = Typeless>
-    struct StructDescriptor;
-
-    template <>
-    struct StructDescriptor<> : StaticDescriptor
+    struct StructDescriptor : StaticDescriptor
     {
         static const uint8_t Uncached      = 0b0000'0000;
         static const uint8_t Cached        = 0b0000'0001;
@@ -216,5 +211,5 @@ namespace dots::type
     };
 
     template <typename TDescriptor>
-    struct type_category<TDescriptor, std::enable_if_t<std::is_same_v<StructDescriptor<>, TDescriptor>>> : std::integral_constant<Type, Type::Struct> {};
+    struct type_category<TDescriptor, std::enable_if_t<std::is_same_v<StructDescriptor, TDescriptor>>> : std::integral_constant<Type, Type::Struct> {};
 }

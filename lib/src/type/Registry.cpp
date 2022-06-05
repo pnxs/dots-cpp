@@ -114,9 +114,9 @@ namespace dots::type
         }
     }
 
-    const EnumDescriptor<>* Registry::findEnumType(std::string_view name, bool assertNotNull/* = false*/) const
+    const EnumDescriptor* Registry::findEnumType(std::string_view name, bool assertNotNull/* = false*/) const
     {
-        auto descriptor = static_cast<const EnumDescriptor<>*>(findType(name, assertNotNull));
+        auto descriptor = static_cast<const EnumDescriptor*>(findType(name, assertNotNull));
 
         if (descriptor != nullptr && descriptor->type() != Type::Enum)
         {
@@ -131,9 +131,9 @@ namespace dots::type
         return descriptor;
     }
 
-    const StructDescriptor<>* Registry::findStructType(std::string_view name, bool assertNotNull/* = false*/) const
+    const StructDescriptor* Registry::findStructType(std::string_view name, bool assertNotNull/* = false*/) const
     {
-        auto descriptor = static_cast<const StructDescriptor<>*>(findType(name, assertNotNull));
+        auto descriptor = static_cast<const StructDescriptor*>(findType(name, assertNotNull));
 
         if (descriptor != nullptr && descriptor->type() != Type::Struct)
         {
@@ -153,14 +153,14 @@ namespace dots::type
         return const_cast<Descriptor<>*>(std::as_const(*this).findType(name, assertNotNull));
     }
 
-    EnumDescriptor<>* Registry::findEnumType(std::string_view name, bool assertNotNull)
+    EnumDescriptor* Registry::findEnumType(std::string_view name, bool assertNotNull)
     {
-        return const_cast<EnumDescriptor<>*>(std::as_const(*this).findEnumType(name, assertNotNull));
+        return const_cast<EnumDescriptor*>(std::as_const(*this).findEnumType(name, assertNotNull));
     }
 
-    StructDescriptor<>* Registry::findStructType(std::string_view name, bool assertNotNull)
+    StructDescriptor* Registry::findStructType(std::string_view name, bool assertNotNull)
     {
-        return const_cast<StructDescriptor<>*>(std::as_const(*this).findStructType(name, assertNotNull));
+        return const_cast<StructDescriptor*>(std::as_const(*this).findStructType(name, assertNotNull));
     }
 
     const Descriptor<>& Registry::getType(std::string_view name) const
@@ -168,12 +168,12 @@ namespace dots::type
         return *findType(name, true);
     }
 
-    const EnumDescriptor<>& Registry::getEnumType(std::string_view name) const
+    const EnumDescriptor& Registry::getEnumType(std::string_view name) const
     {
         return *findEnumType(name, true);
     }
 
-    const  StructDescriptor<>& Registry::getStructType(std::string_view name) const
+    const  StructDescriptor& Registry::getStructType(std::string_view name) const
     {
         return *findStructType(name, true);
     }
@@ -183,14 +183,14 @@ namespace dots::type
         return const_cast<Descriptor<>&>(std::as_const(*this).getType(name));
     }
 
-    EnumDescriptor<>& Registry::getEnumType(std::string_view name)
+    EnumDescriptor& Registry::getEnumType(std::string_view name)
     {
-        return const_cast<EnumDescriptor<>&>(std::as_const(*this).getEnumType(name));
+        return const_cast<EnumDescriptor&>(std::as_const(*this).getEnumType(name));
     }
 
-    StructDescriptor<>& Registry::getStructType(std::string_view name)
+    StructDescriptor& Registry::getStructType(std::string_view name)
     {
-        return const_cast<StructDescriptor<>&>(std::as_const(*this).getStructType(name));
+        return const_cast<StructDescriptor&>(std::as_const(*this).getStructType(name));
     }
 
     bool Registry::hasType(std::string_view name) const
@@ -223,11 +223,11 @@ namespace dots::type
         {
             registerType(vectorDescriptor->valueDescriptor(), false);
         }
-        else if (auto enumDescriptor = descriptor.as<EnumDescriptor<>>(); enumDescriptor != nullptr)
+        else if (auto enumDescriptor = descriptor.as<EnumDescriptor>(); enumDescriptor != nullptr)
         {
             registerType(enumDescriptor->underlyingDescriptor(), false);
         }
-        else if (auto structDescriptor = descriptor.as<StructDescriptor<>>(); structDescriptor != nullptr)
+        else if (auto structDescriptor = descriptor.as<StructDescriptor>(); structDescriptor != nullptr)
         {
             for (PropertyDescriptor& propertyDescriptor : structDescriptor->propertyDescriptors())
             {
@@ -260,7 +260,7 @@ namespace dots::type
 
     bool Registry::IsUserType(const Descriptor<>& descriptor)
     {
-        if (const auto* structDescriptor = descriptor.as<StructDescriptor<>>(); structDescriptor != nullptr)
+        if (const auto* structDescriptor = descriptor.as<StructDescriptor>(); structDescriptor != nullptr)
         {
             return !structDescriptor->internal();
         }

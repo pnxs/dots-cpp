@@ -19,17 +19,17 @@ namespace dots
         return m_containerPool;
     }
 
-    const Container<>& Dispatcher::container(const type::StructDescriptor<>& descriptor) const
+    const Container<>& Dispatcher::container(const type::StructDescriptor& descriptor) const
     {
         return m_containerPool.get(descriptor);
     }
 
-    Container<>& Dispatcher::container(const type::StructDescriptor<>& descriptor)
+    Container<>& Dispatcher::container(const type::StructDescriptor& descriptor)
     {
         return m_containerPool.get(descriptor);
     }
 
-    auto Dispatcher::addTransmissionHandler(const type::StructDescriptor<>& descriptor, transmission_handler_t handler) -> id_t
+    auto Dispatcher::addTransmissionHandler(const type::StructDescriptor& descriptor, transmission_handler_t handler) -> id_t
     {
         id_t id = m_nextId++;
         m_transmissionHandlerPool[&descriptor].emplace(id, std::move(handler));
@@ -37,7 +37,7 @@ namespace dots
         return id;
     }
 
-    auto Dispatcher::addEventHandler(const type::StructDescriptor<>& descriptor, event_handler_t<> handler) -> id_t
+    auto Dispatcher::addEventHandler(const type::StructDescriptor& descriptor, event_handler_t<> handler) -> id_t
     {
         id_t id = m_nextId++;
         event_handlers_t& handlers = m_eventHandlerPool[&descriptor];
@@ -65,12 +65,12 @@ namespace dots
         return id;
     }
 
-    void Dispatcher::removeTransmissionHandler(const type::StructDescriptor<>& descriptor, id_t id)
+    void Dispatcher::removeTransmissionHandler(const type::StructDescriptor& descriptor, id_t id)
     {
         removeHandler(m_transmissionHandlerPool, descriptor, id);
     }
 
-    void Dispatcher::removeEventHandler(const type::StructDescriptor<>& descriptor, id_t id)
+    void Dispatcher::removeEventHandler(const type::StructDescriptor& descriptor, id_t id)
     {
         removeHandler(m_eventHandlerPool, descriptor, id);
     }
@@ -82,7 +82,7 @@ namespace dots
     }
 
     template <typename HandlerPool>
-    void Dispatcher::removeHandler(HandlerPool& handlerPool, const type::StructDescriptor<>& descriptor, id_t id)
+    void Dispatcher::removeHandler(HandlerPool& handlerPool, const type::StructDescriptor& descriptor, id_t id)
     {
         if (auto itHandlers = handlerPool.find(&descriptor); itHandlers != handlerPool.end())
         {
@@ -108,7 +108,7 @@ namespace dots
 
     void Dispatcher::dispatchTransmission(const io::Transmission& transmission)
     {
-        const type::StructDescriptor<>& descriptor = transmission.instance()->_descriptor();
+        const type::StructDescriptor& descriptor = transmission.instance()->_descriptor();
 
         auto itHandlers = m_transmissionHandlerPool.find(&descriptor);
 
@@ -123,7 +123,7 @@ namespace dots
 
     void Dispatcher::dispatchEvent(const DotsHeader& header, const type::AnyStruct& instance)
     {
-        const type::StructDescriptor<>& descriptor = instance->_descriptor();
+        const type::StructDescriptor& descriptor = instance->_descriptor();
         event_handlers_t& handlers = m_eventHandlerPool[&descriptor];
 
         if (descriptor.cached())
@@ -162,7 +162,7 @@ namespace dots
     }
 
     template <typename Handlers, typename Dispatchable>
-    void Dispatcher::dispatchToHandlers(const type::StructDescriptor<>& descriptor, Handlers& handlers, const Dispatchable& dispatchable)
+    void Dispatcher::dispatchToHandlers(const type::StructDescriptor& descriptor, Handlers& handlers, const Dispatchable& dispatchable)
     {
         for (const auto& [id, handler] : handlers)
         {

@@ -12,7 +12,7 @@ namespace dots::type
     };
 
     template <>
-    struct Descriptor<DynamicEnum> : EnumDescriptor<>
+    struct Descriptor<DynamicEnum> : EnumDescriptor
     {
         using value_t = DynamicEnum;
         static_assert(std::is_same_v<std::underlying_type_t<DynamicEnum>, int32_t>);

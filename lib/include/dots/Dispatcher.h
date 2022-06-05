@@ -32,7 +32,7 @@ namespace dots
     struct Dispatcher
     {
         using id_t = uint64_t;
-        using error_handler_t = tools::Handler<void(const type::StructDescriptor<>&, std::exception_ptr)>;
+        using error_handler_t = tools::Handler<void(const type::StructDescriptor&, std::exception_ptr)>;
         using transmission_handler_t = tools::Handler<void(const io::Transmission&)>;
         template <typename T = type::Struct>
         using event_handler_t = tools::Handler<void(const Event<T>&)>;
@@ -76,7 +76,7 @@ namespace dots
          *
          * @return const Container<>& A reference to the Container.
          */
-        const Container<>& container(const type::StructDescriptor<>& descriptor) const;
+        const Container<>& container(const type::StructDescriptor& descriptor) const;
 
         /*!
          * @brief Get a specific container by type.
@@ -88,7 +88,7 @@ namespace dots
          *
          * @return const Container<>& A reference to the Container.
          */
-        Container<>& container(const type::StructDescriptor<>& descriptor);
+        Container<>& container(const type::StructDescriptor& descriptor);
 
         /*!
          * @brief Add a transmission handler for a specific type.
@@ -113,7 +113,7 @@ namespace dots
          * the transmission handler by calling
          * Dispatcher::removeTransmissionHandler().
          */
-        id_t addTransmissionHandler(const type::StructDescriptor<>& descriptor, transmission_handler_t handler);
+        id_t addTransmissionHandler(const type::StructDescriptor& descriptor, transmission_handler_t handler);
 
         /*!
          * @brief Add an event handler for a specific type.
@@ -135,7 +135,7 @@ namespace dots
          * remove the event handler by calling
          * Dispatcher::removeEventHandler().
          */
-        id_t addEventHandler(const type::StructDescriptor<>& descriptor, event_handler_t<> handler);
+        id_t addEventHandler(const type::StructDescriptor& descriptor, event_handler_t<> handler);
 
         /*!
          * @brief Add an event handler for a specific type.
@@ -199,7 +199,7 @@ namespace dots
          * @param id The unique id of the handler as returned by
          * Dispatcher::addTransmissionHandler().
          */
-        void removeTransmissionHandler(const type::StructDescriptor<>& descriptor, id_t id);
+        void removeTransmissionHandler(const type::StructDescriptor& descriptor, id_t id);
 
         /*!
          * @brief Remove a specific event handler.
@@ -213,7 +213,7 @@ namespace dots
          * @param id The unique id of the handler as returned by
          * Dispatcher::addEventHandler().
          */
-        void removeEventHandler(const type::StructDescriptor<>& descriptor, id_t id);
+        void removeEventHandler(const type::StructDescriptor& descriptor, id_t id);
 
         /*!
          * @brief Dispatch a transmission.
@@ -329,19 +329,19 @@ namespace dots
     private:
 
         using transmission_handlers_t = std::map<id_t, transmission_handler_t, std::greater<>>;
-        using transmission_handler_pool_t = std::unordered_map<const type::StructDescriptor<>*, transmission_handlers_t>;
+        using transmission_handler_pool_t = std::unordered_map<const type::StructDescriptor*, transmission_handlers_t>;
 
         using event_handlers_t = std::map<id_t, event_handler_t<>, std::greater<>>;
-        using event_handler_pool_t = std::unordered_map<const type::StructDescriptor<>*, event_handlers_t>;
+        using event_handler_pool_t = std::unordered_map<const type::StructDescriptor*, event_handlers_t>;
 
         template <typename HandlerPool>
-        void removeHandler(HandlerPool& handlerPool, const type::StructDescriptor<>& descriptor, id_t id);
+        void removeHandler(HandlerPool& handlerPool, const type::StructDescriptor& descriptor, id_t id);
 
         void dispatchTransmission(const io::Transmission& transmission);
         void dispatchEvent(const DotsHeader& header, const type::AnyStruct& instance);
 
         template <typename Handlers, typename Dispatchable>
-        void dispatchToHandlers(const type::StructDescriptor<>& descriptor, Handlers& handlers, const Dispatchable& dispatchable);
+        void dispatchToHandlers(const type::StructDescriptor& descriptor, Handlers& handlers, const Dispatchable& dispatchable);
 
         std::optional<id_t> m_currentlyDispatchingId;
         std::vector<id_t> m_removeIds;

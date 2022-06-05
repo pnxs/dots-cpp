@@ -61,7 +61,7 @@ namespace dots::io
                     return;
                 }
 
-                const type::StructDescriptor<>* descriptor = other->registry().findStructType(*header.typeName);
+                const type::StructDescriptor* descriptor = other->registry().findStructType(*header.typeName);
 
                 if (descriptor == nullptr)
                 {

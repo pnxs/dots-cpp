@@ -9,11 +9,11 @@ namespace dots::io
     {
         DescriptorConverter(type::Registry& registry);
 
-        type::EnumDescriptor<>& operator () (const types::EnumDescriptorData& enumData) const;
-        type::StructDescriptor<>& operator () (const types::StructDescriptorData& structData) const;
+        type::EnumDescriptor& operator () (const types::EnumDescriptorData& enumData) const;
+        type::StructDescriptor& operator () (const types::StructDescriptorData& structData) const;
 
-        types::EnumDescriptorData operator () (const type::EnumDescriptor<>& enumDescriptor);
-        types::StructDescriptorData operator () (const type::StructDescriptor<>& structDescriptor);
+        types::EnumDescriptorData operator () (const type::EnumDescriptor& enumDescriptor);
+        types::StructDescriptorData operator () (const type::StructDescriptor& structDescriptor);
 
     private:
 

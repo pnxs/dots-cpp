@@ -391,7 +391,7 @@ TEST_F(TestDynamicStruct, _descriptor_AlignmentMatchesActualAlignment)
 TEST_F(TestDynamicStruct, _descriptor_FlagsHaveExpectedValues)
 {
     DynamicStruct sut{ *m_testDynamicStructDescriptor };
-    const StructDescriptor<>& descriptor = sut._descriptor();
+    const StructDescriptor& descriptor = sut._descriptor();
 
     EXPECT_TRUE(descriptor.cached());
     EXPECT_FALSE(descriptor.internal());

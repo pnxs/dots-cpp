@@ -12,7 +12,7 @@ namespace dots
         m_nextId(0),
         m_this(std::make_shared<Transceiver*>(this)),
         m_registry{ [this_{ m_this }](const type::Descriptor<>& descriptor){ (*this_)->handleNewType(descriptor); }, staticTypePolicy },
-        m_dispatcher{ [this_{ m_this }](const type::StructDescriptor<>& descriptor, std::exception_ptr ePtr){ (*this_)->handleDispatchError(descriptor, ePtr); } },
+        m_dispatcher{ [this_{ m_this }](const type::StructDescriptor& descriptor, std::exception_ptr ePtr){ (*this_)->handleDispatchError(descriptor, ePtr); } },
         m_selfName{ std::move(selfName) },
         m_ioContext(std::ref(ioContext)),
         m_transitionHandler{ std::move(transitionHandler) }
@@ -105,12 +105,12 @@ namespace dots
         return m_dispatcher.pool();
     }
 
-    const Container<>& Transceiver::container(const type::StructDescriptor<>& descriptor) const
+    const Container<>& Transceiver::container(const type::StructDescriptor& descriptor) const
     {
         return m_dispatcher.container(descriptor);
     }
 
-    Subscription Transceiver::subscribe(const type::StructDescriptor<>& descriptor, transmission_handler_t handler)
+    Subscription Transceiver::subscribe(const type::StructDescriptor& descriptor, transmission_handler_t handler)
     {
         if (descriptor.substructOnly())
         {
@@ -123,7 +123,7 @@ namespace dots
         return makeSubscription([&, id]{ m_dispatcher.removeTransmissionHandler(descriptor, id); });
     }
 
-    Subscription Transceiver::subscribe(const type::StructDescriptor<>& descriptor, event_handler_t<> handler)
+    Subscription Transceiver::subscribe(const type::StructDescriptor& descriptor, event_handler_t<> handler)
     {
         if (descriptor.substructOnly())
         {
@@ -194,7 +194,7 @@ namespace dots
         m_removeIds.clear();
     }
 
-    void Transceiver::handleDispatchError(const type::StructDescriptor<>& descriptor, std::exception_ptr ePtr) noexcept
+    void Transceiver::handleDispatchError(const type::StructDescriptor& descriptor, std::exception_ptr ePtr) noexcept
     {
         try
         {
