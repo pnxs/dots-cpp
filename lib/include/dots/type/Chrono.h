@@ -3,6 +3,12 @@
 #include <string_view>
 #include <chrono>
 
+namespace dots::type::chrono::experimental
+{
+    void set_time_zone_override(std::string_view timeZone = {});
+    void clear_time_zone_override();
+}
+
 namespace dots::type
 {
     using DurationBase = std::chrono::duration<double>;
