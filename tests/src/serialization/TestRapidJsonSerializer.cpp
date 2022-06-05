@@ -558,3 +558,15 @@ TEST_F(TestRapidJsonSerializer, deserialize_SpecificProperties)
         EXPECT_TRUE(structComplex._equal(Decoded().structComplex1, deserializerProperties));
     }
 }
+
+TEST_F(TestRapidJsonSerializer, deserialize_InvalidatePropertyWhenInputIsInvalid)
+{
+    SerializationStructSimple instance{
+        SerializationStructSimple::int32Property_i{ 42 }
+    };
+
+    std::string input = "{ \"int32Property\": null }";
+    EXPECT_TRUE(instance.int32Property.isValid());
+    serializer_t::Deserialize(input, instance);
+    EXPECT_FALSE(instance.int32Property.isValid());
+}

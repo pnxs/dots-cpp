@@ -235,6 +235,7 @@ namespace dots::serialization
         {
             if (reader().tryReadNull())
             {
+                property.destroy();
                 return false;
             }
             else

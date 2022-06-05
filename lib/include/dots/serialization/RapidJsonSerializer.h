@@ -442,6 +442,7 @@ namespace dots::serialization
         {
             if (m_reader.tryReadNull())
             {
+                property.destroy();
                 return false;
             }
             else

@@ -423,3 +423,15 @@ TEST_F(TestStringSerializer, deserialize_UnsignedIntegerWithInputPolicy)
         EXPECT_TRUE(actual._equal(expected));
     }
 }
+
+TEST_F(TestStringSerializer, deserialize_InvalidatePropertyWhenInputIsInvalid)
+{
+    SerializationStructSimple instance{
+        SerializationStructSimple::int32Property_i{ 42 }
+    };
+
+    std::string input = "SerializationStructSimple{ .int32Property = <invalid> }";
+    EXPECT_TRUE(instance.int32Property.isValid());
+    sut_t::Deserialize(input, instance);
+    EXPECT_FALSE(instance.int32Property.isValid());
+}
