@@ -62,8 +62,15 @@ namespace dots::type
         bool equal(const Typeless& lhs, const Typeless& rhs) const override;
         bool less(const Typeless& lhs, const Typeless& rhs) const override;
 
-        size_t areaOffset() const;
-        size_t numSubStructs() const;
+        size_t areaOffset() const
+        {
+            return m_areaOffset;
+        }
+
+        size_t numSubStructs() const
+        {
+            return m_numSubStructs;
+        }
 
         bool usesDynamicMemory() const override;
         size_t dynamicMemoryUsage(const Typeless& instance) const override;
@@ -89,24 +96,64 @@ namespace dots::type
         virtual const PropertyArea& propertyArea(const Struct& instance) const = 0;
         virtual PropertyArea& propertyArea(Struct& instance) const = 0;
 
-        uint8_t flags() const;
-        bool cached() const;
-        bool cleanup() const;
-        bool local() const;
-        bool persistent() const;
-        bool internal() const;
-        bool substructOnly() const;
+        uint8_t flags() const
+        {
+            return m_flags;
+        }
 
-        const property_descriptor_container_t& propertyDescriptors() const;
+        bool cached() const
+        {
+            return static_cast<bool>(m_flags & Cached);
+        }
+
+        bool cleanup() const
+        {
+            return static_cast<bool>(m_flags & Cleanup);
+        }
+
+        bool local() const
+        {
+            return static_cast<bool>(m_flags & Local);
+        }
+
+        bool persistent() const
+        {
+            return static_cast<bool>(m_flags & Persistent);
+        }
+
+        bool internal() const
+        {
+            return static_cast<bool>(m_flags & Internal);
+        }
+
+        bool substructOnly() const
+        {
+            return static_cast<bool>(m_flags & SubstructOnly);
+        }
+
+        const property_descriptor_container_t& propertyDescriptors() const
+        {
+            return m_propertyDescriptors;
+        }
+
         partial_property_descriptor_container_t propertyDescriptors(PropertySet properties) const;
-
         property_descriptor_container_t& propertyDescriptors();
-
         const std::vector<PropertyPath>& propertyPaths() const;
 
-        PropertySet properties() const;
-        PropertySet keyProperties() const;
-        PropertySet dynamicMemoryProperties() const;
+        PropertySet properties() const
+        {
+            return m_properties;
+        }
+
+        PropertySet keyProperties() const
+        {
+            return m_keyProperties;
+        }
+
+        PropertySet dynamicMemoryProperties() const
+        {
+            return m_dynamicMemoryProperties;
+        }
 
         template <typename T, std::enable_if_t<!std::is_same_v<T, Struct>, int> = 0>
         static T& assign(T& instance, const T& other, PropertySet includedProperties)

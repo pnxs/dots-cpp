@@ -55,12 +55,27 @@ namespace dots::type
         Descriptor& operator = (const Descriptor& rhs) = delete;
         Descriptor& operator = (Descriptor&& rhs) = delete;
 
-        Type type() const;
+        Type type() const
+        {
+            return m_type;
+        }
+
         virtual bool isFundamentalType() const;
 
-        const std::string& name() const;
-        size_t size() const;
-        size_t alignment() const;
+        const std::string& name() const
+        {
+            return m_name;
+        }
+
+        size_t size() const
+        {
+            return m_size;
+        }
+
+        size_t alignment() const
+        {
+            return m_alignment;
+        }
 
         virtual Typeless& construct(Typeless& value) const = 0;
         virtual Typeless& construct(Typeless& value, const Typeless& other) const = 0;

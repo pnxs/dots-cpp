@@ -162,16 +162,6 @@ namespace dots::type
         return less(lhs.to<Struct>(), rhs.to<Struct>(), PropertySet{ PropertySet::All });
     }
 
-    size_t StructDescriptor::areaOffset() const
-    {
-        return m_areaOffset;
-    }
-
-    size_t StructDescriptor::numSubStructs() const
-    {
-        return m_numSubStructs;
-    }
-
     bool StructDescriptor::usesDynamicMemory() const
     {
         return !m_dynamicMemoryProperties.empty();
@@ -369,46 +359,6 @@ namespace dots::type
         return symmetricDiff;
     }
 
-    uint8_t StructDescriptor::flags() const
-    {
-        return m_flags;
-    }
-
-    bool StructDescriptor::cached() const
-    {
-        return static_cast<bool>(m_flags & Cached);
-    }
-
-    bool StructDescriptor::cleanup() const
-    {
-        return static_cast<bool>(m_flags & Cleanup);
-    }
-
-    bool StructDescriptor::local() const
-    {
-        return static_cast<bool>(m_flags & Local);
-    }
-
-    bool StructDescriptor::persistent() const
-    {
-        return static_cast<bool>(m_flags & Persistent);
-    }
-
-    bool StructDescriptor::internal() const
-    {
-        return static_cast<bool>(m_flags & Internal);
-    }
-
-    bool StructDescriptor::substructOnly() const
-    {
-        return static_cast<bool>(m_flags & SubstructOnly);
-    }
-
-    const property_descriptor_container_t& StructDescriptor::propertyDescriptors() const
-    {
-        return m_propertyDescriptors;
-    }
-
     partial_property_descriptor_container_t StructDescriptor::propertyDescriptors(PropertySet properties) const
     {
         partial_property_descriptor_container_t partialPropertyDescriptors;
@@ -451,20 +401,5 @@ namespace dots::type
         }
 
         return m_propertyPaths;
-    }
-
-    PropertySet StructDescriptor::properties() const
-    {
-        return m_properties;
-    }
-
-    PropertySet StructDescriptor::keyProperties() const
-    {
-        return m_keyProperties;
-    }
-
-    PropertySet StructDescriptor::dynamicMemoryProperties() const
-    {
-        return m_dynamicMemoryProperties;
     }
 }
