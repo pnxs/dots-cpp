@@ -282,7 +282,7 @@ namespace dots
         const DotsHeader& m_header;
         const type::Struct& m_transmitted;
         const type::Struct& m_updated;
-        const DotsCloneInformation m_cloneInfo;
+        const DotsCloneInformation& m_cloneInfo;
         DotsMt m_mt;
     };
 

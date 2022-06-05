@@ -150,14 +150,14 @@ namespace dots
                 throw std::logic_error{ "cannot remove uncached instance for type: " + descriptor.name() };
             }
 
-            dispatchToHandlers(descriptor, handlers, Event<>{ header, instance, instance,
-                DotsCloneInformation{
-                    DotsCloneInformation::lastOperation_i{ DotsMt::create },
-                    DotsCloneInformation::createdFrom_i{ header.sender },
-                    DotsCloneInformation::created_i{ header.sentTime },
-                    DotsCloneInformation::localUpdateTime_i{ timepoint_t::Now() }
-                }
-            });
+            DotsCloneInformation cloneInfo{
+                DotsCloneInformation::lastOperation_i{ DotsMt::create },
+                DotsCloneInformation::createdFrom_i{ header.sender },
+                DotsCloneInformation::created_i{ header.sentTime },
+                DotsCloneInformation::localUpdateTime_i{ timepoint_t::Now() }
+            };
+
+            dispatchToHandlers(descriptor, handlers, Event<>{ header, instance, instance, cloneInfo });
         }
     }
 
