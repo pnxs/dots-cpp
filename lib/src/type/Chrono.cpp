@@ -212,8 +212,20 @@ namespace dots::type
                 std::istringstream iss{ value.data() };
                 iss.exceptions(std::istringstream::failbit | std::istringstream::badbit);
                 sys_time_t sysTimePoint;
-                iss >> date::parse(fmt == ISO8601DateTime ? "%FT%T%Ez" : fmt.data(), sysTimePoint);
 
+                if (fmt == ISO8601DateTime)
+                {
+                    if (value.back() == 'Z')
+                    {
+                        fmt = "%FT%TZ";
+                    }
+                    else
+                    {
+                        fmt = "%FT%T%Ez";
+                    }
+                }
+
+                iss >> date::parse(fmt.data(), sysTimePoint);
                 return TimePointImpl{ sysTimePoint.time_since_epoch() };
             }
         }
