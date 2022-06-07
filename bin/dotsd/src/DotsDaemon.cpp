@@ -53,22 +53,30 @@ namespace dots
 
             if (client.connectionState == DotsConnectionState::closed)
             {
-                for (const auto& [descriptor, container] : transceiver().pool())
+                bool isStale = [&]
                 {
-                    (void)descriptor;
-
-                    for (const auto& [instance, cloneInformation] : container)
+                    for (const auto& [descriptor, container] : transceiver().pool())
                     {
-                        (void)instance;
+                        (void)descriptor;
 
-                        if (cloneInformation.createdFrom == client.id || cloneInformation.lastUpdateFrom == client.id)
+                        for (const auto& [instance, cloneInformation] : container)
                         {
-                            break;
+                            (void)instance;
+
+                            if (cloneInformation.createdFrom == client.id || cloneInformation.lastUpdateFrom == client.id)
+                            {
+                                return false;
+                            }
                         }
                     }
-                }
 
-                expiredClients.emplace(client.id);
+                    return true;
+                }();
+
+                if (isStale)
+                {
+                    expiredClients.emplace(client.id);
+                }
             }
         }
 
