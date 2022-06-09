@@ -96,13 +96,13 @@ TEST_F(TestStaticStructExperimental, ctor_Initializer)
     TestStruct sut{
         .intProperty = 1,
         .stringProperty = "foo",
-        .floatVectorProperty = { 3.1415f, 2.7183f }
+        .floatVectorProperty = { 3.1415f, 2.7183f, 42, 73 }
     };
 
     EXPECT_EQ(sut.intProperty, 1);
     EXPECT_EQ(*sut.stringProperty, "foo");
     EXPECT_FALSE(sut.boolProperty.isValid());
-    EXPECT_EQ(sut.floatVectorProperty, vector_t<float32_t>({ 3.1415f, 2.7183f }));
+    EXPECT_EQ(sut.floatVectorProperty, vector_t<float32_t>({ 3.1415f, 2.7183f, 42, 73 }));
 }
 
 TEST_F(TestStaticStructExperimental, ctor_Copy)

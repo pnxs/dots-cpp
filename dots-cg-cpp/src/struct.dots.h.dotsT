@@ -100,7 +100,14 @@ namespace dots::types
             {{property.name}}_pt() = default;
             ~{{property.name}}_pt() = default;
             #endif
-            
+
+            {% if property.vector %}
+            {{property.name}}_pt(std::initializer_list<types::{{property.cxx_vector_type}}> init)
+            {
+                StaticProperty::construct<false>(init);
+            }
+
+            {% endif %}
             using StaticProperty::operator=;
 
         private:
