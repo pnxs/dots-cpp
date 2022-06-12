@@ -117,18 +117,7 @@ namespace dots::type
             setValid();
 
             static_assert(!IsTypeless || sizeof...(Args) <= 1, "typeless construct only supports a single argument");
-            if constexpr (!IsTypeless)
-            {
-                Descriptor<T>::constructInPlace(storage(), std::forward<Args>(args)...);
-            }
-            else if constexpr (sizeof...(Args) == 1)
-            {
-                descriptor().valueDescriptor().constructInPlace(storage(), std::forward<Args>(args)...);
-            }
-            else if constexpr (sizeof...(Args) == 0)
-            {
-                descriptor().valueDescriptor().constructInPlace(storage());
-            }
+            descriptor().valueDescriptor().constructInPlace(storage(), std::forward<Args>(args)...);
 
             return storage();
         }
@@ -137,15 +126,7 @@ namespace dots::type
         {
             if (isValid())
             {
-                if constexpr (IsTypeless)
-                {
-                    descriptor().valueDescriptor().destruct(storage());
-                }
-                else
-                {
-                    Descriptor<T>::destruct(storage());
-                }
-
+                descriptor().valueDescriptor().destruct(storage());
                 setInvalid();
             }
         }
@@ -221,18 +202,7 @@ namespace dots::type
             setValid();
 
             static_assert(!IsTypeless || sizeof...(Args) <= 1, "typeless assignment only supports a single argument");
-            if constexpr (!IsTypeless)
-            {
-                Descriptor<T>::assign(storage(), std::forward<Args>(args)...);
-            }
-            else if constexpr (sizeof...(Args) == 1)
-            {
-                descriptor().valueDescriptor().assign(storage(), std::forward<Args>(args)...);
-            }
-            else if constexpr (sizeof...(Args) == 0)
-            {
-                descriptor().valueDescriptor().assign(storage());
-            }
+            descriptor().valueDescriptor().assign(storage(), std::forward<Args>(args)...);
 
             return storage();
         }
@@ -256,14 +226,7 @@ namespace dots::type
             {
                 if (other.isValid())
                 {
-                    if constexpr (IsTypeless)
-                    {
-                        return descriptor().valueDescriptor().swap(storage(), other);
-                    }
-                    else
-                    {
-                        return Descriptor<T>::swap(storage(), other.storage());
-                    }
+                    return descriptor().valueDescriptor().swap(storage(), other.storage());
                 }
                 else
                 {
@@ -376,18 +339,9 @@ namespace dots::type
     {
         auto equal = [](const auto& lhs, const auto& rhs)
         {
-            using property_t = std::decay_t<decltype(lhs)>;
-
             if (lhs.isValid())
             {
-                if constexpr (property_t::IsTypeless)
-                {
-                    return lhs.descriptor().valueDescriptor().equal(lhs.storage(), rhs);
-                }
-                else
-                {
-                    return Descriptor<typename property_t::value_t>::equal(lhs.storage(), rhs);
-                }
+                return lhs.descriptor().valueDescriptor().equal(lhs.storage(), rhs);
             }
             else
             {
@@ -430,18 +384,9 @@ namespace dots::type
     {
         auto less = [](const auto& lhs, const auto& rhs)
         {
-            using property_t = std::decay_t<decltype(lhs)>;
-
             if (lhs.isValid())
             {
-                if constexpr (property_t::IsTypeless)
-                {
-                    return lhs.descriptor().valueDescriptor().less(lhs.storage(), rhs);
-                }
-                else
-                {
-                    return Descriptor<typename property_t::value_t>::less(lhs.storage(), rhs);
-                }
+                return lhs.descriptor().valueDescriptor().less(lhs.storage(), rhs);
             }
             else
             {
