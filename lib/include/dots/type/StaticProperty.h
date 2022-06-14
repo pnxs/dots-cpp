@@ -60,18 +60,12 @@ namespace dots::type
 
         StaticProperty(const StaticProperty& other) : Property<T, Derived>()
         {
-            if (other.isValid())
-            {
-                Property<T, Derived>::template construct<false>(static_cast<const Derived&>(other));
-            }
+            Property<T, Derived>::template construct<false>(static_cast<const Derived&>(other));
         }
 
         StaticProperty(StaticProperty&& other)
         {
-            if (other.isValid())
-            {
-                Property<T, Derived>::template construct<false>(static_cast<Derived&&>(other));
-            }
+            Property<T, Derived>::template construct<false>(static_cast<Derived&&>(other));
         }
 
         ~StaticProperty()
@@ -81,29 +75,13 @@ namespace dots::type
 
         StaticProperty& operator = (const StaticProperty& rhs)
         {
-            if (rhs.isValid())
-            {
-                Property<T, Derived>::constructOrAssign(static_cast<const Derived&>(rhs));
-            }
-            else
-            {
-                Property<T, Derived>::destroy();
-            }
-
+            Property<T, Derived>::constructOrAssign(static_cast<const Derived&>(rhs));
             return *this;
         }
 
         StaticProperty& operator = (StaticProperty&& rhs)
         {
-            if (rhs.isValid())
-            {
-                Property<T, Derived>::constructOrAssign(static_cast<Derived&&>(rhs));
-            }
-            else
-            {
-                Property<T, Derived>::destroy();
-            }
-
+            Property<T, Derived>::constructOrAssign(static_cast<Derived&&>(rhs));
             return *this;
         }
 

@@ -99,6 +99,21 @@ TEST_F(TestProperty, construct_EqualValueAfterEmplaceConstruction)
     EXPECT_EQ(m_sut.value(), "foo");
 }
 
+TEST_F(TestProperty, construct_EqualValueAfterConstructionFromOther)
+{
+    m_sutRhs.construct("foo");
+    m_sutLhs.construct(m_sutRhs);
+
+    EXPECT_TRUE(m_sutLhs.isValid());
+    EXPECT_EQ(m_sutLhs.value(), "foo");
+}
+
+TEST_F(TestProperty, construct_InvalidAfterConstructionFromInvalidOther)
+{
+    m_sutLhs.construct(m_sutRhs);
+    EXPECT_FALSE(m_sutLhs.isValid());
+}
+
 TEST_F(TestProperty, construct_ThrowOnOverconstruction)
 {
     m_sut.construct();
@@ -170,6 +185,24 @@ TEST_F(TestProperty, assign_EqualValueAfterImplicitAssign)
 
     EXPECT_TRUE(m_sut.isValid());
     EXPECT_EQ(m_sut.value(), "foo");
+}
+
+TEST_F(TestProperty, assign_EqualValueAfterAssignmentFromOther)
+{
+    m_sutLhs.construct("foo");
+    m_sutRhs.construct("bar");
+    m_sutLhs.assign(m_sutRhs);
+
+    EXPECT_TRUE(m_sutLhs.isValid());
+    EXPECT_EQ(m_sutLhs.value(), "bar");
+}
+
+TEST_F(TestProperty, assign_InvalidAfterAssignmentFromInvalidOther)
+{
+    m_sutLhs.construct("foo");
+    m_sutLhs.assign(m_sutRhs);
+
+    EXPECT_FALSE(m_sutLhs.isValid());
 }
 
 TEST_F(TestProperty, assign_EqualValueAfterEmplaceAssign)

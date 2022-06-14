@@ -12,7 +12,7 @@ namespace dots::type
     }
 
     template <typename T>
-    using is_property = std::is_base_of<details::property_tag, T>;
+    using is_property = std::is_base_of<details::property_tag, std::decay_t<T>>;
 
     template <typename T>
     using is_property_t = typename is_property<T>::type;
@@ -87,20 +87,43 @@ namespace dots::type
             return static_cast<const Derived&>(*this).derivedIsValid();
         }
 
-        template <bool AssertInvalidity = true>
-        T& construct(const Property& rhs)
+        template <bool AssertInvalidity = true, typename D>
+        Derived& construct(const Property<T, D>& rhs)
         {
-            construct<AssertInvalidity>(rhs.storage());
-            return *this;
+            if constexpr (AssertInvalidity)
+            {
+                if (isValid())
+                {
+                    throw std::runtime_error{ "attempt to construct already valid property: " + descriptor().name() };
+                }
+            }
+
+            if (rhs.isValid())
+            {
+                construct<false>(rhs.storage());
+            }
+
+            return static_cast<Derived&>(*this);
         }
 
-        template <bool AssertInvalidity = true>
-        T& construct(Property&& rhs)
+        template <bool AssertInvalidity = true, typename D>
+        Derived& construct(Property<T, D>&& rhs)
         {
-            construct<AssertInvalidity>(std::move(rhs.storage()));
-            rhs.destroy();
+            if constexpr (AssertInvalidity)
+            {
+                if (isValid())
+                {
+                    throw std::runtime_error{ "attempt to construct already valid property: " + descriptor().name() };
+                }
+            }
 
-            return *this;
+            if (rhs.isValid())
+            {
+                construct<false>(std::move(rhs.storage()));
+                rhs.destroy();
+            }
+
+            return static_cast<Derived&>(*this);
         }
 
         template <bool AssertInvalidity = true, typename... Args, std::enable_if_t<!std::disjunction_v<is_property<Args>...>, int> = 0>
@@ -172,20 +195,51 @@ namespace dots::type
             }
         }
 
-        template <bool AssertValidity = true>
-        T& assign(const Property& rhs)
+        template <bool AssertValidity = true, typename D>
+        Derived& assign(const Property<T, D>& rhs)
         {
-            assign<AssertValidity>(rhs.storage());
-            return *this;
+            if constexpr (AssertValidity)
+            {
+                if (!isValid())
+                {
+                    throw std::runtime_error{ "attempt to assign invalid property: " + descriptor().name() };
+                }
+            }
+
+            if (rhs.isValid())
+            {
+                assign<false>(rhs.storage());
+            }
+            else
+            {
+                destroy();
+            }
+
+            return static_cast<Derived&>(*this);
         }
 
-        template <bool AssertValidity = true>
-        T& assign(Property&& rhs)
+        template <bool AssertValidity = true, typename D>
+        Derived& assign(Property<T, D>&& rhs)
         {
-            assign<AssertValidity>(std::move(rhs.storage()));
-            rhs.destroy();
+            if constexpr (AssertValidity)
+            {
+                if (!isValid())
+                {
+                    throw std::runtime_error{ "attempt to assign invalid property: " + descriptor().name() };
+                }
+            }
 
-            return *this;
+            if (rhs.isValid())
+            {
+                assign<false>(std::move(rhs.storage()));
+                rhs.destroy();
+            }
+            else
+            {
+                destroy();
+            }
+
+            return static_cast<Derived&>(*this);
         }
 
         template <bool AssertValidity = true, typename... Args, std::enable_if_t<!std::disjunction_v<is_property<Args>...>, int> = 0>
@@ -207,7 +261,37 @@ namespace dots::type
             return storage();
         }
 
-        template <typename... Args>
+        template <typename D>
+        Derived& constructOrAssign(const Property<T, D>& rhs)
+        {
+            if (isValid())
+            {
+                assign<false>(rhs);
+            }
+            else
+            {
+                construct<false>(rhs);
+            }
+
+            return static_cast<Derived&>(*this);
+        }
+
+        template <typename D>
+        Derived& constructOrAssign(Property<T, D>&& rhs)
+        {
+            if (isValid())
+            {
+                assign<false>(std::move(rhs));
+            }
+            else
+            {
+                construct<false>(std::move(rhs));
+            }
+
+            return static_cast<Derived&>(*this);
+        }
+
+        template <typename... Args, std::enable_if_t<!std::disjunction_v<is_property<Args>...>, int> = 0>
         T& constructOrAssign(Args&&... args)
         {
             if (isValid())
@@ -220,7 +304,8 @@ namespace dots::type
             }
         }
 
-        void swap(Property& other)
+        template <typename D>
+        void swap(Property<T, D>& other)
         {
             if (isValid())
             {
@@ -246,7 +331,8 @@ namespace dots::type
             return *this == rhs;
         }
 
-        bool equal(const Property& rhs) const
+        template <typename D>
+        bool equal(const Property<T, D>& rhs) const
         {
             return *this == rhs;
         }
@@ -256,7 +342,8 @@ namespace dots::type
             return *this < rhs;
         }
 
-        bool less(const Property& rhs) const
+        template <typename D>
+        bool less(const Property<T, D>& rhs) const
         {
             return *this < rhs;
         }
@@ -266,7 +353,8 @@ namespace dots::type
             return *this <= rhs;
         }
 
-        bool lessEqual(const Property& rhs) const
+        template <typename D>
+        bool lessEqual(const Property<T, D>& rhs) const
         {
             return *this <= rhs;
         }
@@ -276,7 +364,8 @@ namespace dots::type
             return *this > rhs;
         }
 
-        bool greater(const Property& rhs) const
+        template <typename D>
+        bool greater(const Property<T, D>& rhs) const
         {
             return *this > rhs;
         }
@@ -286,7 +375,8 @@ namespace dots::type
             return *this >= rhs;
         }
 
-        bool greaterEqual(const Property& rhs) const
+        template <typename D>
+        bool greaterEqual(const Property<T, D>& rhs) const
         {
             return *this >= rhs;
         }

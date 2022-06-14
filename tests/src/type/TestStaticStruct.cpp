@@ -104,6 +104,22 @@ TEST_F(TestStaticStruct, ctor_Initializer)
     EXPECT_EQ(sut.floatVectorProperty, vector_t<float32_t>({ 3.1415f, 2.7183f }));
 }
 
+TEST_F(TestStaticStruct, ctor_InitializeFromCompatibleProperty)
+{
+    TestSubStruct subStruct{
+        TestSubStruct::p1_i{ true }
+    };
+
+    TestStruct sut{
+        TestStruct::boolProperty_i{ subStruct.p1 }
+    };
+
+    EXPECT_FALSE(sut.intProperty.isValid());
+    EXPECT_FALSE(sut.stringProperty.isValid());
+    EXPECT_EQ(sut.boolProperty, true);
+    EXPECT_FALSE(sut.floatVectorProperty.isValid());
+}
+
 TEST_F(TestStaticStruct, ctor_Copy)
 {
     TestStruct sutOther{
@@ -172,6 +188,36 @@ TEST_F(TestStaticStruct, assignment_Move)
     EXPECT_FALSE(sutOther.stringProperty.isValid());
     EXPECT_FALSE(sutOther.boolProperty.isValid());
     EXPECT_FALSE(sutOther.floatVectorProperty.isValid());
+}
+
+TEST_F(TestStaticStruct, assignment_FromValidCompatibleProperty)
+{
+    TestSubStruct subStruct{
+        TestSubStruct::p1_i{ true }
+    };
+
+    TestStruct sut{
+        TestStruct::boolProperty_i{ false }
+    };
+
+    EXPECT_EQ(sut.boolProperty, false);
+
+    sut.boolProperty = subStruct.p1;
+    EXPECT_EQ(sut.boolProperty, true);
+}
+
+TEST_F(TestStaticStruct, assignment_FromInvalidCompatibleProperty)
+{
+    TestSubStruct subStruct;
+
+    TestStruct sut{
+        TestStruct::boolProperty_i{ true }
+    };
+
+    EXPECT_EQ(sut.boolProperty, true);
+
+    sut.boolProperty = subStruct.p1;
+    EXPECT_FALSE(sut.boolProperty.isValid());
 }
 
 TEST_F(TestStaticStruct, assign_CompleteAssign)
