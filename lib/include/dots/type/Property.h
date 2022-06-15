@@ -27,22 +27,42 @@ namespace dots::type
         using value_t = T;
         static constexpr bool IsTypeless = std::is_same_v<T, Typeless>;
 
-        template <typename U>
-        static constexpr bool is_same_property_v = std::disjunction_v<std::is_same<std::decay_t<U>, Property>, std::is_same<std::decay_t<U>, Derived>>;
-
-        template <typename... Args>
-        static constexpr bool is_single_same_property_v = std::conjunction_v<std::bool_constant<sizeof...(Args) == 1>, std::bool_constant<is_same_property_v<Args>>...>;
-
-        template <typename... Args, std::enable_if_t<sizeof...(Args) >= 1 && !is_single_same_property_v<Args...>, int> = 0>
+        template <typename... Args, std::enable_if_t<sizeof...(Args) >= 1 && !std::disjunction_v<is_property<Args>...>, int> = 0>
         Property(Args&&... args)
         {
             Property<T, Derived>::construct<false>(std::forward<Args>(args)...);
         }
 
-        template <typename U, std::enable_if_t<!is_same_property_v<U>, int> = 0>
-        Derived& operator = (U&& rhs)
+        template <typename D, std::enable_if_t<!std::is_same_v<D, Derived>, int> = 0>
+        Property(const Property<T, D>& other)
         {
-            Property<T, Derived>::constructOrAssign(std::forward<U>(rhs));
+            Property<T, Derived>::construct<false>(other);
+        }
+
+        template <typename D, std::enable_if_t<!std::is_same_v<D, Derived>, int> = 0>
+        Property(Property<T, D>&& other)
+        {
+            Property<T, Derived>::construct<false>(std::move(other));
+        }
+
+        template <typename Arg, std::enable_if_t<!is_property_v<Arg>, int> = 0>
+        Derived& operator = (Arg&& rhs)
+        {
+            Property<T, Derived>::constructOrAssign(std::forward<Arg>(rhs));
+            return static_cast<Derived&>(*this);
+        }
+
+        template <typename D, std::enable_if_t<!std::is_same_v<D, Derived>, int> = 0>
+        Derived& operator = (const Property<T, D>& other)
+        {
+            Property<T, Derived>::constructOrAssign(other);
+            return static_cast<Derived&>(*this);
+        }
+
+        template <typename D, std::enable_if_t<!std::is_same_v<D, Derived>, int> = 0>
+        Derived& operator = (Property<T, D>&& other)
+        {
+            Property<T, Derived>::constructOrAssign(std::move(other));
             return static_cast<Derived&>(*this);
         }
 
