@@ -90,13 +90,7 @@ namespace dots::type
         template <bool AssertInvalidity = true, typename D>
         Derived& construct(const Property<T, D>& rhs)
         {
-            if constexpr (AssertInvalidity)
-            {
-                if (isValid())
-                {
-                    throw std::runtime_error{ "attempt to construct already valid property: " + descriptor().name() };
-                }
-            }
+            assertNotIsValid<AssertInvalidity>();
 
             if (rhs.isValid())
             {
@@ -109,13 +103,7 @@ namespace dots::type
         template <bool AssertInvalidity = true, typename D>
         Derived& construct(Property<T, D>&& rhs)
         {
-            if constexpr (AssertInvalidity)
-            {
-                if (isValid())
-                {
-                    throw std::runtime_error{ "attempt to construct already valid property: " + descriptor().name() };
-                }
-            }
+            assertNotIsValid<AssertInvalidity>();
 
             if (rhs.isValid())
             {
@@ -129,14 +117,7 @@ namespace dots::type
         template <bool AssertInvalidity = true, typename... Args, std::enable_if_t<!std::disjunction_v<is_property<Args>...>, int> = 0>
         T& construct(Args&&... args)
         {
-            if constexpr (AssertInvalidity)
-            {
-                if (isValid())
-                {
-                    throw std::runtime_error{ "attempt to construct already valid property: " + descriptor().name() };
-                }
-            }
-
+            assertNotIsValid<AssertInvalidity>();
             setValid();
 
             static_assert(!IsTypeless || sizeof...(Args) <= 1, "typeless construct only supports a single argument");
@@ -156,11 +137,7 @@ namespace dots::type
 
         const T& value() const
         {
-            if (!isValid())
-            {
-                throw std::runtime_error{ "attempt to access invalid property: " + descriptor().name() };
-            }
-
+            assertIsValid<true>();
             return storage();
         }
 
@@ -198,13 +175,7 @@ namespace dots::type
         template <bool AssertValidity = true, typename D>
         Derived& assign(const Property<T, D>& rhs)
         {
-            if constexpr (AssertValidity)
-            {
-                if (!isValid())
-                {
-                    throw std::runtime_error{ "attempt to assign invalid property: " + descriptor().name() };
-                }
-            }
+            assertIsValid<AssertValidity>();
 
             if (rhs.isValid())
             {
@@ -221,13 +192,7 @@ namespace dots::type
         template <bool AssertValidity = true, typename D>
         Derived& assign(Property<T, D>&& rhs)
         {
-            if constexpr (AssertValidity)
-            {
-                if (!isValid())
-                {
-                    throw std::runtime_error{ "attempt to assign invalid property: " + descriptor().name() };
-                }
-            }
+            assertIsValid<AssertValidity>();
 
             if (rhs.isValid())
             {
@@ -245,14 +210,7 @@ namespace dots::type
         template <bool AssertValidity = true, typename... Args, std::enable_if_t<!std::disjunction_v<is_property<Args>...>, int> = 0>
         T& assign(Args&&... args)
         {
-            if constexpr (AssertValidity)
-            {
-                if (!isValid())
-                {
-                    throw std::runtime_error{ "attempt to assign invalid property: " + descriptor().name() };
-                }
-            }
-
+            assertIsValid<AssertValidity>();
             setValid();
 
             static_assert(!IsTypeless || sizeof...(Args) <= 1, "typeless assignment only supports a single argument");
@@ -412,6 +370,30 @@ namespace dots::type
         constexpr Property& operator = (Property&& rhs) = default;
 
     private:
+
+        template <bool AssertValidity>
+        void assertIsValid() const
+        {
+            if constexpr (AssertValidity)
+            {
+                if (!isValid())
+                {
+                    throw std::runtime_error{ "property is expected to be valid but it is not: " + descriptor().name() };
+                }
+            }
+        }
+
+        template <bool AssertInvalidity>
+        void assertNotIsValid() const
+        {
+            if constexpr (AssertInvalidity)
+            {
+                if (isValid())
+                {
+                    throw std::runtime_error{ "property is expected to be invalid but it is not: " + descriptor().name() };
+                }
+            }
+        }
 
         void setValid()
         {
