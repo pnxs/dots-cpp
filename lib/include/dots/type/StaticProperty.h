@@ -9,8 +9,44 @@ namespace dots::type
     template <typename T, typename Derived>
     struct StaticProperty : Property<T, Derived>
     {
-        using Property<T, Derived>::Property;
-        using Property<T, Derived>::operator=;
+        template <typename... Args, std::enable_if_t<sizeof...(Args) >= 1 && !std::disjunction_v<is_property<Args>...>, int> = 0>
+        StaticProperty(Args&&... args)
+        {
+            StaticProperty<T, Derived>::template construct<false>(std::forward<Args>(args)...);
+        }
+
+        template <typename D, std::enable_if_t<!std::is_same_v<D, Derived>, int> = 0>
+        StaticProperty(const Property<T, D>& other)
+        {
+            StaticProperty<T, Derived>::template construct<false>(other);
+        }
+
+        template <typename D, std::enable_if_t<!std::is_same_v<D, Derived>, int> = 0>
+        StaticProperty(Property<T, D>&& other)
+        {
+            Property<T, Derived>::template construct<false>(std::move(other));
+        }
+
+        template <typename Arg, std::enable_if_t<!is_property_v<Arg>, int> = 0>
+        Derived& operator = (Arg&& rhs)
+        {
+            Property<T, Derived>::constructOrAssign(std::forward<Arg>(rhs));
+            return static_cast<Derived&>(*this);
+        }
+
+        template <typename D, std::enable_if_t<!std::is_same_v<D, Derived>, int> = 0>
+        Derived& operator = (const Property<T, D>& other)
+        {
+            Property<T, Derived>::constructOrAssign(other);
+            return static_cast<Derived&>(*this);
+        }
+
+        template <typename D, std::enable_if_t<!std::is_same_v<D, Derived>, int> = 0>
+        Derived& operator = (Property<T, D>&& other)
+        {
+            Property<T, Derived>::constructOrAssign(std::move(other));
+            return static_cast<Derived&>(*this);
+        }
 
         static constexpr std::string_view Name()
         {
