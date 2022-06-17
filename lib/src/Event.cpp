@@ -7,7 +7,7 @@ namespace dots
         m_transmitted(transmitted),
         m_updated(updated),
         m_cloneInfo(cloneInfo),
-        m_mt(mt == std::nullopt ? m_cloneInfo.lastOperation : *mt)
+        m_mt(mt == std::nullopt ? *m_cloneInfo.lastOperation : *mt)
     {
         /* do nothing */
     }

@@ -221,7 +221,7 @@ namespace dots
          * @return property_set_t The property set contained in the
          * transmission that triggered this event.
          */
-        property_set_t newProperties() const { return header().attributes; }
+        property_set_t newProperties() const { return *header().attributes; }
 
         /*!
          * @brief Get the updated properties.

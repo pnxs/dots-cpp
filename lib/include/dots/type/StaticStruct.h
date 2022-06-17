@@ -192,7 +192,7 @@ namespace dots::type
                     {
                         if constexpr (std::is_base_of_v<Struct, value_t>)
                         {
-                            propertyThis.constructOrValue()._merge(propertyOther);
+                            propertyThis.constructOrValue()._merge(*propertyOther);
                         }
                         else
                         {

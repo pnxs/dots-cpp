@@ -21,10 +21,10 @@ namespace dots::io
 
         for (const EnumElementDescriptor& enumeratorData : *enumData.elements)
         {
-            enumerators.emplace_back(enumeratorData.tag, enumeratorData.name, static_cast<type::DynamicEnum>(*enumeratorData.enum_value));
+            enumerators.emplace_back(*enumeratorData.tag, *enumeratorData.name, static_cast<type::DynamicEnum>(*enumeratorData.enum_value));
         }
 
-        return m_registry.get().registerType<type::Descriptor<type::DynamicEnum>>(enumData.name, std::move(enumerators));
+        return m_registry.get().registerType<type::Descriptor<type::DynamicEnum>>(*enumData.name, std::move(enumerators));
     }
 
     type::StructDescriptor& DescriptorConverter::operator () (const StructDescriptorData& structData) const
@@ -97,11 +97,11 @@ namespace dots::io
 
             if (last == nullptr)
             {
-                last = &propertyDescriptors.emplace_back(*descriptor, propertyData.name, propertyData.tag, propertyData.isKey, type::PropertyOffset::First(descriptor->alignment(), sizeof(type::PropertyArea)));
+                last = &propertyDescriptors.emplace_back(*descriptor, *propertyData.name, *propertyData.tag, *propertyData.isKey, type::PropertyOffset::First(descriptor->alignment(), sizeof(type::PropertyArea)));
             }
             else
             {
-                last = &propertyDescriptors.emplace_back(*descriptor, propertyData.name, propertyData.tag, propertyData.isKey, type::PropertyOffset::Next(descriptor->alignment(), last->offset(), last->valueDescriptor().size()));
+                last = &propertyDescriptors.emplace_back(*descriptor, *propertyData.name, *propertyData.tag, *propertyData.isKey, type::PropertyOffset::Next(descriptor->alignment(), last->offset(), last->valueDescriptor().size()));
             }
 
             alignment = std::max(last->valueDescriptor().alignment(), alignment);
@@ -109,7 +109,7 @@ namespace dots::io
 
         size_t size = type::PropertyOffset::Next(alignment, last->offset(), last->valueDescriptor().size());
 
-        return m_registry.get().registerType<type::Descriptor<type::DynamicStruct>>(structData.name, flags, propertyDescriptors, sizeof(type::DynamicStruct) + size);
+        return m_registry.get().registerType<type::Descriptor<type::DynamicStruct>>(*structData.name, flags, propertyDescriptors, sizeof(type::DynamicStruct) + size);
     }
 
     EnumDescriptorData DescriptorConverter::operator () (const type::EnumDescriptor& enumDescriptor)

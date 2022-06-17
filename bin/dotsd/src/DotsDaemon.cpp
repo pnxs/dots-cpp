@@ -75,7 +75,7 @@ namespace dots
 
                 if (isStale)
                 {
-                    expiredClients.emplace(client.id);
+                    expiredClients.emplace(*client.id);
                 }
             }
         }

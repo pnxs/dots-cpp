@@ -53,16 +53,6 @@ namespace dots::type
             return &value();
         }
 
-        operator T& ()
-        {
-            return value();
-        }
-
-        operator const T& () const
-        {
-            return value();
-        }
-
         bool isValid() const
         {
             return static_cast<const Derived&>(*this).derivedIsValid();

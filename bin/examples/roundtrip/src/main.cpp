@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
             {
                 std::cout << dots::to_string(roundtripData) << "\n";
 
-                if (uint32_t i = roundtripData.id + 1; i < NumInstances)
+                if (uint32_t i = *roundtripData.id + 1; i < NumInstances)
                 {
 
                     dots::publish(RoundtripData{
