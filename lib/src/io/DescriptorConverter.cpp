@@ -114,7 +114,10 @@ namespace dots::io
 
     EnumDescriptorData DescriptorConverter::operator () (const type::EnumDescriptor& enumDescriptor)
     {
-        EnumDescriptorData enumData{ EnumDescriptorData::name_i{ enumDescriptor.name() } };
+        EnumDescriptorData enumData{
+            EnumDescriptorData::name_i{ enumDescriptor.name() }
+        };
+
         vector_t<EnumElementDescriptor>& enumeratorData = enumData.elements.construct();
 
         for (const type::EnumeratorDescriptor& enumeratorDescriptor : enumDescriptor.enumeratorsTypeless())
@@ -130,27 +133,28 @@ namespace dots::io
 
     StructDescriptorData DescriptorConverter::operator () (const type::StructDescriptor& structDescriptor)
     {
-        StructDescriptorData structData;
-        structData.name.construct(structDescriptor.name());
-
-        auto& flags = structData.flags.construct();
-        flags.cached.construct(structDescriptor.cached());
-        flags.internal.construct(structDescriptor.internal());
-        flags.persistent.construct(structDescriptor.persistent());
-        flags.cleanup.construct(structDescriptor.cleanup());
-        flags.local.construct(structDescriptor.local());
-        flags.substructOnly.construct(structDescriptor.substructOnly());
+        StructDescriptorData structData{
+            StructDescriptorData::name_i{ structDescriptor.name() },
+            StructDescriptorData::flags_i{
+                DotsStructFlags::cached_i{ structDescriptor.cached() },
+                DotsStructFlags::internal_i{ structDescriptor.internal() },
+                DotsStructFlags::persistent_i{ structDescriptor.persistent() },
+                DotsStructFlags::cleanup_i{ structDescriptor.cleanup() },
+                DotsStructFlags::local_i{ structDescriptor.local() },
+                DotsStructFlags::substructOnly_i{ structDescriptor.substructOnly() }
+            }
+        };
 
         auto& properties = structData.properties.construct();
 
         for (const type::PropertyDescriptor& propertyDescriptor : structDescriptor.propertyDescriptors())
         {
-            StructPropertyData propertyData;
-            propertyData.tag.construct(propertyDescriptor.tag());
-            propertyData.name.construct(propertyDescriptor.name());
-            propertyData.isKey.construct(propertyDescriptor.isKey());
-            propertyData.type.construct(propertyDescriptor.valueDescriptor().name());
-            properties.emplace_back(propertyData);
+            properties.emplace_back(StructPropertyData{
+                StructPropertyData::tag_i{ propertyDescriptor.tag() },
+                StructPropertyData::name_i{ propertyDescriptor.name() },
+                StructPropertyData::isKey_i{ propertyDescriptor.isKey() },
+                StructPropertyData::type_i{ propertyDescriptor.valueDescriptor().name() }
+            });
         }
 
         return structData;

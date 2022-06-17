@@ -11,17 +11,19 @@ using namespace dots::type;
 
 TEST(TestAsciiSerialization, serialize)
 {
-    StructDescriptorData sd;
-    sd.name.construct("aName");
+    StructDescriptorData sd{
+        StructDescriptorData::name_i{ "aName" }
+    };
 
     auto& properties = sd.properties.construct();
     auto& documentation = sd.documentation.construct();
 
-    StructPropertyData pd;
-    pd.name.construct("aProperty");
-    pd.tag.construct(1);
-    pd.type.construct("type");
-    pd.isKey.construct(false);
+    StructPropertyData pd{
+        StructPropertyData::name_i{ "aProperty" },
+        StructPropertyData::tag_i{ 1 },
+        StructPropertyData::type_i{ "type" },
+        StructPropertyData::isKey_i{ false },
+    };
 
     properties.push_back(pd);
     pd.name = "anotherProperty";
@@ -58,17 +60,19 @@ TEST(TestAsciiSerialization, serialize)
 
 TEST(TestAsciiSerialization, serializeSingleLine)
 {
-    StructDescriptorData sd;
-    sd.name.construct("aName");
+    StructDescriptorData sd{
+        StructDescriptorData::name_i{ "aName" }
+    };
 
     auto& properties = sd.properties.construct();
     auto& documentation = sd.documentation.construct();
-
-    StructPropertyData pd;
-    pd.name.construct("aProperty");
-    pd.tag.construct(1);
-    pd.type.construct("type");
-    pd.isKey.construct(false);
+    
+    StructPropertyData pd{
+        StructPropertyData::name_i{ "aProperty" },
+        StructPropertyData::tag_i{ 1 },
+        StructPropertyData::type_i{ "type" },
+        StructPropertyData::isKey_i{ false },
+    };
 
     properties.push_back(pd);
     pd.name = "anotherProperty";
@@ -88,11 +92,12 @@ TEST(TestAsciiSerialization, serializeSingleLine)
 
 TEST(TestAsciiSerialization, serializeSingleLineWithEnums)
 {
-    DotsTestStruct ts;
-    ts.indKeyfField.construct(42);
-    ts.enumField.construct(DotsTestEnum::value3);
-    ts.tp.construct(TimePoint());
-    ts.uuid.construct(dots::uuid_t{ dots::uuid_t::value_t{} });
+    DotsTestStruct ts{
+        DotsTestStruct::indKeyfField_i{ 42 },
+        DotsTestStruct::enumField_i{ DotsTestEnum::value3 },
+        DotsTestStruct::tp_i{ TimePoint() },
+        DotsTestStruct::uuid_i{ dots::uuid_t{ dots::uuid_t::value_t{} } }
+    };
 
     dots::ToAsciiOptions options;
     options.singleLine = true;
@@ -123,17 +128,19 @@ struct TraceColorSchema: dots::ToAsciiColorSchema
 
 TEST(TestAsciiSerialization, serializeSingleLineColored)
 {
-    StructDescriptorData sd;
-    sd.name.construct("aName");
+    StructDescriptorData sd{
+        StructDescriptorData::name_i{ "aName" }
+    };
 
     auto& properties = sd.properties.construct();
     auto& documentation = sd.documentation.construct();
 
-    StructPropertyData pd;
-    pd.name.construct("aProperty");
-    pd.tag.construct(1);
-    pd.type.construct("type");
-    pd.isKey.construct(false);
+    StructPropertyData pd{
+        StructPropertyData::name_i{ "aProperty" },
+        StructPropertyData::tag_i{ 1 },
+        StructPropertyData::type_i{ "type" },
+        StructPropertyData::isKey_i{ false },
+    };
 
     properties.push_back(pd);
     pd.name = "anotherProperty";
