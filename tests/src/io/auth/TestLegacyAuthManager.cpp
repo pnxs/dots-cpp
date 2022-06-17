@@ -65,13 +65,13 @@ TEST_F(TestLegacyAuthManager, testFindNetwork)
 
     {
         DotsAuthentication a{ DotsAuthentication::nameSpace_i{ "" }, DotsAuthentication::network_i{ DotsNetwork::network_i{ "127.0.0.1" }, DotsNetwork::prefix_i{ 8 } }, DotsAuthentication::clientName_i{ "" }, DotsAuthentication::priority_i{ 10 } };
-        a.accept(true);
+        a.accept.construct(true);
         m_transceiver.publish(a);
     }
     {
         DotsAuthentication a{ DotsAuthentication::nameSpace_i{ "" }, DotsAuthentication::network_i{ DotsNetwork::network_i{ "192.168.2.10" }, DotsNetwork::prefix_i{ 24 } }, DotsAuthentication::clientName_i{ "" }, DotsAuthentication::priority_i{ 20 } };
-        a.accept(true);
-        a.secret("mysecret");
+        a.accept.construct(true);
+        a.secret.construct("mysecret");
         m_transceiver.publish(a);
     }
 
@@ -98,19 +98,19 @@ TEST_F(TestLegacyAuthManager, testRulePriority)
 
     {
         DotsAuthentication a{ DotsAuthentication::nameSpace_i{ "" }, DotsAuthentication::network_i{ DotsNetwork::network_i{ "127.0.0.1" }, DotsNetwork::prefix_i{ 8 } }, DotsAuthentication::clientName_i{ "" }, DotsAuthentication::priority_i{ 20 } };
-        a.accept(true);
+        a.accept.construct(true);
         m_transceiver.publish(a);
     }
     {
         DotsAuthentication a{ DotsAuthentication::nameSpace_i{ "" }, DotsAuthentication::network_i{ DotsNetwork::network_i{ "0.0.0.0" }, DotsNetwork::prefix_i{ 0 } }, DotsAuthentication::clientName_i{ "" }, DotsAuthentication::priority_i{ 10 } };
-        a.accept(false);
-        a.secret("remote");
+        a.accept.construct(false);
+        a.secret.construct("remote");
         m_transceiver.publish(a);
     }
     {
         DotsAuthentication a{ DotsAuthentication::nameSpace_i{ "" }, DotsAuthentication::network_i{ DotsNetwork::network_i{ "192.168.1.2" }, DotsNetwork::prefix_i{ 24 } }, DotsAuthentication::clientName_i{ "" }, DotsAuthentication::priority_i{ 5 } };
-        a.accept(true);
-        a.secret("lan");
+        a.accept.construct(true);
+        a.secret.construct("lan");
         m_transceiver.publish(a);
     }
 
@@ -140,7 +140,7 @@ TEST_F(TestLegacyAuthManager, testDefaultPolicy)
 
     {
         DotsAuthenticationPolicy d{ DotsAuthenticationPolicy::nameSpace_i{ "" } };
-        d.accept(false);
+        d.accept.construct(false);
         m_transceiver.publish(d);
     }
 
@@ -149,7 +149,7 @@ TEST_F(TestLegacyAuthManager, testDefaultPolicy)
 
     {
         DotsAuthenticationPolicy d{ DotsAuthenticationPolicy::nameSpace_i{ "" } };
-        d.accept(true);
+        d.accept.construct(true);
         m_transceiver.publish(d);
     }
 
@@ -172,31 +172,31 @@ TEST_F(TestLegacyAuthManager, testCheckAuthentication)
 
     {
         DotsAuthentication a{ DotsAuthentication::nameSpace_i{ "" }, DotsAuthentication::network_i{ DotsNetwork::network_i{ "127.0.0.1" }, DotsNetwork::prefix_i{ 8 } }, DotsAuthentication::clientName_i{ "" }, DotsAuthentication::priority_i{ 10 } };
-        a.accept(true);
+        a.accept.construct(true);
         m_transceiver.publish(a);
     }
     {
         DotsAuthentication a{ DotsAuthentication::nameSpace_i{ "" }, DotsAuthentication::network_i{ DotsNetwork::network_i{ "192.168.1.2" }, DotsNetwork::prefix_i{ 24 } }, DotsAuthentication::clientName_i{ "" }, DotsAuthentication::priority_i{ 20 } };
-        a.accept(true);
-        a.secret(secret_lan);
+        a.accept.construct(true);
+        a.secret.construct(secret_lan);
         m_transceiver.publish(a);
     }
     {
         DotsAuthentication a{ DotsAuthentication::nameSpace_i{ "" }, DotsAuthentication::network_i{ DotsNetwork::network_i{ "192.168.1.2" }, DotsNetwork::prefix_i{ 24 } }, DotsAuthentication::clientName_i{ "" }, DotsAuthentication::priority_i{ 21 } };
-        a.accept(true);
-        a.secret(secret_lan2);
+        a.accept.construct(true);
+        a.secret.construct(secret_lan2);
         m_transceiver.publish(a);
     }
     {
         DotsAuthentication a{ DotsAuthentication::nameSpace_i{ "" }, DotsAuthentication::network_i{ DotsNetwork::network_i{ "10.0.0.0" }, DotsNetwork::prefix_i{ 8 } }, DotsAuthentication::clientName_i{ "" }, DotsAuthentication::priority_i{ 22 } };
-        a.accept(true);
-        a.secret(secret_other);
+        a.accept.construct(true);
+        a.secret.construct(secret_other);
         m_transceiver.publish(a);
     }
 
     {
         DotsAuthenticationPolicy d{ DotsAuthenticationPolicy::nameSpace_i{ "" } };
-        d.accept(false);
+        d.accept.construct(false);
         m_transceiver.publish(d);
     }
 
@@ -207,7 +207,7 @@ TEST_F(TestLegacyAuthManager, testCheckAuthentication)
     {
         auto addr = boost::asio::ip::address::from_string("127.0.0.1");
         DotsMsgConnect response;
-        response.clientName("dummyClient");
+        response.clientName.construct("dummyClient");
 
         EXPECT_TRUE(m_sut.verifyResponse(addr, nonce, response));
     }
@@ -215,13 +215,13 @@ TEST_F(TestLegacyAuthManager, testCheckAuthentication)
     {
         auto addr = boost::asio::ip::address::from_string("192.168.1.11");
         DotsMsgConnect response;
-        response.clientName("dummyClient");
-        response.cnonce("noncense");
+        response.clientName.construct("dummyClient");
+        response.cnonce.construct("noncense");
 
         auto responseHash = dots::io::Digest(nonce, *response.cnonce, *response.clientName, secret_lan).value();
         std::string responseStr = boost::algorithm::hex_lower(std::string(responseHash.begin(), responseHash.end()));
 
-        response.authChallengeResponse(responseStr);
+        response.authChallengeResponse.construct(responseStr);
 
         EXPECT_TRUE(m_sut.verifyResponse(addr, nonce, response));
     }
@@ -229,13 +229,13 @@ TEST_F(TestLegacyAuthManager, testCheckAuthentication)
     {
         auto addr = boost::asio::ip::address::from_string("192.168.1.11");
         DotsMsgConnect response;
-        response.clientName("dummyClient");
-        response.cnonce("noncense");
+        response.clientName.construct("dummyClient");
+        response.cnonce.construct("noncense");
 
         auto responseHash = dots::io::Digest(nonce, *response.cnonce, *response.clientName, secret_lan2).value();
         std::string responseStr = boost::algorithm::hex_lower(std::string(responseHash.begin(), responseHash.end()));
 
-        response.authChallengeResponse(responseStr);
+        response.authChallengeResponse.construct(responseStr);
 
         EXPECT_TRUE(m_sut.verifyResponse(addr, nonce, response));
     }
@@ -243,13 +243,13 @@ TEST_F(TestLegacyAuthManager, testCheckAuthentication)
     {
         auto addr = boost::asio::ip::address::from_string("10.10.1.2");
         DotsMsgConnect response;
-        response.clientName("dummyClient");
-        response.cnonce("noncense");
+        response.clientName.construct("dummyClient");
+        response.cnonce.construct("noncense");
 
         auto responseHash = dots::io::Digest(nonce, *response.cnonce, *response.clientName, secret_other).value();
         std::string responseStr = boost::algorithm::hex_lower(std::string(responseHash.begin(), responseHash.end()));
 
-        response.authChallengeResponse(responseStr);
+        response.authChallengeResponse.construct(responseStr);
 
         EXPECT_TRUE(m_sut.verifyResponse(addr, nonce, response));
     }
@@ -257,13 +257,13 @@ TEST_F(TestLegacyAuthManager, testCheckAuthentication)
     {
         auto addr = boost::asio::ip::address::from_string("1.2.3.4");
         DotsMsgConnect response;
-        response.clientName("dummyClient");
-        response.cnonce("noncense");
+        response.clientName.construct("dummyClient");
+        response.cnonce.construct("noncense");
 
         auto responseHash = dots::io::Digest(nonce, *response.cnonce, *response.clientName, "blub").value();
         std::string responseStr = boost::algorithm::hex_lower(std::string(responseHash.begin(), responseHash.end()));
 
-        response.authChallengeResponse(responseStr);
+        response.authChallengeResponse.construct(responseStr);
 
         EXPECT_FALSE(m_sut.verifyResponse(addr, nonce, response));
     }
@@ -276,7 +276,7 @@ TEST_F(TestLegacyAuthManager, testCheckAuthenticationDefault)
     {
         auto addr = boost::asio::ip::address::from_string("127.0.0.1");
         DotsMsgConnect response;
-        response.clientName("dummyClient");
+        response.clientName.construct("dummyClient");
 
         EXPECT_TRUE(m_sut.verifyResponse(addr, nonce, response));
     }
@@ -284,13 +284,13 @@ TEST_F(TestLegacyAuthManager, testCheckAuthenticationDefault)
     {
         auto addr = boost::asio::ip::address::from_string("192.168.1.11");
         DotsMsgConnect response;
-        response.clientName("dummyClient");
-        response.cnonce("noncense");
+        response.clientName.construct("dummyClient");
+        response.cnonce.construct("noncense");
 
         auto responseHash = dots::io::Digest(nonce, *response.cnonce, *response.clientName, "lan").value();
         std::string responseStr = boost::algorithm::hex_lower(std::string(responseHash.begin(), responseHash.end()));
 
-        response.authChallengeResponse(responseStr);
+        response.authChallengeResponse.construct(responseStr);
 
         EXPECT_TRUE(m_sut.verifyResponse(addr, nonce, response));
     }

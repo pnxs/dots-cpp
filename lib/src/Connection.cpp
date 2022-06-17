@@ -279,7 +279,7 @@ namespace dots
                 {
                     if (!header.sentTime.isValid())
                     {
-                        header.sentTime(timepoint_t::Now());
+                        header.sentTime.construct(timepoint_t::Now());
                     }
 
                     if (header.sender.isValid())
@@ -289,7 +289,7 @@ namespace dots
                     }
                     else
                     {
-                        header.sender(m_peerId);
+                        header.sender.construct(m_peerId);
                         header.isFromMyself = false;
                         return (*m_receiveHandler)(*this, std::move(transmission));
                     }

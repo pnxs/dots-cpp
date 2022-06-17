@@ -27,12 +27,6 @@ namespace dots::type
         using value_t = T;
         static constexpr bool IsTypeless = std::is_same_v<T, Typeless>;
 
-        template <typename... Args, std::enable_if_t<sizeof...(Args) >= 1, int> = 0>
-        T& operator () (Args&&... args)
-        {
-            return construct(std::forward<Args>(args)...);
-        }
-
         T& operator * ()
         {
             return value();

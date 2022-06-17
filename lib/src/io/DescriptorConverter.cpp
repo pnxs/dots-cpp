@@ -131,25 +131,25 @@ namespace dots::io
     StructDescriptorData DescriptorConverter::operator () (const type::StructDescriptor& structDescriptor)
     {
         StructDescriptorData structData;
-        structData.name(structDescriptor.name());
+        structData.name.construct(structDescriptor.name());
 
         auto& flags = structData.flags.construct();
-        flags.cached(structDescriptor.cached());
-        flags.internal(structDescriptor.internal());
-        flags.persistent(structDescriptor.persistent());
-        flags.cleanup(structDescriptor.cleanup());
-        flags.local(structDescriptor.local());
-        flags.substructOnly(structDescriptor.substructOnly());
+        flags.cached.construct(structDescriptor.cached());
+        flags.internal.construct(structDescriptor.internal());
+        flags.persistent.construct(structDescriptor.persistent());
+        flags.cleanup.construct(structDescriptor.cleanup());
+        flags.local.construct(structDescriptor.local());
+        flags.substructOnly.construct(structDescriptor.substructOnly());
 
         auto& properties = structData.properties.construct();
 
         for (const type::PropertyDescriptor& propertyDescriptor : structDescriptor.propertyDescriptors())
         {
             StructPropertyData propertyData;
-            propertyData.tag(propertyDescriptor.tag());
-            propertyData.name(propertyDescriptor.name());
-            propertyData.isKey(propertyDescriptor.isKey());
-            propertyData.type(propertyDescriptor.valueDescriptor().name());
+            propertyData.tag.construct(propertyDescriptor.tag());
+            propertyData.name.construct(propertyDescriptor.name());
+            propertyData.isKey.construct(propertyDescriptor.isKey());
+            propertyData.type.construct(propertyDescriptor.valueDescriptor().name());
             properties.emplace_back(propertyData);
         }
 

@@ -12,24 +12,24 @@ using namespace dots::type;
 TEST(TestAsciiSerialization, serialize)
 {
     StructDescriptorData sd;
-    sd.name("aName");
+    sd.name.construct("aName");
 
     auto& properties = sd.properties.construct();
     auto& documentation = sd.documentation.construct();
 
     StructPropertyData pd;
-    pd.name("aProperty");
-    pd.tag(1);
-    pd.type("type");
-    pd.isKey(false);
+    pd.name.construct("aProperty");
+    pd.tag.construct(1);
+    pd.type.construct("type");
+    pd.isKey.construct(false);
 
     properties.push_back(pd);
     pd.name = "anotherProperty";
     pd.tag = 2;
     properties.push_back(pd);
 
-    documentation.description("aDescription");
-    documentation.comment("aComment");
+    documentation.description.construct("aDescription");
+    documentation.comment.construct("aComment");
 
     std::string expectedOutput = "{\n"
             "    name=aName\n"
@@ -59,24 +59,24 @@ TEST(TestAsciiSerialization, serialize)
 TEST(TestAsciiSerialization, serializeSingleLine)
 {
     StructDescriptorData sd;
-    sd.name("aName");
+    sd.name.construct("aName");
 
     auto& properties = sd.properties.construct();
     auto& documentation = sd.documentation.construct();
 
     StructPropertyData pd;
-    pd.name("aProperty");
-    pd.tag(1);
-    pd.type("type");
-    pd.isKey(false);
+    pd.name.construct("aProperty");
+    pd.tag.construct(1);
+    pd.type.construct("type");
+    pd.isKey.construct(false);
 
     properties.push_back(pd);
     pd.name = "anotherProperty";
     pd.tag = 2;
     properties.push_back(pd);
 
-    documentation.description("aDescription");
-    documentation.comment("aComment");
+    documentation.description.construct("aDescription");
+    documentation.comment.construct("aComment");
 
     dots::ToAsciiOptions options;
     options.singleLine = true;
@@ -89,10 +89,10 @@ TEST(TestAsciiSerialization, serializeSingleLine)
 TEST(TestAsciiSerialization, serializeSingleLineWithEnums)
 {
     DotsTestStruct ts;
-    ts.indKeyfField(42);
-    ts.enumField(DotsTestEnum::value3);
-    ts.tp(TimePoint());
-    ts.uuid(dots::uuid_t{ dots::uuid_t::value_t{} });
+    ts.indKeyfField.construct(42);
+    ts.enumField.construct(DotsTestEnum::value3);
+    ts.tp.construct(TimePoint());
+    ts.uuid.construct(dots::uuid_t{ dots::uuid_t::value_t{} });
 
     dots::ToAsciiOptions options;
     options.singleLine = true;
@@ -124,24 +124,24 @@ struct TraceColorSchema: dots::ToAsciiColorSchema
 TEST(TestAsciiSerialization, serializeSingleLineColored)
 {
     StructDescriptorData sd;
-    sd.name("aName");
+    sd.name.construct("aName");
 
     auto& properties = sd.properties.construct();
     auto& documentation = sd.documentation.construct();
 
     StructPropertyData pd;
-    pd.name("aProperty");
-    pd.tag(1);
-    pd.type("type");
-    pd.isKey(false);
+    pd.name.construct("aProperty");
+    pd.tag.construct(1);
+    pd.type.construct("type");
+    pd.isKey.construct(false);
 
     properties.push_back(pd);
     pd.name = "anotherProperty";
     pd.tag = 2;
     properties.push_back(pd);
 
-    documentation.description("aDescription");
-    documentation.comment("aComment");
+    documentation.description.construct("aDescription");
+    documentation.comment.construct("aComment");
 
     dots::ToAsciiOptions options;
     TraceColorSchema cs;
