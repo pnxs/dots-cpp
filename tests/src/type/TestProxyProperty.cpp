@@ -216,17 +216,14 @@ TEST_F(TestProxyProperty, equal_CompareNotEqualToValueWhenInvalid)
 {
     std::string rhs{ "foo" };
 
-    EXPECT_FALSE(m_sut.equal(rhs));
     EXPECT_FALSE(m_sut == rhs);
     EXPECT_TRUE(m_sut != rhs);
 }
 TEST_F(TestProxyProperty, equal_CompareEqualToValueWhenValid)
 {
     std::string rhs{ "foo" };
-
     m_sut.construct("foo");
 
-    EXPECT_TRUE(m_sut.equal(rhs));
     EXPECT_TRUE(m_sut == rhs);
     EXPECT_FALSE(m_sut != rhs);
 }
@@ -234,10 +231,8 @@ TEST_F(TestProxyProperty, equal_CompareEqualToValueWhenValid)
 TEST_F(TestProxyProperty, equal_CompareNotEqualToValueWhenValid)
 {
     std::string rhs{ "bar" };
-
     m_sut.construct("foo");
 
-    EXPECT_FALSE(m_sut.equal(rhs));
     EXPECT_FALSE(m_sut == rhs);
     EXPECT_TRUE(m_sut != rhs);
 }
@@ -246,7 +241,6 @@ TEST_F(TestProxyProperty, equal_CompareNotEqualToValidPropertyWhenInvalid)
 {
     m_sutRhs.construct("foo");
 
-    EXPECT_FALSE(m_sutLhs.equal(m_sutRhs));
     EXPECT_FALSE(m_sutLhs == m_sutRhs);
     EXPECT_TRUE(m_sutLhs != m_sutRhs);
 }
@@ -256,7 +250,6 @@ TEST_F(TestProxyProperty, equal_CompareEqualToValidPropertyWhenValid)
     m_sutLhs.construct("foo");
     m_sutRhs.construct("foo");
 
-    EXPECT_TRUE(m_sutLhs.equal(m_sutRhs));
     EXPECT_TRUE(m_sutLhs == m_sutRhs);
     EXPECT_FALSE(m_sutLhs != m_sutRhs);
 }
@@ -266,7 +259,6 @@ TEST_F(TestProxyProperty, equal_CompareNotEqualToValidPropertyWhenValid)
     m_sutLhs.construct("foo");
     m_sutRhs.construct("bar");
 
-    EXPECT_FALSE(m_sutLhs.equal(m_sutRhs));
     EXPECT_FALSE(m_sutLhs == m_sutRhs);
     EXPECT_TRUE(m_sutLhs != m_sutRhs);
 }
@@ -274,42 +266,33 @@ TEST_F(TestProxyProperty, equal_CompareNotEqualToValidPropertyWhenValid)
 TEST_F(TestProxyProperty, less_CompareNotLessToValueWhenInvalid)
 {
     std::string rhs{ "fou" };
-
-    EXPECT_FALSE(m_sut.less(rhs));
     EXPECT_FALSE(m_sut < rhs);
 }
 
 TEST_F(TestProxyProperty, less_CompareLessToValueWhenValid)
 {
     std::string rhs{ "fou" };
-
     m_sut.construct("foo");
 
-    EXPECT_TRUE(m_sut.less(rhs));
     EXPECT_TRUE(m_sut < rhs);
 }
 
 TEST_F(TestProxyProperty, less_CompareNotLessToValueWhenValid)
 {
     std::string rhs{ "bar" };
-
     m_sut.construct("foo");
 
-    EXPECT_FALSE(m_sut.less(rhs));
     EXPECT_FALSE(m_sut < rhs);
 }
 
 TEST_F(TestProxyProperty, less_CompareLessToInvalidPropertyWhenInvalid)
 {
-    EXPECT_FALSE(m_sutLhs.less(m_sutRhs));
     EXPECT_FALSE(m_sutLhs < m_sutRhs);
 }
 
 TEST_F(TestProxyProperty, less_CompareNotLessToValidPropertyWhenInvalid)
 {
     m_sutRhs.construct("fou");
-
-    EXPECT_FALSE(m_sutLhs.less(m_sutRhs));
     EXPECT_FALSE(m_sutLhs < m_sutRhs);
 }
 
@@ -318,7 +301,6 @@ TEST_F(TestProxyProperty, less_CompareLessToValidPropertyValid)
     m_sutLhs.construct("foo");
     m_sutRhs.construct("fou");
 
-    EXPECT_TRUE(m_sutLhs.less(m_sutRhs));
     EXPECT_TRUE(m_sutLhs < m_sutRhs);
 }
 
@@ -327,7 +309,6 @@ TEST_F(TestProxyProperty, less_CompareNotLessToValidPropertyValid)
     m_sutLhs.construct("foo");
     m_sutRhs.construct("bar");
 
-    EXPECT_FALSE(m_sutLhs.less(m_sutRhs));
     EXPECT_FALSE(m_sutLhs < m_sutRhs);
 }
 

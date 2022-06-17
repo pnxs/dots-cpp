@@ -255,61 +255,6 @@ namespace dots::type
             }
         }
 
-        bool equal(const T& rhs) const
-        {
-            return *this == rhs;
-        }
-
-        template <typename D>
-        bool equal(const Property<T, D>& rhs) const
-        {
-            return *this == rhs;
-        }
-
-        bool less(const T& rhs) const
-        {
-            return *this < rhs;
-        }
-
-        template <typename D>
-        bool less(const Property<T, D>& rhs) const
-        {
-            return *this < rhs;
-        }
-
-        bool lessEqual(const T& rhs) const
-        {
-            return *this <= rhs;
-        }
-
-        template <typename D>
-        bool lessEqual(const Property<T, D>& rhs) const
-        {
-            return *this <= rhs;
-        }
-
-        bool greater(const T& rhs) const
-        {
-            return *this > rhs;
-        }
-
-        template <typename D>
-        bool greater(const Property<T, D>& rhs) const
-        {
-            return *this > rhs;
-        }
-
-        bool greaterEqual(const T& rhs) const
-        {
-            return *this >= rhs;
-        }
-
-        template <typename D>
-        bool greaterEqual(const Property<T, D>& rhs) const
-        {
-            return *this >= rhs;
-        }
-
         constexpr const PropertyDescriptor& descriptor() const
         {
             return static_cast<const Derived&>(*this).derivedDescriptor();
