@@ -111,19 +111,14 @@ namespace dots::type
 
         friend struct Property<T, Derived>;
 
-        T& derivedStorage()
+        PropertySet validProperties() const
         {
-            return reinterpret_cast<T&>(m_storage);
+            return PropertyArea::GetArea(static_cast<const Derived&>(*this)).validProperties();
         }
 
-        const T& derivedStorage() const
+        PropertySet& validProperties()
         {
-            return const_cast<StaticProperty&>(*this).derivedStorage();
-        }
-
-        static constexpr size_t derivedOffset()
-        {
-            return Derived::Offset;
+            return PropertyArea::GetArea(static_cast<Derived&>(*this)).validProperties();
         }
 
         static const PropertyDescriptor& derivedDescriptor()
@@ -131,19 +126,24 @@ namespace dots::type
             return Derived::Descriptor;
         }
 
-        const PropertySet& derivedValidProperties() const
+        const T& derivedStorage() const
         {
-            return PropertyArea::GetArea(static_cast<const Derived&>(*this)).validProperties();
-        }
-
-        PropertySet& derivedValidProperties()
-        {
-            return const_cast<PropertySet&>(std::as_const(*this).derivedValidProperties());
+            return reinterpret_cast<const T&>(m_storage);
         }
 
         bool derivedIsValid() const
         {
-            return Set() <= derivedValidProperties();
+            return Set() <= validProperties();
+        }
+
+        void derivedSetValid()
+        {
+            validProperties() += derivedDescriptor().set();
+        }
+
+        void derivedSetInvalid()
+        {
+            validProperties() -= derivedDescriptor().set();
         }
 
         inline static std::optional<PropertyDescriptor> M_descriptorStorage;

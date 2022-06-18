@@ -355,3 +355,15 @@ TEST_F(TestJsonSerializer, serialize_WithOutputStyle)
         EXPECT_EQ(sut_t::Serialize(instance, TextOptions{ TextOptions::MultiLine }), expected);
     }
 }
+
+TEST_F(TestJsonSerializer, deserialize_InvalidatePropertyWhenInputIsInvalid)
+{
+    SerializationStructSimple instance{
+        SerializationStructSimple::int32Property_i{ 42 }
+    };
+
+    std::string input = "{ \"int32Property\": null }";
+    EXPECT_TRUE(instance.int32Property.isValid());
+    sut_t::Deserialize(input, instance);
+    EXPECT_FALSE(instance.int32Property.isValid());
+}

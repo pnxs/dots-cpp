@@ -21,7 +21,8 @@ namespace dots::io
             Endpoint([]() -> std::string
             {
                 constexpr bool IsTcp = std::is_same_v<InternetProtocol, asio::ip::tcp>;
-                static_assert(std::is_same_v<InternetProtocol, asio::ip::tcp>, "unsupported IP endpoint protocol");
+                static_assert(IsTcp, "unsupported IP endpoint protocol");
+                (void)IsTcp;
 
                 if constexpr (IsTcp)
                 {

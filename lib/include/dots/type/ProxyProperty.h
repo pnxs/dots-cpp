@@ -174,38 +174,28 @@ namespace dots::type
             }
         }
 
-        size_t determineOffset()
+        const T& derivedStorage() const
         {
             if (std::holds_alternative<const PropertyDescriptor*>(m_path))
             {
-                return std::get<const PropertyDescriptor*>(m_path)->offset();
+                return m_area->getProperty<T>(std::get<const PropertyDescriptor*>(m_path)->offset());
             }
             else
             {
-                size_t offset = 0;
-                const auto& elements = std::get<const PropertyPath*>(m_path)->elements();
-
-                for (size_t i = 0; i < elements.size() - 1; ++i)
-                {
-                    const PropertyDescriptor& descriptor = elements[i];
-                    offset += descriptor.offset();
-                    offset += *descriptor.subAreaOffset();
-                }
-
-                offset += elements[elements.size() - 1].get().offset();
-                return offset;
+                return m_area->getProperty<T>(std::get<const PropertyPath*>(m_path)->offset());
             }
         }
 
-        const PropertySet& derivedValidProperties() const
+        const PropertyDescriptor& derivedDescriptor() const
         {
-            static_assert(!std::is_same_v<T, T>, "derivedValidProperties shall not be used");
-            return None;
-        }
-
-        PropertySet& derivedValidProperties()
-        {
-            return const_cast<PropertySet&>(std::as_const(*this).derivedValidProperties());
+            if (std::holds_alternative<const PropertyDescriptor*>(m_path))
+            {
+                return *std::get<const PropertyDescriptor*>(m_path);
+            }
+            else
+            {
+                return std::get<const PropertyPath*>(m_path)->elements().back();
+            }
         }
 
         bool derivedIsValid() const
@@ -221,35 +211,6 @@ namespace dots::type
         void derivedSetInvalid()
         {
             validPathProperties() -= derivedDescriptor().set();
-        }
-
-        T& derivedStorage()
-        {
-            if (std::holds_alternative<const PropertyDescriptor*>(m_path))
-            {
-                return m_area->getProperty<T>(std::get<const PropertyDescriptor*>(m_path)->offset());
-            }
-            else
-            {
-                return m_area->getProperty<T>(std::get<const PropertyPath*>(m_path)->offset());
-            }
-        }
-
-        const T& derivedStorage() const
-        {
-            return const_cast<ProxyProperty&>(*this).derivedValue();
-        }
-
-        const PropertyDescriptor& derivedDescriptor() const
-        {
-            if (std::holds_alternative<const PropertyDescriptor*>(m_path))
-            {
-                return *std::get<const PropertyDescriptor*>(m_path);
-            }
-            else
-            {
-                return std::get<const PropertyPath*>(m_path)->elements().back();
-            }
         }
 
         PropertyArea* m_area;

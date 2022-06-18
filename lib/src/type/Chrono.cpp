@@ -5,6 +5,21 @@
 #include <date/date.h>
 #include <date/tz.h>
 
+namespace dots::type::chrono::experimental
+{
+    const date::time_zone* TimeZoneOverride = nullptr;
+
+    void set_time_zone_override(std::string_view timeZone/* = {}*/)
+    {
+        TimeZoneOverride = timeZone.empty() ? date::current_zone() : date::locate_zone(timeZone);
+    }
+
+    void clear_time_zone_override()
+    {
+        TimeZoneOverride = nullptr;
+    }
+}
+
 namespace dots::type
 {
     std::string Duration::toString() const
@@ -166,7 +181,9 @@ namespace dots::type
                 {
                     try
                     {
-                        date::zoned_time localTimePoint{ date::current_zone(), sysTimePoint };
+                        using chrono::experimental::TimeZoneOverride;
+                        const date::time_zone* timeZone = TimeZoneOverride ? TimeZoneOverride : date::current_zone();
+                        date::zoned_time localTimePoint{ timeZone, sysTimePoint };
                         time_point_to_stream(oss, fmt, localTimePoint);
                     }
                     catch (const std::runtime_error&/* e*/)
@@ -212,8 +229,20 @@ namespace dots::type
                 std::istringstream iss{ value.data() };
                 iss.exceptions(std::istringstream::failbit | std::istringstream::badbit);
                 sys_time_t sysTimePoint;
-                iss >> date::parse(fmt == ISO8601DateTime ? "%FT%T%Ez" : fmt.data(), sysTimePoint);
 
+                if (fmt == ISO8601DateTime)
+                {
+                    if (value.back() == 'Z')
+                    {
+                        fmt = "%FT%TZ";
+                    }
+                    else
+                    {
+                        fmt = "%FT%T%Ez";
+                    }
+                }
+
+                iss >> date::parse(fmt.data(), sysTimePoint);
                 return TimePointImpl{ sysTimePoint.time_since_epoch() };
             }
         }

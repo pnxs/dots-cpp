@@ -118,6 +118,7 @@ protected:
     static constexpr double UnixTimestampValue = 1583960877.500000;
     static constexpr char UnixTimestampString[] = "1583960877.500000";
     static constexpr char UnixTimestampISO8601UTC[] = "2020-03-11T21:07:57.500+00:00";
+    static constexpr char UnixTimestampISO8601Z[] = "2020-03-11T21:07:57.500Z";
     static constexpr char UnixTimestampISO8601CET[] = "2020-03-11T22:07:57.500+01:00";
     static constexpr char UnixTimestampISO8601SRET[] = "2020-03-12T08:07:57.500+11:00";
 };
@@ -132,6 +133,7 @@ TEST_F(TestTimePoint, fromString)
 {
     EXPECT_EQ(dots::type::TimePoint::FromString(UnixTimestampString, {}).duration().toFractionalSeconds(), UnixTimestampValue);
     EXPECT_EQ(dots::type::TimePoint::FromString(UnixTimestampISO8601UTC).duration().toFractionalSeconds(), UnixTimestampValue);
+    EXPECT_EQ(dots::type::TimePoint::FromString(UnixTimestampISO8601Z).duration().toFractionalSeconds(), UnixTimestampValue);
     EXPECT_EQ(dots::type::TimePoint::FromString(UnixTimestampISO8601CET).duration().toFractionalSeconds(), UnixTimestampValue);
     EXPECT_EQ(dots::type::TimePoint::FromString(UnixTimestampISO8601SRET).duration().toFractionalSeconds(), UnixTimestampValue);
 }

@@ -11,6 +11,15 @@ namespace dots::type
         struct property_tag {};
     }
 
+    template <typename T>
+    using is_property = std::is_base_of<details::property_tag, T>;
+
+    template <typename T>
+    using is_property_t = typename is_property<T>::type;
+
+    template <typename T>
+    constexpr bool is_property_v = is_property_t<T>::value;
+
     template <typename T, typename Derived>
     struct Property : details::property_tag
     {
@@ -28,12 +37,6 @@ namespace dots::type
         Property(Args&&... args)
         {
             Property<T, Derived>::construct<false>(std::forward<Args>(args)...);
-        }
-
-        template <typename U, std::enable_if_t<std::is_constructible_v<T, std::initializer_list<U>>, int> = 0>
-        Property(std::initializer_list<U> init)
-        {
-            Property<T, Derived>::construct<false>(init);
         }
 
         template <typename U, std::enable_if_t<!is_same_property_v<U>, int> = 0>
@@ -79,80 +82,20 @@ namespace dots::type
             return value();
         }
 
-        bool operator == (const T& rhs) const
-        {
-            return equal(rhs);
-        }
-
-        bool operator == (const Derived& rhs) const
-        {
-            return equal(rhs);
-        }
-
-        bool operator != (const T& rhs) const
-        {
-            return !(*this == rhs);
-        }
-
-        bool operator != (const Derived& rhs) const
-        {
-            return !(*this == rhs);
-        }
-
-        bool operator < (const T& rhs) const
-        {
-            return less(rhs);
-        }
-
-        bool operator < (const Derived& rhs) const
-        {
-            return less(rhs);
-        }
-
-        bool operator <= (const T& rhs) const
-        {
-            return lessEqual(rhs);
-        }
-
-        bool operator <= (const Derived& rhs) const
-        {
-            return lessEqual(rhs);
-        }
-
-        bool operator > (const T& rhs) const
-        {
-            return greater(rhs);
-        }
-
-        bool operator > (const Derived& rhs) const
-        {
-            return greater(rhs);
-        }
-
-        bool operator >= (const T& rhs) const
-        {
-            return greaterEqual(rhs);
-        }
-
-        bool operator >= (const Derived& rhs) const
-        {
-            return greaterEqual(rhs);
-        }
-
         bool isValid() const
         {
             return static_cast<const Derived&>(*this).derivedIsValid();
         }
 
         template <bool AssertInvalidity = true>
-        T& construct(const Derived& rhs)
+        T& construct(const Property& rhs)
         {
             construct<AssertInvalidity>(rhs.storage());
             return *this;
         }
 
         template <bool AssertInvalidity = true>
-        T& construct(Derived&& rhs)
+        T& construct(Property&& rhs)
         {
             construct<AssertInvalidity>(std::move(rhs.storage()));
             rhs.destroy();
@@ -160,7 +103,7 @@ namespace dots::type
             return *this;
         }
 
-        template <bool AssertInvalidity = true, typename... Args>
+        template <bool AssertInvalidity = true, typename... Args, std::enable_if_t<!std::disjunction_v<is_property<Args>...>, int> = 0>
         T& construct(Args&&... args)
         {
             if constexpr (AssertInvalidity)
@@ -207,7 +150,7 @@ namespace dots::type
             }
         }
 
-        T& value()
+        const T& value() const
         {
             if (!isValid())
             {
@@ -217,9 +160,9 @@ namespace dots::type
             return storage();
         }
 
-        const T& value() const
+        T& value()
         {
-            return const_cast<Property&>(*this).value();
+            return const_cast<T&>(std::as_const(*this).value());
         }
 
         template <typename... Args>
@@ -249,14 +192,14 @@ namespace dots::type
         }
 
         template <bool AssertValidity = true>
-        T& assign(const Derived& rhs)
+        T& assign(const Property& rhs)
         {
             assign<AssertValidity>(rhs.storage());
             return *this;
         }
 
         template <bool AssertValidity = true>
-        T& assign(Derived&& rhs)
+        T& assign(Property&& rhs)
         {
             assign<AssertValidity>(std::move(rhs.storage()));
             rhs.destroy();
@@ -264,7 +207,7 @@ namespace dots::type
             return *this;
         }
 
-        template <bool AssertValidity = true, typename... Args>
+        template <bool AssertValidity = true, typename... Args, std::enable_if_t<!std::disjunction_v<is_property<Args>...>, int> = 0>
         T& assign(Args&&... args)
         {
             if constexpr (AssertValidity)
@@ -307,7 +250,7 @@ namespace dots::type
             }
         }
 
-        void swap(Derived& other)
+        void swap(Property& other)
         {
             if (isValid())
             {
@@ -337,108 +280,52 @@ namespace dots::type
 
         bool equal(const T& rhs) const
         {
-            if (isValid())
-            {
-                if constexpr (IsTypeless)
-                {
-                    return descriptor().valueDescriptor().equal(storage(), rhs);
-                }
-                else
-                {
-                    return Descriptor<T>::equal(storage(), rhs);
-                }
-            }
-            else
-            {
-                return false;
-            }
+            return *this == rhs;
         }
 
-        bool equal(const Derived& rhs) const
+        bool equal(const Property& rhs) const
         {
-            if (rhs.isValid())
-            {
-                return equal(rhs.storage());
-            }
-            else
-            {
-                return !isValid();
-            }
+            return *this == rhs;
         }
 
         bool less(const T& rhs) const
         {
-            if (isValid())
-            {
-                if constexpr (IsTypeless)
-                {
-                    return descriptor().valueDescriptor().less(storage(), rhs);
-                }
-                else
-                {
-                    return Descriptor<T>::less(storage(), rhs);
-                }
-            }
-            else
-            {
-                return false;
-            }
+            return *this < rhs;
         }
 
-        bool less(const Derived& rhs) const
+        bool less(const Property& rhs) const
         {
-            if (rhs.isValid())
-            {
-                return less(rhs.storage());
-            }
-            else
-            {
-                return isValid();
-            }
+            return *this < rhs;
         }
 
         bool lessEqual(const T& rhs) const
         {
-            return !greater(rhs);
+            return *this <= rhs;
         }
 
-        bool lessEqual(const Derived& rhs) const
+        bool lessEqual(const Property& rhs) const
         {
-            return !greater(rhs);
+            return *this <= rhs;
         }
 
         bool greater(const T& rhs) const
         {
-            if (isValid())
-            {
-                if constexpr (IsTypeless)
-                {
-                    return descriptor().valueDescriptor().less(rhs, storage());
-                }
-                else
-                {
-                    return Descriptor<T>::less(rhs, storage());
-                }
-            }
-            else
-            {
-                return true;
-            }
+            return *this > rhs;
         }
 
-        bool greater(const Derived& rhs) const
+        bool greater(const Property& rhs) const
         {
-            return rhs.less(static_cast<const Derived&>(*this));
+            return *this > rhs;
         }
 
         bool greaterEqual(const T& rhs) const
         {
-            return !less(rhs);
+            return *this >= rhs;
         }
 
-        bool greaterEqual(const Derived& rhs) const
+        bool greaterEqual(const Property& rhs) const
         {
-            return !less(rhs);
+            return *this >= rhs;
         }
 
         constexpr const PropertyDescriptor& descriptor() const
@@ -451,14 +338,14 @@ namespace dots::type
             return descriptor().set() <= propertySet;
         }
 
-        constexpr T& storage()
-        {
-            return static_cast<Derived&>(*this).derivedStorage();
-        }
-
         constexpr const T& storage() const
         {
-            return const_cast<Property&>(*this).storage();
+            return static_cast<const Derived&>(*this).derivedStorage();
+        }
+
+        constexpr T& storage()
+        {
+            return const_cast<T&>(std::as_const(*this).storage());
         }
 
     protected:
@@ -473,21 +360,6 @@ namespace dots::type
 
     private:
 
-        size_t offset() const
-        {
-            return static_cast<const Derived&>(*this).derivedOffset();
-        }
-
-        const PropertySet& validProperties() const
-        {
-            return static_cast<const Derived&>(*this).derivedValidProperties();
-        }
-
-        PropertySet& validProperties()
-        {
-            return const_cast<PropertySet&>(std::as_const(*this).validProperties());
-        }
-
         void setValid()
         {
             static_cast<Derived&>(*this).derivedSetValid();
@@ -497,44 +369,125 @@ namespace dots::type
         {
             static_cast<Derived&>(*this).derivedSetInvalid();
         }
-
-        size_t derivedOffset() const
-        {
-            return descriptor().offset();
-        }
-
-        const PropertySet& derivedValidProperties() const
-        {
-            return PropertyArea::GetArea(storage(), offset()).validProperties();
-        }
-
-        PropertySet& derivedValidProperties()
-        {
-            return const_cast<PropertySet&>(std::as_const(*this).derivedValidProperties());
-        }
-
-        bool derivedIsValid() const
-        {
-            return descriptor().set() <= validProperties();
-        }
-
-        void derivedSetValid()
-        {
-            validProperties() += descriptor().set();
-        }
-
-        void derivedSetInvalid()
-        {
-            validProperties() -= descriptor().set();
-        }
     };
 
-    template <typename T>
-    using is_property = std::is_base_of<details::property_tag, T>;
+    template <typename Lhs, typename Rhs, std::enable_if_t<std::disjunction_v<is_property<Lhs>, is_property<Rhs>>, int> = 0>
+    bool operator == (const Lhs& lhs, const Rhs& rhs)
+    {
+        auto equal = [](const auto& lhs, const auto& rhs)
+        {
+            using property_t = std::decay_t<decltype(lhs)>;
 
-    template <typename T>
-    using is_property_t = typename is_property<T>::type;
+            if (lhs.isValid())
+            {
+                if constexpr (property_t::IsTypeless)
+                {
+                    return lhs.descriptor().valueDescriptor().equal(lhs.storage(), rhs);
+                }
+                else
+                {
+                    return Descriptor<typename property_t::value_t>::equal(lhs.storage(), rhs);
+                }
+            }
+            else
+            {
+                return false;
+            }
+        };
 
-    template <typename T>
-    constexpr bool is_property_v = is_property_t<T>::value;
+        if constexpr (is_property_v<Lhs>)
+        {
+            if constexpr (is_property_v<Rhs>)
+            {
+                if (rhs.isValid())
+                {
+                    return equal(lhs, rhs.storage());
+                }
+                else
+                {
+                    return !lhs.isValid();
+                }
+            }
+            else
+            {
+                return equal(lhs, rhs);
+            }
+        }
+        else
+        {
+            return equal(rhs, lhs);
+        }
+    }
+
+    template <typename Lhs, typename Rhs, std::enable_if_t<std::disjunction_v<is_property<Lhs>, is_property<Rhs>>, int> = 0>
+    bool operator != (const Lhs& lhs, const Rhs& rhs)
+    {
+        return !(lhs == rhs);
+    }
+
+    template <typename Lhs, typename Rhs, std::enable_if_t<std::disjunction_v<is_property<Lhs>, is_property<Rhs>>, int> = 0>
+    bool operator < (const Lhs& lhs, const Rhs& rhs)
+    {
+        auto less = [](const auto& lhs, const auto& rhs)
+        {
+            using property_t = std::decay_t<decltype(lhs)>;
+
+            if (lhs.isValid())
+            {
+                if constexpr (property_t::IsTypeless)
+                {
+                    return lhs.descriptor().valueDescriptor().less(lhs.storage(), rhs);
+                }
+                else
+                {
+                    return Descriptor<typename property_t::value_t>::less(lhs.storage(), rhs);
+                }
+            }
+            else
+            {
+                return false;
+            }
+        };
+
+        if constexpr (is_property_v<Lhs>)
+        {
+            if constexpr (is_property_v<Rhs>)
+            {
+                if (rhs.isValid())
+                {
+                    return less(lhs, rhs.storage());
+                }
+                else
+                {
+                    return lhs.isValid();
+                }
+            }
+            else
+            {
+                return less(lhs, rhs);
+            }
+        }
+        else
+        {
+            return less(rhs, lhs);
+        }
+    }
+
+    template <typename Lhs, typename Rhs, std::enable_if_t<std::disjunction_v<is_property<Lhs>, is_property<Rhs>>, int> = 0>
+    bool operator <= (const Lhs& lhs, const Rhs& rhs)
+    {
+        return !(lhs > rhs);
+    }
+
+    template <typename Lhs, typename Rhs, std::enable_if_t<std::disjunction_v<is_property<Lhs>, is_property<Rhs>>, int> = 0>
+    bool operator > (const Lhs& lhs, const Rhs& rhs)
+    {
+        return rhs < lhs;
+    }
+
+    template <typename Lhs, typename Rhs, std::enable_if_t<std::disjunction_v<is_property<Lhs>, is_property<Rhs>>, int> = 0>
+    bool operator >= (const Lhs& lhs, const Rhs& rhs)
+    {
+        return !(lhs < rhs);
+    }
 }

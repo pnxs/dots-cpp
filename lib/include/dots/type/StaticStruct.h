@@ -306,7 +306,7 @@ namespace dots::type
 
         bool _greater(const Derived& rhs, PropertySet includedProperties = PropertySet::All) const
         {
-            return rhs._less(*this, includedProperties);
+            return rhs._less(static_cast<const Derived&>(*this), includedProperties);
         }
 
         bool _greaterEqual(const Derived& rhs, PropertySet includedProperties = PropertySet::All) const
