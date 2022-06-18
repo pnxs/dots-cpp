@@ -119,20 +119,20 @@ namespace dots::type
         }
 
         const Descriptor<>* findType(std::string_view name, bool assertNotNull = false) const;
-        const EnumDescriptor<>* findEnumType(std::string_view name, bool assertNotNull = false) const;
-        const StructDescriptor<>* findStructType(std::string_view name, bool assertNotNull = false) const;
+        const EnumDescriptor* findEnumType(std::string_view name, bool assertNotNull = false) const;
+        const StructDescriptor* findStructType(std::string_view name, bool assertNotNull = false) const;
 
         Descriptor<>* findType(std::string_view name, bool assertNotNull = false);
-        EnumDescriptor<>* findEnumType(std::string_view name, bool assertNotNull = false);
-        StructDescriptor<>* findStructType(std::string_view name, bool assertNotNull = false);
+        EnumDescriptor* findEnumType(std::string_view name, bool assertNotNull = false);
+        StructDescriptor* findStructType(std::string_view name, bool assertNotNull = false);
 
         const Descriptor<>& getType(std::string_view name) const;
-        const EnumDescriptor<>& getEnumType(std::string_view name) const;
-        const StructDescriptor<>& getStructType(std::string_view name) const;
+        const EnumDescriptor& getEnumType(std::string_view name) const;
+        const StructDescriptor& getStructType(std::string_view name) const;
 
         Descriptor<>& getType(std::string_view name);
-        EnumDescriptor<>& getEnumType(std::string_view name);
-        StructDescriptor<>& getStructType(std::string_view name);
+        EnumDescriptor& getEnumType(std::string_view name);
+        StructDescriptor& getStructType(std::string_view name);
 
         bool hasType(std::string_view name) const;
         size_t size() const;

@@ -2,8 +2,8 @@
 
 namespace dots::type
 {
-    Descriptor<DynamicEnum>::Descriptor(key_t key, std::string name, std::vector<EnumeratorDescriptor<DynamicEnum>> enumeratorDescriptors):
-        EnumDescriptor<DynamicEnum>(key, std::move(name), std::move(enumeratorDescriptors))
+    Descriptor<DynamicEnum>::Descriptor(key_t key, std::string name, std::vector<EnumeratorDescriptor> enumeratorDescriptors):
+        EnumDescriptor(key, std::move(name), std::move(enumeratorDescriptors))
     {
         /* do nothing */
     }

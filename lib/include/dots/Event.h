@@ -136,10 +136,10 @@ namespace dots
         /*!
          * @brief Get the descriptor of the DOTS struct type of the event.
          *
-         * @return const type::StructDescriptor<>& A reference to the
+         * @return const type::StructDescriptor& A reference to the
          * descriptor of the DOTS struct type.
          */
-        const type::StructDescriptor<>& descriptor() const;
+        const type::StructDescriptor& descriptor() const;
 
         /*!
          * @brief Get the operation (i.e. "type" or "category") of the event.

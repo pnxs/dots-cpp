@@ -12,29 +12,9 @@ namespace dots::type
         /* do nothing */
     }
 
-    Type Descriptor<Typeless>::type() const
-    {
-        return m_type;
-    }
-
     bool Descriptor<Typeless>::isFundamentalType() const
     {
         return IsFundamentalType(type());
-    }
-
-    const std::string& Descriptor<Typeless>::name() const
-    {
-        return m_name;
-    }
-
-    size_t Descriptor<Typeless>::size() const
-    {
-        return m_size;
-    }
-
-    size_t Descriptor<Typeless>::alignment() const
-    {
-        return m_alignment;
     }
 
     bool Descriptor<Typeless>::lessEqual(const Typeless& lhs, const Typeless& rhs) const

@@ -193,7 +193,7 @@ namespace dots
         m_channel->transmit(transmission);
     }
 
-    void Connection::transmit(const type::StructDescriptor<>& descriptor)
+    void Connection::transmit(const type::StructDescriptor& descriptor)
     {
         m_channel->transmit(descriptor);
     }

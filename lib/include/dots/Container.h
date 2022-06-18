@@ -47,7 +47,7 @@ namespace dots
         {
             using is_transparent = void;
 
-            key_compare(const type::StructDescriptor<>& descriptor);
+            key_compare(const type::StructDescriptor& descriptor);
             bool operator () (const type::Struct& lhs, const type::Struct& rhs) const;
             bool operator () (const type::AnyStruct& lhs, const type::Struct& rhs) const;
             bool operator () (const type::Struct& lhs, const type::AnyStruct& rhs) const;
@@ -69,18 +69,18 @@ namespace dots
          *
          * @param descriptor The DOTS struct type of the Container.
          */
-        Container(const type::StructDescriptor<>& descriptor);
+        Container(const type::StructDescriptor& descriptor);
 
         /*!
          * @brief Get the DOTS struct type of the Container.
          *
          * Note that this is the same descriptor that was given in Container().
          *
-         * @return const type::StructDescriptor<>& A reference to the DOTS
+         * @return const type::StructDescriptor& A reference to the DOTS
          * struct type of the container.
          */
-        const type::StructDescriptor<>& descriptor() const &;
-        const type::StructDescriptor<>& descriptor() && = delete;
+        const type::StructDescriptor& descriptor() const &;
+        const type::StructDescriptor& descriptor() && = delete;
 
         /*!
          * @brief Get a constant iterator to the beginning of the Container.
@@ -426,7 +426,7 @@ namespace dots
 
         void updateWithoutKeys(type::Struct& lhs, const type::Struct& rhs, property_set_t includedSet);
 
-        const type::StructDescriptor<>* m_descriptor;
+        const type::StructDescriptor* m_descriptor;
         container_t m_instances;
         type::partial_property_descriptor_container_t m_noKeyPropertyDescriptors;
     };

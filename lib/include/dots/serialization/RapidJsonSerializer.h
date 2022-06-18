@@ -328,7 +328,7 @@ namespace dots::serialization
         }
 
         template <typename T>
-        void visitEnumDerived(const T& value, const type::EnumDescriptor<T>& descriptor)
+        void visitEnumDerived(const T& value, const type::EnumDescriptor& descriptor)
         {
             if constexpr (format_t::EnumFormat == format_t::EnumFormat::Tag)
             {
@@ -403,7 +403,7 @@ namespace dots::serialization
         template <typename T>
         bool visitStructBeginDerived(T& instance, property_set_t& includedProperties)
         {
-            const type::StructDescriptor<>& descriptor = instance._descriptor();
+            const type::StructDescriptor& descriptor = instance._descriptor();
             const type::property_descriptor_container_t& propertyDescriptors = descriptor.propertyDescriptors();
 
             m_reader.readObjectBegin();
@@ -483,21 +483,21 @@ namespace dots::serialization
         }
 
         template <typename T>
-        void visitEnumDerived(T& value, const type::EnumDescriptor<T>& descriptor)
+        void visitEnumDerived(T& value, const type::EnumDescriptor& descriptor)
         {
             if constexpr (format_t::EnumFormat == format_t::EnumFormat::Tag)
             {
-                descriptor.construct(value, descriptor.enumeratorFromTag(reader().template read<uint32_t>()).value());
+                descriptor.construct(value, descriptor.enumeratorFromTag(reader().template read<uint32_t>()).template value<T>());
             }
             else if constexpr (format_t::EnumFormat == format_t::EnumFormat::Value)
             {
                 auto underlyingValue = m_reader.template read<uint32_t>();
-                descriptor.construct(value, descriptor.enumeratorFromValue(type::Typeless::From(underlyingValue)).value());
+                descriptor.construct(value, descriptor.enumeratorFromValue(type::Typeless::From(underlyingValue)).template value<T>());
             }
             else if constexpr (format_t::EnumFormat == format_t::EnumFormat::String)
             {
                 std::string_view identifier = m_reader.template read<std::string_view>();
-                descriptor.construct(value, descriptor.enumeratorFromName(identifier).value());
+                descriptor.construct(value, descriptor.enumeratorFromName(identifier).value<T>());
             }
             else
             {

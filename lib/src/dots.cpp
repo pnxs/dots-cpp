@@ -81,7 +81,7 @@ namespace dots
         publish(instance, instance._keyProperties(), true);
     }
 
-    Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::event_handler_t<> handler)
+    Subscription subscribe(const type::StructDescriptor& descriptor, Transceiver::event_handler_t<> handler)
     {
         return global_transceiver()->subscribe(descriptor, std::move(handler));
     }
@@ -91,7 +91,7 @@ namespace dots
         return global_transceiver()->pool();
     }
 
-    const Container<>& container(const type::StructDescriptor<>& descriptor)
+    const Container<>& container(const type::StructDescriptor& descriptor)
     {
         return global_transceiver()->container(descriptor);
     }

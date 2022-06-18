@@ -147,48 +147,48 @@ TEST_F(TestStaticDescriptor, equal)
 
 TEST_F(TestStaticDescriptor, less)
 {
-    EXPECT_TRUE(m_sutInt->less(21, 42));
-    EXPECT_TRUE(m_sutString->less("bar", "foo"));
+    EXPECT_TRUE(m_sutInt->less<int>(21, 42));
+    EXPECT_TRUE(m_sutString->less<std::string>("bar", "foo"));
 
-    EXPECT_FALSE(m_sutInt->less(21, 21));
-    EXPECT_FALSE(m_sutString->less("bar", "bar"));
+    EXPECT_FALSE(m_sutInt->less<int>(21, 21));
+    EXPECT_FALSE(m_sutString->less<std::string>("bar", "bar"));
 
-    EXPECT_FALSE(m_sutInt->less(42, 21));
-    EXPECT_FALSE(m_sutString->less("foo", "bar"));
+    EXPECT_FALSE(m_sutInt->less<int>(42, 21));
+    EXPECT_FALSE(m_sutString->less<std::string>("foo", "bar"));
 }
 
 TEST_F(TestStaticDescriptor, lessEqual)
 {
-    EXPECT_TRUE(m_sutInt->lessEqual(21, 42));
-    EXPECT_TRUE(m_sutString->lessEqual("bar", "foo"));
+    EXPECT_TRUE(m_sutInt->lessEqual<int>(21, 42));
+    EXPECT_TRUE(m_sutString->lessEqual<std::string>("bar", "foo"));
 
-    EXPECT_TRUE(m_sutInt->lessEqual(21, 21));
-    EXPECT_TRUE(m_sutString->lessEqual("bar", "bar"));
+    EXPECT_TRUE(m_sutInt->lessEqual<int>(21, 21));
+    EXPECT_TRUE(m_sutString->lessEqual<std::string>("bar", "bar"));
 
-    EXPECT_FALSE(m_sutInt->lessEqual(42, 21));
-    EXPECT_FALSE(m_sutString->lessEqual("foo", "bar"));
+    EXPECT_FALSE(m_sutInt->lessEqual<int>(42, 21));
+    EXPECT_FALSE(m_sutString->lessEqual<std::string>("foo", "bar"));
 }
 
 TEST_F(TestStaticDescriptor, greater)
 {
-    EXPECT_FALSE(m_sutInt->greater(21, 42));
-    EXPECT_FALSE(m_sutString->greater("bar", "foo"));
+    EXPECT_FALSE(m_sutInt->greater<int>(21, 42));
+    EXPECT_FALSE(m_sutString->greater<std::string>("bar", "foo"));
 
-    EXPECT_FALSE(m_sutInt->greater(21, 21));
-    EXPECT_FALSE(m_sutString->greater("bar", "bar"));
+    EXPECT_FALSE(m_sutInt->greater<int>(21, 21));
+    EXPECT_FALSE(m_sutString->greater<std::string>("bar", "bar"));
 
-    EXPECT_TRUE(m_sutInt->greater(42, 21));
-    EXPECT_TRUE(m_sutString->greater("foo", "bar"));
+    EXPECT_TRUE(m_sutInt->greater<int>(42, 21));
+    EXPECT_TRUE(m_sutString->greater<std::string>("foo", "bar"));
 }
 
 TEST_F(TestStaticDescriptor, greaterEqual)
 {
-    EXPECT_FALSE(m_sutInt->greaterEqual(21, 42));
-    EXPECT_FALSE(m_sutString->greaterEqual("bar", "foo"));
+    EXPECT_FALSE(m_sutInt->greaterEqual<int>(21, 42));
+    EXPECT_FALSE(m_sutString->greaterEqual<std::string>("bar", "foo"));
 
-    EXPECT_TRUE(m_sutInt->greaterEqual(21, 21));
-    EXPECT_TRUE(m_sutString->greaterEqual("bar", "bar"));
+    EXPECT_TRUE(m_sutInt->greaterEqual<int>(21, 21));
+    EXPECT_TRUE(m_sutString->greaterEqual<std::string>("bar", "bar"));
 
-    EXPECT_TRUE(m_sutInt->greaterEqual(42, 21));
-    EXPECT_TRUE(m_sutString->greaterEqual("foo", "bar"));
+    EXPECT_TRUE(m_sutInt->greaterEqual<int>(42, 21));
+    EXPECT_TRUE(m_sutString->greaterEqual<std::string>("foo", "bar"));
 }

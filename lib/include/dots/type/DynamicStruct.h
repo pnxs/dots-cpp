@@ -44,8 +44,6 @@ namespace dots::type
         template <typename T>
         using property_i = DynamicPropertyInitializer<T>;
 
-        static constexpr bool _UseStaticDescriptorOperations = false;
-
         DynamicStruct(const Descriptor<DynamicStruct>& descriptor);
         DynamicStruct(const Descriptor<DynamicStruct>& descriptor, PropertyArea* propertyArea);
 
@@ -129,12 +127,12 @@ namespace dots::type
     };
 
     template <>
-    struct Descriptor<DynamicStruct> : StructDescriptor<DynamicStruct>
+    struct Descriptor<DynamicStruct> : StructDescriptor
     {
         static constexpr bool IsDynamic = true;
 
         Descriptor(key_t key, std::string name, uint8_t flags, const property_descriptor_container_t& propertyDescriptors, size_t size) :
-            StructDescriptor<DynamicStruct>(key, std::move(name), flags, propertyDescriptors, sizeof(DynamicStruct), size, alignof(DynamicStruct))
+            StructDescriptor(key, std::move(name), flags, propertyDescriptors, sizeof(DynamicStruct), size, alignof(DynamicStruct))
         {
             /* do nothing */
         }
@@ -145,8 +143,9 @@ namespace dots::type
         Descriptor& operator = (const Descriptor& rhs) = delete;
         Descriptor& operator = (Descriptor&& rhs) = delete;
 
-        using StructDescriptor<DynamicStruct>::construct;
-        using StructDescriptor<DynamicStruct>::constructInPlace;
+        using StaticDescriptor::construct;
+        using StaticDescriptor::constructInPlace;
+        using StaticDescriptor::assign;
 
         DynamicStruct& construct(DynamicStruct& value) const
         {
@@ -210,6 +209,26 @@ namespace dots::type
         Typeless& constructInPlace(Typeless& value, Typeless&& other) const override
         {
             return Typeless::From(constructInPlace(value.to<DynamicStruct>(), std::move(other.to<DynamicStruct>())));
+        }
+
+        const PropertyArea& propertyArea(const Struct& instance) const override
+        {
+            return StructDescriptor::propertyArea(static_cast<const DynamicStruct&>(instance));
+        }
+
+        PropertyArea& propertyArea(Struct& instance) const override
+        {
+            return StructDescriptor::propertyArea(static_cast<DynamicStruct&>(instance));
+        }
+
+        static const PropertyArea& propertyArea(const DynamicStruct& instance)
+        {
+            return instance._propertyArea();
+        }
+
+        static PropertyArea& propertyArea(DynamicStruct& instance)
+        {
+            return instance._propertyArea();
         }
     };
 }

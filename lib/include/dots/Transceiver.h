@@ -119,7 +119,7 @@ namespace dots
          * @exception std::runtime_error Thrown if no Container for @p
          * descriptor was found.
          */
-        const Container<>& container(const type::StructDescriptor<>& descriptor) const;
+        const Container<>& container(const type::StructDescriptor& descriptor) const;
 
         /*!
          * @brief Subscribe to transmissions of a specific type.
@@ -152,7 +152,7 @@ namespace dots
          * @exception std::logic_error Thrown if @p descriptor is a sub-struct
          * only type.
          */
-        Subscription subscribe(const type::StructDescriptor<>& descriptor, transmission_handler_t handler);
+        Subscription subscribe(const type::StructDescriptor& descriptor, transmission_handler_t handler);
 
         /*!
          * @brief Subscribe to events of a specific type.
@@ -181,7 +181,7 @@ namespace dots
          * @exception std::logic_error Thrown if @p descriptor is a sub-struct
          * only type.
          */
-        Subscription subscribe(const type::StructDescriptor<>& descriptor, event_handler_t<> handler);
+        Subscription subscribe(const type::StructDescriptor& descriptor, event_handler_t<> handler);
 
         /*!
          * @brief Subscribe to events of a specific type.
@@ -332,7 +332,7 @@ namespace dots
          *
          * @code{.cpp}
          * // subscribing to new struct types with lambda handler
-         * transceiver.subscribe<dots::type::StructDescriptor<>>([](const auto& descriptor)
+         * transceiver.subscribe<dots::type::StructDescriptor>([](const auto& descriptor)
          * {
          *     // ...
          * });
@@ -342,7 +342,7 @@ namespace dots
          * @endcode
          *
          * @tparam TDescriptor The descriptor type (e.g.
-         * dots::type::StructDescriptor<>).
+         * dots::type::StructDescriptor).
          *
          * @param handler The handler to invoke asynchronously every time a
          * type of the given category is added to the registry. If the registry
@@ -477,7 +477,7 @@ namespace dots
          *
          * @code{.cpp}
          * // subscribing to new struct and enum types with lambda handler
-         * transceiver.subscribe<dots::type::StructDescriptor<>, dots::type::EnumDescriptor<>>([](const auto& descriptor)
+         * transceiver.subscribe<dots::type::StructDescriptor, dots::type::EnumDescriptor>([](const auto& descriptor)
          * {
          *     // ...
          * });
@@ -487,7 +487,7 @@ namespace dots
          * @endcode
          *
          * @tparam TDescriptors The descriptor types (e.g.
-         * dots::type::StructDescriptor<>).
+         * dots::type::StructDescriptor).
          *
          * @tparam TypeHandler The type of the handler. Must be invocable with
          * references of all @p TDescriptor types and optionally @p args if given.
@@ -561,7 +561,7 @@ namespace dots
         Subscription makeSubscription(UnsubscribeHandler&& unsubscribeHandler);
 
         void handleNewType(const type::Descriptor<>& descriptor) noexcept;
-        void handleDispatchError(const type::StructDescriptor<>& descriptor, std::exception_ptr ePtr) noexcept;
+        void handleDispatchError(const type::StructDescriptor& descriptor, std::exception_ptr ePtr) noexcept;
 
         id_t m_nextId;
         std::optional<id_t> m_currentlyDispatchingId;

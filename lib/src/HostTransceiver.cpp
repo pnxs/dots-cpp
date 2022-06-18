@@ -37,7 +37,7 @@ namespace dots
 
     void HostTransceiver::publish(const type::Struct& instance, std::optional<property_set_t> includedProperties/* = std::nullopt*/, bool remove/* = false*/)
     {
-        if (const type::StructDescriptor<>& descriptor = instance._descriptor(); descriptor.substructOnly())
+        if (const type::StructDescriptor& descriptor = instance._descriptor(); descriptor.substructOnly())
         {
             throw std::logic_error{ "attempt to publish substruct-only type '" + descriptor.name() + "'" };
         }
@@ -267,7 +267,7 @@ namespace dots
         const vector_t<string_t>& whiteList = descriptorRequest.whitelist.isValid() ? *descriptorRequest.whitelist : vector_t<string_t>{};
         const vector_t<string_t>& blacklist = descriptorRequest.blacklist.isValid() ? *descriptorRequest.blacklist : vector_t<string_t>{};
 
-        registry().forEach<type::StructDescriptor<>>([&](const auto& descriptor) 
+        registry().forEach<type::StructDescriptor>([&](const auto& descriptor) 
         {
             if (descriptor.internal())
             {

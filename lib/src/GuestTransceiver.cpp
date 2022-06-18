@@ -59,7 +59,7 @@ namespace dots
 
     void GuestTransceiver::publish(const type::Struct& instance, std::optional<property_set_t> includedProperties/* = std::nullopt*/, bool remove/* = false*/)
     {
-        if (const type::StructDescriptor<>& descriptor = instance._descriptor(); descriptor.substructOnly())
+        if (const type::StructDescriptor& descriptor = instance._descriptor(); descriptor.substructOnly())
         {
             throw std::logic_error{ "attempt to publish substruct-only type '" + descriptor.name() + "'" };
         }
@@ -133,12 +133,12 @@ namespace dots
                 for (const auto& [name, descriptor] : m_preloadPublishTypes)
                 {
                     (void)name;
-                    connection.transmit(descriptor->to<type::StructDescriptor<>>());
+                    connection.transmit(descriptor->to<type::StructDescriptor>());
                 }
 
                 for (const auto& [name, descriptor] : m_preloadSubscribeTypes)
                 {
-                    connection.transmit(descriptor->to<type::StructDescriptor<>>());
+                    connection.transmit(descriptor->to<type::StructDescriptor>());
                     joinGroup(name);
                 }
 

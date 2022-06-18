@@ -91,6 +91,7 @@ target_sources(${TARGET_NAME}
         src/type/EnumDescriptor.cpp
         src/type/PropertyDescriptor.cpp
         src/type/Registry.cpp
+        src/type/StaticDescriptor.cpp
         src/type/Struct.cpp
         src/type/StructDescriptor.cpp
         src/type/TypeVisitor.cpp

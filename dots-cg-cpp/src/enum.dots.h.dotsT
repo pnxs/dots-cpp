@@ -27,11 +27,7 @@ namespace dots::types
 namespace dots::type
 {
     template <>
-    #if (defined DOTS_ENUMS_USE_STATIC_DESCRIPTOR_OPERATIONS) || (defined DOTS_USE_STATIC_DESCRIPTOR_OPERATIONS_FOR_{{name}})
-    struct Descriptor<types::{{name}}> : EnumDescriptor<types::{{name}}, true>
-    #else
-    struct Descriptor<types::{{name}}> : EnumDescriptor<types::{{name}}, false>
-    #endif
+    struct Descriptor<types::{{name}}> : EnumDescriptor
     {
         using value_t = types::{{name}};
 
@@ -43,6 +39,11 @@ namespace dots::type
             })
         {
             /* do nothing */
+        }
+
+        static auto& Instance()
+        {
+            return InitInstance<types::{{name}}>();
         }
     };
 }

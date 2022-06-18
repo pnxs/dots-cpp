@@ -25,7 +25,7 @@ namespace dots
      */
     struct ContainerPool
     {
-        using pool_t = std::unordered_map<const type::StructDescriptor<>*, Container<>>;
+        using pool_t = std::unordered_map<const type::StructDescriptor*, Container<>>;
         using iterator_t = pool_t::iterator;
         using const_iterator_t = pool_t::const_iterator;
         using value_t = pool_t::value_type;
@@ -105,7 +105,7 @@ namespace dots
          * @return const Container<>* A pointer to the Container. Will be
          * nullptr if no Container for the given type was found.
          */
-        const Container<>* find(const type::StructDescriptor<>& descriptor) const;
+        const Container<>* find(const type::StructDescriptor& descriptor) const;
 
         /*!
          * @brief Get a specific container by type.
@@ -120,7 +120,7 @@ namespace dots
          * @exception std::runtime_error Thrown if no Container for @p
          * descriptor was found and @p insertIfNotExist was given as false.
          */
-        const Container<>& get(const type::StructDescriptor<>& descriptor, bool insertIfNotExist = true) const;
+        const Container<>& get(const type::StructDescriptor& descriptor, bool insertIfNotExist = true) const;
 
         /*!
          * @brief Try to find a specific Container by type.
@@ -130,7 +130,7 @@ namespace dots
          * @return Container<>* A pointer to the Container. Will be nullptr if
          * no Container for the given type was found.
          */
-        Container<>* find(const type::StructDescriptor<>& descriptor);
+        Container<>* find(const type::StructDescriptor& descriptor);
 
         /*!
          * @brief Get a specific container by type.
@@ -145,7 +145,7 @@ namespace dots
          * @exception std::runtime_error Thrown if no Container for @p
          * descriptor was found and @p insertIfNotExist was given as false.
          */
-        Container<>& get(const type::StructDescriptor<>& descriptor, bool insertIfNotExist = true);
+        Container<>& get(const type::StructDescriptor& descriptor, bool insertIfNotExist = true);
 
         /*!
          * @brief Try to find a specific Container by type name.
@@ -204,7 +204,7 @@ namespace dots
          * @exception std::runtime_error Thrown if the ContainerPool does not
          * have a container for the given type @p descriptor.
          */
-        node_t remove(const type::StructDescriptor<>& descriptor);
+        node_t remove(const type::StructDescriptor& descriptor);
 
         /*!
          * @brief Iterate over all Container objects in the ContainerPool.

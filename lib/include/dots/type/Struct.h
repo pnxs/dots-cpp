@@ -7,9 +7,9 @@ namespace dots::type
 {
     struct Struct : PropertyContainer<Struct>
     {
-        explicit Struct(const StructDescriptor<>& descriptor);
+        explicit Struct(const StructDescriptor& descriptor);
 
-        const StructDescriptor<>& _descriptor() const;
+        const StructDescriptor& _descriptor() const;
 
         bool _usesDynamicMemory() const;
         size_t _dynamicMemoryUsage() const;
@@ -56,7 +56,7 @@ namespace dots::type
 
             if (!_hasProperties<AllowSubset>(expectedProperties))
             {
-                auto to_property_list = [](const StructDescriptor<>& descriptor, PropertySet properties)
+                auto to_property_list = [](const StructDescriptor& descriptor, PropertySet properties)
                 {
                     std::string propertyList;
 
@@ -89,7 +89,7 @@ namespace dots::type
         bool _is(TDescriptor&& descriptor) const
         {
             static_assert(!std::is_rvalue_reference_v<TDescriptor>);
-            static_assert(std::is_base_of_v<StructDescriptor<>, std::remove_pointer_t<std::decay_t<TDescriptor>>>);
+            static_assert(std::is_base_of_v<StructDescriptor, std::remove_pointer_t<std::decay_t<TDescriptor>>>);
 
             return &ToRef(std::forward<TDescriptor>(descriptor)) == _desc;
         }
@@ -222,6 +222,6 @@ namespace dots::type
             }
         }
 
-        const StructDescriptor<>* _desc;
+        const StructDescriptor* _desc;
     };
 }

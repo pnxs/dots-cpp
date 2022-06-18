@@ -157,7 +157,7 @@ namespace dots::type
         }
 
         template <typename U>
-        void visitEnumDerived(U&/* value*/, const EnumDescriptor<std::remove_const_t<U>>&/* descriptor*/)
+        void visitEnumDerived(U&/* value*/, const EnumDescriptor&/* descriptor*/)
         {
             /* do nothing */
         }
@@ -383,7 +383,7 @@ namespace dots::type
 
                     case Type::Enum:
                     {
-                        const auto& enumDescriptor = static_cast<const EnumDescriptor<>&>(descriptor);
+                        const auto& enumDescriptor = static_cast<const EnumDescriptor&>(descriptor);
                         derived().visitEnumDerived(value, enumDescriptor);
                         break;
                     }
@@ -547,8 +547,8 @@ namespace dots::type
         virtual void visitVectorEnd(const Vector<>& vector, const VectorDescriptor& descriptor);
         virtual void visitVectorEnd(Vector<>& vector, const VectorDescriptor& descriptor);
 
-        virtual void visitEnum(const Typeless& value, const EnumDescriptor<>& descriptor);
-        virtual void visitEnum(Typeless& value, const EnumDescriptor<>& descriptor);
+        virtual void visitEnum(const Typeless& value, const EnumDescriptor& descriptor);
+        virtual void visitEnum(Typeless& value, const EnumDescriptor& descriptor);
 
         virtual bool visitFundamentalTypeBegin(const Typeless& value, const Descriptor<>& descriptor);
         virtual bool visitFundamentalTypeBegin(Typeless& value, const Descriptor<>& descriptor);
@@ -714,7 +714,7 @@ namespace dots::type
         }
 
         template <typename T, typename U, std::enable_if_t<std::is_same_v<T, std::remove_const_t<U>>, int> = 0>
-        void visitEnumDerived(U& value, const EnumDescriptor<T>& descriptor)
+        void visitEnumDerived(U& value, const EnumDescriptor& descriptor)
         {
             if constexpr (std::is_same_v<std::decay_t<U>, Typeless>)
             {

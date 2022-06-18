@@ -102,12 +102,12 @@ namespace dots::type
         TypeVisitor<TypeVisitor<void>>::visitVectorEndDerived(vector, descriptor);
     }
 
-    void TypeVisitor<void, void>::visitEnum(const Typeless& value, const EnumDescriptor<>& descriptor)
+    void TypeVisitor<void, void>::visitEnum(const Typeless& value, const EnumDescriptor& descriptor)
     {
         TypeVisitor<TypeVisitor<void>>::visitEnumDerived(value, descriptor);
     }
 
-    void TypeVisitor<void, void>::visitEnum(Typeless& value, const EnumDescriptor<>& descriptor)
+    void TypeVisitor<void, void>::visitEnum(Typeless& value, const EnumDescriptor& descriptor)
     {
         TypeVisitor<TypeVisitor<void>>::visitEnumDerived(value, descriptor);
     }

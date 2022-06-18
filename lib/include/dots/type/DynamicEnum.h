@@ -12,19 +12,24 @@ namespace dots::type
     };
 
     template <>
-    struct Descriptor<DynamicEnum> : EnumDescriptor<DynamicEnum, false>
+    struct Descriptor<DynamicEnum> : EnumDescriptor
     {
         using value_t = DynamicEnum;
-        static_assert(std::is_same_v<details::underlying_type_t<DynamicEnum>, int32_t>);
+        static_assert(std::is_same_v<std::underlying_type_t<DynamicEnum>, int32_t>);
 
         static constexpr bool IsDynamic = true;
 
-        Descriptor(key_t key, std::string name, std::vector<EnumeratorDescriptor<DynamicEnum>> enumeratorDescriptors);
+        Descriptor(key_t key, std::string name, std::vector<EnumeratorDescriptor> enumeratorDescriptors);
         Descriptor(const Descriptor& other) = delete;
         Descriptor(Descriptor&& other) = delete;
         ~Descriptor() override = default;
 
         Descriptor& operator = (const Descriptor& rhs) = delete;
         Descriptor& operator = (Descriptor&& rhs) = delete;
+
+        static auto& Instance()
+        {
+            return InitInstance<DynamicEnum>();
+        }
     };
 }

@@ -285,7 +285,7 @@ namespace dots
      * @exception std::logic_error Thrown if @p descriptor is a sub-struct
      * only type.
      */
-    Subscription subscribe(const type::StructDescriptor<>& descriptor, Transceiver::event_handler_t<> handler);
+    Subscription subscribe(const type::StructDescriptor& descriptor, Transceiver::event_handler_t<> handler);
 
     /*!
      * @brief Subscribe to events of a specific type via the global
@@ -356,7 +356,7 @@ namespace dots
      *
      * @code{.cpp}
      * // subscribing to new struct types with lambda handler
-     * dots::subscribe<dots::type::StructDescriptor<>>([](const auto& descriptor)
+     * dots::subscribe<dots::type::StructDescriptor>([](const auto& descriptor)
      * {
      *     // ...
      * });
@@ -366,7 +366,7 @@ namespace dots
      * @endcode
      *
      * @tparam TDescriptor The descriptor type (e.g.
-     * dots::type::StructDescriptor<>).
+     * dots::type::StructDescriptor).
      *
      * @param handler The handler to invoke asynchronously every time a
      * type of the given category is added to the registry. If the registry
@@ -408,7 +408,7 @@ namespace dots
      * @exception std::runtime_error Thrown if no Container for
      * @p descriptor was found.
      */
-    const Container<>& container(const type::StructDescriptor<>& descriptor);
+    const Container<>& container(const type::StructDescriptor& descriptor);
 
     /*!
      * @brief Get a specific container of the global transceiver by type.

@@ -2,7 +2,7 @@
 
 namespace dots::type
 {
-    AnyStruct::AnyStruct(const StructDescriptor<>& descriptor):
+    AnyStruct::AnyStruct(const StructDescriptor& descriptor):
         _instance{ static_cast<Struct*>(::operator new(descriptor.size())) }
     {
         descriptor.constructInPlace(Typeless::From(*_instance));
