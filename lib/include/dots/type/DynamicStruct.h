@@ -1,6 +1,5 @@
 #pragma once
 #include <string_view>
-#include <variant>
 #include <dots/type/Struct.h>
 
 namespace dots
@@ -116,14 +115,10 @@ namespace dots::type
         template <typename T>
         using strip_t = std::remove_pointer_t<std::decay_t<T>>;
 
-        using pointer_t = std::variant<PropertyArea*, std::unique_ptr<PropertyArea>>;
-
         using Struct::_propertyArea;
 
-        const PropertyArea* propertyAreaGet() const;
-        PropertyArea* propertyAreaGet();
-
-        pointer_t m_propertyArea;
+        std::unique_ptr<PropertyArea> m_propertyAreaStorage;
+        PropertyArea* m_propertyArea;
     };
 
     template <>
