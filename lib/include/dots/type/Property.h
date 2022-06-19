@@ -52,41 +52,62 @@ namespace dots::type
             return static_cast<const Derived&>(*this).derivedIsValid();
         }
 
-        template <bool AssertInvalidity = true, typename D>
-        Derived& construct(const Property<T, D>& rhs)
+        template <typename D>
+        Derived& emplace(const Property<T, D>& rhs)
         {
-            assertNotIsValid<AssertInvalidity>();
-
             if (rhs.isValid())
             {
-                construct<false>(rhs.storage());
+                emplace(rhs.storage());
+            }
+            else
+            {
+                destroy();
             }
 
             return static_cast<Derived&>(*this);
         }
 
-        template <bool AssertInvalidity = true, typename D>
-        Derived& construct(Property<T, D>&& rhs)
+        template <typename D>
+        Derived& emplace(Property<T, D>&& rhs)
         {
-            assertNotIsValid<AssertInvalidity>();
-
             if (rhs.isValid())
             {
-                construct<false>(std::move(rhs.storage()));
+                emplace(std::move(rhs.storage()));
                 rhs.destroy();
             }
+            else
+            {
+                destroy();
+            }
 
             return static_cast<Derived&>(*this);
         }
 
-        template <bool AssertInvalidity = true, typename... Args, std::enable_if_t<!std::disjunction_v<is_property<Args>...>, int> = 0>
-        T& construct(Args&&... args)
+        template <typename... Args, std::enable_if_t<!std::disjunction_v<is_property<Args>...>, int> = 0>
+        T& emplace(Args&&... args)
         {
-            assertNotIsValid<AssertInvalidity>();
-            setValid();
+            static_assert(!IsTypeless || sizeof...(Args) <= 1, "typeless construct or assignment only supports a single argument");
 
-            static_assert(!IsTypeless || sizeof...(Args) <= 1, "typeless construct only supports a single argument");
-            descriptor().valueDescriptor().constructInPlace(storage(), std::forward<Args>(args)...);
+            if (isValid())
+            {
+                if constexpr (sizeof...(Args) == 0)
+                {
+                    // note that this is currently necessary because there is no typeless
+                    // overload for assignment without an argument on the descriptor
+                    // interface.
+                    descriptor().valueDescriptor().destruct(storage());
+                    descriptor().valueDescriptor().constructInPlace(storage());
+                }
+                else
+                {
+                    descriptor().valueDescriptor().assign(storage(), std::forward<Args>(args)...);
+                }
+            }
+            else
+            {
+                static_cast<Derived&>(*this).derivedSetValid();
+                descriptor().valueDescriptor().constructInPlace(storage(), std::forward<Args>(args)...);
+            }
 
             return storage();
         }
@@ -96,13 +117,17 @@ namespace dots::type
             if (isValid())
             {
                 descriptor().valueDescriptor().destruct(storage());
-                setInvalid();
+                static_cast<Derived&>(*this).derivedSetInvalid();
             }
         }
 
         const T& value() const
         {
-            assertIsValid<true>();
+            if (!isValid())
+            {
+                throw std::runtime_error{ "property is expected to be valid but it is not: " + descriptor().name() };
+            }
+
             return storage();
         }
 
@@ -125,7 +150,7 @@ namespace dots::type
         }
 
         template <typename... Args>
-        T& constructOrValue(Args&&... args)
+        T& valueOrEmplace(Args&&... args)
         {
             if (isValid())
             {
@@ -133,97 +158,7 @@ namespace dots::type
             }
             else
             {
-                return construct<false>(std::forward<Args>(args)...);
-            }
-        }
-
-        template <bool AssertValidity = true, typename D>
-        Derived& assign(const Property<T, D>& rhs)
-        {
-            assertIsValid<AssertValidity>();
-
-            if (rhs.isValid())
-            {
-                assign<false>(rhs.storage());
-            }
-            else
-            {
-                destroy();
-            }
-
-            return static_cast<Derived&>(*this);
-        }
-
-        template <bool AssertValidity = true, typename D>
-        Derived& assign(Property<T, D>&& rhs)
-        {
-            assertIsValid<AssertValidity>();
-
-            if (rhs.isValid())
-            {
-                assign<false>(std::move(rhs.storage()));
-                rhs.destroy();
-            }
-            else
-            {
-                destroy();
-            }
-
-            return static_cast<Derived&>(*this);
-        }
-
-        template <bool AssertValidity = true, typename... Args, std::enable_if_t<!std::disjunction_v<is_property<Args>...>, int> = 0>
-        T& assign(Args&&... args)
-        {
-            assertIsValid<AssertValidity>();
-            setValid();
-
-            static_assert(!IsTypeless || sizeof...(Args) <= 1, "typeless assignment only supports a single argument");
-            descriptor().valueDescriptor().assign(storage(), std::forward<Args>(args)...);
-
-            return storage();
-        }
-
-        template <typename D>
-        Derived& constructOrAssign(const Property<T, D>& rhs)
-        {
-            if (isValid())
-            {
-                assign<false>(rhs);
-            }
-            else
-            {
-                construct<false>(rhs);
-            }
-
-            return static_cast<Derived&>(*this);
-        }
-
-        template <typename D>
-        Derived& constructOrAssign(Property<T, D>&& rhs)
-        {
-            if (isValid())
-            {
-                assign<false>(std::move(rhs));
-            }
-            else
-            {
-                construct<false>(std::move(rhs));
-            }
-
-            return static_cast<Derived&>(*this);
-        }
-
-        template <typename... Args, std::enable_if_t<!std::disjunction_v<is_property<Args>...>, int> = 0>
-        T& constructOrAssign(Args&&... args)
-        {
-            if (isValid())
-            {
-                return assign<false>(std::forward<Args>(args)...);
-            }
-            else
-            {
-                return construct<false>(std::forward<Args>(args)...);
+                return emplace(std::forward<Args>(args)...);
             }
         }
 
@@ -238,13 +173,13 @@ namespace dots::type
                 }
                 else
                 {
-                    other.template construct<false>(std::move(storage()));
+                    other.emplace(std::move(storage()));
                     destroy();
                 }
             }
             else if (other.isValid())
             {
-                construct<false>(std::move(other.storage()));
+                emplace(std::move(other.storage()));
                 other.destroy();
             }
         }
@@ -278,42 +213,6 @@ namespace dots::type
 
         constexpr Property& operator = (const Property& rhs) = default;
         constexpr Property& operator = (Property&& rhs) = default;
-
-    private:
-
-        template <bool AssertValidity>
-        void assertIsValid() const
-        {
-            if constexpr (AssertValidity)
-            {
-                if (!isValid())
-                {
-                    throw std::runtime_error{ "property is expected to be valid but it is not: " + descriptor().name() };
-                }
-            }
-        }
-
-        template <bool AssertInvalidity>
-        void assertNotIsValid() const
-        {
-            if constexpr (AssertInvalidity)
-            {
-                if (isValid())
-                {
-                    throw std::runtime_error{ "property is expected to be invalid but it is not: " + descriptor().name() };
-                }
-            }
-        }
-
-        void setValid()
-        {
-            static_cast<Derived&>(*this).derivedSetValid();
-        }
-
-        void setInvalid()
-        {
-            static_cast<Derived&>(*this).derivedSetInvalid();
-        }
     };
 
     template <typename Lhs, typename Rhs, std::enable_if_t<std::disjunction_v<is_property<Lhs>, is_property<Rhs>>, int> = 0>

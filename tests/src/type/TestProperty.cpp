@@ -69,60 +69,54 @@ TEST_F(TestProperty, isValid_InvalidWithoutValue)
 
 TEST_F(TestProperty, isValid_ValidWithValue)
 {
-    m_sut.construct();
+    m_sut.emplace();
 
     EXPECT_TRUE(m_sut.isValid());
     EXPECT_NO_THROW(m_sut.value());
 }
 
-TEST_F(TestProperty, construct_EqualValueAfterExplicitConstruction)
+TEST_F(TestProperty, emplace_EqualValueAfterExplicitConstruction)
 {
-    m_sut.construct(std::string{ "foo" });
+    m_sut.emplace(std::string{ "foo" });
 
     EXPECT_TRUE(m_sut.isValid());
     EXPECT_EQ(m_sut.value(), std::string{ "foo" });
 }
 
-TEST_F(TestProperty, construct_EqualValueAfterImplicitConstruction)
+TEST_F(TestProperty, emplace_EqualValueAfterImplicitConstruction)
 {
-    m_sut.construct("foo");
+    m_sut.emplace("foo");
 
     EXPECT_TRUE(m_sut.isValid());
     EXPECT_EQ(m_sut.value(), "foo");
 }
 
-TEST_F(TestProperty, construct_EqualValueAfterEmplaceConstruction)
+TEST_F(TestProperty, emplace_EqualValueAfterEmplaceConstruction)
 {
-    m_sut.construct(std::string{ "barfoo" }, 3u, 3u);
+    m_sut.emplace(std::string{ "barfoo" }, 3u, 3u);
 
     EXPECT_TRUE(m_sut.isValid());
     EXPECT_EQ(m_sut.value(), "foo");
 }
 
-TEST_F(TestProperty, construct_EqualValueAfterConstructionFromOther)
+TEST_F(TestProperty, emplace_EqualValueAfterConstructionFromOther)
 {
-    m_sutRhs.construct("foo");
-    m_sutLhs.construct(m_sutRhs);
+    m_sutRhs.emplace("foo");
+    m_sutLhs.emplace(m_sutRhs);
 
     EXPECT_TRUE(m_sutLhs.isValid());
     EXPECT_EQ(m_sutLhs.value(), "foo");
 }
 
-TEST_F(TestProperty, construct_InvalidAfterConstructionFromInvalidOther)
+TEST_F(TestProperty, emplace_InvalidAfterConstructionFromInvalidOther)
 {
-    m_sutLhs.construct(m_sutRhs);
+    m_sutLhs.emplace(m_sutRhs);
     EXPECT_FALSE(m_sutLhs.isValid());
-}
-
-TEST_F(TestProperty, construct_ThrowOnOverconstruction)
-{
-    m_sut.construct();
-    EXPECT_THROW(m_sut.construct(), std::runtime_error);
 }
 
 TEST_F(TestProperty, destroy_InvalidAfterDestroy)
 {
-    m_sut.construct("foo");
+    m_sut.emplace("foo");
     m_sut.destroy();
 
     EXPECT_FALSE(m_sut.isValid());
@@ -130,7 +124,7 @@ TEST_F(TestProperty, destroy_InvalidAfterDestroy)
 
 TEST_F(TestProperty, valueOrDefault_ValueOnValid)
 {
-    m_sut.construct("foo");
+    m_sut.emplace("foo");
     std::string value = m_sut.valueOrDefault("bar");
 
     EXPECT_TRUE(m_sut.isValid());
@@ -145,95 +139,28 @@ TEST_F(TestProperty, valueOrDefault_DefaultOnValid)
     EXPECT_EQ(value, "bar");
 }
 
-TEST_F(TestProperty, constructOrValue_ConstructOnInvalid)
+TEST_F(TestProperty, valueOrEmplace_EmplaceOnInvalid)
 {
-    std::string& value = m_sut.constructOrValue("foo");
+    std::string& value = m_sut.valueOrEmplace("foo");
 
     EXPECT_TRUE(m_sut.isValid());
     EXPECT_EQ(value, "foo");
 }
 
-TEST_F(TestProperty, constructOrValue_ValueOnValid)
+TEST_F(TestProperty, valueOrEmplace_ValueOnValid)
 {
-    m_sut.construct("foo");
+    m_sut.emplace("foo");
 
-    std::string& value = m_sut.constructOrValue("bar");
+    std::string& value = m_sut.valueOrEmplace("bar");
 
     EXPECT_TRUE(m_sut.isValid());
     EXPECT_EQ(value, "foo");
-}
-
-TEST_F(TestProperty, assign_ExceptionOnInvalid)
-{
-    EXPECT_THROW(m_sut.assign(), std::runtime_error);
-}
-
-TEST_F(TestProperty, assign_EqualValueAfterExplicitAssign)
-{
-    m_sut.construct();
-    m_sut.assign(std::string{ "foo" });
-
-    EXPECT_TRUE(m_sut.isValid());
-    EXPECT_EQ(m_sut.value(), std::string{ "foo" });
-}
-
-TEST_F(TestProperty, assign_EqualValueAfterImplicitAssign)
-{
-    m_sut.construct();
-    m_sut.assign("foo");
-
-    EXPECT_TRUE(m_sut.isValid());
-    EXPECT_EQ(m_sut.value(), "foo");
-}
-
-TEST_F(TestProperty, assign_EqualValueAfterAssignmentFromOther)
-{
-    m_sutLhs.construct("foo");
-    m_sutRhs.construct("bar");
-    m_sutLhs.assign(m_sutRhs);
-
-    EXPECT_TRUE(m_sutLhs.isValid());
-    EXPECT_EQ(m_sutLhs.value(), "bar");
-}
-
-TEST_F(TestProperty, assign_InvalidAfterAssignmentFromInvalidOther)
-{
-    m_sutLhs.construct("foo");
-    m_sutLhs.assign(m_sutRhs);
-
-    EXPECT_FALSE(m_sutLhs.isValid());
-}
-
-TEST_F(TestProperty, assign_EqualValueAfterEmplaceAssign)
-{
-    m_sut.construct();
-    m_sut.assign(std::string{ "barfoo" }, 3u, 3u);
-
-    EXPECT_TRUE(m_sut.isValid());
-    EXPECT_EQ(m_sut.value(), "foo");
-}
-
-TEST_F(TestProperty, constructOrAssign_ConstructOnInvalid)
-{
-    std::string& value = m_sut.constructOrAssign("foo");
-
-    EXPECT_TRUE(m_sut.isValid());
-    EXPECT_EQ(value, "foo");
-}
-
-TEST_F(TestProperty, constructOrAssign_AssignOnValid)
-{
-    m_sut.construct("foo");
-    std::string& value = m_sut.constructOrAssign("bar");
-
-    EXPECT_TRUE(m_sut.isValid());
-    EXPECT_EQ(value, "bar");
 }
 
 TEST_F(TestProperty, swap_OppositeValuesAfterSwapValid)
 {
-    m_sutLhs.construct("foo");
-    m_sutRhs.construct("bar");
+    m_sutLhs.emplace("foo");
+    m_sutRhs.emplace("bar");
 
     m_sutLhs.swap(m_sutRhs);
 
@@ -243,7 +170,7 @@ TEST_F(TestProperty, swap_OppositeValuesAfterSwapValid)
 
 TEST_F(TestProperty, swap_OppositeValuesAfterSwapInvalid)
 {
-    m_sutLhs.construct("foo");
+    m_sutLhs.emplace("foo");
     m_sutLhs.swap(m_sutRhs);
 
     EXPECT_FALSE(m_sutLhs.isValid());
@@ -253,7 +180,7 @@ TEST_F(TestProperty, swap_OppositeValuesAfterSwapInvalid)
 
 TEST_F(TestProperty, swap_OppositeValuesAfterInvalidSwap)
 {
-    m_sutRhs.construct("bar");
+    m_sutRhs.emplace("bar");
     m_sutLhs.swap(m_sutRhs);
 
     EXPECT_FALSE(m_sutRhs.isValid());
@@ -271,7 +198,7 @@ TEST_F(TestProperty, equal_CompareNotEqualToValueWhenInvalid)
 TEST_F(TestProperty, equal_CompareEqualToValueWhenValid)
 {
     std::string rhs{ "foo" };
-    m_sut.construct("foo");
+    m_sut.emplace("foo");
 
     EXPECT_TRUE(m_sut == rhs);
     EXPECT_FALSE(m_sut != rhs);
@@ -280,7 +207,7 @@ TEST_F(TestProperty, equal_CompareEqualToValueWhenValid)
 TEST_F(TestProperty, equal_CompareNotEqualToValueWhenValid)
 {
     std::string rhs{ "bar" };
-    m_sut.construct("foo");
+    m_sut.emplace("foo");
 
     EXPECT_FALSE(m_sut == rhs);
     EXPECT_TRUE(m_sut != rhs);
@@ -288,7 +215,7 @@ TEST_F(TestProperty, equal_CompareNotEqualToValueWhenValid)
 
 TEST_F(TestProperty, equal_CompareNotEqualToValidPropertyWhenInvalid)
 {
-    m_sutRhs.construct("foo");
+    m_sutRhs.emplace("foo");
 
     EXPECT_FALSE(m_sutLhs == m_sutRhs);
     EXPECT_TRUE(m_sutLhs != m_sutRhs);
@@ -296,8 +223,8 @@ TEST_F(TestProperty, equal_CompareNotEqualToValidPropertyWhenInvalid)
 
 TEST_F(TestProperty, equal_CompareEqualToValidPropertyWhenValid)
 {
-    m_sutLhs.construct("foo");
-    m_sutRhs.construct("foo");
+    m_sutLhs.emplace("foo");
+    m_sutRhs.emplace("foo");
 
     EXPECT_TRUE(m_sutLhs == m_sutRhs);
     EXPECT_FALSE(m_sutLhs != m_sutRhs);
@@ -305,8 +232,8 @@ TEST_F(TestProperty, equal_CompareEqualToValidPropertyWhenValid)
 
 TEST_F(TestProperty, equal_CompareNotEqualToValidPropertyWhenValid)
 {
-    m_sutLhs.construct("foo");
-    m_sutRhs.construct("bar");
+    m_sutLhs.emplace("foo");
+    m_sutRhs.emplace("bar");
 
     EXPECT_FALSE(m_sutLhs == m_sutRhs);
     EXPECT_TRUE(m_sutLhs != m_sutRhs);
@@ -321,7 +248,7 @@ TEST_F(TestProperty, less_CompareNotLessToValueWhenInvalid)
 TEST_F(TestProperty, less_CompareLessToValueWhenValid)
 {
     std::string rhs{ "fou" };
-    m_sut.construct("foo");
+    m_sut.emplace("foo");
 
     EXPECT_TRUE(m_sut < rhs);
 }
@@ -329,7 +256,7 @@ TEST_F(TestProperty, less_CompareLessToValueWhenValid)
 TEST_F(TestProperty, less_CompareNotLessToValueWhenValid)
 {
     std::string rhs{ "bar" };
-    m_sut.construct("foo");
+    m_sut.emplace("foo");
 
     EXPECT_FALSE(m_sut < rhs);
 }
@@ -341,22 +268,22 @@ TEST_F(TestProperty, less_CompareNotLessToInvalidPropertyWhenInvalid)
 
 TEST_F(TestProperty, less_CompareNotLessToValidPropertyWhenInvalid)
 {
-    m_sutRhs.construct("fou");
+    m_sutRhs.emplace("fou");
     EXPECT_FALSE(m_sutLhs < m_sutRhs);
 }
 
 TEST_F(TestProperty, less_CompareLessToValidPropertyValid)
 {
-    m_sutLhs.construct("foo");
-    m_sutRhs.construct("fou");
+    m_sutLhs.emplace("foo");
+    m_sutRhs.emplace("fou");
 
     EXPECT_TRUE(m_sutLhs < m_sutRhs);
 }
 
 TEST_F(TestProperty, less_CompareNotLessToValidPropertyValid)
 {
-    m_sutLhs.construct("foo");
-    m_sutRhs.construct("bar");
+    m_sutLhs.emplace("foo");
+    m_sutRhs.emplace("bar");
 
     EXPECT_FALSE(m_sutLhs < m_sutRhs);
 }

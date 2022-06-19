@@ -282,7 +282,7 @@ TEST_F(TestLegacyAuthManager, testCheckAuthentication)
         auto responseHash = dots::io::Digest(nonce, *response.cnonce, *response.clientName, secret_lan).value();
         std::string responseStr = boost::algorithm::hex_lower(std::string(responseHash.begin(), responseHash.end()));
 
-        response.authChallengeResponse.construct(responseStr);
+        response.authChallengeResponse.emplace(responseStr);
 
         EXPECT_TRUE(m_sut.verifyResponse(addr, nonce, response));
     }
@@ -297,7 +297,7 @@ TEST_F(TestLegacyAuthManager, testCheckAuthentication)
         auto responseHash = dots::io::Digest(nonce, *response.cnonce, *response.clientName, secret_lan2).value();
         std::string responseStr = boost::algorithm::hex_lower(std::string(responseHash.begin(), responseHash.end()));
 
-        response.authChallengeResponse.construct(responseStr);
+        response.authChallengeResponse.emplace(responseStr);
 
         EXPECT_TRUE(m_sut.verifyResponse(addr, nonce, response));
     }
@@ -312,7 +312,7 @@ TEST_F(TestLegacyAuthManager, testCheckAuthentication)
         auto responseHash = dots::io::Digest(nonce, *response.cnonce, *response.clientName, secret_other).value();
         std::string responseStr = boost::algorithm::hex_lower(std::string(responseHash.begin(), responseHash.end()));
 
-        response.authChallengeResponse.construct(responseStr);
+        response.authChallengeResponse.emplace(responseStr);
 
         EXPECT_TRUE(m_sut.verifyResponse(addr, nonce, response));
     }
@@ -327,7 +327,7 @@ TEST_F(TestLegacyAuthManager, testCheckAuthentication)
         auto responseHash = dots::io::Digest(nonce, *response.cnonce, *response.clientName, "blub").value();
         std::string responseStr = boost::algorithm::hex_lower(std::string(responseHash.begin(), responseHash.end()));
 
-        response.authChallengeResponse.construct(responseStr);
+        response.authChallengeResponse.emplace(responseStr);
 
         EXPECT_FALSE(m_sut.verifyResponse(addr, nonce, response));
     }
@@ -340,7 +340,7 @@ TEST_F(TestLegacyAuthManager, testCheckAuthenticationDefault)
     {
         auto addr = boost::asio::ip::address::from_string("127.0.0.1");
         DotsMsgConnect response;
-        response.clientName.construct("dummyClient");
+        response.clientName.emplace("dummyClient");
 
         EXPECT_TRUE(m_sut.verifyResponse(addr, nonce, response));
     }
@@ -355,7 +355,7 @@ TEST_F(TestLegacyAuthManager, testCheckAuthenticationDefault)
         auto responseHash = dots::io::Digest(nonce, *response.cnonce, *response.clientName, "lan").value();
         std::string responseStr = boost::algorithm::hex_lower(std::string(responseHash.begin(), responseHash.end()));
 
-        response.authChallengeResponse.construct(responseStr);
+        response.authChallengeResponse.emplace(responseStr);
 
         EXPECT_TRUE(m_sut.verifyResponse(addr, nonce, response));
     }

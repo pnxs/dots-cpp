@@ -560,13 +560,13 @@ namespace dots::io
                     // conditionally set namespace
                     if (instance._descriptor().internal() && !instance._is<DotsClient>() && !instance._is<DotsDescriptorRequest>())
                     {
-                        transportHeader.nameSpace.construct("SYS");
+                        transportHeader.nameSpace.emplace("SYS");
                     }
 
                     // set mandatory sent time if not valid
                     if (!transportHeader.dotsHeader->sentTime.isValid())
                     {
-                        transportHeader.dotsHeader->sentTime.construct(timepoint_t::Now());
+                        transportHeader.dotsHeader->sentTime.emplace(timepoint_t::Now());
                     }
 
                     // set mandatory sender if not valid. note that a fixed server id for the sender can be used here because

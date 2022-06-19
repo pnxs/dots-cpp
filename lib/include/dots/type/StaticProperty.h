@@ -12,39 +12,39 @@ namespace dots::type
         template <typename... Args, std::enable_if_t<sizeof...(Args) >= 1 && !std::disjunction_v<is_property<Args>...>, int> = 0>
         StaticProperty(Args&&... args)
         {
-            StaticProperty<T, Derived>::template construct<false>(std::forward<Args>(args)...);
+            StaticProperty<T, Derived>::emplace(std::forward<Args>(args)...);
         }
 
         template <typename D, std::enable_if_t<!std::is_same_v<D, Derived>, int> = 0>
         StaticProperty(const Property<T, D>& other)
         {
-            StaticProperty<T, Derived>::template construct<false>(other);
+            StaticProperty<T, Derived>::emplace(other);
         }
 
         template <typename D, std::enable_if_t<!std::is_same_v<D, Derived>, int> = 0>
         StaticProperty(Property<T, D>&& other)
         {
-            Property<T, Derived>::template construct<false>(std::move(other));
+            Property<T, Derived>::emplace(std::move(other));
         }
 
         template <typename Arg, std::enable_if_t<!is_property_v<Arg>, int> = 0>
         Derived& operator = (Arg&& rhs)
         {
-            Property<T, Derived>::constructOrAssign(std::forward<Arg>(rhs));
+            Property<T, Derived>::emplace(std::forward<Arg>(rhs));
             return static_cast<Derived&>(*this);
         }
 
         template <typename D, std::enable_if_t<!std::is_same_v<D, Derived>, int> = 0>
         Derived& operator = (const Property<T, D>& other)
         {
-            Property<T, Derived>::constructOrAssign(other);
+            Property<T, Derived>::emplace(other);
             return static_cast<Derived&>(*this);
         }
 
         template <typename D, std::enable_if_t<!std::is_same_v<D, Derived>, int> = 0>
         Derived& operator = (Property<T, D>&& other)
         {
-            Property<T, Derived>::constructOrAssign(std::move(other));
+            Property<T, Derived>::emplace(std::move(other));
             return static_cast<Derived&>(*this);
         }
 
@@ -96,12 +96,12 @@ namespace dots::type
 
         StaticProperty(const StaticProperty& other) : Property<T, Derived>()
         {
-            Property<T, Derived>::template construct<false>(static_cast<const Derived&>(other));
+            Property<T, Derived>::emplace(static_cast<const Derived&>(other));
         }
 
         StaticProperty(StaticProperty&& other)
         {
-            Property<T, Derived>::template construct<false>(static_cast<Derived&&>(other));
+            Property<T, Derived>::emplace(static_cast<Derived&&>(other));
         }
 
         ~StaticProperty()
@@ -111,13 +111,13 @@ namespace dots::type
 
         StaticProperty& operator = (const StaticProperty& rhs)
         {
-            Property<T, Derived>::constructOrAssign(static_cast<const Derived&>(rhs));
+            Property<T, Derived>::emplace(static_cast<const Derived&>(rhs));
             return *this;
         }
 
         StaticProperty& operator = (StaticProperty&& rhs)
         {
-            Property<T, Derived>::constructOrAssign(static_cast<Derived&&>(rhs));
+            Property<T, Derived>::emplace(static_cast<Derived&&>(rhs));
             return *this;
         }
 

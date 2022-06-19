@@ -118,7 +118,7 @@ namespace dots::io
             EnumDescriptorData::name_i{ enumDescriptor.name() }
         };
 
-        vector_t<EnumElementDescriptor>& enumeratorData = enumData.elements.construct();
+        vector_t<EnumElementDescriptor>& enumeratorData = enumData.elements.emplace();
 
         for (const type::EnumeratorDescriptor& enumeratorDescriptor : enumDescriptor.enumeratorsTypeless())
         {
@@ -145,7 +145,7 @@ namespace dots::io
             }
         };
 
-        auto& properties = structData.properties.construct();
+        auto& properties = structData.properties.emplace();
 
         for (const type::PropertyDescriptor& propertyDescriptor : structDescriptor.propertyDescriptors())
         {

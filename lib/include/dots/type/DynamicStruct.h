@@ -50,14 +50,14 @@ namespace dots::type
         DynamicStruct(const Descriptor<DynamicStruct>& descriptor, DynamicPropertyInitializers&&... dynamicPropertyInitializers) :
             DynamicStruct(descriptor)
         {
-            (this->operator[](dynamicPropertyInitializers.name)->template construct<false>(Typeless::From(std::forward<decltype(dynamicPropertyInitializers)>(dynamicPropertyInitializers).value)), ...);
+            (this->operator[](dynamicPropertyInitializers.name)->emplace(Typeless::From(std::forward<decltype(dynamicPropertyInitializers)>(dynamicPropertyInitializers).value)), ...);
         }
 
         template <typename... DynamicPropertyInitializers, std::enable_if_t<sizeof...(DynamicPropertyInitializers) >= 1 && std::conjunction_v<is_dynamic_property_initializer_t<std::remove_pointer_t<std::decay_t<DynamicPropertyInitializers>>>...>, int> = 0>
         DynamicStruct(const Descriptor<DynamicStruct>& descriptor, PropertyArea* propertyArea, DynamicPropertyInitializers&&... dynamicPropertyInitializers) :
             DynamicStruct(descriptor, propertyArea)
         {
-            (this->operator[](dynamicPropertyInitializers.name)->template construct<false>(Typeless::From(std::forward<decltype(dynamicPropertyInitializers)>(dynamicPropertyInitializers).value)), ...);
+            (this->operator[](dynamicPropertyInitializers.name)->emplace(Typeless::From(std::forward<decltype(dynamicPropertyInitializers)>(dynamicPropertyInitializers).value)), ...);
         }
 
         DynamicStruct(const DynamicStruct& other);

@@ -58,7 +58,7 @@ namespace dots::type
 
         for (auto&[propertyInstance, propertyOther] : instance._propertyRange(other, other._validProperties()))
         {
-            propertyInstance.construct(propertyOther);
+            propertyInstance.emplace(propertyOther);
         }
 
         return instance;
@@ -76,7 +76,7 @@ namespace dots::type
 
         for (auto&[propertyInstance, propertyOther] : instance._propertyRange(other, other._validProperties()))
         {
-            propertyInstance.construct(std::move(propertyOther));
+            propertyInstance.emplace(std::move(propertyOther));
         }
 
         return instance;
@@ -199,7 +199,7 @@ namespace dots::type
         {
             if (propertyThis.isPartOf(assignProperties))
             {
-                propertyThis.constructOrAssign(propertyOther);
+                propertyThis.emplace(propertyOther);
             }
             else
             {
@@ -218,7 +218,7 @@ namespace dots::type
         {
             if (propertyThis.isPartOf(assignProperties))
             {
-                propertyThis.constructOrAssign(std::move(propertyOther));
+                propertyThis.emplace(std::move(propertyOther));
             }
             else
             {
@@ -237,7 +237,7 @@ namespace dots::type
         {
             if (propertyOther.isValid())
             {
-                propertyThis.constructOrAssign(propertyOther);
+                propertyThis.emplace(propertyOther);
             }
             else
             {
@@ -256,11 +256,11 @@ namespace dots::type
         {
             if (propertyThis.descriptor().valueDescriptor().type() == Type::Struct)
             {
-                propertyThis.constructOrValue().to<Struct>()._merge(propertyOther->to<Struct>());
+                propertyThis.valueOrEmplace().to<Struct>()._merge(propertyOther->to<Struct>());
             }
             else
             {
-                propertyThis.constructOrAssign(propertyOther);
+                propertyThis.emplace(propertyOther);
             }
         }
 

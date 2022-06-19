@@ -15,8 +15,8 @@ TEST(TestAsciiSerialization, serialize)
         StructDescriptorData::name_i{ "aName" }
     };
 
-    auto& properties = sd.properties.construct();
-    auto& documentation = sd.documentation.construct();
+    auto& properties = sd.properties.emplace();
+    auto& documentation = sd.documentation.emplace();
 
     StructPropertyData pd{
         StructPropertyData::name_i{ "aProperty" },
@@ -30,8 +30,8 @@ TEST(TestAsciiSerialization, serialize)
     pd.tag = 2;
     properties.push_back(pd);
 
-    documentation.description.construct("aDescription");
-    documentation.comment.construct("aComment");
+    documentation.description.emplace("aDescription");
+    documentation.comment.emplace("aComment");
 
     std::string expectedOutput = "{\n"
             "    name=aName\n"
@@ -64,8 +64,8 @@ TEST(TestAsciiSerialization, serializeSingleLine)
         StructDescriptorData::name_i{ "aName" }
     };
 
-    auto& properties = sd.properties.construct();
-    auto& documentation = sd.documentation.construct();
+    auto& properties = sd.properties.emplace();
+    auto& documentation = sd.documentation.emplace();
     
     StructPropertyData pd{
         StructPropertyData::name_i{ "aProperty" },
@@ -79,8 +79,8 @@ TEST(TestAsciiSerialization, serializeSingleLine)
     pd.tag = 2;
     properties.push_back(pd);
 
-    documentation.description.construct("aDescription");
-    documentation.comment.construct("aComment");
+    documentation.description.emplace("aDescription");
+    documentation.comment.emplace("aComment");
 
     dots::ToAsciiOptions options;
     options.singleLine = true;
@@ -132,8 +132,8 @@ TEST(TestAsciiSerialization, serializeSingleLineColored)
         StructDescriptorData::name_i{ "aName" }
     };
 
-    auto& properties = sd.properties.construct();
-    auto& documentation = sd.documentation.construct();
+    auto& properties = sd.properties.emplace();
+    auto& documentation = sd.documentation.emplace();
 
     StructPropertyData pd{
         StructPropertyData::name_i{ "aProperty" },
@@ -147,8 +147,8 @@ TEST(TestAsciiSerialization, serializeSingleLineColored)
     pd.tag = 2;
     properties.push_back(pd);
 
-    documentation.description.construct("aDescription");
-    documentation.comment.construct("aComment");
+    documentation.description.emplace("aDescription");
+    documentation.comment.emplace("aComment");
 
     dots::ToAsciiOptions options;
     TraceColorSchema cs;

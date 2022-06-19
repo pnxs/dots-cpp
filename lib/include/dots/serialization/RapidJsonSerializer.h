@@ -447,7 +447,7 @@ namespace dots::serialization
             }
             else
             {
-                property.constructOrValue();
+                property.valueOrEmplace();
                 return true;
             }
         }
