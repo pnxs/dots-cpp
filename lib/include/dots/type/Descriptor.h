@@ -87,6 +87,7 @@ namespace dots::type
 
         virtual void destruct(Typeless& value) const = 0;
 
+        virtual Typeless& assign(Typeless& value) const = 0;
         virtual Typeless& assign(Typeless& lhs, const Typeless& rhs) const = 0;
         virtual Typeless& assign(Typeless& lhs, Typeless&& rhs) const = 0;
         virtual void swap(Typeless& value, Typeless& other) const = 0;

@@ -55,6 +55,7 @@ namespace dots::type
         void destruct(Typeless& value) const override;
         Struct& destruct(Struct& instance) const;
 
+        Typeless& assign(Typeless& lhs) const override;
         Typeless& assign(Typeless& lhs, const Typeless& rhs) const override;
         Typeless& assign(Typeless& lhs, Typeless&& rhs) const override;
         void swap(Typeless& value, Typeless& other) const override;

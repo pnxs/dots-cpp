@@ -90,18 +90,7 @@ namespace dots::type
 
             if (isValid())
             {
-                if constexpr (sizeof...(Args) == 0)
-                {
-                    // note that this is currently necessary because there is no typeless
-                    // overload for assignment without an argument on the descriptor
-                    // interface.
-                    descriptor().valueDescriptor().destruct(storage());
-                    descriptor().valueDescriptor().constructInPlace(storage());
-                }
-                else
-                {
-                    descriptor().valueDescriptor().assign(storage(), std::forward<Args>(args)...);
-                }
+                descriptor().valueDescriptor().assign(storage(), std::forward<Args>(args)...);
             }
             else
             {

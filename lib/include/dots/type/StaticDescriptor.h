@@ -50,6 +50,7 @@ namespace dots::type
 
         void destruct(Typeless& value) const override;
 
+        Typeless& assign(Typeless& lhs) const override;
         Typeless& assign(Typeless& lhs, const Typeless& rhs) const override;
         Typeless& assign(Typeless& lhs, Typeless&& rhs) const override;
 

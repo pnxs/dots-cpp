@@ -137,6 +137,11 @@ namespace dots::type
         return instance;
     }
 
+    Typeless& StructDescriptor::assign(Typeless& lhs) const
+    {
+        return Typeless::From(destruct(lhs.to<Struct>()));
+    }
+
     Typeless& StructDescriptor::assign(Typeless& lhs, const Typeless& rhs) const
     {
         return Typeless::From(assign(lhs.to<Struct>(), rhs.to<Struct>(), PropertySet{ PropertySet::All }));
