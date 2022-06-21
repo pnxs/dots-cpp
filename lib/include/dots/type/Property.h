@@ -1,6 +1,10 @@
 #pragma once
 #include <type_traits>
 #include <cstddef>
+#if (__GNUG__ == 9)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
 #include <dots/type/PropertyArea.h>
 #include <dots/type/PropertyDescriptor.h>
 
@@ -306,3 +310,7 @@ namespace dots::type
         return !(lhs < rhs);
     }
 }
+
+#if (defined __GNUG__)
+#pragma GCC diagnostic pop
+#endif
