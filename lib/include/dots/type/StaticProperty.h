@@ -4,6 +4,52 @@
 #include <dots/type/Property.h>
 #include <dots/type/StaticPropertyMetadata.h>
 
+namespace dots::type::details
+{
+    struct dummy_t
+    {
+        constexpr dummy_t() noexcept
+        {
+            // explicitly user-provided to avoid zero-initialization
+        }
+    };
+
+    template <typename  T, bool = std::is_trivially_destructible_v<T>>
+    struct storage_t
+    {
+        union
+        {
+            dummy_t dummy;
+            T value;
+        };
+
+        constexpr storage_t() noexcept : dummy{} {}
+    };
+
+    template <typename T>
+    struct storage_t<T, false>
+    {
+        union
+        {
+            dummy_t dummy;
+            T value;
+        };
+
+        constexpr storage_t() noexcept : dummy{} {}
+
+        storage_t(const storage_t&) = default;
+        storage_t(storage_t&& other) = default;
+
+        ~storage_t() noexcept
+        {
+            // handled in property
+        }
+
+        storage_t& operator = (const storage_t& rhs) = default;
+        storage_t& operator = (storage_t&& rhs) = default;
+    };
+}
+
 namespace dots::type
 {
     template <typename T, typename Derived>
@@ -142,7 +188,7 @@ namespace dots::type
 
         const T& derivedStorage() const
         {
-            return reinterpret_cast<const T&>(m_storage);
+            return m_storage.value;
         }
 
         bool derivedIsValid() const
@@ -161,6 +207,7 @@ namespace dots::type
         }
 
         inline static std::optional<PropertyDescriptor> M_descriptorStorage;
-        std::aligned_storage_t<sizeof(T), alignof(T)> m_storage;
+
+        details::storage_t<T> m_storage;
     };
 }
