@@ -96,7 +96,11 @@ namespace dots::types
             #endif
 
             {% if property.vector %}
+            {% if property.cxx_vector_type == 'bool_t' %}
+            {{property.name}}_pt(std::initializer_list<types::uint8_t> init)
+            {% else %}
             {{property.name}}_pt(std::initializer_list<types::{{property.cxx_vector_type}}> init)
+            {% endif %}
             {
                 StaticProperty::construct<false>(init);
             }
