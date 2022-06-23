@@ -1,6 +1,7 @@
 #include <sstream>
 #include <regex>
 #include <charconv>
+#include <optional>
 #include <dots/type/Chrono.h>
 #include <date/date.h>
 #include <date/tz.h>
@@ -8,15 +9,18 @@
 namespace dots::type::chrono::experimental
 {
     const date::time_zone* TimeZoneOverride = nullptr;
+    std::optional<date::sys_info> SysInfoOverride;
 
     void set_time_zone_override(std::string_view timeZone/* = {}*/)
     {
         TimeZoneOverride = timeZone.empty() ? date::current_zone() : date::locate_zone(timeZone);
+        SysInfoOverride = date::make_zoned(TimeZoneOverride, std::chrono::system_clock::now()).get_info();
     }
 
     void clear_time_zone_override()
     {
         TimeZoneOverride = nullptr;
+        SysInfoOverride = std::nullopt;
     }
 }
 
@@ -166,31 +170,35 @@ namespace dots::type
             {
                 std::ostringstream oss;
                 oss.exceptions(std::istringstream::failbit | std::istringstream::badbit);
+                const char* fmtData = fmt == ISO8601DateTime ? "%FT%T%Ez" : fmt.data();
                 sys_time_t sysTimePoint{ std::chrono::duration_cast<sys_duration_t>(duration()) };
-
-                auto time_point_to_stream = [](auto& oss, std::string_view fmt, auto timePoint)
-                {
-                    date::to_stream(oss, fmt == ISO8601DateTime ? "%FT%T%Ez" : fmt.data(), timePoint);
-                };
 
                 if (utc)
                 {
-                    time_point_to_stream(oss, fmt, sysTimePoint);
+                    date::to_stream(oss, fmtData, sysTimePoint);
                 }
                 else
                 {
                     try
                     {
                         using chrono::experimental::TimeZoneOverride;
-                        const date::time_zone* timeZone = TimeZoneOverride ? TimeZoneOverride : date::current_zone();
-                        date::zoned_time localTimePoint{ timeZone, sysTimePoint };
-                        time_point_to_stream(oss, fmt, localTimePoint);
+                        using chrono::experimental::SysInfoOverride;
+
+                        if (TimeZoneOverride == nullptr)
+                        {
+                            date::to_stream(oss, fmtData, date::make_zoned(date::current_zone(), sysTimePoint));
+                        }
+                        else
+                        {
+                            auto localTimePoint = date::local_time<sys_duration_t>{ (sysTimePoint + SysInfoOverride->offset).time_since_epoch() };
+                            date::to_stream(oss, fmtData, localTimePoint, &SysInfoOverride->abbrev, &SysInfoOverride->offset);
+                        }
                     }
                     catch (const std::runtime_error&/* e*/)
                     {
                         // if the system does not have any timezone information then getting the current zone might fail
                         // and UTC is used as a fallback instead
-                        time_point_to_stream(oss, fmt, sysTimePoint);
+                        date::to_stream(oss, fmtData, sysTimePoint);
                     }
                 }
 
