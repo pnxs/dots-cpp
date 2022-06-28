@@ -55,7 +55,7 @@ namespace dots::type
     template <typename T, typename Derived>
     struct StaticProperty : Property<T, Derived>
     {
-        template <typename... Args, std::enable_if_t<sizeof...(Args) >= 1 && !std::disjunction_v<is_property<Args>...>, int> = 0>
+        template <typename... Args, std::enable_if_t<sizeof...(Args) >= 1 && std::is_constructible_v<T, Args...>, int> = 0>
         StaticProperty(Args&&... args)
         {
             StaticProperty<T, Derived>::emplace(std::forward<Args>(args)...);
