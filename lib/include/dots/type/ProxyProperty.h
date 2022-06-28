@@ -55,6 +55,8 @@ namespace dots::type
             /* do nothing */
         }
 
+        using Property<T, ProxyProperty<T>>::operator=;
+
         template <typename U>
         bool is() const
         {

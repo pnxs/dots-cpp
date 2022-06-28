@@ -17,10 +17,17 @@ protected:
             m_descriptor{ PropertyDescriptor{ Descriptor<T>::Instance(), std::move(name), tag, false, PropertyOffset{ std::in_place, static_cast<uint32_t>(reinterpret_cast<char*>(this) - reinterpret_cast<const char*>(&area)) } } } {}
         test_property_t(const test_property_t& other) = delete;
         test_property_t(test_property_t&& other) = delete;
-        ~test_property_t() { Property<T, test_property_t<T>>::destroy(); }
+        ~test_property_t() { Property<T, test_property_t<T>>::reset(); }
 
-        test_property_t& operator = (const test_property_t& rhs) = delete;
+        test_property_t& operator = (const test_property_t& rhs)
+        {
+            Property<T, test_property_t<T>>::assign(rhs);
+            return *this;
+        }
+
         test_property_t& operator = (test_property_t&& rhs) = delete;
+
+        using Property<T, test_property_t<T>>::operator=;
 
     private:
 
@@ -64,6 +71,8 @@ protected:
 TEST_F(TestProperty, isValid_InvalidWithoutValue)
 {
     EXPECT_FALSE(m_sut.isValid());
+    EXPECT_EQ(m_sut, dots::invalid);
+    EXPECT_EQ(dots::invalid, m_sut);
     EXPECT_THROW(m_sut.value(), std::runtime_error);
 }
 
@@ -72,6 +81,8 @@ TEST_F(TestProperty, isValid_ValidWithValue)
     m_sut.emplace();
 
     EXPECT_TRUE(m_sut.isValid());
+    EXPECT_NE(m_sut, dots::invalid);
+    EXPECT_NE(dots::invalid, m_sut);
     EXPECT_NO_THROW(m_sut.value());
 }
 
@@ -102,7 +113,7 @@ TEST_F(TestProperty, emplace_EqualValueAfterEmplaceConstruction)
 TEST_F(TestProperty, emplace_EqualValueAfterConstructionFromOther)
 {
     m_sutRhs.emplace("foo");
-    m_sutLhs.emplace(m_sutRhs);
+    m_sutLhs = m_sutRhs;
 
     EXPECT_TRUE(m_sutLhs.isValid());
     EXPECT_EQ(m_sutLhs.value(), "foo");
@@ -110,16 +121,25 @@ TEST_F(TestProperty, emplace_EqualValueAfterConstructionFromOther)
 
 TEST_F(TestProperty, emplace_InvalidAfterConstructionFromInvalidOther)
 {
-    m_sutLhs.emplace(m_sutRhs);
+    m_sutLhs = m_sutRhs;
     EXPECT_FALSE(m_sutLhs.isValid());
 }
 
 TEST_F(TestProperty, destroy_InvalidAfterDestroy)
 {
-    m_sut.emplace("foo");
-    m_sut.destroy();
+    {
+        m_sut.emplace("foo");
+        m_sut.reset();
 
-    EXPECT_FALSE(m_sut.isValid());
+        EXPECT_FALSE(m_sut.isValid());
+    }
+
+    {
+        m_sut.emplace("foo");
+        m_sut = dots::invalid;
+
+        EXPECT_FALSE(m_sut.isValid());
+    }
 }
 
 TEST_F(TestProperty, valueOrDefault_ValueOnValid)
@@ -243,6 +263,7 @@ TEST_F(TestProperty, less_CompareNotLessToValueWhenInvalid)
 {
     std::string rhs{ "fou" };
     EXPECT_FALSE(m_sut < rhs);
+    EXPECT_FALSE(m_sut < dots::invalid);
 }
 
 TEST_F(TestProperty, less_CompareLessToValueWhenValid)
@@ -251,6 +272,7 @@ TEST_F(TestProperty, less_CompareLessToValueWhenValid)
     m_sut.emplace("foo");
 
     EXPECT_TRUE(m_sut < rhs);
+    EXPECT_TRUE(dots::invalid < m_sut);
 }
 
 TEST_F(TestProperty, less_CompareNotLessToValueWhenValid)

@@ -58,7 +58,7 @@ namespace dots::type
 
         for (auto&[propertyInstance, propertyOther] : instance._propertyRange(other, other._validProperties()))
         {
-            propertyInstance.emplace(propertyOther);
+            propertyInstance.assign(propertyOther);
         }
 
         return instance;
@@ -76,7 +76,14 @@ namespace dots::type
 
         for (auto&[propertyInstance, propertyOther] : instance._propertyRange(other, other._validProperties()))
         {
-            propertyInstance.emplace(std::move(propertyOther));
+            if (propertyOther.isValid())
+            {
+                propertyInstance = std::move(propertyOther.storage());
+            }
+            else
+            {
+                propertyInstance = dots::invalid;
+            }
         }
 
         return instance;
@@ -204,11 +211,11 @@ namespace dots::type
         {
             if (propertyThis.isPartOf(assignProperties))
             {
-                propertyThis.emplace(propertyOther);
+                propertyThis.assign(propertyOther);
             }
             else
             {
-                propertyThis.destroy();
+                propertyThis = dots::invalid;
             }
         }
 
@@ -223,11 +230,12 @@ namespace dots::type
         {
             if (propertyThis.isPartOf(assignProperties))
             {
-                propertyThis.emplace(std::move(propertyOther));
+                propertyThis = std::move(propertyOther.storage());
+                propertyOther = dots::invalid;
             }
             else
             {
-                propertyThis.destroy();
+                propertyThis = dots::invalid;
             }
         }
 
@@ -242,11 +250,11 @@ namespace dots::type
         {
             if (propertyOther.isValid())
             {
-                propertyThis.emplace(propertyOther);
+                propertyThis.assign(propertyOther);
             }
             else
             {
-                propertyThis.destroy();
+                propertyThis = dots::invalid;
             }
         }
 
@@ -265,7 +273,7 @@ namespace dots::type
             }
             else
             {
-                propertyThis.emplace(propertyOther);
+                propertyThis.assign(propertyOther);
             }
         }
 
@@ -284,7 +292,7 @@ namespace dots::type
     {
         for (auto& property : instance._propertyRange(includedProperties))
         {
-            property.destroy();
+            property = dots::invalid;
         }
     }
 

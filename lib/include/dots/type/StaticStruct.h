@@ -126,7 +126,7 @@ namespace dots::type
                     }
                     else
                     {
-                        propertyThis.destroy();
+                        propertyThis = dots::invalid;
                     }
                 };
                 (void)assign;
@@ -233,7 +233,7 @@ namespace dots::type
                 {
                     if (strip_t<decltype(property)>::IsPartOf(includedProperties))
                     {
-                        property.destroy();
+                        property = dots::invalid;
                     }
                 };
                 (void)destroy;

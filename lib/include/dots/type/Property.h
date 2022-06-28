@@ -8,6 +8,12 @@
 #include <dots/type/PropertyArea.h>
 #include <dots/type/PropertyDescriptor.h>
 
+namespace dots
+{
+    struct invalid_t{};
+    inline constexpr invalid_t invalid;
+}
+
 namespace dots::type
 {
     namespace details
@@ -30,6 +36,18 @@ namespace dots::type
         static_assert(std::conjunction_v<std::negation<std::is_pointer<T>>, std::negation<std::is_reference<T>>>);
         using value_t = T;
         static constexpr bool IsTypeless = std::is_same_v<T, Typeless>;
+
+        template <typename Rhs, std::enable_if_t<!is_property_v<Rhs>, int> = 0>
+        Derived& operator = (Rhs&& rhs)
+        {
+            return assign(std::forward<Rhs>(rhs));
+        }
+
+        Derived& operator = (invalid_t)
+        {
+            reset();
+            return static_cast<Derived&>(*this);
+        }
 
         T& operator * ()
         {
@@ -56,8 +74,15 @@ namespace dots::type
             return static_cast<const Derived&>(*this).derivedIsValid();
         }
 
+        template <typename Rhs, std::enable_if_t<!is_property_v<Rhs>, int> = 0>
+        Derived& assign(Rhs&& rhs)
+        {
+            emplace(std::forward<Rhs>(rhs));
+            return static_cast<Derived&>(*this);
+        }
+
         template <typename D>
-        Derived& emplace(const Property<T, D>& rhs)
+        Derived& assign(const Property<T, D>& rhs)
         {
             if (rhs.isValid())
             {
@@ -65,23 +90,23 @@ namespace dots::type
             }
             else
             {
-                destroy();
+                reset();
             }
 
             return static_cast<Derived&>(*this);
         }
 
         template <typename D>
-        Derived& emplace(Property<T, D>&& rhs)
+        Derived& assign(Property<T, D>&& rhs)
         {
             if (rhs.isValid())
             {
                 emplace(std::move(rhs.storage()));
-                rhs.destroy();
+                rhs.reset();
             }
             else
             {
-                destroy();
+                reset();
             }
 
             return static_cast<Derived&>(*this);
@@ -105,7 +130,7 @@ namespace dots::type
             return storage();
         }
 
-        void destroy()
+        void reset()
         {
             if (isValid())
             {
@@ -167,13 +192,13 @@ namespace dots::type
                 else
                 {
                     other.emplace(std::move(storage()));
-                    destroy();
+                    reset();
                 }
             }
             else if (other.isValid())
             {
                 emplace(std::move(other.storage()));
-                other.destroy();
+                other.reset();
             }
         }
 
@@ -222,6 +247,7 @@ namespace dots::type
                 return false;
             }
         };
+        (void)equal;
 
         if constexpr (is_property_v<Lhs>)
         {
@@ -238,12 +264,26 @@ namespace dots::type
             }
             else
             {
-                return equal(lhs, rhs);
+                if constexpr (std::is_same_v<std::decay_t<Rhs>, dots::invalid_t>)
+                {
+                    return !lhs.isValid();
+                }
+                else
+                {
+                    return equal(lhs, rhs);
+                }
             }
         }
         else
         {
-            return equal(rhs, lhs);
+            if constexpr (std::is_same_v<std::decay_t<Lhs>, dots::invalid_t>)
+            {
+                return !rhs.isValid();
+            }
+            else
+            {
+                return equal(rhs, lhs);
+            }
         }
     }
 
@@ -267,6 +307,7 @@ namespace dots::type
                 return false;
             }
         };
+        (void)less;
 
         if constexpr (is_property_v<Lhs>)
         {
@@ -283,12 +324,26 @@ namespace dots::type
             }
             else
             {
-                return less(lhs, rhs);
+                if constexpr (std::is_same_v<std::decay_t<Rhs>, dots::invalid_t>)
+                {
+                    return false;
+                }
+                else
+                {
+                    return less(lhs, rhs);
+                }
             }
         }
         else
         {
-            return less(rhs, lhs);
+            if constexpr (std::is_same_v<std::decay_t<Lhs>, dots::invalid_t>)
+            {
+                return rhs.isValid();
+            }
+            else
+            {
+                return less(rhs, lhs);
+            }
         }
     }
 

@@ -17,10 +17,12 @@ protected:
             m_descriptor{ PropertyDescriptor{ Descriptor<T>::Instance(), std::move(name), tag, false, PropertyOffset{ std::in_place, static_cast<uint32_t>(reinterpret_cast<char*>(this) - reinterpret_cast<const char*>(&area)) } } } {}
         TestProperty(const TestProperty& other) = delete;
         TestProperty(TestProperty&& other) = delete;
-        ~TestProperty() { Property<T, TestProperty<T>>::destroy(); }
+        ~TestProperty() { Property<T, TestProperty<T>>::reset(); }
 
         TestProperty& operator = (const TestProperty& rhs) = delete;
         TestProperty& operator = (TestProperty&& rhs) = delete;
+
+        using Property<T, TestProperty<T>>::operator=;
 
     private:
 
@@ -64,6 +66,8 @@ protected:
 TEST_F(TestProxyProperty, isValid_InvalidWithoutValue)
 {
     EXPECT_FALSE(m_sut.isValid());
+    EXPECT_EQ(m_sut, dots::invalid);
+    EXPECT_EQ(dots::invalid, m_sut);
     EXPECT_THROW(m_sut.value(), std::runtime_error);
 }
 
@@ -72,6 +76,8 @@ TEST_F(TestProxyProperty, isValid_ValidWithValue)
     m_sut.emplace();
 
     EXPECT_TRUE(m_sut.isValid());
+    EXPECT_NE(m_sut, dots::invalid);
+    EXPECT_NE(dots::invalid, m_sut);
     EXPECT_NO_THROW(m_sut.value());
 }
 
@@ -101,10 +107,19 @@ TEST_F(TestProxyProperty, emplace_EqualValueAfterEmplaceConstruction)
 
 TEST_F(TestProxyProperty, destroy_InvalidAfterDestroy)
 {
-    m_sut.emplace("foo");
-    m_sut.destroy();
+    {
+        m_sut.emplace("foo");
+        m_sut.reset();
 
-    EXPECT_FALSE(m_sut.isValid());
+        EXPECT_FALSE(m_sut.isValid());
+    }
+
+    {
+        m_sut.emplace("foo");
+        m_sut = dots::invalid;
+
+        EXPECT_FALSE(m_sut.isValid());
+    }
 }
 
 TEST_F(TestProxyProperty, valueOrEmplace_EmplaceOnInvalid)
@@ -211,6 +226,7 @@ TEST_F(TestProxyProperty, less_CompareNotLessToValueWhenInvalid)
 {
     std::string rhs{ "fou" };
     EXPECT_FALSE(m_sut < rhs);
+    EXPECT_FALSE(m_sut < dots::invalid);
 }
 
 TEST_F(TestProxyProperty, less_CompareLessToValueWhenValid)
@@ -227,6 +243,7 @@ TEST_F(TestProxyProperty, less_CompareNotLessToValueWhenValid)
     m_sut.emplace("foo");
 
     EXPECT_FALSE(m_sut < rhs);
+    EXPECT_TRUE(dots::invalid < m_sut);
 }
 
 TEST_F(TestProxyProperty, less_CompareLessToInvalidPropertyWhenInvalid)

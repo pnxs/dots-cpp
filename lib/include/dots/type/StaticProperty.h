@@ -64,35 +64,28 @@ namespace dots::type
         template <typename D, std::enable_if_t<!std::is_same_v<D, Derived>, int> = 0>
         StaticProperty(const Property<T, D>& other)
         {
-            StaticProperty<T, Derived>::emplace(other);
+            Property<T, Derived>::assign(other);
         }
 
         template <typename D, std::enable_if_t<!std::is_same_v<D, Derived>, int> = 0>
         StaticProperty(Property<T, D>&& other)
         {
-            Property<T, Derived>::emplace(std::move(other));
-        }
-
-        template <typename Arg, std::enable_if_t<!is_property_v<Arg>, int> = 0>
-        Derived& operator = (Arg&& rhs)
-        {
-            Property<T, Derived>::emplace(std::forward<Arg>(rhs));
-            return static_cast<Derived&>(*this);
+            Property<T, Derived>::assign(std::move(other));
         }
 
         template <typename D, std::enable_if_t<!std::is_same_v<D, Derived>, int> = 0>
-        Derived& operator = (const Property<T, D>& other)
+        Derived& operator = (const Property<T, D>& rhs)
         {
-            Property<T, Derived>::emplace(other);
-            return static_cast<Derived&>(*this);
+            return Property<T, Derived>::assign(rhs);
         }
 
         template <typename D, std::enable_if_t<!std::is_same_v<D, Derived>, int> = 0>
-        Derived& operator = (Property<T, D>&& other)
+        Derived& operator = (Property<T, D>&& rhs)
         {
-            Property<T, Derived>::emplace(std::move(other));
-            return static_cast<Derived&>(*this);
+            return Property<T, Derived>::assign(std::move(rhs));
         }
+
+        using Property<T, Derived>::operator=;
 
         static constexpr std::string_view Name()
         {
@@ -142,28 +135,28 @@ namespace dots::type
 
         StaticProperty(const StaticProperty& other) : Property<T, Derived>()
         {
-            Property<T, Derived>::emplace(static_cast<const Derived&>(other));
+            *this = other;
         }
 
         StaticProperty(StaticProperty&& other)
         {
-            Property<T, Derived>::emplace(static_cast<Derived&&>(other));
+            *this = std::move(other);
         }
 
         ~StaticProperty()
         {
-            Property<T, Derived>::destroy();
+            Property<T, Derived>::reset();
         }
 
         StaticProperty& operator = (const StaticProperty& rhs)
         {
-            Property<T, Derived>::emplace(static_cast<const Derived&>(rhs));
+            Property<T, Derived>::assign(static_cast<const Derived&>(rhs));
             return *this;
         }
 
         StaticProperty& operator = (StaticProperty&& rhs)
         {
-            Property<T, Derived>::emplace(static_cast<Derived&&>(rhs));
+            Property<T, Derived>::assign(static_cast<Derived&&>(rhs));
             return *this;
         }
 
