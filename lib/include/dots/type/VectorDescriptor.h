@@ -62,14 +62,7 @@ namespace dots::type
 
         Typeless& construct(Typeless& value) const override
         {
-            if constexpr (std::is_default_constructible_v<T>)
-            {
-                return reinterpret_cast<Typeless&>(construct(reinterpret_cast<Vector<T>&>(value)));
-            }
-            else
-            {
-                throw std::logic_error{ "construct has to be overridden in sub-class because T is not default constructible" };
-            }
+            return reinterpret_cast<Typeless&>(construct(reinterpret_cast<Vector<T>&>(value)));
         }
 
         Typeless& construct(Typeless& value, const Typeless& other) const override
