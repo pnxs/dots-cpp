@@ -94,36 +94,6 @@ namespace dots::type
             return *this;
         }
 
-        bool operator == (const DynamicStruct& rhs) const
-        {
-            return _equal(rhs);
-        }
-
-        bool operator != (const DynamicStruct& rhs) const
-        {
-            return !(*this == rhs);
-        }
-
-        bool operator < (const DynamicStruct& rhs) const
-        {
-            return _less(rhs);
-        }
-
-        bool operator <= (const DynamicStruct& rhs) const
-        {
-            return _lessEqual(rhs);
-        }
-
-        bool operator > (const DynamicStruct& rhs) const
-        {
-            return _greater(rhs);
-        }
-
-        bool operator >= (const DynamicStruct& rhs) const
-        {
-            return _greaterEqual(rhs);
-        }
-
         using Struct::_assign;
         using Struct::_copy;
         using Struct::_merge;

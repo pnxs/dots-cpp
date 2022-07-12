@@ -299,4 +299,40 @@ namespace dots::type
 
         const StructDescriptor* _desc;
     };
+
+    template <typename T, std::enable_if_t<std::is_base_of_v<Struct, std::decay_t<T>>, int> = 0>
+    bool operator == (const T& lhs, const T& rhs)
+    {
+        return lhs._equal(rhs);
+    }
+
+    template <typename T, std::enable_if_t<std::is_base_of_v<Struct, std::decay_t<T>>, int> = 0>
+    bool operator != (const T& lhs, const T& rhs)
+    {
+        return !(lhs == rhs);
+    }
+
+    template <typename T, std::enable_if_t<std::is_base_of_v<Struct, std::decay_t<T>>, int> = 0>
+    bool operator < (const T& lhs, const T& rhs)
+    {
+        return lhs._less(rhs);
+    }
+
+    template <typename T, std::enable_if_t<std::is_base_of_v<Struct, std::decay_t<T>>, int> = 0>
+    bool operator <= (const T& lhs, const T& rhs)
+    {
+        return !(lhs > rhs);
+    }
+
+    template <typename T, std::enable_if_t<std::is_base_of_v<Struct, std::decay_t<T>>, int> = 0>
+    bool operator > (const T& lhs, const T& rhs)
+    {
+        return rhs < lhs;
+    }
+
+    template <typename T, std::enable_if_t<std::is_base_of_v<Struct, std::decay_t<T>>, int> = 0>
+    bool operator >= (const T& lhs, const T& rhs)
+    {
+        return !(lhs < rhs);
+    }
 }
