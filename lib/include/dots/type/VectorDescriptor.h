@@ -104,14 +104,7 @@ namespace dots::type
 
         Typeless& assign(Typeless& lhs) const override
         {
-            if constexpr (std::is_default_constructible_v<T>)
-            {
-                return reinterpret_cast<Typeless&>(assign(reinterpret_cast<Vector<T>&>(lhs)));
-            }
-            else
-            {
-                throw std::logic_error{ "assign has to be overridden in sub-class because T is not default constructible" };
-            }
+            return reinterpret_cast<Typeless&>(assign(reinterpret_cast<Vector<T>&>(lhs)));
         }
 
         Typeless& assign(Typeless& lhs, const Typeless& rhs) const override
