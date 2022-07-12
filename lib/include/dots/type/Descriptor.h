@@ -87,7 +87,7 @@ namespace dots::type
 
         virtual void destruct(Typeless& value) const = 0;
 
-        virtual Typeless& assign(Typeless& value) const = 0;
+        virtual Typeless& assign(Typeless& lhs) const = 0;
         virtual Typeless& assign(Typeless& lhs, const Typeless& rhs) const = 0;
         virtual Typeless& assign(Typeless& lhs, Typeless&& rhs) const = 0;
         virtual void swap(Typeless& value, Typeless& other) const = 0;
@@ -126,15 +126,15 @@ namespace dots::type
         }
 
         template <typename T, typename... Args, std::enable_if_t<!std::is_same_v<T, Typeless>, int> = 0>
-        static constexpr T& assign(T& value, Args&&... args)
+        static constexpr T& assign(T& lhs, Args&&... args)
         {
             static_assert(std::is_constructible_v<T, Args...>, "type is not constructible from passed arguments");
             if constexpr (std::is_constructible_v<T, Args...>)
             {
-                value = T(std::forward<Args>(args)...);
+                lhs = T(std::forward<Args>(args)...);
             }
 
-            return value;
+            return lhs;
         }
 
         template <typename T, std::enable_if_t<!std::is_same_v<T, Typeless>, int> = 0>
