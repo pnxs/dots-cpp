@@ -9,26 +9,81 @@ namespace dots::type
     struct AnyStruct
     {
         AnyStruct(const StructDescriptor& descriptor);
-        AnyStruct(const Struct& instance);
-        AnyStruct(const AnyStruct& other);
+
+        AnyStruct(const Struct& instance) :
+            AnyStruct(instance._descriptor())
+        {
+            *this = instance;
+        }
+
+        AnyStruct(const AnyStruct& other):
+            AnyStruct(other->_descriptor())
+        {
+            *this = other;
+        }
+
         AnyStruct(AnyStruct&& other) = default;
-        ~AnyStruct();
 
-        AnyStruct& operator = (const AnyStruct& rhs);
+        ~AnyStruct()
+        {
+            if (_instance != nullptr)
+            {
+                _instance->_descriptor().destruct(Typeless::From(*_instance));
+            }
+        }
+
+        AnyStruct& operator = (const AnyStruct& rhs)
+        {
+            return *this = rhs.get();
+        }
+
         AnyStruct& operator = (AnyStruct&& rhs) = default;
-        AnyStruct& operator = (const Struct& rhs);
 
-        Struct& operator * ();
-        const Struct& operator *() const;
+        AnyStruct& operator = (const Struct& rhs)
+        {
+            _instance->_assign(rhs);
+            return *this;
+        }
 
-        Struct* operator -> ();
-        const Struct* operator -> () const;
+        Struct& operator * ()
+        {
+            return get();
+        }
 
-        operator Struct&();
-        operator const Struct&() const;
+        const Struct& operator * () const
+        {
+            return get();
+        }
 
-        operator const PropertyArea&() const;
-        operator PropertyArea&();
+        Struct* operator -> ()
+        {
+            return &get();
+        }
+
+        const Struct* operator -> () const
+        {
+            return &get();
+        }
+
+        operator Struct&()
+        {
+            return get();
+        }
+
+        operator const Struct&() const
+        {
+            return const_cast<AnyStruct&>(*this).get();
+        }
+
+        operator const PropertyArea&() const
+        {
+            return *_instance;
+        }
+
+        operator PropertyArea&()
+        {
+            return *_instance;
+        }
 
         template <typename T>
         bool is() const
@@ -60,23 +115,58 @@ namespace dots::type
             return _instance->_to<T, Safe>();
         }
 
-        Struct& get();
-        const Struct& get() const;
+        Struct& get()
+        {
+            return *_instance;
+        }
+
+        const Struct& get() const
+        {
+            return *_instance;
+        }
 
     private:
 
         std::unique_ptr<Struct> _instance;
     };
     
-    property_iterator begin(AnyStruct& instance);
-    const_property_iterator begin(const AnyStruct& instance);
+    inline property_iterator begin(AnyStruct& instance)
+    {
+        return instance->_begin();
+    }
 
-    property_iterator end(AnyStruct& instance);
-    const_property_iterator end(const AnyStruct& instance);
+    inline const_property_iterator begin(const AnyStruct& instance)
+    {
+        return instance->_begin();
+    }
 
-    reverse_property_iterator rbegin(AnyStruct& instance);
-    const_reverse_property_iterator rbegin(const AnyStruct& instance);
+    inline property_iterator end(AnyStruct& instance)
+    {
+        return instance->_end();
+    }
 
-    reverse_property_iterator rend(AnyStruct& instance);
-    const_reverse_property_iterator rend(const AnyStruct& instance);
+    inline const_property_iterator end(const AnyStruct& instance)
+    {
+        return instance->_end();
+    }
+
+    inline reverse_property_iterator rbegin(AnyStruct& instance)
+    {
+        return instance->_rbegin();
+    }
+
+    inline const_reverse_property_iterator rbegin(const AnyStruct& instance)
+    {
+        return instance->_rbegin();
+    }
+
+    inline reverse_property_iterator rend(AnyStruct& instance)
+    {
+        return instance->_rend();
+    }
+
+    inline const_reverse_property_iterator rend(const AnyStruct& instance)
+    {
+        return instance->_rend();
+    }
 }

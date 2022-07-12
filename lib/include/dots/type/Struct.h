@@ -9,34 +9,107 @@ namespace dots::type
 {
     struct Struct : PropertyContainer<Struct>
     {
-        explicit Struct(const StructDescriptor& descriptor);
+        explicit Struct(const StructDescriptor& descriptor) :
+            _desc(&descriptor)
+        {
+            /* do nothing */
+        }
 
-        const StructDescriptor& _descriptor() const;
+        const StructDescriptor& _descriptor() const
+        {
+            return *_desc;
+        }
 
-        bool _usesDynamicMemory() const;
-        size_t _dynamicMemoryUsage() const;
-        size_t _staticMemoryUsage() const;
+        bool _usesDynamicMemory() const
+        {
+            return _desc->usesDynamicMemory();
+        }
+        size_t _dynamicMemoryUsage() const
+        {
+            return _desc->dynamicMemoryUsage(Typeless::From(*this));
+        }
+
+        size_t _staticMemoryUsage() const
+        {
+            return _desc->size();
+        }
+
         size_t _totalMemoryUsage() const;
 
-        PropertySet _properties() const;
-        PropertySet _keyProperties() const;
+        PropertySet _properties() const
+        {
+            return _desc->properties();
+        }
 
-        Struct& _assign(const Struct& other, PropertySet includedProperties = PropertySet::All);
-        Struct& _assign(Struct&& other, PropertySet includedProperties = PropertySet::All);
-        Struct& _copy(const Struct& other, PropertySet includedProperties = PropertySet::All);
-        Struct& _merge(const Struct& other, PropertySet includedProperties = PropertySet::All);
-        void _swap(Struct& other, PropertySet includedProperties = PropertySet::All);
-        void _clear(PropertySet includedProperties = PropertySet::All);
+        PropertySet _keyProperties() const
+        {
+            return _desc->keyProperties();
+        }
 
-        bool _equal(const Struct& rhs, PropertySet includedProperties = PropertySet::All) const;
-        bool _same(const Struct& rhs) const;
+        Struct& _assign(const Struct& other, PropertySet includedProperties = PropertySet::All)
+        {
+            return _desc->assign(*this, other, includedProperties);
+        }
 
-        bool _less(const Struct& rhs, PropertySet includedProperties = PropertySet::All) const;
-        bool _lessEqual(const Struct& rhs, PropertySet includedProperties = PropertySet::All) const;
-        bool _greater(const Struct& rhs, PropertySet includedProperties = PropertySet::All) const;
-        bool _greaterEqual(const Struct& rhs, PropertySet includedProperties = PropertySet::All) const;
+        Struct& _assign(Struct&& other, PropertySet includedProperties = PropertySet::All)
+        {
+            return _desc->assign(*this, std::move(other), includedProperties);
+        }
 
-        PropertySet _diffProperties(const Struct& other, PropertySet includedProperties = PropertySet::All) const;
+        Struct& _copy(const Struct& other, PropertySet includedProperties = PropertySet::All)
+        {
+            return _desc->copy(*this, other, includedProperties);
+        }
+
+        Struct& _merge(const Struct& other, PropertySet includedProperties = PropertySet::All)
+        {
+            return _desc->merge(*this, other, includedProperties);
+        }
+
+        void _swap(Struct& other, PropertySet includedProperties = PropertySet::All)
+        {
+            return _desc->swap(*this, other, includedProperties);
+        }
+
+        void _clear(PropertySet includedProperties = PropertySet::All)
+        {
+            _desc->clear(*this, includedProperties);
+        }
+
+        bool _equal(const Struct& rhs, PropertySet includedProperties = PropertySet::All) const
+        {
+            return _desc->equal(*this, rhs, includedProperties);
+        }
+
+        bool _same(const Struct& rhs) const
+        {
+            return _desc->same(*this, rhs);
+        }
+
+        bool _less(const Struct& rhs, PropertySet includedProperties = PropertySet::All) const
+        {
+            return _desc->less(*this, rhs, includedProperties);
+        }
+
+        bool _lessEqual(const Struct& rhs, PropertySet includedProperties = PropertySet::All) const
+        {
+            return _desc->lessEqual(*this, rhs, includedProperties);
+        }
+
+        bool _greater(const Struct& rhs, PropertySet includedProperties = PropertySet::All) const
+        {
+            return _desc->greater(*this, rhs, includedProperties);
+        }
+
+        bool _greaterEqual(const Struct& rhs, PropertySet includedProperties = PropertySet::All) const
+        {
+            return _desc->greaterEqual(*this, rhs, includedProperties);
+        }
+
+        PropertySet _diffProperties(const Struct& other, PropertySet includedProperties = PropertySet::All) const
+        {
+            return _desc->diffProperties(*this, other, includedProperties);
+        }
 
         template <bool AllowSubset = true>
         bool _hasProperties(PropertySet properties) const
