@@ -79,6 +79,7 @@ namespace dots::type
             if (propertyOther.isValid())
             {
                 propertyInstance = std::move(propertyOther.storage());
+                propertyOther = dots::invalid;
             }
             else
             {
