@@ -1,6 +1,10 @@
 #pragma once
 #include <type_traits>
 #include <optional>
+#if (__GNUG__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
 #include <dots/type/Property.h>
 #include <dots/type/StaticPropertyMetadata.h>
 
@@ -204,3 +208,7 @@ namespace dots::type
         details::storage_t<T> m_storage;
     };
 }
+
+#if (defined __GNUG__)
+#pragma GCC diagnostic pop
+#endif

@@ -196,40 +196,40 @@ TEST_F(TestDynamicStruct, GetPropertyAllowsTypedDefaultConstruction)
 {
     DynamicStruct sut{ *m_testDynamicStructDescriptor };
 
-    EXPECT_EQ(sut._get<dots::int32_t>("intProperty").construct(), 0);
-    EXPECT_EQ(sut._get<dots::string_t>("stringProperty").construct(), "");
-    EXPECT_EQ(sut._get<dots::bool_t>("boolProperty").construct(), false);
-    EXPECT_EQ(sut._get<dots::vector_t<dots::float32_t>>("floatVectorProperty").construct(), dots::vector_t<dots::float32_t>{});
+    EXPECT_EQ(sut._get<dots::int32_t>("intProperty").emplace(), 0);
+    EXPECT_EQ(sut._get<dots::string_t>("stringProperty").emplace(), "");
+    EXPECT_EQ(sut._get<dots::bool_t>("boolProperty").emplace(), false);
+    EXPECT_EQ(sut._get<dots::vector_t<dots::float32_t>>("floatVectorProperty").emplace(), dots::vector_t<dots::float32_t>{});
     // proxy properties currently do not support dynamic types
-    //EXPECT_EQ(sut._get<DynamicStruct>("subStructProperty").construct()._validProperties(), dots::property_set_t{ dots::property_set_t::None });
-    EXPECT_EQ(sut._get<vector_t<DynamicStruct>>("structVectorProperty").construct(), vector_t<DynamicStruct>{});
+    //EXPECT_EQ(sut._get<DynamicStruct>("subStructProperty").emplace()._validProperties(), dots::property_set_t{ dots::property_set_t::None });
+    EXPECT_EQ(sut._get<vector_t<DynamicStruct>>("structVectorProperty").emplace(), vector_t<DynamicStruct>{});
 
-    EXPECT_EQ(sut._get<dots::int64_t>("subStructProperty.subIntProperty").construct(), 0);
+    EXPECT_EQ(sut._get<dots::int64_t>("subStructProperty.subIntProperty").emplace(), 0);
     // proxy properties currently do not support dynamic types
-    //EXPECT_EQ(sut._get<DynamicStruct>("subStructProperty.subSubStructProperty").construct(), dots::property_set_t{ dots::property_set_t::None });
-    EXPECT_EQ(sut._get<dots::float32_t>("subStructProperty.subFloatProperty").construct(), 0.0f);
+    //EXPECT_EQ(sut._get<DynamicStruct>("subStructProperty.subSubStructProperty").emplace(), dots::property_set_t{ dots::property_set_t::None });
+    EXPECT_EQ(sut._get<dots::float32_t>("subStructProperty.subFloatProperty").emplace(), 0.0f);
 
-    EXPECT_EQ(sut._get<dots::int32_t>("subStructProperty.subSubStructProperty.subSubIntProperty").construct(), 0);
-    EXPECT_EQ(sut._get<dots::float64_t>("subStructProperty.subSubStructProperty.subSubDoubleProperty").construct(), 0.0);
+    EXPECT_EQ(sut._get<dots::int32_t>("subStructProperty.subSubStructProperty.subSubIntProperty").emplace(), 0);
+    EXPECT_EQ(sut._get<dots::float64_t>("subStructProperty.subSubStructProperty.subSubDoubleProperty").emplace(), 0.0);
 }
 
 TEST_F(TestDynamicStruct, GetPropertyAllowsTypelessDefaultConstruction)
 {
     DynamicStruct sut{ *m_testDynamicStructDescriptor };
 
-    EXPECT_EQ(sut._get("intProperty").construct().to<dots::int32_t>(), 0);
-    EXPECT_EQ(sut._get("stringProperty").construct().to<dots::string_t>(), "");
-    EXPECT_EQ(sut._get("boolProperty").construct().to<dots::bool_t>(), false);
-    EXPECT_EQ(sut._get("floatVectorProperty").construct().to<dots::vector_t<dots::float32_t>>(), dots::vector_t<dots::float32_t>{});
-    EXPECT_EQ(sut._get("subStructProperty").construct().to<DynamicStruct>()._validProperties(), dots::property_set_t{ dots::property_set_t::None });
-    EXPECT_EQ(sut._get("structVectorProperty").construct().to<vector_t<DynamicStruct>>(), vector_t<DynamicStruct>{});
+    EXPECT_EQ(sut._get("intProperty").emplace().to<dots::int32_t>(), 0);
+    EXPECT_EQ(sut._get("stringProperty").emplace().to<dots::string_t>(), "");
+    EXPECT_EQ(sut._get("boolProperty").emplace().to<dots::bool_t>(), false);
+    EXPECT_EQ(sut._get("floatVectorProperty").emplace().to<dots::vector_t<dots::float32_t>>(), dots::vector_t<dots::float32_t>{});
+    EXPECT_EQ(sut._get("subStructProperty").emplace().to<DynamicStruct>()._validProperties(), dots::property_set_t{ dots::property_set_t::None });
+    EXPECT_EQ(sut._get("structVectorProperty").emplace().to<vector_t<DynamicStruct>>(), vector_t<DynamicStruct>{});
 
-    EXPECT_EQ(sut._get("subStructProperty.subIntProperty").construct().to<dots::int64_t>(), 0);
-    EXPECT_EQ(sut._get("subStructProperty.subSubStructProperty").construct().to<DynamicStruct>()._validProperties(), dots::property_set_t{ dots::property_set_t::None });
-    EXPECT_EQ(sut._get("subStructProperty.subFloatProperty").construct().to<dots::float32_t>(), 0.0f);
+    EXPECT_EQ(sut._get("subStructProperty.subIntProperty").emplace().to<dots::int64_t>(), 0);
+    EXPECT_EQ(sut._get("subStructProperty.subSubStructProperty").emplace().to<DynamicStruct>()._validProperties(), dots::property_set_t{ dots::property_set_t::None });
+    EXPECT_EQ(sut._get("subStructProperty.subFloatProperty").emplace().to<dots::float32_t>(), 0.0f);
 
-    EXPECT_EQ(sut._get("subStructProperty.subSubStructProperty.subSubIntProperty").construct().to<dots::int32_t>(), 0);
-    EXPECT_EQ(sut._get("subStructProperty.subSubStructProperty.subSubDoubleProperty").construct().to<dots::float64_t>(), 0.0);
+    EXPECT_EQ(sut._get("subStructProperty.subSubStructProperty.subSubIntProperty").emplace().to<dots::int32_t>(), 0);
+    EXPECT_EQ(sut._get("subStructProperty.subSubStructProperty.subSubDoubleProperty").emplace().to<dots::float64_t>(), 0.0);
 }
 
 TEST_F(TestDynamicStruct, GetPropertyReturnsSubPropertyWithExpectedValues)
