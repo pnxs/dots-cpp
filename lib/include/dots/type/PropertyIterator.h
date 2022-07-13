@@ -218,11 +218,6 @@ namespace dots::type
         Iterator m_end;
     };
 
-    extern template struct PropertyRange<property_iterator>;
-    extern template struct PropertyRange<const_property_iterator>;
-    extern template struct PropertyRange<reverse_property_iterator>;
-    extern template struct PropertyRange<const_reverse_property_iterator>;
-
     using property_range               = PropertyRange<property_iterator>;
     using const_property_range         = PropertyRange<const_property_iterator>;
     using reverse_property_range       = PropertyRange<reverse_property_iterator>;
