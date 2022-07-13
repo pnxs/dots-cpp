@@ -1,5 +1,9 @@
 #pragma once
 #include <variant>
+#if (__GNUG__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
 #include <dots/type/Property.h>
 #include <dots/type/PropertyPath.h>
 
@@ -219,3 +223,7 @@ namespace dots::type
         path_t m_path;
     };
 }
+
+#if (defined __GNUG__)
+#pragma GCC diagnostic pop
+#endif
