@@ -103,7 +103,7 @@ namespace dots::serialization
         template <typename T>
         bool visitPropertyBeginDerived(T& property, bool/* first*/)
         {
-            property.constructOrValue();
+            property.valueOrEmplace();
             return true;
         }
 

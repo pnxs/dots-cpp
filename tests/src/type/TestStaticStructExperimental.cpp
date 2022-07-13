@@ -105,6 +105,22 @@ TEST_F(TestStaticStructExperimental, ctor_Initializer)
     EXPECT_EQ(sut.floatVectorProperty, vector_t<float32_t>({ 3.1415f, 2.7183f, 42, 73 }));
 }
 
+TEST_F(TestStaticStructExperimental, ctor_InitializeFromCompatibleProperty)
+{
+    TestSubStruct subStruct{
+        .p1 = true
+    };
+
+    TestStruct sut{
+        .boolProperty = subStruct.p1
+    };
+
+    EXPECT_FALSE(sut.intProperty.isValid());
+    EXPECT_FALSE(sut.stringProperty.isValid());
+    EXPECT_EQ(sut.boolProperty, true);
+    EXPECT_FALSE(sut.floatVectorProperty.isValid());
+}
+
 TEST_F(TestStaticStructExperimental, ctor_Copy)
 {
     TestStruct sutOther{
@@ -195,6 +211,36 @@ TEST_F(TestStaticStructExperimental, assign_CompleteAssign)
     EXPECT_EQ(*sutThis.stringProperty, "bar");
     EXPECT_FALSE(sutThis.boolProperty.isValid());
     EXPECT_EQ(sutThis.floatVectorProperty, vector_t<float32_t>{ 2.7183f });
+}
+
+TEST_F(TestStaticStructExperimental, assignment_FromValidCompatibleProperty)
+{
+    TestSubStruct subStruct{
+        .p1 = true
+    };
+
+    TestStruct sut{
+        .boolProperty = false
+    };
+
+    EXPECT_EQ(sut.boolProperty, false);
+
+    sut.boolProperty = subStruct.p1;
+    EXPECT_EQ(sut.boolProperty, true);
+}
+
+TEST_F(TestStaticStructExperimental, assignment_FromInvalidCompatibleProperty)
+{
+    TestSubStruct subStruct;
+
+    TestStruct sut{
+        .boolProperty = true
+    };
+
+    EXPECT_EQ(sut.boolProperty, true);
+
+    sut.boolProperty = subStruct.p1;
+    EXPECT_FALSE(sut.boolProperty.isValid());
 }
 
 TEST_F(TestStaticStructExperimental, assign_PartialAssign)

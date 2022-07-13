@@ -28,6 +28,18 @@ namespace dots::type
         StaticDescriptor& operator = (const StaticDescriptor& rhs) = delete;
         StaticDescriptor& operator = (StaticDescriptor&& rhs) = delete;
 
+        using Descriptor<>::construct;
+        using Descriptor<>::constructInPlace;
+        using Descriptor<>::destruct;
+        using Descriptor<>::assign;
+        using Descriptor<>::swap;
+        using Descriptor<>::equal;
+        using Descriptor<>::less;
+        using Descriptor<>::lessEqual;
+        using Descriptor<>::greater;
+        using Descriptor<>::greaterEqual;
+        using Descriptor<>::dynamicMemoryUsage;
+
         Typeless& construct(Typeless& value) const override;
         Typeless& construct(Typeless& value, const Typeless& other) const override;
         Typeless& construct(Typeless& value, Typeless&& other) const override;
@@ -38,91 +50,13 @@ namespace dots::type
 
         void destruct(Typeless& value) const override;
 
+        Typeless& assign(Typeless& lhs) const override;
         Typeless& assign(Typeless& lhs, const Typeless& rhs) const override;
         Typeless& assign(Typeless& lhs, Typeless&& rhs) const override;
 
         void swap(Typeless& value, Typeless& other) const override;
         bool equal(const Typeless& lhs, const Typeless& rhs) const override;
         bool less(const Typeless& lhs, const Typeless& rhs) const override;
-        using Descriptor<>::dynamicMemoryUsage;
-
-        template <typename T, typename... Args, std::enable_if_t<!std::is_same_v<T, Typeless>, int> = 0>
-        static constexpr T& construct(T& value, Args&&... args)
-        {
-            static_assert(std::is_constructible_v<T, Args...>, "type is not constructible from passed arguments");
-            if constexpr (std::is_constructible_v<T, Args...>)
-            {
-                ::new(static_cast<void*>(::std::addressof(value))) T(std::forward<Args>(args)...);
-            }
-
-            return value;
-        }
-
-        template <typename T, typename... Args, std::enable_if_t<!std::is_same_v<T, Typeless>, int> = 0>
-        static constexpr T& constructInPlace(T& value, Args&&... args)
-        {
-            return construct(value, std::forward<Args>(args)...);
-        }
-
-        template <typename T, std::enable_if_t<!std::is_same_v<T, Typeless>, int> = 0>
-        static constexpr void destruct(T& value)
-        {
-            value.~T();
-        }
-
-        template <typename T, typename... Args, std::enable_if_t<!std::is_same_v<T, Typeless>, int> = 0>
-        static constexpr T& assign(T& value, Args&&... args)
-        {
-            static_assert(std::is_constructible_v<T, Args...>, "type is not constructible from passed arguments");
-            if constexpr (std::is_constructible_v<T, Args...>)
-            {
-                value = T(std::forward<Args>(args)...);
-            }
-
-            return value;
-        }
-
-        template <typename T, std::enable_if_t<!std::is_same_v<T, Typeless>, int> = 0>
-        static constexpr void swap(T& lhs, T& rhs)
-        {
-            std::swap(lhs, rhs);
-        }
-
-        template <typename T, typename U, std::enable_if_t<!std::is_same_v<T, Typeless>, int> = 0>
-        static constexpr bool equal(const T& lhs, const U& rhs)
-        {
-            return std::equal_to<T>{}(lhs, rhs);
-        }
-
-        template <typename T, typename U, std::enable_if_t<!std::is_same_v<T, Typeless>, int> = 0>
-        static constexpr bool less(const T& lhs, const U& rhs)
-        {
-            return std::less<T>{}(lhs, rhs);
-        }
-
-        template <typename T, typename U, std::enable_if_t<!std::is_same_v<T, Typeless>, int> = 0>
-        static constexpr bool lessEqual(const T& lhs, const U& rhs)
-        {
-            return !greater(lhs, rhs);
-        }
-
-        template <typename T, typename U, std::enable_if_t<!std::is_same_v<T, Typeless>, int> = 0>
-        static constexpr bool greater(const T& lhs, const U& rhs)
-        {
-            return less<T>(rhs, lhs);
-        }
-
-        template <typename T, typename U, std::enable_if_t<!std::is_same_v<T, Typeless>, int> = 0>
-        static constexpr bool greaterEqual(const T& lhs, const U& rhs)
-        {
-            return !less(lhs, rhs);
-        }
-
-        template <typename T, std::enable_if_t<!std::is_same_v<T, Typeless>, int> = 0>
-        size_t dynamicMemoryUsage(const T& value) const
-        {
-            return dynamicMemoryUsage(Typeless::From(value));
-        }
 
         template <typename T>
         static Descriptor<T>& InitInstance()

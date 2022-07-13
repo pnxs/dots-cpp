@@ -442,12 +442,12 @@ namespace dots::serialization
         {
             if (m_reader.tryReadNull())
             {
-                property.destroy();
+                property = dots::invalid;
                 return false;
             }
             else
             {
-                property.constructOrValue();
+                property.valueOrEmplace();
                 return true;
             }
         }

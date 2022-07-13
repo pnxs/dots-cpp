@@ -13,7 +13,7 @@ namespace dots::testing
             using is_gtest_matcher = void;
 
             TransmissionEqualMatcher(T instance, DotsHeader header) :
-                m_expectedStructMatcher{ std::move(instance), header.attributes },
+                m_expectedStructMatcher{ std::move(instance), *header.attributes },
                 m_header(std::move(header))
             {
                 /* do nothing */

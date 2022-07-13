@@ -21,10 +21,10 @@ namespace dots::io
 
         for (const EnumElementDescriptor& enumeratorData : *enumData.elements)
         {
-            enumerators.emplace_back(enumeratorData.tag, enumeratorData.name, static_cast<type::DynamicEnum>(*enumeratorData.enum_value));
+            enumerators.emplace_back(*enumeratorData.tag, *enumeratorData.name, static_cast<type::DynamicEnum>(*enumeratorData.enum_value));
         }
 
-        return m_registry.get().registerType<type::Descriptor<type::DynamicEnum>>(enumData.name, std::move(enumerators));
+        return m_registry.get().registerType<type::Descriptor<type::DynamicEnum>>(*enumData.name, std::move(enumerators));
     }
 
     type::StructDescriptor& DescriptorConverter::operator () (const StructDescriptorData& structData) const
@@ -97,11 +97,11 @@ namespace dots::io
 
             if (last == nullptr)
             {
-                last = &propertyDescriptors.emplace_back(*descriptor, propertyData.name, propertyData.tag, propertyData.isKey, type::PropertyOffset::First(descriptor->alignment(), sizeof(type::PropertyArea)));
+                last = &propertyDescriptors.emplace_back(*descriptor, *propertyData.name, *propertyData.tag, *propertyData.isKey, type::PropertyOffset::First(descriptor->alignment(), sizeof(type::PropertyArea)));
             }
             else
             {
-                last = &propertyDescriptors.emplace_back(*descriptor, propertyData.name, propertyData.tag, propertyData.isKey, type::PropertyOffset::Next(descriptor->alignment(), last->offset(), last->valueDescriptor().size()));
+                last = &propertyDescriptors.emplace_back(*descriptor, *propertyData.name, *propertyData.tag, *propertyData.isKey, type::PropertyOffset::Next(descriptor->alignment(), last->offset(), last->valueDescriptor().size()));
             }
 
             alignment = std::max(last->valueDescriptor().alignment(), alignment);
@@ -109,13 +109,16 @@ namespace dots::io
 
         size_t size = type::PropertyOffset::Next(alignment, last->offset(), last->valueDescriptor().size());
 
-        return m_registry.get().registerType<type::Descriptor<type::DynamicStruct>>(structData.name, flags, propertyDescriptors, sizeof(type::DynamicStruct) + size);
+        return m_registry.get().registerType<type::Descriptor<type::DynamicStruct>>(*structData.name, flags, propertyDescriptors, sizeof(type::DynamicStruct) + size);
     }
 
     EnumDescriptorData DescriptorConverter::operator () (const type::EnumDescriptor& enumDescriptor)
     {
-        EnumDescriptorData enumData{ EnumDescriptorData::name_i{ enumDescriptor.name() } };
-        vector_t<EnumElementDescriptor>& enumeratorData = enumData.elements.construct();
+        EnumDescriptorData enumData{
+            EnumDescriptorData::name_i{ enumDescriptor.name() }
+        };
+
+        vector_t<EnumElementDescriptor>& enumeratorData = enumData.elements.emplace();
 
         for (const type::EnumeratorDescriptor& enumeratorDescriptor : enumDescriptor.enumeratorsTypeless())
         {
@@ -130,27 +133,28 @@ namespace dots::io
 
     StructDescriptorData DescriptorConverter::operator () (const type::StructDescriptor& structDescriptor)
     {
-        StructDescriptorData structData;
-        structData.name(structDescriptor.name());
+        StructDescriptorData structData{
+            StructDescriptorData::name_i{ structDescriptor.name() },
+            StructDescriptorData::flags_i{
+                DotsStructFlags::cached_i{ structDescriptor.cached() },
+                DotsStructFlags::internal_i{ structDescriptor.internal() },
+                DotsStructFlags::persistent_i{ structDescriptor.persistent() },
+                DotsStructFlags::cleanup_i{ structDescriptor.cleanup() },
+                DotsStructFlags::local_i{ structDescriptor.local() },
+                DotsStructFlags::substructOnly_i{ structDescriptor.substructOnly() }
+            }
+        };
 
-        auto& flags = structData.flags.construct();
-        flags.cached(structDescriptor.cached());
-        flags.internal(structDescriptor.internal());
-        flags.persistent(structDescriptor.persistent());
-        flags.cleanup(structDescriptor.cleanup());
-        flags.local(structDescriptor.local());
-        flags.substructOnly(structDescriptor.substructOnly());
-
-        auto& properties = structData.properties.construct();
+        auto& properties = structData.properties.emplace();
 
         for (const type::PropertyDescriptor& propertyDescriptor : structDescriptor.propertyDescriptors())
         {
-            StructPropertyData propertyData;
-            propertyData.tag(propertyDescriptor.tag());
-            propertyData.name(propertyDescriptor.name());
-            propertyData.isKey(propertyDescriptor.isKey());
-            propertyData.type(propertyDescriptor.valueDescriptor().name());
-            properties.emplace_back(propertyData);
+            properties.emplace_back(StructPropertyData{
+                StructPropertyData::tag_i{ propertyDescriptor.tag() },
+                StructPropertyData::name_i{ propertyDescriptor.name() },
+                StructPropertyData::isKey_i{ propertyDescriptor.isKey() },
+                StructPropertyData::type_i{ propertyDescriptor.valueDescriptor().name() }
+            });
         }
 
         return structData;

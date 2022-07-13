@@ -279,7 +279,7 @@ namespace dots
                 {
                     if (!header.sentTime.isValid())
                     {
-                        header.sentTime(timepoint_t::Now());
+                        header.sentTime.emplace(timepoint_t::Now());
                     }
 
                     if (header.sender.isValid())
@@ -289,7 +289,7 @@ namespace dots
                     }
                     else
                     {
-                        header.sender(m_peerId);
+                        header.sender.emplace(m_peerId);
                         header.isFromMyself = false;
                         return (*m_receiveHandler)(*this, std::move(transmission));
                     }
@@ -311,7 +311,7 @@ namespace dots
 
     void Connection::handleHello(const DotsMsgHello& hello)
     {
-        m_peerName = hello.serverName;
+        m_peerName = *hello.serverName;
 
         DotsMsgConnect connect{
             DotsMsgConnect::clientName_i{ m_selfName },
@@ -336,7 +336,7 @@ namespace dots
 
     void Connection::handleAuthorizationRequest(const DotsMsgConnectResponse& connectResponse)
     {
-        m_selfId = connectResponse.clientId;
+        m_selfId = *connectResponse.clientId;
 
         if (connectResponse.preload == true)
         {
@@ -370,7 +370,7 @@ namespace dots
             throw std::runtime_error{ "invalid authorization information" };
         }
 
-        m_peerName = connect.clientName;
+        m_peerName = *connect.clientName;
 
         transmit(DotsMsgConnectResponse{
             DotsMsgConnectResponse::clientId_i{ m_peerId },
@@ -417,7 +417,7 @@ namespace dots
         else
         {
             std::string what = "received DOTS error: (";
-            what += error.errorCode.isValid() ? std::to_string(error.errorCode) : std::string{ "<unknown error code>" };
+            what += error.errorCode.isValid() ? std::to_string(*error.errorCode) : std::string{ "<unknown error code>" };
             what += ") ";
             what += error.errorText.isValid() ? *error.errorText : std::string{ "<unknown error>" };
             handleError(std::make_exception_ptr(std::runtime_error{ what }));

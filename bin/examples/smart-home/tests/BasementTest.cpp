@@ -68,7 +68,7 @@ TEST_F(BasementTest, TurnLightOffAfterTimeoutOccurs)
         }),
         [&](const dots::Event<>& event)
         {
-            lightDisabled = event.header().sentTime;
+            lightDisabled = *event.header().sentTime;
         }
     );
 

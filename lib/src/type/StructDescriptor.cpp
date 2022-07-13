@@ -58,7 +58,7 @@ namespace dots::type
 
         for (auto&[propertyInstance, propertyOther] : instance._propertyRange(other, other._validProperties()))
         {
-            propertyInstance.construct(propertyOther);
+            propertyInstance.assign(propertyOther);
         }
 
         return instance;
@@ -76,7 +76,15 @@ namespace dots::type
 
         for (auto&[propertyInstance, propertyOther] : instance._propertyRange(other, other._validProperties()))
         {
-            propertyInstance.construct(std::move(propertyOther));
+            if (propertyOther.isValid())
+            {
+                propertyInstance = std::move(propertyOther.storage());
+                propertyOther = dots::invalid;
+            }
+            else
+            {
+                propertyInstance = dots::invalid;
+            }
         }
 
         return instance;
@@ -137,6 +145,11 @@ namespace dots::type
         return instance;
     }
 
+    Typeless& StructDescriptor::assign(Typeless& lhs) const
+    {
+        return Typeless::From(destruct(lhs.to<Struct>()));
+    }
+
     Typeless& StructDescriptor::assign(Typeless& lhs, const Typeless& rhs) const
     {
         return Typeless::From(assign(lhs.to<Struct>(), rhs.to<Struct>(), PropertySet{ PropertySet::All }));
@@ -180,7 +193,7 @@ namespace dots::type
 
             for (const ProxyProperty<>& property : instance._propertyRange(m_dynamicMemoryProperties ^ instance._validProperties()))
             {
-                dynMemUsage += property.descriptor().valueDescriptor().dynamicMemoryUsage(property);
+                dynMemUsage += property.descriptor().valueDescriptor().dynamicMemoryUsage(*property);
             }
 
             return dynMemUsage;
@@ -199,11 +212,11 @@ namespace dots::type
         {
             if (propertyThis.isPartOf(assignProperties))
             {
-                propertyThis.constructOrAssign(propertyOther);
+                propertyThis.assign(propertyOther);
             }
             else
             {
-                propertyThis.destroy();
+                propertyThis = dots::invalid;
             }
         }
 
@@ -218,11 +231,12 @@ namespace dots::type
         {
             if (propertyThis.isPartOf(assignProperties))
             {
-                propertyThis.constructOrAssign(std::move(propertyOther));
+                propertyThis = std::move(propertyOther.storage());
+                propertyOther = dots::invalid;
             }
             else
             {
-                propertyThis.destroy();
+                propertyThis = dots::invalid;
             }
         }
 
@@ -237,11 +251,11 @@ namespace dots::type
         {
             if (propertyOther.isValid())
             {
-                propertyThis.constructOrAssign(propertyOther);
+                propertyThis.assign(propertyOther);
             }
             else
             {
-                propertyThis.destroy();
+                propertyThis = dots::invalid;
             }
         }
 
@@ -256,11 +270,11 @@ namespace dots::type
         {
             if (propertyThis.descriptor().valueDescriptor().type() == Type::Struct)
             {
-                propertyThis.constructOrValue().to<Struct>()._merge(propertyOther->to<Struct>());
+                propertyThis.valueOrEmplace().to<Struct>()._merge(propertyOther->to<Struct>());
             }
             else
             {
-                propertyThis.constructOrAssign(propertyOther);
+                propertyThis.assign(propertyOther);
             }
         }
 
@@ -279,7 +293,7 @@ namespace dots::type
     {
         for (auto& property : instance._propertyRange(includedProperties))
         {
-            property.destroy();
+            property = dots::invalid;
         }
     }
 

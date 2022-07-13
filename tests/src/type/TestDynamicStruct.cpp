@@ -154,7 +154,7 @@ TEST_F(TestDynamicStruct, PropertyAddressessMatchExpectedAddresses)
     EXPECT_EQ(reinterpret_cast<const std::byte*>(&subStructProperty.storage()), sutAddress + subStructProperty.descriptor().offset());
     EXPECT_EQ(reinterpret_cast<const std::byte*>(&structVectorProperty.storage()), sutAddress + structVectorProperty.descriptor().offset());
 
-    DynamicStruct& sutSub = subStructProperty.construct().to<DynamicStruct>();
+    DynamicStruct& sutSub = subStructProperty.emplace().to<DynamicStruct>();
     size_t subOffset = subStructProperty.descriptor().offset() + sizeof(DynamicStruct);
     ProxyProperty<> subIntProperty = sutSub._get("subIntProperty");
     ProxyProperty<> subSubStructProperty = sutSub._get("subSubStructProperty");
@@ -164,7 +164,7 @@ TEST_F(TestDynamicStruct, PropertyAddressessMatchExpectedAddresses)
     EXPECT_EQ(reinterpret_cast<const std::byte*>(&subSubStructProperty.storage()), sutAddress + subOffset + subSubStructProperty.descriptor().offset());
     EXPECT_EQ(reinterpret_cast<const std::byte*>(&subFloatProperty.storage()), sutAddress + subOffset + subFloatProperty.descriptor().offset());
 
-    DynamicStruct& sutSubSub = subSubStructProperty.construct().to<DynamicStruct>();
+    DynamicStruct& sutSubSub = subSubStructProperty.emplace().to<DynamicStruct>();
     size_t subSubOffset = subSubStructProperty.descriptor().offset() + sizeof(DynamicStruct);
     ProxyProperty<> subSubIntProperty = sutSubSub._get("subSubIntProperty");
     ProxyProperty<> subSubDoubleProperty = sutSubSub._get("subSubDoubleProperty");
@@ -297,7 +297,7 @@ TEST_F(TestDynamicStruct, GetPropertyAllowsImplicitConstructionOfPath)
     EXPECT_FALSE(sut._get("subStructProperty.subSubStructProperty").isValid());
     EXPECT_FALSE(sut._get("subStructProperty").isValid());
 
-    sut._get<int64_t>("subStructProperty.subSubStructProperty.subSubIntProperty").construct(42);
+    sut._get<int64_t>("subStructProperty.subSubStructProperty.subSubIntProperty").emplace(42);
 
     EXPECT_TRUE(sut._get("subStructProperty").isValid());
     EXPECT_TRUE(sut._get("subStructProperty.subSubStructProperty").isValid());
@@ -770,7 +770,7 @@ TEST_F(TestDynamicStruct, assign_DirectSubStructMove)
         }
     };
 
-    sutThis._get("subStructProperty").assign(Typeless::From(std::move(sutSubOther)));
+    sutThis._get("subStructProperty").emplace(Typeless::From(std::move(sutSubOther)));
 
     EXPECT_EQ(sutThis._get<int32_t>("intProperty"), 1);
     EXPECT_EQ(sutThis._get<string_t>("stringProperty"), "foo");

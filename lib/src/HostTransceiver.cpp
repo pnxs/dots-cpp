@@ -87,7 +87,7 @@ namespace dots
         using dirty_connection_t = std::pair<Connection*, std::exception_ptr>;
         std::vector<dirty_connection_t> dirtyConnections;
 
-        for (Connection* destinationConnection : m_groups[transmission.header().typeName])
+        for (Connection* destinationConnection : m_groups[*transmission.header().typeName])
         {
             if (destinationConnection->state() != DotsConnectionState::closed)
             {
@@ -220,7 +220,7 @@ namespace dots
     void HostTransceiver::handleMemberMessage(Connection& connection, const DotsMember& member)
     {
         member._assertHasProperties(DotsMember::groupName_p + DotsMember::event_p);
-        const std::string& groupName = member.groupName;
+        const std::string& groupName = *member.groupName;
 
         if (member.event == DotsMemberEvent::kill)
         {
@@ -293,7 +293,7 @@ namespace dots
     void HostTransceiver::handleClearCache(Connection&/* connection*/, const DotsClearCache& clearCache)
     {
         clearCache._assertHasProperties(DotsClearCache::typeNames_p);
-        const vector_t<string_t>& typeNames = clearCache.typeNames;
+        const vector_t<string_t>& typeNames = *clearCache.typeNames;
 
         for (auto& [descriptor, container] : pool())
         {

@@ -235,12 +235,12 @@ namespace dots::serialization
         {
             if (reader().tryReadNull())
             {
-                property.destroy();
+                property = dots::invalid;
                 return false;
             }
             else
             {
-                property.constructOrValue();
+                property.valueOrEmplace();
                 return true;
             }
         }

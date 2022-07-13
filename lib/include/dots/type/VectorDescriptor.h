@@ -95,6 +95,11 @@ namespace dots::type
             destruct(reinterpret_cast<Vector<T>&>(value));
         }
 
+        Typeless& assign(Typeless& lhs) const override
+        {
+            return reinterpret_cast<Typeless&>(assign(reinterpret_cast<Vector<T>&>(lhs)));
+        }
+
         Typeless& assign(Typeless& lhs, const Typeless& rhs) const override
         {
             return reinterpret_cast<Typeless&>(assign(reinterpret_cast<Vector<T>&>(lhs), reinterpret_cast<const Vector<T>&>(rhs)));

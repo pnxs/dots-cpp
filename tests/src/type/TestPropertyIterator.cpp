@@ -16,7 +16,7 @@ protected:
             m_descriptor{ PropertyDescriptor{ Descriptor<T>::Instance(), std::move(name), tag, false, PropertyOffset{ std::in_place, static_cast<uint32_t>(reinterpret_cast<char*>(this) - reinterpret_cast<const char*>(&area)) } } } {}
         TestProperty(const TestProperty& other) = delete;
         TestProperty(TestProperty&& other) = delete;
-        ~TestProperty() { Property<T, TestProperty<T>>::destroy(); }
+        ~TestProperty() { Property<T, TestProperty<T>>::reset(); }
 
         TestProperty& operator = (const TestProperty& rhs) = delete;
         TestProperty& operator = (TestProperty&& rhs) = delete;

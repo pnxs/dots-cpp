@@ -166,18 +166,18 @@ namespace dots::io
     {
         if (auto* structDescriptorData = instance._as<StructDescriptorData>())
         {
-            if (bool isNewSharedType = m_sharedTypeNames.count(structDescriptorData->name) == 0; isNewSharedType)
+            if (bool isNewSharedType = m_sharedTypeNames.count(*structDescriptorData->name) == 0; isNewSharedType)
             {
-                m_sharedTypeNames.emplace(structDescriptorData->name);
+                m_sharedTypeNames.emplace(*structDescriptorData->name);
                 const type::StructDescriptor& descriptor = DescriptorConverter{ registry() }(*structDescriptorData);
                 m_sharedTypeDescriptors.emplace(&descriptor);
             }
         }
         else if (auto* enumDescriptorData = instance._as<EnumDescriptorData>())
         {
-            if (bool isNewSharedType = m_sharedTypeNames.count(enumDescriptorData->name) == 0; isNewSharedType)
+            if (bool isNewSharedType = m_sharedTypeNames.count(*enumDescriptorData->name) == 0; isNewSharedType)
             {
-                m_sharedTypeNames.emplace(enumDescriptorData->name);
+                m_sharedTypeNames.emplace(*enumDescriptorData->name);
                 const type::EnumDescriptor& descriptor = DescriptorConverter{ registry() }(*enumDescriptorData);
                 m_sharedTypeDescriptors.emplace(&descriptor);
             }

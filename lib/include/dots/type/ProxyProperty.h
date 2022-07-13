@@ -55,6 +55,8 @@ namespace dots::type
             /* do nothing */
         }
 
+        using Property<T, ProxyProperty<T>>::operator=;
+
         template <typename U>
         bool is() const
         {
@@ -166,7 +168,7 @@ namespace dots::type
                     for (size_t i = 0; i < elements.size() - 1; ++i)
                     {
                         ProxyProperty<> subProperty{ *area, elements[i].get() };
-                        area = reinterpret_cast<PropertyArea*>(reinterpret_cast<std::byte*>(&subProperty.constructOrValue()) + *subProperty.descriptor().subAreaOffset());
+                        area = reinterpret_cast<PropertyArea*>(reinterpret_cast<std::byte*>(&subProperty.valueOrEmplace()) + *subProperty.descriptor().subAreaOffset());
                     }
 
                     return area->validProperties();

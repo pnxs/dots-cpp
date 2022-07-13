@@ -6,16 +6,17 @@ namespace dots::type
 {
     DynamicStruct::DynamicStruct(const Descriptor<DynamicStruct>& descriptor) :
         Struct(descriptor),
-        m_propertyArea{ std::unique_ptr<PropertyArea>{ static_cast<PropertyArea*>(::operator new(descriptor.size() - sizeof(DynamicStruct))) } }
+        m_propertyAreaStorage{ std::unique_ptr<PropertyArea>{ static_cast<PropertyArea*>(::operator new(descriptor.size() - sizeof(DynamicStruct))) } },
+        m_propertyArea(m_propertyAreaStorage.get())
     {
-        ::new(static_cast<void*>(propertyAreaGet())) PropertyArea{};
+        ::new(static_cast<void*>(m_propertyArea)) PropertyArea{};
     }
 
     DynamicStruct::DynamicStruct(const Descriptor<DynamicStruct>& descriptor, PropertyArea* propertyArea) :
         Struct(descriptor),
         m_propertyArea{ propertyArea }
     {
-        ::new(static_cast<void*>(propertyAreaGet())) PropertyArea{};
+        ::new(static_cast<void*>(m_propertyArea)) PropertyArea{};
     }
 
     DynamicStruct::DynamicStruct(const DynamicStruct& other) :
@@ -32,7 +33,7 @@ namespace dots::type
 
     DynamicStruct::~DynamicStruct()
     {
-        if (propertyAreaGet() != nullptr)
+        if (m_propertyArea != nullptr)
         {
             _clear();
         }
@@ -147,28 +148,11 @@ namespace dots::type
 
     const PropertyArea& DynamicStruct::_propertyArea() const
     {
-        return *propertyAreaGet();
+        return *m_propertyArea;
     }
 
     PropertyArea& DynamicStruct::_propertyArea()
     {
-        return *propertyAreaGet();
-    }
-
-    const PropertyArea* DynamicStruct::propertyAreaGet() const
-    {
-        if (std::holds_alternative<PropertyArea*>(m_propertyArea))
-        {
-            return std::get<PropertyArea*>(m_propertyArea);
-        }
-        else
-        {
-            return std::get<std::unique_ptr<PropertyArea>>(m_propertyArea).get();
-        }
-    }
-
-    PropertyArea* DynamicStruct::propertyAreaGet()
-    {
-        return const_cast<PropertyArea*>(std::as_const(*this).propertyAreaGet());
+        return *m_propertyArea;
     }
 }

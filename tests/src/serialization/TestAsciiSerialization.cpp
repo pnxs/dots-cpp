@@ -11,25 +11,27 @@ using namespace dots::type;
 
 TEST(TestAsciiSerialization, serialize)
 {
-    StructDescriptorData sd;
-    sd.name("aName");
+    StructDescriptorData sd{
+        StructDescriptorData::name_i{ "aName" }
+    };
 
-    auto& properties = sd.properties.construct();
-    auto& documentation = sd.documentation.construct();
+    auto& properties = sd.properties.emplace();
+    auto& documentation = sd.documentation.emplace();
 
-    StructPropertyData pd;
-    pd.name("aProperty");
-    pd.tag(1);
-    pd.type("type");
-    pd.isKey(false);
+    StructPropertyData pd{
+        StructPropertyData::name_i{ "aProperty" },
+        StructPropertyData::tag_i{ 1 },
+        StructPropertyData::type_i{ "type" },
+        StructPropertyData::isKey_i{ false },
+    };
 
     properties.push_back(pd);
     pd.name = "anotherProperty";
     pd.tag = 2;
     properties.push_back(pd);
 
-    documentation.description("aDescription");
-    documentation.comment("aComment");
+    documentation.description.emplace("aDescription");
+    documentation.comment.emplace("aComment");
 
     std::string expectedOutput = "{\n"
             "    name=aName\n"
@@ -58,25 +60,27 @@ TEST(TestAsciiSerialization, serialize)
 
 TEST(TestAsciiSerialization, serializeSingleLine)
 {
-    StructDescriptorData sd;
-    sd.name("aName");
+    StructDescriptorData sd{
+        StructDescriptorData::name_i{ "aName" }
+    };
 
-    auto& properties = sd.properties.construct();
-    auto& documentation = sd.documentation.construct();
-
-    StructPropertyData pd;
-    pd.name("aProperty");
-    pd.tag(1);
-    pd.type("type");
-    pd.isKey(false);
+    auto& properties = sd.properties.emplace();
+    auto& documentation = sd.documentation.emplace();
+    
+    StructPropertyData pd{
+        StructPropertyData::name_i{ "aProperty" },
+        StructPropertyData::tag_i{ 1 },
+        StructPropertyData::type_i{ "type" },
+        StructPropertyData::isKey_i{ false },
+    };
 
     properties.push_back(pd);
     pd.name = "anotherProperty";
     pd.tag = 2;
     properties.push_back(pd);
 
-    documentation.description("aDescription");
-    documentation.comment("aComment");
+    documentation.description.emplace("aDescription");
+    documentation.comment.emplace("aComment");
 
     dots::ToAsciiOptions options;
     options.singleLine = true;
@@ -88,11 +92,12 @@ TEST(TestAsciiSerialization, serializeSingleLine)
 
 TEST(TestAsciiSerialization, serializeSingleLineWithEnums)
 {
-    DotsTestStruct ts;
-    ts.indKeyfField(42);
-    ts.enumField(DotsTestEnum::value3);
-    ts.tp(TimePoint());
-    ts.uuid(dots::uuid_t{ dots::uuid_t::value_t{} });
+    DotsTestStruct ts{
+        DotsTestStruct::indKeyfField_i{ 42 },
+        DotsTestStruct::enumField_i{ DotsTestEnum::value3 },
+        DotsTestStruct::tp_i{ TimePoint() },
+        DotsTestStruct::uuid_i{ dots::uuid_t{ dots::uuid_t::value_t{} } }
+    };
 
     dots::ToAsciiOptions options;
     options.singleLine = true;
@@ -123,25 +128,27 @@ struct TraceColorSchema: dots::ToAsciiColorSchema
 
 TEST(TestAsciiSerialization, serializeSingleLineColored)
 {
-    StructDescriptorData sd;
-    sd.name("aName");
+    StructDescriptorData sd{
+        StructDescriptorData::name_i{ "aName" }
+    };
 
-    auto& properties = sd.properties.construct();
-    auto& documentation = sd.documentation.construct();
+    auto& properties = sd.properties.emplace();
+    auto& documentation = sd.documentation.emplace();
 
-    StructPropertyData pd;
-    pd.name("aProperty");
-    pd.tag(1);
-    pd.type("type");
-    pd.isKey(false);
+    StructPropertyData pd{
+        StructPropertyData::name_i{ "aProperty" },
+        StructPropertyData::tag_i{ 1 },
+        StructPropertyData::type_i{ "type" },
+        StructPropertyData::isKey_i{ false },
+    };
 
     properties.push_back(pd);
     pd.name = "anotherProperty";
     pd.tag = 2;
     properties.push_back(pd);
 
-    documentation.description("aDescription");
-    documentation.comment("aComment");
+    documentation.description.emplace("aDescription");
+    documentation.comment.emplace("aComment");
 
     dots::ToAsciiOptions options;
     TraceColorSchema cs;

@@ -487,7 +487,7 @@ namespace dots::io
                     throw std::runtime_error{ "received header without payloadSize" };
                 }
 
-                return m_transportHeader.payloadSize;
+                return *m_transportHeader.payloadSize;
             }
             else
             {
@@ -507,7 +507,7 @@ namespace dots::io
                 type::AnyStruct instance{ registry().getStructType(*m_transportHeader.dotsHeader->typeName) };
                 m_serializer.deserialize(*instance);
 
-                return Transmission{ std::move(m_transportHeader.dotsHeader), std::move(instance) };
+                return Transmission{ std::move(*m_transportHeader.dotsHeader), std::move(instance) };
             }
             else
             {
@@ -544,7 +544,7 @@ namespace dots::io
             if constexpr (TransmissionFormat == TransmissionFormat::v1)
             {
                 serializer_t serializer;
-                serializer.serialize(instance, header.attributes);
+                serializer.serialize(instance, *header.attributes);
                 std::vector<uint8_t> serializedInstance = std::move(serializer.output());
 
                 DotsTransportHeader transportHeader{
@@ -560,13 +560,13 @@ namespace dots::io
                     // conditionally set namespace
                     if (instance._descriptor().internal() && !instance._is<DotsClient>() && !instance._is<DotsDescriptorRequest>())
                     {
-                        transportHeader.nameSpace("SYS");
+                        transportHeader.nameSpace.emplace("SYS");
                     }
 
                     // set mandatory sent time if not valid
                     if (!transportHeader.dotsHeader->sentTime.isValid())
                     {
-                        transportHeader.dotsHeader->sentTime(timepoint_t::Now());
+                        transportHeader.dotsHeader->sentTime.emplace(timepoint_t::Now());
                     }
 
                     // set mandatory sender if not valid. note that a fixed server id for the sender can be used here because
@@ -600,7 +600,7 @@ namespace dots::io
 
                 // serialize header and instance
                 m_serializer.serialize(header);
-                m_serializer.serialize(instance, header.attributes);
+                m_serializer.serialize(instance, *header.attributes);
 
                 // serialize transmission size into previously created storage
                 // area. note that the transmission size is encoded as a fixed size

@@ -85,7 +85,7 @@ namespace dots::io
     {
         std::optional<bool> accept;
 
-        if (auto rules = findMatchingRules(address, msgConnect.clientName); !rules.empty())
+        if (auto rules = findMatchingRules(address, *msgConnect.clientName); !rules.empty())
         {
             for (const DotsAuthentication& rule : rules)
             {
@@ -104,7 +104,7 @@ namespace dots::io
                     {
                         if (rule.accept.isValid())
                         {
-                            accept = rule.accept;
+                            accept = *rule.accept;
                             break;
                         }
                     }
@@ -113,7 +113,7 @@ namespace dots::io
                 {
                     if (rule.accept.isValid())
                     {
-                        accept = rule.accept;
+                        accept = *rule.accept;
                         break;
                     }
                 }
@@ -153,9 +153,9 @@ namespace dots::io
             {
                 DotsAuthentication& rule = iter.second;
 
-                if ((rule.clientName->empty() || *rule.clientName == clientName) && network.isSubnetOf(tools::IpNetwork{ rule.network->network, rule.network->prefix }))
+                if ((rule.clientName->empty() || *rule.clientName == clientName) && network.isSubnetOf(tools::IpNetwork{ *rule.network->network, *rule.network->prefix }))
                 {
-                    LOG_DEBUG_S("Match: " << *rule.network->network << "/" << +*rule.network->prefix << " (" << (rule.secret.isValid() ? "with secret" : "without secret") << ", accept=" << rule.accept << ")");
+                    LOG_DEBUG_S("Match: " << *rule.network->network << "/" << +*rule.network->prefix << " (" << (rule.secret.isValid() ? "with secret" : "without secret") << ", accept=" << *rule.accept << ")");
                     matchtingRules.emplace_back(rule);
                 }
             }
@@ -207,7 +207,7 @@ namespace dots::io
         {
             if (policy.accept.isValid())
             {
-                m_defaultAcceptPolicy = policy.accept;
+                m_defaultAcceptPolicy = *policy.accept;
             }
         }
     }

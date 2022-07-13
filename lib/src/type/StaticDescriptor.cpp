@@ -108,6 +108,14 @@ namespace dots::type
         }, value);
     }
 
+    Typeless& StaticDescriptor::assign(Typeless& lhs) const
+    {
+        return apply(type(), [](auto& lhs) -> Typeless&
+        {
+            return Typeless::From(assign(lhs));
+        }, lhs);
+    }
+
     Typeless& StaticDescriptor::assign(Typeless& lhs, const Typeless& rhs) const
     {
         return apply(type(), [](auto& lhs, const auto& rhs) -> Typeless&
