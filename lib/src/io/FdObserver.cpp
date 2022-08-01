@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-only
+// Copyright 2015-2022 Thomas Schaetzlein <thomas@pnxs.de>, Christopher Gerlach <gerlachch@gmx.com>
 #include <dots/asio.h>
 #if defined(BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR)
 #include <dots/io/FdObserver.h>
