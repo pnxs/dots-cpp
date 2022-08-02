@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-only
+// Copyright 2015-2022 Thomas Schaetzlein <thomas@pnxs.de>, Christopher Gerlach <gerlachch@gmx.com>
 #undef DOTS_NO_GLOBAL_TRANSCEIVER
 #include <dots/Application.h>
 #include <dots/io/Io.h>

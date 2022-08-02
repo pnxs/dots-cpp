@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-only
+// Copyright 2015-2022 Thomas Schaetzlein <thomas@pnxs.de>, Christopher Gerlach <gerlachch@gmx.com>
 #include <dots/io/auth/Digest.h>
 #include <PicoSHA2/picosha2.h>
 #include <boost/algorithm/hex.hpp>
