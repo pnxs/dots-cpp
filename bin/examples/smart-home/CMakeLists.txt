@@ -33,7 +33,7 @@ target_compile_options(${TARGET_NAME}
 )
 target_compile_features(${TARGET_NAME}
     PRIVATE
-        cxx_std_17
+        cxx_std_20
 )
 target_link_libraries(${TARGET_NAME}
     PRIVATE
@@ -80,7 +80,7 @@ target_compile_definitions(${TEST_TARGET_NAME}
 )
 target_compile_features(${TEST_TARGET_NAME}
     PRIVATE
-        cxx_std_17
+        cxx_std_20
 )
 target_link_libraries(${TEST_TARGET_NAME}
     PRIVATE

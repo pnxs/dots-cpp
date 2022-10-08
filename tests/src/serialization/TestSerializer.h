@@ -73,7 +73,7 @@ struct TestSerializerDataDecoded
     dots::string_t string2{ "\"foo\" bar baz" };
     dots::string_t string3{ "foo \"bar\" baz" };
     dots::string_t string4{ "foo bar \"baz\"" };
-    dots::string_t string5{ u8"foo\\ \u0062\u0061\u0072\u00A9\n b\\az" };
+    dots::string_t string5{ "foo\\ \x62\x61\x72\xC2\xA9\n b\\az" };
 
     //
     // enum

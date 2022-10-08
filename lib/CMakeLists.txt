@@ -105,7 +105,7 @@ target_include_directories(${TARGET_NAME}
 )
 target_compile_features(${TARGET_NAME}
     PUBLIC
-        cxx_std_17
+        cxx_std_20
 )
 target_compile_options(${TARGET_NAME}
     PUBLIC

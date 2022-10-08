@@ -69,7 +69,7 @@ struct RapidJsonSerializerTestDataEncoded : SerializerTestDataEncoded<dots::seri
     data_t string2{ "\"\\\"foo\\\" bar baz\"" };
     data_t string3{ "\"foo \\\"bar\\\" baz\"" };
     data_t string4{ "\"foo bar \\\"baz\\\"\"" };
-    data_t string5{ u8"\"foo\\\\ \u0062\u0061\u0072\u00A9\\n b\\\\az\"" };
+    data_t string5{ "\"foo\\\\ \x62\x61\x72\xC2\xA9\\n b\\\\az\"" };
     data_t stringInvalid{ "\"fo\\obar\"" };
 
     //
@@ -172,7 +172,7 @@ struct RapidJsonSerializerTestDataEncoded : SerializerTestDataEncoded<dots::seri
     // unescaped string
     //
 
-    data_t string5Unescaped = u8"foo\\ \u0062\u0061\u0072\u00A9\n b\\az";
+    data_t string5Unescaped = "foo\\ \x62\x61\x72\xC2\xA9\n b\\az";
     data_t structSimple_String5Unescaped = Concat("{\"stringProperty\":", string5Unescaped, "}");
 
     //
