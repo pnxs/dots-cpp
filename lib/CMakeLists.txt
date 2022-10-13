@@ -45,6 +45,7 @@ target_sources(${TARGET_NAME}
         src/Event.cpp
         src/GuestTransceiver.cpp
         src/HostTransceiver.cpp
+        src/Requirements.cpp
         src/Subscription.cpp
         src/Timer.cpp
         src/Transceiver.cpp
