@@ -2,7 +2,7 @@
 // Copyright 2015-2022 Thomas Schaetzlein <thomas@pnxs.de>, Christopher Gerlach <gerlachch@gmx.com>
 #pragma once
 #include <variant>
-#if (__GNUG__)
+#if defined(__GNUG__) && !defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif
@@ -226,6 +226,6 @@ namespace dots::type
     };
 }
 
-#if (defined __GNUG__)
+#if defined(__GNUG__) && !defined(__clang__)
 #pragma GCC diagnostic pop
 #endif

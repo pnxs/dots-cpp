@@ -3,7 +3,7 @@
 #pragma once
 #include <type_traits>
 #include <optional>
-#if (__GNUG__)
+#if defined(__GNUG__) && !defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif
@@ -211,6 +211,6 @@ namespace dots::type
     };
 }
 
-#if (defined __GNUG__)
+#if defined(__GNUG__) && !defined(__clang__)
 #pragma GCC diagnostic pop
 #endif
