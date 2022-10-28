@@ -46,8 +46,8 @@ struct RapidJsonSerializerTestDataEncoded : SerializerTestDataEncoded<dots::seri
     data_t uint64Positive2{ "18434398394799440403" };
 
     data_t float32Zero{ "0.0" };
-    data_t float32Positive{ "3.1414999961853029" };
-    data_t float32Negative{ "-2.7183001041412355" };
+    data_t float32Positive{ "3.1414999961853027" };
+    data_t float32Negative{ "-2.7183001041412354" };
 
     data_t float64Zero{ "0.0" };
     data_t float64Positive{ "3.14159265359" };
