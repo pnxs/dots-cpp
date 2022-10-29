@@ -14,17 +14,17 @@ using namespace dots::type;
 TEST(TestAsciiSerialization, serialize)
 {
     StructDescriptorData sd{
-        StructDescriptorData::name_i{ "aName" }
+        .name = "aName" 
     };
 
     auto& properties = sd.properties.emplace();
     auto& documentation = sd.documentation.emplace();
 
     StructPropertyData pd{
-        StructPropertyData::name_i{ "aProperty" },
-        StructPropertyData::tag_i{ 1 },
-        StructPropertyData::type_i{ "type" },
-        StructPropertyData::isKey_i{ false },
+        .name = "aProperty" ,
+        .tag = 1 ,
+        .isKey = false ,
+        .type = "type" ,
     };
 
     properties.push_back(pd);
@@ -63,17 +63,17 @@ TEST(TestAsciiSerialization, serialize)
 TEST(TestAsciiSerialization, serializeSingleLine)
 {
     StructDescriptorData sd{
-        StructDescriptorData::name_i{ "aName" }
+        .name = "aName" 
     };
 
     auto& properties = sd.properties.emplace();
     auto& documentation = sd.documentation.emplace();
     
     StructPropertyData pd{
-        StructPropertyData::name_i{ "aProperty" },
-        StructPropertyData::tag_i{ 1 },
-        StructPropertyData::type_i{ "type" },
-        StructPropertyData::isKey_i{ false },
+        .name = "aProperty" ,
+        .tag = 1 ,
+        .isKey = false ,
+        .type = "type" ,
     };
 
     properties.push_back(pd);
@@ -95,10 +95,10 @@ TEST(TestAsciiSerialization, serializeSingleLine)
 TEST(TestAsciiSerialization, serializeSingleLineWithEnums)
 {
     DotsTestStruct ts{
-        DotsTestStruct::indKeyfField_i{ 42 },
-        DotsTestStruct::enumField_i{ DotsTestEnum::value3 },
-        DotsTestStruct::tp_i{ TimePoint() },
-        DotsTestStruct::uuid_i{ dots::uuid_t{ dots::uuid_t::value_t{} } }
+        .indKeyfField = 42 ,
+        .enumField = DotsTestEnum::value3 ,
+        .tp = TimePoint() ,
+        .uuid = dots::uuid_t{ dots::uuid_t::value_t{} } 
     };
 
     dots::ToAsciiOptions options;
@@ -131,17 +131,17 @@ struct TraceColorSchema: dots::ToAsciiColorSchema
 TEST(TestAsciiSerialization, serializeSingleLineColored)
 {
     StructDescriptorData sd{
-        StructDescriptorData::name_i{ "aName" }
+        .name = "aName" 
     };
 
     auto& properties = sd.properties.emplace();
     auto& documentation = sd.documentation.emplace();
 
     StructPropertyData pd{
-        StructPropertyData::name_i{ "aProperty" },
-        StructPropertyData::tag_i{ 1 },
-        StructPropertyData::type_i{ "type" },
-        StructPropertyData::isKey_i{ false },
+        .name = "aProperty" ,
+        .tag = 1 ,
+        .isKey = false ,
+        .type = "type" ,
     };
 
     properties.push_back(pd);

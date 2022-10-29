@@ -17,42 +17,42 @@ TEST_F(StairwellTest, ToggleLightWhenUsingSameSwitch)
         [this]
         {
             SPOOF_DOTS_PUBLISH(StatelessSwitch{
-                StatelessSwitch::id_i{ Stairwell::LowerSwitch }
+                .id = Stairwell::LowerSwitch
             });
         },
         EXPECT_DOTS_PUBLISH(LightControl{
-            LightControl::id_i{ Stairwell::Light },
-            LightControl::brightness_i{ 100u }
+            .id = Stairwell::Light,
+            .brightness = 100u
         }),
         [this]
         {
             SPOOF_DOTS_PUBLISH(StatelessSwitch{
-                StatelessSwitch::id_i{ Stairwell::LowerSwitch }
+                .id = Stairwell::LowerSwitch
             });
         },
         EXPECT_DOTS_PUBLISH(LightControl{
-            LightControl::id_i{ Stairwell::Light },
-            LightControl::brightness_i{ 0u }
+            .id = Stairwell::Light,
+            .brightness = 0u
         }),
         [this]
         {
             SPOOF_DOTS_PUBLISH(StatelessSwitch{
-                StatelessSwitch::id_i{ Stairwell::UpperSwitch }
+                .id = Stairwell::UpperSwitch
             });
         },
         EXPECT_DOTS_PUBLISH(LightControl{
-            LightControl::id_i{ Stairwell::Light },
-            LightControl::brightness_i{ 100u }
+            .id = Stairwell::Light,
+            .brightness = 100u
         }),
         [this]
         {
             SPOOF_DOTS_PUBLISH(StatelessSwitch{
-                StatelessSwitch::id_i{ Stairwell::UpperSwitch }
+                .id = Stairwell::UpperSwitch
             });
         },
         EXPECT_DOTS_PUBLISH(LightControl{
-            LightControl::id_i{ Stairwell::Light },
-            LightControl::brightness_i{ 0u }
+            .id = Stairwell::Light,
+            .brightness = 0u
         })
     );
 
@@ -64,42 +64,42 @@ TEST_F(StairwellTest, ToggleLightWhenUsingDifferentSwitches)
         [this]
         {
             SPOOF_DOTS_PUBLISH(StatelessSwitch{
-                StatelessSwitch::id_i{ Stairwell::LowerSwitch }
+                .id = Stairwell::LowerSwitch
             });
         },
         EXPECT_DOTS_PUBLISH(LightControl{
-            LightControl::id_i{ Stairwell::Light },
-            LightControl::brightness_i{ 100u }
+            .id = Stairwell::Light,
+            .brightness = 100u
         }),
         [this]
         {
             SPOOF_DOTS_PUBLISH(StatelessSwitch{
-                StatelessSwitch::id_i{ Stairwell::UpperSwitch }
+                .id = Stairwell::UpperSwitch
             });
         },
         EXPECT_DOTS_PUBLISH(LightControl{
-            LightControl::id_i{ Stairwell::Light },
-            LightControl::brightness_i{ 0u }
+            .id = Stairwell::Light,
+            .brightness = 0u
         }),
         [this]
         {
             SPOOF_DOTS_PUBLISH(StatelessSwitch{
-                StatelessSwitch::id_i{ Stairwell::UpperSwitch }
+                .id = Stairwell::UpperSwitch
             });
         },
         EXPECT_DOTS_PUBLISH(LightControl{
-            LightControl::id_i{ Stairwell::Light },
-            LightControl::brightness_i{ 100u }
+            .id = Stairwell::Light,
+            .brightness = 100u
         }),
         [this]
         {
             SPOOF_DOTS_PUBLISH(StatelessSwitch{
-                StatelessSwitch::id_i{ Stairwell::LowerSwitch }
+                .id = Stairwell::LowerSwitch
             });
         },
         EXPECT_DOTS_PUBLISH(LightControl{
-            LightControl::id_i{ Stairwell::Light },
-            LightControl::brightness_i{ 0u }
+            .id = Stairwell::Light,
+            .brightness = 0u
         })
     );
 

@@ -98,7 +98,7 @@ TEST_F(TestDescriptor, dynamicMemoryUsage)
 
     EXPECT_DYNAMIC_MEMORY_USAGE(
         DotsTestVectorStruct{
-            DotsTestVectorStruct::stringList_i{ vector_t<string_t>{ "foo", "bar", "baz", "qux" } }
+            .stringList = { "foo", "bar", "baz", "qux" }
         },
         4 * sizeof(string_t) + 4 * 4
     );
@@ -111,10 +111,10 @@ TEST_F(TestDescriptor, dynamicMemoryUsage)
     {
         vector_t<DotsTestSubStruct> subStructVector{
             DotsTestSubStruct{
-                DotsTestSubStruct::flag1_i{ false },
+                .flag1 = false,
             },
             DotsTestSubStruct{
-                DotsTestSubStruct::flag1_i{ true },
+                .flag1 = true,
             }
         };
         constexpr size_t SubStructVectorDynSize = 2 * sizeof(DotsTestSubStruct);
@@ -127,13 +127,13 @@ TEST_F(TestDescriptor, dynamicMemoryUsage)
         EXPECT_DYNAMIC_MEMORY_USAGE(stringVector, StringVectorDynSize);
 
         DotsTestVectorStruct vectorStruct1{
-            DotsTestVectorStruct::subStructList_i{ subStructVector }
+            .subStructList = subStructVector
         };
         constexpr size_t VectorStruct1DynSize = SubStructVectorDynSize;
         EXPECT_DYNAMIC_MEMORY_USAGE(vectorStruct1, VectorStruct1DynSize);
 
         DotsTestVectorStruct vectorStruct2{
-            DotsTestVectorStruct::stringList_i{ stringVector }
+            .stringList = stringVector
         };
         constexpr size_t VectorStruct2DynSize = StringVectorDynSize;
         EXPECT_DYNAMIC_MEMORY_USAGE(vectorStruct2, VectorStruct2DynSize);

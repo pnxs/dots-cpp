@@ -17,35 +17,35 @@ TEST_F(LivingRoomTest, UpdateLightsWhenDimmerChanges)
         [this]
         {
             SPOOF_DOTS_PUBLISH(Dimmer{
-                Dimmer::id_i{ LivingRoom::MasterDimmer },
-                Dimmer::brightness_i{ 42u }
+                .id = LivingRoom::MasterDimmer,
+                .brightness = 42u
             });
         },
         DOTS_EXPECTATION_SET(
             EXPECT_DOTS_PUBLISH(LightControl{
-                LightControl::id_i{ LivingRoom::CeilingLight },
-                LightControl::brightness_i{ 42u }
+                .id = LivingRoom::CeilingLight,
+                .brightness = 42u
             }),
             EXPECT_DOTS_PUBLISH(LightControl{
-                LightControl::id_i{ LivingRoom::CouchLight },
-                LightControl::brightness_i{ 42u }
+                .id = LivingRoom::CouchLight,
+                .brightness = 42u
             })
         ),
         [this]
         {
             SPOOF_DOTS_PUBLISH(Dimmer{
-                Dimmer::id_i{ LivingRoom::MasterDimmer },
-                Dimmer::brightness_i{ 72u }
+                .id = LivingRoom::MasterDimmer,
+                .brightness = 72u
             });
         },
         DOTS_EXPECTATION_SET(
             EXPECT_DOTS_PUBLISH(LightControl{
-                LightControl::id_i{ LivingRoom::CeilingLight },
-                LightControl::brightness_i{ 72u }
+                .id = LivingRoom::CeilingLight,
+                .brightness = 72u
             }),
             EXPECT_DOTS_PUBLISH(LightControl{
-                LightControl::id_i{ LivingRoom::CouchLight },
-                LightControl::brightness_i{ 72u }
+                .id = LivingRoom::CouchLight,
+                .brightness = 72u
             })
         )
     );

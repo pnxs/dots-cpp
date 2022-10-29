@@ -4,7 +4,6 @@
 #include <dots/type/StaticProperty.h>
 #include <dots/type/StaticPropertyOffset.h>
 #include <dots/type/FundamentalTypes.h>
-#include <dots/type/PropertyInitializer.h>
 #include <dots/testing/gtest/gtest.h>
 #include <TestStruct.dots.h>
 
@@ -95,9 +94,9 @@ TEST_F(TestStaticStruct, _KeyProperties)
 TEST_F(TestStaticStruct, ctor_Initializer)
 {
     TestStruct sut{
-        TestStruct::intProperty_i{ 1 },
-        TestStruct::stringProperty_i{ "foo" },
-        TestStruct::floatVectorProperty_i{ vector_t<float32_t>{ 3.1415f, 2.7183f } }
+        .intProperty = 1,
+        .stringProperty = "foo",
+        .floatVectorProperty = vector_t<float32_t>{ 3.1415f, 2.7183f }
     };
 
     EXPECT_EQ(sut.intProperty, 1);
@@ -109,11 +108,11 @@ TEST_F(TestStaticStruct, ctor_Initializer)
 TEST_F(TestStaticStruct, ctor_InitializeFromCompatibleProperty)
 {
     TestSubStruct subStruct{
-        TestSubStruct::p1_i{ true }
+        .p1 = true 
     };
 
     TestStruct sut{
-        TestStruct::boolProperty_i{ subStruct.p1 }
+        .boolProperty = subStruct.p1 
     };
 
     EXPECT_FALSE(sut.intProperty.isValid());
@@ -125,9 +124,9 @@ TEST_F(TestStaticStruct, ctor_InitializeFromCompatibleProperty)
 TEST_F(TestStaticStruct, ctor_Copy)
 {
     TestStruct sutOther{
-        TestStruct::intProperty_i{ 1 },
-        TestStruct::stringProperty_i{ "foo" },
-        TestStruct::floatVectorProperty_i{ vector_t<float32_t>{ 3.1415f, 2.7183f } }
+        .intProperty = 1,
+        .stringProperty = "foo",
+        .floatVectorProperty = vector_t<float32_t>{ 3.1415f, 2.7183f }
     };
     TestStruct sutThis{ sutOther };
 
@@ -140,9 +139,9 @@ TEST_F(TestStaticStruct, ctor_Copy)
 TEST_F(TestStaticStruct, ctor_Move)
 {
     TestStruct sutOther{
-        TestStruct::intProperty_i{ 1 },
-        TestStruct::stringProperty_i{ "foo" },
-        TestStruct::floatVectorProperty_i{ vector_t<float32_t>{ 3.1415f, 2.7183f } }
+        .intProperty = 1,
+        .stringProperty = "foo",
+        .floatVectorProperty = vector_t<float32_t>{ 3.1415f, 2.7183f }
     };
     TestStruct sutThis{ std::move(sutOther) };
 
@@ -160,9 +159,9 @@ TEST_F(TestStaticStruct, ctor_Move)
 TEST_F(TestStaticStruct, assignment_Copy)
 {
     TestStruct sutOther{
-        TestStruct::intProperty_i{ 1 },
-        TestStruct::stringProperty_i{ "foo" },
-        TestStruct::floatVectorProperty_i{ vector_t<float32_t>{ 3.1415f, 2.7183f } }
+        .intProperty = 1,
+        .stringProperty = "foo",
+        .floatVectorProperty = vector_t<float32_t>{ 3.1415f, 2.7183f }
     };
     TestStruct sutThis = sutOther;
 
@@ -175,9 +174,9 @@ TEST_F(TestStaticStruct, assignment_Copy)
 TEST_F(TestStaticStruct, assignment_Move)
 {
     TestStruct sutOther{
-        TestStruct::intProperty_i{ 1 },
-        TestStruct::stringProperty_i{ "foo" },
-        TestStruct::floatVectorProperty_i{ vector_t<float32_t>{ 3.1415f, 2.7183f } }
+        .intProperty = 1,
+        .stringProperty = "foo",
+        .floatVectorProperty = vector_t<float32_t>{ 3.1415f, 2.7183f }
     };
     TestStruct sutThis = std::move(sutOther);
 
@@ -195,11 +194,11 @@ TEST_F(TestStaticStruct, assignment_Move)
 TEST_F(TestStaticStruct, assignment_FromValidCompatibleProperty)
 {
     TestSubStruct subStruct{
-        TestSubStruct::p1_i{ true }
+        .p1 = true 
     };
 
     TestStruct sut{
-        TestStruct::boolProperty_i{ false }
+        .boolProperty = false 
     };
 
     EXPECT_EQ(sut.boolProperty, false);
@@ -213,7 +212,7 @@ TEST_F(TestStaticStruct, assignment_FromInvalidCompatibleProperty)
     TestSubStruct subStruct;
 
     TestStruct sut{
-        TestStruct::boolProperty_i{ true }
+        .boolProperty = true 
     };
 
     EXPECT_EQ(sut.boolProperty, true);
@@ -225,15 +224,15 @@ TEST_F(TestStaticStruct, assignment_FromInvalidCompatibleProperty)
 TEST_F(TestStaticStruct, assign_CompleteAssign)
 {
     TestStruct sutThis{
-        TestStruct::intProperty_i{ 1 },
-        TestStruct::stringProperty_i{ "foo" },
-        TestStruct::floatVectorProperty_i{ vector_t<float32_t>{ 3.1415f } }
+        .intProperty = 1,
+        .stringProperty = "foo",
+        .floatVectorProperty = vector_t<float32_t>{ 3.1415f }
     };
 
     TestStruct sutOther{
-        TestStruct::intProperty_i{ 2 },
-        TestStruct::stringProperty_i{ "bar" },
-        TestStruct::floatVectorProperty_i{ vector_t<float32_t>{ 2.7183f } }
+        .intProperty = 2,
+        .stringProperty = "bar",
+        .floatVectorProperty = vector_t<float32_t>{ 2.7183f }
     };
 
     sutThis._assign(sutOther);
@@ -247,14 +246,14 @@ TEST_F(TestStaticStruct, assign_CompleteAssign)
 TEST_F(TestStaticStruct, assign_PartialAssign)
 {
     TestStruct sutThis{
-        TestStruct::intProperty_i{ 1 },
-        TestStruct::stringProperty_i{ "foo" },
-        TestStruct::floatVectorProperty_i{ vector_t<float32_t>{ 3.1415f } }
+        .intProperty = 1,
+        .stringProperty = "foo",
+        .floatVectorProperty = vector_t<float32_t>{ 3.1415f }
     };
 
     TestStruct sutOther{
-        TestStruct::intProperty_i{ 2 },
-        TestStruct::stringProperty_i{ "bar" }
+        .intProperty = 2,
+        .stringProperty = "bar"
     };
 
     sutThis._assign(sutOther, ~TestStruct::floatVectorProperty_p);
@@ -268,15 +267,15 @@ TEST_F(TestStaticStruct, assign_PartialAssign)
 TEST_F(TestStaticStruct, copy_CompleteCopy)
 {
     TestStruct sutThis{
-        TestStruct::intProperty_i{ 1 },
-        TestStruct::stringProperty_i{ "foo" },
-        TestStruct::floatVectorProperty_i{ vector_t<float32_t>{ 3.1415f } }
+        .intProperty = 1,
+        .stringProperty = "foo",
+        .floatVectorProperty = vector_t<float32_t>{ 3.1415f }
     };
 
     TestStruct sutOther{
-        TestStruct::intProperty_i{ 2 },
-        TestStruct::stringProperty_i{ "bar" },
-        TestStruct::floatVectorProperty_i{ vector_t<float32_t>{ 2.7183f } }
+        .intProperty = 2,
+        .stringProperty = "bar",
+        .floatVectorProperty = vector_t<float32_t>{ 2.7183f }
     };
 
     sutThis._copy(sutOther);
@@ -290,15 +289,15 @@ TEST_F(TestStaticStruct, copy_CompleteCopy)
 TEST_F(TestStaticStruct, copy_PartialCopy)
 {
     TestStruct sutThis{
-        TestStruct::intProperty_i{ 1 },
-        TestStruct::stringProperty_i{ "foo" },
-        TestStruct::boolProperty_i{ true },
-        TestStruct::floatVectorProperty_i{ vector_t<float32_t>{ 3.1415f } }
+        .intProperty = 1,
+        .stringProperty = "foo",
+        .boolProperty = true,
+        .floatVectorProperty = vector_t<float32_t>{ 3.1415f }
     };
 
     TestStruct sutOther{
-        TestStruct::intProperty_i{ 2 },
-        TestStruct::stringProperty_i{ "bar" }
+        .intProperty = 2,
+        .stringProperty = "bar"
     };
 
     sutThis._copy(sutOther, TestStruct::stringProperty_p + TestStruct::boolProperty_p);
@@ -312,14 +311,14 @@ TEST_F(TestStaticStruct, copy_PartialCopy)
 TEST_F(TestStaticStruct, merge_CompleteMerge)
 {
     TestStruct sutThis{
-        TestStruct::intProperty_i{ 1 },
-        TestStruct::stringProperty_i{ "foo" },
-        TestStruct::floatVectorProperty_i{ vector_t<float32_t>{ 3.1415f } }
+        .intProperty = 1,
+        .stringProperty = "foo",
+        .floatVectorProperty = vector_t<float32_t>{ 3.1415f }
     };
 
     TestStruct sutOther{
-        TestStruct::intProperty_i{ 2 },
-        TestStruct::stringProperty_i{ "bar" }
+        .intProperty = 2,
+        .stringProperty = "bar"
     };
 
     sutThis._merge(sutOther);
@@ -333,15 +332,15 @@ TEST_F(TestStaticStruct, merge_CompleteMerge)
 TEST_F(TestStaticStruct, merge_PartialMerge)
 {
     TestStruct sutThis{
-        TestStruct::intProperty_i{ 1 },
-        TestStruct::stringProperty_i{ "foo" },
-        TestStruct::floatVectorProperty_i{ vector_t<float32_t>{ 3.1415f } }
+        .intProperty = 1,
+        .stringProperty = "foo",
+        .floatVectorProperty = vector_t<float32_t>{ 3.1415f }
     };
 
     TestStruct sutOther{
-        TestStruct::intProperty_i{ 2 },
-        TestStruct::stringProperty_i{ "bar" },
-        TestStruct::floatVectorProperty_i{ vector_t<float32_t>{ 2.7183f } }
+        .intProperty = 2,
+        .stringProperty = "bar",
+        .floatVectorProperty = vector_t<float32_t>{ 2.7183f }
     };
 
     sutThis._merge(sutOther, ~TestStruct::stringProperty_p);
@@ -355,20 +354,20 @@ TEST_F(TestStaticStruct, merge_PartialMerge)
 TEST_F(TestStaticStruct, merge_PartialMergeSubStruct)
 {
     TestStruct sutThis{
-        TestStruct::intProperty_i{ 1 },
-        TestStruct::stringProperty_i{ "foo" },
-        TestStruct::floatVectorProperty_i{ vector_t<float32_t>{ 3.1415f } },
-        TestStruct::subStruct_i{
-            TestSubStruct::p2_i(true)
+        .intProperty = 1,
+        .stringProperty = "foo",
+        .floatVectorProperty = vector_t<float32_t>{ 3.1415f },
+        .subStruct = TestSubStruct{
+            .p2 = true
         }
     };
 
     TestStruct sutOther{
-        TestStruct::intProperty_i{ 2 },
-        TestStruct::stringProperty_i{ "bar" },
-        TestStruct::floatVectorProperty_i{ vector_t<float32_t>{ 2.7183f } },
-        TestStruct::subStruct_i{
-            TestSubStruct::p1_i(true)
+        .intProperty = 2,
+        .stringProperty = "bar",
+        .floatVectorProperty = vector_t<float32_t>{ 2.7183f },
+        .subStruct = TestSubStruct{
+            .p1 = true
         }
     };
 
@@ -385,14 +384,14 @@ TEST_F(TestStaticStruct, merge_PartialMergeSubStruct)
 TEST_F(TestStaticStruct, swap_CompleteSwap)
 {
     TestStruct sutThis{
-        TestStruct::intProperty_i{ 1 },
-        TestStruct::stringProperty_i{ "foo" },
-        TestStruct::floatVectorProperty_i{ vector_t<float32_t>{ 3.1415f } }
+        .intProperty = 1,
+        .stringProperty = "foo",
+        .floatVectorProperty = vector_t<float32_t>{ 3.1415f }
     };
 
     TestStruct sutOther{
-        TestStruct::intProperty_i{ 2 },
-        TestStruct::stringProperty_i{ "bar" }
+        .intProperty = 2,
+        .stringProperty = "bar"
     };
 
     sutThis._swap(sutOther);
@@ -411,15 +410,15 @@ TEST_F(TestStaticStruct, swap_CompleteSwap)
 TEST_F(TestStaticStruct, swap_PartialSwap)
 {
     TestStruct sutThis{
-        TestStruct::intProperty_i{ 1 },
-        TestStruct::stringProperty_i{ "foo" },
-        TestStruct::floatVectorProperty_i{ vector_t<float32_t>{ 3.1415f } }
+        .intProperty = 1,
+        .stringProperty = "foo",
+        .floatVectorProperty = vector_t<float32_t>{ 3.1415f }
     };
 
     TestStruct sutOther{
-        TestStruct::intProperty_i{ 2 },
-        TestStruct::stringProperty_i{ "bar" },
-        TestStruct::floatVectorProperty_i{ vector_t<float32_t>{ 2.7183f } }
+        .intProperty = 2,
+        .stringProperty = "bar",
+        .floatVectorProperty = vector_t<float32_t>{ 2.7183f }
     };
 
     sutThis._swap(sutOther, TestStruct::floatVectorProperty_p);
@@ -438,9 +437,9 @@ TEST_F(TestStaticStruct, swap_PartialSwap)
 TEST_F(TestStaticStruct, clear_CompleteClear)
 {
     TestStruct sut{
-        TestStruct::intProperty_i{ 1 },
-        TestStruct::stringProperty_i{ "foo" },
-        TestStruct::floatVectorProperty_i{ vector_t<float32_t>{ 3.1415f } }
+        .intProperty = 1,
+        .stringProperty = "foo",
+        .floatVectorProperty = vector_t<float32_t>{ 3.1415f }
     };
 
     sut._clear();
@@ -454,9 +453,9 @@ TEST_F(TestStaticStruct, clear_CompleteClear)
 TEST_F(TestStaticStruct, clear_PartialClear)
 {
     TestStruct sut{
-        TestStruct::intProperty_i{ 1 },
-        TestStruct::stringProperty_i{ "foo" },
-        TestStruct::floatVectorProperty_i{ vector_t<float32_t>{ 3.1415f } }
+        .intProperty = 1,
+        .stringProperty = "foo",
+        .floatVectorProperty = vector_t<float32_t>{ 3.1415f }
     };
 
     sut._clear(~TestStruct::stringProperty_p);
@@ -470,15 +469,15 @@ TEST_F(TestStaticStruct, clear_PartialClear)
 TEST_F(TestStaticStruct, equal)
 {
     TestStruct sutLhs{
-        TestStruct::intProperty_i{ 2 },
-        TestStruct::stringProperty_i{ "foo" },
-        TestStruct::floatVectorProperty_i{ vector_t<float32_t>{ 3.1415f } }
+        .intProperty = 2,
+        .stringProperty = "foo",
+        .floatVectorProperty = vector_t<float32_t>{ 3.1415f }
     };
 
     TestStruct sutRhs{
-        TestStruct::intProperty_i{ 2 },
-        TestStruct::stringProperty_i{ "bar" },
-        TestStruct::floatVectorProperty_i{ vector_t<float32_t>{ 3.1415f } }
+        .intProperty = 2,
+        .stringProperty = "bar",
+        .floatVectorProperty = vector_t<float32_t>{ 3.1415f }
     };
 
     EXPECT_TRUE(sutLhs._equal(sutLhs));
@@ -493,21 +492,21 @@ TEST_F(TestStaticStruct, equal)
 TEST_F(TestStaticStruct, same)
 {
     TestStruct sut1{
-        TestStruct::intProperty_i{ 1 },
-        TestStruct::stringProperty_i{ "foo" },
-        TestStruct::floatVectorProperty_i{ vector_t<float32_t>{ 3.1415f } }
+        .intProperty = 1,
+        .stringProperty = "foo",
+        .floatVectorProperty = vector_t<float32_t>{ 3.1415f }
     };
 
     TestStruct sut2{
-        TestStruct::intProperty_i{ 1 },
-        TestStruct::stringProperty_i{ "bar" },
-        TestStruct::floatVectorProperty_i{ vector_t<float32_t>{ 3.1415f } }
+        .intProperty = 1,
+        .stringProperty = "bar",
+        .floatVectorProperty = vector_t<float32_t>{ 3.1415f }
     };
 
     TestStruct sut3{
-        TestStruct::intProperty_i{ 2 },
-        TestStruct::stringProperty_i{ "foo" },
-        TestStruct::floatVectorProperty_i{ vector_t<float32_t>{ 2.7183f } }
+        .intProperty = 2,
+        .stringProperty = "foo",
+        .floatVectorProperty = vector_t<float32_t>{ 2.7183f }
     };
 
     EXPECT_TRUE(sut1._same(sut1));
@@ -518,15 +517,15 @@ TEST_F(TestStaticStruct, same)
 TEST_F(TestStaticStruct, less_lessEqual_greater_greaterEqual)
 {
     TestStruct sutLhs{
-        TestStruct::intProperty_i{ 2 },
-        TestStruct::stringProperty_i{ "bar" },
-        TestStruct::floatVectorProperty_i{ vector_t<float32_t>{ 3.1415f } }
+        .intProperty = 2,
+        .stringProperty = "bar",
+        .floatVectorProperty = vector_t<float32_t>{ 3.1415f }
     };
 
     TestStruct sutRhs{
-        TestStruct::intProperty_i{ 2 },
-        TestStruct::stringProperty_i{ "foo" },
-        TestStruct::floatVectorProperty_i{ vector_t<float32_t>{ 2.7183f } }
+        .intProperty = 2,
+        .stringProperty = "foo",
+        .floatVectorProperty = vector_t<float32_t>{ 2.7183f }
     };
 
     EXPECT_TRUE(sutLhs._less(sutRhs));
@@ -557,15 +556,15 @@ TEST_F(TestStaticStruct, less_lessEqual_greater_greaterEqual)
 TEST_F(TestStaticStruct, diffProperties)
 {
     TestStruct sutLhs{
-        TestStruct::intProperty_i{ 2 },
-        TestStruct::stringProperty_i{ "bar" },
-        TestStruct::floatVectorProperty_i{ vector_t<float32_t>{ 3.1415f } }
+        .intProperty = 2,
+        .stringProperty = "bar",
+        .floatVectorProperty = vector_t<float32_t>{ 3.1415f }
     };
 
     TestStruct sutRhs{
-        TestStruct::intProperty_i{ 2 },
-        TestStruct::stringProperty_i{ "foo" },
-        TestStruct::floatVectorProperty_i{ vector_t<float32_t>{ 2.7183f } }
+        .intProperty = 2,
+        .stringProperty = "foo",
+        .floatVectorProperty = vector_t<float32_t>{ 2.7183f }
     };
 
     EXPECT_EQ(sutLhs._diffProperties(sutRhs), TestStruct::stringProperty_p + TestStruct::floatVectorProperty_p);
@@ -575,8 +574,8 @@ TEST_F(TestStaticStruct, diffProperties)
 TEST_F(TestStaticStruct, assertProperties)
 {
     TestStruct sut{
-        TestStruct::intProperty_i{ 1 },
-        TestStruct::stringProperty_i{ "foo" }
+        .intProperty = 1,
+        .stringProperty = "foo"
     };
 
     EXPECT_NO_THROW(sut._assertHasProperties(TestStruct::intProperty_p));

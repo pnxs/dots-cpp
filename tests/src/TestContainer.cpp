@@ -12,11 +12,11 @@ namespace
         DotsHeader make_header(const dots::type::Struct& instance, uint32_t sender, bool remove = false, dots::property_set_t includeProperties = dots::property_set_t::All)
         {
             return DotsHeader{
-                DotsHeader::typeName_i{ instance._descriptor().name() },
-                DotsHeader::sentTime_i{ dots::timepoint_t::Now() },
-                DotsHeader::attributes_i{ includeProperties == dots::property_set_t::All ? instance._validProperties() : includeProperties },
-                DotsHeader::sender_i{ sender },
-                DotsHeader::removeObj_i{ remove },
+                .typeName = instance._descriptor().name(),
+                .sentTime = dots::timepoint_t::Now(),
+                .attributes = includeProperties == dots::property_set_t::All ? instance._validProperties() : includeProperties,
+                .sender = sender,
+                .removeObj = remove,
             };
         }
 
@@ -32,7 +32,7 @@ TEST(TestContainer, ctor_EmptyAfterDefaultConstruction)
 {
     {
         dots::Container<DotsTestStruct> sut;
-        DotsTestStruct dts{ DotsTestStruct::indKeyfField_i{ 1 } };
+        DotsTestStruct dts{ .indKeyfField = 1 };
 
         ASSERT_TRUE(sut.empty());
         ASSERT_EQ(sut.size(), 0);
@@ -54,9 +54,9 @@ TEST(TestContainer, insert_CreateInstanceWhenEmpty)
 {
     dots::Container<DotsTestStruct> sut;
     DotsTestStruct dts{
-        DotsTestStruct::indKeyfField_i{ 1 },
-        DotsTestStruct::stringField_i{ "foo" },
-        DotsTestStruct::floatField_i{ 3.1415f }
+        .stringField = "foo",
+        .indKeyfField = 1,
+        .floatField = 3.1415f
     };
     DotsHeader header = test_helpers::make_header(dts, 42);
 
@@ -84,19 +84,19 @@ TEST(TestContainer, insert_UpdateSameInstanceWhenNotEmpty)
 {
     dots::Container<DotsTestStruct> sut;
     DotsTestStruct dts1{
-        DotsTestStruct::indKeyfField_i{ 1 },
-        DotsTestStruct::stringField_i{ "foo" },
-        DotsTestStruct::floatField_i{ 3.1415f }
+        .stringField = "foo",
+        .indKeyfField = 1,
+        .floatField = 3.1415f
     };
     DotsTestStruct dts2{
-        DotsTestStruct::indKeyfField_i{ 1 },
-        DotsTestStruct::floatField_i{ 2.7183f },
-        DotsTestStruct::enumField_i{ DotsTestEnum::value1 }
+        .indKeyfField = 1,
+        .floatField = 2.7183f,
+        .enumField = DotsTestEnum::value1
     };
     DotsTestStruct dts3{
-        DotsTestStruct::indKeyfField_i{ 1 },
-        DotsTestStruct::floatField_i{ 2.7183f },
-        DotsTestStruct::enumField_i{ DotsTestEnum::value1 }
+        .indKeyfField = 1,
+        .floatField = 2.7183f,
+        .enumField = DotsTestEnum::value1
     };
     DotsHeader header1 = test_helpers::make_header(dts1, 42);
     DotsHeader header2 = test_helpers::make_header(dts2, 21, false, dts2._validProperties() + DotsTestStruct::stringField_p);
@@ -126,14 +126,14 @@ TEST(TestContainer, insert_CreateDifferentInstanceWhenNotEmpty)
 {
     dots::Container<DotsTestStruct> sut;
     DotsTestStruct dts1{
-        DotsTestStruct::indKeyfField_i{ 1 },
-        DotsTestStruct::stringField_i{ "foo" },
-        DotsTestStruct::floatField_i{ 3.1415f }
+        .stringField = "foo",
+        .indKeyfField = 1,
+        .floatField = 3.1415f
     };
     DotsTestStruct dts2{
-        DotsTestStruct::indKeyfField_i{ 2 },
-        DotsTestStruct::floatField_i{ 2.7183f },
-        DotsTestStruct::enumField_i{ DotsTestEnum::value1 }
+        .indKeyfField = 2,
+        .floatField = 2.7183f,
+        .enumField = DotsTestEnum::value1
     };
     DotsHeader header1 = test_helpers::make_header(dts1, 42);
     DotsHeader header2 = test_helpers::make_header(dts2, 21);
@@ -162,7 +162,7 @@ TEST(TestContainer, insert_CreateDifferentInstanceWhenNotEmpty)
 TEST(TestContainer, remove_EmptyNodeWhenEmpty)
 {
     dots::Container<DotsTestStruct> sut;
-    DotsTestStruct dts{    DotsTestStruct::indKeyfField_i{ 1 } };
+    DotsTestStruct dts{    .indKeyfField = 1 };
     DotsHeader header = test_helpers::make_header(dts, 42);
 
     ASSERT_TRUE(sut.remove(header, dts).empty());
@@ -171,8 +171,8 @@ TEST(TestContainer, remove_EmptyNodeWhenEmpty)
 TEST(TestContainer, remove_EmptyNodeWhenNotContained)
 {
     dots::Container<DotsTestStruct> sut;
-    DotsTestStruct dts1{ DotsTestStruct::indKeyfField_i{ 1 } };
-    DotsTestStruct dts2{ DotsTestStruct::indKeyfField_i{ 2 } };
+    DotsTestStruct dts1{ .indKeyfField = 1 };
+    DotsTestStruct dts2{ .indKeyfField = 2 };
     DotsHeader header1 = test_helpers::make_header(dts1, 42);
     DotsHeader header2 = test_helpers::make_header(dts2, 21);
 
@@ -186,20 +186,20 @@ TEST(TestContainer, remove_RemoveWhenContained)
 {
     dots::Container<DotsTestStruct> sut;
     DotsTestStruct dts1{
-        DotsTestStruct::indKeyfField_i{ 1 },
-        DotsTestStruct::stringField_i{ "foo" }
+        .stringField = "foo",
+        .indKeyfField = 1
     };
     DotsTestStruct dts2{
-        DotsTestStruct::indKeyfField_i{ 2 }
+        .indKeyfField = 2
     };
     DotsTestStruct dts3{
-        DotsTestStruct::indKeyfField_i{ 1 },
-        DotsTestStruct::floatField_i{ 2.7183f }
+        .indKeyfField = 1,
+        .floatField = 2.7183f
     };
     DotsTestStruct dts4{
-        DotsTestStruct::indKeyfField_i{ 1 },
-        DotsTestStruct::stringField_i{ "foo" },
-        DotsTestStruct::floatField_i{ 2.7183f }
+        .stringField = "foo",
+        .indKeyfField = 1,
+        .floatField = 2.7183f
     };
     DotsHeader header1 = test_helpers::make_header(dts1, 42);
     DotsHeader header2 = test_helpers::make_header(dts2, 21);
@@ -234,10 +234,10 @@ TEST(TestContainer, begin_end_IterationYieldsExpectedInstances)
     dots::Container<DotsTestStruct> sut;
     std::vector<DotsTestStruct> expected;
 
-    auto [header1, dts1] = test_helpers::make_instance(DotsTestStruct{ DotsTestStruct::indKeyfField_i{ 1 }, DotsTestStruct::stringField_i{ "foo" } }, 42);
-    auto [header2, dts2] = test_helpers::make_instance(DotsTestStruct{ DotsTestStruct::indKeyfField_i{ 2 }, DotsTestStruct::stringField_i{ "bar" } }, 42);
-    auto [header3, dts3] = test_helpers::make_instance(DotsTestStruct{ DotsTestStruct::indKeyfField_i{ 3 }, DotsTestStruct::stringField_i{ "baz" } }, 42);
-    auto [header4, dts4] = test_helpers::make_instance(DotsTestStruct{ DotsTestStruct::indKeyfField_i{ 4 }, DotsTestStruct::stringField_i{ "qux" } }, 42);
+    auto [header1, dts1] = test_helpers::make_instance(DotsTestStruct{ .stringField = "foo", .indKeyfField = 1 }, 42);
+    auto [header2, dts2] = test_helpers::make_instance(DotsTestStruct{ .stringField = "bar", .indKeyfField = 2 }, 42);
+    auto [header3, dts3] = test_helpers::make_instance(DotsTestStruct{ .stringField = "baz", .indKeyfField = 3 }, 42);
+    auto [header4, dts4] = test_helpers::make_instance(DotsTestStruct{ .stringField = "qux", .indKeyfField = 4 }, 42);
 
     expected.emplace_back(sut.insert(header1, dts1).first.to<DotsTestStruct>());
     expected.emplace_back(sut.insert(header2, dts2).first.to<DotsTestStruct>());
@@ -268,10 +268,10 @@ TEST(TestContainer, forEach_IterationYieldsExpectedInstances)
     dots::Container<DotsTestStruct> sut;
     std::vector<DotsTestStruct> expected;
 
-    auto [header1, dts1] = test_helpers::make_instance(DotsTestStruct{ DotsTestStruct::indKeyfField_i{ 1 }, DotsTestStruct::stringField_i{ "foo" } }, 42);
-    auto [header2, dts2] = test_helpers::make_instance(DotsTestStruct{ DotsTestStruct::indKeyfField_i{ 2 }, DotsTestStruct::stringField_i{ "bar" } }, 42);
-    auto [header3, dts3] = test_helpers::make_instance(DotsTestStruct{ DotsTestStruct::indKeyfField_i{ 3 }, DotsTestStruct::stringField_i{ "baz" } }, 42);
-    auto [header4, dts4] = test_helpers::make_instance(DotsTestStruct{ DotsTestStruct::indKeyfField_i{ 4 }, DotsTestStruct::stringField_i{ "qux" } }, 42);
+    auto [header1, dts1] = test_helpers::make_instance(DotsTestStruct{ .stringField = "foo", .indKeyfField = 1 }, 42);
+    auto [header2, dts2] = test_helpers::make_instance(DotsTestStruct{ .stringField = "bar", .indKeyfField = 2 }, 42);
+    auto [header3, dts3] = test_helpers::make_instance(DotsTestStruct{ .stringField = "baz", .indKeyfField = 3 }, 42);
+    auto [header4, dts4] = test_helpers::make_instance(DotsTestStruct{ .stringField = "qux", .indKeyfField = 4 }, 42);
 
     expected.emplace_back(sut.insert(header1, dts1).first.to<DotsTestStruct>());
     expected.emplace_back(sut.insert(header2, dts2).first.to<DotsTestStruct>());

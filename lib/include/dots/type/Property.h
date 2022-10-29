@@ -35,10 +35,16 @@ namespace dots::type
         using value_t = T;
         static constexpr bool IsTypeless = std::is_same_v<T, Typeless>;
 
-        template <typename Rhs, std::enable_if_t<std::is_same_v<Rhs, Typeless> || std::is_constructible_v<T, Rhs>, int> = 0>
+        template <typename Rhs, std::enable_if_t<!std::is_arithmetic_v<T> && (std::is_same_v<Rhs, Typeless> || std::is_constructible_v<T, Rhs>), int> = 0>
         Derived& operator = (Rhs&& rhs)
         {
             return assign(std::forward<Rhs>(rhs));
+        }
+
+        template <typename T_ = T, std::enable_if_t<std::is_arithmetic_v<T_>, int> = 0>
+        Derived& operator = (T rhs)
+        {
+            return assign(rhs);
         }
 
         Derived& operator = (invalid_t)

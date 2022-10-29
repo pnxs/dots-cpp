@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
         
         // request descriptor for parsed type
         dots::publish(DotsDescriptorRequest{
-            DotsDescriptorRequest::whitelist_i{ dots::vector_t<dots::string_t>{ typeName } }
+            .whitelist = { typeName }
         });
 
         // asynchronously wait until descriptor has been received
@@ -63,8 +63,8 @@ int main(int argc, char* argv[])
 
                 // publish closing echo
                 dots::publish(DotsEcho{
-                    DotsEcho::request_i{ true },
-                    DotsEcho::data_i{ AppName }
+                    .request = true,
+                    .data = AppName
                 });
             }
         }).discard();

@@ -22,7 +22,7 @@ namespace dots
 {
     DotsDaemon::DotsDaemon(std::string name, int argc, char* argv[]) :
         Application(argc, argv, HostTransceiver{ std::move(name), io::global_io_context(), type::Registry::StaticTypePolicy::InternalOnly, HostTransceiver::transition_handler_t{&DotsDaemon::handleTransition, this}}),
-        m_daemonStatus{ DotsDaemonStatus::serverName_i{ transceiver().selfName() }, DotsDaemonStatus::startTime_i{ timepoint_t::Now() } },
+        m_daemonStatus{ .serverName = transceiver().selfName(), .startTime = timepoint_t::Now() },
         m_updateServerStatusTimer{ io::global_io_context(), 1s, { &DotsDaemon::updateServerStatus, this }, true },
         m_cleanUpClientsTimer{ io::global_io_context(), 10s, { &DotsDaemon::cleanUpClients, this }, true }
     {
@@ -39,9 +39,9 @@ namespace dots
     void DotsDaemon::handleTransition(const Connection& connection, std::exception_ptr/* ePtr*/)
     {
         transceiver().publish(DotsClient{
-            DotsClient::id_i{ connection.peerId() },
-            DotsClient::name_i{ connection.peerName() },
-            DotsClient::connectionState_i{ connection.state() }
+            .id = connection.peerId(),
+            .name = connection.peerName(),
+            .connectionState = connection.state()
         });
     }
 
@@ -84,7 +84,7 @@ namespace dots
 
         for (Connection::id_t id : expiredClients)
         {
-            transceiver().remove(DotsClient{ DotsClient::id_i{ id } });
+            transceiver().remove(DotsClient{ .id = id });
         }
     }
 
@@ -101,22 +101,22 @@ namespace dots
                 ::getrusage(RUSAGE_SELF, &usage);
 
                 ds.resourceUsage = DotsResourceUsage{
-                    DotsResourceUsage::userCpuTime_i{ type::posix::Timeval{ usage.ru_utime } },
-                    DotsResourceUsage::systemCpuTime_i{ type::posix::Timeval{ usage.ru_stime } },
-                    DotsResourceUsage::maxRss_i{ static_cast<int32_t>(usage.ru_maxrss) },
-                    DotsResourceUsage::minorFaults_i{ static_cast<int32_t>(usage.ru_minflt) },
-                    DotsResourceUsage::majorFaults_i{ static_cast<int32_t>(usage.ru_majflt) },
-                    DotsResourceUsage::nrSwaps_i{ static_cast<int32_t>(usage.ru_nswap) },
-                    DotsResourceUsage::inBlock_i{ static_cast<int32_t>(usage.ru_inblock) },
-                    DotsResourceUsage::outBlock_i{ static_cast<int32_t>(usage.ru_oublock) },
-                    DotsResourceUsage::nrSignals_i{ static_cast<int32_t>(usage.ru_nsignals) },
-                    DotsResourceUsage::nrVoluntaryContextSwitches_i{ static_cast<int32_t>(usage.ru_nvcsw) },
-                    DotsResourceUsage::nrInvoluntaryContextSwitches_i{ static_cast<int32_t>(usage.ru_nivcsw) }
+                    .minorFaults = static_cast<int32_t>(usage.ru_minflt),
+                    .majorFaults = static_cast<int32_t>(usage.ru_majflt),
+                    .inBlock = static_cast<int32_t>(usage.ru_inblock),
+                    .outBlock = static_cast<int32_t>(usage.ru_oublock),
+                    .nrSignals = static_cast<int32_t>(usage.ru_nsignals),
+                    .nrSwaps = static_cast<int32_t>(usage.ru_nswap),
+                    .nrVoluntaryContextSwitches = static_cast<int32_t>(usage.ru_nvcsw),
+                    .nrInvoluntaryContextSwitches = static_cast<int32_t>(usage.ru_nivcsw),
+                    .maxRss = static_cast<int32_t>(usage.ru_maxrss),
+                    .userCpuTime = type::posix::Timeval{ usage.ru_utime },
+                    .systemCpuTime = type::posix::Timeval{ usage.ru_stime }
                 };
                 #endif
                 ds.cache = DotsCacheStatus{
-                    DotsCacheStatus::nrTypes_i{ static_cast<uint32_t>(transceiver().pool().size()) },
-                    DotsCacheStatus::size_i{ static_cast<uint32_t>(transceiver().pool().totalMemoryUsage()) }
+                    .nrTypes = static_cast<uint32_t>(transceiver().pool().size()),
+                    .size = static_cast<uint32_t>(transceiver().pool().totalMemoryUsage())
                 };
 
                 transceiver().publish(ds);

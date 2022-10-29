@@ -143,12 +143,12 @@ namespace dots
         if (unknownInstance)
         {
             auto itCreated = m_instances.emplace_hint(itUpper, instance, DotsCloneInformation{
-                DotsCloneInformation::lastOperation_i{ DotsMt::create },
-                DotsCloneInformation::lastUpdateFrom_i{ header.sender },
-                DotsCloneInformation::created_i{ header.sentTime },
-                DotsCloneInformation::createdFrom_i{ header.sender },
-                DotsCloneInformation::modified_i{ header.sentTime },
-                DotsCloneInformation::localUpdateTime_i{ timepoint_t::Now() }
+                .lastOperation = DotsMt::create,
+                .lastUpdateFrom = header.sender,
+                .created = header.sentTime,
+                .createdFrom = header.sender,
+                .modified = header.sentTime,
+                .localUpdateTime = timepoint_t::Now()
             });
 
             return *itCreated;

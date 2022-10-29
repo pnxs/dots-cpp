@@ -86,28 +86,28 @@ struct TestSerializerDataDecoded
     //
 
     SerializationStructSimple structSimple1{
-        SerializationStructSimple::int32Property_i{ int32Positive },
-        SerializationStructSimple::stringProperty_i{ string1 },
-        SerializationStructSimple::float32Property_i{ float32Positive }
+        .int32Property = int32Positive,
+        .stringProperty = string1,
+        .float32Property = float32Positive
     };
 
     SerializationStructComplex structComplex1{
-        SerializationStructComplex::enumProperty_i{ enum1 },
-        SerializationStructComplex::float64Property_i{ float64Negative },
-        SerializationStructComplex::timepointProperty_i{ timePoint1 },
-        SerializationStructComplex::structSimpleProperty_i{
-            SerializationStructSimple::boolProperty_i{ boolFalse }
+        .enumProperty = enum1,
+        .float64Property = float64Negative,
+        .timepointProperty = timePoint1,
+        .structSimpleProperty = SerializationStructSimple{
+            .boolProperty = boolFalse
         }
     };
 
     SerializationStructComplex structComplex2{
-        SerializationStructComplex::propertySetProperty_i{ propertySetMixed1 },
-        SerializationStructComplex::durationVectorProperty_i{ dots::vector_t<dots::duration_t>{ duration1, duration2 } },
-        SerializationStructComplex::uuidProperty_i{ uuid1 }
+        .propertySetProperty = propertySetMixed1,
+        .durationVectorProperty = dots::vector_t<dots::duration_t>{ duration1, duration2 },
+        .uuidProperty = uuid1
     };
 
     SerializationStructComplex structComplex3{
-        SerializationStructComplex::uint32Property_i{ uint32Positive1 }
+        .uint32Property = uint32Positive1
     };
 
     //
@@ -136,10 +136,10 @@ struct TestSerializerDataDecoded
 
     dots::vector_t<SerializationStructSimple> vectorStructSimple{
         SerializationStructSimple{
-            SerializationStructSimple::int32Property_i{ int32Positive }
+            .int32Property = int32Positive
         },
         SerializationStructSimple{
-            SerializationStructSimple::boolProperty_i{ boolFalse }
+            .boolProperty = boolFalse
         }
     };
 

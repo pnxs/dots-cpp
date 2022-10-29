@@ -101,8 +101,8 @@ namespace dots
         if (m_joinedGroups.count(std::string(name)) == 0)
         {
             publish(DotsMember{
-                DotsMember::groupName_i{name},
-                DotsMember::event_i{DotsMemberEvent::join}
+                .groupName = name,
+                .event = DotsMemberEvent::join
             });
             m_joinedGroups.insert(std::string(name));
         }
@@ -113,8 +113,8 @@ namespace dots
         if (m_joinedGroups.count(std::string(name)))
         {
             publish(DotsMember{
-                DotsMember::groupName_i{name},
-                DotsMember::event_i{DotsMemberEvent::leave}
+                .groupName = name,
+                .event = DotsMemberEvent::leave
             });
             m_joinedGroups.erase(std::string(name));
         }

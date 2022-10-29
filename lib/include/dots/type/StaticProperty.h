@@ -61,10 +61,16 @@ namespace dots::type
     template <typename T, typename Derived>
     struct StaticProperty : Property<T, Derived>
     {
-        template <typename... Args, std::enable_if_t<sizeof...(Args) >= 1 && std::is_constructible_v<T, Args...>, int> = 0>
+        template <typename... Args, std::enable_if_t<!std::is_arithmetic_v<T> && sizeof...(Args) >= 1 && std::is_constructible_v<T, Args...>, int> = 0>
         StaticProperty(Args&&... args)
         {
             StaticProperty<T, Derived>::emplace(std::forward<Args>(args)...);
+        }
+
+        template <typename T_ = T, std::enable_if_t<std::is_arithmetic_v<T_>, int> = 0>
+        StaticProperty(T value)
+        {
+            StaticProperty<T, Derived>::emplace(value);
         }
 
         template <typename D, std::enable_if_t<!std::is_same_v<D, Derived>, int> = 0>

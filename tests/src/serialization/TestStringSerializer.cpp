@@ -236,28 +236,28 @@ TEST_F(TestStringSerializer, serialize_EscapedString)
 {
     {
         SerializationStructSimple instance{
-            SerializationStructSimple::stringProperty_i{ "\"foo\" bar baz" }
+            .stringProperty = "\"foo\" bar baz"
         };
         EXPECT_EQ(sut_t::Serialize(instance), "SerializationStructSimple{ .stringProperty = \"\\\"foo\\\" bar baz\" }");
     }
 
     {
         SerializationStructSimple instance{
-            SerializationStructSimple::stringProperty_i{ "foo \"bar\" baz" }
+            .stringProperty = "foo \"bar\" baz"
         };
         EXPECT_EQ(sut_t::Serialize(instance), "SerializationStructSimple{ .stringProperty = \"foo \\\"bar\\\" baz\" }");
     }
 
     {
         SerializationStructSimple instance{
-            SerializationStructSimple::stringProperty_i{ "foo bar \"baz\"" }
+            .stringProperty = "foo bar \"baz\""
         };
         EXPECT_EQ(sut_t::Serialize(instance), "SerializationStructSimple{ .stringProperty = \"foo bar \\\"baz\\\"\" }");
     }
 
     {
         SerializationStructSimple instance{
-            SerializationStructSimple::stringProperty_i{ "foo\\ \u0062\u0061\u0072\u00A9\n b\\az" }
+            .stringProperty = "foo\\ \u0062\u0061\u0072\u00A9\n b\\az"
         };
         EXPECT_EQ(sut_t::Serialize(instance), "SerializationStructSimple{ .stringProperty = \"foo\\\\ \u0062\u0061\u0072\u00A9\\n b\\\\az\" }");
     }
@@ -268,7 +268,7 @@ TEST_F(TestStringSerializer, deserialize_EscapedString)
     {
         std::string input = "SerializationStructSimple{ .stringProperty = \"\\\"foo\\\" bar baz\" }";
         SerializationStructSimple expected{
-            SerializationStructSimple::stringProperty_i{ "\"foo\" bar baz" }
+            .stringProperty = "\"foo\" bar baz"
         };
         EXPECT_EQ(sut_t::Deserialize<SerializationStructSimple>(input), expected);
     }
@@ -276,7 +276,7 @@ TEST_F(TestStringSerializer, deserialize_EscapedString)
     {
         std::string input = "SerializationStructSimple{ .stringProperty = \"foo \\\"bar\\\" baz\" }";
         SerializationStructSimple expected{
-            SerializationStructSimple::stringProperty_i{ "foo \"bar\" baz" }
+            .stringProperty = "foo \"bar\" baz"
         };
         EXPECT_EQ(sut_t::Deserialize<SerializationStructSimple>(input), expected);
     }
@@ -284,7 +284,7 @@ TEST_F(TestStringSerializer, deserialize_EscapedString)
     {
         std::string input = "SerializationStructSimple{ .stringProperty = \"foo bar \\\"baz\\\"\" }";
         SerializationStructSimple expected{
-            SerializationStructSimple::stringProperty_i{ "foo bar \"baz\"" }
+            .stringProperty = "foo bar \"baz\""
         };
         EXPECT_EQ(sut_t::Deserialize<SerializationStructSimple>(input), expected);
     }
@@ -292,7 +292,7 @@ TEST_F(TestStringSerializer, deserialize_EscapedString)
     {
         std::string input = "SerializationStructSimple{ .stringProperty = \"foo\\\\ \u0062\u0061\u0072\u00A9\\n b\\\\az\" }";
         SerializationStructSimple expected{
-            SerializationStructSimple::stringProperty_i{ "foo\\ \u0062\u0061\u0072\u00A9\n b\\az" }
+            .stringProperty = "foo\\ \u0062\u0061\u0072\u00A9\n b\\az"
         };
         EXPECT_EQ(sut_t::Deserialize<SerializationStructSimple>(input), expected);
     }
@@ -325,11 +325,11 @@ TEST_F(TestStringSerializer, deserialize_RejectNonTopLevelUnescapedStringArgumen
 TEST_F(TestStringSerializer, serialize_WithOutputStyle)
 {
     SerializationStructComplex instance{
-        SerializationStructComplex::enumProperty_i{ SerializationEnum::baz },
-        SerializationStructComplex::uint32Property_i{ 12345789u },
-        SerializationStructComplex::structSimpleProperty_i{
-            SerializationStructSimple::boolProperty_i{ false },
-            SerializationStructSimple::float32Property_i{ -2.7183f }
+        .enumProperty = SerializationEnum::baz,
+        .uint32Property = 12345789u,
+        .structSimpleProperty = SerializationStructSimple{
+            .boolProperty = false,
+            .float32Property = -2.7183f
         }
     };
 
@@ -364,7 +364,7 @@ TEST_F(TestStringSerializer, deserialize_EnumWithInputPolicy)
     TextOptions strictOptions{ TextOptions::SingleLine, TextOptions::Strict };
 
     SerializationStructComplex expected{
-        SerializationStructComplex::enumProperty_i{ SerializationEnum::baz }
+        .enumProperty = SerializationEnum::baz
     };
     
     {
@@ -398,7 +398,7 @@ TEST_F(TestStringSerializer, deserialize_UnsignedIntegerWithInputPolicy)
     TextOptions strictOptions{ TextOptions::SingleLine, TextOptions::Strict };
 
     SerializationStructComplex expected{
-        SerializationStructComplex::uint32Property_i{ 12345789u }
+        .uint32Property = 12345789u
     };
 
     {
@@ -429,7 +429,7 @@ TEST_F(TestStringSerializer, deserialize_UnsignedIntegerWithInputPolicy)
 TEST_F(TestStringSerializer, deserialize_InvalidatePropertyWhenInputIsInvalid)
 {
     SerializationStructSimple instance{
-        SerializationStructSimple::int32Property_i{ 42 }
+        .int32Property = 42
     };
 
     std::string input = "SerializationStructSimple{ .int32Property = <invalid> }";

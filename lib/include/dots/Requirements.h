@@ -28,3 +28,10 @@
  *
  *  - [2] https://en.cppreference.com/w/cpp/feature_test
  */
+
+// note that even though GCC 9 does support designated initializers, it
+// does not support the C++20 feature test macros and has to be handled
+// separately
+#if not defined(__cpp_designated_initializers) && (not defined(__GNUC__) || __GNUC__ != 9)
+#error "compiler is missing required feature: __cpp_designated_initializers"
+#endif

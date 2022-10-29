@@ -25,9 +25,9 @@ int main(int argc, char* argv[])
                 {
 
                     dots::publish(RoundtripData{
-                        RoundtripData::id_i{ i },
-                        RoundtripData::someString_i{ "foobar" },
-                        RoundtripData::someFloat_i{ 3.1415f }
+                        .id = i ,
+                        .someString = "foobar" ,
+                        .someFloat = 3.1415f 
                     });
                 }
                 else
@@ -42,9 +42,9 @@ int main(int argc, char* argv[])
 
         // publish initial 'RoundtripData' instance
         dots::publish(RoundtripData{
-            RoundtripData::id_i{ 0 },
-            RoundtripData::someString_i{ "foobar" },
-            RoundtripData::someFloat_i{ 3.1415f }
+            .id = 0 ,
+            .someString = "foobar" ,
+            .someFloat = 3.1415f 
         });
 
         // execute event loop of application 

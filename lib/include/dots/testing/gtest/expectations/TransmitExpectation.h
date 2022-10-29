@@ -205,11 +205,11 @@ namespace dots::testing
             }
 
             spoof(DotsHeader{
-                DotsHeader::typeName_i{ instance._descriptor().name() },
-                DotsHeader::sentTime_i{ timepoint_t::Now() },
-                DotsHeader::attributes_i{ *includedProperties },
-                DotsHeader::sender_i{ sender },
-                DotsHeader::removeObj_i{ remove }
+                .typeName = instance._descriptor().name(),
+                .sentTime = timepoint_t::Now(),
+                .attributes = *includedProperties,
+                .sender = sender,
+                .removeObj = remove
             }, instance);
         }
 

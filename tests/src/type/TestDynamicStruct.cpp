@@ -5,7 +5,6 @@
 #include <dots/type/Registry.h>
 #include <dots/io/DescriptorConverter.h>
 #include <dots/type/FundamentalTypes.h>
-#include <dots/type/PropertyInitializer.h>
 #include <StructDescriptorData.dots.h>
 #include <dots/testing/gtest/gtest.h>
 
@@ -20,99 +19,99 @@ protected:
         m_descriptorConverter{ m_registry }
     {
         StructDescriptorData testDynamicSubSubStructData{
-            StructDescriptorData::name_i{ "TestDynamicSubSubStruct" },
-            StructDescriptorData::flags_i{
-                DotsStructFlags::cached_i{ true }
-            },
-            StructDescriptorData::properties_i{ vector_t<StructPropertyData>{
+            .name = "TestDynamicSubSubStruct",
+            .properties = vector_t<StructPropertyData>{
                 StructPropertyData{
-                    StructPropertyData::name_i{ "subSubIntProperty" },
-                    StructPropertyData::tag_i{ 1 },
-                    StructPropertyData::isKey_i{ false },
-                    StructPropertyData::type_i{ "int32" }
+                    .name = "subSubIntProperty",
+                    .tag = 1,
+                    .isKey = false,
+                    .type = "int32"
                 },
                 StructPropertyData{
-                    StructPropertyData::name_i{ "subSubDoubleProperty" },
-                    StructPropertyData::tag_i{ 2 },
-                    StructPropertyData::isKey_i{ true },
-                    StructPropertyData::type_i{ "float64" }
+                    .name = "subSubDoubleProperty",
+                    .tag = 2,
+                    .isKey = true,
+                    .type = "float64"
                 }
-            } }
+            },
+            .flags = DotsStructFlags{
+                .cached = true
+            },
         };
         m_testDynamicSubSubStructDescriptor = static_cast<Descriptor<DynamicStruct>*>(&m_descriptorConverter(testDynamicSubSubStructData));
 
         StructDescriptorData testDynamicSubStructData{
-            StructDescriptorData::name_i{ "TestDynamicSubStruct" },
-            StructDescriptorData::flags_i{
-                DotsStructFlags::cached_i{ true },
-                DotsStructFlags::substructOnly_i{ true }
-            },
-            StructDescriptorData::properties_i{ vector_t<StructPropertyData>{
+            .name = "TestDynamicSubStruct",
+            .properties = vector_t<StructPropertyData>{
                 StructPropertyData{
-                    StructPropertyData::name_i{ "subIntProperty" },
-                    StructPropertyData::tag_i{ 1 },
-                    StructPropertyData::isKey_i{ true },
-                    StructPropertyData::type_i{ "int64" }
+                    .name = "subIntProperty",
+                    .tag = 1,
+                    .isKey = true,
+                    .type = "int64"
                 },
                 StructPropertyData{
-                    StructPropertyData::name_i{ "subSubStructProperty" },
-                    StructPropertyData::tag_i{ 2 },
-                    StructPropertyData::isKey_i{ false },
-                    StructPropertyData::type_i{ "TestDynamicSubSubStruct" }
+                    .name = "subSubStructProperty",
+                    .tag = 2,
+                    .isKey = false,
+                    .type = "TestDynamicSubSubStruct"
                 },
                 StructPropertyData{
-                    StructPropertyData::name_i{ "subFloatProperty" },
-                    StructPropertyData::tag_i{ 3 },
-                    StructPropertyData::isKey_i{ false },
-                    StructPropertyData::type_i{ "float32" }
+                    .name = "subFloatProperty",
+                    .tag = 3,
+                    .isKey = false,
+                    .type = "float32"
                 }
-            } }
+            },
+            .flags = DotsStructFlags{
+                .cached = true,
+                .substructOnly = true
+            },
         };
         m_testDynamicSubStructDescriptor = static_cast<Descriptor<DynamicStruct>*>(&m_descriptorConverter(testDynamicSubStructData));
 
         StructDescriptorData testDynamicStructData{
-            StructDescriptorData::name_i{ "TestDynamicStruct" },
-            StructDescriptorData::flags_i{
-                DotsStructFlags::cached_i{ true }
+            .name = "TestDynamicStruct",
+            .properties = vector_t<StructPropertyData>{
+                StructPropertyData{
+                    .name = "intProperty",
+                    .tag = 1,
+                    .isKey = true,
+                    .type = "int32"
+                },
+                StructPropertyData{
+                    .name = "stringProperty",
+                    .tag = 2,
+                    .isKey = false,
+                    .type = "string"
+                },
+                StructPropertyData{
+                    .name = "boolProperty",
+                    .tag = 3,
+                    .isKey = false,
+                    .type = "bool"
+                },
+                StructPropertyData{
+                    .name = "floatVectorProperty",
+                    .tag = 4,
+                    .isKey = false,
+                    .type = "vector<float32>"
+                },
+                StructPropertyData{
+                    .name = "subStructProperty",
+                    .tag = 5,
+                    .isKey = false,
+                    .type = "TestDynamicSubStruct"
+                },
+                StructPropertyData{
+                    .name = "structVectorProperty",
+                    .tag = 6,
+                    .isKey = false,
+                    .type = "vector<TestDynamicSubStruct>"
+                },
             },
-            StructDescriptorData::properties_i{ vector_t<StructPropertyData>{
-                StructPropertyData{
-                    StructPropertyData::name_i{ "intProperty" },
-                    StructPropertyData::tag_i{ 1 },
-                    StructPropertyData::isKey_i{ true },
-                    StructPropertyData::type_i{ "int32" }
-                },
-                StructPropertyData{
-                    StructPropertyData::name_i{ "stringProperty" },
-                    StructPropertyData::tag_i{ 2 },
-                    StructPropertyData::isKey_i{ false },
-                    StructPropertyData::type_i{ "string" }
-                },
-                StructPropertyData{
-                    StructPropertyData::name_i{ "boolProperty" },
-                    StructPropertyData::tag_i{ 3 },
-                    StructPropertyData::isKey_i{ false },
-                    StructPropertyData::type_i{ "bool" }
-                },
-                StructPropertyData{
-                    StructPropertyData::name_i{ "floatVectorProperty" },
-                    StructPropertyData::tag_i{ 4 },
-                    StructPropertyData::isKey_i{ false },
-                    StructPropertyData::type_i{ "vector<float32>" }
-                },
-                StructPropertyData{
-                    StructPropertyData::name_i{ "subStructProperty" },
-                    StructPropertyData::tag_i{ 5 },
-                    StructPropertyData::isKey_i{ false },
-                    StructPropertyData::type_i{ "TestDynamicSubStruct" }
-                },
-                StructPropertyData{
-                    StructPropertyData::name_i{ "structVectorProperty" },
-                    StructPropertyData::tag_i{ 6 },
-                    StructPropertyData::isKey_i{ false },
-                    StructPropertyData::type_i{ "vector<TestDynamicSubStruct>" }
-                },
-            } },
+            .flags = DotsStructFlags{
+                .cached = true
+            },
         };
         m_testDynamicStructDescriptor = static_cast<Descriptor<DynamicStruct>*>(&m_descriptorConverter(testDynamicStructData));
     }

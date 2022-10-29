@@ -57,7 +57,7 @@ namespace dots
             {
                 if (m_connectionState == DotsConnectionState::connected)
                 {
-                    transmit(DotsMsgError{ DotsMsgError::errorCode_i{ 0 } });
+                    transmit(DotsMsgError{ .errorCode = 0 });
                 }
 
                 handleClose(nullptr);
@@ -142,16 +142,16 @@ namespace dots
             if (m_nonce = m_authManager == nullptr ? std::nullopt : m_authManager->requiresAuthentication(m_channel->remoteEndpoint(), {}); m_nonce == std::nullopt)
             {
                 transmit(DotsMsgHello{
-                    DotsMsgHello::serverName_i{ name },
-                    DotsMsgHello::authChallenge_i{ 0 }
+                    .serverName = name,
+                    .authChallenge = 0
                 });
             }
             else
             {
                 transmit(DotsMsgHello{
-                    DotsMsgHello::serverName_i{ name },
-                    DotsMsgHello::authChallenge_i{ m_nonce->value() },
-                    DotsMsgHello::authenticationRequired_i{ true }
+                    .serverName = name,
+                    .authChallenge = m_nonce->value(),
+                    .authenticationRequired = true
                 });
             }
 
@@ -176,10 +176,10 @@ namespace dots
         }
 
         transmit(DotsHeader{
-            DotsHeader::typeName_i{ instance._descriptor().name() },
-            DotsHeader::sentTime_i{ timepoint_t::Now() },
-            DotsHeader::attributes_i{ *includedProperties },
-            DotsHeader::removeObj_i{ remove }
+            .typeName = instance._descriptor().name(),
+            .sentTime = timepoint_t::Now(),
+            .attributes = *includedProperties,
+            .removeObj = remove
         }, instance);
     }
 
@@ -213,8 +213,8 @@ namespace dots
                 try
                 {
                     transmit(DotsMsgError{
-                        DotsMsgError::errorCode_i{ 1 },
-                        DotsMsgError::errorText_i{ e.what() }
+                        .errorCode = 1,
+                        .errorText = e.what()
                     });
                 }
                 catch (...)
@@ -316,8 +316,8 @@ namespace dots
         m_peerName = *hello.serverName;
 
         DotsMsgConnect connect{
-            DotsMsgConnect::clientName_i{ m_selfName },
-            DotsMsgConnect::preloadCache_i{ true }
+            .clientName = m_selfName,
+            .preloadCache = true
         };
 
         if (hello.authenticationRequired == true)
@@ -343,7 +343,7 @@ namespace dots
         if (connectResponse.preload == true)
         {
             setConnectionState(DotsConnectionState::early_subscribe);
-            transmit(DotsMsgConnect{ DotsMsgConnect::preloadClientFinished_i{ true } });
+            transmit(DotsMsgConnect{ .preloadClientFinished = true });
             expectSystemType<DotsMsgConnectResponse>(DotsMsgConnectResponse::preloadFinished_p, &Connection::handlePreloadFinished);
         }
         else
@@ -364,9 +364,9 @@ namespace dots
         if (m_authManager != nullptr && !m_authManager->verifyAuthentication(m_channel->remoteEndpoint(), *connect.clientName, m_nonce.value_or(0), connect.cnonce.valueOrDefault(""), io::Digest{ connect.authChallengeResponse.valueOrDefault("") }))
         {
             transmit(DotsMsgConnectResponse{
-                DotsMsgConnectResponse::clientId_i{ m_peerId },
-                DotsMsgConnectResponse::preload_i{ connect.preloadCache == true },
-                DotsMsgConnectResponse::accepted_i{ false },
+                .clientId = m_peerId,
+                .accepted = false,
+                .preload = connect.preloadCache == true
             });
 
             throw std::runtime_error{ "invalid authorization information" };
@@ -375,9 +375,9 @@ namespace dots
         m_peerName = *connect.clientName;
 
         transmit(DotsMsgConnectResponse{
-            DotsMsgConnectResponse::clientId_i{ m_peerId },
-            DotsMsgConnectResponse::preload_i{ connect.preloadCache == true },
-            DotsMsgConnectResponse::accepted_i{ true },
+            .clientId = m_peerId,
+            .accepted = true,
+            .preload = connect.preloadCache == true
         });
 
         if (connect.preloadCache == true)
@@ -404,7 +404,7 @@ namespace dots
 
         // When all cache items are sent to client, send fin-message
         transmit(DotsMsgConnectResponse{
-            DotsMsgConnectResponse::preloadFinished_i{ true }
+            .preloadFinished = true
         });
 
         expectSystemType<DotsMsgError>(DotsMsgError::errorCode_p, &Connection::handlePeerError);

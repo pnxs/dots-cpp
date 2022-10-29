@@ -56,9 +56,9 @@ namespace dots::io
         if (remoteEndpoint.scheme() == "tcp" || remoteEndpoint.scheme() == "ws")
         {
             DotsMsgConnect connect{
-                DotsMsgConnect::clientName_i{ guest },
-                DotsMsgConnect::authChallengeResponse_i{ response.toString() },
-                DotsMsgConnect::cnonce_i{ cnonce }
+                .clientName = guest,
+                .authChallengeResponse = response.toString(),
+                .cnonce = cnonce
             };
 
             return verifyResponse(asio::ip::address::from_string(std::string{ remoteEndpoint.host() }), nonce.value(), connect);

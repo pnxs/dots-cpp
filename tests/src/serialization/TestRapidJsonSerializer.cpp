@@ -564,7 +564,7 @@ TEST_F(TestRapidJsonSerializer, deserialize_SpecificProperties)
 TEST_F(TestRapidJsonSerializer, deserialize_InvalidatePropertyWhenInputIsInvalid)
 {
     SerializationStructSimple instance{
-        SerializationStructSimple::int32Property_i{ 42 }
+        .int32Property = 42
     };
 
     std::string input = "{ \"int32Property\": null }";

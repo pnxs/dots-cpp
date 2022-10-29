@@ -4,7 +4,6 @@
 #include <type_traits>
 #include <utility>
 #include <dots/type/Struct.h>
-#include <dots/type/PropertyInitializer.h>
 
 namespace dots
 {
