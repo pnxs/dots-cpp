@@ -62,17 +62,8 @@ namespace dots::type
             (this->operator[](dynamicPropertyInitializers.name)->emplace(Typeless::From(std::forward<decltype(dynamicPropertyInitializers)>(dynamicPropertyInitializers).value)), ...);
         }
 
-        DynamicStruct(const DynamicStruct& other) :
-            DynamicStruct(other._descriptor().to<Descriptor<DynamicStruct>, true>())
-        {
-            *this = other;
-        }
-
-        DynamicStruct(DynamicStruct&& other) :
-            DynamicStruct(other._descriptor().to<Descriptor<DynamicStruct>, true>())
-        {
-            *this = std::move(other);
-        }
+        DynamicStruct(const DynamicStruct& other);
+        DynamicStruct(DynamicStruct&& other);
 
         ~DynamicStruct()
         {
@@ -296,4 +287,16 @@ namespace dots::type
             return instance._propertyArea();
         }
     };
+
+    inline DynamicStruct::DynamicStruct(const DynamicStruct& other) :
+        DynamicStruct(other._descriptor().to<Descriptor<DynamicStruct>, true>())
+    {
+        *this = other;
+    }
+
+    inline DynamicStruct::DynamicStruct(DynamicStruct&& other) :
+        DynamicStruct(other._descriptor().to<Descriptor<DynamicStruct>, true>())
+    {
+        *this = std::move(other);
+    }
 }
