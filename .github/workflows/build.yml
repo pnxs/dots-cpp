@@ -7,7 +7,7 @@ env:
   BUILD_TYPE: Release
 
 jobs:
-  build-ubuntu-20.04:
+  build_ubuntu_20_04:
     # The CMake configure and build commands are platform agnostic and should work equally
     # well on Windows or Mac.  You can convert this to a matrix build if you need
     # cross-platform coverage.
@@ -61,7 +61,7 @@ jobs:
       shell: bash
       run: tests/dots-unittests-experimental --gtest_output="xml:report_experimental.xml"
   
-  build-ubuntu-22.04:
+  build_ubuntu_22_04:
     # The CMake configure and build commands are platform agnostic and should work equally
     # well on Windows or Mac.  You can convert this to a matrix build if you need
     # cross-platform coverage.
