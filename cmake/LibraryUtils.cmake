@@ -50,10 +50,7 @@ function(bundle_static_library tgt_name)
     endif()
 
     add_custom_command(TARGET ${tgt_name} POST_BUILD
-      COMMAND echo -e "CREATE ${bundled_tgt_full_name}\\n\
-ADDLIB $<JOIN:${static_libs_full_names},\\nADDLIB >\\n\
-SAVE\\n\
-END" > ${CMAKE_BINARY_DIR}/${bundled_tgt_name}.ar
+      COMMAND printf "CREATE ${bundled_tgt_full_name}\\nADDLIB $<JOIN:${static_libs_full_names},\\nADDLIB >\\nSAVE\\nEND" > ${CMAKE_BINARY_DIR}/${bundled_tgt_name}.ar
       COMMAND ${ar_tool} -M < ${CMAKE_BINARY_DIR}/${bundled_tgt_name}.ar
       COMMAND ${CMAKE_COMMAND} -E copy ${bundled_tgt_full_name} ${tgt_full_name}
       COMMAND ${CMAKE_COMMAND} -E remove ${bundled_tgt_full_name}
