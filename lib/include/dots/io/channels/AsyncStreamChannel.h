@@ -550,8 +550,8 @@ namespace dots::io
                 std::vector<uint8_t> serializedInstance = std::move(serializer.output());
 
                 DotsTransportHeader transportHeader{
-                    DotsTransportHeader::dotsHeader_i{ header },
-                    DotsTransportHeader::payloadSize_i{ static_cast<uint32_t>(serializedInstance.size()) }
+                    .dotsHeader = header,
+                    .payloadSize = static_cast<uint32_t>(serializedInstance.size())
                 };
 
                 // adjust header for backwards compatibility to legacy implementation

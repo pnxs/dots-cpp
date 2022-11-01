@@ -4,7 +4,6 @@
 #include <type_traits>
 #include <utility>
 #include <dots/type/Struct.h>
-#include <dots/type/PropertyInitializer.h>
 
 namespace dots
 {
@@ -25,36 +24,6 @@ namespace dots::type
         }
 
         ~StaticStruct() = default;
-
-        bool operator == (const Derived& rhs) const
-        {
-            return _equal(rhs);
-        }
-
-        bool operator != (const Derived& rhs) const
-        {
-            return !(*this == rhs);
-        }
-
-        bool operator < (const Derived& rhs) const
-        {
-            return _less(rhs);
-        }
-
-        bool operator <= (const Derived& rhs) const
-        {
-            return _lessEqual(rhs);
-        }
-
-        bool operator > (const Derived& rhs) const
-        {
-            return _greater(rhs);
-        }
-
-        bool operator >= (const Derived& rhs) const
-        {
-            return _greaterEqual(rhs);
-        }
 
         template <typename Callable>
         auto _applyProperties(Callable&& callable)

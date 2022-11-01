@@ -107,7 +107,7 @@ namespace dots::testing
         if constexpr (IsStruct)
         {
             DotsHeader header{
-                DotsHeader::attributes_i{ includedProperties == std::nullopt ? instance._validProperties() : *includedProperties },
+                .attributes = includedProperties == std::nullopt ? instance._validProperties() : *includedProperties,
             };
 
             if (remove)

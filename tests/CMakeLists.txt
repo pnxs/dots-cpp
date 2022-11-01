@@ -53,7 +53,7 @@ target_include_directories(${TARGET_NAME}
 )
 target_compile_options(${TARGET_NAME}
     PRIVATE
-        $<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-Wall -Wextra -Wpedantic -Werror -Wno-missing-field-initializers>>
+        $<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-Wall -Wextra -Wpedantic -Werror>>
         $<$<CXX_COMPILER_ID:Clang>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-Wall -Wextra -Wpedantic -Werror -Wno-gnu-zero-variadic-macro-arguments>>
         $<$<CXX_COMPILER_ID:MSVC>:/W4>
 )
@@ -64,7 +64,7 @@ target_compile_definitions(${TARGET_NAME}
 )
 target_compile_features(${TARGET_NAME}
     PRIVATE
-        cxx_std_17
+        cxx_std_20
 )
 target_link_libraries(${TARGET_NAME}
     PRIVATE
@@ -94,7 +94,7 @@ target_include_directories(${TARGET_NAME_EXPERIMENTAL}
 )
 target_compile_options(${TARGET_NAME_EXPERIMENTAL}
     PRIVATE
-        $<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-Wall -Wextra -Wpedantic -Werror -Wno-missing-field-initializers>>
+        $<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-Wall -Wextra -Wpedantic -Werror>>
         $<$<CXX_COMPILER_ID:Clang>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-Wall -Wextra -Wpedantic -Werror -Wno-gnu-zero-variadic-macro-arguments>>
         $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>>:/W4>
 )

@@ -26,13 +26,13 @@ TEST_F(BasementTest, TurnLightOnWhenMotionIsDetected)
         [this]
         {
             SPOOF_DOTS_PUBLISH(Switch{
-                Switch::id_i{ Basement::MotionSwitch },
-                Switch::enabled_i{ true }
+                .id = Basement::MotionSwitch,
+                .enabled = true
             });
         },
         EXPECT_DOTS_PUBLISH(LightControl{
-            LightControl::id_i{ Basement::Light },
-            LightControl::brightness_i{ 100u }
+            .id = Basement::Light,
+            .brightness = 100u
         })
     );
 
@@ -48,25 +48,25 @@ TEST_F(BasementTest, TurnLightOffAfterTimeoutOccurs)
         [this]
         {
             SPOOF_DOTS_PUBLISH(Switch{
-                Switch::id_i{ Basement::MotionSwitch },
-                Switch::enabled_i{ true }
+                .id = Basement::MotionSwitch,
+                .enabled = true
             });
         },
         EXPECT_DOTS_PUBLISH(LightControl{
-            LightControl::id_i{ Basement::Light },
-            LightControl::brightness_i{ 100u }
+            .id = Basement::Light,
+            .brightness = 100u
         }),
         [&]
         {
             SPOOF_DOTS_PUBLISH(Switch{
-                Switch::id_i{ Basement::MotionSwitch },
-                Switch::enabled_i{ false }
+                .id = Basement::MotionSwitch,
+                .enabled = false
             });
             motionSwitchDisabled = dots::timepoint_t::Now();
         },
         EXPECT_DOTS_PUBLISH(LightControl{
-            LightControl::id_i{ Basement::Light },
-            LightControl::brightness_i{ 0u }
+            .id = Basement::Light,
+            .brightness = 0u
         }),
         [&](const dots::Event<>& event)
         {
@@ -85,17 +85,17 @@ TEST_F(BasementTest, DoNotTurnLightOnWhenItIsAlreadyOn)
         [this]
         {
             SPOOF_DOTS_PUBLISH(LightControl{
-                LightControl::id_i{ Basement::Light },
-                LightControl::brightness_i{ 100u }
+                .id = Basement::Light,
+                .brightness = 100u
             });
             SPOOF_DOTS_PUBLISH(Switch{
-                Switch::id_i{ Basement::MotionSwitch },
-                Switch::enabled_i{ true }
+                .id = Basement::MotionSwitch,
+                .enabled = true
             });
         },
         EXPECT_DOTS_PUBLISH(LightControl{
-            LightControl::id_i{ Basement::Light },
-            LightControl::brightness_i{ 100u }
+            .id = Basement::Light,
+            .brightness = 100u
         }).Times(0)
     );
 
@@ -108,16 +108,16 @@ TEST_F(BasementTest, DoNotTurnLightOffWhenItIsAlreadyOff)
         [&]
         {
             SPOOF_DOTS_PUBLISH(LightControl{
-                LightControl::id_i{ Basement::Light },
-                LightControl::brightness_i{ 0u }
+                .id = Basement::Light,
+                .brightness = 0u
             });
             SPOOF_DOTS_PUBLISH(Switch{
-                Switch::id_i{ Basement::MotionSwitch },
-                Switch::enabled_i{ false }
+                .id = Basement::MotionSwitch,
+                .enabled = false
             });
         },
         EXPECT_DOTS_PUBLISH(LightControl{
-            LightControl::id_i{ Basement::Light }
+            .id = Basement::Light
         }).Times(0)
     );
 

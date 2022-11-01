@@ -45,6 +45,7 @@ target_sources(${TARGET_NAME}
         src/Event.cpp
         src/GuestTransceiver.cpp
         src/HostTransceiver.cpp
+        src/Requirements.cpp
         src/Subscription.cpp
         src/Timer.cpp
         src/Transceiver.cpp
@@ -94,7 +95,6 @@ target_sources(${TARGET_NAME}
         src/type/StaticDescriptor.cpp
         src/type/Struct.cpp
         src/type/StructDescriptor.cpp
-        src/type/TypeVisitor.cpp
         src/type/Uuid.cpp
         src/type/VectorDescriptor.cpp
 )
@@ -106,7 +106,7 @@ target_include_directories(${TARGET_NAME}
 )
 target_compile_features(${TARGET_NAME}
     PUBLIC
-        cxx_std_17
+        cxx_std_20
 )
 target_compile_options(${TARGET_NAME}
     PUBLIC
@@ -120,7 +120,7 @@ target_compile_options(${TARGET_NAME}
         $<$<CXX_COMPILER_ID:MSVC>:/DWINVER=0x0A00 /D_WIN32_WINNT=0x0A00>
     PRIVATE
         $<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-Wall -Wextra -Wpedantic -Werror>>
-        $<$<CXX_COMPILER_ID:Clang>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-Wall -Wextra -Wpedantic -Werror>>
+        $<$<CXX_COMPILER_ID:Clang>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-Wall -Wextra -Wpedantic -Werror -Wall -Wextra -Wpedantic -Werror>>
         $<$<CXX_COMPILER_ID:MSVC>:/W4>
 )
 target_compile_definitions(${TARGET_NAME}

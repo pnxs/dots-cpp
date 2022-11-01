@@ -29,7 +29,7 @@ struct TestConnectionBase : dots::testing::ChannelTestBase
         {
             // close gracefully on destruction
             EXPECT_DOTS_TRANSMIT(DotsMsgError{
-                DotsMsgError::errorCode_i{ 0 }
+                .errorCode = 0
             });
         }
 
@@ -105,16 +105,16 @@ TEST_F(TestConnectionAsHost, HandshakeWithoutAuthenticationWithoutPreloading)
             EXPECT_EQ(m_sut->state(), DotsConnectionState::connecting);
         },
         EXPECT_DOTS_TRANSMIT(DotsMsgHello{
-            DotsMsgHello::serverName_i{ hostName() },
-            DotsMsgHello::authChallenge_i{ 0u }
+            .serverName = hostName(),
+            .authChallenge = 0u
         }),
         [this]
         {
             SPOOF_DOTS_TRANSMIT_FROM_SENDER(
                 UninitializedId,
                 DotsMsgConnect{
-                    DotsMsgConnect::clientName_i{ GuestName },
-                    DotsMsgConnect::preloadCache_i{ false }
+                    .clientName = GuestName,
+                    .preloadCache = false
                 }
             );
         },
@@ -124,9 +124,9 @@ TEST_F(TestConnectionAsHost, HandshakeWithoutAuthenticationWithoutPreloading)
             EXPECT_EQ(m_sut->state(), DotsConnectionState::connected);
         },
         EXPECT_DOTS_TRANSMIT(DotsMsgConnectResponse{
-            DotsMsgConnectResponse::clientId_i{ m_sut->peerId() },
-            DotsMsgConnectResponse::preload_i{ false },
-            DotsMsgConnectResponse::accepted_i{ true }
+            .clientId = m_sut->peerId(),
+            .accepted = true,
+            .preload = false
         })
     );
     
@@ -147,16 +147,16 @@ TEST_F(TestConnectionAsHost, HandshakeWithoutAuthenticationWithPreloading)
             EXPECT_EQ(m_sut->state(), DotsConnectionState::connecting);
         },
         EXPECT_DOTS_TRANSMIT(DotsMsgHello{
-            DotsMsgHello::serverName_i{ hostName() },
-            DotsMsgHello::authChallenge_i{ 0u }
+            .serverName = hostName(),
+            .authChallenge = 0u
         }),
         [this]
         {
             SPOOF_DOTS_TRANSMIT_FROM_SENDER(
                 UninitializedId,
                 DotsMsgConnect{
-                    DotsMsgConnect::clientName_i{ GuestName },
-                    DotsMsgConnect::preloadCache_i{ true }
+                    .clientName = GuestName,
+                    .preloadCache = true
                 }
             );
         },
@@ -166,16 +166,16 @@ TEST_F(TestConnectionAsHost, HandshakeWithoutAuthenticationWithPreloading)
             EXPECT_EQ(m_sut->state(), DotsConnectionState::early_subscribe);
         },
         EXPECT_DOTS_TRANSMIT(DotsMsgConnectResponse{
-            DotsMsgConnectResponse::clientId_i{ m_sut->peerId() },
-            DotsMsgConnectResponse::preload_i{ true },
-            DotsMsgConnectResponse::accepted_i{ true }
+            .clientId = m_sut->peerId(),
+            .accepted = true,
+            .preload = true
         }),
         [this]
         {
             SPOOF_DOTS_TRANSMIT_FROM_SENDER(
                 m_sut->peerId(),
                 DotsMsgConnect{
-                    DotsMsgConnect::preloadClientFinished_i{ true }
+                    .preloadClientFinished = true
                 }
             );
         },
@@ -185,7 +185,7 @@ TEST_F(TestConnectionAsHost, HandshakeWithoutAuthenticationWithPreloading)
             EXPECT_EQ(m_sut->state(), DotsConnectionState::connected);
         },
         EXPECT_DOTS_TRANSMIT(DotsMsgConnectResponse{
-            DotsMsgConnectResponse::preloadFinished_i{ true }
+            .preloadFinished = true
         })
     );
 
@@ -206,16 +206,16 @@ TEST_F(TestConnectionAsHost, RejectInstancesThatAreMissingKeyProperties)
             EXPECT_EQ(m_sut->state(), DotsConnectionState::connecting);
         },
         EXPECT_DOTS_TRANSMIT(DotsMsgHello{
-            DotsMsgHello::serverName_i{ hostName() },
-            DotsMsgHello::authChallenge_i{ 0u }
+            .serverName = hostName(),
+            .authChallenge = 0u
         }),
         [this]
         {
             SPOOF_DOTS_TRANSMIT_FROM_SENDER(
                 UninitializedId,
                 DotsMsgConnect{
-                    DotsMsgConnect::clientName_i{ GuestName },
-                    DotsMsgConnect::preloadCache_i{ false }
+                    .clientName = GuestName,
+                    .preloadCache = false
                 }
             );
         },
@@ -225,16 +225,16 @@ TEST_F(TestConnectionAsHost, RejectInstancesThatAreMissingKeyProperties)
             EXPECT_EQ(m_sut->state(), DotsConnectionState::connected);
         },
         EXPECT_DOTS_TRANSMIT(DotsMsgConnectResponse{
-            DotsMsgConnectResponse::clientId_i{ m_sut->peerId() },
-            DotsMsgConnectResponse::preload_i{ false },
-            DotsMsgConnectResponse::accepted_i{ true }
+            .clientId = m_sut->peerId(),
+            .accepted = true,
+            .preload = false
         }),
         [this]
         {
             SPOOF_DOTS_TRANSMIT_FROM_SENDER(
                 m_sut->peerId(),
                 DotsTestStruct{
-                    DotsTestStruct::stringField_i{ "foobar"}
+                    .stringField = "foobar"
                 }
             );
         },
@@ -244,7 +244,7 @@ TEST_F(TestConnectionAsHost, RejectInstancesThatAreMissingKeyProperties)
             EXPECT_EQ(m_sut->state(), DotsConnectionState::closed);
         },
         EXPECT_DOTS_TRANSMIT(DotsMsgError{
-            DotsMsgError::errorCode_i{ 1 }
+            .errorCode = 1
         })
     );
     
@@ -261,8 +261,8 @@ TEST_F(TestConnectionAsGuest, HandshakeWithoutAuthenticationWithPreloading)
             SPOOF_DOTS_TRANSMIT_FROM_SENDER(
                 HostId,
                 DotsMsgHello{
-                    DotsMsgHello::serverName_i{ hostName() },
-                    DotsMsgHello::authChallenge_i{ 0 }
+                    .serverName = hostName(),
+                    .authChallenge = 0
                 }
             );
         },
@@ -272,17 +272,17 @@ TEST_F(TestConnectionAsGuest, HandshakeWithoutAuthenticationWithPreloading)
             EXPECT_EQ(m_sut->state(), DotsConnectionState::connecting);
         },
         EXPECT_DOTS_TRANSMIT(DotsMsgConnect{
-            DotsMsgConnect::clientName_i{ GuestName },
-            DotsMsgConnect::preloadCache_i{ true }
+            .clientName = GuestName,
+            .preloadCache = true
         }),
         [this]
         {
             SPOOF_DOTS_TRANSMIT_FROM_SENDER(
                 HostId,
                 DotsMsgConnectResponse{
-                    DotsMsgConnectResponse::clientId_i{ GuestId },
-                    DotsMsgConnectResponse::preload_i{ true },
-                    DotsMsgConnectResponse::accepted_i{ true }
+                    .clientId = GuestId,
+                    .accepted = true,
+                    .preload = true
                 }
             );
         },
@@ -292,14 +292,14 @@ TEST_F(TestConnectionAsGuest, HandshakeWithoutAuthenticationWithPreloading)
             EXPECT_EQ(m_sut->state(), DotsConnectionState::early_subscribe);
         },
         EXPECT_DOTS_TRANSMIT(DotsMsgConnect{
-            DotsMsgConnect::preloadClientFinished_i{ true }
+            .preloadClientFinished = true
         }),
         [this]
         {
             SPOOF_DOTS_TRANSMIT_FROM_SENDER(
                 HostId,
                 DotsMsgConnectResponse{
-                    DotsMsgConnectResponse::preloadFinished_i{ true }
+                    .preloadFinished = true
                 }
             );
         },
@@ -323,8 +323,8 @@ TEST_F(TestConnectionAsGuest, RejectInstancesThatAreMissingKeyProperties)
             SPOOF_DOTS_TRANSMIT_FROM_SENDER(
                 HostId,
                 DotsMsgHello{
-                    DotsMsgHello::serverName_i{ hostName() },
-                    DotsMsgHello::authChallenge_i{ 0 }
+                    .serverName = hostName(),
+                    .authChallenge = 0
                 }
             );
         },
@@ -334,17 +334,17 @@ TEST_F(TestConnectionAsGuest, RejectInstancesThatAreMissingKeyProperties)
             EXPECT_EQ(m_sut->state(), DotsConnectionState::connecting);
         },
         EXPECT_DOTS_TRANSMIT(DotsMsgConnect{
-            DotsMsgConnect::clientName_i{ GuestName },
-            DotsMsgConnect::preloadCache_i{ true }
+            .clientName = GuestName,
+            .preloadCache = true
         }),
         [this]
         {
             SPOOF_DOTS_TRANSMIT_FROM_SENDER(
                 HostId,
                 DotsMsgConnectResponse{
-                    DotsMsgConnectResponse::clientId_i{ GuestId },
-                    DotsMsgConnectResponse::preload_i{ true },
-                    DotsMsgConnectResponse::accepted_i{ true }
+                    .clientId = GuestId,
+                    .accepted = true,
+                    .preload = true
                 }
             );
         },
@@ -354,14 +354,14 @@ TEST_F(TestConnectionAsGuest, RejectInstancesThatAreMissingKeyProperties)
             EXPECT_EQ(m_sut->state(), DotsConnectionState::early_subscribe);
         },
         EXPECT_DOTS_TRANSMIT(DotsMsgConnect{
-            DotsMsgConnect::preloadClientFinished_i{ true }
+            .preloadClientFinished = true
         }),
         [this]
         {
             SPOOF_DOTS_TRANSMIT_FROM_SENDER(
                 HostId,
                 DotsMsgConnectResponse{
-                    DotsMsgConnectResponse::preloadFinished_i{ true }
+                    .preloadFinished = true
                 }
             );
         },
@@ -372,7 +372,7 @@ TEST_F(TestConnectionAsGuest, RejectInstancesThatAreMissingKeyProperties)
             SPOOF_DOTS_TRANSMIT_FROM_SENDER(
                 HostId,
                 DotsTestStruct{
-                    DotsTestStruct::stringField_i{ "foobar"}
+                    .stringField = "foobar"
                 }
             );
         },
@@ -382,7 +382,7 @@ TEST_F(TestConnectionAsGuest, RejectInstancesThatAreMissingKeyProperties)
             EXPECT_EQ(m_sut->state(), DotsConnectionState::closed);
         },
         EXPECT_DOTS_TRANSMIT(DotsMsgError{
-            DotsMsgError::errorCode_i{ 1 }
+            .errorCode = 1
         })
     );
     

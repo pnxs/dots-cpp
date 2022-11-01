@@ -65,7 +65,7 @@ namespace dots
             }
         }
 
-        transceiver->publish(DotsClient{ DotsClient::id_i{ transceiver->connection().selfId() }, DotsClient::running_i{ true } });
+        transceiver->publish(DotsClient{ .id = transceiver->connection().selfId(), .running = true });
     }
 
     Application::Application(const std::string& name, std::optional<GuestTransceiver> guestTransceiver/* = std::nullopt*/, bool handleExitSignals/* = true*/) :

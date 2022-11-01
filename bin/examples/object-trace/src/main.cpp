@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
 
         // request descriptors for all currently known types
         dots::publish(DotsDescriptorRequest{
-            DotsDescriptorRequest::whitelist_i{}
+            .whitelist = {}
         });
 
         // subscribe to all DOTS struct type descriptors

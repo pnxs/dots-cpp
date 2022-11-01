@@ -66,8 +66,8 @@ namespace dots::io
     void Channel::transmit(const type::Struct& instance)
     {
       transmit(DotsHeader{
-            DotsHeader::typeName_i{ instance._descriptor().name() },
-            DotsHeader::attributes_i{ instance._validProperties() }
+            .typeName = instance._descriptor().name(),
+            .attributes = instance._validProperties()
         }, instance);
     }
 

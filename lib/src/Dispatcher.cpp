@@ -50,10 +50,10 @@ namespace dots
         if (!container.empty())
         {
             DotsHeader header{
-                DotsHeader::typeName_i{ descriptor.name() },
-                DotsHeader::removeObj_i{ false },
-                DotsHeader::fromCache_i{ static_cast<uint32_t>(container.size()) },
-                DotsHeader::isFromMyself_i{ false }
+                .typeName = descriptor.name(),
+                .fromCache = static_cast<uint32_t>(container.size()),
+                .removeObj = false,
+                .isFromMyself = false
             };
 
             for (const auto& [instance, cloneInfo] : container)
@@ -153,10 +153,10 @@ namespace dots
             }
 
             DotsCloneInformation cloneInfo{
-                DotsCloneInformation::lastOperation_i{ DotsMt::create },
-                DotsCloneInformation::createdFrom_i{ header.sender },
-                DotsCloneInformation::created_i{ header.sentTime },
-                DotsCloneInformation::localUpdateTime_i{ timepoint_t::Now() }
+                .lastOperation = DotsMt::create,
+                .created = header.sentTime,
+                .createdFrom = header.sender,
+                .localUpdateTime = timepoint_t::Now()
             };
 
             dispatchToHandlers(descriptor, handlers, Event<>{ header, instance, instance, cloneInfo });

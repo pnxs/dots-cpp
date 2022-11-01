@@ -16,15 +16,15 @@ namespace examples
     {
         if (const Switch& switch_ = event(); switch_.id == MotionSwitch)
         {
-            auto* existingBasementLight = dots::container<LightControl>().find(LightControl::id_i{ Light });
+            auto* existingBasementLight = dots::container<LightControl>().find({ .id = Light });
 
             if (switch_.enabled == true)
             {
                 if (existingBasementLight == nullptr || existingBasementLight->brightness == 0u)
                 {
                     dots::publish(LightControl{
-                        LightControl::id_i{ Light },
-                        LightControl::brightness_i{ 100u }
+                        .id = Light,
+                        .brightness = 100u
                     });
                 }
             }
@@ -33,8 +33,8 @@ namespace examples
                 m_timer = dots::create_timer(m_lightTimeout, []
                 {
                     dots::publish(LightControl{
-                        LightControl::id_i{ Light },
-                        LightControl::brightness_i{ 0u }
+                        .id = Light,
+                        .brightness = 0u
                     });
                 });
             }

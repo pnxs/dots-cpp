@@ -46,8 +46,8 @@ struct RapidJsonSerializerTestDataEncoded : SerializerTestDataEncoded<dots::seri
     data_t uint64Positive2{ "18434398394799440403" };
 
     data_t float32Zero{ "0.0" };
-    data_t float32Positive{ "3.1414999961853029" };
-    data_t float32Negative{ "-2.7183001041412355" };
+    data_t float32Positive{ "3.1414999961853027" };
+    data_t float32Negative{ "-2.7183001041412354" };
 
     data_t float64Zero{ "0.0" };
     data_t float64Positive{ "3.14159265359" };
@@ -69,7 +69,7 @@ struct RapidJsonSerializerTestDataEncoded : SerializerTestDataEncoded<dots::seri
     data_t string2{ "\"\\\"foo\\\" bar baz\"" };
     data_t string3{ "\"foo \\\"bar\\\" baz\"" };
     data_t string4{ "\"foo bar \\\"baz\\\"\"" };
-    data_t string5{ u8"\"foo\\\\ \u0062\u0061\u0072\u00A9\\n b\\\\az\"" };
+    data_t string5{ "\"foo\\\\ \x62\x61\x72\xC2\xA9\\n b\\\\az\"" };
     data_t stringInvalid{ "\"fo\\obar\"" };
 
     //
@@ -172,7 +172,7 @@ struct RapidJsonSerializerTestDataEncoded : SerializerTestDataEncoded<dots::seri
     // unescaped string
     //
 
-    data_t string5Unescaped = u8"foo\\ \u0062\u0061\u0072\u00A9\n b\\az";
+    data_t string5Unescaped = "foo\\ \x62\x61\x72\xC2\xA9\n b\\az";
     data_t structSimple_String5Unescaped = Concat("{\"stringProperty\":", string5Unescaped, "}");
 
     //
@@ -564,7 +564,7 @@ TEST_F(TestRapidJsonSerializer, deserialize_SpecificProperties)
 TEST_F(TestRapidJsonSerializer, deserialize_InvalidatePropertyWhenInputIsInvalid)
 {
     SerializationStructSimple instance{
-        SerializationStructSimple::int32Property_i{ 42 }
+        .int32Property = 42
     };
 
     std::string input = "{ \"int32Property\": null }";

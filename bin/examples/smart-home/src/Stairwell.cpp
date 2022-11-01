@@ -18,7 +18,7 @@ namespace examples
         if (statelessSwitch.id == LowerSwitch || statelessSwitch.id == UpperSwitch)
         {
             LightControl stairwellLight{
-                LightControl::id_i{ Light }
+                .id = Light
             };
 
             auto* existingStairwellLight = dots::container<LightControl>().find(stairwellLight);

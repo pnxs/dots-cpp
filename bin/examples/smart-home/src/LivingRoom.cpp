@@ -15,13 +15,13 @@ namespace examples
         if (const Dimmer& dimmer = event(); dimmer.id == MasterDimmer)
         {
             dots::publish(LightControl{
-                LightControl::id_i{ CouchLight },
-                LightControl::brightness_i{ dimmer.brightness }
+                .id = CouchLight,
+                .brightness = dimmer.brightness
             });
 
             dots::publish(LightControl{
-                LightControl::id_i{ CeilingLight },
-                LightControl::brightness_i{ dimmer.brightness }
+                .id = CeilingLight,
+                .brightness = dimmer.brightness
             });
         }
     }

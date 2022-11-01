@@ -117,17 +117,18 @@ namespace dots::io
     EnumDescriptorData DescriptorConverter::operator () (const type::EnumDescriptor& enumDescriptor)
     {
         EnumDescriptorData enumData{
-            EnumDescriptorData::name_i{ enumDescriptor.name() }
+            .name = enumDescriptor.name() 
         };
 
         vector_t<EnumElementDescriptor>& enumeratorData = enumData.elements.emplace();
 
         for (const type::EnumeratorDescriptor& enumeratorDescriptor : enumDescriptor.enumeratorsTypeless())
         {
-            enumeratorData.emplace_back(
-                EnumElementDescriptor::enum_value_i{ enumeratorDescriptor.valueTypeless().to<int32_t>() },
-                EnumElementDescriptor::name_i{ enumeratorDescriptor.name() },
-                EnumElementDescriptor::tag_i{ enumeratorDescriptor.tag() });
+            enumeratorData.emplace_back(EnumElementDescriptor{
+                .enum_value = enumeratorDescriptor.valueTypeless().to<int32_t>() ,
+                .name = enumeratorDescriptor.name() ,
+                .tag = enumeratorDescriptor.tag()
+            });
         }
 
         return enumData;
@@ -136,14 +137,14 @@ namespace dots::io
     StructDescriptorData DescriptorConverter::operator () (const type::StructDescriptor& structDescriptor)
     {
         StructDescriptorData structData{
-            StructDescriptorData::name_i{ structDescriptor.name() },
-            StructDescriptorData::flags_i{
-                DotsStructFlags::cached_i{ structDescriptor.cached() },
-                DotsStructFlags::internal_i{ structDescriptor.internal() },
-                DotsStructFlags::persistent_i{ structDescriptor.persistent() },
-                DotsStructFlags::cleanup_i{ structDescriptor.cleanup() },
-                DotsStructFlags::local_i{ structDescriptor.local() },
-                DotsStructFlags::substructOnly_i{ structDescriptor.substructOnly() }
+            .name = structDescriptor.name() ,
+            .flags = DotsStructFlags{
+                .cached = structDescriptor.cached() ,
+                .internal = structDescriptor.internal() ,
+                .persistent = structDescriptor.persistent() ,
+                .cleanup = structDescriptor.cleanup() ,
+                .local = structDescriptor.local() ,
+                .substructOnly = structDescriptor.substructOnly() 
             }
         };
 
@@ -152,10 +153,10 @@ namespace dots::io
         for (const type::PropertyDescriptor& propertyDescriptor : structDescriptor.propertyDescriptors())
         {
             properties.emplace_back(StructPropertyData{
-                StructPropertyData::tag_i{ propertyDescriptor.tag() },
-                StructPropertyData::name_i{ propertyDescriptor.name() },
-                StructPropertyData::isKey_i{ propertyDescriptor.isKey() },
-                StructPropertyData::type_i{ propertyDescriptor.valueDescriptor().name() }
+                .name = propertyDescriptor.name() ,
+                .tag = propertyDescriptor.tag() ,
+                .isKey = propertyDescriptor.isKey() ,
+                .type = propertyDescriptor.valueDescriptor().name() 
             });
         }
 

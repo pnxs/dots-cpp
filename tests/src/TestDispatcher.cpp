@@ -18,11 +18,11 @@ namespace
         DotsHeader make_header(const dots::type::Struct& instance, uint32_t sender, bool remove = false)
         {
             return DotsHeader{
-                DotsHeader::typeName_i{ instance._descriptor().name() },
-                DotsHeader::sentTime_i{ dots::timepoint_t::Now() },
-                DotsHeader::attributes_i{ instance._validProperties() },
-                DotsHeader::sender_i{ sender },
-                DotsHeader::removeObj_i{ remove },
+                .typeName = instance._descriptor().name(),
+                .sentTime = dots::timepoint_t::Now(),
+                .attributes = instance._validProperties(),
+                .sender = sender,
+                .removeObj = remove,
             };
         }
     }
@@ -32,7 +32,7 @@ namespace
 //{
 //    dots::Dispatcher sut;
 //    DotsTestStruct dts{
-//        DotsTestStruct::indKeyfField_i{ 1 }
+//        .indKeyfField = 1
 //    };
 //    DotsHeader header = test_helpers::make_header(dts, 42);
 //
@@ -53,7 +53,7 @@ struct TestDispatcher : ::testing::Test
 
 TEST_F(TestDispatcher, addEventHandler_AllowsUsageOfVariousHandlerTypes)
 {
-    DotsTestStruct dts{ DotsTestStruct::indKeyfField_i{ 1 } };
+    DotsTestStruct dts{ .indKeyfField = 1 };
     DotsHeader header = test_helpers::make_header(dts, 42);
 
     static int I = 0;
@@ -115,7 +115,7 @@ TEST_F(TestDispatcher, addEventHandler_AllowsUsageOfVariousHandlerTypes)
 
 TEST_F(TestDispatcher, dispatch_CreateEventWhenAddedHandlerForCachedType)
 {
-    DotsTestStruct dts{ DotsTestStruct::indKeyfField_i{ 1 } };
+    DotsTestStruct dts{ .indKeyfField = 1 };
     DotsHeader header = test_helpers::make_header(dts, 42);
 
     size_t i = 0;
@@ -154,17 +154,17 @@ TEST_F(TestDispatcher, dispatch_CreateEventWhenAddedHandlerForCachedType)
 TEST_F(TestDispatcher, dispatch_UpdateEventWhenAddedHandlerForCachedType)
 {
     DotsTestStruct dts1{
-        DotsTestStruct::indKeyfField_i{ 1 },
-        DotsTestStruct::stringField_i{ "foo" }
+        .stringField = "foo",
+        .indKeyfField = 1
     };
     DotsTestStruct dts2{
-        DotsTestStruct::indKeyfField_i{ 1 },
-        DotsTestStruct::floatField_i{ 2.7183f }
+        .indKeyfField = 1,
+        .floatField = 2.7183f
     };
     DotsTestStruct dts3{
-        DotsTestStruct::indKeyfField_i{ 1 },
-        DotsTestStruct::stringField_i{ "foo" },
-        DotsTestStruct::floatField_i{ 2.7183f }
+        .stringField = "foo",
+        .indKeyfField = 1,
+        .floatField = 2.7183f
     };
     DotsHeader header1 = test_helpers::make_header(dts1, 42);
     DotsHeader header2 = test_helpers::make_header(dts2, 21);
@@ -206,20 +206,20 @@ TEST_F(TestDispatcher, dispatch_UpdateEventWhenAddedHandlerForCachedType)
 TEST_F(TestDispatcher, dispatch_RemoveEventWhenAddedHandlerForCachedType)
 {
     DotsTestStruct dts1{
-        DotsTestStruct::indKeyfField_i{ 1 },
-        DotsTestStruct::stringField_i{ "foo" }
+        .stringField = "foo",
+        .indKeyfField = 1
     };
     DotsTestStruct dts2{
-        DotsTestStruct::indKeyfField_i{ 2 }
+        .indKeyfField = 2
     };
     DotsTestStruct dts3{
-        DotsTestStruct::indKeyfField_i{ 1 },
-        DotsTestStruct::floatField_i{ 2.7183f }
+        .indKeyfField = 1,
+        .floatField = 2.7183f
     };
     DotsTestStruct dts4{
-        DotsTestStruct::indKeyfField_i{ 1 },
-        DotsTestStruct::stringField_i{ "foo" },
-        DotsTestStruct::floatField_i{ 2.7183f }
+        .stringField = "foo",
+        .indKeyfField = 1,
+        .floatField = 2.7183f
     };
     DotsHeader header1 = test_helpers::make_header(dts1, 42);
     DotsHeader header2 = test_helpers::make_header(dts2, 21);
@@ -262,7 +262,7 @@ TEST_F(TestDispatcher, dispatch_RemoveEventWhenAddedHandlerForCachedType)
 
 TEST_F(TestDispatcher, dispatch_CreateEventWhenDynamicallyAddedHandlerForCachedType)
 {
-    DotsTestStruct dts{ DotsTestStruct::indKeyfField_i{ 1 } };
+    DotsTestStruct dts{ .indKeyfField = 1 };
     DotsHeader header = test_helpers::make_header(dts, 42);
 
     size_t i = 0;
@@ -301,17 +301,17 @@ TEST_F(TestDispatcher, dispatch_CreateEventWhenDynamicallyAddedHandlerForCachedT
 TEST_F(TestDispatcher, dispatch_UpdateEventWhenDynamicallAddedHandlerForCachedType)
 {
     DotsTestStruct dts1{
-        DotsTestStruct::indKeyfField_i{ 1 },
-        DotsTestStruct::stringField_i{ "foo" }
+        .stringField = "foo",
+        .indKeyfField = 1
     };
     DotsTestStruct dts2{
-        DotsTestStruct::indKeyfField_i{ 1 },
-        DotsTestStruct::floatField_i{ 2.7183f }
+        .indKeyfField = 1,
+        .floatField = 2.7183f
     };
     DotsTestStruct dts3{
-        DotsTestStruct::indKeyfField_i{ 1 },
-        DotsTestStruct::stringField_i{ "foo" },
-        DotsTestStruct::floatField_i{ 2.7183f }
+        .stringField = "foo",
+        .indKeyfField = 1,
+        .floatField = 2.7183f
     };
     DotsHeader header1 = test_helpers::make_header(dts1, 42);
     DotsHeader header2 = test_helpers::make_header(dts2, 21);
@@ -353,20 +353,20 @@ TEST_F(TestDispatcher, dispatch_UpdateEventWhenDynamicallAddedHandlerForCachedTy
 TEST_F(TestDispatcher, dispatch_RemoveEventWhenDynamicallAddedHandlerForCachedType)
 {
     DotsTestStruct dts1{
-        DotsTestStruct::indKeyfField_i{ 1 },
-        DotsTestStruct::stringField_i{ "foo" }
+        .stringField = "foo",
+        .indKeyfField = 1
     };
     DotsTestStruct dts2{
-        DotsTestStruct::indKeyfField_i{ 2 }
+        .indKeyfField = 2
     };
     DotsTestStruct dts3{
-        DotsTestStruct::indKeyfField_i{ 1 },
-        DotsTestStruct::floatField_i{ 2.7183f }
+        .indKeyfField = 1,
+        .floatField = 2.7183f
     };
     DotsTestStruct dts4{
-        DotsTestStruct::indKeyfField_i{ 1 },
-        DotsTestStruct::stringField_i{ "foo" },
-        DotsTestStruct::floatField_i{ 2.7183f }
+        .stringField = "foo",
+        .indKeyfField = 1,
+        .floatField = 2.7183f
     };
     DotsHeader header1 = test_helpers::make_header(dts1, 42);
     DotsHeader header2 = test_helpers::make_header(dts2, 21);
@@ -409,7 +409,7 @@ TEST_F(TestDispatcher, dispatch_RemoveEventWhenDynamicallAddedHandlerForCachedTy
 
 TEST_F(TestDispatcher, dispatch_CreateEventFromCacheWhenAddedHandlerForCachedType)
 {
-    DotsTestStruct dts{ DotsTestStruct::indKeyfField_i{ 1 } };
+    DotsTestStruct dts{ .indKeyfField = 1 };
     DotsHeader header = test_helpers::make_header(dts, 42);
 
     size_t i = 0;
@@ -455,11 +455,11 @@ TEST_F(TestDispatcher, dispatch_CreateEventFromCacheWhenAddedHandlerForCachedTyp
 TEST_F(TestDispatcher, dispatch_CreateEventWhenAddedHandlerForUncachedType)
 {
     DotsUncachedTestStruct dts1{
-        DotsUncachedTestStruct::intKeyfField_i{ 1 },
-        DotsUncachedTestStruct::value_i{ "foo" },
+        .intKeyfField = 1,
+        .value = "foo",
     };
     DotsUncachedTestStruct dts2{
-        DotsUncachedTestStruct::intKeyfField_i{ 1 },
+        .intKeyfField = 1,
     };
     DotsHeader header1 = test_helpers::make_header(dts1, 42);
     DotsHeader header2 = test_helpers::make_header(dts2, 21);
@@ -500,7 +500,7 @@ TEST_F(TestDispatcher, dispatch_CreateEventWhenAddedHandlerForUncachedType)
 
 TEST_F(TestDispatcher, dispatch_NoEventAfterRedundantRemoveForCachedType)
 {
-    DotsTestStruct dts{ DotsTestStruct::indKeyfField_i{ 1 } };
+    DotsTestStruct dts{ .indKeyfField = 1 };
     DotsHeader headerCreate = test_helpers::make_header(dts, 42);
     DotsHeader headerRemove = test_helpers::make_header(dts, 42, true);
 
@@ -526,7 +526,7 @@ TEST_F(TestDispatcher, dispatch_NoEventAfterRedundantRemoveForCachedType)
 TEST_F(TestDispatcher, dispatch_ThrowWhenRemovingUncachedType)
 {
     DotsUncachedTestStruct duts{
-        DotsUncachedTestStruct::intKeyfField_i{ 1 }
+        .intKeyfField = 1
     };
     DotsHeader header = test_helpers::make_header(duts, 42, true);
 
@@ -541,7 +541,7 @@ TEST_F(TestDispatcher, dispatch_ThrowWhenRemovingUncachedType)
 
 TEST_F(TestDispatcher, dispatch_NoEventWhenNotAddedHandlerForType)
 {
-    DotsUncachedTestStruct duts{ DotsUncachedTestStruct::intKeyfField_i{ 1 } };
+    DotsUncachedTestStruct duts{ .intKeyfField = 1 };
     DotsHeader header = test_helpers::make_header(duts, 42);
 
     size_t i = 0;
@@ -564,7 +564,7 @@ TEST_F(TestDispatcher, dispatch_NoEventWhenNotAddedHandlerForType)
 
 TEST_F(TestDispatcher, dispatch_NoEventAfterExplicitRemoveHandlerForType)
 {
-    DotsTestStruct dts{ DotsTestStruct::indKeyfField_i{ 1 } };
+    DotsTestStruct dts{ .indKeyfField = 1 };
     DotsHeader header1 = test_helpers::make_header(dts, 42);
     DotsHeader header2 = test_helpers::make_header(dts, 42);
 
@@ -584,7 +584,7 @@ TEST_F(TestDispatcher, dispatch_NoEventAfterExplicitRemoveHandlerForType)
 
 TEST_F(TestDispatcher, dispatch_AddEventHandlerDuringDispatch)
 {
-    DotsTestStruct dts{ DotsTestStruct::indKeyfField_i{ 1 } };
+    DotsTestStruct dts{ .indKeyfField = 1 };
     DotsHeader header = test_helpers::make_header(dts, 42);
 
     size_t i = 0;
@@ -620,7 +620,7 @@ TEST_F(TestDispatcher, dispatch_AddEventHandlerDuringDispatch)
 
 TEST_F(TestDispatcher, dispatch_RemoveCurrentEventHandlerDuringDispatch)
 {
-    DotsTestStruct dts{ DotsTestStruct::indKeyfField_i{ 1 } };
+    DotsTestStruct dts{ .indKeyfField = 1 };
     DotsHeader header = test_helpers::make_header(dts, 42);
 
     size_t i = 0;
@@ -654,7 +654,7 @@ TEST_F(TestDispatcher, dispatch_RemoveCurrentEventHandlerDuringDispatch)
 
 TEST_F(TestDispatcher, dispatch_RemoveOtherEventHandlerDuringDispatch)
 {
-    DotsTestStruct dts{ DotsTestStruct::indKeyfField_i{ 1 } };
+    DotsTestStruct dts{ .indKeyfField = 1 };
     DotsHeader header = test_helpers::make_header(dts, 42);
 
     size_t i = 0;
@@ -695,7 +695,7 @@ TEST_F(TestDispatcher, dispatch_RemoveOtherEventHandlerDuringDispatch)
 
 TEST_F(TestDispatcher, dispatch_ExecptionInvokesErrorHandler)
 {
-    DotsTestStruct dts{ DotsTestStruct::indKeyfField_i{ 1 } };
+    DotsTestStruct dts{ .indKeyfField = 1 };
 
     m_sut.addEventHandler<DotsTestStruct>([i{ 0 }](const dots::Event<DotsTestStruct>&/* e*/) mutable
     {
@@ -721,7 +721,7 @@ TEST_F(TestDispatcher, dispatch_ExecptionInvokesErrorHandler)
 TEST_F(TestDispatcher, moveCtor_CreateEventAfterMoveContructWhenAddedHandlerForCachedType)
 {
     dots::Dispatcher dispatcher{ [](auto&&...){} };
-    DotsTestStruct dts{ DotsTestStruct::indKeyfField_i{ 1 } };
+    DotsTestStruct dts{ .indKeyfField = 1 };
     DotsHeader header = test_helpers::make_header(dts, 42);
 
     size_t i = 0;

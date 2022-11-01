@@ -31,12 +31,13 @@ TEST_F(TestLegacyAuthManager, testAddUpdateRemoveRules)
     auto make_rule = [](dots::uint16_t priority, std::optional<bool> accept = std::nullopt)
     {
         DotsAuthentication rule{
-            DotsAuthentication::nameSpace_i{ "" },
-            DotsAuthentication::network_i{
-                DotsNetwork::network_i{ "127.0.0.1" },
-                DotsNetwork::prefix_i{ 8 } },
-                DotsAuthentication::clientName_i{ "" },
-            DotsAuthentication::priority_i{ priority }
+            .nameSpace = "",
+            .network = DotsNetwork{
+                .network = "127.0.0.1",
+                .prefix = 8
+            },
+            .clientName = "",
+            .priority = priority
         };
 
         if (accept != std::nullopt)
@@ -67,26 +68,27 @@ TEST_F(TestLegacyAuthManager, testFindNetwork)
 
     {
         m_transceiver.publish(DotsAuthentication{
-            DotsAuthentication::nameSpace_i{ "" },
-            DotsAuthentication::network_i{
-                DotsNetwork::network_i{ "127.0.0.1" },
-                DotsNetwork::prefix_i{ 8 }
+            .nameSpace = "",
+            .network = DotsNetwork{
+                .network = "127.0.0.1",
+                .prefix = 8
             },
-            DotsAuthentication::clientName_i{ "" },
-            DotsAuthentication::priority_i{ 10 },
-            DotsAuthentication::accept_i{ true }
+            .clientName = "",
+            .priority = 10,
+            .accept = true 
         });
     }
     {
         m_transceiver.publish(DotsAuthentication{
-            DotsAuthentication::nameSpace_i{ "" },
-            DotsAuthentication::network_i{
-                DotsNetwork::network_i{ "192.168.2.10" },
-                DotsNetwork::prefix_i{ 24 } },
-            DotsAuthentication::clientName_i{ "" },
-            DotsAuthentication::priority_i{ 20 },
-            DotsAuthentication::secret_i{ "mysecret" },
-            DotsAuthentication::accept_i{ true }
+            .nameSpace = "",
+            .network = DotsNetwork{
+                .network = "192.168.2.10",
+                .prefix = 24
+            },
+            .clientName = "",
+            .priority = 20,
+            .secret = "mysecret",
+            .accept = true 
         });
     }
 
@@ -113,37 +115,40 @@ TEST_F(TestLegacyAuthManager, testRulePriority)
 
     {
         m_transceiver.publish(DotsAuthentication{
-            DotsAuthentication::nameSpace_i{ "" },
-            DotsAuthentication::network_i{
-                DotsNetwork::network_i{ "127.0.0.1" },
-                DotsNetwork::prefix_i{ 8 } },
-            DotsAuthentication::clientName_i{ "" },
-            DotsAuthentication::priority_i{ 20 },
-            DotsAuthentication::accept_i{ true }
+            .nameSpace = "",
+            .network = DotsNetwork{
+                .network = "127.0.0.1",
+                .prefix = 8
+            },
+            .clientName = "",
+            .priority = 20,
+            .accept = true 
         });
     }
     {
         m_transceiver.publish(DotsAuthentication{
-            DotsAuthentication::nameSpace_i{ "" },
-            DotsAuthentication::network_i{
-                DotsNetwork::network_i{ "0.0.0.0" },
-                DotsNetwork::prefix_i{ 0 } },
-            DotsAuthentication::clientName_i{ "" },
-            DotsAuthentication::priority_i{ 10 },
-            DotsAuthentication::secret_i{ "remote" },
-            DotsAuthentication::accept_i{ false }
+            .nameSpace = "",
+            .network = DotsNetwork{
+                .network = "0.0.0.0",
+                .prefix = 0
+            },
+            .clientName = "",
+            .priority = 10,
+            .secret = "remote",
+            .accept = false 
         });
     }
     {
         m_transceiver.publish(DotsAuthentication{
-            DotsAuthentication::nameSpace_i{ "" },
-            DotsAuthentication::network_i{
-                DotsNetwork::network_i{ "192.168.1.2" },
-                DotsNetwork::prefix_i{ 24 } },
-            DotsAuthentication::clientName_i{ "" },
-            DotsAuthentication::priority_i{ 5 },
-            DotsAuthentication::secret_i{ "lan" },
-            DotsAuthentication::accept_i{ true }
+            .nameSpace = "",
+            .network = DotsNetwork{
+                .network = "192.168.1.2",
+                .prefix = 24
+            },
+            .clientName = "",
+            .priority = 5,
+            .secret = "lan",
+            .accept = true 
         });
     }
 
@@ -173,8 +178,8 @@ TEST_F(TestLegacyAuthManager, testDefaultPolicy)
 
     {
         m_transceiver.publish(DotsAuthenticationPolicy{
-            DotsAuthenticationPolicy::nameSpace_i{ "" },
-            DotsAuthenticationPolicy::accept_i{ false }
+            .nameSpace = "",
+            .accept = false 
         });
     }
 
@@ -183,8 +188,8 @@ TEST_F(TestLegacyAuthManager, testDefaultPolicy)
 
     {
         m_transceiver.publish(DotsAuthenticationPolicy{
-            DotsAuthenticationPolicy::nameSpace_i{ "" },
-            DotsAuthenticationPolicy::accept_i{ true }
+            .nameSpace = "",
+            .accept = true 
         });
     }
 
@@ -193,7 +198,7 @@ TEST_F(TestLegacyAuthManager, testDefaultPolicy)
 
     {
         m_transceiver.remove(DotsAuthenticationPolicy{
-            DotsAuthenticationPolicy::nameSpace_i{ "" }
+            .nameSpace = "" 
         });
     }
 
@@ -208,56 +213,60 @@ TEST_F(TestLegacyAuthManager, testCheckAuthentication)
 
     {
         m_transceiver.publish(DotsAuthentication{
-            DotsAuthentication::nameSpace_i{ "" },
-            DotsAuthentication::network_i{
-                DotsNetwork::network_i{ "127.0.0.1" },
-                DotsNetwork::prefix_i{ 8 } },
-            DotsAuthentication::clientName_i{ "" },
-            DotsAuthentication::priority_i{ 10 },
-            DotsAuthentication::accept_i{ true }
+            .nameSpace = "",
+            .network = DotsNetwork{
+                .network = "127.0.0.1",
+                .prefix = 8
+            },
+            .clientName = "",
+            .priority = 10,
+            .accept = true 
         });
     }
     {
         m_transceiver.publish(DotsAuthentication{
-            DotsAuthentication::nameSpace_i{ "" },
-            DotsAuthentication::network_i{
-                DotsNetwork::network_i{ "192.168.1.2" },
-                DotsNetwork::prefix_i{ 24 } },
-            DotsAuthentication::clientName_i{ "" },
-            DotsAuthentication::priority_i{ 20 },
-            DotsAuthentication::secret_i{ secret_lan },
-            DotsAuthentication::accept_i{ true }
+            .nameSpace = "",
+            .network = DotsNetwork{
+                .network = "192.168.1.2",
+                .prefix = 24
+            },
+            .clientName = "",
+            .priority = 20,
+            .secret = secret_lan,
+            .accept = true 
         });
     }
     {
         m_transceiver.publish(DotsAuthentication{
-            DotsAuthentication::nameSpace_i{ "" },
-            DotsAuthentication::network_i{
-                DotsNetwork::network_i{ "192.168.1.2" },
-                DotsNetwork::prefix_i{ 24 } },
-            DotsAuthentication::clientName_i{ "" },
-            DotsAuthentication::priority_i{ 21 },
-            DotsAuthentication::secret_i{ secret_lan2 },
-            DotsAuthentication::accept_i{ true }
+            .nameSpace = "",
+            .network = DotsNetwork{
+                .network = "192.168.1.2",
+                .prefix = 24
+            },
+            .clientName = "",
+            .priority = 21,
+            .secret = secret_lan2,
+            .accept = true 
         });
     }
     {
         m_transceiver.publish(DotsAuthentication{
-            DotsAuthentication::nameSpace_i{ "" },
-            DotsAuthentication::network_i{
-                DotsNetwork::network_i{ "10.0.0.0" },
-                DotsNetwork::prefix_i{ 8 } },
-            DotsAuthentication::clientName_i{ "" },
-            DotsAuthentication::priority_i{ 22 },
-            DotsAuthentication::secret_i{ secret_other },
-            DotsAuthentication::accept_i{ true }
+            .nameSpace = "",
+            .network = DotsNetwork{
+                .network = "10.0.0.0",
+                .prefix = 8
+            },
+            .clientName = "",
+            .priority = 22,
+            .secret = secret_other,
+            .accept = true 
         });
     }
 
     {
         m_transceiver.publish(DotsAuthenticationPolicy{
-            DotsAuthenticationPolicy::nameSpace_i{ "" },
-            DotsAuthenticationPolicy::accept_i{ false }
+            .nameSpace = "",
+            .accept = false 
         });
     }
 
@@ -268,7 +277,7 @@ TEST_F(TestLegacyAuthManager, testCheckAuthentication)
     {
         auto addr = boost::asio::ip::address::from_string("127.0.0.1");
         DotsMsgConnect response{
-            DotsMsgConnect::clientName_i{ "dummyClient" }
+            .clientName = "dummyClient" 
         };
 
         EXPECT_TRUE(m_sut.verifyResponse(addr, nonce, response));
@@ -277,8 +286,8 @@ TEST_F(TestLegacyAuthManager, testCheckAuthentication)
     {
         auto addr = boost::asio::ip::address::from_string("192.168.1.11");
         DotsMsgConnect response{
-            DotsMsgConnect::clientName_i{ "dummyClient" },
-            DotsMsgConnect::cnonce_i{ "noncense" }
+            .clientName = "dummyClient",
+            .cnonce = "noncense" 
         };
 
         auto responseHash = dots::io::Digest(nonce, *response.cnonce, *response.clientName, secret_lan).value();
@@ -292,8 +301,8 @@ TEST_F(TestLegacyAuthManager, testCheckAuthentication)
     {
         auto addr = boost::asio::ip::address::from_string("192.168.1.11");
         DotsMsgConnect response{
-            DotsMsgConnect::clientName_i{ "dummyClient" },
-            DotsMsgConnect::cnonce_i{ "noncense" }
+            .clientName = "dummyClient",
+            .cnonce = "noncense" 
         };
 
         auto responseHash = dots::io::Digest(nonce, *response.cnonce, *response.clientName, secret_lan2).value();
@@ -307,8 +316,8 @@ TEST_F(TestLegacyAuthManager, testCheckAuthentication)
     {
         auto addr = boost::asio::ip::address::from_string("10.10.1.2");
         DotsMsgConnect response{
-            DotsMsgConnect::clientName_i{ "dummyClient" },
-            DotsMsgConnect::cnonce_i{ "noncense" }
+            .clientName = "dummyClient",
+            .cnonce = "noncense" 
         };
 
         auto responseHash = dots::io::Digest(nonce, *response.cnonce, *response.clientName, secret_other).value();
@@ -322,8 +331,8 @@ TEST_F(TestLegacyAuthManager, testCheckAuthentication)
     {
         auto addr = boost::asio::ip::address::from_string("1.2.3.4");
         DotsMsgConnect response{
-            DotsMsgConnect::clientName_i{ "dummyClient" },
-            DotsMsgConnect::cnonce_i{ "noncense" }
+            .clientName = "dummyClient",
+            .cnonce = "noncense" 
         };
 
         auto responseHash = dots::io::Digest(nonce, *response.cnonce, *response.clientName, "blub").value();
@@ -350,8 +359,8 @@ TEST_F(TestLegacyAuthManager, testCheckAuthenticationDefault)
     {
         auto addr = boost::asio::ip::address::from_string("192.168.1.11");
         DotsMsgConnect response{
-            DotsMsgConnect::clientName_i{ "dummyClient" },
-            DotsMsgConnect::cnonce_i{ "noncense" }
+            .clientName = "dummyClient",
+            .cnonce = "noncense" 
         };
 
         auto responseHash = dots::io::Digest(nonce, *response.cnonce, *response.clientName, "lan").value();
@@ -371,54 +380,56 @@ TEST_F(TestLegacyAuthManager, requiresAuthentication)
     EXPECT_FALSE(m_sut.requiresAuthentication(boost::asio::ip::address::from_string("192.168.0.42")));
 
     m_transceiver.publish(DotsAuthentication{
-        DotsAuthentication::nameSpace_i{ "" },
-        DotsAuthentication::network_i{
-            DotsNetwork::network_i{ "127.0.0.1" },
-            DotsNetwork::prefix_i{ 8 }
+        .nameSpace = "",
+        .network = DotsNetwork{
+            .network = "127.0.0.1",
+            .prefix = 8
         },
-        DotsAuthentication::clientName_i{ "" },
-        DotsAuthentication::priority_i{ 10 },
-        DotsAuthentication::accept_i{ true }
+        .clientName = "",
+        .priority = 10,
+        .accept = true
+    });
+
+    DotsNetwork network{
+        .network = "10.60.61.0",
+        .prefix = 30
+    };
+
+    m_transceiver.publish(DotsAuthentication{
+        .nameSpace = "",
+        .network = network,
+        .clientName = "",
+        .priority = 20,
+        .accept = true
     });
 
     m_transceiver.publish(DotsAuthentication{
-        DotsAuthentication::nameSpace_i{ "" },
-        DotsAuthentication::network_i{
-            DotsNetwork::network_i{ "10.60.61.0" },
-            DotsNetwork::prefix_i{ 30 }
+        .nameSpace = "",
+        .network = DotsNetwork{
+            .network = "0.0.0.0",
+            .prefix = 0u
         },
-        DotsAuthentication::clientName_i{ "" },
-        DotsAuthentication::priority_i{ 20 },
-        DotsAuthentication::accept_i{ true }
+        .clientName = "",
+        .priority = 50,
+        .secret = "foo:bar",
+        .accept = true
     });
 
     m_transceiver.publish(DotsAuthentication{
-        DotsAuthentication::nameSpace_i{ "" },
-        DotsAuthentication::network_i{
-            DotsNetwork::network_i{ "0.0.0.0" },
-            DotsNetwork::prefix_i{ 0 }
+        .nameSpace = "",
+        .network = DotsNetwork{
+            .network = "0.0.0.0",
+            .prefix = 0
         },
-        DotsAuthentication::clientName_i{ "" },
-        DotsAuthentication::priority_i{ 50 },
-        DotsAuthentication::secret_i{ "foo:bar" },
-        DotsAuthentication::accept_i{ true }
-    });
-
-    m_transceiver.publish(DotsAuthentication{
-        DotsAuthentication::nameSpace_i{ "" },
-        DotsAuthentication::network_i{
-            DotsNetwork::network_i{ "0.0.0.0" },
-            DotsNetwork::prefix_i{ 0 }
-        },
-        DotsAuthentication::clientName_i{ "" },
-        DotsAuthentication::priority_i{ 51 },
-        DotsAuthentication::secret_i{ "baz:qux" },
-        DotsAuthentication::accept_i{ true }
+        .clientName = "",
+        .priority = 51,
+        .secret = "baz:qux",
+        .accept = true
     });
 
     m_transceiver.publish(DotsAuthenticationPolicy{
-        DotsAuthenticationPolicy::nameSpace_i{ "" },
-        DotsAuthenticationPolicy::accept_i{ false }
+        .nameSpace = "",
+        .accept = false
     });
 
     EXPECT_FALSE(m_sut.requiresAuthentication(boost::asio::ip::address::from_string("127.0.0.1")));

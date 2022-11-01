@@ -1,6 +1,6 @@
 # dots-cpp
 
-The *dots-cpp* project is a C++17/20 library for type-oriented *interprocess communication (IPC)* with a focus on closed environments. It is based on the *DOTS (Distributed Object in Time and Space)* specification and is its reference implementation.
+The *dots-cpp* project is a C++20 library for type-oriented *interprocess communication (IPC)* with a focus on closed environments. It is based on the *DOTS (Distributed Object in Time and Space)* specification and is its reference implementation.
 
 # TL;DR
 
@@ -59,7 +59,7 @@ The dots-cpp library is a complete publish-subscribe IPC solution for both local
 
 ## Features: Library
 
-* Modern C++17/20 library with CMake support.
+* Modern C++20 library with CMake support.
 * Portable with officially maintained support for Linux (with GCC 9.4.0 or Clang 10.0.0) and Windows (with latest MSVC).
 * Variety of available transport protocols (TCP, UNIX domain sockets, WebSocket) and serialization methods (CBOR, JSON).
 * Small base API that is sufficient for most common uses cases.
@@ -86,7 +86,7 @@ Intermediate examples:
 * Boost Libraries[^1] >= 1.71.0 (including program-options)
 * Python >= 3.8
 * dots-code-generator >= 0.0.4 (https://github.com/pnxs/dots-code-generator, also available via pip (https://pypi.org/project/dots-code-generator))
-* C++ compiler supporting at least C++17 (such as GCC 9 or MSVC 19.14)
+* C++ compiler supporting at least C++20 (such as GCC 9 or MSVC 19.14)
 
 [^1]: Boost is linked static by default, change cmake-option 'Boost_USE_STATIC_LIBS' to link it shared.
 

@@ -64,17 +64,26 @@ namespace dots::type
 
         DynamicStruct(const DynamicStruct& other);
         DynamicStruct(DynamicStruct&& other);
-        ~DynamicStruct();
 
-        DynamicStruct& operator = (const DynamicStruct& rhs);
-        DynamicStruct& operator = (DynamicStruct&& rhs);
+        ~DynamicStruct()
+        {
+            if (m_propertyArea != nullptr)
+            {
+                _clear();
+            }
+        }
 
-        bool operator == (const DynamicStruct& rhs) const;
-        bool operator != (const DynamicStruct& rhs) const;
-        bool operator < (const DynamicStruct& rhs) const;
-        bool operator <= (const DynamicStruct& rhs) const;
-        bool operator > (const DynamicStruct& rhs) const;
-        bool operator >= (const DynamicStruct& rhs) const;
+        DynamicStruct& operator = (const DynamicStruct& rhs)
+        {
+            _assign(rhs);
+            return *this;
+        }
+
+        DynamicStruct& operator = (DynamicStruct&& rhs)
+        {
+            _assign(std::move(rhs));
+            return *this;
+        }
 
         using Struct::_assign;
         using Struct::_copy;
@@ -92,25 +101,75 @@ namespace dots::type
 
         using Struct::_diffProperties;
 
-        DynamicStruct& _assign(const DynamicStruct& other, PropertySet includedProperties = PropertySet::All);
-        DynamicStruct& _assign(DynamicStruct&& other, PropertySet includedProperties = PropertySet::All);
-        DynamicStruct& _copy(const DynamicStruct& other, PropertySet includedProperties = PropertySet::All);
-        DynamicStruct& _merge(const DynamicStruct& other, PropertySet includedProperties = PropertySet::All);
-        void _swap(DynamicStruct& other, PropertySet includedProperties = PropertySet::All);
-        void _clear(PropertySet includedProperties = PropertySet::All);
+        DynamicStruct& _assign(const DynamicStruct& other, PropertySet includedProperties = PropertySet::All)
+        {
+            return static_cast<DynamicStruct&>(Struct::_assign(other, includedProperties));
+        }
 
-        bool _equal(const DynamicStruct& rhs, PropertySet includedProperties = PropertySet::All) const;
-        bool _same(const DynamicStruct& rhs) const;
+        DynamicStruct& _assign(DynamicStruct&& other, PropertySet includedProperties = PropertySet::All)
+        {
+            return static_cast<DynamicStruct&>(Struct::_assign(std::move(other), includedProperties));
+        }
 
-        bool _less(const DynamicStruct& rhs, PropertySet includedProperties = PropertySet::All) const;
-        bool _lessEqual(const DynamicStruct& rhs, PropertySet includedProperties = PropertySet::All) const;
-        bool _greater(const DynamicStruct& rhs, PropertySet includedProperties = PropertySet::All) const;
-        bool _greaterEqual(const DynamicStruct& rhs, PropertySet includedProperties = PropertySet::All) const;
+        DynamicStruct& _copy(const DynamicStruct& other, PropertySet includedProperties = PropertySet::All)
+        {
+            return static_cast<DynamicStruct&>(Struct::_copy(other, includedProperties));
+        }
 
-        PropertySet _diffProperties(const DynamicStruct& other, PropertySet includedProperties = PropertySet::All) const;
+        DynamicStruct& _merge(const DynamicStruct& other, PropertySet includedProperties = PropertySet::All)
+        {
+            return static_cast<DynamicStruct&>(Struct::_merge(other, includedProperties));
+        }
 
-        const PropertyArea& _propertyArea() const;
-        PropertyArea& _propertyArea();
+        void _swap(DynamicStruct& other, PropertySet includedProperties = PropertySet::All)
+        {
+            Struct::_swap(other, includedProperties);
+        }
+
+        void _clear(PropertySet includedProperties = PropertySet::All)
+        {
+            Struct::_clear(includedProperties);
+        }
+
+        bool _equal(const DynamicStruct& rhs, PropertySet includedProperties = PropertySet::All) const
+        {
+            return Struct::_equal(rhs, includedProperties);
+        }
+
+        bool _same(const DynamicStruct& rhs) const
+        {
+            return Struct::_same(rhs);
+        }
+
+        bool _lessEqual(const DynamicStruct& rhs, PropertySet includedProperties = PropertySet::All) const
+        {
+            return Struct::_lessEqual(rhs, includedProperties);
+        }
+
+        bool _greater(const DynamicStruct& rhs, PropertySet includedProperties = PropertySet::All) const
+        {
+            return Struct::_greater(rhs, includedProperties);
+        }
+
+        bool _greaterEqual(const DynamicStruct& rhs, PropertySet includedProperties = PropertySet::All) const
+        {
+            return Struct::_greaterEqual(rhs, includedProperties);
+        }
+
+        PropertySet _diffProperties(const DynamicStruct& other, PropertySet includedProperties = PropertySet::All) const
+        {
+            return Struct::_diffProperties(other, includedProperties);
+        }
+
+        const PropertyArea& _propertyArea() const
+        {
+            return *m_propertyArea;
+        }
+
+        PropertyArea& _propertyArea()
+        {
+            return *m_propertyArea;
+        }
 
     private:
 
@@ -228,4 +287,16 @@ namespace dots::type
             return instance._propertyArea();
         }
     };
+
+    inline DynamicStruct::DynamicStruct(const DynamicStruct& other) :
+        DynamicStruct(other._descriptor().to<Descriptor<DynamicStruct>, true>())
+    {
+        *this = other;
+    }
+
+    inline DynamicStruct::DynamicStruct(DynamicStruct&& other) :
+        DynamicStruct(other._descriptor().to<Descriptor<DynamicStruct>, true>())
+    {
+        *this = std::move(other);
+    }
 }

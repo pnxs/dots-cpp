@@ -4,9 +4,7 @@
 #include <dots/type/StaticProperty.h>
 #include <dots/type/StaticPropertyOffset.h>
 #include <dots/type/FundamentalTypes.h>
-#include <dots/type/PropertyInitializer.h>
 #include <dots/testing/gtest/gtest.h>
-#define DOTS_EXPERIMENTAL_DESIGNATED_STRUCT_INITIALIZATION
 #include <TestStruct.dots.h>
 
 using namespace dots::types;

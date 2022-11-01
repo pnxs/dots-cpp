@@ -60,13 +60,13 @@ namespace dots
         }
 
         DotsHeader header{
-            DotsHeader::typeName_i{ instance._descriptor().name() },
-            DotsHeader::sentTime_i{ timepoint_t::Now() },
-            DotsHeader::serverSentTime_i{ timepoint_t::Now() },
-            DotsHeader::attributes_i{ *includedProperties },
-            DotsHeader::sender_i{ Connection::HostId },
-            DotsHeader::removeObj_i{ remove },
-            DotsHeader::isFromMyself_i{ true }
+            .typeName = instance._descriptor().name(),
+            .sentTime = timepoint_t::Now(),
+            .serverSentTime = timepoint_t::Now(),
+            .attributes = *includedProperties,
+            .sender = Connection::HostId,
+            .removeObj = remove,
+            .isFromMyself = true
         };
 
         io::Transmission transmission{ std::move(header), instance };
@@ -257,8 +257,8 @@ namespace dots
                 }
 
                 connection.transmit(DotsCacheInfo{
-                    DotsCacheInfo::typeName_i{ member.groupName },
-                    DotsCacheInfo::endTransmission_i{ true }
+                    .typeName = member.groupName,
+                    .endTransmission = true
                 });
             }
         }
@@ -289,7 +289,7 @@ namespace dots
             connection.transmit(descriptor);
         });
 
-        connection.transmit(DotsCacheInfo{ DotsCacheInfo::endDescriptorRequest_i{ true } });
+        connection.transmit(DotsCacheInfo{ .endDescriptorRequest = true });
     }
 
     void HostTransceiver::handleClearCache(Connection&/* connection*/, const DotsClearCache& clearCache)
@@ -335,9 +335,9 @@ namespace dots
         }
 
         DotsHeader header{
-            DotsHeader::typeName_i{ container.descriptor().name() },
-            DotsHeader::fromCache_i{ static_cast<uint32_t>(container.size()) },
-            DotsHeader::removeObj_i{ false }
+            .typeName = container.descriptor().name(),
+            .fromCache = static_cast<uint32_t>(container.size()),
+            .removeObj = false
         };
 
         for (const auto& [instance, cloneInfo] : container)
