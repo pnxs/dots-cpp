@@ -48,6 +48,7 @@ target_sources(${TARGET_NAME}
         src/Transceiver.cpp
 
         src/io/DescriptorConverter.cpp
+        src/io/Io.cpp
 
         src/serialization/AsciiSerialization.cpp
 
@@ -81,7 +82,6 @@ if(ENABLE_DOTS_IO)
             src/GuestTransceiver.cpp
             src/HostTransceiver.cpp
 
-            src/io/Io.cpp
             src/io/Endpoint.cpp
             src/io/FdObserver.cpp
             src/io/Channel.cpp
