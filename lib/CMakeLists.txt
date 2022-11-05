@@ -8,6 +8,7 @@ include(LibraryUtils)
 
 # options
 option(BUILD_DOTS_SHARED "Build DOTS as a shared instead of a static library" OFF)
+option(ENABLE_CHANNEL_WEBSOCKET "Compile with websocket channel support" ON)
 option(ENABLE_DOTS_IO "Compile DOTS IO" ON)
 
 # dependencies
@@ -47,8 +48,6 @@ target_sources(${TARGET_NAME}
         src/Transceiver.cpp
 
         src/io/DescriptorConverter.cpp
-        src/io/channels/WebSocketChannel.cpp
-        src/io/channels/WebSocketListener.cpp
 
         src/serialization/AsciiSerialization.cpp
 
@@ -102,6 +101,20 @@ if(ENABLE_DOTS_IO)
             src/io/auth/LegacyAuthManager.cpp
             )
 endif()
+
+if(ENABLE_CHANNEL_WEBSOCKET)
+    target_sources(${TARGET_NAME}
+            PRIVATE
+            src/io/channels/WebSocketChannel.cpp
+            src/io/channels/WebSocketListener.cpp
+    )
+    target_compile_definitions(${TARGET_NAME}
+            PUBLIC
+            # suppress warning for usage of deprecated Win32 socket functions in Boost
+            ENABLE_CHANNEL_WEBSOCKET
+    )
+endif()
+
 target_include_directories(${TARGET_NAME}
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
