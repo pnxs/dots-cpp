@@ -8,6 +8,7 @@ include(LibraryUtils)
 
 # options
 option(BUILD_DOTS_SHARED "Build DOTS as a shared instead of a static library" OFF)
+option(ENABLE_DOTS_IO "Compile DOTS IO" ON)
 
 # dependencies
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
@@ -37,39 +38,15 @@ target_dots_model(${TARGET_NAME}
 )
 target_sources(${TARGET_NAME}
     PRIVATE
-        src/Application.cpp
-        src/Connection.cpp
         src/Container.cpp
         src/ContainerPool.cpp
-        src/Dispatcher.cpp
         src/dots.cpp
-        src/Event.cpp
-        src/GuestTransceiver.cpp
-        src/HostTransceiver.cpp
         src/Requirements.cpp
         src/Subscription.cpp
         src/Timer.cpp
         src/Transceiver.cpp
 
-        src/io/Channel.cpp
         src/io/DescriptorConverter.cpp
-        src/io/Endpoint.cpp
-        src/io/FdObserver.cpp
-        src/io/Io.cpp
-        src/io/Listener.cpp
-        src/io/Transmission.cpp
-
-        src/io/auth/AuthManager.cpp
-        src/io/auth/Digest.cpp
-        src/io/auth/LegacyAuthManager.cpp
-        src/io/auth/Nonce.cpp
-
-        src/io/channels/LocalChannel.cpp
-        src/io/channels/LocalListener.cpp
-        src/io/channels/TcpChannel.cpp
-        src/io/channels/TcpListener.cpp
-        src/io/channels/UdsChannel.cpp
-        src/io/channels/UdsListener.cpp
         src/io/channels/WebSocketChannel.cpp
         src/io/channels/WebSocketListener.cpp
 
@@ -94,6 +71,37 @@ target_sources(${TARGET_NAME}
         src/type/Uuid.cpp
         src/type/VectorDescriptor.cpp
 )
+
+if(ENABLE_DOTS_IO)
+    target_sources(${TARGET_NAME}
+            PRIVATE
+            src/Application.cpp
+            src/Connection.cpp
+            src/Dispatcher.cpp
+            src/Event.cpp
+            src/GuestTransceiver.cpp
+            src/HostTransceiver.cpp
+
+            src/io/Io.cpp
+            src/io/Endpoint.cpp
+            src/io/FdObserver.cpp
+            src/io/Channel.cpp
+            src/io/Listener.cpp
+            src/io/Transmission.cpp
+
+            src/io/channels/TcpListener.cpp
+            src/io/channels/TcpChannel.cpp
+            src/io/channels/UdsChannel.cpp
+            src/io/channels/UdsListener.cpp
+            src/io/channels/LocalChannel.cpp
+            src/io/channels/LocalListener.cpp
+
+            src/io/auth/Nonce.cpp
+            src/io/auth/Digest.cpp
+            src/io/auth/AuthManager.cpp
+            src/io/auth/LegacyAuthManager.cpp
+            )
+endif()
 target_include_directories(${TARGET_NAME}
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

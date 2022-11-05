@@ -47,6 +47,17 @@ target_sources(${TARGET_NAME}
         src/type/TestStaticDescriptor.cpp
         src/type/TestStaticStruct.cpp
 )
+if(ENABLE_DOTS_IO)
+    target_sources(${TARGET_NAME}
+            PRIVATE
+            src/io/auth/TestDigest.cpp
+            src/io/auth/TestLegacyAuthManager.cpp
+            src/TestConnection.cpp
+            src/TestHostTransceiver.cpp
+            src/TestGuestTransceiver.cpp
+            src/TestDispatcher.cpp
+    )
+endif()
 target_include_directories(${TARGET_NAME}
     PRIVATE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
