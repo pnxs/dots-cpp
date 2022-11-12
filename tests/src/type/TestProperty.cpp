@@ -5,6 +5,7 @@
 #include <dots/testing/gtest/gtest.h>
 #include <dots/type/Property.h>
 #include <dots/type/FundamentalTypes.h>
+#include <TestStruct.dots.h>
 
 using namespace dots::type;
 
@@ -12,62 +13,18 @@ struct TestProperty : ::testing::Test
 {
 protected:
 
-    template <typename T>
-    struct test_property_t : Property<T, test_property_t<T>>
-    {
-        test_property_t(const PropertyArea& area, std::string name, uint32_t tag) :
-            m_descriptor{ PropertyDescriptor{ Descriptor<T>::Instance(), std::move(name), tag, false, PropertyOffset{ std::in_place, static_cast<uint32_t>(reinterpret_cast<char*>(this) - reinterpret_cast<const char*>(&area)) } } } {}
-        test_property_t(const test_property_t& other) = delete;
-        test_property_t(test_property_t&& other) = delete;
-        ~test_property_t() { Property<T, test_property_t<T>>::reset(); }
-
-        test_property_t& operator = (const test_property_t& rhs)
-        {
-            Property<T, test_property_t<T>>::assign(rhs);
-            return *this;
-        }
-
-        test_property_t& operator = (test_property_t&& rhs) = delete;
-
-        using Property<T, test_property_t<T>>::operator=;
-
-    private:
-
-        friend struct Property<T, test_property_t<T>>;
-
-        PropertySet validProperties() const { return PropertyArea::GetArea(*this, m_descriptor.offset()).validProperties(); }
-        PropertySet& validProperties() { return PropertyArea::GetArea(*this, m_descriptor.offset()).validProperties(); }
-
-        const T& derivedStorage() const { return m_value; }
-        const PropertyDescriptor& derivedDescriptor() const { return m_descriptor; }
-
-        bool derivedIsValid() const { return m_descriptor.set() <= validProperties(); }
-        void derivedSetValid(){ validProperties() += derivedDescriptor().set(); }
-        void derivedSetInvalid(){ validProperties() -= derivedDescriptor().set(); }
-
-        union { T m_value; };
-        const PropertyDescriptor m_descriptor;
-    };
-
-    struct test_property_area_t : PropertyArea
-    {
-        test_property_area_t() : intProperty{ *this, "intProperty", 1 }, stringProperty{ *this, "stringProperty", 2 } {}
-        test_property_t<int> intProperty;
-        test_property_t<std::string> stringProperty;
-    };
-
     TestProperty() :
         m_sut(m_propertyArea.stringProperty),
         m_sutLhs(m_propertyAreaLhs.stringProperty),
         m_sutRhs(m_propertyAreaRhs.stringProperty) {}
 
-    test_property_area_t m_propertyArea;
-    test_property_area_t m_propertyAreaLhs;
-    test_property_area_t m_propertyAreaRhs;
+    TestStruct m_propertyArea;
+    TestStruct m_propertyAreaLhs;
+    TestStruct m_propertyAreaRhs;
 
-    test_property_t<std::string>& m_sut;
-    test_property_t<std::string>& m_sutLhs;
-    test_property_t<std::string>& m_sutRhs;
+    TestStruct::stringProperty_pt& m_sut;
+    TestStruct::stringProperty_pt& m_sutLhs;
+    TestStruct::stringProperty_pt& m_sutRhs;
 };
 
 TEST_F(TestProperty, isValid_InvalidWithoutValue)
