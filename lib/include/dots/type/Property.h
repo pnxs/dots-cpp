@@ -308,7 +308,7 @@ namespace dots::type
             }
             else
             {
-                return false;
+                return true;
             }
         };
         (void)less;
@@ -323,7 +323,7 @@ namespace dots::type
                 }
                 else
                 {
-                    return lhs.isValid();
+                    return false;
                 }
             }
             else
@@ -352,7 +352,7 @@ namespace dots::type
                 }
                 else
                 {
-                    return true;
+                    return false;
                 }
             }
         }

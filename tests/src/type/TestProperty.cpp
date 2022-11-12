@@ -298,11 +298,11 @@ TEST_F(TestProperty, CompareOrderingOfPropertyWithProperty)
         const auto& validProperty = TestStruct{ .stringProperty = "a" }.stringProperty;
         const auto& invalidProperty = TestStruct{}.stringProperty;
 
-        EXPECT_FALSE(validProperty > invalidProperty);
-        EXPECT_FALSE(validProperty >= invalidProperty);
+        EXPECT_TRUE(validProperty > invalidProperty);
+        EXPECT_TRUE(validProperty >= invalidProperty);
 
-        EXPECT_TRUE(validProperty < invalidProperty);
-        EXPECT_TRUE(validProperty <= invalidProperty);
+        EXPECT_FALSE(validProperty < invalidProperty);
+        EXPECT_FALSE(validProperty <= invalidProperty);
     }
 
     // invalid lhs, valid rhs
@@ -310,11 +310,11 @@ TEST_F(TestProperty, CompareOrderingOfPropertyWithProperty)
         const auto& invalidProperty = TestStruct{}.stringProperty;
         const auto& validProperty = TestStruct{ .stringProperty = "a" }.stringProperty;
 
-        EXPECT_FALSE(invalidProperty < validProperty);
-        EXPECT_FALSE(invalidProperty <= validProperty);
+        EXPECT_TRUE(invalidProperty < validProperty);
+        EXPECT_TRUE(invalidProperty <= validProperty);
 
-        EXPECT_TRUE(invalidProperty > validProperty);
-        EXPECT_TRUE(invalidProperty >= validProperty);
+        EXPECT_FALSE(invalidProperty > validProperty);
+        EXPECT_FALSE(invalidProperty >= validProperty);
     }
 
     // valid lhs, valid rhs, unequal values
@@ -361,15 +361,15 @@ TEST_F(TestProperty, CompareOrderingOfPropertyWithValue)
         const auto& invalidProperty = TestStruct{}.stringProperty;
         dots::string_t value = "a";
 
-        EXPECT_FALSE(invalidProperty < value);
-        EXPECT_FALSE(invalidProperty <= value);
-        EXPECT_FALSE(value > invalidProperty);
-        EXPECT_FALSE(value >= invalidProperty);
+        EXPECT_TRUE(invalidProperty < value);
+        EXPECT_TRUE(invalidProperty <= value);
+        EXPECT_TRUE(value > invalidProperty);
+        EXPECT_TRUE(value >= invalidProperty);
 
-        EXPECT_TRUE(value < invalidProperty);
-        EXPECT_TRUE(value <= invalidProperty);
-        EXPECT_TRUE(invalidProperty > value);
-        EXPECT_TRUE(invalidProperty >= value);
+        EXPECT_FALSE(value < invalidProperty);
+        EXPECT_FALSE(value <= invalidProperty);
+        EXPECT_FALSE(invalidProperty > value);
+        EXPECT_FALSE(invalidProperty >= value);
     }
 
     // valid property, unequal values
