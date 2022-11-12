@@ -346,7 +346,14 @@ namespace dots::type
             }
             else
             {
-                return less(rhs, lhs);
+                if (rhs.isValid())
+                {
+                    return rhs.descriptor().valueDescriptor().less(lhs, rhs.storage());
+                }
+                else
+                {
+                    return true;
+                }
             }
         }
     }

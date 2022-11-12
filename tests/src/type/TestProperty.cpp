@@ -362,13 +362,13 @@ TEST_F(TestProperty, CompareOrderingOfPropertyWithValue)
         dots::string_t value = "a";
 
         EXPECT_FALSE(invalidProperty < value);
-        EXPECT_TRUE(invalidProperty <= value);
+        EXPECT_FALSE(invalidProperty <= value);
         EXPECT_FALSE(value > invalidProperty);
-        EXPECT_TRUE(value >= invalidProperty);
+        EXPECT_FALSE(value >= invalidProperty);
 
-        EXPECT_FALSE(value < invalidProperty);
+        EXPECT_TRUE(value < invalidProperty);
         EXPECT_TRUE(value <= invalidProperty);
-        EXPECT_FALSE(invalidProperty > value);
+        EXPECT_TRUE(invalidProperty > value);
         EXPECT_TRUE(invalidProperty >= value);
     }
 
@@ -378,13 +378,13 @@ TEST_F(TestProperty, CompareOrderingOfPropertyWithValue)
         dots::string_t greaterValue = "b";
 
         EXPECT_TRUE(lesserProperty < greaterValue);
-        EXPECT_FALSE(lesserProperty <= greaterValue);
+        EXPECT_TRUE(lesserProperty <= greaterValue);
         EXPECT_TRUE(greaterValue > lesserProperty);
-        EXPECT_FALSE(greaterValue >= lesserProperty);
+        EXPECT_TRUE(greaterValue >= lesserProperty);
 
-        EXPECT_TRUE(greaterValue < lesserProperty);
+        EXPECT_FALSE(greaterValue < lesserProperty);
         EXPECT_FALSE(greaterValue <= lesserProperty);
-        EXPECT_TRUE(lesserProperty > greaterValue);
+        EXPECT_FALSE(lesserProperty > greaterValue);
         EXPECT_FALSE(lesserProperty >= greaterValue);
     }
 
@@ -393,15 +393,15 @@ TEST_F(TestProperty, CompareOrderingOfPropertyWithValue)
         const auto& greaterProperty = TestStruct{ .stringProperty = "b" }.stringProperty;
         dots::string_t lesserValue = "a";
 
-        EXPECT_FALSE(lesserValue < greaterProperty);
+        EXPECT_TRUE(lesserValue < greaterProperty);
         EXPECT_TRUE(lesserValue <= greaterProperty);
-        EXPECT_FALSE(greaterProperty > lesserValue);
+        EXPECT_TRUE(greaterProperty > lesserValue);
         EXPECT_TRUE(greaterProperty >= lesserValue);
 
         EXPECT_FALSE(greaterProperty < lesserValue);
-        EXPECT_TRUE(greaterProperty <= lesserValue);
+        EXPECT_FALSE(greaterProperty <= lesserValue);
         EXPECT_FALSE(lesserValue > greaterProperty);
-        EXPECT_TRUE(lesserValue >= greaterProperty);
+        EXPECT_FALSE(lesserValue >= greaterProperty);
     }
 
     // valid property, equal values
