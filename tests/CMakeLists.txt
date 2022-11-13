@@ -17,34 +17,35 @@ target_dots_model(${TARGET_NAME}
 )
 target_sources(${TARGET_NAME}
     PRIVATE
+        src/TestConnection.cpp
+        src/TestDispatcher.cpp
+        src/TestGuestTransceiver.cpp
+        src/TestHostTransceiver.cpp
+
+        src/io/auth/TestDigest.cpp
+        src/io/auth/TestLegacyAuthManager.cpp
+
+        src/serialization/TestAsciiSerialization.cpp
         src/serialization/TestCborSerializer.cpp
         src/serialization/TestExperimentalCborSerializer.cpp
         src/serialization/TestJsonSerializer.cpp
         src/serialization/TestRapidJsonSerializer.cpp
         src/serialization/TestStringSerializer.cpp
 
-        src/type/TestRegistry.cpp
-
+        src/tools/TestIpNetwork.cpp
         src/tools/TestUri.cpp
 
-        src/io/auth/TestDigest.cpp
-        src/serialization/TestAsciiSerialization.cpp
         src/type/TestChrono.cpp
-        src/TestDispatcher.cpp
-        src/type/TestEnumDescriptor.cpp
-        src/type/TestStaticDescriptor.cpp
-        src/type/TestStaticStruct.cpp
+        src/type/TestDescriptor.cpp
         src/type/TestDynamicStruct.cpp
-        src/type/TestPropertySet.cpp
+        src/type/TestEnumDescriptor.cpp
         src/type/TestProperty.cpp
         src/type/TestPropertyIterator.cpp
+        src/type/TestPropertySet.cpp
         src/type/TestProxyProperty.cpp
-        src/type/TestDescriptor.cpp
-        src/tools/TestIpNetwork.cpp
-        src/io/auth/TestLegacyAuthManager.cpp
-        src/TestHostTransceiver.cpp
-        src/TestGuestTransceiver.cpp
-        src/TestConnection.cpp
+        src/type/TestRegistry.cpp
+        src/type/TestStaticDescriptor.cpp
+        src/type/TestStaticStruct.cpp
 )
 target_include_directories(${TARGET_NAME}
     PRIVATE

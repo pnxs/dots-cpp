@@ -55,12 +55,12 @@ target_dots_model(${TEST_TARGET_NAME}
 )
 target_sources(${TEST_TARGET_NAME}
     PRIVATE
-        tests/BasementTest.cpp
-        tests/LivingRoomTest.cpp
-        tests/StairwellTest.cpp
         src/Basement.cpp
         src/LivingRoom.cpp
         src/Stairwell.cpp
+        tests/BasementTest.cpp
+        tests/LivingRoomTest.cpp
+        tests/StairwellTest.cpp
 )
 target_include_directories(${TEST_TARGET_NAME}
     PRIVATE
