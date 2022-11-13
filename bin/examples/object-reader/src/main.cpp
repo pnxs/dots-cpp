@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
 
         // create application
         dots::Application app{ AppName, argc, argv };
-        
+
         // request descriptor for parsed type
         dots::publish(DotsDescriptorRequest{
             .whitelist = { typeName }
@@ -78,7 +78,7 @@ int main(int argc, char* argv[])
             }
         }).discard();
 
-        // execute event loop of application 
+        // execute event loop of application
         return app.exec();
     }
     catch (const std::exception& e)

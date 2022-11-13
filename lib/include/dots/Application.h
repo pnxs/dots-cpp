@@ -250,7 +250,7 @@ namespace dots
     private:
 
         struct signal_set_storage;
-        
+
         const asio::io_context& ioContext() const;
         asio::io_context& ioContext();
 

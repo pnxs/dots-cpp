@@ -138,7 +138,7 @@ struct JsonSerializerTestDataEncoded : SerializerTestDataEncoded<dots::serializa
         "{ ",
         "}"
     );
-    
+
     data_t structComplex1_Valid = Concat(
         "{ ",
         structComplex1_enumProperty, ", ",
@@ -344,7 +344,7 @@ TEST_F(TestJsonSerializer, serialize_WithOutputStyle)
     }
 
     {
-        std::string expected = 
+        std::string expected =
             "{\n"
             "    \"enumProperty\": 5,\n"
             "    \"uint32Property\": 12345789,\n"

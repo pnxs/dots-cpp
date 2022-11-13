@@ -54,7 +54,7 @@ namespace dots::serialization
                 return false;
             }
         }
-        
+
         void readObjectBegin()
         {
             consumeTokenAfterWhitespace(format_t::ObjectBegin);
@@ -403,7 +403,7 @@ namespace dots::serialization
         {
             int base = 10;
             consumeWhitespace();
-            
+
             {
                 if (tryConsumeToken("0b"))
                 {

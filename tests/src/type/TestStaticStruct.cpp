@@ -108,11 +108,11 @@ TEST_F(TestStaticStruct, ctor_Initializer)
 TEST_F(TestStaticStruct, ctor_InitializeFromCompatibleProperty)
 {
     TestSubStruct subStruct{
-        .p1 = true 
+        .p1 = true
     };
 
     TestStruct sut{
-        .boolProperty = subStruct.p1 
+        .boolProperty = subStruct.p1
     };
 
     EXPECT_FALSE(sut.intProperty.isValid());
@@ -194,11 +194,11 @@ TEST_F(TestStaticStruct, assignment_Move)
 TEST_F(TestStaticStruct, assignment_FromValidCompatibleProperty)
 {
     TestSubStruct subStruct{
-        .p1 = true 
+        .p1 = true
     };
 
     TestStruct sut{
-        .boolProperty = false 
+        .boolProperty = false
     };
 
     EXPECT_EQ(sut.boolProperty, false);
@@ -212,7 +212,7 @@ TEST_F(TestStaticStruct, assignment_FromInvalidCompatibleProperty)
     TestSubStruct subStruct;
 
     TestStruct sut{
-        .boolProperty = true 
+        .boolProperty = true
     };
 
     EXPECT_EQ(sut.boolProperty, true);

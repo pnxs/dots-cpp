@@ -420,7 +420,7 @@ TYPED_TEST_P(TestSerializer, deserialize_VectorArgument)
 TYPED_TEST_P(TestSerializer, serialize_SimpleStructArgument)
 {
     using base_t = TestSerializer<TypeParam>;
-    
+
     EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().structSimple1), base_t::Encoded().structSimple1_Valid);
     EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().structSimple1, dots::property_set_t::All), base_t::Encoded().structSimple1_All);
     EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().structSimple1, SerializationStructSimple::boolProperty_p + SerializationStructSimple::float32Property_p), base_t::Encoded().structSimple1_Specific);
@@ -453,7 +453,7 @@ TYPED_TEST_P(TestSerializer, deserialize_SimpleStructArgument)
 TYPED_TEST_P(TestSerializer, serialize_ComplexStructArgument)
 {
     using base_t = TestSerializer<TypeParam>;
-    
+
     EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().structComplex1), base_t::Encoded().structComplex1_Valid);
     EXPECT_EQ(base_t::serializer_t::Serialize(base_t::Decoded().structComplex1, SerializationStructComplex::timepointProperty_p + SerializationStructComplex::propertySetProperty_p), base_t::Encoded().structComplex1_Specific);
 
@@ -495,7 +495,7 @@ TYPED_TEST_P(TestSerializer, serialize_ConsecutiveArgumentsToContinuousInternalB
     using base_t = TestSerializer<TypeParam>;
 
     typename base_t::serializer_t sut;
-    
+
     {
         EXPECT_EQ(sut.serialize(base_t::Decoded().structSimple1), base_t::Encoded().structSimple1_Valid.size());
         EXPECT_EQ(sut.serialize(base_t::Decoded().structComplex1), base_t::Encoded().structComplex1_Valid.size());
@@ -514,7 +514,7 @@ TYPED_TEST_P(TestSerializer, deserialize_ConsecutiveArgumentsFromContinuousExter
     sut.setInput(base_t::Encoded().consecutiveTypes1);
 
     EXPECT_TRUE(sut.inputAvailable());
-    
+
     {
         EXPECT_EQ(sut.template deserialize<SerializationStructSimple>(), base_t::Decoded().structSimple1);
         EXPECT_EQ(sut.lastDeserializeSize(), base_t::Encoded().structSimple1_Valid.size());
@@ -632,7 +632,7 @@ TYPED_TEST_P(TestSerializer, deserialize_SpecificProperties)
     }
 }
 
-REGISTER_TYPED_TEST_SUITE_P(TestSerializer, 
+REGISTER_TYPED_TEST_SUITE_P(TestSerializer,
     serialize_TypedArgument,
     deserialize_TypedArgument,
     serialize_PropertyArgument,

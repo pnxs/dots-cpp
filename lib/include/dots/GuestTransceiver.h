@@ -192,7 +192,7 @@ namespace dots
          *
          * @param endpoint The endpoint to use to create a channel and
          * asynchronously open and establish a host connection. The channel
-         * type will be determined by the endpoint's scheme. 
+         * type will be determined by the endpoint's scheme.
          *
          * @return const Connection& A reference to the host connection after
          * asynchronous receiving has started.
@@ -211,7 +211,7 @@ namespace dots
          *
          * @param endpoint The endpoint to use to create a channel and
          * asynchronously open and establish a host connection. The channel
-         * type will be determined by the endpoint's scheme. 
+         * type will be determined by the endpoint's scheme.
          *
          * @return const Connection& A reference to the host connection after
          * asynchronous receiving has started.

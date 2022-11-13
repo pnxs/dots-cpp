@@ -223,7 +223,7 @@ namespace dots
     void Container<type::Struct>::updateWithoutKeys(type::Struct& lhs, const type::Struct& rhs, property_set_t includedSet)
     {
         using namespace type;
-        
+
         property_set_t updateSet = (lhs._validProperties() + rhs._validProperties()) ^ includedSet;
 
         PropertyArea& lhsArea = lhs._propertyArea();
@@ -240,7 +240,7 @@ namespace dots
             {
                 const Descriptor<>& valueDescriptor = propertyDescriptor.valueDescriptor();
                 auto& lhsValue = lhsArea.getProperty<Typeless>(propertyDescriptor.offset());
-                
+
                 if (propertySet <= rhsValidSet)
                 {
                     const auto& rhsValue = rhsArea.getProperty<Typeless>(propertyDescriptor.offset());

@@ -164,7 +164,7 @@ namespace dots
     void Application::parseGuestTransceiverArgs(int argc, char* argv[])
     {
         namespace po = boost::program_options;
-        
+
         po::options_description options("Allowed options");
         options.add_options()
             ("dots-auth-secret", po::value<std::string>(), "secret used during authentication (this can also be given as part of the --dots-endpoint argument)")
@@ -216,7 +216,7 @@ namespace dots
     void Application::parseHostTransceiverArgs(int argc, char* argv[])
     {
         namespace po = boost::program_options;
-        
+
         po::options_description options{ "Allowed options" };
         options.add_options()
             ("dots-endpoint", po::value<std::vector<std::string>>(), "local endpoint URI to listen on for incoming guest connections (e.g. tcp://127.0.0.1, ws://127.0.0.1:11235, uds:/run/dots.socket")
@@ -230,7 +230,7 @@ namespace dots
             po::store(po::basic_command_line_parser<char>(argc, argv).options(options).allow_unregistered().run(), args);
             po::notify(args);
         }
-        
+
         if (auto it = args.find("dots-endpoint"); it != args.end())
         {
             for (const std::string& listenEndpointUri : it->second.as<std::vector<std::string>>())

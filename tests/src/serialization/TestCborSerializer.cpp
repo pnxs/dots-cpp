@@ -126,7 +126,7 @@ struct CborSerializerTestDataEncoded : SerializerTestDataEncoded<dots::serializa
     data_t structSimple1_None = Concat(
         0xA0
     );
-    
+
     data_t structComplex1_Valid = Concat(
         0xA4,
         structComplex1_enumProperty,

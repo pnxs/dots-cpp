@@ -25,12 +25,12 @@ namespace dots::testing
                 const DotsHeader& header = event.header();
                 const type::Struct& instance = event.transmitted();
 
-                if ((m_header.removeObj.isValid() && header.removeObj != m_header.removeObj) || 
+                if ((m_header.removeObj.isValid() && header.removeObj != m_header.removeObj) ||
                     (m_header.isFromMyself.isValid() && header.isFromMyself != m_header.isFromMyself))
                 {
                     return false;
                 }
-                else 
+                else
                 {
                     return m_expectedStructMatcher.MatchAndExplain(instance, os);
                 }
@@ -119,7 +119,7 @@ namespace dots::testing
             }
 
             return details::EventEqualMatcher<decayed_t>(
-                std::forward<T>(instance), 
+                std::forward<T>(instance),
                 std::move(header)
             );
         }

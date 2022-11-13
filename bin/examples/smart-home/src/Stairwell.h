@@ -15,7 +15,7 @@ namespace examples
         Stairwell();
 
     private:
-        
+
         void handleStatelessSwitch(const dots::Event<StatelessSwitch>& event);
 
         dots::Subscription m_statelessSwitchSubscription;

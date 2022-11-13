@@ -30,7 +30,7 @@ namespace dots::type
 
         static constexpr PropertyOffset Next(size_t alignment, size_t previousOffset, size_t previousSize)
         {
-            return PropertyOffset{ alignment, previousOffset, previousSize  }; 
+            return PropertyOffset{ alignment, previousOffset, previousSize  };
         }
 
     protected:

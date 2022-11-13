@@ -6,7 +6,7 @@ variables:
 build_ubuntu:
     stage: build
     before_script:
-        - python3 -m pip install dots-code-generator 
+        - python3 -m pip install dots-code-generator
     script:
         - cmake -Bbuild -H. -DCMAKE_BUILD_TYPE=Release -DCPACK_PACKAGE_VERSION_PATCH=${CI_PIPELINE_ID}
         - make -Cbuild -j4

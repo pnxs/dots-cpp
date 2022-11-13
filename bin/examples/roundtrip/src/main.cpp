@@ -27,7 +27,7 @@ int main(int argc, char* argv[])
                     dots::publish(RoundtripData{
                         .id = i ,
                         .someString = "foobar" ,
-                        .someFloat = 3.1415f 
+                        .someFloat = 3.1415f
                     });
                 }
                 else
@@ -44,10 +44,10 @@ int main(int argc, char* argv[])
         dots::publish(RoundtripData{
             .id = 0 ,
             .someString = "foobar" ,
-            .someFloat = 3.1415f 
+            .someFloat = 3.1415f
         });
 
-        // execute event loop of application 
+        // execute event loop of application
         return app.exec();
     }
     catch (const std::exception& e)

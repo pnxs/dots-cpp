@@ -138,7 +138,7 @@ struct StringSerializerTestDataEncoded : SerializerTestDataEncoded<dots::seriali
         "SerializationStructSimple{ ",
         "}"
     );
-    
+
     data_t structComplex1_Valid = Concat(
         "SerializationStructComplex{ ",
         structComplex1_enumProperty, ", ",
@@ -344,7 +344,7 @@ TEST_F(TestStringSerializer, serialize_WithOutputStyle)
     }
 
     {
-        std::string expected = 
+        std::string expected =
            "SerializationStructComplex{\n"
            "    .enumProperty = SerializationEnum::baz,\n"
            "    .uint32Property = 12345789u,\n"
@@ -366,7 +366,7 @@ TEST_F(TestStringSerializer, deserialize_EnumWithInputPolicy)
     SerializationStructComplex expected{
         .enumProperty = SerializationEnum::baz
     };
-    
+
     {
         std::string input = "SerializationStructComplex{ .enumProperty = baz }";
         SerializationStructComplex actual;

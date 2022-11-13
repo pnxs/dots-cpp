@@ -14,7 +14,7 @@ using namespace dots::type;
 TEST(TestAsciiSerialization, serialize)
 {
     StructDescriptorData sd{
-        .name = "aName" 
+        .name = "aName"
     };
 
     auto& properties = sd.properties.emplace();
@@ -63,12 +63,12 @@ TEST(TestAsciiSerialization, serialize)
 TEST(TestAsciiSerialization, serializeSingleLine)
 {
     StructDescriptorData sd{
-        .name = "aName" 
+        .name = "aName"
     };
 
     auto& properties = sd.properties.emplace();
     auto& documentation = sd.documentation.emplace();
-    
+
     StructPropertyData pd{
         .name = "aProperty" ,
         .tag = 1 ,
@@ -98,7 +98,7 @@ TEST(TestAsciiSerialization, serializeSingleLineWithEnums)
         .indKeyfField = 42 ,
         .enumField = DotsTestEnum::value3 ,
         .tp = TimePoint() ,
-        .uuid = dots::uuid_t{ dots::uuid_t::value_t{} } 
+        .uuid = dots::uuid_t{ dots::uuid_t::value_t{} }
     };
 
     dots::ToAsciiOptions options;
@@ -131,7 +131,7 @@ struct TraceColorSchema: dots::ToAsciiColorSchema
 TEST(TestAsciiSerialization, serializeSingleLineColored)
 {
     StructDescriptorData sd{
-        .name = "aName" 
+        .name = "aName"
     };
 
     auto& properties = sd.properties.emplace();

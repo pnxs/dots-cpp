@@ -22,7 +22,7 @@ struct TestConnectionBase : dots::testing::ChannelTestBase
     {
         /* do nothing */
     }
-    
+
     ~TestConnectionBase()
     {
         if (m_sut->state() == DotsConnectionState::connected)
@@ -129,7 +129,7 @@ TEST_F(TestConnectionAsHost, HandshakeWithoutAuthenticationWithoutPreloading)
             .preload = false
         })
     );
-    
+
     processEvents();
 }
 
@@ -247,7 +247,7 @@ TEST_F(TestConnectionAsHost, RejectInstancesThatAreMissingKeyProperties)
             .errorCode = 1
         })
     );
-    
+
     processEvents();
 }
 
@@ -309,7 +309,7 @@ TEST_F(TestConnectionAsGuest, HandshakeWithoutAuthenticationWithPreloading)
             EXPECT_EQ(m_sut->state(), DotsConnectionState::connected);
         }
     );
-    
+
     processEvents();
 }
 
@@ -385,6 +385,6 @@ TEST_F(TestConnectionAsGuest, RejectInstancesThatAreMissingKeyProperties)
             .errorCode = 1
         })
     );
-    
+
     processEvents();
 }

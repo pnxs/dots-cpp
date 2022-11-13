@@ -129,7 +129,7 @@ namespace dots::type
 
         std::unique_ptr<Struct> _instance;
     };
-    
+
     inline property_iterator begin(AnyStruct& instance)
     {
         return instance->_begin();

@@ -52,7 +52,7 @@ TEST_F(TestDescriptor, usesDynamicMemory)
 
     EXPECT_FALSE(Descriptor<uuid_t>::Instance().usesDynamicMemory());
     EXPECT_TRUE(Descriptor<string_t>::Instance().usesDynamicMemory());
-    
+
     EXPECT_TRUE(Descriptor<vector_t<bool_t>>::Instance().usesDynamicMemory());
     EXPECT_TRUE(Descriptor<vector_t<int8_t>>::Instance().usesDynamicMemory());
 
@@ -145,5 +145,5 @@ TEST_F(TestDescriptor, dynamicMemoryUsage)
             },
             2 * sizeof(DotsTestVectorStruct) + VectorStruct1DynSize + VectorStruct2DynSize
         );
-    } 
+    }
 }

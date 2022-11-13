@@ -13,7 +13,7 @@ namespace dots::serialization
     struct CborWriter : Writer<std::vector<uint8_t>>
     {
         using cbor_t = CborFormat;
-        
+
         void writeArraySize(size_t size)
         {
             writeHead(cbor_t::MajorType::Array, size);

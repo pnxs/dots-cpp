@@ -33,7 +33,7 @@ set(DOTS-CG_TEMPLATE_LIST
     ${DOTS-CG-CPP_DIR}/enum.dots.h.dotsT;
     CACHE INTERNAL "Internal helper variable containing the C++ code generation templates"
 )
-set(DOTS-CG-CPP-GENERATE_CMD 
+set(DOTS-CG-CPP-GENERATE_CMD
     ${DOTS-CG} --config=${DOTS-CG-CPP_DIR}/${DOTS-CG_CONFIG}.py --templatePath=${DOTS-CG_TEMPLATE_DIR}
     CACHE INTERNAL "Internal helper variable containing the DOTS-CG generate command"
 )
@@ -46,8 +46,8 @@ function(target_dots_model TARGET_NAME)
         endif()
 
         # determine generated model header paths
-        execute_process(COMMAND ${DOTS-CG-CPP-GENERATE_CMD} --list-generated ${MODEL_FILE} 
-            OUTPUT_VARIABLE MODEL_TYPES 
+        execute_process(COMMAND ${DOTS-CG-CPP-GENERATE_CMD} --list-generated ${MODEL_FILE}
+            OUTPUT_VARIABLE MODEL_TYPES
             RESULT_VARIABLE rv
         )
         if (NOT ${rv} MATCHES "0")

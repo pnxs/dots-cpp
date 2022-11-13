@@ -43,7 +43,7 @@ namespace dots::testing
 
                     if (os != nullptr)
                     {
-                        *os << "\n" << 
+                        *os << "\n" <<
                             "             Diff: " << to_string(m_expected, diff) << "\n" <<
                             "                 : " << to_string(actual, diff);
                     }

@@ -30,7 +30,7 @@ namespace dots::serialization
             String
         };
     };
-    
+
     struct DefaultRapidJsonSerializerFormat : RapidJsonSerializerFormat<>
     {
         static constexpr TimepointFormat TimepointFormat = TimepointFormat::FractionalSeconds;

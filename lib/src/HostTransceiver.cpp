@@ -269,7 +269,7 @@ namespace dots
         const vector_t<string_t>& whiteList = descriptorRequest.whitelist.isValid() ? *descriptorRequest.whitelist : vector_t<string_t>{};
         const vector_t<string_t>& blacklist = descriptorRequest.blacklist.isValid() ? *descriptorRequest.blacklist : vector_t<string_t>{};
 
-        registry().forEach<type::StructDescriptor>([&](const auto& descriptor) 
+        registry().forEach<type::StructDescriptor>([&](const auto& descriptor)
         {
             if (descriptor.internal())
             {

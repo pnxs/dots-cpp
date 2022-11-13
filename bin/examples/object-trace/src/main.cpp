@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
             }
         }).discard();
 
-        // execute event loop of application 
+        // execute event loop of application
         return app.exec();
     }
     catch (const std::exception& e)

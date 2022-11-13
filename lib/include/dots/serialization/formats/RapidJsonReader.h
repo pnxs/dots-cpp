@@ -10,7 +10,7 @@ namespace dots::serialization
     {
         using data_t = std::string;
         using value_t = data_t::value_type;
-        
+
         using document_t = rapidjson::Document;
 
         RapidJsonReader() = default;
@@ -94,7 +94,7 @@ namespace dots::serialization
             {
                 throw std::runtime_error{ "attempt to read array end with remaining elements" };
             }
-            
+
             finalizeRead();
         }
 
@@ -117,7 +117,7 @@ namespace dots::serialization
                 return false;
             }
         }
-        
+
         void readObjectBegin()
         {
             assertType(rapidjson::kObjectType);
@@ -137,7 +137,7 @@ namespace dots::serialization
             {
                 throw std::runtime_error{ "attempt to read object end with remaining members" };
             }
-            
+
             finalizeRead();
         }
 
