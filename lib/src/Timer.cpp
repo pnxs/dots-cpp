@@ -87,7 +87,7 @@ namespace dots
 
             timerData->handler();
 
-            if (timerData->periodic)
+            if (timerData->periodic && (timerData.use_count() != 1 || timerData->discarded))
             {
                 StartAbsolute(timerData);
             }

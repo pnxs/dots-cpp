@@ -82,7 +82,11 @@ namespace dots::io::posix
             else
             {
                 observerData->handler(nullptr);
-                AsyncWait(observerData);
+
+                if (observerData.use_count() != 1 || observerData->discarded)
+                {
+                    AsyncWait(observerData);
+                }
             }
         });
     }
