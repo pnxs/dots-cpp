@@ -5,6 +5,7 @@
 #include <dots/testing/gtest/gtest.h>
 #include <dots/type/ProxyProperty.h>
 #include <dots/type/FundamentalTypes.h>
+#include <TestStruct.dots.h>
 
 using namespace dots::type;
 
@@ -12,57 +13,20 @@ struct TestProxyProperty : ::testing::Test
 {
 protected:
 
-    template <typename T>
-    struct TestProperty : Property<T, TestProperty<T>>
-    {
-        TestProperty(const PropertyArea& area, std::string name, uint32_t tag) :
-            m_descriptor{ PropertyDescriptor{ Descriptor<T>::Instance(), std::move(name), tag, false, PropertyOffset{ std::in_place, static_cast<uint32_t>(reinterpret_cast<char*>(this) - reinterpret_cast<const char*>(&area)) } } } {}
-        TestProperty(const TestProperty& other) = delete;
-        TestProperty(TestProperty&& other) = delete;
-        ~TestProperty() { Property<T, TestProperty<T>>::reset(); }
-
-        TestProperty& operator = (const TestProperty& rhs) = delete;
-        TestProperty& operator = (TestProperty&& rhs) = delete;
-
-        using Property<T, TestProperty<T>>::operator=;
-
-    private:
-
-        friend struct Property<T, TestProperty<T>>;
-
-        PropertySet validProperties() const { return PropertyArea::GetArea(*this, m_descriptor.offset()).validProperties(); }
-        PropertySet& validProperties() { return PropertyArea::GetArea(*this, m_descriptor.offset()).validProperties(); }
-
-        const T& derivedStorage() const { return m_value; }
-        const PropertyDescriptor& derivedDescriptor() const { return m_descriptor; }
-
-        bool derivedIsValid() const { return m_descriptor.set() <= validProperties(); }
-        void derivedSetValid(){ validProperties() += derivedDescriptor().set(); }
-        void derivedSetInvalid(){ validProperties() -= derivedDescriptor().set(); }
-
-        union { T m_value; };
-        const PropertyDescriptor m_descriptor;
-    };
-
-    struct TestPropertyArea : PropertyArea
-    {
-        TestPropertyArea() : intProperty{ *this, "intProperty", 1 }, stringProperty{ *this, "stringProperty", 2 } {}
-        TestProperty<int> intProperty;
-        TestProperty<std::string> stringProperty;
-    };
-
     TestProxyProperty() :
         m_sut(m_propertyArea.stringProperty),
         m_sutLhs(m_propertyAreaLhs.stringProperty),
         m_sutRhs(m_propertyAreaRhs.stringProperty) {}
 
-    TestPropertyArea m_propertyArea;
-    TestPropertyArea m_propertyAreaLhs;
-    TestPropertyArea m_propertyAreaRhs;
+    using proxy_t = ProxyProperty<dots::string_t>;
 
-    ProxyProperty<std::string> m_sut;
-    ProxyProperty<std::string> m_sutLhs;
-    ProxyProperty<std::string> m_sutRhs;
+    TestStruct m_propertyArea;
+    TestStruct m_propertyAreaLhs;
+    TestStruct m_propertyAreaRhs;
+
+    proxy_t m_sut;
+    proxy_t m_sutLhs;
+    proxy_t m_sutRhs;
 };
 
 TEST_F(TestProxyProperty, isValid_InvalidWithoutValue)
@@ -171,108 +135,6 @@ TEST_F(TestProxyProperty, swap_OppositeValuesAfterInvalidSwap)
     EXPECT_FALSE(m_sutRhs.isValid());
     EXPECT_TRUE(m_sutLhs.isValid());
     EXPECT_EQ(m_sutLhs.value(), "bar");
-}
-
-TEST_F(TestProxyProperty, equal_CompareNotEqualToValueWhenInvalid)
-{
-    std::string rhs{ "foo" };
-
-    EXPECT_FALSE(m_sut == rhs);
-    EXPECT_TRUE(m_sut != rhs);
-}
-TEST_F(TestProxyProperty, equal_CompareEqualToValueWhenValid)
-{
-    std::string rhs{ "foo" };
-    m_sut.emplace("foo");
-
-    EXPECT_TRUE(m_sut == rhs);
-    EXPECT_FALSE(m_sut != rhs);
-}
-
-TEST_F(TestProxyProperty, equal_CompareNotEqualToValueWhenValid)
-{
-    std::string rhs{ "bar" };
-    m_sut.emplace("foo");
-
-    EXPECT_FALSE(m_sut == rhs);
-    EXPECT_TRUE(m_sut != rhs);
-}
-
-TEST_F(TestProxyProperty, equal_CompareNotEqualToValidPropertyWhenInvalid)
-{
-    m_sutRhs.emplace("foo");
-
-    EXPECT_FALSE(m_sutLhs == m_sutRhs);
-    EXPECT_TRUE(m_sutLhs != m_sutRhs);
-}
-
-TEST_F(TestProxyProperty, equal_CompareEqualToValidPropertyWhenValid)
-{
-    m_sutLhs.emplace("foo");
-    m_sutRhs.emplace("foo");
-
-    EXPECT_TRUE(m_sutLhs == m_sutRhs);
-    EXPECT_FALSE(m_sutLhs != m_sutRhs);
-}
-
-TEST_F(TestProxyProperty, equal_CompareNotEqualToValidPropertyWhenValid)
-{
-    m_sutLhs.emplace("foo");
-    m_sutRhs.emplace("bar");
-
-    EXPECT_FALSE(m_sutLhs == m_sutRhs);
-    EXPECT_TRUE(m_sutLhs != m_sutRhs);
-}
-
-TEST_F(TestProxyProperty, less_CompareNotLessToValueWhenInvalid)
-{
-    std::string rhs{ "fou" };
-    EXPECT_FALSE(m_sut < rhs);
-    EXPECT_FALSE(m_sut < dots::invalid);
-}
-
-TEST_F(TestProxyProperty, less_CompareLessToValueWhenValid)
-{
-    std::string rhs{ "fou" };
-    m_sut.emplace("foo");
-
-    EXPECT_TRUE(m_sut < rhs);
-}
-
-TEST_F(TestProxyProperty, less_CompareNotLessToValueWhenValid)
-{
-    std::string rhs{ "bar" };
-    m_sut.emplace("foo");
-
-    EXPECT_FALSE(m_sut < rhs);
-    EXPECT_TRUE(dots::invalid < m_sut);
-}
-
-TEST_F(TestProxyProperty, less_CompareLessToInvalidPropertyWhenInvalid)
-{
-    EXPECT_FALSE(m_sutLhs < m_sutRhs);
-}
-
-TEST_F(TestProxyProperty, less_CompareNotLessToValidPropertyWhenInvalid)
-{
-    m_sutRhs.emplace("fou");
-    EXPECT_FALSE(m_sutLhs < m_sutRhs);
-}
-
-TEST_F(TestProxyProperty, less_CompareLessToValidPropertyValid)
-{
-    m_sutLhs.emplace("foo");
-    m_sutRhs.emplace("fou");
-
-    EXPECT_TRUE(m_sutLhs < m_sutRhs);
-}
-
-TEST_F(TestProxyProperty, less_CompareNotLessToValidPropertyValid)
-{
-    m_sutLhs.emplace("foo");
-    m_sutRhs.emplace("bar");
-
-    EXPECT_FALSE(m_sutLhs < m_sutRhs);
 }
 
 TEST_F(TestProxyProperty, is)

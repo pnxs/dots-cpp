@@ -240,54 +240,25 @@ namespace dots::type
     template <typename Lhs, typename Rhs, std::enable_if_t<std::disjunction_v<is_property<Lhs>, is_property<Rhs>>, int> = 0>
     bool operator == (const Lhs& lhs, const Rhs& rhs)
     {
-        auto equal = [](const auto& lhs, const auto& rhs)
-        {
-            if (lhs.isValid())
-            {
-                return lhs.descriptor().valueDescriptor().equal(lhs.storage(), rhs);
-            }
-            else
-            {
-                return false;
-            }
-        };
-        (void)equal;
+        constexpr bool LhsIsProperty = is_property_v<Lhs>;
+        constexpr bool RhsIsProperty = is_property_v<Rhs>;
+        constexpr bool RhsIsInvalidType = std::is_same_v<std::decay_t<Rhs>, dots::invalid_t>;
 
-        if constexpr (is_property_v<Lhs>)
+        if constexpr (!LhsIsProperty)
         {
-            if constexpr (is_property_v<Rhs>)
-            {
-                if (rhs.isValid())
-                {
-                    return equal(lhs, rhs.storage());
-                }
-                else
-                {
-                    return !lhs.isValid();
-                }
-            }
-            else
-            {
-                if constexpr (std::is_same_v<std::decay_t<Rhs>, dots::invalid_t>)
-                {
-                    return !lhs.isValid();
-                }
-                else
-                {
-                    return equal(lhs, rhs);
-                }
-            }
+            return rhs == lhs;
         }
-        else
+        else if constexpr (/*LhsIsProperty && */RhsIsProperty)
         {
-            if constexpr (std::is_same_v<std::decay_t<Lhs>, dots::invalid_t>)
-            {
-                return !rhs.isValid();
-            }
-            else
-            {
-                return equal(rhs, lhs);
-            }
+            return rhs.isValid() ? lhs == rhs.storage() : lhs == dots::invalid;
+        }
+        else if constexpr (/*LhsIsProperty && */RhsIsInvalidType)
+        {
+            return !lhs.isValid();
+        }
+        else/* if constexpr (LhsIsProperty && !RhsIsInvalidType)*/
+        {
+            return lhs.isValid() ? lhs.descriptor().valueDescriptor().equal(lhs.storage(), rhs) : false;
         }
     }
 
@@ -300,53 +271,35 @@ namespace dots::type
     template <typename Lhs, typename Rhs, std::enable_if_t<std::disjunction_v<is_property<Lhs>, is_property<Rhs>>, int> = 0>
     bool operator < (const Lhs& lhs, const Rhs& rhs)
     {
-        auto less = [](const auto& lhs, const auto& rhs)
+        constexpr bool LhsIsProperty = is_property_v<Lhs>;
+        constexpr bool RhsIsProperty = is_property_v<Rhs>;
+        constexpr bool LhsIsInvalidType = std::is_same_v<std::decay_t<Lhs>, dots::invalid_t>;
+        constexpr bool RhsIsInvalidType = std::is_same_v<std::decay_t<Rhs>, dots::invalid_t>;
+
+        if constexpr (LhsIsProperty && RhsIsProperty)
         {
-            if (lhs.isValid())
-            {
-                return lhs.descriptor().valueDescriptor().less(lhs.storage(), rhs);
-            }
-            else
+            return rhs.isValid() ? lhs < rhs.storage() : lhs < dots::invalid;
+        }
+        else if constexpr (LhsIsProperty/* && !RhsIsProperty*/)
+        {
+            if constexpr (RhsIsInvalidType)
             {
                 return false;
             }
-        };
-        (void)less;
-
-        if constexpr (is_property_v<Lhs>)
-        {
-            if constexpr (is_property_v<Rhs>)
-            {
-                if (rhs.isValid())
-                {
-                    return less(lhs, rhs.storage());
-                }
-                else
-                {
-                    return lhs.isValid();
-                }
-            }
             else
             {
-                if constexpr (std::is_same_v<std::decay_t<Rhs>, dots::invalid_t>)
-                {
-                    return false;
-                }
-                else
-                {
-                    return less(lhs, rhs);
-                }
+                return lhs.isValid() ? lhs.descriptor().valueDescriptor().less(lhs.storage(), rhs) : true;
             }
         }
-        else
+        else/* if constexpr (!LhsIsProperty && RhsIsProperty) */
         {
-            if constexpr (std::is_same_v<std::decay_t<Lhs>, dots::invalid_t>)
+            if constexpr (LhsIsInvalidType)
             {
                 return rhs.isValid();
             }
             else
             {
-                return less(rhs, lhs);
+                return rhs.isValid() ? rhs.descriptor().valueDescriptor().less(lhs, rhs.storage()) : false;
             }
         }
     }

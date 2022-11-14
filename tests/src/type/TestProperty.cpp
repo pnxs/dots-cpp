@@ -5,6 +5,7 @@
 #include <dots/testing/gtest/gtest.h>
 #include <dots/type/Property.h>
 #include <dots/type/FundamentalTypes.h>
+#include <TestStruct.dots.h>
 
 using namespace dots::type;
 
@@ -12,62 +13,18 @@ struct TestProperty : ::testing::Test
 {
 protected:
 
-    template <typename T>
-    struct test_property_t : Property<T, test_property_t<T>>
-    {
-        test_property_t(const PropertyArea& area, std::string name, uint32_t tag) :
-            m_descriptor{ PropertyDescriptor{ Descriptor<T>::Instance(), std::move(name), tag, false, PropertyOffset{ std::in_place, static_cast<uint32_t>(reinterpret_cast<char*>(this) - reinterpret_cast<const char*>(&area)) } } } {}
-        test_property_t(const test_property_t& other) = delete;
-        test_property_t(test_property_t&& other) = delete;
-        ~test_property_t() { Property<T, test_property_t<T>>::reset(); }
-
-        test_property_t& operator = (const test_property_t& rhs)
-        {
-            Property<T, test_property_t<T>>::assign(rhs);
-            return *this;
-        }
-
-        test_property_t& operator = (test_property_t&& rhs) = delete;
-
-        using Property<T, test_property_t<T>>::operator=;
-
-    private:
-
-        friend struct Property<T, test_property_t<T>>;
-
-        PropertySet validProperties() const { return PropertyArea::GetArea(*this, m_descriptor.offset()).validProperties(); }
-        PropertySet& validProperties() { return PropertyArea::GetArea(*this, m_descriptor.offset()).validProperties(); }
-
-        const T& derivedStorage() const { return m_value; }
-        const PropertyDescriptor& derivedDescriptor() const { return m_descriptor; }
-
-        bool derivedIsValid() const { return m_descriptor.set() <= validProperties(); }
-        void derivedSetValid(){ validProperties() += derivedDescriptor().set(); }
-        void derivedSetInvalid(){ validProperties() -= derivedDescriptor().set(); }
-
-        union { T m_value; };
-        const PropertyDescriptor m_descriptor;
-    };
-
-    struct test_property_area_t : PropertyArea
-    {
-        test_property_area_t() : intProperty{ *this, "intProperty", 1 }, stringProperty{ *this, "stringProperty", 2 } {}
-        test_property_t<int> intProperty;
-        test_property_t<std::string> stringProperty;
-    };
-
     TestProperty() :
         m_sut(m_propertyArea.stringProperty),
         m_sutLhs(m_propertyAreaLhs.stringProperty),
         m_sutRhs(m_propertyAreaRhs.stringProperty) {}
 
-    test_property_area_t m_propertyArea;
-    test_property_area_t m_propertyAreaLhs;
-    test_property_area_t m_propertyAreaRhs;
+    TestStruct m_propertyArea;
+    TestStruct m_propertyAreaLhs;
+    TestStruct m_propertyAreaRhs;
 
-    test_property_t<std::string>& m_sut;
-    test_property_t<std::string>& m_sutLhs;
-    test_property_t<std::string>& m_sutRhs;
+    TestStruct::stringProperty_pt& m_sut;
+    TestStruct::stringProperty_pt& m_sutLhs;
+    TestStruct::stringProperty_pt& m_sutRhs;
 };
 
 TEST_F(TestProperty, isValid_InvalidWithoutValue)
@@ -210,104 +167,289 @@ TEST_F(TestProperty, swap_OppositeValuesAfterInvalidSwap)
     EXPECT_EQ(m_sutLhs.value(), "bar");
 }
 
-TEST_F(TestProperty, equal_CompareNotEqualToValueWhenInvalid)
+TEST_F(TestProperty, CompareEqualityOfPropertyWithProperty)
 {
-    std::string rhs{ "foo" };
+    // invalid lhs, invalid rhs
+    {
+        const auto& invalidProperty1 = TestStruct{}.stringProperty;
+        const auto& invalidProperty2 = TestStruct{}.stringProperty;
 
-    EXPECT_FALSE(m_sut == rhs);
-    EXPECT_TRUE(m_sut != rhs);
-}
-TEST_F(TestProperty, equal_CompareEqualToValueWhenValid)
-{
-    std::string rhs{ "foo" };
-    m_sut.emplace("foo");
+        EXPECT_TRUE(invalidProperty1 == invalidProperty2);
+        EXPECT_FALSE(invalidProperty1 != invalidProperty2);
+    }
 
-    EXPECT_TRUE(m_sut == rhs);
-    EXPECT_FALSE(m_sut != rhs);
-}
+    // valid lhs, invalid rhs
+    {
+        const auto& validProperty = TestStruct{ .stringProperty = "a" }.stringProperty;
+        const auto& invalidProperty = TestStruct{}.stringProperty;
 
-TEST_F(TestProperty, equal_CompareNotEqualToValueWhenValid)
-{
-    std::string rhs{ "bar" };
-    m_sut.emplace("foo");
+        EXPECT_FALSE(validProperty == invalidProperty);
+        EXPECT_TRUE(validProperty != invalidProperty);
+    }
 
-    EXPECT_FALSE(m_sut == rhs);
-    EXPECT_TRUE(m_sut != rhs);
-}
+    // invalid lhs, valid rhs
+    {
+        const auto& invalidProperty = TestStruct{}.stringProperty;
+        const auto& validProperty = TestStruct{ .stringProperty = "a" }.stringProperty;
 
-TEST_F(TestProperty, equal_CompareNotEqualToValidPropertyWhenInvalid)
-{
-    m_sutRhs.emplace("foo");
+        EXPECT_FALSE(invalidProperty == validProperty);
+        EXPECT_TRUE(invalidProperty != validProperty);
+    }
 
-    EXPECT_FALSE(m_sutLhs == m_sutRhs);
-    EXPECT_TRUE(m_sutLhs != m_sutRhs);
-}
+    // valid lhs, valid rhs, unequal values
+    {
+        const auto& unequalProperty1 = TestStruct{ .stringProperty = "a" }.stringProperty;
+        const auto& unequalProperty2 = TestStruct{ .stringProperty = "b" }.stringProperty;
 
-TEST_F(TestProperty, equal_CompareEqualToValidPropertyWhenValid)
-{
-    m_sutLhs.emplace("foo");
-    m_sutRhs.emplace("foo");
+        EXPECT_FALSE(unequalProperty1 == unequalProperty2);
+        EXPECT_TRUE(unequalProperty1 != unequalProperty2);
+    }
 
-    EXPECT_TRUE(m_sutLhs == m_sutRhs);
-    EXPECT_FALSE(m_sutLhs != m_sutRhs);
-}
+    // valid lhs, valid rhs, equal values
+    {
+        const auto& equalProperty1 = TestStruct{ .stringProperty = "a" }.stringProperty;
+        const auto& equalProperty2 = TestStruct{ .stringProperty = "a" }.stringProperty;
 
-TEST_F(TestProperty, equal_CompareNotEqualToValidPropertyWhenValid)
-{
-    m_sutLhs.emplace("foo");
-    m_sutRhs.emplace("bar");
-
-    EXPECT_FALSE(m_sutLhs == m_sutRhs);
-    EXPECT_TRUE(m_sutLhs != m_sutRhs);
+        EXPECT_TRUE(equalProperty1 == equalProperty2);
+        EXPECT_FALSE(equalProperty1 != equalProperty2);
+    }
 }
 
-TEST_F(TestProperty, less_CompareNotLessToValueWhenInvalid)
+TEST_F(TestProperty, CompareEqualityOfPropertyWithValue)
 {
-    std::string rhs{ "fou" };
-    EXPECT_FALSE(m_sut < rhs);
-    EXPECT_FALSE(m_sut < dots::invalid);
+    // invalid property
+    {
+        const auto& invalidProperty = TestStruct{}.stringProperty;
+        dots::string_t value = "a";
+
+        EXPECT_TRUE(invalidProperty != value);
+        EXPECT_TRUE(value != invalidProperty);
+
+        EXPECT_FALSE(invalidProperty == value);
+        EXPECT_FALSE(value == invalidProperty);
+    }
+
+    // valid property, unequal values
+    {
+        const auto& unequalProperty = TestStruct{ .stringProperty = "a" }.stringProperty;
+        dots::string_t unequalValue = "b";
+
+        EXPECT_TRUE(unequalProperty != unequalValue);
+        EXPECT_TRUE(unequalValue != unequalProperty);
+
+        EXPECT_FALSE(unequalProperty == unequalValue);
+        EXPECT_FALSE(unequalValue == unequalProperty);
+    }
+
+    // valid property, equal values
+    {
+        const auto& equalProperty = TestStruct{ .stringProperty = "a" }.stringProperty;
+        dots::string_t equalValue = "a";
+
+        EXPECT_TRUE(equalProperty == equalValue);
+        EXPECT_TRUE(equalValue == equalProperty);
+
+        EXPECT_FALSE(equalProperty != equalValue);
+        EXPECT_FALSE(equalValue != equalProperty);
+    }
 }
 
-TEST_F(TestProperty, less_CompareLessToValueWhenValid)
+TEST_F(TestProperty, CompareEqualityOfPropertyWithInvalid)
 {
-    std::string rhs{ "fou" };
-    m_sut.emplace("foo");
+    // invalid property
+    {
+        const auto& invalidProperty = TestStruct{}.stringProperty;
 
-    EXPECT_TRUE(m_sut < rhs);
-    EXPECT_TRUE(dots::invalid < m_sut);
+        EXPECT_TRUE(invalidProperty == dots::invalid);
+        EXPECT_TRUE(dots::invalid == invalidProperty);
+
+        EXPECT_FALSE(invalidProperty != dots::invalid);
+        EXPECT_FALSE(dots::invalid != invalidProperty);
+    }
+
+    // valid property
+    {
+        const auto& validProperty = TestStruct{ .stringProperty = "a" }.stringProperty;
+
+        EXPECT_TRUE(validProperty != dots::invalid);
+        EXPECT_TRUE(dots::invalid != validProperty);
+
+        EXPECT_FALSE(validProperty == dots::invalid);
+        EXPECT_FALSE(dots::invalid == validProperty);
+    }
 }
 
-TEST_F(TestProperty, less_CompareNotLessToValueWhenValid)
+TEST_F(TestProperty, CompareOrderingOfPropertyWithProperty)
 {
-    std::string rhs{ "bar" };
-    m_sut.emplace("foo");
+    // invalid lhs, invalid rhs
+    {
+        const auto& invalidProperty1 = TestStruct{}.stringProperty;
+        const auto& invalidProperty2 = TestStruct{}.stringProperty;
 
-    EXPECT_FALSE(m_sut < rhs);
+        EXPECT_TRUE(invalidProperty1 <= invalidProperty2);
+        EXPECT_TRUE(invalidProperty1 >= invalidProperty2);
+
+        EXPECT_FALSE(invalidProperty1 < invalidProperty2);
+        EXPECT_FALSE(invalidProperty1 > invalidProperty2);
+    }
+
+    // valid lhs, invalid rhs
+    {
+        const auto& validProperty = TestStruct{ .stringProperty = "a" }.stringProperty;
+        const auto& invalidProperty = TestStruct{}.stringProperty;
+
+        EXPECT_TRUE(validProperty > invalidProperty);
+        EXPECT_TRUE(validProperty >= invalidProperty);
+
+        EXPECT_FALSE(validProperty < invalidProperty);
+        EXPECT_FALSE(validProperty <= invalidProperty);
+    }
+
+    // invalid lhs, valid rhs
+    {
+        const auto& invalidProperty = TestStruct{}.stringProperty;
+        const auto& validProperty = TestStruct{ .stringProperty = "a" }.stringProperty;
+
+        EXPECT_TRUE(invalidProperty < validProperty);
+        EXPECT_TRUE(invalidProperty <= validProperty);
+
+        EXPECT_FALSE(invalidProperty > validProperty);
+        EXPECT_FALSE(invalidProperty >= validProperty);
+    }
+
+    // valid lhs, valid rhs, unequal values
+    {
+        const auto& lesserProperty = TestStruct{ .stringProperty = "a" }.stringProperty;
+        const auto& greaterProperty = TestStruct{ .stringProperty = "b" }.stringProperty;
+
+        EXPECT_TRUE(lesserProperty < greaterProperty);
+        EXPECT_TRUE(lesserProperty <= greaterProperty);
+
+        EXPECT_FALSE(lesserProperty > greaterProperty);
+        EXPECT_FALSE(lesserProperty >= greaterProperty);
+    }
+
+    // valid lhs, valid rhs, unequal values, flipped
+    {
+        const auto& greaterProperty = TestStruct{ .stringProperty = "b" }.stringProperty;
+        const auto& lesserProperty = TestStruct{ .stringProperty = "a" }.stringProperty;
+
+        EXPECT_TRUE(greaterProperty > lesserProperty);
+        EXPECT_TRUE(greaterProperty >= lesserProperty);
+
+        EXPECT_FALSE(greaterProperty < lesserProperty);
+        EXPECT_FALSE(greaterProperty <= lesserProperty);
+    }
+
+    // valid lhs, valid rhs, equal values
+    {
+        const auto& equalProperty1 = TestStruct{ .stringProperty = "a" }.stringProperty;
+        const auto& equalProperty2 = TestStruct{ .stringProperty = "a" }.stringProperty;
+
+        EXPECT_TRUE(equalProperty1 <= equalProperty2);
+        EXPECT_TRUE(equalProperty1 >= equalProperty2);
+
+        EXPECT_FALSE(equalProperty1 < equalProperty2);
+        EXPECT_FALSE(equalProperty1 > equalProperty2);
+    }
 }
 
-TEST_F(TestProperty, less_CompareNotLessToInvalidPropertyWhenInvalid)
+TEST_F(TestProperty, CompareOrderingOfPropertyWithValue)
 {
-    EXPECT_FALSE(m_sutLhs < m_sutRhs);
+    // invalid property
+    {
+        const auto& invalidProperty = TestStruct{}.stringProperty;
+        dots::string_t value = "a";
+
+        EXPECT_TRUE(invalidProperty < value);
+        EXPECT_TRUE(invalidProperty <= value);
+        EXPECT_TRUE(value > invalidProperty);
+        EXPECT_TRUE(value >= invalidProperty);
+
+        EXPECT_FALSE(value < invalidProperty);
+        EXPECT_FALSE(value <= invalidProperty);
+        EXPECT_FALSE(invalidProperty > value);
+        EXPECT_FALSE(invalidProperty >= value);
+    }
+
+    // valid property, unequal values
+    {
+        const auto& lesserProperty = TestStruct{ .stringProperty = "a" }.stringProperty;
+        dots::string_t greaterValue = "b";
+
+        EXPECT_TRUE(lesserProperty < greaterValue);
+        EXPECT_TRUE(lesserProperty <= greaterValue);
+        EXPECT_TRUE(greaterValue > lesserProperty);
+        EXPECT_TRUE(greaterValue >= lesserProperty);
+
+        EXPECT_FALSE(greaterValue < lesserProperty);
+        EXPECT_FALSE(greaterValue <= lesserProperty);
+        EXPECT_FALSE(lesserProperty > greaterValue);
+        EXPECT_FALSE(lesserProperty >= greaterValue);
+    }
+
+    // valid property, unequal values, flipped
+    {
+        const auto& greaterProperty = TestStruct{ .stringProperty = "b" }.stringProperty;
+        dots::string_t lesserValue = "a";
+
+        EXPECT_TRUE(lesserValue < greaterProperty);
+        EXPECT_TRUE(lesserValue <= greaterProperty);
+        EXPECT_TRUE(greaterProperty > lesserValue);
+        EXPECT_TRUE(greaterProperty >= lesserValue);
+
+        EXPECT_FALSE(greaterProperty < lesserValue);
+        EXPECT_FALSE(greaterProperty <= lesserValue);
+        EXPECT_FALSE(lesserValue > greaterProperty);
+        EXPECT_FALSE(lesserValue >= greaterProperty);
+    }
+
+    // valid property, equal values
+    {
+        const auto& equalProperty = TestStruct{ .stringProperty = "a" }.stringProperty;
+        dots::string_t equalValue = "a";
+
+        EXPECT_TRUE(equalProperty <= equalValue);
+        EXPECT_TRUE(equalValue <= equalProperty);
+        EXPECT_TRUE(equalProperty >= equalValue);
+        EXPECT_TRUE(equalValue >= equalProperty);
+
+        EXPECT_FALSE(equalValue < equalProperty);
+        EXPECT_FALSE(equalProperty < equalValue);
+        EXPECT_FALSE(equalProperty > equalValue);
+        EXPECT_FALSE(equalValue > equalProperty);
+    }
 }
 
-TEST_F(TestProperty, less_CompareNotLessToValidPropertyWhenInvalid)
+TEST_F(TestProperty, CompareOrderingOfPropertyWithInvalid)
 {
-    m_sutRhs.emplace("fou");
-    EXPECT_FALSE(m_sutLhs < m_sutRhs);
-}
+    // invalid property
+    {
+        const auto& invalidProperty = TestStruct{}.stringProperty;
 
-TEST_F(TestProperty, less_CompareLessToValidPropertyValid)
-{
-    m_sutLhs.emplace("foo");
-    m_sutRhs.emplace("fou");
+        EXPECT_TRUE(invalidProperty <= dots::invalid);
+        EXPECT_TRUE(dots::invalid <= invalidProperty);
+        EXPECT_TRUE(invalidProperty >= dots::invalid);
+        EXPECT_TRUE(dots::invalid >= invalidProperty);
 
-    EXPECT_TRUE(m_sutLhs < m_sutRhs);
-}
+        EXPECT_FALSE(invalidProperty < dots::invalid);
+        EXPECT_FALSE(dots::invalid < invalidProperty);
+        EXPECT_FALSE(invalidProperty > dots::invalid);
+        EXPECT_FALSE(dots::invalid > invalidProperty);
+    }
 
-TEST_F(TestProperty, less_CompareNotLessToValidPropertyValid)
-{
-    m_sutLhs.emplace("foo");
-    m_sutRhs.emplace("bar");
+    // valid property
+    {
+        const auto& validProperty = TestStruct{ .stringProperty = "a" }.stringProperty;
 
-    EXPECT_FALSE(m_sutLhs < m_sutRhs);
+        EXPECT_TRUE(dots::invalid < validProperty);
+        EXPECT_TRUE(dots::invalid <= validProperty);
+        EXPECT_TRUE(validProperty > dots::invalid);
+        EXPECT_TRUE(validProperty >= dots::invalid);
+
+        EXPECT_FALSE(validProperty < dots::invalid);
+        EXPECT_FALSE(validProperty <= dots::invalid);
+        EXPECT_FALSE(dots::invalid > validProperty);
+        EXPECT_FALSE(dots::invalid >= validProperty);
+    }
 }
