@@ -193,15 +193,6 @@ namespace dots
              m_openEndpoint.emplace("tcp://127.0.0.1");
         }
 
-        if ((m_openEndpoint->scheme() == "tcp" || m_openEndpoint->scheme() == "tcp-v2") && m_openEndpoint->port().empty())
-        {
-            m_openEndpoint->setPort("11235");
-        }
-        else if (m_openEndpoint->scheme() == "tcp-v1" && m_openEndpoint->port().empty())
-        {
-            m_openEndpoint->setPort("11234");
-        }
-
         if (auto it = args.find("dots-auth-secret"); it != args.end())
         {
             m_openEndpoint->setUserPassword(it->second.as<std::string>());
@@ -249,18 +240,6 @@ namespace dots
         else
         {
             m_listenEndpoints.emplace_back("tcp://127.0.0.1");
-        }
-
-        for (io::Endpoint& listenEndpoint : m_listenEndpoints)
-        {
-            if ((listenEndpoint.scheme() == "tcp" || listenEndpoint.scheme() == "tcp-v2") && listenEndpoint.port().empty())
-            {
-                listenEndpoint.setPort("11235");
-            }
-            else if (listenEndpoint.scheme() == "tcp-v1" && listenEndpoint.port().empty())
-            {
-                listenEndpoint.setPort("11234");
-            }
         }
 
         if (auto it = args.find("dots-log-level"); it != args.end())

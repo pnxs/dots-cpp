@@ -371,14 +371,26 @@ namespace dots
             if (scheme == "tcp")
             {
                 listen<io::TcpListener>(listenEndpoint);
+
+                // workaround for including default port in log output below
+                if (listenEndpoint.port().empty())
+                    listenEndpoint.setPort(std::string{ io::TcpListener::DefaultPort });
             }
             else if (scheme == "tcp-v2")
             {
                 listen<io::v2::TcpListener>(listenEndpoint);
+
+                // workaround for including default port in log output below
+                if (listenEndpoint.port().empty())
+                    listenEndpoint.setPort(std::string{ io::v2::TcpListener::DefaultPort });
             }
             else if (scheme == "tcp-v1")
             {
                 listen<io::v1::TcpListener>(listenEndpoint);
+
+                // workaround for including default port in log output below
+                if (listenEndpoint.port().empty())
+                    listenEndpoint.setPort(std::string{ io::v1::TcpListener::DefaultPort });
             }
             #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
             else if (scheme == "uds")

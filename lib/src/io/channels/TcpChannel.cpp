@@ -6,7 +6,7 @@ namespace dots::io::details
 {
     template <typename Serializer, TransmissionFormat TransmissionFormat>
     GenericTcpChannel<Serializer, TransmissionFormat>::GenericTcpChannel(key_t key, asio::io_context& ioContext, const Endpoint& endpoint) :
-        GenericTcpChannel(key, ioContext, endpoint.host(), endpoint.port())
+        GenericTcpChannel(key, ioContext, endpoint.host(), endpoint.port().empty() ? DefaultPort : endpoint.port())
     {
         /* do nothing */
     }

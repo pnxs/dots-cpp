@@ -6,7 +6,7 @@ namespace dots::io::details
 {
     template <typename TChannel>
     GenericTcpListener<TChannel>::GenericTcpListener(asio::io_context& ioContext, const Endpoint& endpoint, std::optional<int> backlog/* = std::nullopt*/) :
-        GenericTcpListener(ioContext, std::string{ endpoint.host() }, std::string{ endpoint.port() }, backlog)
+        GenericTcpListener(ioContext, std::string{ endpoint.host() }, std::string{ endpoint.port().empty() ? DefaultPort : endpoint.port() }, backlog)
     {
         /* do nothing */
     }
