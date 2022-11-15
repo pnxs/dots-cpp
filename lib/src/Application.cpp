@@ -168,7 +168,7 @@ namespace dots
         po::options_description options("Allowed options");
         options.add_options()
             ("dots-auth-secret", po::value<std::string>(), "secret used during authentication (this can also be given as part of the --dots-endpoint argument)")
-            ("dots-endpoint", po::value<std::string>(), "remote endpoint URI to open for host connection (e.g. tcp://127.0.0.1, ws://127.0.0.1:11235, uds:/run/dots.socket")
+            ("dots-endpoint", po::value<std::string>(), "remote endpoint URI to open for host connection (e.g. tcp://127.0.0.1, ws://127.0.0.1:11233, uds:/run/dots.socket")
             ("dots-log-level", po::value<int>(), "log level to use (data = 1, debug = 2, info = 3, notice = 4, warn = 5, error = 6, crit = 7, emerg = 8)")
         ;
 
@@ -190,10 +190,14 @@ namespace dots
         }
         else
         {
-             m_openEndpoint.emplace("tcp://127.0.0.1:11234");
+             m_openEndpoint.emplace("tcp://127.0.0.1");
         }
 
-        if (m_openEndpoint->scheme() == "tcp" && m_openEndpoint->port().empty())
+        if ((m_openEndpoint->scheme() == "tcp" || m_openEndpoint->scheme() == "tcp-v2") && m_openEndpoint->port().empty())
+        {
+            m_openEndpoint->setPort("11235");
+        }
+        else if (m_openEndpoint->scheme() == "tcp-v1" && m_openEndpoint->port().empty())
         {
             m_openEndpoint->setPort("11234");
         }
@@ -219,7 +223,7 @@ namespace dots
 
         po::options_description options{ "Allowed options" };
         options.add_options()
-            ("dots-endpoint", po::value<std::vector<std::string>>(), "local endpoint URI to listen on for incoming guest connections (e.g. tcp://127.0.0.1, ws://127.0.0.1:11235, uds:/run/dots.socket")
+            ("dots-endpoint", po::value<std::vector<std::string>>(), "local endpoint URI to listen on for incoming guest connections (e.g. tcp://127.0.0.1, ws://127.0.0.1:11233, uds:/run/dots.socket")
             ("dots-log-level", po::value<int>(), "log level to use (data = 1, debug = 2, info = 3, notice = 4, warn = 5, error = 6, crit = 7, emerg = 8)")
         ;
 
@@ -244,12 +248,16 @@ namespace dots
         }
         else
         {
-            m_listenEndpoints.emplace_back("tcp://127.0.0.1:11234");
+            m_listenEndpoints.emplace_back("tcp://127.0.0.1");
         }
 
         for (io::Endpoint& listenEndpoint : m_listenEndpoints)
         {
-            if (listenEndpoint.scheme() == "tcp" && listenEndpoint.port().empty())
+            if ((listenEndpoint.scheme() == "tcp" || listenEndpoint.scheme() == "tcp-v2") && listenEndpoint.port().empty())
+            {
+                listenEndpoint.setPort("11235");
+            }
+            else if (listenEndpoint.scheme() == "tcp-v1" && listenEndpoint.port().empty())
             {
                 listenEndpoint.setPort("11234");
             }
