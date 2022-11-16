@@ -38,9 +38,9 @@ function(bundle_static_library tgt_name)
 
   set(bundled_tgt_name ${tgt_name}_bundle)
 
-  set(bundled_tgt_full_name 
+  set(bundled_tgt_full_name
     ${CMAKE_BINARY_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}${bundled_tgt_name}${CMAKE_STATIC_LIBRARY_SUFFIX})
-  
+
   set(tgt_full_name $<TARGET_FILE:${tgt_name}>)
 
   if (CMAKE_CXX_COMPILER_ID MATCHES "^(Clang|GNU)$")

@@ -141,7 +141,7 @@ namespace dots::serialization
         void write(T value, int base = 10)
         {
             initiateWrite();
-            
+
             {
                 if (base == 2)
                 {
@@ -356,7 +356,7 @@ namespace dots::serialization
             appendNewLine(level);
             append(suffix);
         }
-        
+
         std::stack<nesting_t> m_nesting;
         TextOptions m_options;
     };

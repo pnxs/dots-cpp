@@ -117,7 +117,7 @@ namespace dots::io
     EnumDescriptorData DescriptorConverter::operator () (const type::EnumDescriptor& enumDescriptor)
     {
         EnumDescriptorData enumData{
-            .name = enumDescriptor.name() 
+            .name = enumDescriptor.name()
         };
 
         vector_t<EnumElementDescriptor>& enumeratorData = enumData.elements.emplace();
@@ -144,7 +144,7 @@ namespace dots::io
                 .persistent = structDescriptor.persistent() ,
                 .cleanup = structDescriptor.cleanup() ,
                 .local = structDescriptor.local() ,
-                .substructOnly = structDescriptor.substructOnly() 
+                .substructOnly = structDescriptor.substructOnly()
             }
         };
 
@@ -156,7 +156,7 @@ namespace dots::io
                 .name = propertyDescriptor.name() ,
                 .tag = propertyDescriptor.tag() ,
                 .isKey = propertyDescriptor.isKey() ,
-                .type = propertyDescriptor.valueDescriptor().name() 
+                .type = propertyDescriptor.valueDescriptor().name()
             });
         }
 

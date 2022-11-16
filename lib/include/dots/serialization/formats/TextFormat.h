@@ -58,7 +58,7 @@ namespace dots::serialization
             Relaxed,
             Strict
         };
-        
+
         enum Style
         {
             Minified,

@@ -11,6 +11,8 @@ namespace dots::io::details
     template <typename TChannel>
     struct GenericTcpListener : Listener
     {
+        static constexpr std::string_view DefaultPort = TChannel::DefaultPort;
+
         GenericTcpListener(asio::io_context& ioContext, const Endpoint& endpoint, std::optional<int> backlog = std::nullopt);
         GenericTcpListener(asio::io_context& ioContext, std::string address, std::string port, std::optional<int> backlog = std::nullopt);
         GenericTcpListener(const GenericTcpListener& other) = delete;

@@ -109,7 +109,7 @@ namespace dots::serialization
         {
             m_underlyingWriter->Double(value);
         }
-        
+
         void write(std::string_view sv)
         {
             m_underlyingWriter->String(sv.data(), static_cast<rapidjson::SizeType>(sv.size()));
@@ -135,7 +135,7 @@ namespace dots::serialization
         {
             assertHasWriter();
         }
-        
+
         std::stack<State> m_nesting;
         underlying_writer_t* m_underlyingWriter = nullptr;
     };

@@ -300,7 +300,7 @@ namespace dots::io
         }
 
     private:
-        
+
         static constexpr size_t ReadBufferMinSize = 16 * 128;
         static constexpr size_t WriteBufferMaxSize = 10 * 1024 * 1024;
 
@@ -445,7 +445,7 @@ namespace dots::io
                         }
                     }
                 });
-                
+
                 m_asyncWriting = true;
             }
         }
@@ -578,7 +578,7 @@ namespace dots::io
                        transportHeader.dotsHeader->sender = 1;
                     }
                 }
-                
+
                 uint16_t serializedHeaderSize = static_cast<uint16_t>(serializer.serialize(transportHeader));
                 auto* serializedHeaderSizeData = reinterpret_cast<uint8_t*>(&serializedHeaderSize);
                 std::vector<uint8_t> serializedHeader = std::move(serializer.output());

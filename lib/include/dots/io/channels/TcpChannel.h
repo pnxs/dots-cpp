@@ -12,6 +12,15 @@ namespace dots::io::details
         using key_t = typename base_t::key_t;
         using payload_cache_t = typename base_t::payload_cache_t;
 
+        static constexpr std::string_view DefaultPort = []
+        {
+            switch (TransmissionFormat)
+            {
+                case TransmissionFormat::v1: return "11234";
+                case TransmissionFormat::v2: return "11235";
+            }
+        }();
+
         GenericTcpChannel(key_t key, asio::io_context& ioContext, const Endpoint& endpoint);
 
         /**

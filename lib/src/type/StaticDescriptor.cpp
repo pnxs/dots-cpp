@@ -49,7 +49,7 @@ namespace dots::type
             case Type::Vector:
             case Type::Struct:
             case Type::Enum:
-            default: 
+            default:
                 return callable(std::forward<Typelesses>(typelesses).template to<dots::string_t>()...);
         }
     }

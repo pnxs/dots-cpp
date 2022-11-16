@@ -90,7 +90,7 @@ TEST_F(TestDispatcher, addEventHandler_AllowsUsageOfVariousHandlerTypes)
     m_sut.addEventHandler<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&/* e*/){ ++I; });
 
     // mutable lambda
-    m_sut.addEventHandler<DotsTestStruct>([&, i = 0](const dots::Event<DotsTestStruct>&/* e*/) mutable { ++I; I += ++i; }); 
+    m_sut.addEventHandler<DotsTestStruct>([&, i = 0](const dots::Event<DotsTestStruct>&/* e*/) mutable { ++I; I += ++i; });
 
     // static member function
     m_sut.addEventHandler<DotsTestStruct>(Foobar::StaticEventHandler);

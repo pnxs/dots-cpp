@@ -77,7 +77,7 @@ namespace dots
          * Using this operator is short hand for Event<>::updated().
          *
          * For cached types, the returned instance refers to the instance in
-         * the local Container. 
+         * the local Container.
          *
          * For uncached types, this is equivalent to Event<>::transmitted().
          *
@@ -234,7 +234,7 @@ namespace dots
          * Note that this does not include properties that were invalidated by
          * the transmission.
          *
-         * @return property_set_t 
+         * @return property_set_t
          */
         property_set_t updatedProperties() const { return newProperties() ^ updated()._validProperties(); }
 

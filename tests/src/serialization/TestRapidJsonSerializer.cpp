@@ -136,7 +136,7 @@ struct RapidJsonSerializerTestDataEncoded : SerializerTestDataEncoded<dots::seri
     data_t structSimple1_None = Concat(
         "{}"
     );
-    
+
     data_t structComplex1_Valid = Concat(
         "{",
         structComplex1_enumProperty, ",",

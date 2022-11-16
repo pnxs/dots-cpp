@@ -31,7 +31,7 @@ namespace dots::io
             std::promise<return_t> promise;
             std::future<return_t> future = promise.get_future();
 
-            asio::post(ioContext, [promise{ std::move(promise) }, handler{ std::forward<Handler>(handler) }]() mutable 
+            asio::post(ioContext, [promise{ std::move(promise) }, handler{ std::forward<Handler>(handler) }]() mutable
             {
                 if constexpr (std::is_same_v<return_t, void>)
                 {

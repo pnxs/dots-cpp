@@ -120,7 +120,7 @@ TEST_F(TestRegistry, deregisterStaticType)
 TEST_F(TestRegistry, forEach)
 {
     using namespace dots::type;
-    
+
     Registry sut{ std::nullopt, Registry::StaticTypePolicy::FundamentalOnly };
     sut.registerType(Descriptor<DotsTestStruct>::Instance());
     sut.registerType(Descriptor<dots::vector_t<DotsTestStruct>>::Instance());

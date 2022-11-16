@@ -23,7 +23,7 @@ int main(int argc, char* argv[])
         examples::LivingRoom livingRoom;
         examples::Stairwell stairwell;
 
-        // execute event loop of application 
+        // execute event loop of application
         return app.exec();
     }
     catch (const std::exception& e)

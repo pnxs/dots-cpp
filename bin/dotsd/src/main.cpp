@@ -27,14 +27,14 @@ int main(int argc, char* argv[])
         po::store(po::basic_command_line_parser<char>(argc, argv).options(options).allow_unregistered().run(), args);
         po::notify(args);
 
-        if (args.count("help")) 
+        if (args.count("help"))
         {
             std::cout << options << "\n";
             return EXIT_SUCCESS;
         }
 
         LOG_NOTICE_S("starting dotsd...");
-        
+
         dots::DotsDaemon dotsDaemon{ args["daemon-name"].as<std::string>(), argc, argv };
 
         #ifdef __linux__
@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
             return EXIT_FAILURE;
         }
         #endif
-        
+
         return dotsDaemon.exec();
     }
     catch (const std::exception& e)

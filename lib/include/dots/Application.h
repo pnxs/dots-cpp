@@ -46,7 +46,7 @@ namespace dots
          * This will parse the given command line arguments and attempt to
          * establish a connection via the given guest transceiver using the
          * endpoint given by the '--dots-endpoint' option. If no endpoint is
-         * specified, "tcp://127.0.0.1:11234" will be used as a default.
+         * specified, "tcp://127.0.0.1:11235" will be used as a default.
          *
          * If no transceiver is given (i.e. the global transceiver is used) and
          * any of the statically typed versions of dots::subscribe<T>() or
@@ -145,7 +145,7 @@ namespace dots
          * This will parse the given command line arguments and attempt to
          * listen for incoming connections via the given host transceiver using
          * the endpoints given by the '--dots-endpoint' option. If no endpoints
-         * are specified, "tcp://127.0.0.1:11234" will be used as a default.
+         * are specified, "tcp://127.0.0.1:11235" will be used as a default.
          *
          * @param argc The number of command line arguments as given in the
          * main() function of the application.
@@ -250,7 +250,7 @@ namespace dots
     private:
 
         struct signal_set_storage;
-        
+
         const asio::io_context& ioContext() const;
         asio::io_context& ioContext();
 

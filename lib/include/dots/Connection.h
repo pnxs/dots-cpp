@@ -199,7 +199,7 @@ namespace dots
          * '<local-endpoint-uri>' at '<remote-endpoint-uri>'".
          *
          * For example: "from 'tcp://127.0.0.1:60062' at
-         * 'tcp://127.0.0.1:11234'"
+         * 'tcp://127.0.0.1:11235'"
          *
          * @return std::string A string representation the endpoints of this
          * connection.

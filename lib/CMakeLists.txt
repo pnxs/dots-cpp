@@ -42,6 +42,7 @@ target_sources(${TARGET_NAME}
         src/Container.cpp
         src/ContainerPool.cpp
         src/Dispatcher.cpp
+        src/dots.cpp
         src/Event.cpp
         src/GuestTransceiver.cpp
         src/HostTransceiver.cpp
@@ -49,39 +50,34 @@ target_sources(${TARGET_NAME}
         src/Subscription.cpp
         src/Timer.cpp
         src/Transceiver.cpp
-        src/dots.cpp
-
-        src/tools/logging.cpp
-        src/tools/IpNetwork.cpp
-        src/tools/Uri.cpp
-
-        src/io/Io.cpp
-        src/io/Endpoint.cpp
-        src/io/FdObserver.cpp
 
         src/io/Channel.cpp
+        src/io/DescriptorConverter.cpp
+        src/io/Endpoint.cpp
+        src/io/FdObserver.cpp
+        src/io/Io.cpp
         src/io/Listener.cpp
+        src/io/Transmission.cpp
+
+        src/io/auth/AuthManager.cpp
+        src/io/auth/Digest.cpp
+        src/io/auth/LegacyAuthManager.cpp
+        src/io/auth/Nonce.cpp
+
+        src/io/channels/LocalChannel.cpp
+        src/io/channels/LocalListener.cpp
+        src/io/channels/TcpChannel.cpp
+        src/io/channels/TcpListener.cpp
+        src/io/channels/UdsChannel.cpp
+        src/io/channels/UdsListener.cpp
+        src/io/channels/WebSocketChannel.cpp
+        src/io/channels/WebSocketListener.cpp
 
         src/serialization/AsciiSerialization.cpp
 
-        src/io/channels/TcpListener.cpp
-        src/io/channels/TcpChannel.cpp
-        src/io/channels/UdsChannel.cpp
-        src/io/channels/UdsListener.cpp
-
-        src/io/channels/WebSocketChannel.cpp
-        src/io/channels/WebSocketListener.cpp
-        src/io/channels/LocalChannel.cpp
-        src/io/channels/LocalListener.cpp
-
-        src/io/Transmission.cpp
-
-        src/io/DescriptorConverter.cpp
-
-        src/io/auth/Nonce.cpp
-        src/io/auth/Digest.cpp
-        src/io/auth/AuthManager.cpp
-        src/io/auth/LegacyAuthManager.cpp
+        src/tools/IpNetwork.cpp
+        src/tools/logging.cpp
+        src/tools/Uri.cpp
 
         src/type/AnyStruct.cpp
         src/type/Chrono.cpp

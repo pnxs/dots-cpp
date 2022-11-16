@@ -97,7 +97,7 @@ namespace dots::testing
         static constexpr Connection::id_t SpoofId = GuestId + 1;
 
         static constexpr std::string_view GuestName = "dots-test-guest";
-        
+
         /*!
          * @brief Get the currently used IO context.
          *
@@ -187,7 +187,7 @@ namespace dots::testing
             m_ioContext.poll();
             m_ioContext.restart();
         }
-        
+
         /*!
          * @brief Process events for a specific duration.
          *

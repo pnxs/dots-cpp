@@ -164,11 +164,11 @@ namespace dots
     void Application::parseGuestTransceiverArgs(int argc, char* argv[])
     {
         namespace po = boost::program_options;
-        
+
         po::options_description options("Allowed options");
         options.add_options()
             ("dots-auth-secret", po::value<std::string>(), "secret used during authentication (this can also be given as part of the --dots-endpoint argument)")
-            ("dots-endpoint", po::value<std::string>(), "remote endpoint URI to open for host connection (e.g. tcp://127.0.0.1, ws://127.0.0.1:11235, uds:/run/dots.socket")
+            ("dots-endpoint", po::value<std::string>(), "remote endpoint URI to open for host connection (e.g. tcp://127.0.0.1, ws://127.0.0.1:11233, uds:/run/dots.socket")
             ("dots-log-level", po::value<int>(), "log level to use (data = 1, debug = 2, info = 3, notice = 4, warn = 5, error = 6, crit = 7, emerg = 8)")
         ;
 
@@ -190,12 +190,7 @@ namespace dots
         }
         else
         {
-             m_openEndpoint.emplace("tcp://127.0.0.1:11234");
-        }
-
-        if (m_openEndpoint->scheme() == "tcp" && m_openEndpoint->port().empty())
-        {
-            m_openEndpoint->setPort("11234");
+             m_openEndpoint.emplace("tcp://127.0.0.1");
         }
 
         if (auto it = args.find("dots-auth-secret"); it != args.end())
@@ -216,10 +211,10 @@ namespace dots
     void Application::parseHostTransceiverArgs(int argc, char* argv[])
     {
         namespace po = boost::program_options;
-        
+
         po::options_description options{ "Allowed options" };
         options.add_options()
-            ("dots-endpoint", po::value<std::vector<std::string>>(), "local endpoint URI to listen on for incoming guest connections (e.g. tcp://127.0.0.1, ws://127.0.0.1:11235, uds:/run/dots.socket")
+            ("dots-endpoint", po::value<std::vector<std::string>>(), "local endpoint URI to listen on for incoming guest connections (e.g. tcp://127.0.0.1, ws://127.0.0.1:11233, uds:/run/dots.socket")
             ("dots-log-level", po::value<int>(), "log level to use (data = 1, debug = 2, info = 3, notice = 4, warn = 5, error = 6, crit = 7, emerg = 8)")
         ;
 
@@ -230,7 +225,7 @@ namespace dots
             po::store(po::basic_command_line_parser<char>(argc, argv).options(options).allow_unregistered().run(), args);
             po::notify(args);
         }
-        
+
         if (auto it = args.find("dots-endpoint"); it != args.end())
         {
             for (const std::string& listenEndpointUri : it->second.as<std::vector<std::string>>())
@@ -244,15 +239,7 @@ namespace dots
         }
         else
         {
-            m_listenEndpoints.emplace_back("tcp://127.0.0.1:11234");
-        }
-
-        for (io::Endpoint& listenEndpoint : m_listenEndpoints)
-        {
-            if (listenEndpoint.scheme() == "tcp" && listenEndpoint.port().empty())
-            {
-                listenEndpoint.setPort("11234");
-            }
+            m_listenEndpoints.emplace_back("tcp://127.0.0.1");
         }
 
         if (auto it = args.find("dots-log-level"); it != args.end())

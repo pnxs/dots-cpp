@@ -34,7 +34,7 @@ namespace dots::tools
                 std::is_pointer<std::decay_t<Obj>>,
                 std::is_invocable_r<R, std::decay_t<MemFn>, std::decay_t<Obj>, Args...>
             >;
-            
+
             template <typename Invocable, typename... BindArgs>
             static constexpr bool is_bind_compatible_v = std::conjunction_v<
                 std::negation<std::is_member_function_pointer<std::decay_t<Invocable>>>,

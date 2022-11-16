@@ -129,14 +129,14 @@ namespace dots::type
             return Set() <= propertySet;
         }
 
-        static const PropertyDescriptor& InitDescriptor() 
+        static const PropertyDescriptor& InitDescriptor()
         {
             if (M_descriptorStorage == std::nullopt)
             {
                 M_descriptorStorage.emplace(type::Descriptor<T>::Instance(), Name().data(), Tag(), IsKey(), Offset());
             }
 
-            return *M_descriptorStorage; 
+            return *M_descriptorStorage;
         }
 
         inline static const PropertyDescriptor& Descriptor = InitDescriptor();
