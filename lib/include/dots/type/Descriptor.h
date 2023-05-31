@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <dots/tools/shared_ptr_only.h>
 #include <dots/type/Typeless.h>
+#include <utility>
 
 namespace dots::type
 {

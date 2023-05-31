@@ -2,6 +2,7 @@
 // Copyright 2015-2022 Thomas Schaetzlein <thomas@pnxs.de>, Christopher Gerlach <gerlachch@gmx.com>
 #include <dots/tools/Uri.h>
 #include <dots/tools/string_tools.h>
+#include <tuple>
 
 namespace dots::tools
 {
