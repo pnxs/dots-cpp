@@ -7,6 +7,7 @@
 #include <limits>
 #include <cstring>
 #include <cmath>
+#include <fmt/core.h>
 #include <dots/serialization/Exceptions.h>
 #include <dots/serialization/formats/Reader.h>
 #include <dots/serialization/formats/CborFormat.h>
@@ -323,10 +324,11 @@ namespace dots::serialization
 
             if (majorType != expectedMajorType)
             {
-                auto offset = std::distance(inputDataBegin(), inputData());
-                throw serializerException{"encountered unexpected major type at offset " + std::to_string(offset) + ".  expected '" +
-                                          std::to_string(expectedMajorType) + "' but got '" + std::to_string(majorType) + "'",
-                                          std::vector<uint8_t>(inputDataBegin(), inputDataEnd()+1)};
+                throw serializerException{fmt::format("encountered unexpected major type at offset '{}'. expected '{:#04x}' but got '{:#04x}'",
+                                                      std::distance(inputDataBegin(), inputData()),
+                                                      expectedMajorType,
+                                                      majorType),
+                                          std::vector<uint8_t>(inputDataBegin(), inputDataEnd() + 1)};
             }
 
             if (additionalInformation <= cbor_t::AdditionalInformation::MaxInplaceValue)

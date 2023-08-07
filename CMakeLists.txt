@@ -57,6 +57,7 @@ endif()
 # external projects
 add_subdirectory(external/date EXCLUDE_FROM_ALL)
 add_subdirectory(external/googletest EXCLUDE_FROM_ALL)
+add_subdirectory(external/fmt EXCLUDE_FROM_ALL)
 
 # allow external packages to be found when cross-compiling
 if (${CMAKE_CROSSCOMPILING})
