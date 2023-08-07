@@ -2,76 +2,58 @@
 // Copyright 2015-2022 Thomas Schaetzlein <thomas@pnxs.de>, Christopher Gerlach <gerlachch@gmx.com>
 #pragma once
 #include <stdexcept>
-#include <boost/algorithm/hex.hpp>
+#include <fmt/core.h>
 
 namespace dots::serialization
 {
     struct serializerException : public std::runtime_error
     {
-        serializerException(const std::string& arg, std::vector<uint8_t> inputBuffer) : runtime_error(arg), m_inputBuffer(std::move(inputBuffer))
+        serializerException(const std::string& arg, std::vector<uint8_t> inputBuffer) : runtime_error(arg)
         {
-            parseInputBuffer();
+            parseInputBuffer(inputBuffer);
         };
 
         [[nodiscard]] const char* what() const noexcept override
         {
-            return m_final.c_str();
+            return m_exceptionMessage.c_str();
         }
 
     private:
-        std::vector<uint8_t> m_inputBuffer;
-        std::string m_final;
+        std::string m_exceptionMessage;
         static int const printLength = 16;
 
         /*!
          * @brief convert binary buffer for easier readability
+         *
+         * @param buffer input stream buffer of malicious object
          */
-        void parseInputBuffer()
+        void parseInputBuffer(std::vector<uint8_t> buffer)
         {
-            m_final += std::runtime_error::what();
-            m_final += "\n";
+            m_exceptionMessage = fmt::format("{}\n", std::runtime_error::what());
 
-            auto itStart = m_inputBuffer.begin();
-            auto itAdvance = itStart;
-            std::ranges::advance(itAdvance, printLength, m_inputBuffer.end());
-            for (; itStart < m_inputBuffer.end();)
+            for (auto itStartOfLine = buffer.begin(); itStartOfLine < buffer.end();
+                 std::ranges::advance(itStartOfLine, printLength, buffer.end()))
             {
-                static int spacer = 0;
-                static int proceeded = 0;
-                for (auto it = itStart; it < itAdvance; it++)
-                {
-                    m_final += boost::algorithm::hex_lower(std::string(it, it + 1));
-                    m_final += " ";
+                auto itEndOfLine = itStartOfLine;
+                std::ranges::advance(itEndOfLine, printLength, buffer.end());
+                std::string lineHex;
+                std::string lineASCII;
 
-                    if (spacer == printLength / 2 - 1)
-                    {
-                        m_final += " ";
-                    }
+                int spacer = 0;
+                for (auto it = itStartOfLine; it < itEndOfLine; it++)
+                {
+                    lineHex += fmt::format("{:02x} ", *it);
+                    lineASCII += (*it < 32) || (*it > 126) ? "." : fmt::format("{:c}", *it);
+
                     spacer++;
-                }
-                spacer = 0;
-
-                if (proceeded != 0)
-                {
-                    m_final += std::string(proceeded * 3, ' ');
-                }
-
-                m_final += "\t";
-
-                for (auto it = itStart; it < itAdvance; it++)
-                {
-                    m_final += (*it < 32) ? '.' : *it;
-                    if (spacer == printLength / 2 - 1)
+                    if (spacer == printLength / 2)
                     {
-                        m_final += " ";
+                        lineHex += " ";
+                        lineASCII += " ";
                     }
-                    spacer++;
                 }
-                spacer = 0;
 
-                m_final += "\n";
-                itStart = itAdvance;
-                proceeded = std::ranges::advance(itAdvance, printLength, m_inputBuffer.end());
+                m_exceptionMessage += fmt::format("{0:{1}}\t{2}\n", lineHex, printLength * 3 + 1, lineASCII);
             }
         }
     };
