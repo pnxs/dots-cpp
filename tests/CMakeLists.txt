@@ -76,6 +76,7 @@ target_link_libraries(${TARGET_NAME}
         date::date
         date::date-tz
         RapidJSON::RapidJSON
+        fmt::fmt
 )
 
 # target [dots-unittests-experimental]
