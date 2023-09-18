@@ -522,7 +522,7 @@ namespace dots::io
                 {
                     m_serializer.deserialize(*instance);
                 }
-                catch (serialization::serializerException& se)
+                catch (serialization::SerializerException& se)
                 {
                     throw std::runtime_error(fmt::format("deserialization exception in type '{}': {}", instance->_descriptor().name(), se.what()));
                 }

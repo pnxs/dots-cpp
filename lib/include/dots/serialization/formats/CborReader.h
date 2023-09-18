@@ -324,7 +324,7 @@ namespace dots::serialization
 
             if (majorType != expectedMajorType)
             {
-                throw serializerException{fmt::format("encountered unexpected major type at offset '{}'. expected '{:#04x}' but got '{:#04x}'",
+                throw SerializerException{fmt::format("encountered unexpected major type at offset '{}'. expected '{:#04x}' but got '{:#04x}'",
                                                       std::distance(inputDataBegin(), inputData()),
                                                       expectedMajorType,
                                                       majorType),

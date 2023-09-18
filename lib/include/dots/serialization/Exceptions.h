@@ -6,9 +6,9 @@
 
 namespace dots::serialization
 {
-    struct serializerException : public std::runtime_error
+    struct SerializerException : public std::runtime_error
     {
-        serializerException(const std::string& arg, std::vector<uint8_t> inputBuffer) : runtime_error(arg)
+        SerializerException(const std::string& arg, std::vector<uint8_t> inputBuffer) : runtime_error(arg)
         {
             parseInputBuffer(inputBuffer);
         };
