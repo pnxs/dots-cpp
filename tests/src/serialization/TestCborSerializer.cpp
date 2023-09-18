@@ -2,6 +2,7 @@
 // Copyright 2015-2022 Thomas Schaetzlein <thomas@pnxs.de>, Christopher Gerlach <gerlachch@gmx.com>
 #include <dots/testing/gtest/gtest.h>
 #include <dots/serialization/CborSerializer.h>
+#include <dots/serialization/SerializerException.h>
 #include <serialization/TestSerializer.h>
 
 struct CborSerializerTestDataEncoded : SerializerTestDataEncoded<dots::serialization::CborSerializer>
@@ -94,6 +95,7 @@ struct CborSerializerTestDataEncoded : SerializerTestDataEncoded<dots::serializa
     data_t structComplex2_durationVectorProperty = Concat(0x09, 0x82, duration1, duration2);
     data_t structComplex2_uuidProperty = Concat(0x06, uuid1);
 
+    data_t invalid_string = Concat(boolFalse, string1);
     //
     // vector
     //
@@ -199,6 +201,37 @@ struct CborSerializerTestDataEncoded : SerializerTestDataEncoded<dots::serializa
         structComplex1_timepointProperty,
         structComplex1_structSimpleProperty
     );
+    data_t structSimple1_Invalid = Concat(
+        0xA3,
+        invalid_string,
+        structSimple1_stringProperty,
+        structSimple1_float32Property
+    );
 };
 
 INSTANTIATE_TYPED_TEST_SUITE_P(TestCborSerializer, TestSerializer, CborSerializerTestDataEncoded);
+
+TEST(TestCborSerializerErrors, serializerException)
+{
+    CborSerializerTestDataEncoded encoded;
+    dots::serialization::CborSerializer serializer;
+
+//#define EXAMINE_SERIALIZER_EXCEPTION 1
+#ifdef EXAMINE_SERIALIZER_EXCEPTION
+    bool receivedException = false;
+
+    try
+    {
+        serializer.Deserialize<dots::bool_t>(encoded.string1);
+    }
+    catch(const dots::serialization::SerializerException& e)
+    {
+        std::cout << "Exception:\n" << e.what() << "\n";
+        receivedException = true;
+    }
+
+    EXPECT_TRUE(receivedException);
+#else
+    EXPECT_THROW(serializer.Deserialize<dots::bool_t>(encoded.string1), dots::serialization::SerializerException);
+#endif
+}

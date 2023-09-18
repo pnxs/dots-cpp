@@ -8,7 +8,6 @@
 #include <cstring>
 #include <cmath>
 #include <array>
-#include <dots/serialization/SerializerException.h>
 #include <dots/serialization/formats/Reader.h>
 #include <dots/serialization/formats/CborFormat.h>
 

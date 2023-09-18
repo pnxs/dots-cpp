@@ -1,5 +1,7 @@
 #include "dots/serialization/formats/CborReader.h"
+#include <dots/serialization/SerializerException.h>
 #include <fmt/core.h>
+
 
 namespace dots::serialization
 {
@@ -33,7 +35,7 @@ namespace dots::serialization
         throw SerializerException{msg,
                                   details,
                                   offset,
-                                  std::vector(inputDataBegin(), inputDataEnd() + 1)};
+                                  std::span(inputDataBegin(), inputDataEnd() + 1)};
     }
 
 }
