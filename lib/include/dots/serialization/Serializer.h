@@ -152,7 +152,7 @@ namespace dots::serialization
         template <typename T, std::enable_if_t<!std::is_const_v<T> && !std::is_reference_v<T>, int> = 0>
         T deserialize()
         {
-            T value;
+            T value = {};
             deserialize(value);
 
             return value;
