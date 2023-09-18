@@ -83,10 +83,10 @@ Intermediate examples:
 # Dependencies
 
 * CMake >= 3.12
-* Boost Libraries[^1] >= 1.71.0 (including program-options)
+* Boost Libraries[^1] >= 1.74.0 (including program-options)
 * Python >= 3.8
 * dots-code-generator >= 0.0.4 (https://github.com/pnxs/dots-code-generator, also available via pip (https://pypi.org/project/dots-code-generator))
-* C++ compiler supporting at least C++20 (such as GCC 9 or MSVC 19.14)
+* C++ compiler supporting at least C++20 (such as GCC 11.4 or MSVC 19.26 (VS 2019 16.6))
 
 [^1]: Boost is linked static by default, change cmake-option 'Boost_USE_STATIC_LIBS' to link it shared.
 
