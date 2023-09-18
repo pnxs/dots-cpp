@@ -7,8 +7,8 @@
 #include <limits>
 #include <cstring>
 #include <cmath>
-#include <fmt/core.h>
-#include <dots/serialization/Exceptions.h>
+#include <array>
+#include <dots/serialization/SerializerException.h>
 #include <dots/serialization/formats/Reader.h>
 #include <dots/serialization/formats/CborFormat.h>
 
@@ -87,7 +87,7 @@ namespace dots::serialization
 
             if (size != N)
             {
-                throw std::runtime_error{ "byte string size does not match size. expected '" + std::to_string(N) + "' but got '" + std::to_string(size) + "'" };
+                throwInvalidSize("byte string size does not match size", N, size);
             }
 
             assertInputAvailable(N);
@@ -121,7 +121,7 @@ namespace dots::serialization
             }
             else
             {
-                throw std::runtime_error{ "encountered unexpected simple value when deserializing bool: '" + std::to_string(simpleValue) + "'" };
+                throwException("encountered unexpected simple value when deserializing bool", simpleValue);
             }
         }
 
@@ -200,7 +200,7 @@ namespace dots::serialization
                 {
                     if (additionalInformation > cbor_t::AdditionalInformation::FollowingBytes8)
                     {
-                        throw std::runtime_error{ "encountered unsupported additional information value: " + std::to_string(additionalInformation) };
+                        throwException("encountered unsupported additional information value", additionalInformation);
                     }
 
                     uint8_t numBytes = 1 << (additionalInformation - cbor_t::AdditionalInformation::FollowingBytes1);
@@ -271,6 +271,12 @@ namespace dots::serialization
 
     private:
 
+        void throwInvalidSize(const std::string& msg, std::size_t expected, std::size_t size) const;
+        void throwUnexpectedHeadException(uint8_t expectedHead, uint8_t head) const;
+        void throwUnexpectedMajorTypeException(uint8_t expectedMajorType, uint8_t majorType) const;
+        void throwException(const std::string& msg, int value) const;
+        void throwException(const std::string& msg, const std::string& details) const;
+
         void assertInputAvailable(size_t size)
         {
             if (size > static_cast<size_t>(inputDataEnd() - inputData()))
@@ -324,11 +330,7 @@ namespace dots::serialization
 
             if (majorType != expectedMajorType)
             {
-                throw SerializerException{fmt::format("encountered unexpected major type at offset '{}'. expected '{:#04x}' but got '{:#04x}'",
-                                                      std::distance(inputDataBegin(), inputData()),
-                                                      expectedMajorType,
-                                                      majorType),
-                                          std::vector<uint8_t>(inputDataBegin(), inputDataEnd() + 1)};
+                throwUnexpectedMajorTypeException(expectedMajorType, majorType);
             }
 
             if (additionalInformation <= cbor_t::AdditionalInformation::MaxInplaceValue)
@@ -339,14 +341,14 @@ namespace dots::serialization
             {
                 if (additionalInformation > cbor_t::AdditionalInformation::FollowingBytes8)
                 {
-                    throw std::runtime_error{ "encountered unsupported additional information value: " + std::to_string(additionalInformation) };
+                    throwException("encountered unsupported additional information", additionalInformation);
                 }
 
                 uint8_t numBytes = 1  << (additionalInformation - cbor_t::AdditionalInformation::FollowingBytes1);
 
                 if (numBytes > valueSize)
                 {
-                    throw std::runtime_error{ "encountered value exceeds value size: expected at most '" + std::to_string(valueSize) + "' but got '" + std::to_string(numBytes) + "'" };
+                    throwInvalidSize("encountered value exceeds value size", valueSize, numBytes);
                 }
 
                 assertInputAvailable(numBytes);
@@ -362,7 +364,7 @@ namespace dots::serialization
 
             if (head != expectedHead)
             {
-                throw std::runtime_error{ "encountered unexpected head. expected '" + std::to_string(expectedHead) + "' but got '" + std::to_string(head) + "'" };
+                throwUnexpectedHeadException(expectedHead, head);
             }
 
             return head;

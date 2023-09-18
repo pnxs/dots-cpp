@@ -74,6 +74,9 @@ target_sources(${TARGET_NAME}
         src/io/channels/WebSocketListener.cpp
 
         src/serialization/AsciiSerialization.cpp
+        src/serialization/SerializerException.cpp
+
+        src/serialization/formats/CborReader.cpp
 
         src/tools/IpNetwork.cpp
         src/tools/logging.cpp

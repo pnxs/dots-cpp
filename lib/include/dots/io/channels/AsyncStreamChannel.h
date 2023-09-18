@@ -5,12 +5,11 @@
 #define DOTS_ACKNOWLEDGE_DEPRECATION_OF_DotsTransportHeader_nameSpace
 #define DOTS_ACKNOWLEDGE_DEPRECATION_OF_DotsTransportHeader_destinationClientId
 #include <optional>
-#include <fmt/core.h>
 #include <dots/asio.h>
 #include <dots/type/Registry.h>
 #include <dots/io/Channel.h>
 #include <dots/serialization/CborSerializer.h>
-#include <dots/serialization/Exceptions.h>
+#include <dots/serialization/SerializerException.h>
 #include <dots/serialization/ExperimentalCborSerializer.h>
 #include <DotsClient.dots.h>
 #include <DotsDescriptorRequest.dots.h>
@@ -524,7 +523,7 @@ namespace dots::io
                 }
                 catch (serialization::SerializerException& se)
                 {
-                    throw std::runtime_error(fmt::format("deserialization exception in type '{}': {}", instance->_descriptor().name(), se.what()));
+                    throw std::runtime_error("deserialization exception in type '" + instance->_descriptor().name() + "': " + se.what());
                 }
 
                 return Transmission{std::move(header), std::move(instance)};
