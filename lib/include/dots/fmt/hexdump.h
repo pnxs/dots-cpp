@@ -26,7 +26,7 @@ namespace fmt::extension
 template<typename T>
 struct fmt::formatter<fmt::extension::hexdump_vector_t<T>>
 {
-    // Preperation for switching output formats: (note: use code from 'format-switch' comments)
+    // Preparation for switching output formats: (note: use code from 'format-switch' comments)
     // Presentation format: 'b' - bytes
     //format-switch: char presentation = 'b';
     uint8_t lineLength = 16;
