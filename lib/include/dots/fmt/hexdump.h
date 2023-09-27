@@ -66,7 +66,7 @@ struct fmt::formatter<fmt::extension::hexdump_vector_t<T>>
                 fmt::format_to(ctx.out(), "{:c}", (c >= 32 && c <= 127) ? c : '.');
             }
 
-            if (data.size() < width) break;
+            if (data.size() <= width) break;
             fmt::format_to(ctx.out(), "\n");
 
             data = data.subspan(width);
