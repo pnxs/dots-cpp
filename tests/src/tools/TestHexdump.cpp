@@ -14,7 +14,7 @@ protected:
 
 };
 
-TEST_F(TestHexdump, hexdump1)
+TEST_F(TestHexdump, hexdump_uint8)
 {
     std::vector<uint8_t> data = {
         0x54, 0x68, 0x65, 0x20, 0x7b, 0x66, 0x6d, 0x74, 0x7d, 0x20, 0x6c, 0x69, 0x62, 0x72, 0x61, 0x72,
@@ -54,6 +54,68 @@ TEST_F(TestHexdump, hexdump1)
         "00d0: 74 64 2e 68 20 66 6f 72 20 6f 74 68 65 72 20 73  td.h for other s\n"
         "00e0: 74 61 6e 64 02 72 64 20 6c 69 62 72 61 72 79 20  tand.rd library \n"
         "00f0: 74 79 70 65 73 2e 0a                             types.."
+    };
+
+    EXPECT_EQ(hexdump, expectedData);
+}
+
+
+TEST_F(TestHexdump, hexdump_char)
+{
+    std::vector<char> data = {
+        0x54, 0x68, 0x65, 0x20, 0x7b, 0x66, 0x6d, 0x74, 0x7d, 0x20, 0x6c, 0x69, 0x62, 0x72, 0x61, 0x72,
+    };
+
+    auto hexdump = fmt::format("{}", fmt::extension::format_hexdump(std::span(data)));
+
+    std::string expectedData = {
+        "0000: 54 68 65 20 7b 66 6d 74 7d 20 6c 69 62 72 61 72  The {fmt} librar"
+    };
+
+    EXPECT_EQ(hexdump, expectedData);
+}
+
+TEST_F(TestHexdump, hexdump_uchar)
+{
+    std::vector<unsigned char> data = {
+        0x54, 0x68, 0x65, 0x20, 0x7b, 0x66, 0x6d, 0x74, 0x7d, 0x20, 0x6c, 0x69, 0x62, 0x72, 0x61, 0x72,
+    };
+
+    auto hexdump = fmt::format("{}", fmt::extension::format_hexdump(std::span(data)));
+
+    std::string expectedData = {
+        "0000: 54 68 65 20 7b 66 6d 74 7d 20 6c 69 62 72 61 72  The {fmt} librar"
+    };
+
+    EXPECT_EQ(hexdump, expectedData);
+}
+
+TEST_F(TestHexdump, hexdump_int8)
+{
+    std::vector<int8_t> data = {
+        0x54, 0x68, 0x65, 0x20, 0x7b, 0x66, 0x6d, 0x74, 0x7d, 0x20, 0x6c, 0x69, 0x62, 0x72, 0x61, 0x72,
+    };
+
+    auto hexdump = fmt::format("{}", fmt::extension::format_hexdump(std::span(data)));
+
+    std::string expectedData = {
+        "0000: 54 68 65 20 7b 66 6d 74 7d 20 6c 69 62 72 61 72  The {fmt} librar"
+    };
+
+    EXPECT_EQ(hexdump, expectedData);
+}
+
+TEST_F(TestHexdump, hexdump_value)
+{
+    std::vector<int8_t> data = {
+        0x54, 0x68, 0x65, 0x20, 0x7b, 0x66, 0x6d, 0x74, 0x7d, 0x20, 0x6c, 0x69, 0x62, 0x72, 0x61, 0x72,
+    };
+
+    auto v = fmt::extension::format_hexdump(std::span(data));
+    auto hexdump = fmt::format("{}", v);
+
+    std::string expectedData = {
+        "0000: 54 68 65 20 7b 66 6d 74 7d 20 6c 69 62 72 61 72  The {fmt} librar"
     };
 
     EXPECT_EQ(hexdump, expectedData);
