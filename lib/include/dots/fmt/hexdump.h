@@ -4,8 +4,8 @@
 
 #include <vector>
 #include <span>
-#include "fmt/core.h"
-#include "fmt/format.h"
+#include <fmt/core.h>
+#include <fmt/format.h>
 
 namespace fmt::extension
 {
@@ -13,13 +13,22 @@ namespace fmt::extension
     template<typename T>
     struct hexdump_vector_t
     {
-        const std::span <T> &data;
+        const std::span<T> data;
     };
 
-    template<typename T>
-    auto format_hexdump(const std::span <T> &d)
+    inline auto format_hexdump(const std::span<const uint8_t> d)
     {
-        return hexdump_vector_t<T>(d);
+        return hexdump_vector_t<const uint8_t>{d};
+    }
+
+    inline auto format_hexdump(const std::span<const char> d)
+    {
+        return hexdump_vector_t<const char>{d};
+    }
+
+    inline auto format_hexdump(const std::span<const int8_t> d)
+    {
+        return hexdump_vector_t<const int8_t>{d};
     }
 }
 
