@@ -152,7 +152,7 @@ namespace dots::serialization
         template <typename T, std::enable_if_t<!std::is_const_v<T> && !std::is_reference_v<T>, int> = 0>
         T deserialize()
         {
-            T value = {};
+            T value = {}; // "= {}" is a workaround for a bug in GCC 11.4, which triggers a false warning (-Werror=maybe-uninitialized)
             deserialize(value);
 
             return value;

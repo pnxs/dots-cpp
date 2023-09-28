@@ -50,7 +50,7 @@ namespace dots::serialization
         template <typename T, std::enable_if_t<std::is_default_constructible_v<T>, int> = 0>
         T read()
         {
-            T value = {};
+            T value = {}; // "= {}" is a workaround for a bug in GCC 11.4, which triggers a false warning (-Werror=maybe-uninitialized)
             read(value);
 
             return value;
