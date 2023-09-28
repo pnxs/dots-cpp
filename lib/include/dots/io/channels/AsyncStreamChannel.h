@@ -9,6 +9,7 @@
 #include <dots/type/Registry.h>
 #include <dots/io/Channel.h>
 #include <dots/serialization/CborSerializer.h>
+#include <dots/serialization/SerializerException.h>
 #include <dots/serialization/ExperimentalCborSerializer.h>
 #include <DotsClient.dots.h>
 #include <DotsDescriptorRequest.dots.h>
@@ -514,10 +515,18 @@ namespace dots::io
             else
             {
                 auto header = m_serializer.template deserialize<DotsHeader>();
-                type::AnyStruct instance{ registry().getStructType(*header.typeName) };
-                m_serializer.deserialize(*instance);
+                type::AnyStruct instance{registry().getStructType(*header.typeName)};
 
-                return Transmission{ std::move(header), std::move(instance) };
+                try
+                {
+                    m_serializer.deserialize(*instance);
+                }
+                catch (serialization::SerializerException& se)
+                {
+                    throw std::runtime_error("deserialization exception in type '" + instance->_descriptor().name() + "': " + se.what());
+                }
+
+                return Transmission{std::move(header), std::move(instance)};
             }
         }
 

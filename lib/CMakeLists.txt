@@ -74,6 +74,9 @@ target_sources(${TARGET_NAME}
         src/io/channels/WebSocketListener.cpp
 
         src/serialization/AsciiSerialization.cpp
+        src/serialization/SerializerException.cpp
+
+        src/serialization/formats/CborReader.cpp
 
         src/tools/IpNetwork.cpp
         src/tools/logging.cpp
@@ -143,7 +146,8 @@ target_link_libraries(${TARGET_NAME}
         $<BUILD_INTERFACE:date::date>
         $<BUILD_INTERFACE:date::date-tz>
         $<BUILD_INTERFACE:PicoSHA2::PicoSHA2>
-)
+        $<BUILD_INTERFACE:fmt::fmt-header-only>
+        )
 set_target_properties(${TARGET_NAME} PROPERTIES
     SOVERSION 0
 )

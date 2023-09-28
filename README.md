@@ -60,7 +60,7 @@ The dots-cpp library is a complete publish-subscribe IPC solution for both local
 ## Features: Library
 
 * Modern C++20 library with CMake support.
-* Portable with officially maintained support for Linux (with GCC 9.4.0 or Clang 10.0.0) and Windows (with latest MSVC).
+* Portable with officially maintained support for Linux (with GCC or Clang) and Windows (with MSVC) (see [Dependencies](#Dependencies)).
 * Variety of available transport protocols (TCP, UNIX domain sockets, WebSocket) and serialization methods (CBOR, JSON).
 * Small base API that is sufficient for most common uses cases.
 * Modular design that allows advanced users to configure, extend or switch components, such as serializers and transport protocols.
@@ -83,16 +83,16 @@ Intermediate examples:
 # Dependencies
 
 * CMake >= 3.12
-* Boost Libraries[^1] >= 1.71.0 (including program-options)
+* Boost Libraries[^1] >= 1.74.0 (including program-options)
 * Python >= 3.8
 * dots-code-generator >= 0.0.4 (https://github.com/pnxs/dots-code-generator, also available via pip (https://pypi.org/project/dots-code-generator))
-* C++ compiler supporting at least C++20 (such as GCC 9 or MSVC 19.14)
+* C++ compiler supporting at least C++20 (such as GCC 11.4, Clang 14 or MSVC 19.26 (VS 2019 16.6))
 
 [^1]: Boost is linked static by default, change cmake-option 'Boost_USE_STATIC_LIBS' to link it shared.
 
 # Build and Run
 
-This is how dots-cpp can be built and run based on the example of Ubuntu 20.04.
+This is how dots-cpp can be built and run based on the example of Ubuntu 22.04.
 
 Install general dependencies:
 
@@ -112,8 +112,9 @@ Install build dependencies:
 ```sh
 sudo apt-get update -yq && \
 sudo apt-get install -yq \
-    libboost-dev=1.71.0.0ubuntu2 \
-    libboost-program-options-dev=1.71.0.0ubuntu2 \
+TODO
+    libboost-dev=1.74.0.3ubuntu7 \
+    libboost-program-options-dev=1.74.0.3ubuntu7 \
 && \
 pip3 install dots-code-generator
 ```

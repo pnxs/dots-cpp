@@ -4,7 +4,7 @@
 # To build, call from top-level directory:
 # docker build -f contrib/Dockerfile .
 #
-FROM ubuntu:20.04 AS dots-cpp-build-env
+FROM ubuntu:22.04 AS dots-cpp-build-env
 
 ARG DEBIAN_FRONTEND="noninteractive"
 ENV TZ=Europe/Berlin
