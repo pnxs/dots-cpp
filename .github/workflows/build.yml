@@ -16,7 +16,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shared: [OFF, ON]
+        shared:
+          - { dots: OFF, boost_static: ON }
+          - { dots: ON, boost_static: OFF }
         compiler:
           - { compiler: GNU,   CXX: g++, install: g++ }
           - { compiler: CLANG, CXX: clang++, install: clang }
@@ -51,7 +53,7 @@ jobs:
       # Note the current convention is to use the -S and -B options here to specify source
       # and build directories, but this is only available with CMake 3.13 and higher.
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-      run: cmake $GITHUB_WORKSPACE -G Ninja -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_DOTS_SHARED=${{ matrix.shared }}
+      run: cmake $GITHUB_WORKSPACE -G Ninja -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_DOTS_SHARED=${{ matrix.shared.dots }} -DBoost_USE_STATIC_LIBS=${{ matrix.shared.boost_static }}
 
     - name: Build
       working-directory: ${{github.workspace}}/build
