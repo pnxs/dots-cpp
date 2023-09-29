@@ -5,6 +5,8 @@
 #include <syslog.h>
 #endif
 #include <dots/type/Chrono.h>
+#include <fmt/format.h>
+#include <fmt/color.h>
 
 namespace dots::tools
 {
@@ -59,6 +61,11 @@ namespace dots::tools
         loggingBackend().log(level, flf, text.str());
     }
 
+    void LogFrontend::log(Level level, const Flf &flf, const std::string& text)
+    {
+        loggingBackend().log(level, flf, text);
+    }
+
     std::optional<Level> LogFrontend::get_loglevel_from_env()
     {
         const char* env = getenv("DOTS_LOG_LEVEL");
@@ -87,6 +94,23 @@ namespace dots::tools
         return default_log_level;
     }
 
+    fmt::text_style level2fmtcolor(Level level)
+    {
+        switch(level)
+        {
+            case Level::data:  return fmt::fg(fmt::color::white);
+            case Level::debug: return fmt::fg(fmt::color::white);
+            case Level::info:  return fmt::emphasis::bold | fmt::fg(fmt::terminal_color::blue); //"\33[1;34m";
+            case Level::notice:return fmt::emphasis::bold | fmt::fg(fmt::terminal_color::green); //"\33[1;32m";
+            case Level::warn:  return fmt::emphasis::bold | fmt::fg(fmt::terminal_color::yellow); //"\33[1;33m";
+            case Level::error: return fmt::emphasis::bold | fmt::fg(fmt::terminal_color::red); //"\33[1;31m";
+            case Level::crit:  return fmt::emphasis::bold | fmt::bg(fmt::terminal_color::magenta) | fmt::fg(fmt::terminal_color::white); //"\33[1;45m";
+            case Level::emerg: return fmt::emphasis::bold | fmt::bg(fmt::terminal_color::red) | fmt::fg(fmt::color::white); //"\33[1;41m";
+        }
+
+        return fmt::fg(fmt::color::white);
+    }
+
     // ConsoleLogBackend
     ConsoleLogBackend::ConsoleLogBackend()
     {
@@ -97,22 +121,23 @@ namespace dots::tools
     {
         std::lock_guard sl{m_mutex };
 
-        const char* dark = "";
-        const char* allOff = "";
-        const char* levelColor = "";
+        fmt::text_style levelColor;
+        fmt::text_style timeColor;
+        fmt::text_style flfColor;
 
-        if (m_colorOut) {
-            dark = "\33[1;30m";
-            allOff = "\33[0m";
-            levelColor = level2color(level);
+        if (m_colorOut)
+        {
+            levelColor = level2fmtcolor(level);
+            timeColor = fmt::emphasis::bold | fmt::fg(fmt::terminal_color::black);
+            flfColor = fmt::emphasis::bold | fmt::fg(fmt::terminal_color::black);
         }
 
-        FILE * const dst = stderr;
-        fprintf(dst, "%s%-*s:%s ", levelColor, MaxLengthLevel, level2string(level), allOff);
-        fprintf(dst, "%s[%s]%s ", dark, type::TimePoint::Now().toString().c_str(), allOff);
-        fprintf(dst, "%s", text);
-        fprintf(dst, " %s(%s:%d (%s))%s\n", dark, flf.file.data(), flf.line, flf.func.data(), allOff);
-        fflush(dst);
+        fmt::print(stderr, "{} {} {} {}\n",
+            fmt::styled(fmt::format("{:<{}}:", level2string(level), MaxLengthLevel), levelColor),
+            fmt::styled(fmt::format("[{}]", type::TimePoint::Now().toString()), timeColor),
+            text,
+            fmt::styled(fmt::format("({}:{} ({}))", flf.file, flf.line, flf.func), flfColor)
+        );
     }
 
     void ConsoleLogBackend::log(Level level, const Flf &flf, const std::string& text)
