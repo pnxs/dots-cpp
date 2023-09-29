@@ -133,11 +133,11 @@ namespace dots::tools
             flfColor = fmt::emphasis::bold | fmt::fg(fmt::terminal_color::black);
         }
 
-        fmt::print(stderr, "{} {} {} {}\n",
+        fmt::print(stderr, "{} {} {}{}\n",
             fmt::styled(fmt::format("{:<{}}:", level2string(level), MaxLengthLevel), levelColor),
             fmt::styled(fmt::format("[{}]", type::TimePoint::Now().toString()), timeColor),
             text,
-            m_logFlf ? fmt::styled(fmt::format("({}:{} ({}))", flf.file, flf.line, flf.func), flfColor) : fmt::styled(fmt::format(""), flfColor)
+            m_logFlf ? fmt::styled(fmt::format(" ({}:{} ({}))", flf.file, flf.line, flf.func), flfColor) : fmt::styled(fmt::format(""), flfColor)
         );
     }
 

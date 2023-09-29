@@ -75,10 +75,11 @@ TEST_F(TestLogging, test_levels)
     fmt::print("tFmt...: {}\n", tFmt.count());
 }
 
-TEST_F(TestLogging, test_consolebackend_bw)
+TEST_F(TestLogging, test_consolebackend_bw_flf)
 {
     ::testing::internal::CaptureStderr();
     setenv("DOTS_DISABLE_LOG_COLORS", "1", 1);
+    setenv("DOTS_LOG_FLF", "1", 1);
 
     dots::tools::ConsoleLogBackend consoleLogBackend;
 
@@ -88,4 +89,20 @@ TEST_F(TestLogging, test_consolebackend_bw)
     std::string logout = testing::internal::GetCapturedStderr();
 
     EXPECT_THAT(logout, MatchesRegex("info  : \\[[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}\\+[0-9]{2}:[0-9]{2}\\] message \\(file:42 \\(function\\)\\)\n"));
+}
+
+TEST_F(TestLogging, test_consolebackend_bw)
+{
+    ::testing::internal::CaptureStderr();
+    setenv("DOTS_DISABLE_LOG_COLORS", "1", 1);
+    unsetenv("DOTS_LOG_FLF");
+
+    dots::tools::ConsoleLogBackend consoleLogBackend;
+
+    auto flf = dots::tools::Flf("file", 42, "function");
+    consoleLogBackend.log(dots::tools::Level::info, flf, "message" );
+
+    std::string logout = testing::internal::GetCapturedStderr();
+
+    EXPECT_THAT(logout, MatchesRegex("info  : \\[[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}\\+[0-9]{2}:[0-9]{2}\\] message\n"));
 }
