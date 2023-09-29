@@ -80,6 +80,7 @@ namespace dots::tools
         [[nodiscard]] bool shouldLog(Level level) const;
         static void log_p(Level level, const Flf &flf, const char* text);
         static void log_s(Level level, const Flf &flf, const std::ostringstream& text);
+        static void log(Level level, const Flf &flf, const std::string& text);
 
     private:
         static std::optional<Level> get_loglevel_from_env();
