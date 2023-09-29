@@ -100,6 +100,7 @@ namespace dots::tools
 
     private:
         bool m_colorOut = false;
+        bool m_logFlf = false;
         static constexpr int MaxLengthLevel = 6;
         std::mutex m_mutex;
     };
@@ -116,6 +117,7 @@ namespace dots::tools
 
         static int toSyslogLevel(Level level);
     private:
+        bool m_logFlf = false;
         std::mutex m_mutex;
     };
 #endif

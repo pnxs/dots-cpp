@@ -115,6 +115,7 @@ namespace dots::tools
     ConsoleLogBackend::ConsoleLogBackend()
     {
         m_colorOut = getenv("DOTS_DISABLE_LOG_COLORS") == nullptr;
+        m_logFlf = getenv("DOTS_LOG_FLF") != nullptr;
     }
 
     void ConsoleLogBackend::log_p(Level level, const Flf &flf, const char* text)
@@ -136,7 +137,7 @@ namespace dots::tools
             fmt::styled(fmt::format("{:<{}}:", level2string(level), MaxLengthLevel), levelColor),
             fmt::styled(fmt::format("[{}]", type::TimePoint::Now().toString()), timeColor),
             text,
-            fmt::styled(fmt::format("({}:{} ({}))", flf.file, flf.line, flf.func), flfColor)
+            m_logFlf ? fmt::styled(fmt::format("({}:{} ({}))", flf.file, flf.line, flf.func), flfColor) : fmt::styled(fmt::format(""), flfColor)
         );
     }
 
@@ -166,6 +167,7 @@ namespace dots::tools
 #ifdef __unix__
     SyslogBackend::SyslogBackend(const char* ident, int option)
     {
+        m_logFlf = getenv("DOTS_LOG_FLF") != nullptr;
         openlog(ident, option, LOG_USER);
     }
 
@@ -174,10 +176,15 @@ namespace dots::tools
         closelog();
     }
 
-    void SyslogBackend::log_p(Level level, const Flf &flf, const char* messagea)
+    void SyslogBackend::log_p(Level level, const Flf &flf, const char* message)
     {
         std::lock_guard sl{m_mutex };
-        syslog(toSyslogLevel(level), "%s:%d (%s): %s", flf.file.data(), flf.line, flf.func.data(), messagea);
+        if (m_logFlf) {
+            syslog(toSyslogLevel(level), "%s:%d (%s): %s", flf.file.data(), flf.line, flf.func.data(), message);
+        }
+        else {
+            syslog(toSyslogLevel(level), "%s", message);
+        }
     }
 
     void SyslogBackend::log(Level level, const Flf &flf, const std::string& text)
