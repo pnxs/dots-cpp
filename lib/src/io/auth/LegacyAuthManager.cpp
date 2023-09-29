@@ -4,7 +4,7 @@
 #include <dots/HostTransceiver.h>
 #include <dots/io/auth/Digest.h>
 #include <dots/tools/IpNetwork.h>
-#include <dots/tools/logging.h>
+#include <dots/fmt/logging_fmt.h>
 
 namespace dots::io
 {
@@ -157,13 +157,17 @@ namespace dots::io
 
                 if ((rule.clientName->empty() || *rule.clientName == clientName) && network.isSubnetOf(tools::IpNetwork{ *rule.network->network, *rule.network->prefix }))
                 {
-                    LOG_DEBUG_S("Match: " << *rule.network->network << "/" << +*rule.network->prefix << " (" << (rule.secret.isValid() ? "with secret" : "without secret") << ", accept=" << *rule.accept << ")");
+                    LOG_DEBUG_F("Match: {}/{} ({}, accept={})",
+                                *rule.network->network,
+                                +*rule.network->prefix,
+                                rule.secret.isValid() ? "with secret" : "without secret",
+                                *rule.accept);
                     matchtingRules.emplace_back(rule);
                 }
             }
             catch (const std::exception& e)
             {
-                LOG_WARN_S("Error processing DotsAuthentication obj: " << e.what());
+                LOG_WARN_F("Error processing DotsAuthentication obj: {}", e.what());
             }
         }
 
