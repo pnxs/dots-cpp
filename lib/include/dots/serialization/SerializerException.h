@@ -3,6 +3,7 @@
 #pragma once
 #include <stdexcept>
 #include <span>
+#include <cstdint>
 
 namespace dots::serialization
 {

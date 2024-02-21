@@ -2,6 +2,7 @@
 // Copyright 2015-2022 Thomas Schaetzlein <thomas@pnxs.de>, Christopher Gerlach <gerlachch@gmx.com>
 #pragma once
 #include <string_view>
+#include <cstdint>
 
 namespace dots::io
 {
