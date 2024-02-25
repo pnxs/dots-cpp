@@ -81,7 +81,7 @@ namespace dots::io
     void Channel::transmit(const Transmission& transmission)
     {
         assert(m_initialized);
-        exportDependencies(transmission.instance()->_descriptor());
+        exportDependencies(transmission.instance());
         transmitImpl(transmission);
     }
 
@@ -171,8 +171,7 @@ namespace dots::io
             if (bool isNewSharedType = m_sharedTypeNames.count(*structDescriptorData->name) == 0; isNewSharedType)
             {
                 m_sharedTypeNames.emplace(*structDescriptorData->name);
-                const type::StructDescriptor& descriptor = DescriptorConverter{ registry() }(*structDescriptorData);
-                m_sharedTypeDescriptors.emplace(&descriptor);
+                m_sharedTypeDescriptors.emplace(&DescriptorConverter{ registry() }(*structDescriptorData));
             }
         }
         else if (auto* enumDescriptorData = instance._as<EnumDescriptorData>())
@@ -180,8 +179,7 @@ namespace dots::io
             if (bool isNewSharedType = m_sharedTypeNames.count(*enumDescriptorData->name) == 0; isNewSharedType)
             {
                 m_sharedTypeNames.emplace(*enumDescriptorData->name);
-                const type::EnumDescriptor& descriptor = DescriptorConverter{ registry() }(*enumDescriptorData);
-                m_sharedTypeDescriptors.emplace(&descriptor);
+                m_sharedTypeDescriptors.emplace(&DescriptorConverter{ registry() }(*enumDescriptorData));
             }
         }
     }
@@ -212,6 +210,30 @@ namespace dots::io
 
                     transmit(DescriptorConverter{ registry() }(*structDescriptor));
                 }
+            }
+        }
+
+    }
+
+    void Channel::exportDependencies(const type::Struct& instance)
+    {
+        // If descriptor is for type StructDescriptorData or EnumDescriptorData, check if dependent types has to be exported first.
+        // This can happen if e.g. a dynamic client sends a DescriptorRequest (and is therefore joined for StructDescriptorData
+        // and EnumDescriptorData) and another client is just in the process sending it descriptors, but the dynamic client
+        // did not receive the start of the transmission-sequence. In that case it could otherwise not resolve the dependent
+        // types, because it may not have received them yet.
+        if (auto* structDescriptorData = instance._as<StructDescriptorData>())
+        {
+            auto* embeddedDescriptor = registry().findStructType(*structDescriptorData->name);
+            if (embeddedDescriptor) {
+                exportDependencies(*embeddedDescriptor);
+            }
+        }
+        else if (auto* enumDescriptorData = instance._as<EnumDescriptorData>())
+        {
+            auto* embeddedDescriptor = m_registry->findEnumType(*enumDescriptorData->name);
+            if (embeddedDescriptor) {
+                exportDependencies(*embeddedDescriptor);
             }
         }
     }

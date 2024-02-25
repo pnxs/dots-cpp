@@ -66,6 +66,7 @@ namespace dots::io
 
         void importDependencies(const type::Struct& instance);
         void exportDependencies(const type::Descriptor<>& descriptor);
+        void exportDependencies(const type::Struct& instance);
 
         std::set<std::string> m_sharedTypeNames;
         std::unordered_set<const type::Descriptor<>*> m_sharedTypeDescriptors;
