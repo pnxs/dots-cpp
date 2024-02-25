@@ -222,16 +222,16 @@ namespace dots::io
         // and EnumDescriptorData) and another client is just in the process sending it descriptors, but the dynamic client
         // did not receive the start of the transmission-sequence. In that case it could otherwise not resolve the dependent
         // types, because it may not have received them yet.
-        if (auto structDescriptorData = instance._as<StructDescriptorData>())
+        if (auto* structDescriptorData = instance._as<StructDescriptorData>())
         {
-            auto embeddedDescriptor = registry().findStructType(*structDescriptorData->name);
+            auto* embeddedDescriptor = registry().findStructType(*structDescriptorData->name);
             if (embeddedDescriptor) {
                 exportDependencies(*embeddedDescriptor);
             }
         }
-        else if (auto enumDescriptorData = instance._as<EnumDescriptorData>())
+        else if (auto* enumDescriptorData = instance._as<EnumDescriptorData>())
         {
-            auto embeddedDescriptor = m_registry->findEnumType(*enumDescriptorData->name);
+            auto* embeddedDescriptor = m_registry->findEnumType(*enumDescriptorData->name);
             if (embeddedDescriptor) {
                 exportDependencies(*embeddedDescriptor);
             }
