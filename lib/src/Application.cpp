@@ -23,15 +23,15 @@ namespace dots
         parseGuestTransceiverArgs(argc, argv);
         GuestTransceiver* transceiver;
 
-        if (m_guestTransceiverStorage == std::nullopt || &*m_guestTransceiverStorage == &*global_transceiver())
+        if (m_guestTransceiverStorage == std::nullopt || &*m_guestTransceiverStorage == &global_transceiver())
         {
             using transition_handler_t = GuestTransceiver::transition_handler_t;
-            transceiver = &global_transceiver().emplace(
+            transceiver = &global_transceiver_create(GuestTransceiver(
                 m_openEndpoint->userName().empty() ? name : std::string{ m_openEndpoint->userName() },
                 io::global_io_context(),
                 type::Registry::StaticTypePolicy::All,
                 transition_handler_t{ &Application::handleGuestTransceiverTransition, this }
-            );
+            ));
             transceiver->open(io::global_publish_types(), io::global_subscribe_types(), *m_openEndpoint);
         }
         else
@@ -110,7 +110,7 @@ namespace dots
         }
         else
         {
-            global_transceiver().reset();
+            global_transceiver_destroy();
         }
 
         ioContext().restart();

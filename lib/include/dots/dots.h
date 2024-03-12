@@ -134,7 +134,7 @@ namespace dots
      * application's construction.
      *
      * When not using dots::Application, the global transceiver has to be
-     * created manually.
+     * created manually (see global_transceiver_create() ).
      *
      * @warning For the global API to work as intended, the global
      * transceiver has to operate on the global IO context (see
@@ -142,10 +142,31 @@ namespace dots
      * type::Registry::StaticTypePolicy::All. It is the user's
      * responsibility to ensure this.
      *
-     * @return std::optional<GuestTransceiver>& A reference to the global
+     * @return GuestTransceiver& A reference to the global
      * guest transceiver.
      */
-    std::optional<GuestTransceiver>& global_transceiver();
+    GuestTransceiver& global_transceiver();
+
+    /*!
+     * @brief Returns if global_transceiver is set
+     */
+    bool global_transceiver_is_set();
+
+    /*!
+     * @brief Create the global transceiver
+     *
+     * This methods are only needed to be called by the user,
+     * if dots::Application is not used.
+     */
+    GuestTransceiver& global_transceiver_create(GuestTransceiver&& transceiver);
+
+    /*!
+     * @brief Destructs the global transceiver
+     *
+     * This methods are only needed to be called by the user,
+     * if dots::Application is not used.
+     */
+    void global_transceiver_destroy();
 
     /*!
      * @brief Publish an instance of a DOTS struct type via the global
@@ -337,7 +358,7 @@ namespace dots
     Subscription subscribe(Transceiver::event_handler_t<T> handler)
     {
         io::register_global_subscribe_type<T>();
-        return global_transceiver()->subscribe<T>(std::move(handler));
+        return global_transceiver().subscribe<T>(std::move(handler));
     }
 
     /*!
@@ -384,7 +405,7 @@ namespace dots
     template <typename TDescriptor, std::enable_if_t<std::is_base_of_v<type::Descriptor<>, TDescriptor>, int> = 0>
     Subscription subscribe(Transceiver::new_type_handler_t<TDescriptor> handler)
     {
-        return global_transceiver()->subscribe<TDescriptor>(std::move(handler));
+        return global_transceiver().subscribe<TDescriptor>(std::move(handler));
     }
 
     /*!
@@ -431,7 +452,7 @@ namespace dots
     const Container<T>& container()
     {
         io::register_global_subscribe_type<T>();
-        return global_transceiver()->container<T>();
+        return global_transceiver().container<T>();
     }
 
     #endif

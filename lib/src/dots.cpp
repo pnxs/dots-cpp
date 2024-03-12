@@ -52,6 +52,9 @@ namespace dots
         };
     }
 
+    static std::optional<GuestTransceiver> g_global_transceiver;
+    static std::shared_ptr<GuestTransceiver> g_global_transceiver_ptr;
+
     Timer::id_t add_timer(type::Duration timeout, tools::Handler<void()> handler, bool periodic/* = false*/)
     {
         return io::global_service<details::TimerService>().addTimer(timeout, std::move(handler), periodic);
@@ -67,15 +70,38 @@ namespace dots
         return Timer{ io::global_io_context(), timeout, std::move(handler), periodic };
     }
 
-    std::optional<GuestTransceiver>& global_transceiver()
+    GuestTransceiver& global_transceiver()
     {
-        static std::optional<GuestTransceiver> Transceiver;
-        return Transceiver;
+        assert(g_global_transceiver.has_value());
+        return g_global_transceiver.value();
+    }
+
+    bool global_transceiver_is_set()
+    {
+        return g_global_transceiver.has_value();
+    }
+
+    GuestTransceiver& global_transceiver_create(GuestTransceiver&& transceiver)
+    {
+        if (g_global_transceiver.has_value()) {
+            throw std::runtime_error("global_transceiver is already set.");
+        }
+        g_global_transceiver = std::move(transceiver);
+        return global_transceiver();
+    }
+
+    void global_transceiver_destroy()
+    {
+        if (!g_global_transceiver.has_value()) {
+            throw std::runtime_error("global_transceiver_destroy: no transceiver instantiated.");
+        }
+        global_transceiver().clear();
+        g_global_transceiver.reset();
     }
 
     void publish(const type::Struct& instance, std::optional<property_set_t> includedProperties/* = std::nullopt*/, bool remove/* = false*/)
     {
-        global_transceiver()->publish(instance, includedProperties, remove);
+        global_transceiver().publish(instance, includedProperties, remove);
     }
 
     void remove(const type::Struct& instance)
@@ -85,16 +111,16 @@ namespace dots
 
     Subscription subscribe(const type::StructDescriptor& descriptor, Transceiver::event_handler_t<> handler)
     {
-        return global_transceiver()->subscribe(descriptor, std::move(handler));
+        return global_transceiver().subscribe(descriptor, std::move(handler));
     }
 
     const ContainerPool& pool()
     {
-        return global_transceiver()->pool();
+        return global_transceiver().pool();
     }
 
     const Container<>& container(const type::StructDescriptor& descriptor)
     {
-        return global_transceiver()->container(descriptor);
+        return global_transceiver().container(descriptor);
     }
 }
