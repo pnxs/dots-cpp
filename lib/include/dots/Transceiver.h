@@ -63,6 +63,11 @@ namespace dots
         Transceiver& operator = (const Transceiver& rhs) = delete;
         Transceiver& operator = (Transceiver&& rhs) noexcept;
 
+        void clear()
+        {
+            m_dispatcher.clear();
+        }
+
         const std::string& selfName() const;
 
         /*!

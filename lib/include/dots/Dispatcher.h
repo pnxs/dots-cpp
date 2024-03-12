@@ -49,10 +49,12 @@ namespace dots
         Dispatcher(error_handler_t handler);
         Dispatcher(const Dispatcher& other) = delete;
         Dispatcher(Dispatcher&& other) noexcept = default;
-        ~Dispatcher() = default;
+        ~Dispatcher();
 
         Dispatcher& operator = (const Dispatcher& rhs) = delete;
         Dispatcher& operator = (Dispatcher&& rhs) noexcept = default;
+
+        void clear();
 
         /*!
          * @brief Get the container pool.
@@ -352,5 +354,6 @@ namespace dots
         event_handler_pool_t m_eventHandlerPool;
         id_t m_nextId;
         error_handler_t m_errorHandler;
+        bool m_clearingHandlers = false;
     };
 }
