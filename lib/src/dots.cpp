@@ -83,7 +83,7 @@ namespace dots
     GuestTransceiver& global_transceiver_create(GuestTransceiver&& transceiver)
     {
         if (global_transceiver_is_set()) {
-            throw std::runtime_error("global_transceiver is already set.");
+            throw std::runtime_error("global_transceiver_create: global_transceiver is already set.");
         }
         g_global_transceiver = std::move(transceiver);
         return global_transceiver();
