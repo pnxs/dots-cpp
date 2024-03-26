@@ -53,7 +53,6 @@ namespace dots
     }
 
     static std::optional<GuestTransceiver> g_global_transceiver;
-    static std::shared_ptr<GuestTransceiver> g_global_transceiver_ptr;
 
     Timer::id_t add_timer(type::Duration timeout, tools::Handler<void()> handler, bool periodic/* = false*/)
     {
