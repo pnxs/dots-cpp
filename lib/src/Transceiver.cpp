@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 // Copyright 2015-2022 Thomas Schaetzlein <thomas@pnxs.de>, Christopher Gerlach <gerlachch@gmx.com>
 #include <dots/Transceiver.h>
-#include <dots/tools/logging.h>
+#include <dots/fmt/logging_fmt.h>
 #include <dots/serialization/AsciiSerialization.h>
 #include <DotsMember.dots.h>
 
@@ -95,7 +95,7 @@ namespace dots
             }
             catch (const std::exception& e)
             {
-                LOG_ERROR_S("error in transition handler for " << connection.peerDescription() << " -> " << e.what());
+                LOG_ERROR_F("error in transition handler for {} -> {}", connection.peerDescription(), e.what());
             }
         }
 
@@ -182,7 +182,7 @@ namespace dots
             }
             catch (const std::exception& e)
             {
-                LOG_ERROR_S("error in new type handler for type '" << descriptor.name() << "' -> " << e.what());
+                LOG_ERROR_F("error in new type handler for type '{}' -> {}", descriptor.name(), e.what());
             }
 
             m_currentlyDispatchingId = std::nullopt;
@@ -204,11 +204,11 @@ namespace dots
         }
         catch (const std::exception& e)
         {
-            LOG_ERROR_S("error in subscription handler for type '" << descriptor.name() << "' -> '" << e.what() << "'");
+            LOG_ERROR_F("error in subscription handler for type '{}' -> '{}'", descriptor.name(), e.what());
         }
         catch (...)
         {
-            LOG_ERROR_S("error in subscription handler for type '" << descriptor.name() << "' -> '<unknown>'");
+            LOG_ERROR_F("error in subscription handler for type '{}' -> '<unknown>'", descriptor.name());
         }
     }
 }

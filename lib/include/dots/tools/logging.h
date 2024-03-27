@@ -80,6 +80,7 @@ namespace dots::tools
         [[nodiscard]] bool shouldLog(Level level) const;
         static void log_p(Level level, const Flf &flf, const char* text);
         static void log_s(Level level, const Flf &flf, const std::ostringstream& text);
+        static void log(Level level, const Flf &flf, const std::string& text);
 
     private:
         static std::optional<Level> get_loglevel_from_env();
@@ -99,6 +100,7 @@ namespace dots::tools
 
     private:
         bool m_colorOut = false;
+        bool m_logFlf = false;
         static constexpr int MaxLengthLevel = 6;
         std::mutex m_mutex;
     };
@@ -115,6 +117,7 @@ namespace dots::tools
 
         static int toSyslogLevel(Level level);
     private:
+        bool m_logFlf = false;
         std::mutex m_mutex;
     };
 #endif
