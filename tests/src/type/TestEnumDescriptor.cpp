@@ -21,6 +21,7 @@ namespace dots::types
     {
         using underlying_type_t = dots::vector_t<string_t>;
         using dots::vector_t<string_t>::vector_t;
+        using dots::vector_t<string_t>::operator=;
     };
 }
 
