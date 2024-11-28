@@ -235,3 +235,19 @@ TEST(TestCborSerializerErrors, serializerException)
     EXPECT_THROW(serializer.Deserialize<dots::bool_t>(encoded.string1), dots::serialization::SerializerException);
 #endif
 }
+
+TEST(TestCborSerializer, skip)
+{
+    CborSerializerTestDataEncoded encoded;
+    dots::serialization::CborSerializer serializer;
+
+    serializer.setInput(encoded.consecutiveTypes1);
+
+    ASSERT_NO_THROW(serializer.reader().skip()); // Skip SerializationStructSimple
+
+    SerializationStructComplex result;
+    ASSERT_NO_THROW(result = serializer.deserialize<SerializationStructComplex>());
+
+    EXPECT_TRUE(result.enumProperty == SerializationEnum::baz);
+    EXPECT_TRUE(result.structSimpleProperty->boolProperty == false);
+}
