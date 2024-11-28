@@ -46,7 +46,6 @@ namespace dots::type
     {
         using value_t = T;
         using vector_t = std::vector<std::conditional_t<std::is_same_v<T, bool>, uint8_t, T>>;
-        using Vector<Typeless>::operator=;
 
         Vector() = default;
 
