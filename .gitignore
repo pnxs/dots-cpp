@@ -4,3 +4,5 @@ build*/
 *.pyc
 .vs/
 CMakeSettings.json
+.cache
+compile_commands.json
