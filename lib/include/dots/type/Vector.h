@@ -75,8 +75,10 @@ namespace dots::type
 
         using vector_t::operator=;
 
+#if defined(__GNUG__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Woverloaded-virtual"
+#endif
         Vector& operator = (const Vector<Typeless>& rhs) override
         {
             // TODO: ensure compatible type
@@ -90,7 +92,9 @@ namespace dots::type
             *this = static_cast<Vector&&>(rhs);
             return *this;
         }
+#if defined(__GNUG__)
 #pragma GCC diagnostic pop
+#endif
 
         size_t typelessSize() const noexcept override
         {

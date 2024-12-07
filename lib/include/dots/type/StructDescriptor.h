@@ -79,11 +79,15 @@ namespace dots::type
         size_t dynamicMemoryUsage(const Typeless& instance) const override;
         size_t dynamicMemoryUsage(const Struct& instance) const;
 
+#if defined(__GNUG__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Woverloaded-virtual"
+#endif
         virtual Struct& assign(Struct& instance, const Struct& other, PropertySet includedProperties) const;
         virtual Struct& assign(Struct& instance, Struct&& other, PropertySet includedProperties) const;
+#if defined(__GNUG__)
 #pragma GCC diagnostic pop
+#endif
         virtual Struct& copy(Struct& instance, const Struct& other, PropertySet includedProperties) const;
         virtual Struct& merge(Struct& instance, const Struct& other, PropertySet includedProperties) const;
         virtual void swap(Struct& instance, Struct& other, PropertySet includedProperties) const;
