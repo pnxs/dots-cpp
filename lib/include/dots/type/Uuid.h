@@ -4,6 +4,7 @@
 #include <array>
 #include <string_view>
 #include <cstdint>
+#include <string>
 
 namespace dots::type
 {

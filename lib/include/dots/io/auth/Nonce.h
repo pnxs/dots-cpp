@@ -3,6 +3,7 @@
 #pragma once
 #include <string_view>
 #include <cstdint>
+#include <string>
 
 namespace dots::io
 {
