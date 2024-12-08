@@ -35,7 +35,7 @@ namespace dots::serialization
         throw SerializerException{msg,
                                   details,
                                   offset,
-                                  std::span(inputDataBegin(), inputDataEnd() + 1)};
+                                  std::span(inputDataBegin(), inputDataEnd())};
     }
 
 }
