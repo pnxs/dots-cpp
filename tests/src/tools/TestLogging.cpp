@@ -75,6 +75,16 @@ TEST_F(TestLogging, test_levels)
     fmt::print("tFmt...: {}\n", tFmt.count());
 }
 
+// WORKAROUND
+//
+// The following tests are currently only available on POSIX platforms,
+// because they require regular expressions that are not available with
+// GoogleTest's simplified syntax (see [1])
+//
+// References:
+//
+// - [1] https://google.github.io/googletest/advanced.html#regular-expression-syntax
+#if defined(GTEST_USES_POSIX_RE)
 TEST_F(TestLogging, test_consolebackend_bw_flf)
 {
     ::testing::internal::CaptureStderr();
@@ -106,3 +116,4 @@ TEST_F(TestLogging, test_consolebackend_bw)
 
     EXPECT_THAT(logout, MatchesRegex("info  : \\[[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}\\+[0-9]{2}:[0-9]{2}\\] message\n"));
 }
+#endif
