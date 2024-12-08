@@ -88,6 +88,8 @@ Intermediate examples:
 * dots-code-generator >= 0.0.4 (https://github.com/pnxs/dots-code-generator, also available via pip (https://pypi.org/project/dots-code-generator))
 * C++ compiler supporting at least C++20 (such as GCC 11.4, Clang 14 or MSVC 19.26 (VS 2019 16.6))
 
+**❗ BEWARE: MSVC versions >= 19.40 (toolset versions >= 14.40) are currently not fully supported due to a compiler bug. While the library is buildable, certain syntactic constructs might not work properly!**
+
 [^1]: Boost is linked static by default, change cmake-option 'Boost_USE_STATIC_LIBS' to link it shared.
 
 # Build and Run
