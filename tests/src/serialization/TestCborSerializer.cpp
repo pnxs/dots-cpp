@@ -238,16 +238,30 @@ TEST(TestCborSerializerErrors, serializerException)
 
 TEST(TestCborSerializer, skip)
 {
-    CborSerializerTestDataEncoded encoded;
+    const CborSerializerTestDataEncoded& encoded = TestSerializer<CborSerializerTestDataEncoded>::Encoded();
+    const TestSerializerDataDecoded& decoded = TestSerializer<CborSerializerTestDataEncoded>::Decoded();
     dots::serialization::CborSerializer serializer;
 
-    serializer.setInput(encoded.consecutiveTypes1);
+    CborSerializerTestDataEncoded::data_t longString{ 0x78, 0x21, 0x66, 0x6F, 0x6F, 0x5C, 0x20, 0x62, 0x61, 0x72, 0xC2, 0xA9, 0x0A, 0x20, 0x62, 0x5C, 0x61, 0x7A, 0x70, 0x66, 0x6F, 0x6F, 0x5C, 0x20, 0x62, 0x61, 0x72, 0xC2, 0xA9, 0x0A, 0x20, 0x62, 0x5C, 0x61, 0x7A };
 
-    ASSERT_NO_THROW(serializer.reader().skip()); // Skip SerializationStructSimple
+    auto skipStruct = CborSerializerTestDataEncoded::Concat(
+        encoded.structSimple1_Valid,
+        encoded.structComplex2_Valid,
+        encoded.vectorBool,
+        longString,
+        encoded.structComplex1_Valid
+    );
 
-    SerializationStructComplex result;
-    ASSERT_NO_THROW(result = serializer.deserialize<SerializationStructComplex>());
+    serializer.setInput(skipStruct);
 
-    EXPECT_TRUE(result.enumProperty == SerializationEnum::baz);
-    EXPECT_TRUE(result.structSimpleProperty->boolProperty == false);
+    // skip all values until last
+    for (int i = 0; i < 4; ++i)
+    {
+        ASSERT_NO_THROW(serializer.reader().skip());
+    }
+
+    SerializationStructComplex structComplex;
+    ASSERT_NO_THROW(structComplex = serializer.deserialize<SerializationStructComplex>());
+    EXPECT_EQ(structComplex, decoded.structComplex1);
+    EXPECT_FALSE(serializer.inputAvailable());
 }
