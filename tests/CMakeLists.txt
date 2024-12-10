@@ -35,6 +35,7 @@ target_sources(${TARGET_NAME}
         src/tools/TestIpNetwork.cpp
         src/tools/TestUri.cpp
         src/tools/TestHexdump.cpp
+        src/tools/TestLogging.cpp
 
         src/type/TestChrono.cpp
         src/type/TestDescriptor.cpp
@@ -77,7 +78,7 @@ target_link_libraries(${TARGET_NAME}
         date::date
         date::date-tz
         RapidJSON::RapidJSON
-        fmt::fmt
+        fmt::fmt-header-only
 )
 
 # target [dots-unittests-experimental]

@@ -2,7 +2,7 @@
 // Copyright 2015-2022 Thomas Schaetzlein <thomas@pnxs.de>, Christopher Gerlach <gerlachch@gmx.com>
 #include <dots/HostTransceiver.h>
 #include <vector>
-#include <dots/tools/logging.h>
+#include <dots/fmt/logging_fmt.h>
 #include <DotsCacheInfo.dots.h>
 #include <DotsClient.dots.h>
 
@@ -133,7 +133,7 @@ namespace dots
         }
         catch (const std::exception& e)
         {
-            LOG_ERROR_S("error while listening for incoming channels -> " << e.what());
+            LOG_ERROR_F("error while listening for incoming channels -> {}", e.what());
         }
 
         m_listeners.erase(&listener);
@@ -215,7 +215,7 @@ namespace dots
         }
         catch (const std::exception& e)
         {
-            LOG_ERROR_S("error while handling transition for connection " << connection.peerDescription() << " -> " << e.what());
+            LOG_ERROR_F("error while handling transition for connection {} -> {}", connection.peerDescription(), e.what());
         }
     }
 
@@ -226,24 +226,24 @@ namespace dots
 
         if (member.event == DotsMemberEvent::kill)
         {
-            LOG_WARN_S(connection.peerDescription() << " requested unsupported kill event");
+            LOG_WARN_F("{} requested unsupported kill event", connection.peerDescription());
         }
         else if (member.event == DotsMemberEvent::leave)
         {
             if (size_t removed = m_groups[groupName].erase(&connection); removed == 0)
             {
-                LOG_WARN_S(connection.peerDescription() << " is not a member of group '" << groupName << "'");
+                LOG_WARN_F("{} is not a member of group '{}'", connection.peerDescription(), groupName);
             }
         }
         else if (member.event == DotsMemberEvent::join)
         {
             if (auto [it, emplaced] = m_groups[groupName].emplace(&connection); emplaced)
             {
-                LOG_DEBUG_S(connection.peerDescription() << " is now a member of group '" << groupName << "'");
+                LOG_DEBUG_F("{} is now a member of group '{}'", connection.peerDescription(), groupName);
             }
             else
             {
-                LOG_WARN_S(connection.peerDescription() << " is already member of group '" << groupName << "'");
+                LOG_WARN_F("{} is already member of group '{}'", connection.peerDescription(), groupName);
             }
 
             // note: transmitting the container content even when the guest has already joined the group is currently
@@ -415,7 +415,7 @@ namespace dots
                 throw std::runtime_error{ "unknown or unsupported endpoint scheme: '" + std::string{ scheme } + "'" };
             }
 
-            LOG_NOTICE_S("listening on endpoint '" << listenEndpoint.uriStr() << "'");
+            LOG_NOTICE_F("listening on endpoint '{}'", listenEndpoint.uriStr());
         }
     }
 }

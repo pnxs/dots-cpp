@@ -194,8 +194,6 @@ struct SerializerTestDataEncoded
 template <typename TEncoded>
 struct TestSerializer : ::testing::Test
 {
-protected:
-
     using decoded_t = TestSerializerDataDecoded;
     using encoded_t = TEncoded;
 

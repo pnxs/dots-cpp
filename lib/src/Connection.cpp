@@ -3,7 +3,7 @@
 #include <dots/Connection.h>
 #include <dots/type/Registry.h>
 #include <dots/io/auth/Digest.h>
-#include <dots/tools/logging.h>
+#include <dots/fmt/logging_fmt.h>
 #include <dots/serialization/StringSerializer.h>
 #include <DotsMsgConnect.dots.h>
 #include <DotsClient.dots.h>
@@ -21,11 +21,11 @@
 {                                                                                                                                                                   \
     if ((instance_)._descriptor().internal())                                                                                                                       \
     {                                                                                                                                                               \
-        LOG_DATA_S(prefix_ << peerDescription() << "\n" << dots::to_string(header_, StringOptions) << ",\n" << dots::to_string(instance_, StringOptions) << "\n");  \
+        LOG_DATA_F("{}{}\n{},\n{}\n", prefix_, peerDescription(), dots::to_string(header_, StringOptions), dots::to_string(instance_, StringOptions));              \
     }                                                                                                                                                               \
     else                                                                                                                                                            \
     {                                                                                                                                                               \
-        LOG_DEBUG_S(prefix_ << peerDescription() << "\n" << dots::to_string(header_, StringOptions) << ",\n" << dots::to_string(instance_, StringOptions) << "\n"); \
+        LOG_DEBUG_F("{}{}\n{},\n{}\n", prefix_, peerDescription(), dots::to_string(header_, StringOptions), dots::to_string(instance_, StringOptions));             \
     }                                                                                                                                                               \
 }
 #else
@@ -434,21 +434,21 @@ namespace dots
         {
             if (m_connectionState == DotsConnectionState::connecting)
             {
-                LOG_DEBUG_S(peerDescription() << " is establishing connection " << endpointDescription());
+                LOG_DEBUG_F("{} is establishing connection {}", peerDescription(), endpointDescription());
             }
             else if (m_connectionState == DotsConnectionState::early_subscribe)
             {
-                LOG_DEBUG_S(peerDescription() << " is preloading " << endpointDescription());
+                LOG_DEBUG_F("{} is preloading {}", peerDescription(), endpointDescription());
             }
             else if (m_connectionState == DotsConnectionState::connected)
             {
-                LOG_NOTICE_S(peerDescription() << " established connection " << endpointDescription());
+                LOG_NOTICE_F("{} established connection {}", peerDescription(), endpointDescription());
             }
             else if (m_connectionState == DotsConnectionState::closed)
             {
                 if (e == nullptr)
                 {
-                    LOG_NOTICE_S(peerDescription() << " gracefully closed connection");
+                    LOG_NOTICE_F("{} gracefully closed connection", peerDescription());
                 }
                 else
                 {
@@ -458,14 +458,14 @@ namespace dots
                     }
                     catch (const std::exception& e)
                     {
-                        LOG_ERROR_S(peerDescription() << " closed connection with error -> " << e.what());
+                        LOG_ERROR_F("{} closed connection with error -> {}", peerDescription(), e.what());
                     }
                 }
             }
         }
         catch (const std::exception& e)
         {
-            LOG_ERROR_S("error while handling transition for connection " << peerDescription() << " -> " << e.what());
+            LOG_ERROR_F("error while handling transition for connection {} -> {}", peerDescription(), e.what());
         }
 
         try

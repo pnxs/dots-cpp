@@ -167,6 +167,26 @@ TEST_F(TestProperty, swap_OppositeValuesAfterInvalidSwap)
     EXPECT_EQ(m_sutLhs.value(), "bar");
 }
 
+// WORKAROUND
+//
+// The following tests do not build with MSVC versions 19.40 and latest
+// (currently 14.42.34433), because syntactic constructs in the form of
+// 'TestStruct{}.stringProperty' result in an 'internal compiler
+// error'.
+//
+// This is most likely due to a compiler bug related to union classes,
+// which are used for the storage of property values. An isolated
+// version of the issue can be inspected in the Compiler Explorer (see
+// [1]), which shows that everything works as intended for GCC and
+// Clang, as well as MSVC versions up to 19.39.
+//
+// Note that we did not yet report the issue and it is unclear whether
+// it is being worked on by the MSVC team.
+//
+// References:
+//
+// - [1] https://godbolt.org/#z:OYLghAFBqd5QCxAYwPYBMCmBRdBLAF1QCcAaPECAMzwBtMA7AQwFtMQByARg9KtQYEAysib0QXACx8BBAKoBnTAAUAHpwAMvAFYTStJg1DIApACYAQuYukl9ZATwDKjdAGFUtAK4sGIM1ykrgAyeAyYAHI%2BAEaYxBIAbKQADqgKhE4MHt6%2B/oGp6Y4CoeFRLLHxXEl2mA6ZQgRMxATZPn4Btpj2RQwNTQQlkTFxibaNza25HQrjA2FD5SNVAJS2qF7EyOwc5gDMYcjeWADUJrtuM8RhwGfYJhoAgnsHR5in5wQAnsmYAPoExCYhAUt3uT0ezDYCmSTC2xwImBmYJMAHYrI9jpjjpcvA5jugfCxPv8wVjTmjSVjUQARM7o8EPMkIljJAwI95uL4/SFvY4AFVIx2iqE872p2II6BAIDwCn%2BVwAbngxLRiVgcXVovRfgqzm4%2BaDdncMViNQQJSQmMA/gRKZjUfSyWSvAxMnanQ73U6sQSWET/vjCZ86V7vfzjgqxF5MCGTd6abHGVSUbTdvT3czWUx2XquYxWG8DUb3WaLYDrSTzgLjlQxEpQXHyY6wy63Y2yZ722Hff7zT3g2nQ96%2BRGozHB137SnE0Oy1abRBlscGKhMKotslzSBA37gxSU02E49ZzNLRWCBA0AwZnPz%2BYEkuV2uN%2BbPdPJ7eF6fyzb7/fjqgBAIHEj6ruumCboe74MmGxwAH7fvO/yLsuYEvrOnZJrBmIAPQ4ccCCGOg9DoMca4IsQzC0KqGHQSeRA/iSZgJABPyAgxYrHJeAg3ohd7MccxAIAooHPhBr5ooJmAEBsDDHAAVEBsp0uStIfnxv4CagbHZiQnEQBpTEJP%2BQkiahYmQQ6UkyZRClKSCaaqe6CYTjBpoAri5oAGIis5FIfnhhm2ucYTBdgQpNImsFBXqMxSiAlzXLcEXEFFyapumdGPAqqB4KR/CoNETSLsi/lYccV43kwXhEP%2BBVFcQnEIjM0o%2Bagb7UgAdA1aWYhAOV5cs9WRa5NIcKstCcAArLwfgcFopCoJwbjWNY2LrJsbx7DwpAEJo42rAA1iAuy7J1p0XZdV1JJNHCSLN%2B2LZwvAKCAGi7ftqxwLASBoCydBxOQlB/ckAPxAqyDJMkOpcAAnL8uzwwAakIXAor88OqAk0g0LQFGvRA0SPdEYRNJ8nA7STzDEJ8ADy0TaLUe3cLwf1sIItMMKqj1YNEXjAG4KqvSzpBYCwhjAOI828PgxBM3gCqIo9a61DV2w7aFXSPbQeDRICNMeFgj0AngLAU7wivEMKSjUpg4tGDrRifXwBjAAoSN4JgADutPcubMiCCIYjsFIAfyEoaiPbogQGE7piWNY%2Bi669kCrNpPTC7wqCW1c6rwKsNR1M4ECuJMfiBCE8xlBUegFBkAhl7XaT1wwgzV0snTdPUsyN4Ehc9H0zRt8MlRjP0vdj0PVcjxIBcbVss/6NND3S09HDHFjkjHCwCgQxGcPnbDxwo2jnVHxAuCEHp23LLwzNaMsR0nWdV2vxdN2cPdpBzQtS0cC9b0PrSy%2BjARAIB1gEGSDVIG3F/r0GIBEAsnBVAAA4EgAFpsYVVjsAY4B8uCdQWpgfADE8p6H4IHUQ4hQ4UPDiodQq9o6kC9oCZI5sJrL2/o9P%2BtMapQPNKgKgG8sE7z3gqA%2BiNj6oxRGfLiHg4FxFOGYXYXBb5AIfk/U65036vyXndFev9nq2EAffA6eizAGKzkY0xj9SCW3SM4SQQA%3D%3D
+#if !defined(_MSC_FULL_VER) || _MSC_FULL_VER < 194000000
 TEST_F(TestProperty, CompareEqualityOfPropertyWithProperty)
 {
     // invalid lhs, invalid rhs
@@ -453,3 +473,4 @@ TEST_F(TestProperty, CompareOrderingOfPropertyWithInvalid)
         EXPECT_FALSE(dots::invalid >= validProperty);
     }
 }
+#endif

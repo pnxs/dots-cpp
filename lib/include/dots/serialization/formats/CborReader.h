@@ -226,8 +226,6 @@ namespace dots::serialization
                     }
                 }
 
-                consume(numBytes);
-
                 return value;
             };
 

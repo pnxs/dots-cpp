@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 // Copyright 2015-2022 Thomas Schaetzlein <thomas@pnxs.de>, Christopher Gerlach <gerlachch@gmx.com>
 #include <dots/GuestTransceiver.h>
-#include <dots/tools/logging.h>
+#include <dots/fmt/logging_fmt.h>
 #include <dots/serialization/AsciiSerialization.h>
 #include <DotsMember.dots.h>
 #include <DotsCacheInfo.dots.h>
@@ -157,7 +157,7 @@ namespace dots
         }
         catch (const std::exception& e)
         {
-            LOG_ERROR_S("error while handling transition for connection " << connection.peerDescription() << " -> " << e.what());
+            LOG_ERROR_F("error while handling transition for connection {} -> {}", connection.peerDescription(), e.what());
             m_hostConnection = nullptr;
         }
     }
