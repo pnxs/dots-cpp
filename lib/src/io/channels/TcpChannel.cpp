@@ -84,22 +84,21 @@ namespace dots::io::details
     template <typename Serializer, TransmissionFormat TransmissionFormat>
     void GenericTcpChannel<Serializer, TransmissionFormat>::asyncResolveEndpoint(std::string_view host, std::string_view port, resolve_handler_t handler)
     {
-        m_resolver.async_resolve(host, port, asio::ip::resolver_query_base::numeric_service, [handler{ std::move(handler) }](const boost::system::error_code& error, auto iter) {
+        m_resolver.async_resolve(host, port, asio::ip::resolver_query_base::numeric_service,
+            [handler{ std::move(handler) }](const boost::system::error_code& error, const auto& results) mutable  {
             if (error)
             {
                 handler(error, {});
                 return;
             }
 
-            decltype(iter) iterEnd;
-
-            for (; iter != iterEnd; ++iter)
+            for (const auto& entry : results)
             {
-                const auto& address = iter->endpoint().address();
+                const auto& address = entry.endpoint().address();
 
                 if (address.is_v4() || address.is_v6())
                 {
-                    handler(error, iter->endpoint());
+                    handler(error, entry.endpoint());
                     return;
                 }
             }
