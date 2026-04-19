@@ -23,7 +23,7 @@ jobs:
           - { compiler: GNU,   CXX: g++, install: g++ }
           - { compiler: CLANG, CXX: clang++, install: clang }
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v6
       with:
         submodules: 'true'
 
