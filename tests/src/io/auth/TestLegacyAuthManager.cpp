@@ -63,7 +63,7 @@ TEST_F(TestLegacyAuthManager, testAddUpdateRemoveRules)
 TEST_F(TestLegacyAuthManager, testFindNetwork)
 {
     auto auth =
-        m_sut.findMatchingRules(boost::asio::ip::address::from_string("127.0.0.1"), "clientName");
+        m_sut.findMatchingRules(boost::asio::ip::make_address("127.0.0.1"), "clientName");
     EXPECT_TRUE(auth.empty());
 
     {
@@ -94,14 +94,14 @@ TEST_F(TestLegacyAuthManager, testFindNetwork)
 
     ASSERT_EQ(m_sut.rules().size(), 2);
 
-    auth = m_sut.findMatchingRules(boost::asio::ip::address::from_string("127.0.0.1"), "clientName");
+    auth = m_sut.findMatchingRules(boost::asio::ip::make_address("127.0.0.1"), "clientName");
     ASSERT_EQ(auth.size(), 1);
     EXPECT_EQ(auth[0].accept, true);
 
-    auth = m_sut.findMatchingRules(boost::asio::ip::address::from_string("192.168.1.2"), "clientName");
+    auth = m_sut.findMatchingRules(boost::asio::ip::make_address("192.168.1.2"), "clientName");
     ASSERT_EQ(auth.size(), 0);
 
-    auth = m_sut.findMatchingRules(boost::asio::ip::address::from_string("192.168.2.61"), "clientName");
+    auth = m_sut.findMatchingRules(boost::asio::ip::make_address("192.168.2.61"), "clientName");
     ASSERT_EQ(auth.size(), 1);
     EXPECT_EQ(auth[0].accept, true);
     EXPECT_EQ(auth[0].secret, "mysecret");
@@ -110,7 +110,7 @@ TEST_F(TestLegacyAuthManager, testFindNetwork)
 TEST_F(TestLegacyAuthManager, testRulePriority)
 {
     auto auth =
-        m_sut.findMatchingRules(boost::asio::ip::address::from_string("127.0.0.1"), "clientName");
+        m_sut.findMatchingRules(boost::asio::ip::make_address("127.0.0.1"), "clientName");
     EXPECT_TRUE(auth.empty());
 
     {
@@ -154,7 +154,7 @@ TEST_F(TestLegacyAuthManager, testRulePriority)
 
     ASSERT_EQ(m_sut.rules().size(), 3);
 
-    auth = m_sut.findMatchingRules(boost::asio::ip::address::from_string("127.0.0.1"), "clientName");
+    auth = m_sut.findMatchingRules(boost::asio::ip::make_address("127.0.0.1"), "clientName");
     // Entry 0.0.0.0
     ASSERT_EQ(auth.size(), 2);
     EXPECT_EQ(auth[0].accept, false);
@@ -165,7 +165,7 @@ TEST_F(TestLegacyAuthManager, testRulePriority)
     EXPECT_EQ(auth[1].accept, true);
     ASSERT_FALSE(auth[1].secret.isValid());
 
-    auth = m_sut.findMatchingRules(boost::asio::ip::address::from_string("192.168.1.61"), "clientName");
+    auth = m_sut.findMatchingRules(boost::asio::ip::make_address("192.168.1.61"), "clientName");
     ASSERT_EQ(auth.size(), 2);
     EXPECT_EQ(auth[0].accept, true);
     ASSERT_TRUE(auth[0].secret.isValid());
@@ -275,7 +275,7 @@ TEST_F(TestLegacyAuthManager, testCheckAuthentication)
     uint64_t nonce = 12345;
 
     {
-        auto addr = boost::asio::ip::address::from_string("127.0.0.1");
+        auto addr = boost::asio::ip::make_address("127.0.0.1");
         DotsMsgConnect response{
             .clientName = "dummyClient"
         };
@@ -284,7 +284,7 @@ TEST_F(TestLegacyAuthManager, testCheckAuthentication)
     }
 
     {
-        auto addr = boost::asio::ip::address::from_string("192.168.1.11");
+        auto addr = boost::asio::ip::make_address("192.168.1.11");
         DotsMsgConnect response{
             .clientName = "dummyClient",
             .cnonce = "noncense"
@@ -299,7 +299,7 @@ TEST_F(TestLegacyAuthManager, testCheckAuthentication)
     }
 
     {
-        auto addr = boost::asio::ip::address::from_string("192.168.1.11");
+        auto addr = boost::asio::ip::make_address("192.168.1.11");
         DotsMsgConnect response{
             .clientName = "dummyClient",
             .cnonce = "noncense"
@@ -314,7 +314,7 @@ TEST_F(TestLegacyAuthManager, testCheckAuthentication)
     }
 
     {
-        auto addr = boost::asio::ip::address::from_string("10.10.1.2");
+        auto addr = boost::asio::ip::make_address("10.10.1.2");
         DotsMsgConnect response{
             .clientName = "dummyClient",
             .cnonce = "noncense"
@@ -329,7 +329,7 @@ TEST_F(TestLegacyAuthManager, testCheckAuthentication)
     }
 
     {
-        auto addr = boost::asio::ip::address::from_string("1.2.3.4");
+        auto addr = boost::asio::ip::make_address("1.2.3.4");
         DotsMsgConnect response{
             .clientName = "dummyClient",
             .cnonce = "noncense"
@@ -349,7 +349,7 @@ TEST_F(TestLegacyAuthManager, testCheckAuthenticationDefault)
     uint64_t nonce = 12345;
 
     {
-        auto addr = boost::asio::ip::address::from_string("127.0.0.1");
+        auto addr = boost::asio::ip::make_address("127.0.0.1");
         DotsMsgConnect response;
         response.clientName.emplace("dummyClient");
 
@@ -357,7 +357,7 @@ TEST_F(TestLegacyAuthManager, testCheckAuthenticationDefault)
     }
 
     {
-        auto addr = boost::asio::ip::address::from_string("192.168.1.11");
+        auto addr = boost::asio::ip::make_address("192.168.1.11");
         DotsMsgConnect response{
             .clientName = "dummyClient",
             .cnonce = "noncense"
@@ -374,10 +374,10 @@ TEST_F(TestLegacyAuthManager, testCheckAuthenticationDefault)
 
 TEST_F(TestLegacyAuthManager, requiresAuthentication)
 {
-    EXPECT_FALSE(m_sut.requiresAuthentication(boost::asio::ip::address::from_string("127.0.0.1")));
-    EXPECT_FALSE(m_sut.requiresAuthentication(boost::asio::ip::address::from_string("10.60.61.3")));
-    EXPECT_FALSE(m_sut.requiresAuthentication(boost::asio::ip::address::from_string("10.60.61.4")));
-    EXPECT_FALSE(m_sut.requiresAuthentication(boost::asio::ip::address::from_string("192.168.0.42")));
+    EXPECT_FALSE(m_sut.requiresAuthentication(boost::asio::ip::make_address("127.0.0.1")));
+    EXPECT_FALSE(m_sut.requiresAuthentication(boost::asio::ip::make_address("10.60.61.3")));
+    EXPECT_FALSE(m_sut.requiresAuthentication(boost::asio::ip::make_address("10.60.61.4")));
+    EXPECT_FALSE(m_sut.requiresAuthentication(boost::asio::ip::make_address("192.168.0.42")));
 
     m_transceiver.publish(DotsAuthentication{
         .nameSpace = "",
@@ -432,8 +432,8 @@ TEST_F(TestLegacyAuthManager, requiresAuthentication)
         .accept = false
     });
 
-    EXPECT_FALSE(m_sut.requiresAuthentication(boost::asio::ip::address::from_string("127.0.0.1")));
-    EXPECT_FALSE(m_sut.requiresAuthentication(boost::asio::ip::address::from_string("10.60.61.3")));
-    EXPECT_TRUE(m_sut.requiresAuthentication(boost::asio::ip::address::from_string("10.60.61.4")));
-    EXPECT_TRUE(m_sut.requiresAuthentication(boost::asio::ip::address::from_string("192.168.0.42")));
+    EXPECT_FALSE(m_sut.requiresAuthentication(boost::asio::ip::make_address("127.0.0.1")));
+    EXPECT_FALSE(m_sut.requiresAuthentication(boost::asio::ip::make_address("10.60.61.3")));
+    EXPECT_TRUE(m_sut.requiresAuthentication(boost::asio::ip::make_address("10.60.61.4")));
+    EXPECT_TRUE(m_sut.requiresAuthentication(boost::asio::ip::make_address("192.168.0.42")));
 }

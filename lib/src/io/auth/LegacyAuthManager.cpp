@@ -20,7 +20,7 @@ namespace dots::io
     {
         if (remoteEndpoint.scheme() == "tcp" || remoteEndpoint.scheme() == "ws")
         {
-            if (requiresAuthentication(asio::ip::address::from_string(std::string{ remoteEndpoint.host() })))
+            if (requiresAuthentication(asio::ip::make_address(std::string{ remoteEndpoint.host() })))
             {
                 return Nonce{};
             }
@@ -61,7 +61,7 @@ namespace dots::io
                 .cnonce = cnonce
             };
 
-            return verifyResponse(asio::ip::address::from_string(std::string{ remoteEndpoint.host() }), nonce.value(), connect);
+            return verifyResponse(asio::ip::make_address(std::string{ remoteEndpoint.host() }), nonce.value(), connect);
         }
         else if (remoteEndpoint.scheme() == "uds")
         {
