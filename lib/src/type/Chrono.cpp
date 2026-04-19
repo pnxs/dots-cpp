@@ -5,7 +5,6 @@
 #include <charconv>
 #include <optional>
 #include <dots/type/Chrono.h>
-#include <date/date.h>
 #include <date/tz.h>
 
 namespace dots::type::chrono::experimental
@@ -252,7 +251,7 @@ namespace dots::type
                     }
                 }
 
-                iss >> date::parse(fmt.data(), sysTimePoint);
+                iss >> std::chrono::parse(std::string{fmt}, sysTimePoint);
                 return TimePointImpl{ sysTimePoint.time_since_epoch() };
             }
         }
