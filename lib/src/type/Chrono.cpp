@@ -5,6 +5,7 @@
 #include <charconv>
 #include <optional>
 #include <dots/type/Chrono.h>
+#include <date/date.h>
 #include <date/tz.h>
 
 namespace dots::type::chrono::experimental
@@ -251,7 +252,11 @@ namespace dots::type
                     }
                 }
 
+#if __cpp_lib_chrono >= 201907L
                 iss >> std::chrono::parse(std::string{fmt}, sysTimePoint);
+#else
+                iss >> date::parse(std::string{fmt}, sysTimePoint);
+#endif
                 return TimePointImpl{ sysTimePoint.time_since_epoch() };
             }
         }
