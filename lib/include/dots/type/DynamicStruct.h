@@ -12,6 +12,15 @@ namespace dots
 
 namespace dots::type
 {
+    struct PropertyAreaDeleter
+    {
+        void operator()(PropertyArea* p) const noexcept
+        {
+            p->~PropertyArea();
+            ::operator delete(p);
+        }
+    };
+
     template <typename T>
     struct DynamicPropertyInitializer
     {
@@ -178,7 +187,7 @@ namespace dots::type
 
         using Struct::_propertyArea;
 
-        std::unique_ptr<PropertyArea> m_propertyAreaStorage;
+        std::unique_ptr<PropertyArea, PropertyAreaDeleter> m_propertyAreaStorage;
         PropertyArea* m_propertyArea;
     };
 
