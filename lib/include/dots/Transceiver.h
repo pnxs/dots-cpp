@@ -414,6 +414,19 @@ namespace dots
         Subscription subscribe(new_type_handler_t<> handler);
 
         /*!
+         * @brief Subscribe to new types with an explicit policy tag.
+         *
+         * The synchronous form (sync_t) replays all currently known types
+         * before returning, just like the non-tagged overload. The
+         * deferred form (deferred_t) posts both registration and the
+         * initial replay to the IO context, so neither happens before the
+         * next event loop turn. The deferred form is the safe choice when
+         * subscribing from a constructor.
+         */
+        Subscription subscribe(sync_t,     new_type_handler_t<> handler);
+        Subscription subscribe(deferred_t, new_type_handler_t<> handler);
+
+        /*!
          * @brief Subscribe to new types of a specific category.
          *
          * This will create a subscription to new types of a given category and
@@ -453,7 +466,38 @@ namespace dots
         template <typename TDescriptor, std::enable_if_t<std::is_base_of_v<type::Descriptor<>, TDescriptor>, int> = 0>
         Subscription subscribe(new_type_handler_t<TDescriptor> handler)
         {
-            return subscribe(new_type_handler_t<>{
+            return subscribe<TDescriptor>(sync, std::move(handler));
+        }
+
+        /*!
+         * @brief Subscribe to new types of a specific category with an
+         * explicit policy tag (synchronous replay).
+         */
+        template <typename TDescriptor, std::enable_if_t<std::is_base_of_v<type::Descriptor<>, TDescriptor>, int> = 0>
+        Subscription subscribe(sync_t, new_type_handler_t<TDescriptor> handler)
+        {
+            return subscribe(sync, new_type_handler_t<>{
+                [handler{ std::move(handler) }](const type::Descriptor<>& descriptor)
+                {
+                    if (auto* wantedDescriptor = descriptor.as<TDescriptor>(); wantedDescriptor != nullptr)
+                    {
+                        std::invoke(handler, *wantedDescriptor);
+                    }
+                }
+            });
+        }
+
+        /*!
+         * @brief Subscribe to new types of a specific category with
+         * deferred initial replay.
+         *
+         * Both registration and the initial replay over the registry are
+         * posted to the IO context.
+         */
+        template <typename TDescriptor, std::enable_if_t<std::is_base_of_v<type::Descriptor<>, TDescriptor>, int> = 0>
+        Subscription subscribe(deferred_t, new_type_handler_t<TDescriptor> handler)
+        {
+            return subscribe(deferred, new_type_handler_t<>{
                 [handler{ std::move(handler) }](const type::Descriptor<>& descriptor)
                 {
                     if (auto* wantedDescriptor = descriptor.as<TDescriptor>(); wantedDescriptor != nullptr)
@@ -669,6 +713,22 @@ namespace dots
         // to the returned Subscription's lifetime.
         std::shared_ptr<deferred_subscription_state> postDeferredSubscribe(
             const type::StructDescriptor& descriptor, event_handler_t<> handler) const;
+
+        // Shared state for a deferred new-type subscription. Holds the
+        // internal handler id once registration has happened and a
+        // cancelled flag that is set if the Subscription is destroyed
+        // before the post fires.
+        struct deferred_new_type_subscription_state
+        {
+            std::optional<id_t> id;
+            bool cancelled = false;
+        };
+
+        // Defers registration of a new-type handler and the initial
+        // registry walk to the next IO context turn. Same lifetime
+        // guarantees as postDeferredSubscribe().
+        std::shared_ptr<deferred_new_type_subscription_state> postDeferredNewTypeSubscribe(
+            new_type_handler_t<> handler) const;
 
         template <typename UnsubscribeHandler>
         Subscription makeSubscription(UnsubscribeHandler&& unsubscribeHandler);

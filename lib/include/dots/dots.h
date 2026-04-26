@@ -444,7 +444,29 @@ namespace dots
     template <typename TDescriptor, std::enable_if_t<std::is_base_of_v<type::Descriptor<>, TDescriptor>, int> = 0>
     Subscription subscribe(Transceiver::new_type_handler_t<TDescriptor> handler)
     {
-        return global_transceiver().subscribe<TDescriptor>(std::move(handler));
+        return subscribe<TDescriptor>(sync, std::move(handler));
+    }
+
+    /*!
+     * @brief Subscribe to new types with an explicit policy tag
+     * (synchronous replay).
+     */
+    template <typename TDescriptor, std::enable_if_t<std::is_base_of_v<type::Descriptor<>, TDescriptor>, int> = 0>
+    Subscription subscribe(sync_t, Transceiver::new_type_handler_t<TDescriptor> handler)
+    {
+        return global_transceiver().subscribe<TDescriptor>(sync, std::move(handler));
+    }
+
+    /*!
+     * @brief Subscribe to new types with deferred initial replay.
+     *
+     * Both registration and the initial walk over currently known types
+     * are posted to the IO context and run at the next event loop turn.
+     */
+    template <typename TDescriptor, std::enable_if_t<std::is_base_of_v<type::Descriptor<>, TDescriptor>, int> = 0>
+    Subscription subscribe(deferred_t, Transceiver::new_type_handler_t<TDescriptor> handler)
+    {
+        return global_transceiver().subscribe<TDescriptor>(deferred, std::move(handler));
     }
 
     /*!
