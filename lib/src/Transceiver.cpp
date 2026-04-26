@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 // Copyright 2015-2022 Thomas Schaetzlein <thomas@pnxs.de>, Christopher Gerlach <gerlachch@gmx.com>
 #include <dots/Transceiver.h>
+#include <dots/asio.h>
 #include <dots/fmt/logging_fmt.h>
 #include <dots/serialization/AsciiSerialization.h>
 #include <DotsMember.dots.h>
@@ -127,6 +128,11 @@ namespace dots
 
     Subscription Transceiver::subscribe(const type::StructDescriptor& descriptor, event_handler_t<> handler)
     {
+        return subscribe(sync, descriptor, std::move(handler));
+    }
+
+    Subscription Transceiver::subscribe(sync_t, const type::StructDescriptor& descriptor, event_handler_t<> handler)
+    {
         if (descriptor.substructOnly())
         {
             throw std::logic_error{ "attempt to subscribe to substruct-only type '" + descriptor.name() + "'" };
@@ -138,6 +144,26 @@ namespace dots
         return makeSubscription([&, id]{ m_dispatcher.removeEventHandler(descriptor, id); });
     }
 
+    Subscription Transceiver::subscribe(deferred_t, const type::StructDescriptor& descriptor, event_handler_t<> handler)
+    {
+        if (descriptor.substructOnly())
+        {
+            throw std::logic_error{ "attempt to subscribe to substruct-only type '" + descriptor.name() + "'" };
+        }
+
+        joinGroup(descriptor.name());
+        auto state = postDeferredSubscribe(descriptor, std::move(handler));
+
+        return makeSubscription([&, descriptor_ = &descriptor, state]
+        {
+            state->cancelled = true;
+            if (state->id)
+            {
+                m_dispatcher.removeEventHandler(*descriptor_, *state->id);
+            }
+        });
+    }
+
     Subscription Transceiver::subscribe(std::string_view name, transmission_handler_t handler)
     {
         return subscribe(m_registry.getStructType(name), std::move(handler));
@@ -145,7 +171,43 @@ namespace dots
 
     Subscription Transceiver::subscribe(std::string_view name, event_handler_t<> handler)
     {
-        return subscribe(m_registry.getStructType(name), std::move(handler));
+        return subscribe(sync, m_registry.getStructType(name), std::move(handler));
+    }
+
+    Subscription Transceiver::subscribe(sync_t, std::string_view name, event_handler_t<> handler)
+    {
+        return subscribe(sync, m_registry.getStructType(name), std::move(handler));
+    }
+
+    Subscription Transceiver::subscribe(deferred_t, std::string_view name, event_handler_t<> handler)
+    {
+        return subscribe(deferred, m_registry.getStructType(name), std::move(handler));
+    }
+
+    auto Transceiver::postDeferredSubscribe(const type::StructDescriptor& descriptor, event_handler_t<> handler) const
+        -> std::shared_ptr<deferred_subscription_state>
+    {
+        auto state = std::make_shared<deferred_subscription_state>();
+
+        asio::post(m_ioContext.get(),
+            [this_ = std::weak_ptr<Transceiver*>{ m_this },
+             descriptor_ = &descriptor,
+             handler = std::move(handler),
+             state]() mutable
+            {
+                if (state->cancelled) return;
+                auto locked = this_.lock();
+                if (!locked) return;
+
+                // Atomic with respect to dispatch: register and replay the
+                // current cache in a single non-suspending operation. Any
+                // transmissions for this type that arrived while the post
+                // was pending have already been merged into the container,
+                // and the replay sees the resulting consistent snapshot.
+                state->id = (*locked)->m_dispatcher.addEventHandler(*descriptor_, std::move(handler));
+            });
+
+        return state;
     }
 
     Subscription Transceiver::subscribe(new_type_handler_t<> handler)

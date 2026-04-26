@@ -142,6 +142,41 @@ namespace dots
         id_t addEventHandler(const type::StructDescriptor& descriptor, event_handler_t<> handler);
 
         /*!
+         * @brief Add an event handler without replaying the current cache.
+         *
+         * This behaves like Dispatcher::addEventHandler() except that the
+         * handler is not invoked synchronously for instances that are
+         * already present in the local Container. Use
+         * Dispatcher::replayCacheToHandler() to perform the replay
+         * separately when desired.
+         *
+         * Note: this is a low-level primitive. The public deferred
+         * subscribe policy (dots::deferred) does not use this directly --
+         * instead, it posts the entire register-and-replay sequence to the
+         * IO context to avoid ordering issues with already-queued
+         * transmissions.
+         *
+         * @param descriptor The type to add an event handler for.
+         *
+         * @param handler The handler to invoke every time a corresponding
+         * transmission is dispatched.
+         *
+         * @return id_t The unique id of the handler.
+         */
+        id_t addEventHandlerNoReplay(const type::StructDescriptor& descriptor, event_handler_t<> handler);
+
+        /*!
+         * @brief Replay the current cache to a previously added handler.
+         *
+         * This invokes the event handler identified by @p id with create
+         * events for each instance currently held in the Container of @p
+         * descriptor. If @p id is no longer registered (e.g. because the
+         * Subscription has been destroyed in the meantime) the call is a
+         * no-op.
+         */
+        void replayCacheToHandler(const type::StructDescriptor& descriptor, id_t id);
+
+        /*!
          * @brief Add an event handler for a specific type.
          *
          * This will add a handler for events of a given type and cause it to
@@ -184,6 +219,28 @@ namespace dots
             if constexpr (IsTopLevelStruct)
             {
                 return addEventHandler(T::_Descriptor(), event_handler_t<>{ tools::static_argument_cast, std::move(handler) });
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
+        /*!
+         * @brief Add an event handler for a specific type without replaying
+         * the current cache.
+         *
+         * Typed counterpart of Dispatcher::addEventHandlerNoReplay().
+         */
+        template<typename T>
+        id_t addEventHandlerNoReplay(event_handler_t<T> handler)
+        {
+            constexpr bool IsTopLevelStruct = std::conjunction_v<std::is_base_of<type::Struct, T>, std::negation<std::bool_constant<T::_SubstructOnly>>>;
+            static_assert(IsTopLevelStruct, "T has to be a top-level DOTS struct type");
+
+            if constexpr (IsTopLevelStruct)
+            {
+                return addEventHandlerNoReplay(T::_Descriptor(), event_handler_t<>{ tools::static_argument_cast, std::move(handler) });
             }
             else
             {

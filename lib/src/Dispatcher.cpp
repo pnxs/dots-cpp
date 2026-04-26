@@ -55,31 +55,47 @@ namespace dots
 
     auto Dispatcher::addEventHandler(const type::StructDescriptor& descriptor, event_handler_t<> handler) -> id_t
     {
+        id_t id = addEventHandlerNoReplay(descriptor, std::move(handler));
+        replayCacheToHandler(descriptor, id);
+        return id;
+    }
+
+    auto Dispatcher::addEventHandlerNoReplay(const type::StructDescriptor& descriptor, event_handler_t<> handler) -> id_t
+    {
         id_t id = m_nextId++;
         if (m_clearingHandlers) return id;
-        event_handlers_t& handlers = m_eventHandlerPool[&descriptor];
-        const event_handler_t<>& handler_ = handlers.emplace(id, std::move(handler)).first->second;
-
-        const Container<>& container = m_containerPool.get(descriptor);
-
-        if (!container.empty())
-        {
-            DotsHeader header{
-                .typeName = descriptor.name(),
-                .fromCache = static_cast<uint32_t>(container.size()),
-                .removeObj = false,
-                .isFromMyself = false
-            };
-
-            for (const auto& [instance, cloneInfo] : container)
-            {
-                header.attributes = instance->_validProperties();
-                --*header.fromCache;
-                handler_(Event<>{ header, instance, instance, cloneInfo, DotsMt::create });
-            }
-        }
-
+        m_eventHandlerPool[&descriptor].emplace(id, std::move(handler));
         return id;
+    }
+
+    void Dispatcher::replayCacheToHandler(const type::StructDescriptor& descriptor, id_t id)
+    {
+        if (m_clearingHandlers) return;
+
+        auto itHandlers = m_eventHandlerPool.find(&descriptor);
+        if (itHandlers == m_eventHandlerPool.end()) return;
+
+        auto& handlers = itHandlers->second;
+        auto itHandler = handlers.find(id);
+        if (itHandler == handlers.end()) return;
+
+        const event_handler_t<>& handler_ = itHandler->second;
+        const Container<>& container = m_containerPool.get(descriptor);
+        if (container.empty()) return;
+
+        DotsHeader header{
+            .typeName = descriptor.name(),
+            .fromCache = static_cast<uint32_t>(container.size()),
+            .removeObj = false,
+            .isFromMyself = false
+        };
+
+        for (const auto& [instance, cloneInfo] : container)
+        {
+            header.attributes = instance->_validProperties();
+            --*header.fromCache;
+            handler_(Event<>{ header, instance, instance, cloneInfo, DotsMt::create });
+        }
     }
 
     void Dispatcher::removeTransmissionHandler(const type::StructDescriptor& descriptor, id_t id)
