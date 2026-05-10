@@ -8,7 +8,9 @@ include(LibraryUtils)
 
 # options
 option(BUILD_DOTS_SHARED "Build DOTS as a shared instead of a static library" OFF)
+option(ENABLE_CHANNEL_WEBSOCKET "Compile with websocket channel support" ON)
 option(ENABLE_DOTS_IO "Build DOTS IO" ON) # Can be used to reduce size of DOTS lib if IO is not needed
+
 
 # dependencies
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
@@ -73,6 +75,7 @@ target_sources(${TARGET_NAME}
         src/type/Uuid.cpp
         src/type/VectorDescriptor.cpp
 )
+
 if (ENABLE_DOTS_IO)
     target_sources(${TARGET_NAME}
             PRIVATE
@@ -100,12 +103,22 @@ if (ENABLE_DOTS_IO)
             src/io/channels/TcpListener.cpp
             src/io/channels/UdsChannel.cpp
             src/io/channels/UdsListener.cpp
-            src/io/channels/WebSocketChannel.cpp
-            src/io/channels/WebSocketListener.cpp
 
     )
 endif()
 
+if (ENABLE_CHANNEL_WEBSOCKET)
+    target_sources(${TARGET_NAME}
+            PRIVATE
+            src/io/channels/WebSocketChannel.cpp
+            src/io/channels/WebSocketListener.cpp
+    )
+    target_compile_definitions(${TARGET_NAME}
+            PUBLIC
+            # suppress warning for usage of deprecated Win32 socket functions in Boost
+            ENABLE_CHANNEL_WEBSOCKET
+    )
+endif()
 
 target_include_directories(${TARGET_NAME}
     PUBLIC

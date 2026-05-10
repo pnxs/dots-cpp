@@ -164,7 +164,9 @@ namespace dots
 }
 
 #include <dots/io/channels/TcpChannel.h>
+#if defined(ENABLE_CHANNEL_WEBSOCKET)
 #include <dots/io/channels/WebSocketChannel.h>
+#endif
 #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
 #include <dots/io/channels/UdsChannel.h>
 #endif
@@ -194,7 +196,7 @@ namespace dots
         {
             return open<io::v1::TcpChannel>(std::move(preloadPublishTypes), std::move(preloadSubscribeTypes), std::move(authSecret), std::move(endpoint));
         }
-        #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
+#if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
         else if (scheme == "uds")
         {
             return open<io::posix::UdsChannel>(std::move(preloadPublishTypes), std::move(preloadSubscribeTypes), std::move(authSecret), std::move(endpoint));
@@ -207,11 +209,13 @@ namespace dots
         {
             return open<io::posix::v1::UdsChannel>(std::move(preloadPublishTypes), std::move(preloadSubscribeTypes), std::move(authSecret), std::move(endpoint));
         }
-        #endif
+#endif
+#if defined(ENABLE_CHANNEL_WEBSOCKET)
         else if (scheme == "ws")
         {
             return open<io::WebSocketChannel>(std::move(preloadPublishTypes), std::move(preloadSubscribeTypes), std::move(authSecret), std::move(endpoint));
         }
+#endif
         else
         {
             throw std::runtime_error{ "unknown or unsupported URI scheme: '" + std::string{ scheme } + "'" };

@@ -355,7 +355,9 @@ namespace dots
 
 #include <boost/program_options.hpp>
 #include <dots/io/channels/TcpListener.h>
+#if defined(ENABLE_CHANNEL_WEBSOCKET)
 #include <dots/io/channels/WebSocketListener.h>
+#endif
 #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
 #include <dots/io/channels/UdsListener.h>
 #endif
@@ -392,7 +394,7 @@ namespace dots
                 if (listenEndpoint.port().empty())
                     listenEndpoint.setPort(std::string{ io::v1::TcpListener::DefaultPort });
             }
-            #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
+#if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
             else if (scheme == "uds")
             {
                 listen<io::posix::UdsListener>(listenEndpoint);
@@ -405,11 +407,13 @@ namespace dots
             {
                 listen<io::posix::v1::UdsListener>(listenEndpoint);
             }
-            #endif
+#endif
+#if defined(ENABLE_CHANNEL_WEBSOCKET)
             else if (scheme == "ws")
             {
                 listen<io::WebSocketListener>(listenEndpoint);
             }
+#endif
             else
             {
                 throw std::runtime_error{ "unknown or unsupported endpoint scheme: '" + std::string{ scheme } + "'" };
