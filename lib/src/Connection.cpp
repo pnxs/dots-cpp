@@ -228,6 +228,13 @@ namespace dots
         handleClose(ePtr);
     }
 
+#if defined(ENABLE_CHANNEL_OBSERVE_API)
+    void Connection::observeChannel(io::Channel::observer_t transmitObserver, io::Channel::observer_t receiveObserver) const
+    {
+        m_channel->observe(std::move(transmitObserver), std::move(receiveObserver));
+    }
+#endif
+
     bool Connection::handleReceive(io::Transmission transmission)
     {
         LOG_RECEIVE_TRANSMISSION(transmission.header(), *transmission.instance());

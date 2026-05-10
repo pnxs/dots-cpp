@@ -10,6 +10,7 @@ include(LibraryUtils)
 option(BUILD_DOTS_SHARED "Build DOTS as a shared instead of a static library" OFF)
 option(ENABLE_CHANNEL_WEBSOCKET "Compile with websocket channel support" ON)
 option(ENABLE_DOTS_IO "Build DOTS IO" ON) # Can be used to reduce size of DOTS lib if IO is not needed
+option(ENABLE_CHANNEL_OBSERVE_API "Build with channel-observe API" OFF)
 
 
 # dependencies
@@ -119,6 +120,13 @@ if (ENABLE_CHANNEL_WEBSOCKET)
             ENABLE_CHANNEL_WEBSOCKET
     )
 endif()
+
+if (ENABLE_CHANNEL_OBSERVE_API)
+    target_compile_definitions(${TARGET_NAME}
+            PUBLIC
+            ENABLE_CHANNEL_OBSERVE_API
+    )
+endif ()
 
 target_include_directories(${TARGET_NAME}
     PUBLIC

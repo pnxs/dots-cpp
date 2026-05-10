@@ -75,20 +75,75 @@ namespace dots::io
     {
         assert(m_initialized);
         exportDependencies(instance._descriptor());
+#if defined(ENABLE_CHANNEL_OBSERVE_API)
+        if (m_transmitObserver == nullptr)
+        {
+            transmitImpl(header, instance);
+        }
+        else
+        {
+            m_transmitObserver(&header, &instance);
+
+            try
+            {
+                transmitImpl(header, instance);
+            }
+            catch (...)
+            {
+                m_transmitObserver(nullptr, nullptr);
+                throw;
+            }
+
+            m_transmitObserver(nullptr, nullptr);
+        }
+#else
         transmitImpl(header, instance);
+#endif
+
     }
 
     void Channel::transmit(const Transmission& transmission)
     {
         assert(m_initialized);
         exportDependencies(transmission.instance());
+#if defined(ENABLE_CHANNEL_OBSERVE_API)
+        if (m_transmitObserver == nullptr)
+        {
+            transmitImpl(transmission);
+        }
+        else
+        {
+            m_transmitObserver(&transmission.header(), &*transmission.instance());
+
+            try
+            {
+                transmitImpl(transmission);
+            }
+            catch (...)
+            {
+                m_transmitObserver(nullptr, nullptr);
+                throw;
+            }
+
+            m_transmitObserver(nullptr, nullptr);
+        }
+#else
         transmitImpl(transmission);
+#endif
     }
 
     void Channel::transmit(const type::Descriptor<>& descriptor)
     {
         exportDependencies(descriptor);
     }
+
+#if defined(ENABLE_CHANNEL_OBSERVE_API)
+    void Channel::observe(observer_t transmitObserver, observer_t receiveObserver)
+    {
+        m_transmitObserver = std::move(transmitObserver);
+        m_receiveObserver = std::make_shared<observer_t>(std::move(receiveObserver));
+    }
+#endif
 
     void Channel::initEndpoints(Endpoint localEndpoint, Endpoint remoteEndpoint)
     {
@@ -120,22 +175,44 @@ namespace dots::io
 
     void Channel::processReceive(Transmission transmission) noexcept
     {
-        try
+        auto process_receive = [&]
         {
-            importDependencies(transmission.instance());
-
-            // note: if the receive handler yields 'false', the channel must no
-            // longer be accessed afterwards, because it might have already been
-            // deleted by the callee prior to returning
-            if ((*m_receiveHandler)(std::move(transmission)))
+            try
             {
-                asyncReceiveImpl();
+                importDependencies(transmission.instance());
+
+                // note: if the receive handler yields 'false', the channel must no
+                // longer be accessed afterwards, because it might have already been
+                // deleted by the callee prior to returning
+                if ((*m_receiveHandler)(std::move(transmission)))
+                {
+                    asyncReceiveImpl();
+                }
             }
-        }
-        catch (...)
+            catch (...)
+            {
+                processError(std::current_exception());
+            }
+        };
+
+#if defined(ENABLE_CHANNEL_OBSERVE_API)
+        if (m_receiveObserver == nullptr)
         {
-            processError(std::current_exception());
+            process_receive();
         }
+        else
+        {
+            // note that the shared observer pointer is deliberately copied to
+            // ensure that the observer still exists in case the channel was
+            // destroyed from within the receive handler
+            std::shared_ptr<observer_t> receiveObserver = m_receiveObserver;
+            (*receiveObserver)(&transmission.header(), &*transmission.instance());
+            process_receive();
+            (*receiveObserver)(nullptr, nullptr);
+        }
+#else
+        process_receive();
+#endif
     }
 
     void Channel::processError(std::exception_ptr ePtr)

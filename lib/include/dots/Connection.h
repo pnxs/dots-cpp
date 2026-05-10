@@ -325,6 +325,10 @@ namespace dots
          */
         void handleError(std::exception_ptr ePtr);
 
+#if defined(ENABLE_CHANNEL_OBSERVE_API)
+        void observeChannel(io::Channel::observer_t transmitObserver, io::Channel::observer_t receiveObserver) const;
+#endif
+
     private:
 
         using system_type_t = std::tuple<const type::StructDescriptor*, property_set_t, std::optional<tools::Handler<void(const type::Struct&)>>>;
