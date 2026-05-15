@@ -7,6 +7,7 @@ struct DotsHeader [internal,cached=false] {
     8: uint32 fromCache; // number of remaining objects that will be sent from cache. Not-set means "not from cache".
     4: bool removeObj; // true of the contained object should be removed.
     6: bool isFromMyself; // is set to true in the client's callback when the sender-name matches the specific client name.
+    9: uint32 subscriptionId; // when set, identifies the filtered subscription this event is destined for. Absent for unfiltered traffic.
 }
 
 struct DotsTransportHeader [internal,cached=false] {
@@ -17,10 +18,18 @@ struct DotsTransportHeader [internal,cached=false] {
     5: [deprecated] uint32 destinationClientId;
 }
 
+// Capabilities advertised by the server in the initial Hello.
+// Old servers don't populate this field; old clients ignore it.
+// Future capabilities are added as new optional bool fields with new tags.
+struct DotsServerCapabilities [internal,cached=false] {
+    1: bool filteredSubscriptions; // server understands DotsMember.filter / DotsMember.subscriptionId
+}
+
 struct DotsMsgHello [internal,cached=false] {
     1: string serverName;
     2: uint64 authChallenge;
     3: bool authenticationRequired;
+    4: DotsServerCapabilities capabilities; // optional; absent on legacy servers
 }
 
 // Used in two cases:

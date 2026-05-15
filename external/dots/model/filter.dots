@@ -1,0 +1,84 @@
+// Server-side subscription filtering.
+//
+// A DotsFilter is attached to a DotsMember(join) and carries two
+// orthogonal axes of selection:
+//
+//   * predicate    -- row selection: which instances of the type
+//                     are forwarded to this subscription.
+//   * propertyMask -- column selection: which properties of a matching
+//                     instance are present on the wire. Key properties
+//                     are always added implicitly by the server.
+//
+// Either axis may be omitted independently. An empty DotsFilter is
+// equivalent to an unfiltered subscription on rows + all properties on
+// columns.
+//
+// The predicate is encoded as a pre-order traversal of an n-ary tree
+// where each node carries an arity (the number of children that follow
+// it linearly in the same vector). This avoids self-referential structs
+// while keeping the wire form compact and the evaluator simple
+// (recursive walk with a moving cursor).
+
+enum DotsPredicateKind {
+    1: leaf,    // node represents a single comparison; uses .leaf
+    2: andOp,   // n-ary conjunction; consumes .arity children
+    3: orOp,    // n-ary disjunction; consumes .arity children
+    4: notOp    // unary negation; .arity must be 1
+}
+
+enum DotsCompareOp {
+    1: eq,       // property == value
+    2: neq,      // property != value
+    3: lt,       // property <  value
+    4: le,       // property <= value
+    5: gt,       // property >  value
+    6: ge,       // property >= value
+    7: isIn,     // property is contained in value's vector slot
+    8: notIn,    // property is not contained in value's vector slot
+    9: isNull,   // property is not set on the instance (value field unused)
+    10: notNull  // property is set on the instance (value field unused)
+}
+
+// Width-unified leaf value. Exactly one slot is populated for scalar ops
+// and exactly one of the *List slots for isIn/notIn. The server validates
+// at subscribe time that the populated slot matches the target property's
+// type as declared in its descriptor.
+struct DotsPredicateValue [internal,cached=false] {
+    1: bool      boolVal;
+    2: int64     intVal;     // covers int8..int64 ranges, narrowed against descriptor
+    3: uint64    uintVal;    // covers uint8..uint64 ranges, narrowed against descriptor
+    4: float64   floatVal;   // covers float32/float64
+    5: string    stringVal;
+    6: timepoint timepointVal;
+    7: duration  durationVal;
+    8: uuid      uuidVal;
+
+    // Vector slots used by isIn / notIn.
+    20: vector<int64>     intList;
+    21: vector<uint64>    uintList;
+    22: vector<float64>   floatList;
+    23: vector<string>    stringList;
+    24: vector<timepoint> timepointList;
+    25: vector<uuid>      uuidList;
+}
+
+struct DotsPredicateLeaf [internal,cached=false] {
+    1: uint32 propertyTag;     // tag of the target property within the subscribed type
+    2: DotsCompareOp op;
+    3: DotsPredicateValue value; // omitted when op is isNull / notNull
+}
+
+struct DotsPredicateNode [internal,cached=false] {
+    1: DotsPredicateKind kind;
+    2: DotsPredicateLeaf leaf;  // present iff kind == leaf
+    3: uint32 arity;            // present iff kind is andOp / orOp / notOp; notOp arity is always 1
+}
+
+struct DotsPredicate [internal,cached=false] {
+    1: vector<DotsPredicateNode> nodes; // pre-order traversal; nodes[0] is the root
+}
+
+struct DotsFilter [internal,cached=false] {
+    1: DotsPredicate predicate;     // optional row selection
+    2: property_set propertyMask;   // optional column projection; keys are added implicitly
+}

@@ -9,6 +9,8 @@ struct DotsMember [internal,cached=false] {
     1: string groupName; // group to join or leave
     2: DotsMemberEvent event; // set to join or leave
     3: uint32 client; // ID of the client that join or leave.
+    4: uint32 subscriptionId; // client-allocated id for filtered subscriptions; absent for unfiltered joins/leaves
+    5: DotsFilter filter; // optional row predicate + column projection; present only on filtered join events
 }
 
 enum DotsMt {
