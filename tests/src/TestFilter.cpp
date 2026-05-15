@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 #include <dots/testing/gtest/gtest.h>
 #include <dots/Filter.h>
+#include <dots/FilterBuilder.h>
 #include <DotsTestStruct.dots.h>
 
 using namespace dots;
@@ -267,4 +268,94 @@ TEST(TestFilter, validate_rejects_not_arity_not_one)
         leafNode(2, DotsCompareOp::eq, intV(2)),
     });
     EXPECT_THROW(filter::validate(p, dots::type::Descriptor<DotsTestStruct>::Instance()), std::invalid_argument);
+}
+
+// -----------------------------------------------------------------------------
+// Builder DSL round-trip tests — exercises FilterBuilder.h through to matches().
+// -----------------------------------------------------------------------------
+
+namespace
+{
+    DotsPredicate toPredicate(filter::Predicate p)
+    {
+        DotsPredicate w;
+        w.nodes = std::move(p.nodes);
+        return w;
+    }
+}
+
+TEST(TestFilterBuilder, eq_via_operator_on_int32_key)
+{
+    namespace f = dots::filter;
+    auto bp = f::attr<DotsTestStruct::indKeyfField_pt> == 42;
+    auto wp = toPredicate(std::move(bp));
+    filter::validate(wp, dots::type::Descriptor<DotsTestStruct>::Instance());
+
+    EXPECT_TRUE (filter::matches(wp, sample(42, "x", 0, 0)));
+    EXPECT_FALSE(filter::matches(wp, sample(43, "x", 0, 0)));
+}
+
+TEST(TestFilterBuilder, n_ary_and_collapses_to_single_node)
+{
+    namespace f = dots::filter;
+    auto bp = (f::attr<DotsTestStruct::int64Field_pt>  >= int64_t{100})
+            & (f::attr<DotsTestStruct::int64Field_pt>  <= int64_t{200})
+            & (f::attr<DotsTestStruct::indKeyfField_pt> != int32_t{0});
+
+    // Expect 1 andOp head with arity 3, then 3 leaves — no nested ands.
+    ASSERT_EQ(bp.nodes.size(), 4u);
+    EXPECT_EQ(*bp.nodes[0].kind,  DotsPredicateKind::andOp);
+    EXPECT_EQ(*bp.nodes[0].arity, 3u);
+    EXPECT_EQ(*bp.nodes[1].kind,  DotsPredicateKind::leaf);
+    EXPECT_EQ(*bp.nodes[2].kind,  DotsPredicateKind::leaf);
+    EXPECT_EQ(*bp.nodes[3].kind,  DotsPredicateKind::leaf);
+
+    auto wp = toPredicate(std::move(bp));
+    filter::validate(wp, dots::type::Descriptor<DotsTestStruct>::Instance());
+
+    EXPECT_TRUE (filter::matches(wp, sample(1, "", 150, 0)));
+    EXPECT_FALSE(filter::matches(wp, sample(0, "", 150, 0))); // key fails
+    EXPECT_FALSE(filter::matches(wp, sample(1, "", 250, 0))); // upper fails
+}
+
+TEST(TestFilterBuilder, not_and_or_compose)
+{
+    namespace f = dots::filter;
+    auto a = f::attr<DotsTestStruct::indKeyfField_pt> == int32_t{1};
+    auto b = f::attr<DotsTestStruct::stringField_pt>.eq("skip");
+    auto bp = a | !std::move(b);   // key == 1 OR string != "skip"
+
+    auto wp = toPredicate(std::move(bp));
+    filter::validate(wp, dots::type::Descriptor<DotsTestStruct>::Instance());
+
+    EXPECT_TRUE (filter::matches(wp, sample(1, "skip", 0, 0))); // a holds
+    EXPECT_TRUE (filter::matches(wp, sample(2, "ok",   0, 0))); // !b holds
+    EXPECT_FALSE(filter::matches(wp, sample(2, "skip", 0, 0))); // neither
+}
+
+TEST(TestFilterBuilder, is_in_list)
+{
+    namespace f = dots::filter;
+    auto bp = f::attr<DotsTestStruct::indKeyfField_pt>.isIn({ 10, 20, 30 });
+    auto wp = toPredicate(std::move(bp));
+    filter::validate(wp, dots::type::Descriptor<DotsTestStruct>::Instance());
+
+    EXPECT_TRUE (filter::matches(wp, sample(20, "", 0, 0)));
+    EXPECT_FALSE(filter::matches(wp, sample(25, "", 0, 0)));
+}
+
+TEST(TestFilterBuilder, project_builds_property_mask)
+{
+    namespace f = dots::filter;
+    auto pred = f::attr<DotsTestStruct::indKeyfField_pt> == int32_t{1};
+    auto built = f::predicate(std::move(pred))
+                  .project(DotsTestStruct::indKeyfField_p + DotsTestStruct::int64Field_p)
+                  .build();
+
+    ASSERT_TRUE(built.predicate.isValid());
+    EXPECT_EQ(built.predicate->nodes->size(), 1u);
+    ASSERT_TRUE(built.propertyMask.isValid());
+    EXPECT_TRUE(DotsTestStruct::indKeyfField_p <= *built.propertyMask);
+    EXPECT_TRUE(DotsTestStruct::int64Field_p   <= *built.propertyMask);
+    EXPECT_FALSE(DotsTestStruct::stringField_p <= *built.propertyMask);
 }
