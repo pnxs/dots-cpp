@@ -2,9 +2,12 @@
 #include <dots/Filter.h>
 
 #include <algorithm>
+#include <cstring>
+#include <new>
 #include <stdexcept>
 #include <string>
 
+#include <dots/type/Descriptor.h>
 #include <dots/type/PropertyArea.h>
 #include <dots/type/PropertyDescriptor.h>
 #include <dots/type/Struct.h>
@@ -15,7 +18,7 @@ namespace dots::filter
 {
     namespace
     {
-        const type::PropertyDescriptor* findPropertyByTag(const type::StructDescriptor& sd, uint32_t tag)
+        const type::PropertyDescriptor* findPropertyByTag(const type::StructDescriptor& sd, std::uint32_t tag)
         {
             const auto& pds = sd.propertyDescriptors();
             auto it = std::find_if(pds.begin(), pds.end(),
@@ -43,11 +46,10 @@ namespace dots::filter
 
         bool isFundamentalEquatableType(type::Type t)
         {
-            // Anything other than aggregate types (Vector/Struct).
             return t != type::Type::Vector && t != type::Type::Struct;
         }
 
-        bool valueSlotMatches(const DotsPredicateValue& v, type::Type t, bool wantList)
+        bool valueSlotMatches(const types::DotsPredicateValue& v, type::Type t, bool wantList)
         {
             if (wantList)
             {
@@ -88,329 +90,419 @@ namespace dots::filter
             }
         }
 
-        // ---- validation ----
+        // ---- rhs buffer helpers -------------------------------------------------
 
-        void validateLeaf(const DotsPredicateLeaf& leaf, const type::StructDescriptor& sd)
+        std::byte* allocRhsBuffer(std::size_t bytes, std::size_t alignment)
         {
-            if (!leaf.propertyTag.isValid() || !leaf.op.isValid())
-            {
-                throw std::invalid_argument{ "predicate leaf is missing propertyTag or op" };
-            }
+            return static_cast<std::byte*>(
+                ::operator new(bytes, std::align_val_t{ alignment }));
+        }
 
-            const type::PropertyDescriptor* pd = findPropertyByTag(sd, *leaf.propertyTag);
-            if (pd == nullptr)
-            {
-                throw std::invalid_argument{
-                    "property tag " + std::to_string(*leaf.propertyTag) +
-                    " not found in type " + sd.name()
-                };
-            }
+        void freeRhsBuffer(std::byte* buffer, std::size_t alignment)
+        {
+            ::operator delete(buffer, std::align_val_t{ alignment });
+        }
 
-            const type::Type t = pd->valueDescriptor().type();
-            const DotsCompareOp op = *leaf.op;
+        template <typename T>
+        void constructAt(const type::Descriptor<type::Typeless>& vd, std::byte* dst, const T& value)
+        {
+            vd.constructInPlace(*reinterpret_cast<type::Typeless*>(dst),
+                                type::Typeless::From(value));
+        }
 
-            if (op == DotsCompareOp::isNull || op == DotsCompareOp::notNull)
+        // Narrow a single scalar wire value into a typed slot at dst.
+        void narrowScalar(const type::Descriptor<type::Typeless>& vd, std::byte* dst,
+                          const types::DotsPredicateValue& v)
+        {
+            switch (vd.type())
             {
-                return; // no value required, applicable to any property
-            }
-
-            if (!leaf.value.isValid())
-            {
-                throw std::invalid_argument{
-                    "predicate leaf is missing value (op=" + std::to_string(static_cast<int>(op)) +
-                    ") on property '" + pd->name() + "'"
-                };
-            }
-
-            const bool wantList = (op == DotsCompareOp::isIn || op == DotsCompareOp::notIn);
-
-            if (!valueSlotMatches(*leaf.value, t, wantList))
-            {
-                throw std::invalid_argument{
-                    "predicate leaf value slot does not match property '" + pd->name() +
-                    "' of type " + pd->valueDescriptor().name()
-                };
-            }
-
-            if (op == DotsCompareOp::lt || op == DotsCompareOp::le ||
-                op == DotsCompareOp::gt || op == DotsCompareOp::ge)
-            {
-                if (!isOrderedType(t))
-                {
-                    throw std::invalid_argument{
-                        "ordered comparison op on non-ordered property '" + pd->name() + "'"
-                    };
-                }
-            }
-            else if (op == DotsCompareOp::eq || op == DotsCompareOp::neq ||
-                     op == DotsCompareOp::isIn || op == DotsCompareOp::notIn)
-            {
-                if (!isFundamentalEquatableType(t))
-                {
-                    throw std::invalid_argument{
-                        "equality op on non-equatable property '" + pd->name() + "'"
-                    };
-                }
+                case type::Type::boolean:   constructAt(vd, dst, *v.boolVal); break;
+                case type::Type::int8:      constructAt(vd, dst, static_cast<types::int8_t>(*v.intVal)); break;
+                case type::Type::int16:     constructAt(vd, dst, static_cast<types::int16_t>(*v.intVal)); break;
+                case type::Type::int32:     constructAt(vd, dst, static_cast<types::int32_t>(*v.intVal)); break;
+                case type::Type::int64:     constructAt(vd, dst, static_cast<types::int64_t>(*v.intVal)); break;
+                case type::Type::uint8:     constructAt(vd, dst, static_cast<types::uint8_t>(*v.uintVal)); break;
+                case type::Type::uint16:    constructAt(vd, dst, static_cast<types::uint16_t>(*v.uintVal)); break;
+                case type::Type::uint32:    constructAt(vd, dst, static_cast<types::uint32_t>(*v.uintVal)); break;
+                case type::Type::uint64:    constructAt(vd, dst, static_cast<types::uint64_t>(*v.uintVal)); break;
+                case type::Type::float32:   constructAt(vd, dst, static_cast<types::float32_t>(*v.floatVal)); break;
+                case type::Type::float64:   constructAt(vd, dst, static_cast<types::float64_t>(*v.floatVal)); break;
+                case type::Type::string:    constructAt(vd, dst, *v.stringVal); break;
+                case type::Type::timepoint: case type::Type::steady_timepoint:
+                                            constructAt(vd, dst, *v.timepointVal); break;
+                case type::Type::duration:  constructAt(vd, dst, *v.durationVal); break;
+                case type::Type::uuid:      constructAt(vd, dst, *v.uuidVal); break;
+                default: break; // unreachable: rejected by validation above
             }
         }
 
-        void validateNode(const vector_t<DotsPredicateNode>& nodes, size_t& cursor,
-                          const type::StructDescriptor& sd)
+        // Narrow a list of wire values into N back-to-back typed slots starting at dst.
+        // Returns the number of elements written.
+        std::uint32_t narrowList(const type::Descriptor<type::Typeless>& vd, std::byte* dst,
+                                 const types::DotsPredicateValue& v)
         {
-            if (cursor >= nodes.size())
+            const std::size_t stride = vd.size();
+            std::uint32_t n = 0;
+            auto step = [&]() { dst += stride; ++n; };
+
+            switch (vd.type())
+            {
+                case type::Type::int8:    for (auto w : *v.intList) { constructAt(vd, dst, static_cast<types::int8_t>(w)); step(); } break;
+                case type::Type::int16:   for (auto w : *v.intList) { constructAt(vd, dst, static_cast<types::int16_t>(w)); step(); } break;
+                case type::Type::int32:   for (auto w : *v.intList) { constructAt(vd, dst, static_cast<types::int32_t>(w)); step(); } break;
+                case type::Type::int64:   for (auto w : *v.intList) { constructAt(vd, dst, static_cast<types::int64_t>(w)); step(); } break;
+                case type::Type::uint8:   for (auto w : *v.uintList) { constructAt(vd, dst, static_cast<types::uint8_t>(w)); step(); } break;
+                case type::Type::uint16:  for (auto w : *v.uintList) { constructAt(vd, dst, static_cast<types::uint16_t>(w)); step(); } break;
+                case type::Type::uint32:  for (auto w : *v.uintList) { constructAt(vd, dst, static_cast<types::uint32_t>(w)); step(); } break;
+                case type::Type::uint64:  for (auto w : *v.uintList) { constructAt(vd, dst, static_cast<types::uint64_t>(w)); step(); } break;
+                case type::Type::float32: for (auto w : *v.floatList) { constructAt(vd, dst, static_cast<types::float32_t>(w)); step(); } break;
+                case type::Type::float64: for (auto w : *v.floatList) { constructAt(vd, dst, static_cast<types::float64_t>(w)); step(); } break;
+                case type::Type::string:  for (const auto& w : *v.stringList) { constructAt(vd, dst, w); step(); } break;
+                case type::Type::timepoint:
+                case type::Type::steady_timepoint:
+                                          for (const auto& w : *v.timepointList) { constructAt(vd, dst, w); step(); } break;
+                case type::Type::uuid:    for (const auto& w : *v.uuidList) { constructAt(vd, dst, w); step(); } break;
+                default: break; // unreachable
+            }
+            return n;
+        }
+    } // anonymous namespace
+
+    // ---- CompiledPredicate::Node lifetime ---------------------------------------
+
+    CompiledPredicate::Node::Node(Node&& other) noexcept :
+        kind(other.kind),
+        op(other.op),
+        arity(other.arity),
+        offset(other.offset),
+        propertySet(other.propertySet),
+        valueDescriptor(other.valueDescriptor),
+        rhs(other.rhs),
+        rhsCount(other.rhsCount)
+    {
+        other.rhs = nullptr;
+        other.rhsCount = 0;
+    }
+
+    CompiledPredicate::Node& CompiledPredicate::Node::operator=(Node&& other) noexcept
+    {
+        if (this == &other) return *this;
+        this->~Node();
+        new (this) Node(std::move(other));
+        return *this;
+    }
+
+    CompiledPredicate::Node::~Node()
+    {
+        if (rhs == nullptr) return;
+        const type::Descriptor<type::Typeless>& vd = *valueDescriptor;
+        const std::size_t stride = vd.size();
+        for (std::uint32_t i = 0; i < rhsCount; ++i)
+        {
+            vd.destruct(*reinterpret_cast<type::Typeless*>(rhs + i * stride));
+        }
+        freeRhsBuffer(rhs, vd.alignment());
+    }
+
+    // ---- compile ----------------------------------------------------------------
+
+    namespace
+    {
+        // Walks the predicate tree in pre-order, validating and emitting one
+        // CompiledPredicate::Node per source DotsPredicateNode. Validation
+        // failures throw std::invalid_argument matching the original messages
+        // produced by filter::validate().
+        void compileNode(const vector_t<types::DotsPredicateNode>& src, std::size_t& cursor,
+                         const type::StructDescriptor& sd,
+                         std::vector<CompiledPredicate::Node>& out)
+        {
+            using namespace types;
+            if (cursor >= src.size())
             {
                 throw std::invalid_argument{ "predicate truncated: expected another node" };
             }
 
-            const DotsPredicateNode& node = nodes[cursor++];
-            if (!node.kind.isValid())
+            const DotsPredicateNode& srcNode = src[cursor++];
+            if (!srcNode.kind.isValid())
             {
                 throw std::invalid_argument{ "predicate node is missing kind" };
             }
 
-            switch (*node.kind)
+            const DotsPredicateKind kind = *srcNode.kind;
+            CompiledPredicate::Node& node = out.emplace_back();
+            node.kind = kind;
+
+            switch (kind)
             {
                 case DotsPredicateKind::leaf:
-                    if (!node.leaf.isValid())
+                {
+                    if (!srcNode.leaf.isValid())
                     {
                         throw std::invalid_argument{ "leaf node missing leaf payload" };
                     }
-                    validateLeaf(*node.leaf, sd);
-                    break;
+                    const DotsPredicateLeaf& leaf = *srcNode.leaf;
+
+                    if (!leaf.propertyTag.isValid() || !leaf.op.isValid())
+                    {
+                        throw std::invalid_argument{ "predicate leaf is missing propertyTag or op" };
+                    }
+
+                    const type::PropertyDescriptor* pd = findPropertyByTag(sd, *leaf.propertyTag);
+                    if (pd == nullptr)
+                    {
+                        throw std::invalid_argument{
+                            "property tag " + std::to_string(*leaf.propertyTag) +
+                            " not found in type " + sd.name()
+                        };
+                    }
+
+                    const type::Type t = pd->valueDescriptor().type();
+                    const DotsCompareOp op = *leaf.op;
+
+                    node.op = op;
+                    node.offset = pd->offset().offset();
+                    node.propertySet = pd->set();
+                    node.valueDescriptor = &pd->valueDescriptor();
+
+                    if (op == DotsCompareOp::isNull || op == DotsCompareOp::notNull)
+                    {
+                        return; // no rhs required
+                    }
+
+                    if (!leaf.value.isValid())
+                    {
+                        throw std::invalid_argument{
+                            "predicate leaf is missing value (op=" + std::to_string(static_cast<int>(op)) +
+                            ") on property '" + pd->name() + "'"
+                        };
+                    }
+
+                    const bool wantList = (op == DotsCompareOp::isIn || op == DotsCompareOp::notIn);
+
+                    if (!valueSlotMatches(*leaf.value, t, wantList))
+                    {
+                        throw std::invalid_argument{
+                            "predicate leaf value slot does not match property '" + pd->name() +
+                            "' of type " + pd->valueDescriptor().name()
+                        };
+                    }
+
+                    if (op == DotsCompareOp::lt || op == DotsCompareOp::le ||
+                        op == DotsCompareOp::gt || op == DotsCompareOp::ge)
+                    {
+                        if (!isOrderedType(t))
+                        {
+                            throw std::invalid_argument{
+                                "ordered comparison op on non-ordered property '" + pd->name() + "'"
+                            };
+                        }
+                    }
+                    else if (op == DotsCompareOp::eq || op == DotsCompareOp::neq ||
+                             op == DotsCompareOp::isIn || op == DotsCompareOp::notIn)
+                    {
+                        if (!isFundamentalEquatableType(t))
+                        {
+                            throw std::invalid_argument{
+                                "equality op on non-equatable property '" + pd->name() + "'"
+                            };
+                        }
+                    }
+
+                    // Materialize rhs. For scalar ops a single typed slot; for
+                    // isIn/notIn N back-to-back slots. Bool/duration cannot occur
+                    // here as list types (validation above rejects wantList).
+                    const type::Descriptor<type::Typeless>& vd = pd->valueDescriptor();
+                    const std::size_t stride = vd.size();
+
+                    if (wantList)
+                    {
+                        std::size_t srcCount = 0;
+                        switch (t)
+                        {
+                            case type::Type::int8:    case type::Type::int16:
+                            case type::Type::int32:   case type::Type::int64:
+                                srcCount = leaf.value->intList->size(); break;
+                            case type::Type::uint8:   case type::Type::uint16:
+                            case type::Type::uint32:  case type::Type::uint64:
+                                srcCount = leaf.value->uintList->size(); break;
+                            case type::Type::float32: case type::Type::float64:
+                                srcCount = leaf.value->floatList->size(); break;
+                            case type::Type::string:
+                                srcCount = leaf.value->stringList->size(); break;
+                            case type::Type::timepoint:
+                            case type::Type::steady_timepoint:
+                                srcCount = leaf.value->timepointList->size(); break;
+                            case type::Type::uuid:
+                                srcCount = leaf.value->uuidList->size(); break;
+                            default: break;
+                        }
+                        if (srcCount > 0)
+                        {
+                            node.rhs = allocRhsBuffer(srcCount * stride, vd.alignment());
+                            node.rhsCount = narrowList(vd, node.rhs, *leaf.value);
+                        }
+                    }
+                    else
+                    {
+                        node.rhs = allocRhsBuffer(stride, vd.alignment());
+                        narrowScalar(vd, node.rhs, *leaf.value);
+                        node.rhsCount = 1;
+                    }
+                    return;
+                }
 
                 case DotsPredicateKind::andOp:
                 case DotsPredicateKind::orOp:
-                    if (!node.arity.isValid() || *node.arity < 1)
+                {
+                    if (!srcNode.arity.isValid() || *srcNode.arity < 1)
                     {
                         throw std::invalid_argument{ "and/or node arity must be >= 1" };
                     }
-                    for (uint32_t i = 0; i < *node.arity; ++i)
+                    const std::uint32_t arity = *srcNode.arity;
+                    node.arity = arity;
+                    // 'node' reference becomes invalid after subsequent emplace_back
+                    // calls; do not touch it past this point.
+                    for (std::uint32_t i = 0; i < arity; ++i)
                     {
-                        validateNode(nodes, cursor, sd);
+                        compileNode(src, cursor, sd, out);
                     }
-                    break;
+                    return;
+                }
 
                 case DotsPredicateKind::notOp:
-                    if (!node.arity.isValid() || *node.arity != 1)
+                {
+                    if (!srcNode.arity.isValid() || *srcNode.arity != 1)
                     {
                         throw std::invalid_argument{ "not node arity must be 1" };
                     }
-                    validateNode(nodes, cursor, sd);
-                    break;
+                    node.arity = 1;
+                    compileNode(src, cursor, sd, out);
+                    return;
+                }
             }
         }
 
-        // ---- evaluation ----
+        // ---- evaluation -----------------------------------------------------
 
-        bool evalNode(const vector_t<DotsPredicateNode>& nodes, size_t& cursor,
-                      const type::Struct& instance);
+        bool evalCompiledNode(const std::vector<CompiledPredicate::Node>& nodes,
+                              std::size_t& cursor,
+                              const type::PropertyArea& area);
 
-        // Compare an instance property (read as Typeless bytes) against a typed rhs value.
-        template <typename T>
-        bool cmpScalar(const type::Descriptor<>& vd, const type::Typeless& lhs,
-                       const T& rhs, DotsCompareOp op)
+        bool evalCompiledLeaf(const CompiledPredicate::Node& n, const type::PropertyArea& area)
         {
-            const type::Typeless& rhsTL = type::Typeless::From(rhs);
+            using namespace types;
+            const bool isSet = n.propertySet <= area.validProperties();
+
+            const DotsCompareOp op = n.op;
+            if (op == DotsCompareOp::isNull)  return !isSet;
+            if (op == DotsCompareOp::notNull) return isSet;
+            if (!isSet) return false;
+
+            const type::Descriptor<>& vd = *n.valueDescriptor;
+            const type::Typeless& lhs = area.getProperty<type::Typeless>(n.offset);
+
+            if (op == DotsCompareOp::isIn || op == DotsCompareOp::notIn)
+            {
+                const bool negate = (op == DotsCompareOp::notIn);
+                const std::size_t stride = vd.size();
+                for (std::uint32_t i = 0; i < n.rhsCount; ++i)
+                {
+                    const auto& rhs = *reinterpret_cast<const type::Typeless*>(n.rhs + i * stride);
+                    if (vd.equal(lhs, rhs)) return !negate;
+                }
+                return negate;
+            }
+
+            const auto& rhs = *reinterpret_cast<const type::Typeless*>(n.rhs);
             switch (op)
             {
-                case DotsCompareOp::eq:  return  vd.equal(lhs, rhsTL);
-                case DotsCompareOp::neq: return !vd.equal(lhs, rhsTL);
-                case DotsCompareOp::lt:  return  vd.less(lhs, rhsTL);
-                case DotsCompareOp::le:  return  vd.lessEqual(lhs, rhsTL);
-                case DotsCompareOp::gt:  return  vd.greater(lhs, rhsTL);
-                case DotsCompareOp::ge:  return  vd.greaterEqual(lhs, rhsTL);
-                default: return false; // isIn/notIn handled in inList()
+                case DotsCompareOp::eq:  return  vd.equal(lhs, rhs);
+                case DotsCompareOp::neq: return !vd.equal(lhs, rhs);
+                case DotsCompareOp::lt:  return  vd.less(lhs, rhs);
+                case DotsCompareOp::le:  return  vd.lessEqual(lhs, rhs);
+                case DotsCompareOp::gt:  return  vd.greater(lhs, rhs);
+                case DotsCompareOp::ge:  return  vd.greaterEqual(lhs, rhs);
+                default: return false;
             }
         }
 
-        template <typename WireT, typename NarrowT>
-        bool inListNarrowed(const type::Descriptor<>& vd, const type::Typeless& lhs,
-                            const vector_t<WireT>& list, bool negate)
+        bool evalCompiledNode(const std::vector<CompiledPredicate::Node>& nodes,
+                              std::size_t& cursor,
+                              const type::PropertyArea& area)
         {
-            for (const WireT& wireItem : list)
-            {
-                NarrowT narrowed = static_cast<NarrowT>(wireItem);
-                const type::Typeless& rhsTL = type::Typeless::From(narrowed);
-                if (vd.equal(lhs, rhsTL)) return !negate;
-            }
-            return negate;
-        }
+            using namespace types;
+            const CompiledPredicate::Node& n = nodes[cursor++];
 
-        template <typename T>
-        bool inListDirect(const type::Descriptor<>& vd, const type::Typeless& lhs,
-                          const vector_t<T>& list, bool negate)
-        {
-            for (const T& item : list)
-            {
-                const type::Typeless& rhsTL = type::Typeless::From(item);
-                if (vd.equal(lhs, rhsTL)) return !negate;
-            }
-            return negate;
-        }
-
-        bool evalLeaf(const DotsPredicateLeaf& leaf, const type::Struct& instance)
-        {
-            const type::StructDescriptor& sd = instance._descriptor();
-            const type::PropertyDescriptor* pd = findPropertyByTag(sd, *leaf.propertyTag);
-            if (pd == nullptr) return false;
-
-            const type::PropertyArea& area = sd.propertyArea(instance);
-            const bool isSet = pd->set() <= area.validProperties();
-
-            const DotsCompareOp op = *leaf.op;
-            if (op == DotsCompareOp::isNull) return !isSet;
-            if (op == DotsCompareOp::notNull) return isSet;
-            if (!isSet) return false; // unset property never satisfies a value comparison
-
-            const type::Descriptor<>& vd = pd->valueDescriptor();
-            const type::Typeless& lhs = area.getProperty<type::Typeless>(pd->offset());
-            const DotsPredicateValue& v = *leaf.value;
-            const bool negate = (op == DotsCompareOp::notIn);
-
-            switch (vd.type())
-            {
-                case type::Type::boolean:
-                    return cmpScalar(vd, lhs, *v.boolVal, op);
-
-                case type::Type::int8: {
-                    if (op == DotsCompareOp::isIn || op == DotsCompareOp::notIn)
-                        return inListNarrowed<int64_t, int8_t>(vd, lhs, *v.intList, negate);
-                    int8_t narrowed = static_cast<int8_t>(*v.intVal);
-                    return cmpScalar(vd, lhs, narrowed, op);
-                }
-                case type::Type::int16: {
-                    if (op == DotsCompareOp::isIn || op == DotsCompareOp::notIn)
-                        return inListNarrowed<int64_t, int16_t>(vd, lhs, *v.intList, negate);
-                    int16_t narrowed = static_cast<int16_t>(*v.intVal);
-                    return cmpScalar(vd, lhs, narrowed, op);
-                }
-                case type::Type::int32: {
-                    if (op == DotsCompareOp::isIn || op == DotsCompareOp::notIn)
-                        return inListNarrowed<int64_t, int32_t>(vd, lhs, *v.intList, negate);
-                    int32_t narrowed = static_cast<int32_t>(*v.intVal);
-                    return cmpScalar(vd, lhs, narrowed, op);
-                }
-                case type::Type::int64: {
-                    if (op == DotsCompareOp::isIn || op == DotsCompareOp::notIn)
-                        return inListDirect<int64_t>(vd, lhs, *v.intList, negate);
-                    int64_t narrowed = *v.intVal;
-                    return cmpScalar(vd, lhs, narrowed, op);
-                }
-                case type::Type::uint8: {
-                    if (op == DotsCompareOp::isIn || op == DotsCompareOp::notIn)
-                        return inListNarrowed<uint64_t, uint8_t>(vd, lhs, *v.uintList, negate);
-                    uint8_t narrowed = static_cast<uint8_t>(*v.uintVal);
-                    return cmpScalar(vd, lhs, narrowed, op);
-                }
-                case type::Type::uint16: {
-                    if (op == DotsCompareOp::isIn || op == DotsCompareOp::notIn)
-                        return inListNarrowed<uint64_t, uint16_t>(vd, lhs, *v.uintList, negate);
-                    uint16_t narrowed = static_cast<uint16_t>(*v.uintVal);
-                    return cmpScalar(vd, lhs, narrowed, op);
-                }
-                case type::Type::uint32: {
-                    if (op == DotsCompareOp::isIn || op == DotsCompareOp::notIn)
-                        return inListNarrowed<uint64_t, uint32_t>(vd, lhs, *v.uintList, negate);
-                    uint32_t narrowed = static_cast<uint32_t>(*v.uintVal);
-                    return cmpScalar(vd, lhs, narrowed, op);
-                }
-                case type::Type::uint64: {
-                    if (op == DotsCompareOp::isIn || op == DotsCompareOp::notIn)
-                        return inListDirect<uint64_t>(vd, lhs, *v.uintList, negate);
-                    uint64_t narrowed = *v.uintVal;
-                    return cmpScalar(vd, lhs, narrowed, op);
-                }
-                case type::Type::float32: {
-                    if (op == DotsCompareOp::isIn || op == DotsCompareOp::notIn)
-                        return inListNarrowed<float64_t, float32_t>(vd, lhs, *v.floatList, negate);
-                    float32_t narrowed = static_cast<float32_t>(*v.floatVal);
-                    return cmpScalar(vd, lhs, narrowed, op);
-                }
-                case type::Type::float64: {
-                    if (op == DotsCompareOp::isIn || op == DotsCompareOp::notIn)
-                        return inListDirect<float64_t>(vd, lhs, *v.floatList, negate);
-                    float64_t narrowed = *v.floatVal;
-                    return cmpScalar(vd, lhs, narrowed, op);
-                }
-                case type::Type::string:
-                    if (op == DotsCompareOp::isIn || op == DotsCompareOp::notIn)
-                        return inListDirect<string_t>(vd, lhs, *v.stringList, negate);
-                    return cmpScalar(vd, lhs, *v.stringVal, op);
-
-                case type::Type::timepoint:
-                case type::Type::steady_timepoint:
-                    if (op == DotsCompareOp::isIn || op == DotsCompareOp::notIn)
-                        return inListDirect<timepoint_t>(vd, lhs, *v.timepointList, negate);
-                    return cmpScalar(vd, lhs, *v.timepointVal, op);
-
-                case type::Type::duration:
-                    return cmpScalar(vd, lhs, *v.durationVal, op);
-
-                case type::Type::uuid:
-                    if (op == DotsCompareOp::isIn || op == DotsCompareOp::notIn)
-                        return inListDirect<uuid_t>(vd, lhs, *v.uuidList, negate);
-                    return cmpScalar(vd, lhs, *v.uuidVal, op);
-
-                default:
-                    return false; // unsupported type — caught by validate()
-            }
-        }
-
-        bool evalNode(const vector_t<DotsPredicateNode>& nodes, size_t& cursor,
-                      const type::Struct& instance)
-        {
-            const DotsPredicateNode& node = nodes[cursor++];
-
-            switch (*node.kind)
+            switch (n.kind)
             {
                 case DotsPredicateKind::leaf:
-                    return evalLeaf(*node.leaf, instance);
+                    return evalCompiledLeaf(n, area);
 
-                case DotsPredicateKind::andOp: {
+                case DotsPredicateKind::andOp:
+                {
                     bool result = true;
-                    for (uint32_t i = 0; i < *node.arity; ++i)
+                    for (std::uint32_t i = 0; i < n.arity; ++i)
                     {
-                        if (!evalNode(nodes, cursor, instance)) result = false;
-                        // continue walking children to keep cursor consistent
+                        if (!evalCompiledNode(nodes, cursor, area)) result = false;
+                        // walk remaining children to keep cursor consistent
                     }
                     return result;
                 }
-                case DotsPredicateKind::orOp: {
+                case DotsPredicateKind::orOp:
+                {
                     bool result = false;
-                    for (uint32_t i = 0; i < *node.arity; ++i)
+                    for (std::uint32_t i = 0; i < n.arity; ++i)
                     {
-                        if (evalNode(nodes, cursor, instance)) result = true;
+                        if (evalCompiledNode(nodes, cursor, area)) result = true;
                     }
                     return result;
                 }
                 case DotsPredicateKind::notOp:
-                    return !evalNode(nodes, cursor, instance);
+                    return !evalCompiledNode(nodes, cursor, area);
             }
             return false;
         }
-    } // namespace
+    } // anonymous namespace
+
+    CompiledPredicate::CompiledPredicate(const DotsPredicate& predicate,
+                                         const type::StructDescriptor& descriptor)
+    {
+        if (!predicate.nodes.isValid() || predicate.nodes->empty())
+        {
+            return;
+        }
+        const auto& src = *predicate.nodes;
+        m_nodes.reserve(src.size());
+        std::size_t cursor = 0;
+        compileNode(src, cursor, descriptor, m_nodes);
+        if (cursor != src.size())
+        {
+            throw std::invalid_argument{ "predicate has extra nodes not attached to the tree" };
+        }
+    }
+
+    bool CompiledPredicate::matches(const type::Struct& instance) const
+    {
+        if (m_nodes.empty()) return true;
+        const type::PropertyArea& area = instance._descriptor().propertyArea(instance);
+        std::size_t cursor = 0;
+        return evalCompiledNode(m_nodes, cursor, area);
+    }
+
+    // ---- legacy free-function entry points --------------------------------------
 
     bool matches(const DotsPredicate& predicate, const type::Struct& instance)
     {
         if (!predicate.nodes.isValid() || predicate.nodes->empty())
         {
-            return true; // empty predicate matches all
+            return true;
         }
-        size_t cursor = 0;
-        return evalNode(*predicate.nodes, cursor, instance);
+        CompiledPredicate compiled{ predicate, instance._descriptor() };
+        return compiled.matches(instance);
     }
 
     void validate(const DotsPredicate& predicate, const type::StructDescriptor& descriptor)
     {
-        if (!predicate.nodes.isValid() || predicate.nodes->empty())
-        {
-            return; // empty predicate is always valid
-        }
-        size_t cursor = 0;
-        validateNode(*predicate.nodes, cursor, descriptor);
-        if (cursor != predicate.nodes->size())
-        {
-            throw std::invalid_argument{ "predicate has extra nodes not attached to the tree" };
-        }
+        CompiledPredicate{ predicate, descriptor };
     }
 }

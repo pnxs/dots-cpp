@@ -159,8 +159,7 @@ namespace dots
                     bool nowMatches = false;
                     if (current != nullptr)
                     {
-                        nowMatches = !sub.filter.predicate.isValid()
-                                  || filter::matches(*sub.filter.predicate, *current);
+                        nowMatches = sub.compiledPredicate.matches(*current);
                     }
 
                     const property_set_t effMask = sub.filter.propertyMask.isValid()
@@ -395,14 +394,18 @@ namespace dots
                 return;
             }
 
-            // Validate the predicate against the target descriptor. A failure
-            // here is a programming error on the guest side — we log and drop
-            // the join (the guest will time out waiting for preload).
+            // Compile the predicate against the target descriptor. Compilation
+            // performs the same validation as filter::validate() and additionally
+            // resolves leaves + narrows rhs values so per-publish eval is cheap.
+            // A failure here is a programming error on the guest side — we log
+            // and drop the join (the guest will time out waiting for preload).
+            filter::CompiledPredicate compiledPredicate;
             if (member.filter->predicate.isValid())
             {
                 try
                 {
-                    filter::validate(*member.filter->predicate, *structDescriptor);
+                    compiledPredicate = filter::CompiledPredicate{
+                        *member.filter->predicate, *structDescriptor };
                 }
                 catch (const std::exception& e)
                 {
@@ -415,7 +418,7 @@ namespace dots
             Group& group = m_groups[groupName];
             auto& subsByConn = group.filteredSubs[&connection];
             auto [subIt, inserted] = subsByConn.try_emplace(subId,
-                FilteredSub{ subId, *member.filter, {} });
+                FilteredSub{ subId, *member.filter, std::move(compiledPredicate), {} });
 
             if (!inserted)
             {
@@ -564,7 +567,6 @@ namespace dots
         const property_set_t effMask = sub.filter.propertyMask.isValid()
             ? (*sub.filter.propertyMask + keyProps)
             : property_set_t::All;
-        const bool hasPredicate = sub.filter.predicate.isValid();
 
         // Pre-pass: count matches so DotsHeader.fromCache reports the actual
         // number of instances that will be transmitted, not the unfiltered total.
@@ -572,7 +574,7 @@ namespace dots
         for (const auto& [instance, cloneInfo] : container)
         {
             (void)cloneInfo;
-            if (!hasPredicate || filter::matches(*sub.filter.predicate, *instance))
+            if (sub.compiledPredicate.matches(*instance))
             {
                 ++matchCount;
             }
@@ -588,7 +590,7 @@ namespace dots
 
         for (const auto& [instance, cloneInfo] : container)
         {
-            if (hasPredicate && !filter::matches(*sub.filter.predicate, *instance)) continue;
+            if (!sub.compiledPredicate.matches(*instance)) continue;
 
             header.sentTime = *cloneInfo.modified;
             header.serverSentTime = timepoint_t::Now();

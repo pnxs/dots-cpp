@@ -5,6 +5,7 @@
 #include <unordered_set>
 #include <dots/tools/Handler.h>
 #include <dots/Connection.h>
+#include <dots/Filter.h>
 #include <dots/Transceiver.h>
 #include <dots/io/Listener.h>
 #include <dots/io/auth/AuthManager.h>
@@ -187,6 +188,7 @@ namespace dots
         {
             uint32_t subscriptionId;
             DotsFilter filter;
+            filter::CompiledPredicate compiledPredicate;
             std::unordered_set<const type::Struct*> visible;
         };
 
