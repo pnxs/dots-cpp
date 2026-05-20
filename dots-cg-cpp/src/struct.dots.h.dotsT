@@ -3,6 +3,10 @@
 
 #if (defined __GNUG__) || (defined __clang__)
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+// The Proto structs are intentionally non-standard-layout (data members at
+// multiple inheritance levels); offsetof on them is well-defined on both
+// supported compilers, just noisy.
+#pragma GCC diagnostic ignored "-Winvalid-offsetof"
 #endif
 
 #include <dots/type/FundamentalTypes.h>
@@ -76,19 +80,12 @@ namespace dots::types
         struct {{property.name}}_pt : type::StaticProperty<types::{{property.cxx_type}}, {{property.name}}_pt>
         {
             using struct_t = {{name}};
-            #if (defined DOTS_PROPERTIES_NO_CONSTEXPR_OFFSETS)
-            inline static auto Metadata = []()
-            {
-                auto proto{{name}} = details::Proto{{name}}{};
-                return type::StaticPropertyMetadata{ "{{property.name}}", {{property.tag}}, {% if property.key %}true{% else %}false{% endif %}, type::StaticPropertyOffset::MakeOffset(&proto{{name}}._propertyArea, &proto{{name}}.{{property.name}}) };
-            }();
-            #else
-            inline static constexpr auto Metadata = []()
-            {
-                constexpr auto proto{{name}} = details::Proto{{name}}{};
-                return type::StaticPropertyMetadata{ "{{property.name}}", {{property.tag}}, {% if property.key %}true{% else %}false{% endif %}, type::StaticPropertyOffset::MakeOffset(&proto{{name}}._propertyArea, &proto{{name}}.{{property.name}}) };
-            }();
-            #endif
+            inline static constexpr auto Metadata = type::StaticPropertyMetadata{
+                "{{property.name}}",
+                {{property.tag}},
+                {% if property.key %}true{% else %}false{% endif %},
+                DOTS_MAKE_PROPERTY_OFFSET(details::Proto{{name}}, {{property.name}})
+            };
 
             {{property.name}}_pt& operator = (const {{property.name}}_pt& rhs) = default;
             {{property.name}}_pt& operator = ({{property.name}}_pt&& rhs) = default;

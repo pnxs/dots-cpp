@@ -159,9 +159,6 @@ target_compile_definitions(${TARGET_NAME}
     PUBLIC
         # suppress warning for usage of deprecated Win32 socket functions in Boost
         $<$<PLATFORM_ID:Windows>:_WINSOCK_DEPRECATED_NO_WARNINGS>
-        # use constexpr property offsets on supported compilers
-        # note that this is currently not compatible with Clang
-        $<$<NOT:$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:MSVC>>>:DOTS_PROPERTIES_NO_CONSTEXPR_OFFSETS>
     PRIVATE
         # suppress warning for usage of unsafe C runtime functions (e.g. getenv)
         $<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_WARNINGS>
