@@ -90,17 +90,11 @@ namespace dots::serialization
         bool visitStructBeginDerived(T& instance, property_set_t& includedProperties)
         {
             const type::StructDescriptor& descriptor = instance._descriptor();
-            const type::property_descriptor_container_t& propertyDescriptors = descriptor.propertyDescriptors();
 
             size_t numProperties = reader().readMapSize();
 
             for (size_t i = 0; i < numProperties; ++i)
             {
-                auto find_property = [&propertyDescriptors](uint32_t tag)
-                {
-                    return std::find_if(propertyDescriptors.begin(), propertyDescriptors.end(), [tag](const auto& p) { return p.tag() == tag; });
-                };
-
                 uint32_t tag = reader().read<uint32_t>();
 
                 if (visitingLevel<false>() > 0)
@@ -108,10 +102,10 @@ namespace dots::serialization
                     includedProperties = property_set_t::All;
                 }
 
-                if (auto it = find_property(tag); it != propertyDescriptors.end() && it->set() <= includedProperties)
+                if (const type::PropertyDescriptor* pd = descriptor.findPropertyByTag(tag);
+                    pd != nullptr && pd->set() <= includedProperties) [[likely]]
                 {
-                    const type::PropertyDescriptor& propertyDescriptor = *it;
-                    type::ProxyProperty<> property{ instance, propertyDescriptor };
+                    type::ProxyProperty<> property{ instance, *pd };
                     visit(property);
                 }
                 else

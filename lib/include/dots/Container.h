@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 // Copyright 2015-2022 Thomas Schaetzlein <thomas@pnxs.de>, Christopher Gerlach <gerlachch@gmx.com>
 #pragma once
-#include <map>
+#include <unordered_map>
 #include <functional>
 #include <dots/type/AnyStruct.h>
 #include <DotsHeader.dots.h>
@@ -45,11 +45,24 @@ namespace dots
     template <>
     struct Container<type::Struct>
     {
-        struct key_compare
+        struct key_hash
         {
             using is_transparent = void;
 
-            key_compare(const type::StructDescriptor& descriptor);
+            key_hash(const type::StructDescriptor& descriptor);
+            size_t operator () (const type::Struct& s) const;
+            size_t operator () (const type::AnyStruct& s) const;
+
+        private:
+
+            type::partial_property_descriptor_container_t m_keyPropertyDescriptors;
+        };
+
+        struct key_equal
+        {
+            using is_transparent = void;
+
+            key_equal(const type::StructDescriptor& descriptor);
             bool operator () (const type::Struct& lhs, const type::Struct& rhs) const;
             bool operator () (const type::AnyStruct& lhs, const type::Struct& rhs) const;
             bool operator () (const type::Struct& lhs, const type::AnyStruct& rhs) const;
@@ -60,7 +73,7 @@ namespace dots
             type::partial_property_descriptor_container_t m_keyPropertyDescriptors;
         };
 
-        using container_t = std::map<type::AnyStruct, DotsCloneInformation, key_compare>;
+        using container_t = std::unordered_map<type::AnyStruct, DotsCloneInformation, key_hash, key_equal>;
         using const_iterator_t = container_t::const_iterator;
         using value_t = container_t::value_type;
         using node_t = container_t::node_type;

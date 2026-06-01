@@ -154,3 +154,94 @@ Alignment analysis:
 4 5 6 7
 8 9 A B
 C D E F
+
+# Afer a couple of years:
+
+Rethink with FNV hash
+
+Fields:
+- payloadSize (32)
+- dstGroupHash (64)
+- sendTime (64)
+- remove flag (1)
+- valid properties (32/64)
+- namespace (32)
+
+                /---- remove Flag
+64 0000: 84 F6 F4 1A 
+32 0004: 00 11 22 33 (32-bit aligned) # payloadSize
+64 0008: xx xx DA 00 (tag)
+32 000C: 40 9B FA 1B 
+64 0010: 00 11 22 33 (64-bit aligned) # dstGroupHash
+32 0014: 44 55 66 77
+64 0018: xx xx xx xx
+32 001C: xx xx tt FB
+64 0020: dd dd dd dd (64-bit aligned) # sendTime
+32 0024: dd dd dd dd
+64 0028: xx xx xx 1A
+32 002C: 00 11 22 33 (32-bit aligned) # validProp
+64 0030: xx xx xx 1A
+32 0034: 00 11 22 33 (32-bit aligned) # sending client-id
+
+
+87                     # array(7)
+   1A 00015F90         # unsigned(90000)
+   1B 0000011F6FDDD64A # unsigned(1234532423242)
+   FB 4147E3AFB9C1EFFA # primitive(4703978679687049210)
+   1A 19D2C137         # unsigned(433242423)
+   F4                  # primitive(20)
+   1A 00015F90         # unsigned(90000)
+   1A 0171E8A6         # unsigned(24242342)
+
+00: 87 1A 00 01 
+04: 5F 90 1B 00
+08: 00 01 1F 6F
+0c: DD D6 4A FB
+10: 41 47 E3 AF
+14: B9 C1 EF FA
+18: 1A 19 D2 C1
+1c: 37 F4 1A 00
+20: 01 5F 90 1A
+24: 01 71 E8 A6
+
+
+64 00: 87 xx xx 1A 
+32 04: 00015F90
+64 08: xx xx xx 1B 
+32 0c: 0000011F
+64 10: 6FDDD64A
+32 14: xx xx xx FB 
+64 18: 4147E3AF
+32 1c: B9C1EFFA
+64 20: xx xx xx 1A 
+32 24: 19D2C137
+64 28: xx xx F4 1A 
+32 2c: 00015F90
+64 30: xx xx xx 1A
+32 34: 0171E8A6
+
+
+DOTS-Stream = cbor-seq.
+
+dots-stream = [* dots-transmission ]
+dots-transmission = bytes .cboreq dots-header dots-payload
+
+/ tag 1
+|  
+C1 58 1D 1A 
+3A DB 05 E7 
+1A 00 01 5F 
+90 C1 49 00 
+1122334455667788A3010102020303 # 
+
+
+bytes .cborseq
+D9 01 2C 5A 
+00 00 00 00
+<dots transmission>
+
+header
+
+
+payload
+

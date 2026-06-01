@@ -60,6 +60,7 @@ namespace dots::type
         using StaticDescriptor::lessEqual;
         using StaticDescriptor::greater;
         using StaticDescriptor::greaterEqual;
+        using StaticDescriptor::hash;
         using StaticDescriptor::dynamicMemoryUsage;
 
         Typeless& construct(Typeless& value) const override
@@ -125,6 +126,18 @@ namespace dots::type
         bool less(const Typeless& lhs, const Typeless& rhs) const override
         {
             return less(reinterpret_cast<const Vector<T>&>(lhs), reinterpret_cast<const Vector<T>&>(rhs));
+        }
+
+        size_t hash(const Typeless& value) const override
+        {
+            const auto& vec = reinterpret_cast<const Vector<T>&>(value);
+            const Descriptor<>& elemDesc = Descriptor<Vector<>>::valueDescriptor();
+            size_t h = vec.size();
+            for (const auto& element : vec)
+            {
+                h ^= elemDesc.hash(Typeless::From(element)) + 0x9e3779b97f4a7c15ULL + (h << 6) + (h >> 2);
+            }
+            return h;
         }
 
         bool usesDynamicMemory() const override

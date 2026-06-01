@@ -507,7 +507,7 @@ namespace dots::io
         {
             if constexpr (TransmissionFormat == TransmissionFormat::v1)
             {
-                type::AnyStruct instance{ registry().getStructType(*m_transportHeader.dotsHeader->typeName) };
+                type::AnyStruct instance{ cachedGetStructType(*m_transportHeader.dotsHeader->typeName) };
                 m_serializer.deserialize(*instance);
 
                 return Transmission{ std::move(*m_transportHeader.dotsHeader), std::move(instance) };
@@ -515,7 +515,7 @@ namespace dots::io
             else
             {
                 auto header = m_serializer.template deserialize<DotsHeader>();
-                type::AnyStruct instance{registry().getStructType(*header.typeName)};
+                type::AnyStruct instance{ cachedGetStructType(*header.typeName) };
 
                 try
                 {
@@ -528,6 +528,18 @@ namespace dots::io
 
                 return Transmission{std::move(header), std::move(instance)};
             }
+        }
+
+        const type::StructDescriptor& cachedGetStructType(std::string_view typeName)
+        {
+            if (m_lastDescriptor != nullptr && m_lastDescriptor->name() == typeName) [[likely]]
+            {
+                return *m_lastDescriptor;
+            }
+
+            const type::StructDescriptor& descriptor = registry().getStructType(typeName);
+            m_lastDescriptor = &descriptor;
+            return descriptor;
         }
 
         /*!
@@ -677,5 +689,6 @@ namespace dots::io
         bool m_readDispatching;
         stream_t m_stream;
         payload_cache_t* m_payloadCache;
+        const type::StructDescriptor* m_lastDescriptor = nullptr;
     };
 }

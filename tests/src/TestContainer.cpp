@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 // Copyright 2015-2022 Thomas Schaetzlein <thomas@pnxs.de>, Christopher Gerlach <gerlachch@gmx.com>
+#include <algorithm>
+#include <vector>
 #include <dots/testing/gtest/gtest.h>
 #include <dots/Container.h>
 #include <DotsHeader.dots.h>
@@ -255,12 +257,16 @@ TEST(TestContainer, begin_end_IterationYieldsExpectedInstances)
 
     ASSERT_EQ(i, expected.size());
 
-    auto itExpected = expected.begin();
-
+    std::vector<DotsTestStruct> actual;
     for (const auto& [instance, cloneInfo]: sut)
     {
-        EXPECT_EQ(instance.to<DotsTestStruct>(), *itExpected++);
+        actual.emplace_back(instance.to<DotsTestStruct>());
     }
+
+    auto byKey = [](const DotsTestStruct& a, const DotsTestStruct& b) { return *a.indKeyfField < *b.indKeyfField; };
+    std::sort(expected.begin(), expected.end(), byKey);
+    std::sort(actual.begin(), actual.end(), byKey);
+    EXPECT_EQ(actual, expected);
 }
 
 TEST(TestContainer, forEach_IterationYieldsExpectedInstances)
@@ -287,10 +293,14 @@ TEST(TestContainer, forEach_IterationYieldsExpectedInstances)
 
     ASSERT_EQ(i, expected.size());
 
-    auto itExpected = expected.begin();
-
-    sut.forEach([&](auto& instance)
+    std::vector<DotsTestStruct> actual;
+    sut.forEach([&](const DotsTestStruct& instance)
     {
-        EXPECT_EQ(instance, *itExpected++);
+        actual.emplace_back(instance);
     });
+
+    auto byKey = [](const DotsTestStruct& a, const DotsTestStruct& b) { return *a.indKeyfField < *b.indKeyfField; };
+    std::sort(expected.begin(), expected.end(), byKey);
+    std::sort(actual.begin(), actual.end(), byKey);
+    EXPECT_EQ(actual, expected);
 }
