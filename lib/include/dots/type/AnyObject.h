@@ -183,6 +183,11 @@ namespace dots::type
             return StaticDescriptor::hash(value.to<types::any_t>());
         }
 
+        // re-expose the base template overload (dynamicMemoryUsage(const T&)),
+        // which the Typeless override below would otherwise hide -- VectorDescriptor
+        // calls valueDescriptor().dynamicMemoryUsage(element) with a typed element.
+        using StaticDescriptor::dynamicMemoryUsage;
+
         bool usesDynamicMemory() const override
         {
             return true;

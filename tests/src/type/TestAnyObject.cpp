@@ -142,6 +142,26 @@ TEST(TestAnyObject, json_ExpandUnknownType_Throws)
     EXPECT_THROW(serializer_t::Serialize(any, registry), std::logic_error);
 }
 
+TEST(TestAnyObject, vectorOfAny_DescriptorAndCborRoundTrip)
+{
+    dots::vector_t<dots::types::any_t> vec{
+        AnyObject{ "A", { 0x01 } },
+        AnyObject{ "B", { 0x02, 0x03 } }
+    };
+
+    // exercises Descriptor<vector<any>>::dynamicMemoryUsage, which calls the
+    // element descriptor's dynamicMemoryUsage(const any_t&) per element
+    const auto& descriptor = dots::type::Descriptor<dots::vector_t<dots::types::any_t>>::Instance();
+    EXPECT_GT(descriptor.dynamicMemoryUsage(dots::type::Typeless::From(vec)), 0u);
+
+    std::vector<uint8_t> encoded = dots::to_cbor(vec);
+    auto decoded = dots::from_cbor<dots::vector_t<dots::types::any_t>>(encoded);
+
+    ASSERT_EQ(decoded.size(), 2u);
+    EXPECT_EQ(decoded.at(0), vec.at(0));
+    EXPECT_EQ(decoded.at(1), vec.at(1));
+}
+
 TEST(TestAnyObject, descriptor_HasAnyType)
 {
     const dots::type::Descriptor<dots::types::any_t>& descriptor = dots::type::Descriptor<dots::types::any_t>::Instance();
