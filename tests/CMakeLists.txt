@@ -31,6 +31,7 @@ target_sources(${TARGET_NAME}
 
         src/TestFilter.cpp
 
+        src/type/TestAnyObject.cpp
         src/type/TestChrono.cpp
         src/type/TestDescriptor.cpp
         src/type/TestDynamicStruct.cpp

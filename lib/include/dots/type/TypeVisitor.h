@@ -5,6 +5,7 @@
 #include <dots/type/FundamentalTypes.h>
 #include <dots/type/EnumDescriptor.h>
 #include <dots/type/StaticStruct.h>
+#include <dots/type/AnyObject.h>
 
 namespace dots::type
 {
@@ -429,6 +430,9 @@ namespace dots::type
                             case Type::uuid: derived().visitFundamentalTypeDerived(value.template to<uuid_t>(), descriptor.template to<Descriptor<uuid_t>>());
                                 break;
                             case Type::string: derived().visitFundamentalTypeDerived(value.template to<string_t>(), descriptor.template to<Descriptor<string_t>>());
+                                break;
+
+                            case Type::Any: derived().visitFundamentalTypeDerived(value.template to<types::any_t>(), descriptor.template to<Descriptor<types::any_t>>());
                                 break;
 
                             case Type::Vector:

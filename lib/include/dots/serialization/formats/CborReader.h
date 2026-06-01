@@ -191,6 +191,14 @@ namespace dots::serialization
             }
         }
 
+        void readByteString(std::vector<uint8_t>& out)
+        {
+            auto size = readHead<size_t>(cbor_t::MajorType::ByteString);
+            assertInputAvailable(size);
+            out.resize(size);
+            readBytes(out.data(), size);
+        }
+
         void skip()
         {
             assertInputAvailable(1);

@@ -20,7 +20,8 @@ namespace dots::type
         timepoint, steady_timepoint, duration,
         uuid, string,
         Vector,
-        Struct, Enum
+        Struct, Enum,
+        Any
     };
 
     template<typename TDescriptor, typename = void>

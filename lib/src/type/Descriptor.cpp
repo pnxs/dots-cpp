@@ -75,6 +75,7 @@ namespace dots::type
             case Type::Vector:
             case Type::Enum:
             case Type::Struct:
+            case Type::Any:
                 return false;
         }
 

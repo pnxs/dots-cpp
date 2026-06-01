@@ -8,6 +8,7 @@
 #include <dots/type/Vector.h>
 #include <dots/type/VectorDescriptor.h>
 #include <dots/type/StaticDescriptor.h>
+#include <dots/type/AnyObject.h>
 
 namespace dots::types
 {

@@ -320,6 +320,7 @@ static void write_atomic_types_to_ascii(const type::Descriptor<>& td, const void
             break;
         case type::Type::Vector:
         case type::Type::Struct:
+        case type::Type::Any:
 
             throw std::runtime_error("unknown type: " + td.name());
     }

@@ -81,6 +81,12 @@ namespace dots::serialization
             writeBytes(reinterpret_cast<const uint8_t*>(str.data()), str.size());
         }
 
+        void writeByteString(const uint8_t* data, size_t size)
+        {
+            writeHead(cbor_t::MajorType::ByteString, size);
+            writeBytes(data, size);
+        }
+
         void write(bool value)
         {
             writeHead(cbor_t::MajorType::SimpleOrFloat | (value ? cbor_t::SimpleValue::True : cbor_t::SimpleValue::False));
