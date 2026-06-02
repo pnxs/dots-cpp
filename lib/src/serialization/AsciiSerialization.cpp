@@ -3,6 +3,10 @@
 #include <dots/serialization/AsciiSerialization.h>
 #include <dots/type/Struct.h>
 #include <dots/type/EnumDescriptor.h>
+#include <dots/type/AnyObject.h>
+#include <dots/type/AnyStruct.h>
+#include <dots/type/Registry.h>
+#include <dots/serialization/CborSerializer.h>
 #include <stack>
 
 namespace dots {
@@ -288,8 +292,9 @@ private:
     bool enumAsTag = false;
 };
 
-static void to_ascii_recursive(const type::StructDescriptor& td, const void *data, property_set_t what, Printer& writer, property_set_t highlight);
-static void write_array_to_ascii(const type::VectorDescriptor& vd, const type::Vector<>& data, Printer& writer);
+static void to_ascii_recursive(const type::StructDescriptor& td, const void *data, property_set_t what, Printer& writer, property_set_t highlight, const type::Registry* registry);
+static void write_array_to_ascii(const type::VectorDescriptor& vd, const type::Vector<>& data, Printer& writer, const type::Registry* registry);
+static void write_any_to_ascii(const type::AnyObject& any, Printer& writer, const type::Registry* registry);
 
 static void write_atomic_types_to_ascii(const type::Descriptor<>& td, const void* data, Printer& writer)
 {
@@ -327,11 +332,15 @@ static void write_atomic_types_to_ascii(const type::Descriptor<>& td, const void
 }
 
 
-static void write_ascii(const type::Descriptor<>& td, const void* data, Printer& writer)
+static void write_ascii(const type::Descriptor<>& td, const void* data, Printer& writer, const type::Registry* registry)
 {
     if (td.type() == type::Type::Vector)
     {
-        write_array_to_ascii(static_cast<const type::VectorDescriptor&>(td), *static_cast<const type::Vector<>*>(data), writer);
+        write_array_to_ascii(static_cast<const type::VectorDescriptor&>(td), *static_cast<const type::Vector<>*>(data), writer, registry);
+    }
+    else if (td.type() == type::Type::Any)
+    {
+        write_any_to_ascii(*static_cast<const type::AnyObject*>(data), writer, registry);
     }
     else if (td.isFundamentalType() || td.type() == type::Type::Enum)
     {
@@ -339,7 +348,7 @@ static void write_ascii(const type::Descriptor<>& td, const void* data, Printer&
     }
     else if (td.type() == type::Type::Struct) // object
     {
-        to_ascii_recursive(static_cast<const type::StructDescriptor&>(td), data, property_set_t::All, writer, property_set_t::None);
+        to_ascii_recursive(static_cast<const type::StructDescriptor&>(td), data, property_set_t::All, writer, property_set_t::None, registry);
     }
     else
     {
@@ -347,19 +356,57 @@ static void write_ascii(const type::Descriptor<>& td, const void* data, Printer&
     }
 }
 
-static void write_array_to_ascii(const type::VectorDescriptor& vd, const type::Vector<>& data, Printer& writer)
+// Render an `any` field. With a registry the contained object is decoded via
+// dots::from_any() and expanded inline as <@type:<name> value=<fields>>.
+// Without a registry, or if the contained type cannot be resolved/decoded, the
+// field falls back to the opaque "typeName#<hex payload>" form.
+static void write_any_to_ascii(const type::AnyObject& any, Printer& writer, const type::Registry* registry)
+{
+    if (registry != nullptr && !any.empty())
+    {
+        try
+        {
+            type::AnyStruct decoded = dots::from_any(any, *registry);
+            const type::Struct& instance = *decoded;
+
+            writer.StartObject();
+            writer.String("@type");
+            writer.String(std::string{ any.typeName() });
+            writer.String("value");
+            to_ascii_recursive(instance._descriptor(), &instance, property_set_t::All, writer, property_set_t::None, registry);
+            writer.EndObject();
+            return;
+        }
+        catch (const std::exception&)
+        {
+            // contained type unknown or payload undecodable -> opaque fallback
+        }
+    }
+
+    std::string s{ any.typeName() };
+    s += '#';
+    static constexpr char HexDigits[] = "0123456789abcdef";
+    for (uint8_t b : any.payload())
+    {
+        s += HexDigits[b >> 4];
+        s += HexDigits[b & 0x0F];
+    }
+    writer.String(s);
+}
+
+static void write_array_to_ascii(const type::VectorDescriptor& vd, const type::Vector<>& data, Printer& writer, const type::Registry* registry)
 {
     writer.StartArray();
 
     for (unsigned int i = 0; i < data.typelessSize(); ++i)
     {
-        write_ascii(vd.valueDescriptor(), &data.typelessAt(i), writer);
+        write_ascii(vd.valueDescriptor(), &data.typelessAt(i), writer, registry);
     }
 
     writer.EndArray();
 }
 
-static void to_ascii_recursive(const type::StructDescriptor& td, const void *data, property_set_t what, Printer& writer, property_set_t highlight)
+static void to_ascii_recursive(const type::StructDescriptor& td, const void *data, property_set_t what, Printer& writer, property_set_t highlight, const type::Registry* registry)
 {
     property_set_t validProperties = td.propertyArea(*static_cast<const type::Struct*>(data)).validProperties();
 
@@ -385,7 +432,7 @@ static void to_ascii_recursive(const type::StructDescriptor& td, const void *dat
             writer.String(property.descriptor().name());
         }
 
-        write_ascii(property.descriptor().valueDescriptor(), &property.value(), writer);
+        write_ascii(property.descriptor().valueDescriptor(), &property.value(), writer, registry);
     }
 
     writer.EndObject();
@@ -403,7 +450,7 @@ std::string to_ascii(const type::StructDescriptor* td, const void* data, propert
         printer = std::make_unique<PrettyPrinter>();
     }
 
-    to_ascii_recursive(*td, data, properties, *printer.get(), cs.highlightAttributes);
+    to_ascii_recursive(*td, data, properties, *printer.get(), cs.highlightAttributes, cs.registry);
 
     return printer->GetString();
 }

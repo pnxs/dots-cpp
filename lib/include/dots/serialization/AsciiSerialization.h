@@ -7,6 +7,8 @@
 
 namespace dots {
 
+namespace type { struct Registry; }
+
 
 
 struct ToAsciiColorSchema
@@ -33,6 +35,10 @@ struct ToAsciiOptions
     bool singleLine = false;
     bool enumAsTag = false;
     property_set_t highlightAttributes;
+    /// When set, `any` (AnyObject) fields are expanded into their contained
+    /// object via dots::from_any(). Without a registry, or when the contained
+    /// type is unknown, such fields fall back to the opaque "typeName#<hex>" form.
+    const type::Registry* registry = nullptr;
 };
 
 
