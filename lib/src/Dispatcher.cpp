@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 // Copyright 2015-2022 Thomas Schaetzlein <thomas@pnxs.de>, Christopher Gerlach <gerlachch@gmx.com>
 #include <dots/Dispatcher.h>
+#include <algorithm>
 
 namespace dots
 {
@@ -126,7 +127,9 @@ namespace dots
 
             if (auto itHandler = handlers.find(id); itHandler != handlers.end())
             {
-                if (id == m_currentlyDispatchingId)
+                // defer removal if the handler is currently being dispatched
+                // at any level of the (possibly re-entrant) dispatch stack
+                if (std::find(m_currentlyDispatchingIds.begin(), m_currentlyDispatchingIds.end(), id) != m_currentlyDispatchingIds.end())
                 {
                     m_removeIds.emplace_back(id);
                 }
@@ -202,9 +205,10 @@ namespace dots
     {
         for (const auto& [id, handler] : handlers)
         {
+            m_currentlyDispatchingIds.emplace_back(id);
+
             try
             {
-                m_currentlyDispatchingId = id;
                 handler(dispatchable);
             }
             catch (...)
@@ -212,14 +216,21 @@ namespace dots
                 m_errorHandler(descriptor, std::current_exception());
             }
 
-            m_currentlyDispatchingId = std::nullopt;
+            m_currentlyDispatchingIds.pop_back();
         }
 
-        for (id_t id : m_removeIds)
+        // Drain deferred removals belonging to this frame's handler map.
+        // Ids that are still being dispatched in an enclosing frame or that
+        // live in another frame's map are kept for that frame to drain (ids
+        // are globally unique, so erase() only succeeds on the owning map).
+        m_removeIds.erase(std::remove_if(m_removeIds.begin(), m_removeIds.end(), [&](id_t id)
         {
-            handlers.erase(id);
-        }
+            if (std::find(m_currentlyDispatchingIds.begin(), m_currentlyDispatchingIds.end(), id) != m_currentlyDispatchingIds.end())
+            {
+                return false;
+            }
 
-        m_removeIds.clear();
+            return handlers.erase(id) > 0;
+        }), m_removeIds.end());
     }
 }

@@ -404,7 +404,11 @@ namespace dots
         template <typename Handlers, typename Dispatchable>
         void dispatchToHandlers(const type::StructDescriptor& descriptor, Handlers& handlers, const Dispatchable& dispatchable);
 
-        std::optional<id_t> m_currentlyDispatchingId;
+        // Dispatch can re-enter synchronously (e.g. a handler on a host
+        // transceiver publishes, which dispatches again before returning), so
+        // the currently dispatching ids form a stack and deferred removals are
+        // drained per dispatch frame (see dispatchToHandlers).
+        std::vector<id_t> m_currentlyDispatchingIds;
         std::vector<id_t> m_removeIds;
         ContainerPool m_containerPool;
         transmission_handler_pool_t m_transmissionHandlerPool;
