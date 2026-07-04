@@ -398,6 +398,8 @@ namespace dots
         template <typename HandlerPool>
         void removeHandler(HandlerPool& handlerPool, const type::StructDescriptor& descriptor, id_t id);
 
+        void replayCacheToHandler(const type::StructDescriptor& descriptor, const event_handler_t<>& handler);
+
         void dispatchTransmission(const io::Transmission& transmission);
         void dispatchEvent(const DotsHeader& header, const type::AnyStruct& instance);
 
