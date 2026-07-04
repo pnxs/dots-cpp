@@ -611,38 +611,36 @@ namespace dots
             ? (*sub.filter.propertyMask + keyProps)
             : property_set_t::All;
 
-        // Pre-pass: count matches so DotsHeader.fromCache reports the actual
-        // number of instances that will be transmitted, not the unfiltered total.
-        uint32_t matchCount = 0;
+        // Collect matches in a single pass so DotsHeader.fromCache reports the
+        // actual number of instances that will be transmitted without
+        // evaluating the predicate twice per instance.
+        std::vector<std::pair<const type::Struct*, const DotsCloneInformation*>> matches;
         for (const auto& [instance, cloneInfo] : container)
         {
-            (void)cloneInfo;
             if (sub.compiledPredicate.matches(*instance))
             {
-                ++matchCount;
+                matches.emplace_back(&instance.get(), &cloneInfo);
             }
         }
-        if (matchCount == 0) return;
+        if (matches.empty()) return;
 
         DotsHeader header{
             .typeName = descriptor.name(),
-            .fromCache = matchCount,
+            .fromCache = static_cast<uint32_t>(matches.size()),
             .removeObj = false,
             .subscriptionId = sub.subscriptionId
         };
 
-        for (const auto& [instance, cloneInfo] : container)
+        for (const auto& [instance, cloneInfo] : matches)
         {
-            if (!sub.compiledPredicate.matches(*instance)) continue;
-
-            header.sentTime = *cloneInfo.modified;
+            header.sentTime = *cloneInfo->modified;
             header.serverSentTime = timepoint_t::Now();
             header.attributes = instance->_validProperties().intersection(effMask);
-            header.sender = *cloneInfo.lastUpdateFrom;
+            header.sender = *cloneInfo->lastUpdateFrom;
             --*header.fromCache;
 
-            connection.transmit(header, instance);
-            sub.visible.insert(&instance.get());
+            connection.transmit(header, *instance);
+            sub.visible.insert(instance);
         }
     }
 }
