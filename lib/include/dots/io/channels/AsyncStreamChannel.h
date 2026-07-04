@@ -302,7 +302,11 @@ namespace dots::io
 
     private:
 
-        static constexpr size_t ReadBufferMinSize = 16 * 128;
+        // Lower bound for the async_read_some scratch buffer. Small values
+        // cost one syscall plus one handler invocation per buffer-fill under
+        // sustained load, so this trades a little idle memory per connection
+        // for far fewer reads on busy ones.
+        static constexpr size_t ReadBufferMinSize = 64 * 1024;
         static constexpr size_t WriteBufferMaxSize = 10 * 1024 * 1024;
 
         using transmission_size_t = std::conditional_t<TransmissionFormat == TransmissionFormat::v1, dots::uint16_t, dots::uint32_t>;
