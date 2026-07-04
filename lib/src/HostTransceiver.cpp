@@ -123,6 +123,7 @@ namespace dots
         if (!group.filteredSubs.empty())
         {
             const type::StructDescriptor& descriptor = transmission.instance()->_descriptor();
+            const bool cached = descriptor.cached();
             const bool isRemove = (transmission.header().removeObj == true);
 
             // Resolve the post-merge state used to evaluate the filter:
@@ -132,7 +133,7 @@ namespace dots
             const type::Struct* current = nullptr;
             if (!isRemove)
             {
-                if (descriptor.cached())
+                if (cached)
                 {
                     if (const Container<>* c = pool().find(descriptor))
                     {
@@ -153,18 +154,8 @@ namespace dots
 
                 for (auto& [subId, sub] : subsByConn)
                 {
-                    // On a remove, the dispatcher has already extracted and
-                    // freed the cache entry that preMergeEntry points to —
-                    // it is only used as an opaque set key from here on,
-                    // never dereferenced.
-                    const bool wasVisible = preMergeEntry != nullptr &&
-                                            sub.visible.count(preMergeEntry) > 0;
-
-                    bool nowMatches = false;
-                    if (current != nullptr)
-                    {
-                        nowMatches = sub.compiledPredicate.matches(*current);
-                    }
+                    const bool nowMatches = current != nullptr &&
+                                            sub.compiledPredicate.matches(*current);
 
                     const property_set_t effMask = sub.filter.propertyMask.isValid()
                         ? (*sub.filter.propertyMask + keyProps)
@@ -172,6 +163,30 @@ namespace dots
 
                     try
                     {
+                        if (!cached)
+                        {
+                            // Uncached types have no persistent instances, so
+                            // there is no enter/leave concept and no 'visible'
+                            // bookkeeping (the in-flight instance is transient
+                            // and must not be stored) — forward matching
+                            // publishes as plain deltas.
+                            if (nowMatches)
+                            {
+                                DotsHeader h = transmission.header();
+                                h.attributes = transmission.header().attributes->intersection(effMask);
+                                h.subscriptionId = subId;
+                                connection->transmit(h, *transmission.instance());
+                            }
+                            continue;
+                        }
+
+                        // On a remove, the dispatcher has already extracted and
+                        // freed the cache entry that preMergeEntry points to —
+                        // it is only used as an opaque set key from here on,
+                        // never dereferenced.
+                        const bool wasVisible = preMergeEntry != nullptr &&
+                                                sub.visible.count(preMergeEntry) > 0;
+
                         if (nowMatches && wasVisible)
                         {
                             // Update — forward delta with projected attributes.
