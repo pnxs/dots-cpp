@@ -375,29 +375,29 @@ namespace dots
         if (member.event == DotsMemberEvent::leave)
         {
             Group& group = m_groups[groupName];
+            bool erased = false;
+
             if (isFiltered || subId != 0)
             {
                 if (auto it = group.filteredSubs.find(&connection); it != group.filteredSubs.end())
                 {
-                    if (it->second.erase(subId) == 0)
-                    {
-                        LOG_WARN_F("{} has no filtered subscription {} on group '{}'",
-                                   connection.peerDescription(), subId, groupName);
-                    }
+                    erased = it->second.erase(subId) > 0;
                     if (it->second.empty()) group.filteredSubs.erase(it);
                 }
-                else
-                {
-                    LOG_WARN_F("{} has no filtered subscriptions on group '{}'",
-                               connection.peerDescription(), groupName);
-                }
             }
-            else
+
+            // Fall through to the unfiltered path: a guest may join unfiltered
+            // while still setting a subscriptionId on the leave (e.g. a
+            // non-C++ or older client), and must not stay subscribed.
+            if (!erased)
             {
-                if (group.unfilteredSubs.erase(&connection) == 0)
-                {
-                    LOG_WARN_F("{} is not a member of group '{}'", connection.peerDescription(), groupName);
-                }
+                erased = group.unfilteredSubs.erase(&connection) > 0;
+            }
+
+            if (!erased)
+            {
+                LOG_WARN_F("{} is not a member of group '{}' (subscriptionId={})",
+                           connection.peerDescription(), groupName, subId);
             }
             return;
         }
