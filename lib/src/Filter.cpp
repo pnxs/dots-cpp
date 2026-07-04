@@ -18,14 +18,6 @@ namespace dots::filter
 {
     namespace
     {
-        const type::PropertyDescriptor* findPropertyByTag(const type::StructDescriptor& sd, std::uint32_t tag)
-        {
-            const auto& pds = sd.propertyDescriptors();
-            auto it = std::find_if(pds.begin(), pds.end(),
-                [tag](const type::PropertyDescriptor& pd) { return pd.tag() == tag; });
-            return it == pds.end() ? nullptr : &*it;
-        }
-
         bool isOrderedType(type::Type t)
         {
             switch (t)
@@ -262,7 +254,7 @@ namespace dots::filter
                         throw std::invalid_argument{ "predicate leaf is missing propertyTag or op" };
                     }
 
-                    const type::PropertyDescriptor* pd = findPropertyByTag(sd, *leaf.propertyTag);
+                    const type::PropertyDescriptor* pd = sd.findPropertyByTag(*leaf.propertyTag);
                     if (pd == nullptr)
                     {
                         throw std::invalid_argument{
