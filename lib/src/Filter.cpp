@@ -208,15 +208,29 @@ namespace dots::filter
 
     namespace
     {
+        // The predicate arrives as a flat pre-order vector, so transport-level
+        // nesting limits do not bound it. Both compilation and evaluation
+        // recurse once per tree level, so an unbounded predicate from a guest
+        // could overflow the host's stack. Cap tree depth and total node count
+        // before recursing.
+        constexpr std::size_t MaxPredicateDepth = 32;
+        constexpr std::size_t MaxPredicateNodes = 1024;
+
         // Walks the predicate tree in pre-order, validating and emitting one
         // CompiledPredicate::Node per source DotsPredicateNode. Validation
         // failures throw std::invalid_argument matching the original messages
         // produced by filter::validate().
         void compileNode(const vector_t<types::DotsPredicateNode>& src, std::size_t& cursor,
                          const type::StructDescriptor& sd,
-                         std::vector<CompiledPredicate::Node>& out)
+                         std::vector<CompiledPredicate::Node>& out,
+                         std::size_t depth)
         {
             using namespace types;
+            if (depth > MaxPredicateDepth)
+            {
+                throw std::invalid_argument{
+                    "predicate exceeds maximum nesting depth of " + std::to_string(MaxPredicateDepth) };
+            }
             if (cursor >= src.size())
             {
                 throw std::invalid_argument{ "predicate truncated: expected another node" };
@@ -364,7 +378,7 @@ namespace dots::filter
                     // calls; do not touch it past this point.
                     for (std::uint32_t i = 0; i < arity; ++i)
                     {
-                        compileNode(src, cursor, sd, out);
+                        compileNode(src, cursor, sd, out, depth + 1);
                     }
                     return;
                 }
@@ -376,7 +390,7 @@ namespace dots::filter
                         throw std::invalid_argument{ "not node arity must be 1" };
                     }
                     node.arity = 1;
-                    compileNode(src, cursor, sd, out);
+                    compileNode(src, cursor, sd, out, depth + 1);
                     return;
                 }
             }
@@ -472,9 +486,14 @@ namespace dots::filter
             return;
         }
         const auto& src = *predicate.nodes;
+        if (src.size() > MaxPredicateNodes)
+        {
+            throw std::invalid_argument{
+                "predicate exceeds maximum node count of " + std::to_string(MaxPredicateNodes) };
+        }
         m_nodes.reserve(src.size());
         std::size_t cursor = 0;
-        compileNode(src, cursor, descriptor, m_nodes);
+        compileNode(src, cursor, descriptor, m_nodes, 0);
         if (cursor != src.size())
         {
             throw std::invalid_argument{ "predicate has extra nodes not attached to the tree" };
