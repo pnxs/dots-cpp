@@ -40,7 +40,7 @@ namespace dots::serialization
 
         void readMapBegin()
         {
-            readHead(cbor_t::MajorType::IndefiniteMapBreak);
+            readHead(cbor_t::MajorType::IndefiniteMap);
         }
 
         void readMapEnd()
