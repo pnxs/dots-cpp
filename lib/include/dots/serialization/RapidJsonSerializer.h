@@ -169,21 +169,21 @@ namespace dots::serialization
         template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
         void serialize(const T& instance, const property_set_t& includedProperties, const type::Registry& registry)
         {
-            m_registry = &registry;
+            registry_scope_t registryScope{ *this, registry };
             visit(instance, includedProperties);
         }
 
         template <typename T>
         void serialize(const T& value, const type::Registry& registry)
         {
-            m_registry = &registry;
+            registry_scope_t registryScope{ *this, registry };
             visit(value);
         }
 
         template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
         void deserialize(T& value, const type::Registry& registry)
         {
-            m_registry = &registry;
+            registry_scope_t registryScope{ *this, registry };
             visit(value);
         }
 
@@ -319,8 +319,9 @@ namespace dots::serialization
         static T Deserialize(const data_t& data, const type::Registry& registry)
         {
             RapidJsonSerializer serializer{ std::string_view{ data.data(), data.size() } };
-            serializer.m_registry = &registry;
-            return serializer.template deserialize<T>();
+            T value;
+            serializer.deserialize(value, registry);
+            return value;
         }
 
     protected:
@@ -694,6 +695,28 @@ namespace dots::serialization
         }
 
     private:
+
+        // Holds m_registry only for the duration of a registry-taking
+        // serialize/deserialize call, so a reused serializer instance does not
+        // stay in any-field Expand mode (or dangle) afterwards.
+        struct registry_scope_t
+        {
+            registry_scope_t(RapidJsonSerializer& serializer, const type::Registry& registry) :
+                m_serializer{ serializer }
+            {
+                m_serializer.m_registry = &registry;
+            }
+            registry_scope_t(const registry_scope_t& other) = delete;
+            registry_scope_t(registry_scope_t&& other) = delete;
+            ~registry_scope_t()
+            {
+                m_serializer.m_registry = nullptr;
+            }
+            registry_scope_t& operator = (const registry_scope_t& rhs) = delete;
+            registry_scope_t& operator = (registry_scope_t&& rhs) = delete;
+
+            RapidJsonSerializer& m_serializer;
+        };
 
         reader_t m_reader;
         writer_t m_writer;
