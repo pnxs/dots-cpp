@@ -171,6 +171,15 @@ namespace dots
 
             const property_set_t keyProps = descriptor.keyProperties();
 
+            // Per-branch header templates: copying a DotsHeader allocates
+            // (typeName string), so each variant is copied from the
+            // transmission header at most once per message and only the
+            // per-subscriber fields (attributes, subscriptionId) are patched
+            // inside the loop.
+            std::optional<DotsHeader> updateHeader;
+            std::optional<DotsHeader> enterHeader;
+            std::optional<DotsHeader> leaveHeader;
+
             for (auto& [connection, subsByConn] : group.filteredSubs)
             {
                 if (connection->state() == DotsConnectionState::closed) continue;
@@ -179,10 +188,6 @@ namespace dots
                 {
                     const bool nowMatches = current != nullptr &&
                                             sub.compiledPredicate.matches(*current);
-
-                    const property_set_t effMask = sub.filter.propertyMask.isValid()
-                        ? (*sub.filter.propertyMask + keyProps)
-                        : property_set_t::All;
 
                     try
                     {
@@ -195,10 +200,13 @@ namespace dots
                             // publishes as plain deltas.
                             if (nowMatches)
                             {
-                                DotsHeader h = transmission.header();
-                                h.attributes = transmission.header().attributes->intersection(effMask);
-                                h.subscriptionId = subId;
-                                connection->transmit(h, *transmission.instance());
+                                if (updateHeader == std::nullopt)
+                                {
+                                    updateHeader = transmission.header();
+                                }
+                                updateHeader->attributes = transmission.header().attributes->intersection(sub.effMask);
+                                updateHeader->subscriptionId = subId;
+                                connection->transmit(*updateHeader, *transmission.instance());
                             }
                             continue;
                         }
@@ -213,21 +221,27 @@ namespace dots
                         if (nowMatches && wasVisible)
                         {
                             // Update — forward delta with projected attributes.
-                            DotsHeader h = transmission.header();
-                            h.attributes = transmission.header().attributes->intersection(effMask);
-                            h.subscriptionId = subId;
-                            connection->transmit(h, *transmission.instance());
+                            if (updateHeader == std::nullopt)
+                            {
+                                updateHeader = transmission.header();
+                            }
+                            updateHeader->attributes = transmission.header().attributes->intersection(sub.effMask);
+                            updateHeader->subscriptionId = subId;
+                            connection->transmit(*updateHeader, *transmission.instance());
                         }
                         else if (nowMatches && !wasVisible)
                         {
                             // Enter view — must send full merged state, not the delta.
                             sub.visible.insert(current);
-                            DotsHeader h = transmission.header();
-                            h.attributes = current->_validProperties().intersection(effMask);
-                            h.serverSentTime = timepoint_t::Now();
-                            h.removeObj = false;
-                            h.subscriptionId = subId;
-                            connection->transmit(h, *current);
+                            if (enterHeader == std::nullopt)
+                            {
+                                enterHeader = transmission.header();
+                                enterHeader->serverSentTime = timepoint_t::Now();
+                                enterHeader->removeObj = false;
+                            }
+                            enterHeader->attributes = current->_validProperties().intersection(sub.effMask);
+                            enterHeader->subscriptionId = subId;
+                            connection->transmit(*enterHeader, *current);
                         }
                         else if (!nowMatches && wasVisible)
                         {
@@ -236,12 +250,15 @@ namespace dots
                             // that located the (possibly already freed)
                             // pre-merge entry, so transmit it instead.
                             sub.visible.erase(preMergeEntry);
-                            DotsHeader h = transmission.header();
-                            h.attributes = keyProps;
-                            h.serverSentTime = timepoint_t::Now();
-                            h.removeObj = true;
-                            h.subscriptionId = subId;
-                            connection->transmit(h, *transmission.instance());
+                            if (leaveHeader == std::nullopt)
+                            {
+                                leaveHeader = transmission.header();
+                                leaveHeader->attributes = keyProps;
+                                leaveHeader->serverSentTime = timepoint_t::Now();
+                                leaveHeader->removeObj = true;
+                            }
+                            leaveHeader->subscriptionId = subId;
+                            connection->transmit(*leaveHeader, *transmission.instance());
                         }
                         // else !nowMatches && !wasVisible: nothing to send.
                     }
@@ -458,10 +475,14 @@ namespace dots
                 }
             }
 
+            const property_set_t effMask = member.filter->propertyMask.isValid()
+                ? (*member.filter->propertyMask + structDescriptor->keyProperties())
+                : property_set_t::All;
+
             Group& group = m_groups[groupName];
             auto& subsByConn = group.filteredSubs[&connection];
             auto [subIt, inserted] = subsByConn.try_emplace(subId,
-                FilteredSub{ subId, *member.filter, std::move(compiledPredicate), {} });
+                FilteredSub{ subId, *member.filter, std::move(compiledPredicate), effMask, {} });
 
             if (!inserted)
             {
@@ -606,10 +627,7 @@ namespace dots
         if (container.empty()) return;
 
         const auto& descriptor = container.descriptor();
-        const property_set_t keyProps = descriptor.keyProperties();
-        const property_set_t effMask = sub.filter.propertyMask.isValid()
-            ? (*sub.filter.propertyMask + keyProps)
-            : property_set_t::All;
+        const property_set_t effMask = sub.effMask;
 
         // Collect matches in a single pass so DotsHeader.fromCache reports the
         // actual number of instances that will be transmitted without

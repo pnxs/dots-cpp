@@ -189,6 +189,9 @@ namespace dots
             uint32_t subscriptionId;
             DotsFilter filter;
             filter::CompiledPredicate compiledPredicate;
+            // Effective projection mask (propertyMask + key properties, or All
+            // when no mask is set), fixed at join time.
+            property_set_t effMask;
             std::unordered_set<const type::Struct*> visible;
         };
 
