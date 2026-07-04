@@ -32,19 +32,29 @@ namespace dots
         m_subId = m_tx->_allocateSubscriptionId();
         m_tx->_registerView(m_subId, this);
 
-        // Ensure the broker has the type descriptor on file before the join —
-        // statically-declared subscribes get this for free during the early
-        // handshake, but runtime-created Views need to push the descriptor
-        // explicitly so the join doesn't land on an unknown type.
-        m_tx->_ensureHostKnowsType(T::_Descriptor());
+        try
+        {
+            // Ensure the broker has the type descriptor on file before the join —
+            // statically-declared subscribes get this for free during the early
+            // handshake, but runtime-created Views need to push the descriptor
+            // explicitly so the join doesn't land on an unknown type.
+            m_tx->_ensureHostKnowsType(T::_Descriptor());
 
-        DotsMember member{
-            .groupName = T::_Descriptor().name(),
-            .event     = DotsMemberEvent::join,
-            .subscriptionId = m_subId,
-            .filter    = m_filter
-        };
-        m_tx->publish(member);
+            DotsMember member{
+                .groupName = T::_Descriptor().name(),
+                .event     = DotsMemberEvent::join,
+                .subscriptionId = m_subId,
+                .filter    = m_filter
+            };
+            m_tx->publish(member);
+        }
+        catch (...)
+        {
+            // ~View() will not run when the constructor throws: deregister
+            // here so the transceiver does not keep a dangling ViewBase*.
+            m_tx->_unregisterView(m_subId);
+            throw;
+        }
     }
 
     template <typename T>
