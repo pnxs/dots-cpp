@@ -6,6 +6,7 @@
 #include <new>
 #include <stdexcept>
 #include <string>
+#include <type_traits>
 
 #include <dots/type/Descriptor.h>
 #include <dots/type/PropertyArea.h>
@@ -41,45 +42,75 @@ namespace dots::filter
             return t != type::Type::Vector && t != type::Type::Struct;
         }
 
-        bool valueSlotMatches(const types::DotsPredicateValue& v, type::Type t, bool wantList)
+        // ---- wire-slot traits ---------------------------------------------
+        // The single place that maps a property's type::Type to the
+        // DotsPredicateValue slot holding its scalar (and, where applicable,
+        // list) wire representation, plus the narrowing cast target. Slot
+        // matching, list sizing, and rhs narrowing all dispatch through it.
+
+        struct NoSlot {};
+
+        template <typename TNarrowed, typename TScalarPtr, typename TListPtr>
+        struct Slot
         {
-            if (wantList)
-            {
-                switch (t)
-                {
-                    case type::Type::int8:    case type::Type::int16:
-                    case type::Type::int32:   case type::Type::int64:
-                        return v.intList.isValid();
-                    case type::Type::uint8:   case type::Type::uint16:
-                    case type::Type::uint32:  case type::Type::uint64:
-                        return v.uintList.isValid();
-                    case type::Type::float32: case type::Type::float64:
-                        return v.floatList.isValid();
-                    case type::Type::string:    return v.stringList.isValid();
-                    case type::Type::timepoint: case type::Type::steady_timepoint:
-                        return v.timepointList.isValid();
-                    case type::Type::uuid:      return v.uuidList.isValid();
-                    default: return false;
-                }
-            }
+            using narrowed_t = TNarrowed;
+            static constexpr bool HasList = !std::is_same_v<TListPtr, std::nullptr_t>;
+
+            TScalarPtr scalar;
+            TListPtr list;
+        };
+
+        template <typename TNarrowed, typename TScalarPtr, typename TListPtr = std::nullptr_t>
+        constexpr auto makeSlot(TScalarPtr scalar, TListPtr list = nullptr)
+        {
+            return Slot<TNarrowed, TScalarPtr, TListPtr>{ scalar, list };
+        }
+
+        template <typename F>
+        decltype(auto) withSlot(type::Type t, F&& f)
+        {
+            using V = types::DotsPredicateValue;
+
             switch (t)
             {
-                case type::Type::boolean:   return v.boolVal.isValid();
-                case type::Type::int8:      case type::Type::int16:
-                case type::Type::int32:     case type::Type::int64:
-                    return v.intVal.isValid();
-                case type::Type::uint8:     case type::Type::uint16:
-                case type::Type::uint32:    case type::Type::uint64:
-                    return v.uintVal.isValid();
-                case type::Type::float32:   case type::Type::float64:
-                    return v.floatVal.isValid();
-                case type::Type::string:    return v.stringVal.isValid();
-                case type::Type::timepoint: case type::Type::steady_timepoint:
-                    return v.timepointVal.isValid();
-                case type::Type::duration:  return v.durationVal.isValid();
-                case type::Type::uuid:      return v.uuidVal.isValid();
-                default: return false;
+                case type::Type::boolean:   return f(makeSlot<types::bool_t>(&V::boolVal));
+                case type::Type::int8:      return f(makeSlot<types::int8_t>(&V::intVal, &V::intList));
+                case type::Type::int16:     return f(makeSlot<types::int16_t>(&V::intVal, &V::intList));
+                case type::Type::int32:     return f(makeSlot<types::int32_t>(&V::intVal, &V::intList));
+                case type::Type::int64:     return f(makeSlot<types::int64_t>(&V::intVal, &V::intList));
+                case type::Type::uint8:     return f(makeSlot<types::uint8_t>(&V::uintVal, &V::uintList));
+                case type::Type::uint16:    return f(makeSlot<types::uint16_t>(&V::uintVal, &V::uintList));
+                case type::Type::uint32:    return f(makeSlot<types::uint32_t>(&V::uintVal, &V::uintList));
+                case type::Type::uint64:    return f(makeSlot<types::uint64_t>(&V::uintVal, &V::uintList));
+                case type::Type::float32:   return f(makeSlot<types::float32_t>(&V::floatVal, &V::floatList));
+                case type::Type::float64:   return f(makeSlot<types::float64_t>(&V::floatVal, &V::floatList));
+                case type::Type::string:    return f(makeSlot<types::string_t>(&V::stringVal, &V::stringList));
+                case type::Type::timepoint:
+                case type::Type::steady_timepoint:
+                                            return f(makeSlot<types::timepoint_t>(&V::timepointVal, &V::timepointList));
+                case type::Type::duration:  return f(makeSlot<types::duration_t>(&V::durationVal));
+                case type::Type::uuid:      return f(makeSlot<types::uuid_t>(&V::uuidVal, &V::uuidList));
+                default:                    return f(NoSlot{});
             }
+        }
+
+        bool valueSlotMatches(const types::DotsPredicateValue& v, type::Type t, bool wantList)
+        {
+            return withSlot(t, [&](auto slot) -> bool
+            {
+                if constexpr (std::is_same_v<decltype(slot), NoSlot>)
+                {
+                    return false;
+                }
+                else if constexpr (!decltype(slot)::HasList)
+                {
+                    return !wantList && (v.*slot.scalar).isValid();
+                }
+                else
+                {
+                    return wantList ? (v.*slot.list).isValid() : (v.*slot.scalar).isValid();
+                }
+            });
         }
 
         // ---- rhs buffer helpers -------------------------------------------------
@@ -106,26 +137,36 @@ namespace dots::filter
         void narrowScalar(const type::Descriptor<type::Typeless>& vd, std::byte* dst,
                           const types::DotsPredicateValue& v)
         {
-            switch (vd.type())
+            withSlot(vd.type(), [&](auto slot)
             {
-                case type::Type::boolean:   constructAt(vd, dst, *v.boolVal); break;
-                case type::Type::int8:      constructAt(vd, dst, static_cast<types::int8_t>(*v.intVal)); break;
-                case type::Type::int16:     constructAt(vd, dst, static_cast<types::int16_t>(*v.intVal)); break;
-                case type::Type::int32:     constructAt(vd, dst, static_cast<types::int32_t>(*v.intVal)); break;
-                case type::Type::int64:     constructAt(vd, dst, static_cast<types::int64_t>(*v.intVal)); break;
-                case type::Type::uint8:     constructAt(vd, dst, static_cast<types::uint8_t>(*v.uintVal)); break;
-                case type::Type::uint16:    constructAt(vd, dst, static_cast<types::uint16_t>(*v.uintVal)); break;
-                case type::Type::uint32:    constructAt(vd, dst, static_cast<types::uint32_t>(*v.uintVal)); break;
-                case type::Type::uint64:    constructAt(vd, dst, static_cast<types::uint64_t>(*v.uintVal)); break;
-                case type::Type::float32:   constructAt(vd, dst, static_cast<types::float32_t>(*v.floatVal)); break;
-                case type::Type::float64:   constructAt(vd, dst, static_cast<types::float64_t>(*v.floatVal)); break;
-                case type::Type::string:    constructAt(vd, dst, *v.stringVal); break;
-                case type::Type::timepoint: case type::Type::steady_timepoint:
-                                            constructAt(vd, dst, *v.timepointVal); break;
-                case type::Type::duration:  constructAt(vd, dst, *v.durationVal); break;
-                case type::Type::uuid:      constructAt(vd, dst, *v.uuidVal); break;
-                default: break; // unreachable: rejected by validation above
-            }
+                // NoSlot is unreachable: rejected by validation beforehand
+                if constexpr (!std::is_same_v<decltype(slot), NoSlot>)
+                {
+                    using narrowed_t = typename decltype(slot)::narrowed_t;
+                    constructAt(vd, dst, static_cast<narrowed_t>(*(v.*slot.scalar)));
+                }
+            });
+        }
+
+        // Number of elements in the matching list slot (0 when the type has
+        // no list form).
+        std::size_t listSlotSize(const types::DotsPredicateValue& v, type::Type t)
+        {
+            return withSlot(t, [&](auto slot) -> std::size_t
+            {
+                if constexpr (std::is_same_v<decltype(slot), NoSlot>)
+                {
+                    return 0;
+                }
+                else if constexpr (!decltype(slot)::HasList)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return (v.*slot.list)->size();
+                }
+            });
         }
 
         // Narrow a list of wire values into N back-to-back typed slots starting at dst.
@@ -133,30 +174,31 @@ namespace dots::filter
         std::uint32_t narrowList(const type::Descriptor<type::Typeless>& vd, std::byte* dst,
                                  const types::DotsPredicateValue& v)
         {
-            const std::size_t stride = vd.size();
-            std::uint32_t n = 0;
-            auto step = [&]() { dst += stride; ++n; };
-
-            switch (vd.type())
+            return withSlot(vd.type(), [&](auto slot) -> std::uint32_t
             {
-                case type::Type::int8:    for (auto w : *v.intList) { constructAt(vd, dst, static_cast<types::int8_t>(w)); step(); } break;
-                case type::Type::int16:   for (auto w : *v.intList) { constructAt(vd, dst, static_cast<types::int16_t>(w)); step(); } break;
-                case type::Type::int32:   for (auto w : *v.intList) { constructAt(vd, dst, static_cast<types::int32_t>(w)); step(); } break;
-                case type::Type::int64:   for (auto w : *v.intList) { constructAt(vd, dst, static_cast<types::int64_t>(w)); step(); } break;
-                case type::Type::uint8:   for (auto w : *v.uintList) { constructAt(vd, dst, static_cast<types::uint8_t>(w)); step(); } break;
-                case type::Type::uint16:  for (auto w : *v.uintList) { constructAt(vd, dst, static_cast<types::uint16_t>(w)); step(); } break;
-                case type::Type::uint32:  for (auto w : *v.uintList) { constructAt(vd, dst, static_cast<types::uint32_t>(w)); step(); } break;
-                case type::Type::uint64:  for (auto w : *v.uintList) { constructAt(vd, dst, static_cast<types::uint64_t>(w)); step(); } break;
-                case type::Type::float32: for (auto w : *v.floatList) { constructAt(vd, dst, static_cast<types::float32_t>(w)); step(); } break;
-                case type::Type::float64: for (auto w : *v.floatList) { constructAt(vd, dst, static_cast<types::float64_t>(w)); step(); } break;
-                case type::Type::string:  for (const auto& w : *v.stringList) { constructAt(vd, dst, w); step(); } break;
-                case type::Type::timepoint:
-                case type::Type::steady_timepoint:
-                                          for (const auto& w : *v.timepointList) { constructAt(vd, dst, w); step(); } break;
-                case type::Type::uuid:    for (const auto& w : *v.uuidList) { constructAt(vd, dst, w); step(); } break;
-                default: break; // unreachable
-            }
-            return n;
+                if constexpr (std::is_same_v<decltype(slot), NoSlot>)
+                {
+                    return 0; // unreachable: rejected by validation beforehand
+                }
+                else if constexpr (!decltype(slot)::HasList)
+                {
+                    return 0; // unreachable
+                }
+                else
+                {
+                    using narrowed_t = typename decltype(slot)::narrowed_t;
+                    const std::size_t stride = vd.size();
+                    std::uint32_t n = 0;
+
+                    for (const auto& w : *(v.*slot.list))
+                    {
+                        constructAt(vd, dst + n * stride, static_cast<narrowed_t>(w));
+                        ++n;
+                    }
+
+                    return n;
+                }
+            });
         }
     } // anonymous namespace
 
@@ -323,26 +365,7 @@ namespace dots::filter
 
                     if (wantList)
                     {
-                        std::size_t srcCount = 0;
-                        switch (t)
-                        {
-                            case type::Type::int8:    case type::Type::int16:
-                            case type::Type::int32:   case type::Type::int64:
-                                srcCount = leaf.value->intList->size(); break;
-                            case type::Type::uint8:   case type::Type::uint16:
-                            case type::Type::uint32:  case type::Type::uint64:
-                                srcCount = leaf.value->uintList->size(); break;
-                            case type::Type::float32: case type::Type::float64:
-                                srcCount = leaf.value->floatList->size(); break;
-                            case type::Type::string:
-                                srcCount = leaf.value->stringList->size(); break;
-                            case type::Type::timepoint:
-                            case type::Type::steady_timepoint:
-                                srcCount = leaf.value->timepointList->size(); break;
-                            case type::Type::uuid:
-                                srcCount = leaf.value->uuidList->size(); break;
-                            default: break;
-                        }
+                        std::size_t srcCount = listSlotSize(*leaf.value, t);
                         if (srcCount > 0)
                         {
                             node.rhs = allocRhsBuffer(srcCount * stride, vd.alignment());
