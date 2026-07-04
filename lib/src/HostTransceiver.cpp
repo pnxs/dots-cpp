@@ -153,6 +153,10 @@ namespace dots
 
                 for (auto& [subId, sub] : subsByConn)
                 {
+                    // On a remove, the dispatcher has already extracted and
+                    // freed the cache entry that preMergeEntry points to —
+                    // it is only used as an opaque set key from here on,
+                    // never dereferenced.
                     const bool wasVisible = preMergeEntry != nullptr &&
                                             sub.visible.count(preMergeEntry) > 0;
 
@@ -189,14 +193,17 @@ namespace dots
                         }
                         else if (!nowMatches && wasVisible)
                         {
-                            // Leave view — synthesize key-only remove.
+                            // Leave view — synthesize key-only remove. The
+                            // in-flight instance carries the same key values
+                            // that located the (possibly already freed)
+                            // pre-merge entry, so transmit it instead.
                             sub.visible.erase(preMergeEntry);
                             DotsHeader h = transmission.header();
                             h.attributes = keyProps;
                             h.serverSentTime = timepoint_t::Now();
                             h.removeObj = true;
                             h.subscriptionId = subId;
-                            connection->transmit(h, *preMergeEntry);
+                            connection->transmit(h, *transmission.instance());
                         }
                         // else !nowMatches && !wasVisible: nothing to send.
                     }
