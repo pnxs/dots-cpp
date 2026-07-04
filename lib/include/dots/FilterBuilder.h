@@ -126,6 +126,14 @@ namespace dots::filter
     // -------------------------------------------------------------------------
     inline Predicate combine(DotsPredicateKind op, Predicate lhs, Predicate rhs)
     {
+        // An empty (default-constructed) predicate acts as the identity of the
+        // combinator, so the accumulator pattern `Predicate p; p = p | leaf;`
+        // works. Without this, the emitted head would count the empty side in
+        // its arity while appending zero nodes — a corrupt tree the host
+        // rejects as truncated.
+        if (lhs.nodes.empty()) return rhs;
+        if (rhs.nodes.empty()) return lhs;
+
         const bool lhsIsSame = detail::rootKind(lhs) == op;
         const bool rhsIsSame = detail::rootKind(rhs) == op;
 
@@ -164,6 +172,10 @@ namespace dots::filter
 
     inline Predicate operator!(Predicate p)
     {
+        // Negating an empty predicate stays empty (no constraint) instead of
+        // emitting a notOp head with no child.
+        if (p.nodes.empty()) return p;
+
         DotsPredicateNode head;
         head.kind = DotsPredicateKind::notOp;
         head.arity = 1u;
