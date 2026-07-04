@@ -174,6 +174,7 @@ namespace dots::filter
         kind(other.kind),
         op(other.op),
         arity(other.arity),
+        subtreeSize(other.subtreeSize),
         offset(other.offset),
         propertySet(other.propertySet),
         valueDescriptor(other.valueDescriptor),
@@ -375,11 +376,13 @@ namespace dots::filter
                     const std::uint32_t arity = *srcNode.arity;
                     node.arity = arity;
                     // 'node' reference becomes invalid after subsequent emplace_back
-                    // calls; do not touch it past this point.
+                    // calls; refer to it by index past this point.
+                    const std::size_t selfIndex = out.size() - 1;
                     for (std::uint32_t i = 0; i < arity; ++i)
                     {
                         compileNode(src, cursor, sd, out, depth + 1);
                     }
+                    out[selfIndex].subtreeSize = static_cast<std::uint32_t>(out.size() - selfIndex);
                     return;
                 }
 
@@ -390,7 +393,9 @@ namespace dots::filter
                         throw std::invalid_argument{ "not node arity must be 1" };
                     }
                     node.arity = 1;
+                    const std::size_t selfIndex = out.size() - 1;
                     compileNode(src, cursor, sd, out, depth + 1);
+                    out[selfIndex].subtreeSize = static_cast<std::uint32_t>(out.size() - selfIndex);
                     return;
                 }
             }
@@ -457,8 +462,15 @@ namespace dots::filter
                     bool result = true;
                     for (std::uint32_t i = 0; i < n.arity; ++i)
                     {
-                        if (!evalCompiledNode(nodes, cursor, area)) result = false;
-                        // walk remaining children to keep cursor consistent
+                        if (!result)
+                        {
+                            // short-circuit: skip the decided branch wholesale
+                            cursor += nodes[cursor].subtreeSize;
+                        }
+                        else if (!evalCompiledNode(nodes, cursor, area))
+                        {
+                            result = false;
+                        }
                     }
                     return result;
                 }
@@ -467,7 +479,15 @@ namespace dots::filter
                     bool result = false;
                     for (std::uint32_t i = 0; i < n.arity; ++i)
                     {
-                        if (evalCompiledNode(nodes, cursor, area)) result = true;
+                        if (result)
+                        {
+                            // short-circuit: skip the decided branch wholesale
+                            cursor += nodes[cursor].subtreeSize;
+                        }
+                        else if (evalCompiledNode(nodes, cursor, area))
+                        {
+                            result = true;
+                        }
                     }
                     return result;
                 }

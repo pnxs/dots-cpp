@@ -51,6 +51,9 @@ namespace dots::filter
             DotsPredicateKind         kind{};
             DotsCompareOp             op{};
             std::uint32_t             arity = 0;
+            // Number of nodes in this subtree including the node itself.
+            // Lets evaluation skip decided and/or branches wholesale.
+            std::uint32_t             subtreeSize = 1;
             std::size_t               offset = 0;
             type::PropertySet         propertySet{};
             const type::Descriptor<>* valueDescriptor = nullptr;
