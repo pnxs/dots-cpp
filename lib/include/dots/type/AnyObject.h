@@ -6,6 +6,7 @@
 #include <vector>
 #include <cstdint>
 #include <functional>
+#include <dots/tools/hash.h>
 #include <dots/type/StaticDescriptor.h>
 
 namespace dots::type
@@ -147,7 +148,7 @@ namespace std
             size_t h = std::hash<std::string_view>{}(value.typeName());
             for (uint8_t byte : value.payload())
             {
-                h ^= std::hash<uint8_t>{}(byte) + 0x9e3779b97f4a7c15ULL + (h << 6) + (h >> 2);
+                h = dots::tools::hashCombine(h, std::hash<uint8_t>{}(byte));
             }
             return h;
         }

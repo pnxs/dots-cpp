@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 // Copyright 2015-2022 Thomas Schaetzlein <thomas@pnxs.de>, Christopher Gerlach <gerlachch@gmx.com>
 #pragma once
+#include <dots/tools/hash.h>
 #include <dots/type/StaticDescriptor.h>
 #include <dots/type/Vector.h>
 
@@ -135,7 +136,7 @@ namespace dots::type
             size_t h = vec.size();
             for (const auto& element : vec)
             {
-                h ^= elemDesc.hash(Typeless::From(element)) + 0x9e3779b97f4a7c15ULL + (h << 6) + (h >> 2);
+                h = tools::hashCombine(h, elemDesc.hash(Typeless::From(element)));
             }
             return h;
         }

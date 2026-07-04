@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 // Copyright 2015-2022 Thomas Schaetzlein <thomas@pnxs.de>, Christopher Gerlach <gerlachch@gmx.com>
 #include <dots/type/StructDescriptor.h>
+#include <dots/tools/hash.h>
 #include <dots/type/Struct.h>
 #include <dots/io/DescriptorConverter.h>
 #include <dots/type/DynamicStruct.h>
@@ -199,7 +200,7 @@ namespace dots::type
             if (pd.set() <= effective)
             {
                 const auto& v = area.getProperty<Typeless>(pd.offset());
-                h ^= pd.valueDescriptor().hash(v) + 0x9e3779b97f4a7c15ULL + (h << 6) + (h >> 2);
+                h = tools::hashCombine(h, pd.valueDescriptor().hash(v));
             }
         }
 

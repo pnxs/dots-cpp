@@ -3,6 +3,7 @@
 #include <dots/Container.h>
 #include <algorithm>
 #include <numeric>
+#include <dots/tools/hash.h>
 
 namespace dots
 {
@@ -26,7 +27,7 @@ namespace dots
         {
             const type::PropertyDescriptor& pd = propertyDescriptor_.get();
             const auto& v = area.getProperty<type::Typeless>(pd.offset());
-            h ^= pd.valueDescriptor().hash(v) + 0x9e3779b97f4a7c15ULL + (h << 6) + (h >> 2);
+            h = tools::hashCombine(h, pd.valueDescriptor().hash(v));
         }
 
         return h;
