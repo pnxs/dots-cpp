@@ -209,6 +209,12 @@ namespace dots
         // dispatch four-cases logic.
         void transmit(const io::Transmission& transmission, const type::Struct* preMergeEntry);
 
+        // Capture the pre-merge cache entry before dispatcher().dispatch()
+        // merges the delta. Returns nullptr (and skips the container lookup
+        // entirely) when the type has no filtered subscribers — the common
+        // case — since only the filtered dispatch consumes the pointer.
+        const type::Struct* preMergeEntryFor(const type::Struct& instance) const;
+
         bool handleListenAccept(io::Listener& listener, io::channel_ptr_t channel);
         void handleListenError(io::Listener& listener, std::exception_ptr ePtr);
 

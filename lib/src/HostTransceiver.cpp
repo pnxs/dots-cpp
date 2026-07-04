@@ -72,14 +72,7 @@ namespace dots
 
         // Capture the pre-merge cache entry before dispatcher().dispatch() merges
         // the delta — filtered subs need the prior pointer to compute wasVisible.
-        const type::Struct* preMergeEntry = nullptr;
-        if (instance._descriptor().cached())
-        {
-            if (const Container<>* container = pool().find(instance._descriptor()))
-            {
-                preMergeEntry = container->find(instance);
-            }
-        }
+        const type::Struct* preMergeEntry = preMergeEntryFor(instance);
 
         io::Transmission transmission{ std::move(header), instance };
         dispatcher().dispatch(transmission);
@@ -96,12 +89,42 @@ namespace dots
         /* do nothing */
     }
 
+    const type::Struct* HostTransceiver::preMergeEntryFor(const type::Struct& instance) const
+    {
+        const type::StructDescriptor& descriptor = instance._descriptor();
+
+        if (!descriptor.cached())
+        {
+            return nullptr;
+        }
+
+        if (auto itGroup = m_groups.find(descriptor.name());
+            itGroup == m_groups.end() || itGroup->second.filteredSubs.empty())
+        {
+            return nullptr;
+        }
+
+        if (const Container<>* container = pool().find(descriptor))
+        {
+            return container->find(instance);
+        }
+
+        return nullptr;
+    }
+
     void HostTransceiver::transmit(const io::Transmission& transmission, const type::Struct* preMergeEntry)
     {
         using dirty_connection_t = std::pair<Connection*, std::exception_ptr>;
         std::vector<dirty_connection_t> dirtyConnections;
 
-        Group& group = m_groups[*transmission.header().typeName];
+        // find() instead of operator[]: do not permanently insert an empty
+        // Group for every published type that never had a subscriber.
+        auto itGroup = m_groups.find(*transmission.header().typeName);
+        if (itGroup == m_groups.end())
+        {
+            return;
+        }
+        Group& group = itGroup->second;
 
         // ---- Hot path: unfiltered subscribers — byte-identical to legacy behavior. ----
         for (Connection* destinationConnection : group.unfilteredSubs)
@@ -300,15 +323,7 @@ namespace dots
         }
 
         // Capture pre-merge cache pointer for filtered dispatch.
-        const type::StructDescriptor& descriptor = instance->_descriptor();
-        const type::Struct* preMergeEntry = nullptr;
-        if (descriptor.cached())
-        {
-            if (const Container<>* container = pool().find(descriptor))
-            {
-                preMergeEntry = container->find(*instance);
-            }
-        }
+        const type::Struct* preMergeEntry = preMergeEntryFor(instance);
 
         dispatcher().dispatch(transmission);
         transmit(transmission, preMergeEntry);
@@ -374,24 +389,30 @@ namespace dots
 
         if (member.event == DotsMemberEvent::leave)
         {
-            Group& group = m_groups[groupName];
             bool erased = false;
 
-            if (isFiltered || subId != 0)
+            // find() instead of operator[]: do not insert an empty Group when
+            // leaving a group that never had a subscriber.
+            if (auto itGroup = m_groups.find(groupName); itGroup != m_groups.end())
             {
-                if (auto it = group.filteredSubs.find(&connection); it != group.filteredSubs.end())
-                {
-                    erased = it->second.erase(subId) > 0;
-                    if (it->second.empty()) group.filteredSubs.erase(it);
-                }
-            }
+                Group& group = itGroup->second;
 
-            // Fall through to the unfiltered path: a guest may join unfiltered
-            // while still setting a subscriptionId on the leave (e.g. a
-            // non-C++ or older client), and must not stay subscribed.
-            if (!erased)
-            {
-                erased = group.unfilteredSubs.erase(&connection) > 0;
+                if (isFiltered || subId != 0)
+                {
+                    if (auto it = group.filteredSubs.find(&connection); it != group.filteredSubs.end())
+                    {
+                        erased = it->second.erase(subId) > 0;
+                        if (it->second.empty()) group.filteredSubs.erase(it);
+                    }
+                }
+
+                // Fall through to the unfiltered path: a guest may join unfiltered
+                // while still setting a subscriptionId on the leave (e.g. a
+                // non-C++ or older client), and must not stay subscribed.
+                if (!erased)
+                {
+                    erased = group.unfilteredSubs.erase(&connection) > 0;
+                }
             }
 
             if (!erased)
