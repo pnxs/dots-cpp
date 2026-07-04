@@ -188,15 +188,7 @@ namespace dots::serialization
             else if constexpr (std::is_same_v<T, type::AnyObject>)
             {
                 // opaque text representation: "typeName#<hex payload>"
-                std::string s{ value.typeName() };
-                s += '#';
-                static constexpr char HexDigits[] = "0123456789abcdef";
-                for (uint8_t b : value.payload())
-                {
-                    s += HexDigits[b >> 4];
-                    s += HexDigits[b & 0x0F];
-                }
-                writer().writeEscapedString(s);
+                writer().writeEscapedString(value.toString());
             }
             else
             {
@@ -366,23 +358,7 @@ namespace dots::serialization
             else if constexpr (std::is_same_v<T, type::AnyObject>)
             {
                 // opaque text representation: "typeName#<hex payload>"
-                std::string s = reader().readEscapedString();
-                size_t sep = s.find('#');
-                std::string typeName = sep == std::string::npos ? s : s.substr(0, sep);
-                std::vector<uint8_t> payload;
-
-                if (sep != std::string::npos)
-                {
-                    auto nibble = [](char c) -> int { return c <= '9' ? c - '0' : (c | 0x20) - 'a' + 10; };
-                    payload.reserve((s.size() - sep) / 2);
-
-                    for (size_t i = sep + 1; i + 1 < s.size(); i += 2)
-                    {
-                        payload.push_back(static_cast<uint8_t>((nibble(s[i]) << 4) | nibble(s[i + 1])));
-                    }
-                }
-
-                value = type::AnyObject{ std::move(typeName), std::move(payload) };
+                value = type::AnyObject::FromString(reader().readEscapedString());
             }
             else
             {

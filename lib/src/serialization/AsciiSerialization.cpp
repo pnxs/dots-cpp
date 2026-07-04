@@ -383,15 +383,7 @@ static void write_any_to_ascii(const type::AnyObject& any, Printer& writer, cons
         }
     }
 
-    std::string s{ any.typeName() };
-    s += '#';
-    static constexpr char HexDigits[] = "0123456789abcdef";
-    for (uint8_t b : any.payload())
-    {
-        s += HexDigits[b >> 4];
-        s += HexDigits[b & 0x0F];
-    }
-    writer.String(s);
+    writer.String(any.toString());
 }
 
 static void write_array_to_ascii(const type::VectorDescriptor& vd, const type::Vector<>& data, Printer& writer, const type::Registry* registry)

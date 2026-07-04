@@ -57,6 +57,59 @@ namespace dots::type
             return m_typeName.empty();
         }
 
+        /*!
+         * @brief Canonical opaque textual form: "<typeName>#<hex payload>".
+         *
+         * This is the single definition of the encoding used by all textual
+         * serializers when an `any` field is not expanded via a registry.
+         */
+        std::string toString() const
+        {
+            static constexpr char HexDigits[] = "0123456789abcdef";
+
+            std::string s;
+            s.reserve(m_typeName.size() + 1 + 2 * m_payload.size());
+            s += m_typeName;
+            s += '#';
+
+            for (uint8_t b : m_payload)
+            {
+                s += HexDigits[b >> 4];
+                s += HexDigits[b & 0x0F];
+            }
+
+            return s;
+        }
+
+        /*!
+         * @brief Parse the canonical opaque textual form produced by
+         * AnyObject::toString().
+         *
+         * The payload consists of hex digits only, so the last '#' always
+         * separates the type name from the payload — a type name that itself
+         * contains '#' round-trips correctly. A string without any '#' is
+         * treated as a bare type name with an empty payload.
+         */
+        static AnyObject FromString(std::string_view s)
+        {
+            size_t sep = s.rfind('#');
+            std::string typeName{ sep == std::string_view::npos ? s : s.substr(0, sep) };
+            std::vector<uint8_t> payload;
+
+            if (sep != std::string_view::npos)
+            {
+                auto nibble = [](char c) -> int { return c <= '9' ? c - '0' : (c | 0x20) - 'a' + 10; };
+                payload.reserve((s.size() - sep) / 2);
+
+                for (size_t i = sep + 1; i + 1 < s.size(); i += 2)
+                {
+                    payload.push_back(static_cast<uint8_t>((nibble(s[i]) << 4) | nibble(s[i + 1])));
+                }
+            }
+
+            return AnyObject{ std::move(typeName), std::move(payload) };
+        }
+
         bool operator == (const AnyObject& rhs) const
         {
             return m_typeName == rhs.m_typeName && m_payload == rhs.m_payload;
