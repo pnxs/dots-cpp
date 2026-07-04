@@ -95,8 +95,16 @@ namespace dots
         Container<T> m_container{};
         std::vector<std::pair<handler_id_t, handler_t>> m_handlers{};
         handler_id_t m_nextHandlerId{ 1 };
+        // Handlers may subscribe or unsubscribe re-entrantly from within a
+        // dispatch: removals are deferred while m_invokeDepth > 0 and drained
+        // when the dispatch unwinds (mirrors the core Dispatcher's behavior).
+        uint32_t m_invokeDepth{ 0 };
+        std::vector<handler_id_t> m_removeIds{};
 
         void invokeHandlers(const event_base_t& event);
+        void eraseHandler(handler_id_t id);
+        void drainRemovedHandlers();
+        bool isMarkedForRemoval(handler_id_t id) const;
     };
 
     /*!

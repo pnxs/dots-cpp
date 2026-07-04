@@ -77,39 +77,107 @@ namespace dots
         m_handlers.emplace_back(id, std::move(handler));
 
         // Synchronous replay: fire the new handler for each instance currently
-        // in this view's container.
-        handler_t& just_added = m_handlers.back().second;
-        for (const auto& [instance, cloneInfo] : m_container)
+        // in this view's container. The handler may re-entrantly subscribe
+        // (reallocating m_handlers) or unsubscribe itself, so it is re-located
+        // by id on every iteration instead of holding a reference.
+        ++m_invokeDepth;
+        try
         {
-            DotsHeader header{
-                .typeName       = m_container.descriptor().name(),
-                .sentTime       = *cloneInfo.modified,
-                .serverSentTime = *cloneInfo.modified,
-                .attributes     = instance->_validProperties(),
-                .sender         = *cloneInfo.lastUpdateFrom,
-                .removeObj      = false,
-                .subscriptionId = m_subId
-            };
-            event_base_t e{ header, *instance, *instance, cloneInfo, DotsMt::create };
-            just_added(static_cast<const event_t&>(e));
+            for (const auto& [instance, cloneInfo] : m_container)
+            {
+                auto it = std::find_if(m_handlers.begin(), m_handlers.end(),
+                    [id](const auto& kv) { return kv.first == id; });
+                if (it == m_handlers.end() || isMarkedForRemoval(id)) break;
+
+                DotsHeader header{
+                    .typeName       = m_container.descriptor().name(),
+                    .sentTime       = *cloneInfo.modified,
+                    .serverSentTime = *cloneInfo.modified,
+                    .attributes     = instance->_validProperties(),
+                    .sender         = *cloneInfo.lastUpdateFrom,
+                    .removeObj      = false,
+                    .subscriptionId = m_subId
+                };
+                event_base_t e{ header, *instance, *instance, cloneInfo, DotsMt::create };
+                it->second(static_cast<const event_t&>(e));
+            }
         }
+        catch (...)
+        {
+            --m_invokeDepth;
+            drainRemovedHandlers();
+            throw;
+        }
+        --m_invokeDepth;
+        drainRemovedHandlers();
 
         return Subscription{ [this, id]
         {
-            auto it = std::find_if(m_handlers.begin(), m_handlers.end(),
-                [id](const auto& kv) { return kv.first == id; });
-            if (it != m_handlers.end()) m_handlers.erase(it);
+            eraseHandler(id);
         } };
     }
 
     template <typename T>
     void View<T>::invokeHandlers(const event_base_t& event)
     {
-        for (auto& [id, handler] : m_handlers)
+        // Handlers may subscribe or unsubscribe re-entrantly: iterate by index
+        // over the initial count (re-entrant subscribes push_back and possibly
+        // reallocate, and their replay already covers the current event) and
+        // defer removals until the dispatch unwinds.
+        ++m_invokeDepth;
+        try
         {
-            (void)id;
-            handler(static_cast<const event_t&>(event));
+            const std::size_t count = m_handlers.size();
+            for (std::size_t i = 0; i < count; ++i)
+            {
+                if (isMarkedForRemoval(m_handlers[i].first)) continue;
+                m_handlers[i].second(static_cast<const event_t&>(event));
+            }
         }
+        catch (...)
+        {
+            --m_invokeDepth;
+            drainRemovedHandlers();
+            throw;
+        }
+        --m_invokeDepth;
+        drainRemovedHandlers();
+    }
+
+    template <typename T>
+    void View<T>::eraseHandler(handler_id_t id)
+    {
+        if (m_invokeDepth > 0)
+        {
+            // Deferred: erasing now would invalidate the live dispatch (or
+            // destroy the handler while it is executing).
+            m_removeIds.push_back(id);
+            return;
+        }
+
+        auto it = std::find_if(m_handlers.begin(), m_handlers.end(),
+            [id](const auto& kv) { return kv.first == id; });
+        if (it != m_handlers.end()) m_handlers.erase(it);
+    }
+
+    template <typename T>
+    void View<T>::drainRemovedHandlers()
+    {
+        if (m_invokeDepth > 0 || m_removeIds.empty()) return;
+
+        std::vector<handler_id_t> removeIds = std::move(m_removeIds);
+        m_removeIds.clear();
+
+        for (handler_id_t id : removeIds)
+        {
+            eraseHandler(id);
+        }
+    }
+
+    template <typename T>
+    bool View<T>::isMarkedForRemoval(handler_id_t id) const
+    {
+        return std::find(m_removeIds.begin(), m_removeIds.end(), id) != m_removeIds.end();
     }
 
     template <typename T>
