@@ -117,8 +117,9 @@ Compatibility rules:
 * Adding a property with a fresh tag is backward compatible.
 * Removing a property requires marking it `removed` so its tag cannot be
   reused.
-* Reordering property declarations does not affect serialized instances
-  (but see section 6.3 for the one constraint on key properties).
+* Reordering property declarations does not affect serialized instances —
+  key properties included (identity artifacts are sorted by tag,
+  section 6.3).
 
 ---
 
@@ -226,17 +227,19 @@ may therefore contain nested arrays.
 
 ### 6.3 Constraint on key declarations
 
-To keep tag order (the wire identity order) aligned with declaration order
-(the order presentation layers such as REST URI mappings and generated
-constructors already use), the following rule is added to the type
-description language:
+Canonical-key element order is **ascending tag order**, never declaration
+order. Implementations MUST sort by tag when producing a canonical key;
+they MUST NOT rely on the declaration order of key properties. Declaration
+order therefore stays free for *all* properties, keys included — reordering
+declarations never changes an instance's identity (this extends the general
+reordering freedom of section 3.1 to key properties).
 
-> Key properties MUST be declared in ascending tag order. Code generators
-> MUST reject a type whose key properties violate this.
-
-This rule is checkable from a single `.dots` file in isolation, preserves
-the general freedom to reorder *non-key* properties, and makes "declaration
-order" and "tag order" provably interchangeable wherever keys appear.
+Consequently, wherever an ordered view of the key matters across programs
+or languages — REST-style URI segment mappings, the element order of a
+typed reference (section 6.5), display of composite keys — that order is
+tag order. Purely program-local orders (e.g. the parameter order of a
+generated constructor) MAY follow declaration order, since they never leave
+the program that was compiled against that declaration.
 
 Key properties MUST be of scalar type — integers, `string`, `bytes`, `uuid`,
 `bool`, or enum — or of reference type (`instance_ref` / `instance_ref<T>`,
@@ -281,8 +284,8 @@ Rules:
 * A reference to a keyless type is legal and denotes the singleton instance;
   its canonical key is `[]` (`0x80`).
 * The elements of a typed reference's canonical key correspond one-to-one to
-  the target type's key properties in ascending tag order (which, by section
-  6.3, is also their declaration order). A reader that knows the target
+  the target type's key properties in ascending tag order (declaration
+  order is irrelevant, section 6.3). A reader that knows the target
   type's descriptor MAY therefore materialize the reference as a partial
   instance containing exactly the key properties; a reader MAY equally treat
   the key as opaque bytes — comparison never requires the descriptor.
