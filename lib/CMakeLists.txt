@@ -63,6 +63,7 @@ target_sources(${TARGET_NAME}
         src/tools/logging.cpp
         src/tools/Uri.cpp
 
+        src/type/InstanceRef.cpp
         src/type/AnyStruct.cpp
         src/type/Chrono.cpp
         src/type/Descriptor.cpp

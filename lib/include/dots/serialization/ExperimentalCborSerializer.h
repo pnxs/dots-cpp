@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 // Copyright 2015-2022 Thomas Schaetzlein <thomas@pnxs.de>, Christopher Gerlach <gerlachch@gmx.com>
 #pragma once
+#include <dots/serialization/InstanceRefSerialization.h>
 #include <vector>
 #include <stdexcept>
 #include <string>
@@ -52,7 +53,7 @@ namespace dots::serialization
         }
 
         template <typename T>
-        void visitFundamentalTypeDerived(const T& value, const type::Descriptor<T>&/* descriptor*/)
+        void visitFundamentalTypeDerived(const T& value, const type::Descriptor<T>& descriptor)
         {
             if constexpr(std::is_floating_point_v<T>)
             {
@@ -81,6 +82,10 @@ namespace dots::serialization
             else if constexpr (std::is_same_v<T, string_t>)
             {
                 writer().write(value);
+            }
+            else if constexpr (std::is_base_of_v<type::InstanceRef, T>)
+            {
+                write_instance_ref(writer(), value, descriptor);
             }
             else if constexpr (std::is_same_v<T, type::AnyObject>)
             {
@@ -129,7 +134,7 @@ namespace dots::serialization
         }
 
         template <typename T>
-        void visitFundamentalTypeDerived(T& value, const type::Descriptor<T>&/* descriptor*/)
+        void visitFundamentalTypeDerived(T& value, const type::Descriptor<T>& descriptor)
         {
             if constexpr(std::is_arithmetic_v<T>)
             {
@@ -150,6 +155,10 @@ namespace dots::serialization
             else if constexpr (std::is_same_v<T, string_t>)
             {
                 reader().read(value);
+            }
+            else if constexpr (std::is_base_of_v<type::InstanceRef, T>)
+            {
+                static_cast<type::InstanceRef&>(value) = read_instance_ref(reader(), descriptor);
             }
             else if constexpr (std::is_same_v<T, type::AnyObject>)
             {

@@ -41,7 +41,6 @@ namespace dots::type
             /* do nothing */
         }
 
-        template <bool IsDynamic = IsDynamic, std::enable_if_t<IsDynamic, int> = 0>
         Descriptor(key_t key, Descriptor<T>& valueDescriptorOverride, bool checkSize = true) :
             Descriptor<Vector<>>(key, "vector<" + valueDescriptorOverride.name() + ">", valueDescriptorOverride, sizeof(Vector<T>), alignof(Vector<T>))
         {

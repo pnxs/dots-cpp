@@ -61,7 +61,7 @@ function(target_dots_model TARGET_NAME)
         # create header generation command for all types in model
         add_custom_command(OUTPUT ${MODEL_TYPES}
             COMMAND ${DOTS-CG-CPP-GENERATE_CMD} ${MODEL_FILE}
-            DEPENDS ${DOTS-CG_TEMPLATE_LIST} ${MODEL_FILE}
+            DEPENDS ${DOTS-CG_TEMPLATE_LIST} ${DOTS-CG-CPP_DIR}/${DOTS-CG_CONFIG}.py ${MODEL_FILE}
             COMMENT "Generating DOTS C++ types for model file: ${MODEL_FILE}"
         )
     endforeach()

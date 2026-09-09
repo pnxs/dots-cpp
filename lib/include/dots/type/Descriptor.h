@@ -21,7 +21,7 @@ namespace dots::type
         uuid, string,
         Vector,
         Struct, Enum,
-        Any
+        Any, InstanceRef
     };
 
     template<typename TDescriptor, typename = void>

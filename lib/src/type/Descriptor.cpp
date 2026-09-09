@@ -76,6 +76,7 @@ namespace dots::type
             case Type::Enum:
             case Type::Struct:
             case Type::Any:
+            case Type::InstanceRef:
                 return false;
         }
 

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 // Copyright 2015-2022 Thomas Schaetzlein <thomas@pnxs.de>, Christopher Gerlach <gerlachch@gmx.com>
 #pragma once
+#include <dots/serialization/InstanceRefSerialization.h>
 #include <string>
 #include <dots/serialization/Serializer.h>
 #include <dots/serialization/CborSerializer.h>
@@ -415,7 +416,7 @@ namespace dots::serialization
         }
 
         template <typename T>
-        void visitFundamentalTypeDerived(const T& value, const type::Descriptor<T>&/* descriptor*/)
+        void visitFundamentalTypeDerived(const T& value, const type::Descriptor<T>& descriptor)
         {
             if constexpr(std::is_arithmetic_v<T>)
             {
@@ -455,6 +456,11 @@ namespace dots::serialization
             else if constexpr (std::is_same_v<T, string_t>)
             {
                 m_writer.write(value);
+            }
+            else if constexpr (std::is_base_of_v<type::InstanceRef, T>)
+            {
+                validate_instance_ref(value, descriptor);
+                m_writer.write(value.toString());
             }
             else if constexpr (std::is_same_v<T, type::AnyObject>)
             {
@@ -593,7 +599,7 @@ namespace dots::serialization
         }
 
         template <typename T>
-        void visitFundamentalTypeDerived(T& value, const type::Descriptor<T>&/* descriptor*/)
+        void visitFundamentalTypeDerived(T& value, const type::Descriptor<T>& descriptor)
         {
             if constexpr(std::is_arithmetic_v<T>)
             {
@@ -629,6 +635,12 @@ namespace dots::serialization
             else if constexpr (std::is_same_v<T, string_t>)
             {
                 value = m_reader.template read<string_t>();
+            }
+            else if constexpr (std::is_base_of_v<type::InstanceRef, T>)
+            {
+                auto ref = type::InstanceRef::FromString(m_reader.template read<string_t>());
+                validate_instance_ref(ref, descriptor);
+                static_cast<type::InstanceRef&>(value) = std::move(ref);
             }
             else if constexpr (std::is_same_v<T, type::AnyObject>)
             {

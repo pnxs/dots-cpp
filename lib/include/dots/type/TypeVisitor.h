@@ -6,6 +6,7 @@
 #include <dots/type/EnumDescriptor.h>
 #include <dots/type/StaticStruct.h>
 #include <dots/type/AnyObject.h>
+#include <dots/type/InstanceRef.h>
 
 namespace dots::type
 {
@@ -432,6 +433,12 @@ namespace dots::type
                             case Type::string: derived().visitFundamentalTypeDerived(value.template to<string_t>(), descriptor.template to<Descriptor<string_t>>());
                                 break;
 
+                            case Type::InstanceRef:
+                            {
+                                const auto& refDescriptor = static_cast<const Descriptor<InstanceRef>&>(descriptor);
+                                derived().visitFundamentalTypeDerived(refDescriptor.reference(value), refDescriptor);
+                                break;
+                            }
                             case Type::Any: derived().visitFundamentalTypeDerived(value.template to<types::any_t>(), descriptor.template to<Descriptor<types::any_t>>());
                                 break;
 

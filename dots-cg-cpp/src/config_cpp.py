@@ -1,6 +1,7 @@
 struct_templates = ["struct.dots.h.dotsT"]
 enum_templates   = ["enum.dots.h.dotsT"]
 vector_format    = "vector_t<{}>"
+instance_ref_format = "typed_instance_ref_t<{}>"
 
 type_mapping     = {
     "bool": "bool_t",
@@ -22,5 +23,6 @@ type_mapping     = {
     "property_set": "property_set_t",
     "uuid": "uuid_t",
     "any": "any_t",
+    "instance_ref": "instance_ref_t",
 }
 
