@@ -53,7 +53,11 @@ schema before returning the partial instance.
 Equality, ordering, and `std::hash` use the target type name and canonical key
 bytes. CBOR encodes generic references as `[typeName, keyArray]`; typed
 references encode only `keyArray`. JSON, string, and ASCII output use the opaque
-text form `typeName#hexKeyBytes`. Text deserialization checks the target name for
+text form `TypeName["key",42]`, with key values in ascending tag order. Strings
+use JSON quoting and escaping, integers and booleans are written directly,
+and nested keys remain arrays. Binary keys (including UUIDs) use CBOR diagnostic
+notation such as `h'00ff'` to distinguish them from text. Keyless references are
+written as `TypeName[]`. Text deserialization checks the target name for
 typed fields. Descriptor exchange uses `instance_ref` and
 `instance_ref<TypeName>` as the type strings and supports opaque references when
 the target descriptor is unavailable.

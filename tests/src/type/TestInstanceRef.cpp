@@ -80,6 +80,7 @@ TEST(TestInstanceRef, valueSemanticsAndText)
     EXPECT_NE(a, b);
     EXPECT_LT(a, b);
     EXPECT_EQ(std::hash<instance_ref_t>{}(a), std::hash<instance_ref_t>{}(instance_ref_t::FromString(a.toString())));
+    EXPECT_EQ(a.toString(), R"(ExampleType["eth0"])");
     EXPECT_EQ(instance_ref_t::FromString(a.toString()), a);
     EXPECT_THROW(instance_ref_t::FromString("T#8"), std::invalid_argument);
     EXPECT_THROW(instance_ref_t::FromString("T#xx"), std::invalid_argument);
@@ -187,9 +188,56 @@ TEST(TestInstanceRef, textOutputAndTypedTargetValidation)
     auto typed = to_typed_instance_ref(ExampleType{.name = "eth0"});
     TypedStatusType instance{.subject = typed};
     auto ascii = to_ascii(&instance._descriptor(), &instance);
-    EXPECT_NE(ascii.find("ExampleType#816465746830"), std::string::npos);
+    EXPECT_NE(ascii.find(R"(ExampleType["eth0"])"), std::string::npos);
     EXPECT_THROW((serialization::JsonSerializer::Deserialize<typed_instance_ref_t<ExampleType>>(
-        "\"OtherType#80\"")), std::invalid_argument);
+        "\"OtherType[]\"")), std::invalid_argument);
     EXPECT_THROW((serialization::RapidJsonSerializer<serialization::DefaultRapidJsonSerializerFormat>::Deserialize<typed_instance_ref_t<ExampleType>>(
-        "\"OtherType#80\"")), std::invalid_argument);
+        "\"OtherType[]\"")), std::invalid_argument);
+}
+
+TEST(TestInstanceRef, readableTextPreservesCanonicalKeys)
+{
+    const std::vector<std::string> references{
+        R"(TheTypeName["some-field"])",
+        R"(RouteType["eth0","r1"])",
+        "TimeType[]",
+        "Scalars[false,true,0,23,24,255,256,65535,65536,4294967295,4294967296,18446744073709551615,-1,-24,-25,-9223372036854775808,-18446744073709551616]",
+        R"(Escaped["quotes\" and slash\\ and newline\n","\u0000"])",
+        R"(Unicode["é","😀"])",
+        "Binary[h'',h'0001ff']",
+        R"(StatusType[["ExampleType",["eth0"]]])",
+        R"(TypedStatusType[["eth0"]])",
+        R"("Type[with delimiter"["value"])",
+    };
+    for (const auto& text : references)
+    {
+        SCOPED_TRACE(text);
+        auto ref = instance_ref_t::FromString(text);
+        EXPECT_EQ(ref.toString(), text);
+        EXPECT_EQ(instance_ref_t::FromString(ref.toString()).key(), ref.key());
+        EXPECT_EQ(from_cbor<instance_ref_t>(to_cbor(ref)), ref);
+    }
+    auto ref = to_instance_ref(ExampleType{.name = "eth0"});
+    EXPECT_EQ(instance_ref_t::FromString(" ExampleType [ \"eth0\" ] "), ref);
+    EXPECT_EQ(to_typed_instance_ref(ExampleType{.name = "eth0"}).toString(), ref.toString());
+    EXPECT_EQ(to_json(ref), ref.toString());
+    EXPECT_EQ(from_json<instance_ref_t>(to_json(ref)), ref);
+}
+
+TEST(TestInstanceRef, rejectsMalformedReadableText)
+{
+    const std::vector<std::string> invalid{
+        "Type", "Type[", "Type[1", "Type[1,]", "Type[,1]", "Type[1 2]", "Type[]extra",
+        "Type[null]", "Type[{}]", "Type[1.5]", "Type[1e2]", "Type[01]", "Type[-0]",
+        "Type[18446744073709551616]", "Type[-18446744073709551617]", "Type[truefalse]",
+        "Type[h'0']", "Type[h'xx']", "Type[h'00]", "Type[\"unterminated]", "Type[\"\\x\"]",
+        "Type[\"\\ud800\"]", "[]"
+    };
+    for (const auto& text : invalid)
+    {
+        SCOPED_TRACE(text);
+        EXPECT_THROW(instance_ref_t::FromString(text), std::invalid_argument);
+    }
+    std::string deep = "Type" + std::string(66, '[') + std::string(66, ']');
+    EXPECT_THROW(instance_ref_t::FromString(deep), std::invalid_argument);
 }

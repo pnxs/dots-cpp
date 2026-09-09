@@ -18,7 +18,7 @@ namespace dots::type
         std::string_view typeName() const { return m_typeName; }
         const std::vector<uint8_t>& key() const { return m_key; }
         bool empty() const { return m_typeName.empty(); }
-        std::string toString() const { return AnyObject{m_typeName, m_key}.toString(); }
+        std::string toString() const;
         static InstanceRef FromString(std::string_view text);
         bool operator==(const InstanceRef& rhs) const { return m_typeName == rhs.m_typeName && m_key == rhs.m_key; }
         bool operator!=(const InstanceRef& rhs) const { return !(*this == rhs); }
