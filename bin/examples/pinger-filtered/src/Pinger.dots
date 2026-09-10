@@ -1,0 +1,7 @@
+// Same Pinger model as bin/examples/pinger. Duplicated rather than shared
+// to keep each example's CMake target self-contained.
+struct Pinger {
+    1: [key] uint32 id;
+    2: string message;
+    3: uint64 sequence;
+}

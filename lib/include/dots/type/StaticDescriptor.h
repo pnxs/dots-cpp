@@ -40,6 +40,7 @@ namespace dots::type
         using Descriptor<>::lessEqual;
         using Descriptor<>::greater;
         using Descriptor<>::greaterEqual;
+        using Descriptor<>::hash;
         using Descriptor<>::dynamicMemoryUsage;
 
         Typeless& construct(Typeless& value) const override;
@@ -59,6 +60,7 @@ namespace dots::type
         void swap(Typeless& value, Typeless& other) const override;
         bool equal(const Typeless& lhs, const Typeless& rhs) const override;
         bool less(const Typeless& lhs, const Typeless& rhs) const override;
+        size_t hash(const Typeless& value) const override;
 
         template <typename T>
         static Descriptor<T>& InitInstance()

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 // Copyright 2015-2022 Thomas Schaetzlein <thomas@pnxs.de>, Christopher Gerlach <gerlachch@gmx.com>
 #pragma once
+#include <dots/serialization/InstanceRefSerialization.h>
 #include <vector>
 #include <stdexcept>
 #include <string>
@@ -52,7 +53,7 @@ namespace dots::serialization
         }
 
         template <typename T>
-        void visitFundamentalTypeDerived(const T& value, const type::Descriptor<T>&/* descriptor*/)
+        void visitFundamentalTypeDerived(const T& value, const type::Descriptor<T>& descriptor)
         {
             if constexpr(std::is_floating_point_v<T>)
             {
@@ -81,6 +82,16 @@ namespace dots::serialization
             else if constexpr (std::is_same_v<T, string_t>)
             {
                 writer().write(value);
+            }
+            else if constexpr (std::is_base_of_v<type::InstanceRef, T>)
+            {
+                write_instance_ref(writer(), value, descriptor);
+            }
+            else if constexpr (std::is_same_v<T, type::AnyObject>)
+            {
+                writer().writeArraySize(2);
+                writer().write(value.typeName());
+                writer().writeByteString(value.payload().data(), value.payload().size());
             }
             else
             {
@@ -123,7 +134,7 @@ namespace dots::serialization
         }
 
         template <typename T>
-        void visitFundamentalTypeDerived(T& value, const type::Descriptor<T>&/* descriptor*/)
+        void visitFundamentalTypeDerived(T& value, const type::Descriptor<T>& descriptor)
         {
             if constexpr(std::is_arithmetic_v<T>)
             {
@@ -144,6 +155,23 @@ namespace dots::serialization
             else if constexpr (std::is_same_v<T, string_t>)
             {
                 reader().read(value);
+            }
+            else if constexpr (std::is_base_of_v<type::InstanceRef, T>)
+            {
+                static_cast<type::InstanceRef&>(value) = read_instance_ref(reader(), descriptor);
+            }
+            else if constexpr (std::is_same_v<T, type::AnyObject>)
+            {
+                if (size_t arraySize = reader().readArraySize(); arraySize != 2)
+                {
+                    throw std::runtime_error{ "invalid any envelope: expected array of 2, got " + std::to_string(arraySize) };
+                }
+
+                string_t typeName;
+                reader().read(typeName);
+                std::vector<uint8_t> payload;
+                reader().readByteString(payload);
+                value = type::AnyObject{ std::move(typeName), std::move(payload) };
             }
             else
             {

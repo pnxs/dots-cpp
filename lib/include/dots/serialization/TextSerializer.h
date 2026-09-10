@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 // Copyright 2015-2022 Thomas Schaetzlein <thomas@pnxs.de>, Christopher Gerlach <gerlachch@gmx.com>
 #pragma once
+#include <dots/serialization/InstanceRefSerialization.h>
 #include <string>
 #include <stack>
 #include <vector>
@@ -133,7 +134,7 @@ namespace dots::serialization
         }
 
         template <typename T>
-        void visitFundamentalTypeDerived(const T& value, const type::Descriptor<T>&/* descriptor*/)
+        void visitFundamentalTypeDerived(const T& value, const type::Descriptor<T>& descriptor)
         {
             if constexpr(std::is_arithmetic_v<T>)
             {
@@ -184,6 +185,16 @@ namespace dots::serialization
             else if constexpr (std::is_same_v<T, string_t>)
             {
                 writer().writeEscapedString(value);
+            }
+            else if constexpr (std::is_base_of_v<type::InstanceRef, T>)
+            {
+                validate_instance_ref(value, descriptor);
+                writer().writeEscapedString(value.toString());
+            }
+            else if constexpr (std::is_same_v<T, type::AnyObject>)
+            {
+                // opaque text representation: "typeName#<hex payload>"
+                writer().writeEscapedString(value.toString());
             }
             else
             {
@@ -306,7 +317,7 @@ namespace dots::serialization
         }
 
         template <typename T>
-        void visitFundamentalTypeDerived(T& value, const type::Descriptor<T>&/* descriptor*/)
+        void visitFundamentalTypeDerived(T& value, const type::Descriptor<T>& descriptor)
         {
             if constexpr(std::is_arithmetic_v<T>)
             {
@@ -349,6 +360,17 @@ namespace dots::serialization
             else if constexpr (std::is_same_v<T, string_t>)
             {
                 value = reader().readEscapedString();
+            }
+            else if constexpr (std::is_base_of_v<type::InstanceRef, T>)
+            {
+                auto ref = type::InstanceRef::FromString(reader().readEscapedString());
+                validate_instance_ref(ref, descriptor);
+                static_cast<type::InstanceRef&>(value) = std::move(ref);
+            }
+            else if constexpr (std::is_same_v<T, type::AnyObject>)
+            {
+                // opaque text representation: "typeName#<hex payload>"
+                value = type::AnyObject::FromString(reader().readEscapedString());
             }
             else
             {

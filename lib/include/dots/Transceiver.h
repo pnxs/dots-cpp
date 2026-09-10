@@ -191,6 +191,31 @@ namespace dots
         Subscription subscribe(const type::StructDescriptor& descriptor, event_handler_t<> handler);
 
         /*!
+         * @brief Subscribe with an explicit policy tag (synchronous replay).
+         *
+         * Equivalent to the non-tagged overload. Provided so that call sites
+         * can opt in to specifying the subscribe policy explicitly. See
+         * dots::sync_t and dots::deferred_t in Subscription.h for the
+         * migration rationale.
+         */
+        Subscription subscribe(sync_t, const type::StructDescriptor& descriptor, event_handler_t<> handler);
+
+        /*!
+         * @brief Subscribe with deferred initial cache replay.
+         *
+         * The handler is registered immediately so that future events are
+         * not lost, but the initial replay of the local Container is posted
+         * to the IO context and only runs at the next event loop turn.
+         * This makes it safe to call subscribe() from a constructor: by
+         * the time the deferred replay fires, the surrounding object is
+         * fully constructed.
+         *
+         * @exception std::logic_error Thrown if @p descriptor is a
+         * sub-struct only type.
+         */
+        Subscription subscribe(deferred_t, const type::StructDescriptor& descriptor, event_handler_t<> handler);
+
+        /*!
          * @brief Subscribe to events of a specific type.
          *
          * This will create a subscription to a given type and cause the given
@@ -228,6 +253,18 @@ namespace dots
         template<typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
         Subscription subscribe(event_handler_t<T> handler)
         {
+            return subscribe<T>(sync, std::move(handler));
+        }
+
+        /*!
+         * @brief Subscribe with an explicit policy tag (synchronous replay).
+         *
+         * Equivalent to subscribe<T>(handler). Provided so that call sites
+         * can opt in to specifying the subscribe policy explicitly.
+         */
+        template<typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
+        Subscription subscribe(sync_t, event_handler_t<T> handler)
+        {
             constexpr bool NotSubStructOnly = !T::_SubstructOnly;
             static_assert(NotSubStructOnly, "it is not allowed to subscribe to a struct that is marked with 'sub-struct only'!");
 
@@ -237,6 +274,48 @@ namespace dots
                 Dispatcher::id_t id = m_dispatcher.addEventHandler(std::move(handler));
 
                 return makeSubscription([&, id]{ m_dispatcher.removeEventHandler(T::_Descriptor(), id); });
+            }
+            else
+            {
+                return std::declval<Subscription>();
+            }
+        }
+
+        /*!
+         * @brief Subscribe with deferred initial cache replay.
+         *
+         * Registration of the handler and the initial cache replay are
+         * both posted to the IO context and run atomically at the next
+         * event loop turn. Until that point the handler is not connected
+         * to live dispatch, so no event for the subscribed type can reach
+         * the handler before the snapshot is delivered -- regardless of
+         * what is already pending on the IO context queue.
+         *
+         * This makes it safe to call subscribe() from a constructor: by
+         * the time the deferred task fires, the surrounding object is
+         * fully constructed, and the snapshot the handler observes is
+         * consistent with all transmissions that arrived in the meantime.
+         */
+        template<typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
+        Subscription subscribe(deferred_t, event_handler_t<T> handler)
+        {
+            constexpr bool NotSubStructOnly = !T::_SubstructOnly;
+            static_assert(NotSubStructOnly, "it is not allowed to subscribe to a struct that is marked with 'sub-struct only'!");
+
+            if constexpr (NotSubStructOnly)
+            {
+                joinGroup(T::_Descriptor().name());
+                auto state = postDeferredSubscribe(T::_Descriptor(),
+                    event_handler_t<>{ tools::static_argument_cast, std::move(handler) });
+
+                return makeSubscription([&, state]
+                {
+                    state->cancelled = true;
+                    if (state->id)
+                    {
+                        m_dispatcher.removeEventHandler(T::_Descriptor(), *state->id);
+                    }
+                });
             }
             else
             {
@@ -308,6 +387,15 @@ namespace dots
         Subscription subscribe(std::string_view name, event_handler_t<> handler);
 
         /*!
+         * @brief Subscribe by type name with an explicit policy tag.
+         *
+         * See the subscribe(sync_t, descriptor, handler) and
+         * subscribe(deferred_t, descriptor, handler) overloads.
+         */
+        Subscription subscribe(sync_t, std::string_view name, event_handler_t<> handler);
+        Subscription subscribe(deferred_t, std::string_view name, event_handler_t<> handler);
+
+        /*!
          * @brief Subscribe to new types.
          *
          * This will create a subscription to new types and cause the given
@@ -324,6 +412,19 @@ namespace dots
          * manually.
          */
         Subscription subscribe(new_type_handler_t<> handler);
+
+        /*!
+         * @brief Subscribe to new types with an explicit policy tag.
+         *
+         * The synchronous form (sync_t) replays all currently known types
+         * before returning, just like the non-tagged overload. The
+         * deferred form (deferred_t) posts both registration and the
+         * initial replay to the IO context, so neither happens before the
+         * next event loop turn. The deferred form is the safe choice when
+         * subscribing from a constructor.
+         */
+        Subscription subscribe(sync_t,     new_type_handler_t<> handler);
+        Subscription subscribe(deferred_t, new_type_handler_t<> handler);
 
         /*!
          * @brief Subscribe to new types of a specific category.
@@ -365,7 +466,38 @@ namespace dots
         template <typename TDescriptor, std::enable_if_t<std::is_base_of_v<type::Descriptor<>, TDescriptor>, int> = 0>
         Subscription subscribe(new_type_handler_t<TDescriptor> handler)
         {
-            return subscribe(new_type_handler_t<>{
+            return subscribe<TDescriptor>(sync, std::move(handler));
+        }
+
+        /*!
+         * @brief Subscribe to new types of a specific category with an
+         * explicit policy tag (synchronous replay).
+         */
+        template <typename TDescriptor, std::enable_if_t<std::is_base_of_v<type::Descriptor<>, TDescriptor>, int> = 0>
+        Subscription subscribe(sync_t, new_type_handler_t<TDescriptor> handler)
+        {
+            return subscribe(sync, new_type_handler_t<>{
+                [handler{ std::move(handler) }](const type::Descriptor<>& descriptor)
+                {
+                    if (auto* wantedDescriptor = descriptor.as<TDescriptor>(); wantedDescriptor != nullptr)
+                    {
+                        std::invoke(handler, *wantedDescriptor);
+                    }
+                }
+            });
+        }
+
+        /*!
+         * @brief Subscribe to new types of a specific category with
+         * deferred initial replay.
+         *
+         * Both registration and the initial replay over the registry are
+         * posted to the IO context.
+         */
+        template <typename TDescriptor, std::enable_if_t<std::is_base_of_v<type::Descriptor<>, TDescriptor>, int> = 0>
+        Subscription subscribe(deferred_t, new_type_handler_t<TDescriptor> handler)
+        {
+            return subscribe(deferred, new_type_handler_t<>{
                 [handler{ std::move(handler) }](const type::Descriptor<>& descriptor)
                 {
                     if (auto* wantedDescriptor = descriptor.as<TDescriptor>(); wantedDescriptor != nullptr)
@@ -563,6 +695,40 @@ namespace dots
         virtual void joinGroup(std::string_view name) = 0;
         virtual void leaveGroup(std::string_view name) = 0;
         virtual void handleTransitionImpl(Connection& connection, std::exception_ptr ePtr) noexcept = 0;
+
+        // Shared state for a deferred subscription. Holds the dispatcher
+        // id once registration has happened (inside the posted task) and a
+        // cancelled flag that is set if the Subscription is destroyed
+        // before the post fires. Accessed only on the IO context thread.
+        struct deferred_subscription_state
+        {
+            std::optional<Dispatcher::id_t> id;
+            bool cancelled = false;
+        };
+
+        // Defers registration of an event handler and the initial cache
+        // replay to the next IO context turn so that no event for the
+        // subscribed type can be observed before the snapshot is delivered.
+        // Returns a shared state object that ties the eventual registration
+        // to the returned Subscription's lifetime.
+        std::shared_ptr<deferred_subscription_state> postDeferredSubscribe(
+            const type::StructDescriptor& descriptor, event_handler_t<> handler) const;
+
+        // Shared state for a deferred new-type subscription. Holds the
+        // internal handler id once registration has happened and a
+        // cancelled flag that is set if the Subscription is destroyed
+        // before the post fires.
+        struct deferred_new_type_subscription_state
+        {
+            std::optional<id_t> id;
+            bool cancelled = false;
+        };
+
+        // Defers registration of a new-type handler and the initial
+        // registry walk to the next IO context turn. Same lifetime
+        // guarantees as postDeferredSubscribe().
+        std::shared_ptr<deferred_new_type_subscription_state> postDeferredNewTypeSubscribe(
+            new_type_handler_t<> handler) const;
 
         template <typename UnsubscribeHandler>
         Subscription makeSubscription(UnsubscribeHandler&& unsubscribeHandler);

@@ -3,10 +3,11 @@
 #include <dots/Container.h>
 #include <algorithm>
 #include <numeric>
+#include <dots/tools/hash.h>
 
 namespace dots
 {
-    Container<type::Struct>::key_compare::key_compare(const type::StructDescriptor& descriptor)
+    Container<type::Struct>::key_hash::key_hash(const type::StructDescriptor& descriptor)
     {
         for (const type::PropertyDescriptor& propertyDescriptor : descriptor.propertyDescriptors())
         {
@@ -17,50 +18,75 @@ namespace dots
         }
     }
 
-    bool Container<type::Struct>::key_compare::operator()(const type::Struct& lhs, const type::Struct& rhs) const
+    size_t Container<type::Struct>::key_hash::operator()(const type::Struct& s) const
     {
-        const type::PropertyArea& lhsPropertyArea = lhs._propertyArea();
-        const type::PropertyArea& rhsPropertyArea = rhs._propertyArea();
+        const type::PropertyArea& area = s._propertyArea();
+        size_t h = 0;
 
         for (const auto& propertyDescriptor_ : m_keyPropertyDescriptors)
         {
-            const type::PropertyDescriptor& propertyDescriptor = propertyDescriptor_.get();
-            const auto& lhsValue = lhsPropertyArea.getProperty<type::Typeless>(propertyDescriptor.offset());
-            const auto& rhsValue = rhsPropertyArea.getProperty<type::Typeless>(propertyDescriptor.offset());
+            const type::PropertyDescriptor& pd = propertyDescriptor_.get();
+            const auto& v = area.getProperty<type::Typeless>(pd.offset());
+            h = tools::hashCombine(h, pd.valueDescriptor().hash(v));
+        }
 
-            const type::Descriptor<>& valueDescriptor = propertyDescriptor.valueDescriptor();
+        return h;
+    }
 
-            if (valueDescriptor.less(lhsValue, rhsValue))
+    size_t Container<type::Struct>::key_hash::operator()(const type::AnyStruct& s) const
+    {
+        return (*this)(static_cast<const type::Struct&>(s));
+    }
+
+    Container<type::Struct>::key_equal::key_equal(const type::StructDescriptor& descriptor)
+    {
+        for (const type::PropertyDescriptor& propertyDescriptor : descriptor.propertyDescriptors())
+        {
+            if (propertyDescriptor.isKey())
             {
-                return true;
+                m_keyPropertyDescriptors.emplace_back(propertyDescriptor);
             }
-            else if (valueDescriptor.less(rhsValue, lhsValue))
+        }
+    }
+
+    bool Container<type::Struct>::key_equal::operator()(const type::Struct& lhs, const type::Struct& rhs) const
+    {
+        const type::PropertyArea& lhsArea = lhs._propertyArea();
+        const type::PropertyArea& rhsArea = rhs._propertyArea();
+
+        for (const auto& propertyDescriptor_ : m_keyPropertyDescriptors)
+        {
+            const type::PropertyDescriptor& pd = propertyDescriptor_.get();
+            const auto& lhsValue = lhsArea.getProperty<type::Typeless>(pd.offset());
+            const auto& rhsValue = rhsArea.getProperty<type::Typeless>(pd.offset());
+
+            if (!pd.valueDescriptor().equal(lhsValue, rhsValue))
             {
                 return false;
             }
         }
 
-        return false;
+        return true;
     }
 
-    bool Container<type::Struct>::key_compare::operator()(const type::AnyStruct& lhs, const type::Struct& rhs) const
+    bool Container<type::Struct>::key_equal::operator()(const type::AnyStruct& lhs, const type::Struct& rhs) const
     {
         return (*this)(static_cast<const type::Struct&>(lhs), rhs);
     }
 
-    bool Container<type::Struct>::key_compare::operator()(const type::Struct& lhs, const type::AnyStruct& rhs) const
+    bool Container<type::Struct>::key_equal::operator()(const type::Struct& lhs, const type::AnyStruct& rhs) const
     {
         return (*this)(lhs, static_cast<const type::Struct&>(rhs));
     }
 
-    bool Container<type::Struct>::key_compare::operator()(const type::AnyStruct& lhs, const type::AnyStruct& rhs) const
+    bool Container<type::Struct>::key_equal::operator()(const type::AnyStruct& lhs, const type::AnyStruct& rhs) const
     {
         return (*this)(static_cast<const type::Struct&>(lhs), static_cast<const type::Struct&>(rhs));
     }
 
     Container<type::Struct>::Container(const type::StructDescriptor& descriptor) :
         m_descriptor(&descriptor),
-        m_instances{ descriptor }
+        m_instances{ 0, key_hash{ descriptor }, key_equal{ descriptor } }
     {
         for (const type::PropertyDescriptor& propertyDescriptor : descriptor.propertyDescriptors())
         {
@@ -137,27 +163,29 @@ namespace dots
 
     auto Container<type::Struct>::insert(const DotsHeader& header, const type::Struct& instance) & -> const value_t &
     {
-        auto [itLower, itUpper] = m_instances.equal_range(instance);
-        bool unknownInstance = itLower == itUpper;
+        auto it = m_instances.find(instance);
 
-        if (unknownInstance)
+        if (it == m_instances.end())
         {
-            auto itCreated = m_instances.emplace_hint(itUpper, instance, DotsCloneInformation{
-                .lastOperation = DotsMt::create,
-                .lastUpdateFrom = header.sender,
-                .created = header.sentTime,
-                .createdFrom = header.sender,
-                .modified = header.sentTime,
-                .localUpdateTime = timepoint_t::Now()
-            });
+            auto [itCreated, _] = m_instances.emplace(std::piecewise_construct,
+                std::forward_as_tuple(instance),
+                std::forward_as_tuple(DotsCloneInformation{
+                    .lastOperation = DotsMt::create,
+                    .lastUpdateFrom = header.sender,
+                    .created = header.sentTime,
+                    .createdFrom = header.sender,
+                    .modified = header.sentTime,
+                    .localUpdateTime = timepoint_t::Now()
+                }));
 
             return *itCreated;
         }
         else
         {
-            node_t node = m_instances.extract(itLower);
-            type::Struct& existing = node.key();
-            DotsCloneInformation& cloneInfo = node.mapped();
+            // Key fields are not touched by updateWithoutKeys, so the hash stays
+            // stable and we can mutate the entry in place without re-insertion.
+            type::Struct& existing = const_cast<type::AnyStruct&>(it->first).get();
+            DotsCloneInformation& cloneInfo = it->second;
 
             updateWithoutKeys(existing, instance, *header.attributes);
             cloneInfo.lastOperation = DotsMt::update;
@@ -165,27 +193,28 @@ namespace dots
             cloneInfo.modified = header.sentTime;
             cloneInfo.localUpdateTime = timepoint_t::Now();
 
-            auto itUpdated = m_instances.insert(itUpper, std::move(node));
-
-            return *itUpdated;
+            return *it;
         }
     }
 
     auto Container<type::Struct>::remove(const DotsHeader& header, const type::Struct& instance) & -> node_t
     {
-        node_t node = m_instances.extract(instance);
+        auto it = m_instances.find(instance);
 
-        if (!node.empty())
+        if (it == m_instances.end())
         {
-            type::Struct& removed = node.key();
-            DotsCloneInformation& cloneInfo = node.mapped();
-
-            updateWithoutKeys(removed, instance, *header.attributes);
-            cloneInfo.lastOperation = DotsMt::remove;
-            cloneInfo.lastUpdateFrom = header.sender;
-            cloneInfo.modified = header.sentTime;
-            cloneInfo.localUpdateTime = timepoint_t::Now();
+            return node_t{};
         }
+
+        node_t node = m_instances.extract(it);
+        type::Struct& removed = node.key();
+        DotsCloneInformation& cloneInfo = node.mapped();
+
+        updateWithoutKeys(removed, instance, *header.attributes);
+        cloneInfo.lastOperation = DotsMt::remove;
+        cloneInfo.lastUpdateFrom = header.sender;
+        cloneInfo.modified = header.sentTime;
+        cloneInfo.localUpdateTime = timepoint_t::Now();
 
         return node;
     }

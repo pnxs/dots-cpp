@@ -8,6 +8,10 @@ include(LibraryUtils)
 
 # options
 option(BUILD_DOTS_SHARED "Build DOTS as a shared instead of a static library" OFF)
+option(ENABLE_CHANNEL_WEBSOCKET "Compile with websocket channel support" ON)
+option(ENABLE_DOTS_IO "Build DOTS IO" ON) # Can be used to reduce size of DOTS lib if IO is not needed
+option(ENABLE_CHANNEL_OBSERVE_API "Build with channel-observe API" OFF)
+
 
 # dependencies
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
@@ -26,6 +30,7 @@ add_library(${EXPORT_NAME}::${EXPORT_NAME} ALIAS ${TARGET_NAME})
 
 # properties
 target_dots_model(${TARGET_NAME}
+    ${CMAKE_CURRENT_LIST_DIR}/../external/dots/model/filter.dots
     ${CMAKE_CURRENT_LIST_DIR}/../external/dots/model/connection.dots
     ${CMAKE_CURRENT_LIST_DIR}/../external/dots/model/event.dots
     ${CMAKE_CURRENT_LIST_DIR}/../external/dots/model/user.dots
@@ -37,41 +42,17 @@ target_dots_model(${TARGET_NAME}
 )
 target_sources(${TARGET_NAME}
     PRIVATE
-        src/Application.cpp
-        src/Connection.cpp
         src/Container.cpp
         src/ContainerPool.cpp
-        src/Dispatcher.cpp
         src/dots.cpp
-        src/Event.cpp
-        src/GuestTransceiver.cpp
-        src/HostTransceiver.cpp
+        src/Filter.cpp
         src/Requirements.cpp
         src/Subscription.cpp
         src/Timer.cpp
         src/Transceiver.cpp
 
-        src/io/Channel.cpp
         src/io/DescriptorConverter.cpp
-        src/io/Endpoint.cpp
-        src/io/FdObserver.cpp
         src/io/Io.cpp
-        src/io/Listener.cpp
-        src/io/Transmission.cpp
-
-        src/io/auth/AuthManager.cpp
-        src/io/auth/Digest.cpp
-        src/io/auth/LegacyAuthManager.cpp
-        src/io/auth/Nonce.cpp
-
-        src/io/channels/LocalChannel.cpp
-        src/io/channels/LocalListener.cpp
-        src/io/channels/TcpChannel.cpp
-        src/io/channels/TcpListener.cpp
-        src/io/channels/UdsChannel.cpp
-        src/io/channels/UdsListener.cpp
-        src/io/channels/WebSocketChannel.cpp
-        src/io/channels/WebSocketListener.cpp
 
         src/serialization/AsciiSerialization.cpp
         src/serialization/SerializerException.cpp
@@ -82,6 +63,7 @@ target_sources(${TARGET_NAME}
         src/tools/logging.cpp
         src/tools/Uri.cpp
 
+        src/type/InstanceRef.cpp
         src/type/AnyStruct.cpp
         src/type/Chrono.cpp
         src/type/Descriptor.cpp
@@ -97,6 +79,58 @@ target_sources(${TARGET_NAME}
         src/type/Uuid.cpp
         src/type/VectorDescriptor.cpp
 )
+
+if (ENABLE_DOTS_IO)
+    target_sources(${TARGET_NAME}
+            PRIVATE
+            src/Application.cpp
+            src/Connection.cpp
+            src/Dispatcher.cpp
+            src/Event.cpp
+            src/GuestTransceiver.cpp
+            src/HostTransceiver.cpp
+
+            src/io/Channel.cpp
+            src/io/Endpoint.cpp
+            src/io/FdObserver.cpp
+            src/io/Listener.cpp
+            src/io/Transmission.cpp
+
+            src/io/auth/AuthManager.cpp
+            src/io/auth/Digest.cpp
+            src/io/auth/LegacyAuthManager.cpp
+            src/io/auth/Nonce.cpp
+
+            src/io/channels/LocalChannel.cpp
+            src/io/channels/LocalListener.cpp
+            src/io/channels/TcpChannel.cpp
+            src/io/channels/TcpListener.cpp
+            src/io/channels/UdsChannel.cpp
+            src/io/channels/UdsListener.cpp
+
+    )
+endif()
+
+if (ENABLE_CHANNEL_WEBSOCKET)
+    target_sources(${TARGET_NAME}
+            PRIVATE
+            src/io/channels/WebSocketChannel.cpp
+            src/io/channels/WebSocketListener.cpp
+    )
+    target_compile_definitions(${TARGET_NAME}
+            PUBLIC
+            # suppress warning for usage of deprecated Win32 socket functions in Boost
+            ENABLE_CHANNEL_WEBSOCKET
+    )
+endif()
+
+if (ENABLE_CHANNEL_OBSERVE_API)
+    target_compile_definitions(${TARGET_NAME}
+            PUBLIC
+            ENABLE_CHANNEL_OBSERVE_API
+    )
+endif ()
+
 target_include_directories(${TARGET_NAME}
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -118,7 +152,7 @@ target_compile_options(${TARGET_NAME}
         # set Windows SDK to target Windows 10
         $<$<CXX_COMPILER_ID:MSVC>:/DWINVER=0x0A00 /D_WIN32_WINNT=0x0A00>
     PRIVATE
-        $<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-Wall -Wextra -Wpedantic -Werror>>
+        $<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-Wall -Wextra -Wpedantic -Werror -O2>>
         $<$<CXX_COMPILER_ID:Clang>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-Wall -Wextra -Wpedantic -Werror -Wall -Wextra -Wpedantic -Werror>>
         $<$<CXX_COMPILER_ID:MSVC>:/W4>
 )
@@ -146,6 +180,7 @@ target_link_libraries(${TARGET_NAME}
         $<BUILD_INTERFACE:date::date>
         $<BUILD_INTERFACE:date::date-tz>
         $<BUILD_INTERFACE:PicoSHA2::PicoSHA2>
+        $<BUILD_INTERFACE:RapidJSON::RapidJSON>
         $<BUILD_INTERFACE:fmt::fmt-header-only>
         )
 set_target_properties(${TARGET_NAME} PROPERTIES

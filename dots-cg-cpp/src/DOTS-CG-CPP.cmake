@@ -9,14 +9,14 @@ if (WIN32)
         message(FATAL_ERROR "Could not determine Python3 user site-package location: ${rv}")
     endif()
     string(REPLACE "\n" "" Python3_SITEUSER ${Python3_SITEUSER})
-    find_program(DOTS-CG NAMES dcg.py PATHS ${Python3_SITEARCH} ${Python3_SITEUSER} PATH_SUFFIXES bin)
+    find_program(DOTS-CG REQUIRED NAMES dcg.py PATHS ${Python3_SITEARCH} ${Python3_SITEUSER} PATH_SUFFIXES bin)
     if(${DOTS-CG} STREQUAL DOTS-CG-NOTFOUND)
         message(FATAL_ERROR "Could not find DOTS code generator")
     else()
         set(DOTS-CG ${Python3_EXECUTABLE} ${DOTS-CG})
     endif()
 else()
-    find_program(DOTS-CG NAMES dcg.py)
+    find_program(DOTS-CG REQUIRED NAMES dcg.py HINTS $ENV{HOME}/.local/bin ENV PATH)
     if(${DOTS-CG} STREQUAL DOTS-CG-NOTFOUND)
         message(FATAL_ERROR "Could not find DOTS code generator")
     endif()
@@ -61,7 +61,7 @@ function(target_dots_model TARGET_NAME)
         # create header generation command for all types in model
         add_custom_command(OUTPUT ${MODEL_TYPES}
             COMMAND ${DOTS-CG-CPP-GENERATE_CMD} ${MODEL_FILE}
-            DEPENDS ${DOTS-CG_TEMPLATE_LIST} ${MODEL_FILE}
+            DEPENDS ${DOTS-CG_TEMPLATE_LIST} ${DOTS-CG-CPP_DIR}/${DOTS-CG_CONFIG}.py ${MODEL_FILE}
             COMMENT "Generating DOTS C++ types for model file: ${MODEL_FILE}"
         )
     endforeach()

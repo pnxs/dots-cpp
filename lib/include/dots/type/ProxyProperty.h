@@ -122,7 +122,7 @@ namespace dots::type
 
         PropertySet validPathProperties() const
         {
-            if (std::holds_alternative<const PropertyDescriptor*>(m_path))
+            if (std::holds_alternative<const PropertyDescriptor*>(m_path)) [[likely]]
             {
                 return m_area->validProperties();
             }
@@ -157,7 +157,7 @@ namespace dots::type
 
         PropertySet& validPathProperties()
         {
-            if (std::holds_alternative<const PropertyDescriptor*>(m_path))
+            if (std::holds_alternative<const PropertyDescriptor*>(m_path)) [[likely]]
             {
                 return m_area->validProperties();
             }
@@ -184,7 +184,7 @@ namespace dots::type
 
         const T& derivedStorage() const
         {
-            if (std::holds_alternative<const PropertyDescriptor*>(m_path))
+            if (std::holds_alternative<const PropertyDescriptor*>(m_path)) [[likely]]
             {
                 return m_area->getProperty<T>(std::get<const PropertyDescriptor*>(m_path)->offset());
             }
@@ -196,7 +196,7 @@ namespace dots::type
 
         const PropertyDescriptor& derivedDescriptor() const
         {
-            if (std::holds_alternative<const PropertyDescriptor*>(m_path))
+            if (std::holds_alternative<const PropertyDescriptor*>(m_path)) [[likely]]
             {
                 return *std::get<const PropertyDescriptor*>(m_path);
             }

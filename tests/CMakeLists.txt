@@ -14,17 +14,10 @@ add_executable(${TARGET_NAME} src/TestContainer.cpp)
 target_dots_model(${TARGET_NAME}
     src/serialization/serialization.dots
     src/type/TestStaticStruct.dots
+    src/type/instance_ref.dots
 )
 target_sources(${TARGET_NAME}
     PRIVATE
-        src/TestConnection.cpp
-        src/TestDispatcher.cpp
-        src/TestGuestTransceiver.cpp
-        src/TestHostTransceiver.cpp
-
-        src/io/auth/TestDigest.cpp
-        src/io/auth/TestLegacyAuthManager.cpp
-
         src/serialization/TestAsciiSerialization.cpp
         src/serialization/TestCborSerializer.cpp
         src/serialization/TestExperimentalCborSerializer.cpp
@@ -37,6 +30,10 @@ target_sources(${TARGET_NAME}
         src/tools/TestHexdump.cpp
         src/tools/TestLogging.cpp
 
+        src/TestFilter.cpp
+
+        src/type/TestInstanceRef.cpp
+        src/type/TestAnyObject.cpp
         src/type/TestChrono.cpp
         src/type/TestDescriptor.cpp
         src/type/TestDynamicStruct.cpp
@@ -49,6 +46,17 @@ target_sources(${TARGET_NAME}
         src/type/TestStaticDescriptor.cpp
         src/type/TestStaticStruct.cpp
 )
+if (ENABLE_DOTS_IO)
+    target_sources(${TARGET_NAME}
+        PRIVATE
+        src/io/auth/TestDigest.cpp
+        src/io/auth/TestLegacyAuthManager.cpp
+        src/TestConnection.cpp
+        src/TestHostTransceiver.cpp
+        src/TestGuestTransceiver.cpp
+        src/TestDispatcher.cpp
+    )
+endif ()
 target_include_directories(${TARGET_NAME}
     PRIVATE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
@@ -56,7 +64,7 @@ target_include_directories(${TARGET_NAME}
 )
 target_compile_options(${TARGET_NAME}
     PRIVATE
-        $<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-Wall -Wextra -Wpedantic -Werror>>
+        $<$<CXX_COMPILER_ID:GNU>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-Wall -Wextra -Wpedantic -Werror -O2>>
         $<$<CXX_COMPILER_ID:Clang>:$<$<NOT:$<BOOL:${CMAKE_CXX_FLAGS}>>:-Wall -Wextra -Wpedantic -Werror -Wno-gnu-zero-variadic-macro-arguments>>
         $<$<CXX_COMPILER_ID:MSVC>:/W4>
 )

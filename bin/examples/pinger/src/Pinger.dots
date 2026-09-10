@@ -1,0 +1,10 @@
+// The canonical DOTS demo struct - used by the Pinger example in every
+// language port (dots-cpp, dots-go, dots-rust, dots-sharp). One key
+// field plus a couple of payload fields; small enough to inspect on
+// the wire, big enough to exercise descriptor lookup + multi-field
+// merging.
+struct Pinger {
+    1: [key] uint32 id;
+    2: string message;
+    3: uint64 sequence;
+}

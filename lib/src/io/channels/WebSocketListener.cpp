@@ -21,7 +21,7 @@ namespace dots::io
         try
         {
             boost::beast::net::ip::tcp::resolver resolver{ ioContext };
-            boost::beast::net::ip::tcp::endpoint endpoint = *resolver.resolve({ m_address, m_port });
+            const auto endpoint = resolver.resolve(m_address, m_port).begin()->endpoint();
 
             m_acceptor.open(endpoint.protocol());
             m_acceptor.set_option(asio::ip::tcp::acceptor::reuse_address(true));
@@ -82,9 +82,9 @@ namespace dots::io
                     m_socket.shutdown(asio::ip::tcp::socket::shutdown_both);
                     m_socket.close();
                 }
-                catch (const std::exception& e)
+                catch (const std::exception& e2)
                 {
-                    processError(std::string{ "failed to shutdown and close WebSocket stream -> " } + e.what());
+                    processError(std::string{ "failed to shutdown and close WebSocket stream -> " } + e2.what());
                 }
             }
         });

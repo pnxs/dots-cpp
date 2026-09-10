@@ -2,6 +2,17 @@
 // Copyright 2015-2022 Thomas Schaetzlein <thomas@pnxs.de>, Christopher Gerlach <gerlachch@gmx.com>
 #include <dots/Subscription.h>
 
+// GCC 15 emits a spurious -Wmaybe-uninitialized on the inlined
+// std::function destructor reached through std::optional<Handler>'s
+// payload union in ~Subscription / operator=(&&). The optional's
+// _M_engaged guard makes the access well-defined; the analyzer just
+// can't see it across the inlined chain. Scope the suppression to
+// the two members that trigger it.
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
+
 namespace dots
 {
     Subscription::Subscription(unsubscribe_handler_t handler) :
@@ -45,3 +56,7 @@ namespace dots
         m_handler = std::nullopt;
     }
 }
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif

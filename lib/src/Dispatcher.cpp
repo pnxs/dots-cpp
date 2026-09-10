@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 // Copyright 2015-2022 Thomas Schaetzlein <thomas@pnxs.de>, Christopher Gerlach <gerlachch@gmx.com>
 #include <dots/Dispatcher.h>
+#include <algorithm>
 
 namespace dots
 {
@@ -57,29 +58,51 @@ namespace dots
     {
         id_t id = m_nextId++;
         if (m_clearingHandlers) return id;
-        event_handlers_t& handlers = m_eventHandlerPool[&descriptor];
-        const event_handler_t<>& handler_ = handlers.emplace(id, std::move(handler)).first->second;
-
-        const Container<>& container = m_containerPool.get(descriptor);
-
-        if (!container.empty())
-        {
-            DotsHeader header{
-                .typeName = descriptor.name(),
-                .fromCache = static_cast<uint32_t>(container.size()),
-                .removeObj = false,
-                .isFromMyself = false
-            };
-
-            for (const auto& [instance, cloneInfo] : container)
-            {
-                header.attributes = instance->_validProperties();
-                --*header.fromCache;
-                handler_(Event<>{ header, instance, instance, cloneInfo, DotsMt::create });
-            }
-        }
-
+        auto itHandler = m_eventHandlerPool[&descriptor].emplace(id, std::move(handler)).first;
+        replayCacheToHandler(descriptor, itHandler->second);
         return id;
+    }
+
+    auto Dispatcher::addEventHandlerNoReplay(const type::StructDescriptor& descriptor, event_handler_t<> handler) -> id_t
+    {
+        id_t id = m_nextId++;
+        if (m_clearingHandlers) return id;
+        m_eventHandlerPool[&descriptor].emplace(id, std::move(handler));
+        return id;
+    }
+
+    void Dispatcher::replayCacheToHandler(const type::StructDescriptor& descriptor, id_t id)
+    {
+        if (m_clearingHandlers) return;
+
+        auto itHandlers = m_eventHandlerPool.find(&descriptor);
+        if (itHandlers == m_eventHandlerPool.end()) return;
+
+        auto& handlers = itHandlers->second;
+        auto itHandler = handlers.find(id);
+        if (itHandler == handlers.end()) return;
+
+        replayCacheToHandler(descriptor, itHandler->second);
+    }
+
+    void Dispatcher::replayCacheToHandler(const type::StructDescriptor& descriptor, const event_handler_t<>& handler_)
+    {
+        const Container<>& container = m_containerPool.get(descriptor);
+        if (container.empty()) return;
+
+        DotsHeader header{
+            .typeName = descriptor.name(),
+            .fromCache = static_cast<uint32_t>(container.size()),
+            .removeObj = false,
+            .isFromMyself = false
+        };
+
+        for (const auto& [instance, cloneInfo] : container)
+        {
+            header.attributes = instance->_validProperties();
+            --*header.fromCache;
+            handler_(Event<>{ header, instance, instance, cloneInfo, DotsMt::create });
+        }
     }
 
     void Dispatcher::removeTransmissionHandler(const type::StructDescriptor& descriptor, id_t id)
@@ -110,7 +133,9 @@ namespace dots
 
             if (auto itHandler = handlers.find(id); itHandler != handlers.end())
             {
-                if (id == m_currentlyDispatchingId)
+                // defer removal if the handler is currently being dispatched
+                // at any level of the (possibly re-entrant) dispatch stack
+                if (std::find(m_currentlyDispatchingIds.begin(), m_currentlyDispatchingIds.end(), id) != m_currentlyDispatchingIds.end())
                 {
                     m_removeIds.emplace_back(id);
                 }
@@ -144,7 +169,12 @@ namespace dots
     void Dispatcher::dispatchEvent(const DotsHeader& header, const type::AnyStruct& instance)
     {
         const type::StructDescriptor& descriptor = instance->_descriptor();
-        event_handlers_t& handlers = m_eventHandlerPool[&descriptor];
+
+        // find() instead of operator[]: do not permanently insert an empty
+        // handler map for every dispatched type without event subscribers.
+        // Note that the cache still has to be updated even without handlers.
+        auto itHandlers = m_eventHandlerPool.find(&descriptor);
+        event_handlers_t* handlers = itHandlers == m_eventHandlerPool.end() ? nullptr : &itHandlers->second;
 
         if (descriptor.cached())
         {
@@ -152,15 +182,19 @@ namespace dots
 
             if (header.removeObj == true)
             {
-                if (Container<>::node_t removed = container.remove(header, instance); !removed.empty())
+                if (Container<>::node_t removed = container.remove(header, instance); !removed.empty() && handlers != nullptr)
                 {
-                    dispatchToHandlers(descriptor, handlers, Event<>{ header, instance, removed.key(), removed.mapped() });
+                    dispatchToHandlers(descriptor, *handlers, Event<>{ header, instance, removed.key(), removed.mapped() });
                 }
             }
             else
             {
                 const auto& [updated, cloneInfo] = container.insert(header, instance);
-                dispatchToHandlers(descriptor, handlers, Event<>{ header, instance, updated, cloneInfo });
+
+                if (handlers != nullptr)
+                {
+                    dispatchToHandlers(descriptor, *handlers, Event<>{ header, instance, updated, cloneInfo });
+                }
             }
         }
         else
@@ -170,14 +204,17 @@ namespace dots
                 throw std::logic_error{ "cannot remove uncached instance for type: " + descriptor.name() };
             }
 
-            DotsCloneInformation cloneInfo{
-                .lastOperation = DotsMt::create,
-                .created = header.sentTime,
-                .createdFrom = header.sender,
-                .localUpdateTime = timepoint_t::Now()
-            };
+            if (handlers != nullptr)
+            {
+                DotsCloneInformation cloneInfo{
+                    .lastOperation = DotsMt::create,
+                    .created = header.sentTime,
+                    .createdFrom = header.sender,
+                    .localUpdateTime = timepoint_t::Now()
+                };
 
-            dispatchToHandlers(descriptor, handlers, Event<>{ header, instance, instance, cloneInfo });
+                dispatchToHandlers(descriptor, *handlers, Event<>{ header, instance, instance, cloneInfo });
+            }
         }
     }
 
@@ -186,9 +223,10 @@ namespace dots
     {
         for (const auto& [id, handler] : handlers)
         {
+            m_currentlyDispatchingIds.emplace_back(id);
+
             try
             {
-                m_currentlyDispatchingId = id;
                 handler(dispatchable);
             }
             catch (...)
@@ -196,14 +234,21 @@ namespace dots
                 m_errorHandler(descriptor, std::current_exception());
             }
 
-            m_currentlyDispatchingId = std::nullopt;
+            m_currentlyDispatchingIds.pop_back();
         }
 
-        for (id_t id : m_removeIds)
+        // Drain deferred removals belonging to this frame's handler map.
+        // Ids that are still being dispatched in an enclosing frame or that
+        // live in another frame's map are kept for that frame to drain (ids
+        // are globally unique, so erase() only succeeds on the owning map).
+        m_removeIds.erase(std::remove_if(m_removeIds.begin(), m_removeIds.end(), [&](id_t id)
         {
-            handlers.erase(id);
-        }
+            if (std::find(m_currentlyDispatchingIds.begin(), m_currentlyDispatchingIds.end(), id) != m_currentlyDispatchingIds.end())
+            {
+                return false;
+            }
 
-        m_removeIds.clear();
+            return handlers.erase(id) > 0;
+        }), m_removeIds.end());
     }
 }

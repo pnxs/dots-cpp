@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 // Copyright 2015-2022 Thomas Schaetzlein <thomas@pnxs.de>, Christopher Gerlach <gerlachch@gmx.com>
 #include <dots/GuestTransceiver.h>
+#include <dots/View.h>
 #include <dots/fmt/logging_fmt.h>
 #include <dots/serialization/AsciiSerialization.h>
 #include <DotsMember.dots.h>
@@ -122,8 +123,46 @@ namespace dots
 
     bool GuestTransceiver::handleTransmission(Connection&/* connection*/, io::Transmission transmission)
     {
+        // Filtered-subscription demux: when the broker tags a transmission
+        // with subscriptionId, deliver only to the matching View. Untagged
+        // transmissions take the normal dispatcher path.
+        if (transmission.header().subscriptionId.isValid())
+        {
+            const uint32_t subId = *transmission.header().subscriptionId;
+            if (auto it = m_views.find(subId); it != m_views.end())
+            {
+                it->second->_dispatch(transmission);
+            }
+            // Unknown subscriptionId — silently drop. Can happen briefly after
+            // a View is destroyed while in-flight transmissions still arrive.
+            return true;
+        }
+
         dispatcher().dispatch(transmission);
         return true;
+    }
+
+    uint32_t GuestTransceiver::_allocateSubscriptionId()
+    {
+        return m_nextSubscriptionId++;
+    }
+
+    void GuestTransceiver::_registerView(uint32_t subscriptionId, details::ViewBase* view)
+    {
+        m_views[subscriptionId] = view;
+    }
+
+    void GuestTransceiver::_unregisterView(uint32_t subscriptionId)
+    {
+        m_views.erase(subscriptionId);
+    }
+
+    void GuestTransceiver::_ensureHostKnowsType(const type::StructDescriptor& descriptor)
+    {
+        if (m_hostConnection != nullptr)
+        {
+            m_hostConnection->transmit(descriptor);
+        }
     }
 
     void GuestTransceiver::handleTransitionImpl(Connection& connection, std::exception_ptr/* e*/) noexcept
@@ -164,7 +203,9 @@ namespace dots
 }
 
 #include <dots/io/channels/TcpChannel.h>
+#if defined(ENABLE_CHANNEL_WEBSOCKET)
 #include <dots/io/channels/WebSocketChannel.h>
+#endif
 #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
 #include <dots/io/channels/UdsChannel.h>
 #endif
@@ -194,7 +235,7 @@ namespace dots
         {
             return open<io::v1::TcpChannel>(std::move(preloadPublishTypes), std::move(preloadSubscribeTypes), std::move(authSecret), std::move(endpoint));
         }
-        #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
+#if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
         else if (scheme == "uds")
         {
             return open<io::posix::UdsChannel>(std::move(preloadPublishTypes), std::move(preloadSubscribeTypes), std::move(authSecret), std::move(endpoint));
@@ -207,11 +248,13 @@ namespace dots
         {
             return open<io::posix::v1::UdsChannel>(std::move(preloadPublishTypes), std::move(preloadSubscribeTypes), std::move(authSecret), std::move(endpoint));
         }
-        #endif
+#endif
+#if defined(ENABLE_CHANNEL_WEBSOCKET)
         else if (scheme == "ws")
         {
             return open<io::WebSocketChannel>(std::move(preloadPublishTypes), std::move(preloadSubscribeTypes), std::move(authSecret), std::move(endpoint));
         }
+#endif
         else
         {
             throw std::runtime_error{ "unknown or unsupported URI scheme: '" + std::string{ scheme } + "'" };

@@ -1,0 +1,1201 @@
+= Using DOTS: A Developer's Guide to dots-cpp
+:toc: left
+:toclevels: 3
+:sectnums:
+:sectanchors:
+:source-highlighter: rouge
+:icons: font
+
+This document describes how to write C++ applications that use the *dots-cpp*
+library to participate in a DOTS (Distributed Objects in Time and Space)
+publish/subscribe system. It complements the project `README.md` by covering
+the runtime model and the public API in the depth a developer needs to actually
+build software with it.
+
+The reference for individual classes and functions are the Doxygen comments in
+the public headers under `lib/include/dots/`. This guide focuses on the *how*
+and the *why*.
+
+This guide covers the v1.9.0 development version. For an existing v1.8.0
+application, start with <<migration,Upgrading From v1.8.0>>.
+
+== What DOTS Is
+
+DOTS is a *type-oriented*, *stateful*, *object-driven* publish/subscribe
+mechanism for inter-process communication. The unit of communication is an
+*instance* of a user-defined *DOTS struct type*. Such instances are
+distributed by a central *host* (typically `dotsd`) to all *guests* that have
+subscribed to the corresponding type.
+
+The properties that distinguish DOTS from a "normal" message bus are:
+
+* *Self-describing types.* Types are defined in a `.dots` modelling language,
+  type descriptors are first-class data and can be transferred between peers.
+* *Stateful, cached types.* By default, the host keeps the latest known instance
+  for every key in memory. New subscribers receive the full current state on
+  subscription, in addition to all subsequent updates.
+* *Partial updates.* A publish does not have to carry every property of an
+  instance. The transmitted property set is part of the protocol; the host and
+  all subscribers merge the partial update into their local clone.
+* *Origin-agnostic.* A subscriber cannot tell whether the publisher is on the
+  same machine, on the network or replayed from a recording.
+
+NOTE: The header file `lib/include/dots/dots.h` defines the *global API*
+(`dots::publish`, `dots::subscribe`, `dots::container`, ...) used by most
+applications. The same operations are also available on individual transceiver
+objects via `dots/Transceiver.h`, `dots/GuestTransceiver.h` and
+`dots/HostTransceiver.h`.
+
+== System Topology
+
+A DOTS system consists of:
+
+* One *host* (server, message broker). For most setups, this is the `dotsd`
+  daemon shipped under `bin/dotsd/`. It accepts guest connections, holds the
+  caches for cached types and routes publications.
+* One or more *guests* (clients). Each guest is a normal application linking
+  against `dots-cpp` and connecting to the host over TCP, a UNIX domain socket
+  or a WebSocket.
+
+A guest application typically uses `dots::Application` as its top-level
+helper -- it creates the global guest transceiver, parses `--dots-endpoint`
+arguments, opens the connection, and runs the asynchronous event loop.
+
+The dots-cpp library is *single-threaded asynchronous* (Boost.Asio based). All
+event handlers and timer callbacks are invoked on the IO context that the
+transceiver was opened on; user code never has to lock anything against
+DOTS itself.
+
+== Quickstart Example
+
+The following minimal application from `bin/examples/roundtrip/src/main.cpp`
+shows the canonical structure: create an `Application`, subscribe, publish,
+run the event loop.
+
+.`model.dots`
+[source]
+----
+struct RoundtripData {
+    1: [key] uint32 id;
+    2: string someString;
+    3: float32 someFloat;
+}
+----
+
+.`main.cpp`
+[source,cpp]
+----
+#include <iostream>
+#include <dots/Application.h>
+#include <RoundtripData.dots.h>
+
+int main(int argc, char* argv[])
+{
+    dots::Application app{ "roundtrip", argc, argv };
+
+    dots::Subscription sub = dots::subscribe<RoundtripData>(
+        [&](const dots::Event<RoundtripData>& event)
+        {
+            const RoundtripData& data = event();
+            if (event.isFromMyself()) {
+                std::cout << dots::to_string(data) << "\n";
+            }
+        });
+
+    dots::publish(RoundtripData{
+        .id        = 0,
+        .someString = "foobar",
+        .someFloat = 3.1415f
+    });
+
+    return app.exec();
+}
+----
+
+Build with `target_dots_model()` (see <<build-integration>>) and run alongside
+a DOTS host:
+
+[source,sh]
+----
+./build/bin/dotsd/dotsd &
+./build/bin/examples/roundtrip/roundtrip
+----
+
+== The DOTS Modelling Language
+
+DOTS types are described in `.dots` files. The code generator (`dcg.py`)
+turns each model file into one C++ header per type and one descriptor per
+type that is registered in the runtime type registry.
+
+=== Struct Definition
+
+[source]
+----
+struct Switch {
+    1: [key] string id;   // unique identifier
+    2: bool enabled;      // current state
+}
+----
+
+Each property has:
+
+* a numeric *tag* (here `1` and `2`). Tags must be unique within the struct
+  and are used as stable identifiers in the binary serialization (CBOR by
+  default). Do not change or reuse tags once a type is in production.
+* an optional *attribute set* in square brackets (e.g. `[key]`).
+* a *type* (built-in or another DOTS type).
+* a *name*.
+
+=== Property Attributes
+
+`[key]`::
+  Marks the property as part of the *primary key* of the type. Multiple `[key]`
+  attributes form a composite key. Key properties must be valid for every
+  publish (otherwise `dots::publish` throws), and they are what the host and
+  the local container use to identify which instance an update refers to.
+
+`[deprecated]`::
+  Marks the property as deprecated. Existing peers can still send it, but it
+  should not be used in new code.
+
+=== Built-in Property Types
+
+[cols="1,3", options="header"]
+|===
+|Modelling type | C++ type
+|`bool`         | `bool_t`
+|`int8`..`int64`     | `intN_t`
+|`uint8`..`uint64`   | `uintN_t`
+|`float32`, `float64`, `float128` | `floatN_t`
+|`string`       | `string_t` (`std::string`)
+|`uuid`         | `uuid_t`
+|`timepoint`    | `timepoint_t`
+|`duration`     | `duration_t`
+|`property_set` | `property_set_t`
+|`vector<T>`    | `vector_t<T>`
+|`any`          | `dots::any_t` (`dots::type::AnyObject`)
+|`instance_ref` | `dots::instance_ref_t`
+|`instance_ref<T>` | `dots::typed_instance_ref_t<T>`
+|`<StructName>` | nested DOTS struct
+|`<EnumName>`   | nested DOTS enum
+|===
+
+=== Generic Object Fields
+
+Use `any` when a property needs to carry an arbitrary DOTS struct, including
+its state. It stores the contained type's name and canonical CBOR payload,
+so a broker can forward it without resolving the contained type.
+
+[source]
+----
+struct Envelope {
+    1: [key] string id;
+    2: any payload;
+}
+----
+
+[source,cpp]
+----
+#include <dots/serialization/CborSerializer.h>
+#include <dots/type/Registry.h>
+
+Envelope envelope{
+    .id = "switch-state",
+    .payload = dots::to_any(Switch{ .id = "kitchen", .enabled = true })
+};
+
+dots::type::Registry registry;
+auto restored = dots::from_any(*envelope.payload, registry);
+----
+
+The registry must know the contained type to reconstruct it with `from_any`;
+an unknown type raises an exception. Plain JSON serialization uses the opaque
+`TypeName#<hex>` representation. Registry-taking JSON overloads expand it to
+an object with `@type` and `value` members. ASCII output can also expand `any`
+values when supplied a registry. `vector<any>` is supported.
+
+=== Instance References
+
+Use `instance_ref` to carry only an instance's identity. A generic reference
+contains a target type name and canonical key; `instance_ref<T>` fixes the
+target type in the schema. Both forms support vectors and can themselves be
+key properties.
+
+[source]
+----
+struct SwitchStatus {
+    1: [key] instance_ref<Switch> subject;
+    2: bool applied;
+}
+----
+
+[source,cpp]
+----
+#include <dots/serialization/CborSerializer.h>
+
+Switch sw{ .id = "kitchen", .enabled = true };
+auto generic = dots::to_instance_ref(sw);
+auto typed = dots::to_typed_instance_ref(sw);
+SwitchStatus status{ .subject = typed, .applied = true };
+
+auto keysOnly = dots::from_instance_ref(generic, registry);
+----
+
+Here `registry` is a `dots::type::Registry` containing the target descriptor.
+`from_instance_ref` reconstructs a partial instance containing only keys; it
+does not fetch the target's current state. Use the appropriate container to
+look up that state.
+
+`dots::canonical_key(instance)` encodes keys in ascending property-tag order,
+independently of declaration order. Reference construction rejects unset
+keys; a keyless type denotes a singleton. Default-constructed references are
+empty placeholders and cannot be serialized. References compare and hash by
+target type name and canonical key bytes. Text, JSON and ASCII output use
+readable notation such as `Switch["kitchen"]`.
+
+See `doc/instance-ref.md` for encoding details and validation rules.
+
+=== Struct Attributes
+
+Struct-level attributes are written after the struct name:
+
+[source]
+----
+struct StatelessSwitch [cached=false] {
+    1: string id;
+}
+----
+
+The most important struct attributes are:
+
+`cached` (default `true`)::
+  If `true`, the host maintains a cache of the latest instance per key.
+  Subscribers receive the cache on subscription and see `create`, `update` and
+  `remove` events afterwards.
++
+If `false`, the type is *uncached*: the host does not store anything, every
+publish is forwarded as an independent `create` event.
+
+`internal`::
+  Type belongs to DOTS itself (e.g. headers, descriptors, daemon status).
+  Application code generally does not define internal types and only consumes
+  them.
+
+`persistent`::
+  The host should persist the cache across restarts (subject to the host
+  implementation supporting it).
+
+`cleanup`::
+  Instances created by a guest are automatically removed when that guest
+  disconnects. Useful for liveness state.
+
+`local`::
+  Type is for local (in-process) use only and must not be sent over the wire.
+
+`substruct_only`::
+  Type may only appear as a property of another struct. Calling
+  `dots::publish` or `dots::subscribe` on such a type is a compile-time error.
+
+=== Enum Definition
+
+[source]
+----
+enum DotsMt {
+    1: create,
+    2: update,
+    3: remove
+}
+----
+
+Each enumerator has a tag. The C++ enum generated for it preserves these
+numeric tags, which are also what is transmitted on the wire.
+
+=== Practical Examples From the Repository
+
+The smart-home example (`bin/examples/smart-home/src/model.dots`) shows a
+typical mix:
+
+[source]
+----
+struct Switch {
+    1: [key] string id;
+    2: bool enabled;
+}
+
+struct StatelessSwitch [cached=false] {
+    1: string id;
+}
+
+struct Dimmer {
+    1: [key] string id;
+    2: uint32 brightness;
+}
+
+struct LightControl {
+    1: [key] string id;
+    2: uint32 brightness;
+}
+----
+
+Vectors and nested structs are demonstrated by the test model
+(`lib/src/model/dotstesttypes.dots`):
+
+[source]
+----
+struct DotsTestSubStruct {
+    1: bool flag1;
+}
+
+struct DotsTestVectorStruct {
+    1: vector<int32> intList;
+    2: vector<DotsTestSubStruct> subStructList;
+    3: vector<string> stringList;
+}
+----
+
+[[build-integration]]
+== Build Integration (CMake)
+
+The documented compiler baseline is GCC 11.4, Clang 14 or MSVC 19.26, with
+Boost 1.74 or later and a standard library providing C++20 `std::span`.
+MSVC 19.40 and later have a known compiler limitation described in `README.md`.
+Initialize bundled dependencies, including libfmt, before configuring:
+
+[source,sh]
+----
+git submodule update --init --recursive
+----
+
+Models using the new field types need a compatible `dots-code-generator`.
+Instance references require `instance_ref` and `instance_ref_format` support.
+Set CMake's `DOTS-CG` to the appropriate `dcg.py` if several versions are
+installed, then regenerate the model headers.
+
+`dots-cpp` ships a CMake helper that turns `.dots` files into generated
+headers and adds them to a target. The function is defined in
+`dots-cg-cpp/src/DOTS-CG-CPP.cmake`:
+
+[source,cmake]
+----
+add_executable(my_app)
+
+target_dots_model(my_app
+    src/model.dots
+    src/another_model.dots
+)
+
+target_sources(my_app PRIVATE src/main.cpp)
+target_include_directories(my_app PRIVATE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>   # generated *.dots.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+target_compile_features(my_app PRIVATE cxx_std_20)
+target_link_libraries(my_app PRIVATE DOTS::DOTS)
+----
+
+For each model file, `target_dots_model` runs the Python code generator
+`dcg.py` (provided by the
+https://pypi.org/project/dots-code-generator/[dots-code-generator] package) and
+generates one `<TypeName>.dots.h` header per struct/enum into
+`${CMAKE_CURRENT_BINARY_DIR}`. The headers are added as dependencies of the
+target via a custom target named `<target>-generate`.
+
+You then `#include "<TypeName>.dots.h"` from your C++ sources -- the generated
+struct is in the global namespace and inherits from `dots::type::Struct`.
+
+Optional library components can be selected at configure time:
+
+[cols="2,1,3", options="header"]
+|===
+|CMake option |Default |Purpose
+|`ENABLE_DOTS_IO` |`ON` |Include communication components.
+|`ENABLE_CHANNEL_WEBSOCKET` |`ON` |Include WebSocket channels and listeners.
+|`ENABLE_CHANNEL_OBSERVE_API` |`OFF` |Expose channel observers for benchmarking.
+|===
+
+For a types-and-serialization build, disable both IO and WebSocket support,
+and disable examples or tests that require communication. For a smaller
+networked application that uses only TCP or UDS, disable WebSocket support.
+
+== The `dots::Application` Class
+
+`dots::Application` (header `dots/Application.h`) is the recommended
+top-level helper for both guests and host applications.
+
+=== Constructor Variants
+
+[source,cpp]
+----
+// Guest with command-line arguments.
+// Parses --dots-endpoint and connects to the host.
+dots::Application app{ "my-app", argc, argv };
+
+// Guest without command-line arguments (uses the default endpoint).
+dots::Application app{ "my-app" };
+
+// Host: takes a pre-built HostTransceiver.
+dots::Application app{ argc, argv, dots::HostTransceiver{ "my-host" } };
+----
+
+The default endpoint, used when `--dots-endpoint` is not given, is
+`tcp://127.0.0.1:11235`.
+
+For a guest, the constructor *blocks until the connection is fully
+established*, including <<early-subscribe,cache preloading>>. After the
+constructor returns, every type that was registered as a subscribe type via a
+template instantiation already has its cache populated.
+
+=== Running the Event Loop
+
+[source,cpp]
+----
+return app.exec();
+----
+
+`exec()` runs the underlying Boost.Asio IO context until either:
+
+* `app.exit(code)` is called from a handler, or
+* `SIGINT` / `SIGTERM` is received (when `handleExitSignals` was `true`,
+  the default), or
+* there is no remaining work.
+
+`exit(int code)` is the standard way to stop a DOTS application from inside an
+event handler. The code becomes the return value of `exec()`.
+
+=== Endpoint Format
+
+Endpoints are URI-like strings. The supported schemes are listed in
+<<transports>>.
+
+[source,sh]
+----
+my-app                                                # tcp://127.0.0.1:11235
+my-app --dots-endpoint=tcp://10.0.0.1:11235
+my-app --dots-endpoint=uds:/run/dots.socket
+my-app --dots-endpoint=ws://127.0.0.1:11233
+----
+
+The same `--dots-endpoint` flag is used by host applications such as `dotsd`,
+where it can be repeated to listen on several endpoints at once.
+
+== Publishing
+
+The simplest way to publish is via the global API:
+
+[source,cpp]
+----
+dots::publish(LightControl{
+    .id        = "Stairwell_Light",
+    .brightness = 100u
+});
+----
+
+The C++20 designated-initializer syntax sets the *valid property set* of the
+instance, which is what gets transmitted by default.
+
+=== `dots::publish` Signature
+
+[source,cpp]
+----
+template<typename T>
+void publish(const T& instance,
+             std::optional<property_set_t> includedProperties = std::nullopt,
+             bool remove = false);
+----
+
+`includedProperties`::
+  If supplied, only those properties (plus all key properties) are transmitted.
+  This allows a partial update of an existing cached instance.
+
+`remove`::
+  When `true`, the publish is interpreted as a remove operation. Subscribers
+  see a `DotsMt::remove` event and the host removes the instance from its
+  cache. The convenience function `dots::remove(instance)` calls `publish`
+  with `remove = true` and only the key properties.
+
+=== Partial Updates
+
+Each generated DOTS struct provides per-property bitsets:
+
+[source,cpp]
+----
+// from generated RoundtripData.dots.h
+RoundtripData::id_p          // property_set_t containing only 'id'
+RoundtripData::someString_p  // property_set_t containing only 'someString'
+----
+
+These can be combined with `|`, `&`, `^`. A typical partial publish:
+
+[source,cpp]
+----
+Dimmer d;
+d.id = "LivingRoom_TopDimmer";
+d.brightness = 60;
+
+// only update brightness; keys are always included
+dots::publish(d, Dimmer::brightness_p);
+----
+
+The host merges the partial update into the cached instance and forwards an
+`update` event to subscribers, with `event.newProperties()` reflecting which
+properties were actually transmitted.
+
+=== Effects on the Local State
+
+`dots::publish` does not directly invoke local subscribers and does not change
+the local container. The publish is sent to the host; the host fans the
+transmission out, and the publishing guest receives its own publish back if --
+and only if -- it has a subscription to that type. In the resulting event
+`event.isFromMyself()` will return `true`.
+
+CAUTION: Publishing a `substruct_only` type is a compile-time error.
+Publishing without a valid key property is a runtime error.
+
+== Subscribing
+
+The dual to `publish` is `subscribe`. The most common form takes the type
+as a template parameter and a callable taking `const dots::Event<T>&`:
+
+[source,cpp]
+----
+dots::Subscription sub = dots::subscribe<Switch>(
+    [](const dots::Event<Switch>& event)
+    {
+        const Switch& s = event();
+        // ...
+    });
+----
+
+The handler can be any compatible invocable: a lambda, a free function, or a
+member function bound with the
+`{ &Class::method, this }` syntax that the framework accepts:
+
+[source,cpp]
+----
+struct Basement {
+    Basement()
+        : m_sub(dots::subscribe<Switch>(dots::deferred,
+              { &Basement::handleSwitch, this }))
+    {}
+
+    void handleSwitch(const dots::Event<Switch>& event);
+
+    dots::Subscription m_sub;
+};
+----
+
+=== Choosing When Initial Callbacks Run
+
+An untagged `subscribe(handler)` replays the current local cache synchronously:
+callbacks can run before `subscribe` returns. Specify `dots::sync` to make
+this choice explicit, or `dots::deferred` to post registration and initial
+replay together to the IO context:
+
+[source,cpp]
+----
+auto sub = dots::subscribe<Switch>(dots::deferred, handler);
+----
+
+Prefer deferred registration in constructors, as in the member-handler
+example above, so cache callbacks do not access an incompletely constructed
+object. This assumes construction finishes before the IO context processes
+the posted registration; do not run the event loop during construction.
+The handler is not connected to live dispatch until registration runs.
+Destroying the subscription before then cancels the pending registration.
+
+Both policies also apply to runtime-descriptor subscriptions and new-type
+handlers, through the global API and explicit transceivers. They control
+local registration and replay; receiving an initial snapshot from the broker
+still requires network processing.
+
+=== Subscribing to Untyped Descriptors
+
+You can subscribe to a runtime-known type by descriptor (used by tools that
+discover types dynamically):
+
+[source,cpp]
+----
+auto sub = dots::subscribe(structDescriptor,
+    [](const dots::Event<>& event) {
+        const dots::type::Struct& inst = event();
+        // ...
+    });
+----
+
+You can also subscribe to *new types being registered* by passing a descriptor
+type as the template parameter:
+
+[source,cpp]
+----
+auto typeSub = dots::subscribe<dots::type::StructDescriptor>(
+    [](const dots::type::StructDescriptor& desc) {
+        if (!desc.internal() && !desc.substructOnly()) {
+            // a new application-level struct type appeared
+        }
+    });
+----
+
+This is exactly how the `object-trace` example discovers every type in the
+system at runtime (see `bin/examples/object-trace/src/main.cpp`).
+
+=== `dots::Subscription` Lifetime
+
+`dots::subscribe` returns a `[[nodiscard]] dots::Subscription`. It is a
+move-only RAII handle:
+
+* Destroying it (or calling `unsubscribe()`) ends the subscription.
+* Calling `discard()` releases ownership *without* unsubscribing -- useful
+  when the subscription should live for the lifetime of the process.
+
+[source,cpp]
+----
+// stored as a member -> tied to object lifetime
+dots::Subscription m_sub = dots::subscribe<Foo>(...);
+
+// fire and forget
+dots::subscribe<Foo>(...).discard();
+----
+
+A common pattern for objects with multiple subscriptions is to keep them in a
+`std::vector<dots::Subscription>`:
+
+[source,cpp]
+----
+std::vector<dots::Subscription> m_subscriptions;
+m_subscriptions.emplace_back(dots::subscribe<Dimmer>({ &LivingRoom::handleDimmer, this }));
+----
+
+[[filtered-views]]
+== Server-Side Filtering and Views
+
+Use a `dots::View<T>` when the broker should send only matching instances or
+selected properties. Each view owns an independent subscription and local
+container; several views of the same type can coexist on one connection.
+
+[source,cpp]
+----
+#include <dots/FilterBuilder.h>
+#include <dots/View.h>
+
+// Create after the Application has connected to the broker.
+namespace f = dots::filter;
+auto brightLights = dots::view<LightControl>(
+    f::predicate(f::attr<LightControl::brightness_pt> >= uint32_t{50})
+        .project(LightControl::brightness_p));
+
+auto sub = brightLights.subscribe([](const dots::Event<LightControl>& event) {
+    if (event.isRemove()) {
+        // This light left the view or was removed from the broker.
+    } else {
+        // Matching state, with the requested properties and all keys.
+    }
+});
+
+const auto& matchingLights = brightLights.container();
+----
+
+Property handles use generated `_pt` types. Predicates support comparisons,
+`isIn`, `notIn`, `isNull`, `notNull`, and combinations with `&`, `|` and `!`.
+The broker validates and compiles predicates at subscription time. Projection
+always includes key properties, even when they are omitted from the mask.
+
+For cached types, the broker sends matching cached instances on joining.
+An instance entering the view generates a create event; an instance remaining
+in the view generates updates. Leaving the predicate generates a key-only
+remove transmission, even if the object still exists in the broker's cache.
+Re-entry generates a new create event. For uncached types, the broker has no
+snapshot or retained membership and forwards matching publications without
+synthesizing leave transitions.
+
+Read filtered state from `view.container()`. A view does not populate the
+ordinary `dots::container<T>()`. Keep the view alive while using its handlers,
+and destroy handler subscriptions before the view and the view before its
+transceiver. `View<T>::subscribe()` replays already-arrived view entries
+synchronously and has no deferred-policy overload. The initial broker
+snapshot arrives asynchronously as the IO context runs.
+
+The broker must advertise `filteredSubscriptions` during the handshake;
+creating a view otherwise throws. Upgrade the broker before adopting views.
+See `bin/examples/pinger-filtered/` for a complete client example.
+
+== The `dots::Event<T>` Class
+
+The handler receives a non-copyable, non-movable read-only view of the event:
+
+[cols="1,2", options="header"]
+|===
+|Method | Meaning
+|`event()` / `event.updated()`
+| The instance after applying the transmission. For *cached* types this is the
+  local container clone, with its valid-property set reflecting all known
+  properties (including ones that earlier publishes had set). For *uncached*
+  types this is the same as `transmitted()`.
+|`event.transmitted()`
+| The unaltered instance contained in this transmission. Its valid-property set
+  is exactly what was published in this update.
+|`event.header()`
+| `DotsHeader` with `sentTime`, `sender`, `attributes` (the published property
+  set) and `removeObj` flag.
+|`event.cloneInfo()`
+| `DotsCloneInformation`: `lastOperation`, `created`/`modified` timestamps,
+  `lastUpdateFrom`, `createdFrom`, etc.
+|`event.descriptor()`
+| The runtime descriptor of the type.
+|`event.mt()` / `isCreate()` / `isUpdate()` / `isRemove()`
+| Operation kind. For uncached types `mt()` is always `DotsMt::create`.
+|`event.isFromMyself()`
+| `true` if this event was triggered by a publish from the *same* transceiver.
+|`event.newProperties()`
+| The property set that was transmitted (i.e. the change).
+|`event.updatedProperties()`
+| Subset of `newProperties()` that is now valid in `updated()` (i.e. excluding
+  properties that were invalidated).
+|`event.as<T>()`
+| Cast an `Event<>` to a typed `Event<T>` with a runtime type check.
+|===
+
+A typical handler distinguishes between event kinds:
+
+[source,cpp]
+----
+auto sub = dots::subscribe<Switch>([](const dots::Event<Switch>& e) {
+    if (e.isCreate())      { /* a new switch appeared */ }
+    else if (e.isUpdate()) { /* an existing switch changed */ }
+    else if (e.isRemove()) { /* a switch was removed */ }
+});
+----
+
+[[containers]]
+== Accessing the Local Cache (Containers)
+
+For every cached type that the application has subscribed to, the framework
+maintains a local `dots::Container<T>` keyed by the type's key properties.
+The container reflects the latest state received and processed by this guest.
+Updates still in transit from the host are not yet visible.
+
+Containers use hash tables. Iteration and initial cache replay are unordered;
+collect and explicitly sort instances when a display or algorithm requires
+key order. Insertions can invalidate iterators when the table rehashes.
+
+[source,cpp]
+----
+const dots::Container<LightControl>& lights = dots::container<LightControl>();
+
+// look up by key (only the key properties of the probe instance are used)
+const LightControl* light = lights.find({ .id = "Stairwell_Light" });
+if (light != nullptr && light->brightness == 0u) {
+    // ...
+}
+----
+
+NOTE: Instantiating `dots::container<T>()` registers `T` as an early-subscribe
+type, so when used together with `dots::Application` the container is fully
+populated by the time the constructor returns.
+
+Useful container methods (typed version):
+
+* `bool empty()`, `size_t size()`
+* `const T* find(const T& probe)` (probe only needs key properties set)
+* `forEach(std::function<void(const T&)>)` -- iterate all instances
+* `forEachClone(std::function<void(const value_t&)>)` -- iterate
+  `std::pair<AnyStruct, DotsCloneInformation>`
+* `begin()` / `end()` constant iterators
+
+The full set of containers can be inspected via `dots::pool()` which returns
+the `ContainerPool` of the global transceiver.
+
+== Cached vs. Uncached Types
+
+The `cached` struct attribute fundamentally changes how a type behaves on the
+wire and in handlers.
+
+[cols="1,2,2", options="header"]
+|===
+|                 | Cached (default)         | `[cached=false]`
+|Host state       | Stores latest instance per key
+                  | No state stored, transmissions pass through
+|New subscriber   | Replays current local instances as `create` events according to the sync/deferred policy, then live updates; broker preload arrives through the IO context
+                  | Receives only future publishes
+|Event kinds      | `create`, `update`, `remove`
+                  | Always `create`
+|`dots::container<T>()` | Populated and queryable
+                  | Empty / unused
+|Typical use      | Configuration, device state, long-lived objects
+                  | Button presses, transient events, alarms
+|===
+
+The `Switch` / `StatelessSwitch` pair in the smart-home example is the
+canonical illustration: a `Switch` represents a physical switch's *state* (on or
+off) and is cached; a `StatelessSwitch` represents the *event* of a button
+being pressed and is uncached.
+
+[[early-subscribe]]
+== Early-Subscribe (Cache Preloading)
+
+When a guest connects to a host it goes through these connection states
+(see `external/dots/model/connection.dots` -> `DotsConnectionState`):
+
+----
+connecting -> early_subscribe -> connected -> [suspended] -> closed
+----
+
+During the *early_subscribe* phase the connection is not yet considered
+"connected" -- the guest sends all initial subscriptions and the host
+responds with the full current cache for every cached type that was
+subscribed to. Only after the host has signalled `preloadFinished` does the
+connection move to `connected` and the guest's `Application` constructor
+returns.
+
+The set of types preloaded is determined automatically from the *type
+templates that have been instantiated* before `Application` is constructed.
+The relevant calls are:
+
+* `dots::subscribe<T>(...)` -- registers `T` as an early-subscribe type.
+* `dots::container<T>()` -- registers `T` as an early-subscribe type.
+* `dots::publish(T{...})` / `dots::remove(T{...})` -- registers `T` as an
+  early-publish type (so the host knows the type exists).
+
+The practical implication: if you simply write the standard
+
+[source,cpp]
+----
+int main(int argc, char* argv[])
+{
+    dots::Application app{ "my-app", argc, argv };
+
+    // subscriptions and publishes here ...
+}
+----
+
+then by the time the application body runs, the local containers for every
+cached type you `subscribe<T>` or `container<T>` are guaranteed to be in sync
+with the host. There is *no* race window where you can miss the initial state.
+
+If you must subscribe at runtime to a type that was not statically instantiated
+beforehand, the subscription will be created normally but the initial cache
+is delivered asynchronously, after the call returns.
+
+== Timers
+
+DOTS provides RAII timers that share the application's IO context, so their
+callbacks are dispatched on the same thread as event handlers and do not race
+against them.
+
+[source,cpp]
+----
+using namespace dots::type::literals;   // makes 30s, 500ms etc. available
+
+dots::Timer t = dots::create_timer(30s, [] {
+    // fires once after 30 seconds
+});
+
+// periodic timer
+dots::Timer pulse = dots::create_timer(1s, [] {
+    // fires every second until 'pulse' is destroyed
+}, /*periodic=*/true);
+----
+
+A `dots::Timer` is a move-only RAII handle: destroying it cancels the timer.
+Like `Subscription`, it has a `discard()` method to detach the timer from the
+handle's lifetime.
+
+NOTE: The free functions `dots::add_timer` / `dots::remove_timer` are
+deprecated in favour of `dots::create_timer`.
+
+[[transports]]
+== Transports and Endpoints
+
+dots-cpp implements four transport channels (see
+`lib/include/dots/io/channels/`):
+
+[cols="1,1,2", options="header"]
+|===
+|Scheme | Class | Notes
+|`tcp://`  | `TcpChannel` / `TcpListener`
+| Default. Default port `11235`. Works over IPv4 and IPv6.
+|`uds:`    | `UdsChannel` / `UdsListener`
+| UNIX domain socket, e.g. `uds:/run/dots.socket`. Linux/UNIX only.
+|`ws://`, `wss://` | `WebSocketChannel` / `WebSocketListener`
+| WebSocket transport, useful for browser-side guests. `wss` is TLS-encrypted.
+|in-process | `LocalChannel` / `LocalListener`
+| Same-process channel without an endpoint URI. Used for tests and embedding.
+|===
+
+You normally only see endpoint URIs through the `--dots-endpoint`
+command-line option that `dots::Application` parses. For advanced setups
+you can build a `GuestTransceiver` or `HostTransceiver` yourself and call
+`open()` / `listen()` with a specific channel type:
+
+[source,cpp]
+----
+GuestTransceiver gt{ "my-app" };
+gt.open<io::posix::TcpChannel>(
+    /*preloadPublishTypes*/ {}, /*preloadSubscribeTypes*/ {},
+    io::Endpoint{ "tcp://10.0.0.1:11235" });
+----
+
+== The Global API vs. Explicit Transceivers
+
+For most applications, the global API in `dots/dots.h` is sufficient and the
+recommended choice:
+
+[source,cpp]
+----
+dots::publish(...);
+dots::subscribe<T>(...);
+dots::container<T>();
+dots::pool();
+dots::create_timer(...);
+----
+
+These delegate to a global guest transceiver that `dots::Application`
+constructs. To avoid accidental use of global state, you can compile with
+`-DDOTS_NO_GLOBAL_TRANSCEIVER` and the global functions disappear.
+
+In that case, or in tests with multiple transceivers, hold a transceiver
+explicitly and call its members:
+
+[source,cpp]
+----
+auto& gt = app.transceiver();   // or your own GuestTransceiver
+gt.publish(instance);
+auto sub = gt.subscribe<T>(handler);
+const auto& container = gt.container<T>();
+----
+
+Both paths invoke the same underlying machinery (Dispatcher, ContainerPool,
+Connection).
+
+=== Managing the Global Transceiver Directly
+
+`dots::global_transceiver()` returns a `GuestTransceiver&`. Use member access
+with `.`, and check availability with `dots::global_transceiver_is_set()`:
+
+[source,cpp]
+----
+if (dots::global_transceiver_is_set()) {
+    dots::global_transceiver().publish(instance);
+}
+----
+
+When `dots::Application` is not managing it, install a transceiver with
+`dots::global_transceiver_create(std::move(transceiver))` and release it with
+`dots::global_transceiver_destroy()`. Creation requires no existing global
+transceiver; destruction requires an existing one. Direct access requires
+creation first. The global transceiver must use the global IO context and
+the registry's `StaticTypePolicy::All`. Prefer `dots::Application` unless you
+need to manage this setup explicitly.
+
+== Dynamic / Reflective Use
+
+DOTS types are self-describing, so you can write applications that operate on
+types they do not know at compile time. The `object-trace` and `object-reader`
+examples illustrate the two halves:
+
+* *Discover types* by subscribing to descriptor categories such as
+  `dots::type::StructDescriptor` (already shown above) and dispatch on
+  `descriptor.name()` etc.
+* *Subscribe / publish without a static C++ type* using:
++
+[source,cpp]
+----
+// dynamic subscribe by descriptor:
+auto sub = dots::subscribe(descriptor, [](const dots::Event<>& e) {
+    std::cout << dots::to_string(e()) << "\n";
+});
+
+// dynamic creation of an instance from a textual representation:
+dots::type::AnyStruct instance{ descriptor };
+dots::from_string("Dimmer{ .id = \"X\", .brightness = 42 }", *instance);
+dots::publish(*instance);
+----
+
+`dots::to_string()` and `dots::from_string()` work uniformly on every DOTS
+struct -- they are how the `object-reader` and `object-trace` tools talk to
+the human user.
+
+To force the host to send the descriptors of types not yet known locally,
+publish a `DotsDescriptorRequest`:
+
+[source,cpp]
+----
+dots::publish(DotsDescriptorRequest{ .whitelist = {} });
+----
+
+== Authentication (Brief)
+
+The host can require challenge/response authentication. The protocol
+(documented in `doc/authentication.txt`) is roughly:
+
+. Host sends `DotsMsgHello` containing a 64-bit random nonce.
+. Guest computes
+  `response = SHA256( SHA256(clientName ":" ":" secret) ":" nonce ":" cnonce )`
+. Guest puts `response` and a self-generated `cnonce` into
+  `DotsMsgConnect.authChallengeResponse`.
+. Host verifies and either accepts or closes the connection.
+
+On the host side, an `AuthManager` decides which secret applies to which
+network/clientName tuple via instances of `DotsAuthentication`. Application
+code installs it via `HostTransceiver::setAuthManager<T>(args...)`.
+
+For purely local TCP / UDS deployments without a hostile network this is
+typically left disabled.
+
+== The `dotsd` Daemon
+
+`bin/dotsd/` is the standard host. Outside of advanced setups (custom
+authentication, embedding the host into another binary), it is the only host
+process you need.
+
+[source,sh]
+----
+# default: tcp://127.0.0.1:11235
+dotsd
+
+# explicit endpoints, possibly several
+dotsd --dots-endpoint=tcp://127.0.0.1:11235
+dotsd --dots-endpoint=uds:/run/dots.socket
+dotsd --dots-endpoint=ws://127.0.0.1:11233
+dotsd --dots-endpoint=tcp://127.0.0.1:11235 --dots-endpoint=uds:/run/dots.socket
+
+# name and (Linux) daemonize
+dotsd --daemon-name=my-broker -d
+----
+
+`dotsd` itself publishes a few internal types describing the system:
+
+* `DotsClient` -- one instance per connected guest, with name and connection
+  state.
+* `DotsDaemonStatus` -- daemon-level status.
+
+These are useful for operational monitoring and for examples like
+`object-trace`.
+
+== Putting It Together: The Smart-Home Example
+
+The `bin/examples/smart-home/` example combines all of the above and is the
+recommended next step after the quickstart. It demonstrates:
+
+* Splitting an application into components (`Basement`, `LivingRoom`,
+  `Stairwell` classes).
+* Subscribing with member-function handlers.
+* Reading the local cache via `dots::container<LightControl>().find(...)`.
+* Reacting to *uncached* events (`StatelessSwitch`) by toggling a *cached*
+  controlling object (`LightControl`).
+* Using a managed timer to delay turning the light off after motion stops.
+* Unit-testing components with the GoogleTest integration under
+  `bin/examples/smart-home/tests/`.
+
+A condensed slice adapted from `bin/examples/smart-home/src/Basement.cpp`,
+using deferred registration for the constructor's subscription:
+
+[source,cpp]
+----
+Basement::Basement(dots::duration_t lightTimeout)
+    : m_lightTimeout(lightTimeout)
+    , m_switchSubscription{ dots::subscribe<Switch>(dots::deferred,
+          { &Basement::handleSwitch, this }) }
+{}
+
+void Basement::handleSwitch(const dots::Event<Switch>& event)
+{
+    const Switch& sw = event();
+    if (sw.id != MotionSwitch) return;
+
+    auto* light = dots::container<LightControl>().find({ .id = Light });
+
+    if (sw.enabled) {
+        if (light == nullptr || light->brightness == 0u) {
+            dots::publish(LightControl{ .id = Light, .brightness = 100u });
+        }
+    } else if (light != nullptr && light->brightness != 0u) {
+        m_timer = dots::create_timer(m_lightTimeout, [] {
+            dots::publish(LightControl{ .id = Light, .brightness = 0u });
+        });
+    }
+}
+----
+
+Note how the application *never* tracks the light state itself: it queries the
+cached `LightControl` container, which is kept in sync by the framework.
+
+[[migration]]
+== Upgrading From v1.8.0
+
+=== Breaking Changes and Suggested Migration
+
+* *Global transceiver API:* Replace `global_transceiver()->method()` with
+  `global_transceiver().method()`, `.has_value()` with
+  `global_transceiver_is_set()`, assignment with `global_transceiver_create()`,
+  and `.reset()` with `global_transceiver_destroy()`. Let `dots::Application`
+  manage the lifetime where possible.
+* *Container representation:* `Container<>::container_t` is now an
+  `std::unordered_map`, and `key_compare` has been replaced by `key_hash` and
+  `key_equal`. Adapt code using those public types, remove assumptions about
+  replay order, and sort explicitly when needed.
+* *Custom descriptors:* Implement the new pure virtual
+  `hash(const Typeless&) const` where no base class supplies it. Equal values
+  must have equal hashes. Rebuild the library and its consumers together.
+  Extend custom visitors and serializers to handle `Type::Any` and
+  `Type::InstanceRef` when adopting those fields.
+* *Build environment:* Update compilers and dependencies to the versions in
+  <<build-integration>>, initialize submodules and regenerate model headers.
+* *Log output:* File, line and function information is omitted by default.
+  Set the `DOTS_LOG_FLF` environment variable to restore it, for example
+  `DOTS_LOG_FLF=1 ./my-app`, and update log parsers or output tests as needed.
+
+Existing untagged subscriptions retain synchronous replay. Consider explicit
+`dots::deferred` registration for constructor callbacks. Upgrade the broker
+before using <<filtered-views,filtered views>>, and upgrade the code generator
+before using the new field types. See `CHANGELOG.md` for the complete release
+history and commit references.
+
+== Cheat Sheet
+
+[cols="2,3", options="header"]
+|===
+|Goal | Code
+|Create application | `dots::Application app{ "name", argc, argv };`
+|Run event loop | `return app.exec();`
+|Stop from handler | `app.exit(EXIT_SUCCESS);`
+|Subscribe (lambda) | `auto sub = dots::subscribe<T>([](const dots::Event<T>& e){ ... });`
+|Subscribe (member) | `auto sub = dots::subscribe<T>(dots::deferred, { &C::onT, this });`
+|Subscribe with deferred replay | `auto sub = dots::subscribe<T>(dots::deferred, handler);`
+|Read filtered cache | `view.container()`
+|Subscribe forever | `dots::subscribe<T>(handler).discard();`
+|Publish full instance | `dots::publish(T{ .key = ..., .x = ... });`
+|Publish partial | `dots::publish(t, T::x_p \| T::y_p);`
+|Remove | `dots::remove(T{ .key = ... });`
+|Find in cache | `dots::container<T>().find({ .key = ... })`
+|Iterate cache | `dots::container<T>().forEach([](const T& t){...});`
+|One-shot timer | `auto tm = dots::create_timer(500ms, h);`
+|Periodic timer | `auto tm = dots::create_timer(1s, h, true);`
+|Detect own publish | `event.isFromMyself()`
+|Distinguish kind | `event.isCreate()` / `isUpdate()` / `isRemove()`
+|Stringify any instance | `dots::to_string(instance)`
+|Parse any instance | `dots::from_string(str, anyStruct)`
+|Wrap an arbitrary object | `dots::to_any(instance)`
+|Reference an instance | `dots::to_instance_ref(instance)`
+|Reference a known type | `dots::to_typed_instance_ref(instance)`
+|Check global transceiver | `dots::global_transceiver_is_set()`
+|===
+
+== Where to Look in the Repository
+
+* Public headers: `lib/include/dots/` (`Application.h`, `dots.h`,
+  `Transceiver.h`, `GuestTransceiver.h`, `HostTransceiver.h`, `Event.h`,
+  `Container.h`, `Subscription.h`, `FilterBuilder.h`, `View.h`, `Timer.h`, ...).
+* Channel implementations: `lib/include/dots/io/channels/`.
+* Internal DOTS types (headers, descriptors, daemon):
+  `external/dots/model/*.dots`.
+* Code generator: `dots-cg-cpp/` (CMake function `target_dots_model`).
+* Examples: `bin/examples/{roundtrip,object-trace,smart-home,object-reader,pinger,pinger-filtered}/`.
+* Daemon: `bin/dotsd/`.
+* Other docs:
++
+** `doc/authentication.txt` -- challenge-response auth details.
+** `doc/dcg.txt` -- code generator notes.
+** `doc/dots-file-formats.txt` -- on-disk record/dump formats.
+** `doc/instance-ref.md` -- instance-reference usage and encoding.
+** `external/dots/doc/dots-wire-format.md` -- wire format and canonical keys.
+** `CHANGELOG.md` -- release changes and migration notes.

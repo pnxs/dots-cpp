@@ -418,7 +418,7 @@ TEST_F(TestDynamicStruct, PropertiesHaveExpectedSet)
 TEST_F(TestDynamicStruct, _descriptor_SizeMatchesAllocateSize)
 {
     DynamicStruct sut{ *m_testDynamicStructDescriptor };
-    const PropertyDescriptor& lastPropertyDescriptor = sut._get("structVectorProperty").descriptor();
+    const PropertyDescriptor lastPropertyDescriptor = sut._get("structVectorProperty").descriptor();
 
     // note: this expectation only holds true if the last property has an 8-byte alignment
     EXPECT_EQ(m_testDynamicStructDescriptor->size(), sizeof(DynamicStruct) + lastPropertyDescriptor.offset() + lastPropertyDescriptor.valueDescriptor().size());

@@ -99,6 +99,11 @@ namespace dots
         return m_peerName;
     }
 
+    const DotsServerCapabilities& Connection::peerCapabilities() const
+    {
+        return m_peerCapabilities;
+    }
+
     bool Connection::connected() const
     {
         return m_connectionState == DotsConnectionState::connected;
@@ -139,11 +144,16 @@ namespace dots
 
         if (m_selfId == HostId)
         {
+            DotsServerCapabilities caps{
+                .filteredSubscriptions = true
+            };
+
             if (m_nonce = m_authManager == nullptr ? std::nullopt : m_authManager->requiresAuthentication(m_channel->remoteEndpoint(), {}); m_nonce == std::nullopt)
             {
                 transmit(DotsMsgHello{
                     .serverName = name,
-                    .authChallenge = 0
+                    .authChallenge = 0,
+                    .capabilities = caps
                 });
             }
             else
@@ -151,7 +161,8 @@ namespace dots
                 transmit(DotsMsgHello{
                     .serverName = name,
                     .authChallenge = m_nonce->value(),
-                    .authenticationRequired = true
+                    .authenticationRequired = true,
+                    .capabilities = caps
                 });
             }
 
@@ -227,6 +238,13 @@ namespace dots
 
         handleClose(ePtr);
     }
+
+#if defined(ENABLE_CHANNEL_OBSERVE_API)
+    void Connection::observeChannel(io::Channel::observer_t transmitObserver, io::Channel::observer_t receiveObserver) const
+    {
+        m_channel->observe(std::move(transmitObserver), std::move(receiveObserver));
+    }
+#endif
 
     bool Connection::handleReceive(io::Transmission transmission)
     {
@@ -314,6 +332,10 @@ namespace dots
     void Connection::handleHello(const DotsMsgHello& hello)
     {
         m_peerName = *hello.serverName;
+        if (hello.capabilities.isValid())
+        {
+            m_peerCapabilities = *hello.capabilities;
+        }
 
         DotsMsgConnect connect{
             .clientName = m_selfName,

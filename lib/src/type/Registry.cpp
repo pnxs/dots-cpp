@@ -40,6 +40,14 @@ namespace dots::type
         ensureDescriptor<uuid_t>();
         ensureDescriptor<string_t>();
 
+        // The `any` type (Type::Any) is a built-in, but unlike the scalars
+        // above it was never instantiated into the static descriptor map — so
+        // findType("any") returned null and any struct with an `any` member
+        // (e.g. ConfigChange, Status) failed DescriptorConverter with
+        // "missing type dependency: any". Seed it like the other built-ins.
+        ensureDescriptor<any_t>();
+        ensureDescriptor<instance_ref_t>();
+
         switch (staticTypePolicy)
         {
             case StaticTypePolicy::FundamentalOnly:

@@ -4,12 +4,18 @@
 #include <string_view>
 #include <optional>
 #include <set>
+#include <unordered_map>
 #include <dots/type/DescriptorMap.h>
 #include <dots/Transceiver.h>
 #include <dots/Connection.h>
 
 namespace dots
 {
+    namespace details
+    {
+        struct ViewBase;
+    }
+
     /*!
      * @class GuestTransceiver GuestTransceiver.h <dots/GuestTransceiver.h>
      *
@@ -255,6 +261,16 @@ namespace dots
          */
         void publish(const type::Struct& instance, std::optional<property_set_t> includedProperties = std::nullopt, bool remove = false) override;
 
+        /// @cond INTERNAL — used by dots::View<T>, not application code.
+        uint32_t _allocateSubscriptionId();
+        void     _registerView(uint32_t subscriptionId, details::ViewBase* view);
+        void     _unregisterView(uint32_t subscriptionId);
+        // Forward a struct descriptor to the host so the broker knows the type
+        // before a filtered subscription joins. The channel's exportDependencies
+        // tracking dedups the descriptor itself, so repeat calls are cheap.
+        void     _ensureHostKnowsType(const type::StructDescriptor& descriptor);
+        /// @endcond
+
     private:
 
         void joinGroup(std::string_view name) override;
@@ -267,5 +283,11 @@ namespace dots
         type::DescriptorMap m_preloadPublishTypes;
         type::DescriptorMap m_preloadSubscribeTypes;
         std::set<std::string> m_joinedGroups;
+
+        // Filtered-subscription demux: subscriptionId -> View. Empty when
+        // the application uses no filtered subscriptions; the per-transmission
+        // header check is one virtual-free branch.
+        std::unordered_map<uint32_t, details::ViewBase*> m_views;
+        uint32_t m_nextSubscriptionId{ 1 };
     };
 }

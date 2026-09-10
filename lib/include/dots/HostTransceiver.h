@@ -5,6 +5,7 @@
 #include <unordered_set>
 #include <dots/tools/Handler.h>
 #include <dots/Connection.h>
+#include <dots/Filter.h>
 #include <dots/Transceiver.h>
 #include <dots/io/Listener.h>
 #include <dots/io/auth/AuthManager.h>
@@ -12,6 +13,7 @@
 #include <DotsDescriptorRequest.dots.h>
 #include <DotsMember.dots.h>
 #include <DotsEcho.dots.h>
+#include <DotsFilter.dots.h>
 
 namespace dots
 {
@@ -177,13 +179,44 @@ namespace dots
 
         using listener_map_t = std::unordered_map<io::Listener*, io::listener_ptr_t>;
         using connection_map_t = std::unordered_map<Connection*, connection_ptr_t>;
-        using group_t = std::unordered_set<Connection*>;
-        using group_map_t = std::unordered_map<std::string, group_t>;
+
+        // Per (Connection, subscriptionId) state for a filtered subscription.
+        // 'visible' is the shadow: pointers into the host's Container for instances
+        // currently in this subscription's view. Pointers are stable for the
+        // lifetime of the corresponding cache entry.
+        struct FilteredSub
+        {
+            uint32_t subscriptionId;
+            DotsFilter filter;
+            filter::CompiledPredicate compiledPredicate;
+            // Effective projection mask (propertyMask + key properties, or All
+            // when no mask is set), fixed at join time.
+            property_set_t effMask;
+            std::unordered_set<const type::Struct*> visible;
+        };
+
+        // Subscribers to a type are split structurally so the unfiltered hot
+        // path pays nothing when no filters exist for the type.
+        struct Group
+        {
+            std::unordered_set<Connection*> unfilteredSubs;
+            std::unordered_map<Connection*, std::unordered_map<uint32_t, FilteredSub>> filteredSubs;
+        };
+        using group_map_t = std::unordered_map<std::string, Group>;
 
         void joinGroup(std::string_view name) override;
         void leaveGroup(std::string_view name) override;
 
-        void transmit(const io::Transmission& transmission);
+        // Caller must capture the pre-merge cache pointer (if any) before
+        // dispatcher().dispatch() and pass it here; needed for the filtered
+        // dispatch four-cases logic.
+        void transmit(const io::Transmission& transmission, const type::Struct* preMergeEntry);
+
+        // Capture the pre-merge cache entry before dispatcher().dispatch()
+        // merges the delta. Returns nullptr (and skips the container lookup
+        // entirely) when the type has no filtered subscribers — the common
+        // case — since only the filtered dispatch consumes the pointer.
+        const type::Struct* preMergeEntryFor(const type::Struct& instance) const;
 
         bool handleListenAccept(io::Listener& listener, io::channel_ptr_t channel);
         void handleListenError(io::Listener& listener, std::exception_ptr ePtr);
@@ -197,6 +230,7 @@ namespace dots
         void handleEchoRequest(Connection& connection, const DotsEcho& echoRequest);
 
         void transmitContainer(Connection& connection, const Container<>& container);
+        void transmitFilteredContainer(Connection& connection, const Container<>& container, FilteredSub& sub);
 
         listener_map_t m_listeners;
         connection_map_t m_guestConnections;

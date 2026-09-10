@@ -252,7 +252,11 @@ namespace dots::type
                     }
                 }
 
-                iss >> date::parse(fmt.data(), sysTimePoint);
+#if __cpp_lib_chrono >= 201907L
+                iss >> std::chrono::parse(std::string{fmt}, sysTimePoint);
+#else
+                iss >> date::parse(std::string{fmt}, sysTimePoint);
+#endif
                 return TimePointImpl{ sysTimePoint.time_since_epoch() };
             }
         }

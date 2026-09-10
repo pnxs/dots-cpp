@@ -22,7 +22,7 @@ namespace dots::io::details
         try
         {
             asio::ip::tcp::resolver resolver{ ioContext };
-            asio::ip::tcp::endpoint endpoint = *resolver.resolve({ m_address, m_port });
+            const auto endpoint = resolver.resolve(m_address, m_port).begin()->endpoint();
 
             m_acceptor.open(endpoint.protocol());
             m_acceptor.set_option(asio::ip::tcp::acceptor::reuse_address(true));

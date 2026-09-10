@@ -23,6 +23,9 @@ namespace dots::io
     {
         using receive_handler_t = tools::Handler<bool(Transmission)>;
         using error_handler_t = tools::Handler<void(std::exception_ptr)>;
+#if defined(ENABLE_CHANNEL_OBSERVE_API)
+        using observer_t = std::function<void(const DotsHeader*, const type::Struct*)>;
+#endif
 
         Channel(key_t key);
         Channel(const Channel& other) = delete;
@@ -42,6 +45,9 @@ namespace dots::io
         void transmit(const DotsHeader& header, const type::Struct& instance);
         void transmit(const Transmission& transmission);
         void transmit(const type::Descriptor<>& descriptor);
+#if defined(ENABLE_CHANNEL_OBSERVE_API)
+        void observe(observer_t transmitObserver, observer_t receiveObserver);
+#endif
 
     protected:
 
@@ -77,6 +83,10 @@ namespace dots::io
         std::optional<Endpoint> m_remoteEndpoint;
         std::optional<receive_handler_t> m_receiveHandler;
         std::optional<error_handler_t> m_errorHandler;
+#if defined(ENABLE_CHANNEL_OBSERVE_API)
+        observer_t m_transmitObserver;
+        std::shared_ptr<observer_t> m_receiveObserver;
+#endif
     };
 
     using channel_ptr_t = std::shared_ptr<Channel>;

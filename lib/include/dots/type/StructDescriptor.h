@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 // Copyright 2015-2022 Thomas Schaetzlein <thomas@pnxs.de>, Christopher Gerlach <gerlachch@gmx.com>
 #pragma once
+#include <array>
 #include <dots/type/Descriptor.h>
 #include <dots/type/StaticDescriptor.h>
 #include <dots/type/Property.h>
@@ -38,6 +39,7 @@ namespace dots::type
         using StaticDescriptor::lessEqual;
         using StaticDescriptor::greater;
         using StaticDescriptor::greaterEqual;
+        using StaticDescriptor::hash;
         using StaticDescriptor::dynamicMemoryUsage;
 
         Typeless& construct(Typeless& value) const override;
@@ -64,6 +66,8 @@ namespace dots::type
 
         bool equal(const Typeless& lhs, const Typeless& rhs) const override;
         bool less(const Typeless& lhs, const Typeless& rhs) const override;
+        size_t hash(const Typeless& value) const override;
+        virtual size_t hash(const Struct& instance, PropertySet includedProperties) const;
 
         size_t areaOffset() const
         {
@@ -149,6 +153,11 @@ namespace dots::type
         partial_property_descriptor_container_t propertyDescriptors(PropertySet properties) const;
         property_descriptor_container_t& propertyDescriptors();
         const std::vector<PropertyPath>& propertyPaths() const;
+
+        const PropertyDescriptor* findPropertyByTag(uint32_t tag) const
+        {
+            return tag < m_propertyDescriptorsByTag.size() ? m_propertyDescriptorsByTag[tag] : nullptr;
+        }
 
         PropertySet properties() const
         {
@@ -259,6 +268,7 @@ namespace dots::type
 
         uint8_t m_flags;
         property_descriptor_container_t m_propertyDescriptors;
+        std::array<const PropertyDescriptor*, PropertySet::MaxProperties> m_propertyDescriptorsByTag;
         size_t m_areaOffset;
         PropertySet m_properties;
         PropertySet m_keyProperties;

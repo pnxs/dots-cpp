@@ -1,10 +1,14 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 // Copyright 2015-2022 Thomas Schaetzlein <thomas@pnxs.de>, Christopher Gerlach <gerlachch@gmx.com>
 #pragma once
+#include <dots/serialization/InstanceRefSerialization.h>
 #include <vector>
 #include <dots/serialization/Serializer.h>
 #include <dots/serialization/formats/CborReader.h>
 #include <dots/serialization/formats/CborWriter.h>
+#include <dots/type/AnyObject.h>
+#include <dots/type/AnyStruct.h>
+#include <dots/type/Registry.h>
 
 namespace dots::serialization
 {
@@ -54,7 +58,7 @@ namespace dots::serialization
         }
 
         template <typename T>
-        void visitFundamentalTypeDerived(const T& value, const type::Descriptor<T>&/* descriptor*/)
+        void visitFundamentalTypeDerived(const T& value, const type::Descriptor<T>& descriptor)
         {
             if constexpr(std::is_arithmetic_v<T>)
             {
@@ -80,6 +84,17 @@ namespace dots::serialization
             {
                 writer().write(value);
             }
+            else if constexpr (std::is_base_of_v<type::InstanceRef, T>)
+            {
+                write_instance_ref(writer(), value, descriptor);
+            }
+            else if constexpr (std::is_same_v<T, type::AnyObject>)
+            {
+                // opaque envelope: [ typeName, payload-bytes ]
+                writer().writeArraySize(2);
+                writer().write(value.typeName());
+                writer().writeByteString(value.payload().data(), value.payload().size());
+            }
             else
             {
                 static_assert(!std::is_same_v<T, T>, "type not supported");
@@ -90,17 +105,11 @@ namespace dots::serialization
         bool visitStructBeginDerived(T& instance, property_set_t& includedProperties)
         {
             const type::StructDescriptor& descriptor = instance._descriptor();
-            const type::property_descriptor_container_t& propertyDescriptors = descriptor.propertyDescriptors();
 
             size_t numProperties = reader().readMapSize();
 
             for (size_t i = 0; i < numProperties; ++i)
             {
-                auto find_property = [&propertyDescriptors](uint32_t tag)
-                {
-                    return std::find_if(propertyDescriptors.begin(), propertyDescriptors.end(), [tag](const auto& p) { return p.tag() == tag; });
-                };
-
                 uint32_t tag = reader().read<uint32_t>();
 
                 if (visitingLevel<false>() > 0)
@@ -108,10 +117,10 @@ namespace dots::serialization
                     includedProperties = property_set_t::All;
                 }
 
-                if (auto it = find_property(tag); it != propertyDescriptors.end() && it->set() <= includedProperties)
+                if (const type::PropertyDescriptor* pd = descriptor.findPropertyByTag(tag);
+                    pd != nullptr && pd->set() <= includedProperties) [[likely]]
                 {
-                    const type::PropertyDescriptor& propertyDescriptor = *it;
-                    type::ProxyProperty<> property{ instance, propertyDescriptor };
+                    type::ProxyProperty<> property{ instance, *pd };
                     visit(property);
                 }
                 else
@@ -144,7 +153,7 @@ namespace dots::serialization
         }
 
         template <typename T>
-        void visitFundamentalTypeDerived(T& value, const type::Descriptor<T>&/* descriptor*/)
+        void visitFundamentalTypeDerived(T& value, const type::Descriptor<T>& descriptor)
         {
             if constexpr(std::is_arithmetic_v<T>)
             {
@@ -165,6 +174,24 @@ namespace dots::serialization
             else if constexpr (std::is_same_v<T, string_t>)
             {
                 reader().read(value);
+            }
+            else if constexpr (std::is_base_of_v<type::InstanceRef, T>)
+            {
+                static_cast<type::InstanceRef&>(value) = read_instance_ref(reader(), descriptor);
+            }
+            else if constexpr (std::is_same_v<T, type::AnyObject>)
+            {
+                // opaque envelope: [ typeName, payload-bytes ]
+                if (size_t arraySize = reader().readArraySize(); arraySize != 2)
+                {
+                    throw std::runtime_error{ "invalid any envelope: expected array of 2, got " + std::to_string(arraySize) };
+                }
+
+                string_t typeName;
+                reader().read(typeName);
+                std::vector<uint8_t> payload;
+                reader().readByteString(payload);
+                value = type::AnyObject{ std::move(typeName), std::move(payload) };
             }
             else
             {
@@ -210,5 +237,84 @@ namespace dots
     T from_cbor(const std::vector<uint8_t>& data)
     {
         return serialization::CborSerializer::Deserialize<T>(data);
+    }
+
+    /*!
+     * @brief Wrap a live DOTS struct into an AnyObject by serializing it to
+     * canonical CBOR. The contained type's name is taken from its descriptor.
+     */
+    inline type::AnyObject to_any(const type::Struct& instance)
+    {
+        return type::AnyObject{ instance._descriptor().name(), to_cbor(instance, instance._validProperties()) };
+    }
+
+    /*!
+     * @brief Recover the DOTS struct stored in an AnyObject. The contained
+     * type is resolved by name against the given registry (throws if unknown,
+     * which by the DOTS descriptor contract indicates the contained type's
+     * descriptor was not published before the object).
+     */
+    inline type::AnyStruct from_any(const type::AnyObject& any, const type::Registry& registry)
+    {
+        const type::StructDescriptor& descriptor = registry.getStructType(any.typeName());
+        type::AnyStruct instance{ descriptor };
+        from_cbor(any.payload(), *instance);
+        return instance;
+    }
+}
+
+namespace dots
+{
+    // Canonical identity artifact. Unlike a reference, this permits unset keys.
+    inline std::vector<uint8_t> canonical_key(const type::Struct& instance)
+    {
+        serialization::CborSerializer serializer;
+        const auto& descriptor = instance._descriptor();
+        serializer.writer().writeArraySize(descriptor.keyProperties().count());
+        for (uint32_t tag = 1; tag <= 31; ++tag)
+        {
+            const auto* property = descriptor.findPropertyByTag(tag);
+            if (property == nullptr || !property->isKey()) continue;
+            auto kind = property->valueDescriptor().type();
+            if (!(kind <= type::Type::uint64 || kind == type::Type::string || kind == type::Type::uuid ||
+                  kind == type::Type::Enum || kind == type::Type::InstanceRef))
+                throw std::invalid_argument{"unsupported canonical key type: " + property->valueDescriptor().name()};
+            auto it = instance[tag];
+            const auto& value = *it;
+            if (value.isValid()) serializer.serialize(value);
+            else serializer.output().push_back(0xf6);
+        }
+        type::instance_key_size(serializer.output().data(), serializer.output().size(), true);
+        return serializer.output();
+    }
+
+    inline instance_ref_t to_instance_ref(const type::Struct& instance)
+    {
+        return instance_ref_t{instance._descriptor().name(), canonical_key(instance)};
+    }
+
+    template <typename T>
+    typed_instance_ref_t<T> to_typed_instance_ref(const T& instance)
+    {
+        return typed_instance_ref_t<T>{to_instance_ref(instance)};
+    }
+
+    // Materialize exactly the key properties using a known target descriptor.
+    inline type::AnyStruct from_instance_ref(const instance_ref_t& ref, const type::Registry& registry)
+    {
+        const auto& descriptor = registry.getStructType(ref.typeName());
+        type::AnyStruct instance{descriptor};
+        serialization::CborSerializer serializer;
+        serializer.setInput(ref.key());
+        if (serializer.reader().readArraySize() != descriptor.keyProperties().count())
+            throw std::invalid_argument{"instance_ref key count does not match target type"};
+        for (uint32_t tag = 1; tag <= 31; ++tag)
+        {
+            const auto* property = descriptor.findPropertyByTag(tag);
+            if (property != nullptr && property->isKey()) serializer.deserialize(*(*instance)[tag]);
+        }
+        if (canonical_key(*instance) != ref.key())
+            throw std::invalid_argument{"instance_ref key does not match target schema"};
+        return instance;
     }
 }

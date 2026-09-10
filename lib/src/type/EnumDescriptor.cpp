@@ -90,6 +90,11 @@ namespace dots::type
         return underlyingDescriptor().less(lhs, rhs);
     }
 
+    size_t EnumDescriptor::hash(const Typeless& value) const
+    {
+        return underlyingDescriptor().hash(value);
+    }
+
     size_t EnumDescriptor::dynamicMemoryUsage(const Typeless& value) const
     {
         return underlyingDescriptor().dynamicMemoryUsage(value);
