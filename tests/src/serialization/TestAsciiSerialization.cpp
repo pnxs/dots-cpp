@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 // Copyright 2015-2022 Thomas Schaetzlein <thomas@pnxs.de>, Christopher Gerlach <gerlachch@gmx.com>
 #include <dots/serialization/AsciiSerialization.h>
+#include <dots/serialization/CborSerializer.h>
 #include "StructDescriptorData.dots.h"
 #include "DotsTestStruct.dots.h"
+#include "SerializationStructSimple.dots.h"
+#include "SerializationStructAny.dots.h"
 #include "dots/type/Registry.h"
 #include <dots/testing/gtest/gtest.h>
 
@@ -110,6 +113,60 @@ TEST(TestAsciiSerialization, serializeSingleLineWithEnums)
     //std::cout << "Ascii: '" << dots::to_ascii(&ts._Descriptor(), &ts, PropertySet::All, options) << "'";
 
     EXPECT_EQ(dots::to_ascii(&ts._Descriptor(), &ts, PropertySet::All, options), expectedOutput);
+}
+
+TEST(TestAsciiSerialization, anyField_ExpandedWithRegistry)
+{
+    using dots::types::SerializationStructSimple;
+    using dots::types::SerializationStructAny;
+
+    SerializationStructSimple inner{
+        .int32Property = 42,
+        .stringProperty = "hello",
+        .boolProperty = true
+    };
+
+    SerializationStructAny holder{
+        .int32Property = 7,
+        .anyProperty = dots::to_any(inner)
+    };
+
+    dots::type::Registry registry;
+
+    dots::ToAsciiOptions options;
+    options.singleLine = true;
+    options.registry = &registry;
+
+    std::string out = dots::to_ascii(&holder._Descriptor(), &holder, PropertySet::All, options);
+
+    // the `any` field is expanded into the contained object via from_any()
+    EXPECT_NE(out.find("@type:SerializationStructSimple"), std::string::npos);
+    EXPECT_NE(out.find("stringProperty:hello"), std::string::npos);
+    EXPECT_NE(out.find("int32Property:42"), std::string::npos);
+}
+
+TEST(TestAsciiSerialization, anyField_OpaqueWithoutRegistry)
+{
+    using dots::types::SerializationStructSimple;
+    using dots::types::SerializationStructAny;
+
+    SerializationStructSimple inner{
+        .int32Property = 1,
+        .stringProperty = "x"
+    };
+
+    SerializationStructAny holder{
+        .int32Property = 7,
+        .anyProperty = dots::to_any(inner)
+    };
+
+    dots::ToAsciiOptions options;
+    options.singleLine = true;
+    // no registry -> opaque "typeName#<hex>" form, and must not throw
+
+    std::string out = dots::to_ascii(&holder._Descriptor(), &holder, PropertySet::All, options);
+
+    EXPECT_NE(out.find("SerializationStructSimple#"), std::string::npos);
 }
 
 struct TraceColorSchema: dots::ToAsciiColorSchema

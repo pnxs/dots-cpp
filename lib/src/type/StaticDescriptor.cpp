@@ -2,6 +2,7 @@
 // Copyright 2015-2022 Thomas Schaetzlein <thomas@pnxs.de>, Christopher Gerlach <gerlachch@gmx.com>
 #include <dots/type/StaticDescriptor.h>
 #include <cassert>
+#include <cstring>
 #include <dots/type/FundamentalTypes.h>
 
 namespace dots::type
@@ -156,5 +157,38 @@ namespace dots::type
         {
             return less(lhs, rhs);
         }, lhs, rhs);
+    }
+
+    size_t StaticDescriptor::hash(const Typeless& value) const
+    {
+        return apply(type(), [](const auto& v) -> size_t
+        {
+            using T = std::decay_t<decltype(v)>;
+            if constexpr (std::is_same_v<T, dots::property_set_t>)
+            {
+                return std::hash<dots::property_set_t::value_t>{}(v.toValue());
+            }
+            else if constexpr (std::is_same_v<T, dots::timepoint_t> ||
+                               std::is_same_v<T, dots::steady_timepoint_t>)
+            {
+                return std::hash<double>{}(v.duration().count());
+            }
+            else if constexpr (std::is_same_v<T, dots::duration_t>)
+            {
+                return std::hash<double>{}(v.count());
+            }
+            else if constexpr (std::is_same_v<T, dots::uuid_t>)
+            {
+                const auto& data = v.data();
+                uint64_t lo = 0, hi = 0;
+                std::memcpy(&lo, data.data(), 8);
+                std::memcpy(&hi, data.data() + 8, 8);
+                return std::hash<uint64_t>{}(lo) ^ (std::hash<uint64_t>{}(hi) + 0x9e3779b97f4a7c15ULL);
+            }
+            else
+            {
+                return std::hash<T>{}(v);
+            }
+        }, value);
     }
 }

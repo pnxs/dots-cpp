@@ -72,14 +72,7 @@ namespace dots
 
         // Capture the pre-merge cache entry before dispatcher().dispatch() merges
         // the delta — filtered subs need the prior pointer to compute wasVisible.
-        const type::Struct* preMergeEntry = nullptr;
-        if (instance._descriptor().cached())
-        {
-            if (const Container<>* container = pool().find(instance._descriptor()))
-            {
-                preMergeEntry = container->find(instance);
-            }
-        }
+        const type::Struct* preMergeEntry = preMergeEntryFor(instance);
 
         io::Transmission transmission{ std::move(header), instance };
         dispatcher().dispatch(transmission);
@@ -96,12 +89,42 @@ namespace dots
         /* do nothing */
     }
 
+    const type::Struct* HostTransceiver::preMergeEntryFor(const type::Struct& instance) const
+    {
+        const type::StructDescriptor& descriptor = instance._descriptor();
+
+        if (!descriptor.cached())
+        {
+            return nullptr;
+        }
+
+        if (auto itGroup = m_groups.find(descriptor.name());
+            itGroup == m_groups.end() || itGroup->second.filteredSubs.empty())
+        {
+            return nullptr;
+        }
+
+        if (const Container<>* container = pool().find(descriptor))
+        {
+            return container->find(instance);
+        }
+
+        return nullptr;
+    }
+
     void HostTransceiver::transmit(const io::Transmission& transmission, const type::Struct* preMergeEntry)
     {
         using dirty_connection_t = std::pair<Connection*, std::exception_ptr>;
         std::vector<dirty_connection_t> dirtyConnections;
 
-        Group& group = m_groups[*transmission.header().typeName];
+        // find() instead of operator[]: do not permanently insert an empty
+        // Group for every published type that never had a subscriber.
+        auto itGroup = m_groups.find(*transmission.header().typeName);
+        if (itGroup == m_groups.end())
+        {
+            return;
+        }
+        Group& group = itGroup->second;
 
         // ---- Hot path: unfiltered subscribers — byte-identical to legacy behavior. ----
         for (Connection* destinationConnection : group.unfilteredSubs)
@@ -123,6 +146,7 @@ namespace dots
         if (!group.filteredSubs.empty())
         {
             const type::StructDescriptor& descriptor = transmission.instance()->_descriptor();
+            const bool cached = descriptor.cached();
             const bool isRemove = (transmission.header().removeObj == true);
 
             // Resolve the post-merge state used to evaluate the filter:
@@ -132,7 +156,7 @@ namespace dots
             const type::Struct* current = nullptr;
             if (!isRemove)
             {
-                if (descriptor.cached())
+                if (cached)
                 {
                     if (const Container<>* c = pool().find(descriptor))
                     {
@@ -147,56 +171,94 @@ namespace dots
 
             const property_set_t keyProps = descriptor.keyProperties();
 
+            // Per-branch header templates: copying a DotsHeader allocates
+            // (typeName string), so each variant is copied from the
+            // transmission header at most once per message and only the
+            // per-subscriber fields (attributes, subscriptionId) are patched
+            // inside the loop.
+            std::optional<DotsHeader> updateHeader;
+            std::optional<DotsHeader> enterHeader;
+            std::optional<DotsHeader> leaveHeader;
+
             for (auto& [connection, subsByConn] : group.filteredSubs)
             {
                 if (connection->state() == DotsConnectionState::closed) continue;
 
                 for (auto& [subId, sub] : subsByConn)
                 {
-                    const bool wasVisible = preMergeEntry != nullptr &&
-                                            sub.visible.count(preMergeEntry) > 0;
-
-                    bool nowMatches = false;
-                    if (current != nullptr)
-                    {
-                        nowMatches = sub.compiledPredicate.matches(*current);
-                    }
-
-                    const property_set_t effMask = sub.filter.propertyMask.isValid()
-                        ? (*sub.filter.propertyMask + keyProps)
-                        : property_set_t::All;
+                    const bool nowMatches = current != nullptr &&
+                                            sub.compiledPredicate.matches(*current);
 
                     try
                     {
+                        if (!cached)
+                        {
+                            // Uncached types have no persistent instances, so
+                            // there is no enter/leave concept and no 'visible'
+                            // bookkeeping (the in-flight instance is transient
+                            // and must not be stored) — forward matching
+                            // publishes as plain deltas.
+                            if (nowMatches)
+                            {
+                                if (updateHeader == std::nullopt)
+                                {
+                                    updateHeader = transmission.header();
+                                }
+                                updateHeader->attributes = transmission.header().attributes->intersection(sub.effMask);
+                                updateHeader->subscriptionId = subId;
+                                connection->transmit(*updateHeader, *transmission.instance());
+                            }
+                            continue;
+                        }
+
+                        // On a remove, the dispatcher has already extracted and
+                        // freed the cache entry that preMergeEntry points to —
+                        // it is only used as an opaque set key from here on,
+                        // never dereferenced.
+                        const bool wasVisible = preMergeEntry != nullptr &&
+                                                sub.visible.count(preMergeEntry) > 0;
+
                         if (nowMatches && wasVisible)
                         {
                             // Update — forward delta with projected attributes.
-                            DotsHeader h = transmission.header();
-                            h.attributes = transmission.header().attributes->intersection(effMask);
-                            h.subscriptionId = subId;
-                            connection->transmit(h, *transmission.instance());
+                            if (updateHeader == std::nullopt)
+                            {
+                                updateHeader = transmission.header();
+                            }
+                            updateHeader->attributes = transmission.header().attributes->intersection(sub.effMask);
+                            updateHeader->subscriptionId = subId;
+                            connection->transmit(*updateHeader, *transmission.instance());
                         }
                         else if (nowMatches && !wasVisible)
                         {
                             // Enter view — must send full merged state, not the delta.
                             sub.visible.insert(current);
-                            DotsHeader h = transmission.header();
-                            h.attributes = current->_validProperties().intersection(effMask);
-                            h.serverSentTime = timepoint_t::Now();
-                            h.removeObj = false;
-                            h.subscriptionId = subId;
-                            connection->transmit(h, *current);
+                            if (enterHeader == std::nullopt)
+                            {
+                                enterHeader = transmission.header();
+                                enterHeader->serverSentTime = timepoint_t::Now();
+                                enterHeader->removeObj = false;
+                            }
+                            enterHeader->attributes = current->_validProperties().intersection(sub.effMask);
+                            enterHeader->subscriptionId = subId;
+                            connection->transmit(*enterHeader, *current);
                         }
                         else if (!nowMatches && wasVisible)
                         {
-                            // Leave view — synthesize key-only remove.
+                            // Leave view — synthesize key-only remove. The
+                            // in-flight instance carries the same key values
+                            // that located the (possibly already freed)
+                            // pre-merge entry, so transmit it instead.
                             sub.visible.erase(preMergeEntry);
-                            DotsHeader h = transmission.header();
-                            h.attributes = keyProps;
-                            h.serverSentTime = timepoint_t::Now();
-                            h.removeObj = true;
-                            h.subscriptionId = subId;
-                            connection->transmit(h, *preMergeEntry);
+                            if (leaveHeader == std::nullopt)
+                            {
+                                leaveHeader = transmission.header();
+                                leaveHeader->attributes = keyProps;
+                                leaveHeader->serverSentTime = timepoint_t::Now();
+                                leaveHeader->removeObj = true;
+                            }
+                            leaveHeader->subscriptionId = subId;
+                            connection->transmit(*leaveHeader, *transmission.instance());
                         }
                         // else !nowMatches && !wasVisible: nothing to send.
                     }
@@ -278,15 +340,7 @@ namespace dots
         }
 
         // Capture pre-merge cache pointer for filtered dispatch.
-        const type::StructDescriptor& descriptor = instance->_descriptor();
-        const type::Struct* preMergeEntry = nullptr;
-        if (descriptor.cached())
-        {
-            if (const Container<>* container = pool().find(descriptor))
-            {
-                preMergeEntry = container->find(*instance);
-            }
-        }
+        const type::Struct* preMergeEntry = preMergeEntryFor(instance);
 
         dispatcher().dispatch(transmission);
         transmit(transmission, preMergeEntry);
@@ -352,30 +406,36 @@ namespace dots
 
         if (member.event == DotsMemberEvent::leave)
         {
-            Group& group = m_groups[groupName];
-            if (isFiltered || subId != 0)
+            bool erased = false;
+
+            // find() instead of operator[]: do not insert an empty Group when
+            // leaving a group that never had a subscriber.
+            if (auto itGroup = m_groups.find(groupName); itGroup != m_groups.end())
             {
-                if (auto it = group.filteredSubs.find(&connection); it != group.filteredSubs.end())
+                Group& group = itGroup->second;
+
+                if (isFiltered || subId != 0)
                 {
-                    if (it->second.erase(subId) == 0)
+                    if (auto it = group.filteredSubs.find(&connection); it != group.filteredSubs.end())
                     {
-                        LOG_WARN_F("{} has no filtered subscription {} on group '{}'",
-                                   connection.peerDescription(), subId, groupName);
+                        erased = it->second.erase(subId) > 0;
+                        if (it->second.empty()) group.filteredSubs.erase(it);
                     }
-                    if (it->second.empty()) group.filteredSubs.erase(it);
                 }
-                else
+
+                // Fall through to the unfiltered path: a guest may join unfiltered
+                // while still setting a subscriptionId on the leave (e.g. a
+                // non-C++ or older client), and must not stay subscribed.
+                if (!erased)
                 {
-                    LOG_WARN_F("{} has no filtered subscriptions on group '{}'",
-                               connection.peerDescription(), groupName);
+                    erased = group.unfilteredSubs.erase(&connection) > 0;
                 }
             }
-            else
+
+            if (!erased)
             {
-                if (group.unfilteredSubs.erase(&connection) == 0)
-                {
-                    LOG_WARN_F("{} is not a member of group '{}'", connection.peerDescription(), groupName);
-                }
+                LOG_WARN_F("{} is not a member of group '{}' (subscriptionId={})",
+                           connection.peerDescription(), groupName, subId);
             }
             return;
         }
@@ -415,10 +475,14 @@ namespace dots
                 }
             }
 
+            const property_set_t effMask = member.filter->propertyMask.isValid()
+                ? (*member.filter->propertyMask + structDescriptor->keyProperties())
+                : property_set_t::All;
+
             Group& group = m_groups[groupName];
             auto& subsByConn = group.filteredSubs[&connection];
             auto [subIt, inserted] = subsByConn.try_emplace(subId,
-                FilteredSub{ subId, *member.filter, std::move(compiledPredicate), {} });
+                FilteredSub{ subId, *member.filter, std::move(compiledPredicate), effMask, {} });
 
             if (!inserted)
             {
@@ -563,43 +627,38 @@ namespace dots
         if (container.empty()) return;
 
         const auto& descriptor = container.descriptor();
-        const property_set_t keyProps = descriptor.keyProperties();
-        const property_set_t effMask = sub.filter.propertyMask.isValid()
-            ? (*sub.filter.propertyMask + keyProps)
-            : property_set_t::All;
+        const property_set_t effMask = sub.effMask;
 
-        // Pre-pass: count matches so DotsHeader.fromCache reports the actual
-        // number of instances that will be transmitted, not the unfiltered total.
-        uint32_t matchCount = 0;
+        // Collect matches in a single pass so DotsHeader.fromCache reports the
+        // actual number of instances that will be transmitted without
+        // evaluating the predicate twice per instance.
+        std::vector<std::pair<const type::Struct*, const DotsCloneInformation*>> matches;
         for (const auto& [instance, cloneInfo] : container)
         {
-            (void)cloneInfo;
             if (sub.compiledPredicate.matches(*instance))
             {
-                ++matchCount;
+                matches.emplace_back(&instance.get(), &cloneInfo);
             }
         }
-        if (matchCount == 0) return;
+        if (matches.empty()) return;
 
         DotsHeader header{
             .typeName = descriptor.name(),
-            .fromCache = matchCount,
+            .fromCache = static_cast<uint32_t>(matches.size()),
             .removeObj = false,
             .subscriptionId = sub.subscriptionId
         };
 
-        for (const auto& [instance, cloneInfo] : container)
+        for (const auto& [instance, cloneInfo] : matches)
         {
-            if (!sub.compiledPredicate.matches(*instance)) continue;
-
-            header.sentTime = *cloneInfo.modified;
+            header.sentTime = *cloneInfo->modified;
             header.serverSentTime = timepoint_t::Now();
             header.attributes = instance->_validProperties().intersection(effMask);
-            header.sender = *cloneInfo.lastUpdateFrom;
+            header.sender = *cloneInfo->lastUpdateFrom;
             --*header.fromCache;
 
-            connection.transmit(header, instance);
-            sub.visible.insert(&instance.get());
+            connection.transmit(header, *instance);
+            sub.visible.insert(instance);
         }
     }
 }

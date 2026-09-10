@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 // Copyright 2015-2022 Thomas Schaetzlein <thomas@pnxs.de>, Christopher Gerlach <gerlachch@gmx.com>
 #pragma once
+#include <dots/tools/hash.h>
 #include <dots/type/StaticDescriptor.h>
 #include <dots/type/Vector.h>
 
@@ -60,6 +61,7 @@ namespace dots::type
         using StaticDescriptor::lessEqual;
         using StaticDescriptor::greater;
         using StaticDescriptor::greaterEqual;
+        using StaticDescriptor::hash;
         using StaticDescriptor::dynamicMemoryUsage;
 
         Typeless& construct(Typeless& value) const override
@@ -125,6 +127,18 @@ namespace dots::type
         bool less(const Typeless& lhs, const Typeless& rhs) const override
         {
             return less(reinterpret_cast<const Vector<T>&>(lhs), reinterpret_cast<const Vector<T>&>(rhs));
+        }
+
+        size_t hash(const Typeless& value) const override
+        {
+            const auto& vec = reinterpret_cast<const Vector<T>&>(value);
+            const Descriptor<>& elemDesc = Descriptor<Vector<>>::valueDescriptor();
+            size_t h = vec.size();
+            for (const auto& element : vec)
+            {
+                h = tools::hashCombine(h, elemDesc.hash(Typeless::From(element)));
+            }
+            return h;
         }
 
         bool usesDynamicMemory() const override

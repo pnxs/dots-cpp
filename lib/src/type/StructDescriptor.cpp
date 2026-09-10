@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 // Copyright 2015-2022 Thomas Schaetzlein <thomas@pnxs.de>, Christopher Gerlach <gerlachch@gmx.com>
 #include <dots/type/StructDescriptor.h>
+#include <dots/tools/hash.h>
 #include <dots/type/Struct.h>
 #include <dots/io/DescriptorConverter.h>
 #include <dots/type/DynamicStruct.h>
@@ -11,6 +12,7 @@ namespace dots::type
         StaticDescriptor(key, Type::Struct, std::move(name), size, alignment),
         m_flags(flags),
         m_propertyDescriptors(propertyDescriptors),
+        m_propertyDescriptorsByTag{},
         m_areaOffset(areaOffset),
         m_numSubStructs(0)
     {
@@ -31,6 +33,11 @@ namespace dots::type
             if (propertyDescriptor.valueDescriptor().usesDynamicMemory())
             {
                 m_dynamicMemoryProperties += propertyDescriptor.set();
+            }
+
+            if (uint32_t tag = propertyDescriptor.tag(); tag < m_propertyDescriptorsByTag.size())
+            {
+                m_propertyDescriptorsByTag[tag] = &propertyDescriptor;
             }
         }
     }
@@ -175,6 +182,29 @@ namespace dots::type
     bool StructDescriptor::less(const Typeless& lhs, const Typeless& rhs) const
     {
         return less(lhs.to<Struct>(), rhs.to<Struct>(), PropertySet{ PropertySet::All });
+    }
+
+    size_t StructDescriptor::hash(const Typeless& value) const
+    {
+        return hash(value.to<Struct>(), PropertySet{ PropertySet::All });
+    }
+
+    size_t StructDescriptor::hash(const Struct& instance, PropertySet includedProperties) const
+    {
+        const PropertyArea& area = propertyArea(instance);
+        const PropertySet effective = area.validProperties().intersection(includedProperties);
+        size_t h = effective.toValue();
+
+        for (const PropertyDescriptor& pd : m_propertyDescriptors)
+        {
+            if (pd.set() <= effective)
+            {
+                const auto& v = area.getProperty<Typeless>(pd.offset());
+                h = tools::hashCombine(h, pd.valueDescriptor().hash(v));
+            }
+        }
+
+        return h;
     }
 
     bool StructDescriptor::usesDynamicMemory() const

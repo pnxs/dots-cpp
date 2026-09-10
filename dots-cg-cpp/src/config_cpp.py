@@ -21,5 +21,6 @@ type_mapping     = {
     "string": "string_t",
     "property_set": "property_set_t",
     "uuid": "uuid_t",
+    "any": "any_t",
 }
 

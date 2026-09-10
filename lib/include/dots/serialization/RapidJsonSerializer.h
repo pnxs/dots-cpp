@@ -3,6 +3,7 @@
 #pragma once
 #include <string>
 #include <dots/serialization/Serializer.h>
+#include <dots/serialization/CborSerializer.h>
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
 #include <dots/serialization/formats/RapidJsonReader.h>
@@ -161,6 +162,31 @@ namespace dots::serialization
             visit(value);
         }
 
+        // Registry overloads: passing a registry selects Expand mode for `any`
+        // fields (the contained object is decoded inline). Plain calls leave
+        // `any` fields in the opaque "typeName#<hex>" form.
+
+        template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
+        void serialize(const T& instance, const property_set_t& includedProperties, const type::Registry& registry)
+        {
+            registry_scope_t registryScope{ *this, registry };
+            visit(instance, includedProperties);
+        }
+
+        template <typename T>
+        void serialize(const T& value, const type::Registry& registry)
+        {
+            registry_scope_t registryScope{ *this, registry };
+            visit(value);
+        }
+
+        template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
+        void deserialize(T& value, const type::Registry& registry)
+        {
+            registry_scope_t registryScope{ *this, registry };
+            visit(value);
+        }
+
         template <typename T, std::enable_if_t<!std::is_const_v<T> && std::is_base_of_v<type::Struct, T>, int> = 0>
         void deserialize(T& instance, const property_set_t& includedProperties = property_set_t::All)
         {
@@ -221,6 +247,28 @@ namespace dots::serialization
             return buffer.GetString();
         }
 
+        template <typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
+        static data_t Serialize(const T& instance, const property_set_t& includedProperties, const type::Registry& registry)
+        {
+            rapidjson::StringBuffer buffer;
+            underlying_writer_t writer{ buffer };
+            RapidJsonSerializer serializer{ writer };
+            serializer.serialize(instance, includedProperties, registry);
+
+            return buffer.GetString();
+        }
+
+        template <typename T>
+        static data_t Serialize(const T& value, const type::Registry& registry)
+        {
+            rapidjson::StringBuffer buffer;
+            underlying_writer_t writer{ buffer };
+            RapidJsonSerializer serializer{ writer };
+            serializer.serialize(value, registry);
+
+            return buffer.GetString();
+        }
+
         template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
         static void Deserialize(const value_t* data, size_t size, T& value, const type::Descriptor<T>& descriptor)
         {
@@ -258,6 +306,22 @@ namespace dots::serialization
         static T Deserialize(const data_t& data)
         {
             return Deserialize<T>(data.data(), data.size());
+        }
+
+        template <typename T, std::enable_if_t<!std::is_const_v<T>, int> = 0>
+        static void Deserialize(const data_t& data, T& value, const type::Registry& registry)
+        {
+            RapidJsonSerializer serializer{ std::string_view{ data.data(), data.size() } };
+            serializer.deserialize(value, registry);
+        }
+
+        template <typename T, std::enable_if_t<!std::is_const_v<T> && !std::is_reference_v<T>, int> = 0>
+        static T Deserialize(const data_t& data, const type::Registry& registry)
+        {
+            RapidJsonSerializer serializer{ std::string_view{ data.data(), data.size() } };
+            T value;
+            serializer.deserialize(value, registry);
+            return value;
         }
 
     protected:
@@ -391,6 +455,27 @@ namespace dots::serialization
             else if constexpr (std::is_same_v<T, string_t>)
             {
                 m_writer.write(value);
+            }
+            else if constexpr (std::is_same_v<T, type::AnyObject>)
+            {
+                if (m_registry != nullptr)
+                {
+                    // expand: { "@type": <name>, "value": { <fields> } }
+                    type::AnyStruct decoded = dots::from_any(value, *m_registry);
+                    const type::Struct& instance = *decoded;
+
+                    m_writer.writeObjectBegin();
+                    m_writer.writeObjectMemberName("@type");
+                    m_writer.write(value.typeName());
+                    m_writer.writeObjectMemberName("value");
+                    visit(instance, instance._validProperties());
+                    m_writer.writeObjectEnd();
+                }
+                else
+                {
+                    // opaque representation: "typeName#<hex payload>"
+                    m_writer.write(value.toString());
+                }
             }
             else
             {
@@ -545,6 +630,40 @@ namespace dots::serialization
             {
                 value = m_reader.template read<string_t>();
             }
+            else if constexpr (std::is_same_v<T, type::AnyObject>)
+            {
+                if (m_registry != nullptr)
+                {
+                    // expand: { "@type": <name>, "value": { <fields> } }
+                    m_reader.readObjectBegin();
+
+                    if (std::string member{ m_reader.readObjectMemberName() }; member != "@type")
+                    {
+                        throw std::runtime_error{ "expected '@type' as first member of expanded any object, got '" + member + "'" };
+                    }
+
+                    std::string typeName = m_reader.template read<string_t>();
+                    const type::StructDescriptor& descriptor = m_registry->getStructType(typeName);
+                    type::AnyStruct instance{ descriptor };
+
+                    if (std::string member{ m_reader.readObjectMemberName() }; member != "value")
+                    {
+                        throw std::runtime_error{ "expected 'value' as second member of expanded any object, got '" + member + "'" };
+                    }
+
+                    type::Struct& s = *instance;
+                    property_set_t includedProperties = property_set_t::All;
+                    visit(s, includedProperties);
+
+                    m_reader.tryReadObjectEnd();
+                    value = dots::to_any(s);
+                }
+                else
+                {
+                    // opaque representation: "typeName#<hex payload>"
+                    value = type::AnyObject::FromString(m_reader.template read<string_t>());
+                }
+            }
             else
             {
                 static_assert(!std::is_same_v<T, T>, "type not supported");
@@ -553,7 +672,30 @@ namespace dots::serialization
 
     private:
 
+        // Holds m_registry only for the duration of a registry-taking
+        // serialize/deserialize call, so a reused serializer instance does not
+        // stay in any-field Expand mode (or dangle) afterwards.
+        struct registry_scope_t
+        {
+            registry_scope_t(RapidJsonSerializer& serializer, const type::Registry& registry) :
+                m_serializer{ serializer }
+            {
+                m_serializer.m_registry = &registry;
+            }
+            registry_scope_t(const registry_scope_t& other) = delete;
+            registry_scope_t(registry_scope_t&& other) = delete;
+            ~registry_scope_t()
+            {
+                m_serializer.m_registry = nullptr;
+            }
+            registry_scope_t& operator = (const registry_scope_t& rhs) = delete;
+            registry_scope_t& operator = (registry_scope_t&& rhs) = delete;
+
+            RapidJsonSerializer& m_serializer;
+        };
+
         reader_t m_reader;
         writer_t m_writer;
+        const type::Registry* m_registry = nullptr;  // non-null selects any-field Expand mode
     };
 }

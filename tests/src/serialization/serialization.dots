@@ -25,6 +25,11 @@ struct SerializationStructComplex {
     6: uuid uuidProperty;
 }
 
+struct SerializationStructAny {
+    1: [key] int32 int32Property;
+    2: any anyProperty;
+}
+
 struct SerializationStructVector {
     1: vector<bool> boolVectorProperty;
     2: vector<uint8> uint8VectorProperty;

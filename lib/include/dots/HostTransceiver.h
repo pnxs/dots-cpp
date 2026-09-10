@@ -189,6 +189,9 @@ namespace dots
             uint32_t subscriptionId;
             DotsFilter filter;
             filter::CompiledPredicate compiledPredicate;
+            // Effective projection mask (propertyMask + key properties, or All
+            // when no mask is set), fixed at join time.
+            property_set_t effMask;
             std::unordered_set<const type::Struct*> visible;
         };
 
@@ -208,6 +211,12 @@ namespace dots
         // dispatcher().dispatch() and pass it here; needed for the filtered
         // dispatch four-cases logic.
         void transmit(const io::Transmission& transmission, const type::Struct* preMergeEntry);
+
+        // Capture the pre-merge cache entry before dispatcher().dispatch()
+        // merges the delta. Returns nullptr (and skips the container lookup
+        // entirely) when the type has no filtered subscribers — the common
+        // case — since only the filtered dispatch consumes the pointer.
+        const type::Struct* preMergeEntryFor(const type::Struct& instance) const;
 
         bool handleListenAccept(io::Listener& listener, io::channel_ptr_t channel);
         void handleListenError(io::Listener& listener, std::exception_ptr ePtr);

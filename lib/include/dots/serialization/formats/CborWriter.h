@@ -2,9 +2,8 @@
 // Copyright 2015-2022 Thomas Schaetzlein <thomas@pnxs.de>, Christopher Gerlach <gerlachch@gmx.com>
 #pragma once
 #include <vector>
-#include <stdexcept>
-#include <limits>
 #include <cstring>
+#include <bit>
 #include <dots/serialization/formats/Writer.h>
 #include <dots/serialization/formats/CborFormat.h>
 
@@ -82,6 +81,12 @@ namespace dots::serialization
             writeBytes(reinterpret_cast<const uint8_t*>(str.data()), str.size());
         }
 
+        void writeByteString(const uint8_t* data, size_t size)
+        {
+            writeHead(cbor_t::MajorType::ByteString, size);
+            writeBytes(data, size);
+        }
+
         void write(bool value)
         {
             writeHead(cbor_t::MajorType::SimpleOrFloat | (value ? cbor_t::SimpleValue::True : cbor_t::SimpleValue::False));
@@ -140,15 +145,39 @@ namespace dots::serialization
             std::memcpy(ensureOutputAvailable(size), begin, size);
         }
 
+        template <size_t N>
+        static void storeBigEndian(uint8_t* dst, uint64_t value)
+        {
+            if constexpr (N == 1)
+            {
+                *dst = static_cast<uint8_t>(value);
+            }
+            else if constexpr (N == 2)
+            {
+                auto v = static_cast<uint16_t>(value);
+                if constexpr (std::endian::native == std::endian::little) v = __builtin_bswap16(v);
+                std::memcpy(dst, &v, 2);
+            }
+            else if constexpr (N == 4)
+            {
+                auto v = static_cast<uint32_t>(value);
+                if constexpr (std::endian::native == std::endian::little) v = __builtin_bswap32(v);
+                std::memcpy(dst, &v, 4);
+            }
+            else
+            {
+                static_assert(N == 8);
+                uint64_t v = value;
+                if constexpr (std::endian::native == std::endian::little) v = __builtin_bswap64(v);
+                std::memcpy(dst, &v, 8);
+            }
+        }
+
         template <typename T, std::enable_if_t<std::is_unsigned_v<T> && sizeof(T) >= 1 && sizeof(T) <= 8, int> = 0>
         void writeContingentBytes(T value)
         {
             uint8_t* outputData = ensureOutputAvailable(sizeof(T));
-
-            for (auto i = static_cast<ptrdiff_t>(sizeof(T) - 1); i >= 0; --i)
-            {
-                *outputData++ = static_cast<uint8_t>(value >> i * 8);
-            }
+            storeBigEndian<sizeof(T)>(outputData, static_cast<uint64_t>(value));
         }
 
         template <typename T, std::enable_if_t<sizeof(T) >= 2 && sizeof(T) <= 8, int> = 0>
@@ -168,22 +197,25 @@ namespace dots::serialization
         template <typename T, std::enable_if_t<std::is_unsigned_v<T>, int> = 0>
         void writeHead(uint8_t majorType, T value)
         {
-            uint64_t unsignedValue = static_cast<uint64_t>(value);
+            auto unsignedValue = static_cast<uint64_t>(value);
 
-            if (unsignedValue <= cbor_t::AdditionalInformation::MaxInplaceValue)
+            if (unsignedValue <= cbor_t::AdditionalInformation::MaxInplaceValue) [[likely]]
             {
                 writeByte(majorType | static_cast<uint8_t>(unsignedValue));
+                return;
             }
-            else
-            {
-                uint8_t numBytesExponent = static_cast<uint8_t>(unsignedValue > 0xFFFFFFFF) + static_cast<uint8_t>(unsignedValue > 0xFFFF) + static_cast<uint8_t>(unsignedValue > 0xFF);
-                uint8_t numBytes = 1 << numBytesExponent;
-                writeByte(majorType | (cbor_t::AdditionalInformation::FollowingBytes1 + numBytesExponent));
 
-                for (int16_t i = numBytes - 1; i >= 0; --i)
-                {
-                    writeByte(static_cast<uint8_t>(unsignedValue >> i * 8));
-                }
+            auto numBytesExponent = static_cast<uint8_t>(unsignedValue > 0xFFFFFFFF) + static_cast<uint8_t>(unsignedValue > 0xFFFF) + static_cast<uint8_t>(unsignedValue > 0xFF);
+            auto numBytes = static_cast<uint8_t>(1u << numBytesExponent);
+            uint8_t* p = ensureOutputAvailable(size_t{ 1 } + numBytes);
+            *p++ = static_cast<uint8_t>(majorType | (cbor_t::AdditionalInformation::FollowingBytes1 + numBytesExponent));
+
+            switch (numBytes)
+            {
+                case 1: storeBigEndian<1>(p, unsignedValue); break;
+                case 2: storeBigEndian<2>(p, unsignedValue); break;
+                case 4: storeBigEndian<4>(p, unsignedValue); break;
+                default: storeBigEndian<8>(p, unsignedValue); break;
             }
         }
     };

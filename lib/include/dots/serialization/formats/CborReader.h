@@ -8,6 +8,7 @@
 #include <cstring>
 #include <cmath>
 #include <array>
+#include <bit>
 #include <dots/serialization/formats/Reader.h>
 #include <dots/serialization/formats/CborFormat.h>
 
@@ -39,7 +40,7 @@ namespace dots::serialization
 
         void readMapBegin()
         {
-            readHead(cbor_t::MajorType::IndefiniteMapBreak);
+            readHead(cbor_t::MajorType::IndefiniteMap);
         }
 
         void readMapEnd()
@@ -67,14 +68,24 @@ namespace dots::serialization
         {
             using unsigned_t = std::make_unsigned_t<T>;
 
-            if (uint8_t majorType = *inputData() & cbor_t::MajorType::Mask; majorType == cbor_t::MajorType::SignedInt)
+            assertInputAvailable(1);
+            uint8_t initialByte = *inputData();
+            uint8_t majorType = initialByte & cbor_t::MajorType::Mask;
+
+            if (majorType != cbor_t::MajorType::SignedInt && majorType != cbor_t::MajorType::UnsignedInt) [[unlikely]]
             {
-                unsigned_t unsignedValue = readHead<unsigned_t>(cbor_t::MajorType::SignedInt);
+                throwUnexpectedMajorTypeException(cbor_t::MajorType::UnsignedInt, majorType);
+            }
+
+            auto [numBytes, additionalInformation] = consumeInitialByte(initialByte, sizeof(unsigned_t));
+            unsigned_t unsignedValue = decodeHeadTail<unsigned_t>(numBytes, additionalInformation);
+
+            if (majorType == cbor_t::MajorType::SignedInt)
+            {
                 value = -1 - reinterpret_cast<const T&>(unsignedValue);
             }
             else
             {
-                unsigned_t unsignedValue = readHead<unsigned_t>(cbor_t::MajorType::UnsignedInt);
                 value = reinterpret_cast<const T&>(unsignedValue);
             }
         }
@@ -82,7 +93,7 @@ namespace dots::serialization
         template <typename T, size_t N, std::enable_if_t<std::is_unsigned_v<T> && sizeof(T) == 1, int> = 0>
         void read(T(&bytes)[N])
         {
-            size_t size = readHead<size_t>(cbor_t::MajorType::ByteString);
+            auto size = readHead<size_t>(cbor_t::MajorType::ByteString);
 
             if (size != N)
             {
@@ -101,16 +112,25 @@ namespace dots::serialization
 
         void read(std::string& str)
         {
-            size_t size = readHead<size_t>(cbor_t::MajorType::TextString);
+            auto size = readHead<size_t>(cbor_t::MajorType::TextString);
             assertInputAvailable(size);
+#ifdef __cpp_lib_string_resize_and_overwrite
+            const uint8_t* src = inputData();
+            str.resize_and_overwrite(size, [src, size](char* dst, size_t) {
+                std::memcpy(dst, src, size);
+                return size;
+            });
+            inputData() += size;
+#else
             str.resize(size);
             readBytes(reinterpret_cast<uint8_t*>(str.data()), size);
+#endif
         }
 
         template <typename T, std::enable_if_t<std::is_same_v<T, bool>, int> = 0>
         void read(T& value)
         {
-            if (uint8_t simpleValue = readHead<uint8_t>(cbor_t::MajorType::SimpleOrFloat); simpleValue == cbor_t::SimpleValue::False)
+            if (auto simpleValue = readHead<uint8_t>(cbor_t::MajorType::SimpleOrFloat); simpleValue == cbor_t::SimpleValue::False)
             {
                 value = false;
             }
@@ -142,7 +162,7 @@ namespace dots::serialization
                     }
                     else
                     {
-                        uint16_t float16 = readPunnedContingentBytes<uint16_t>();
+                        auto float16 = readPunnedContingentBytes<uint16_t>();
                         uint16_t sign = float16 & 0x8000;
                         uint16_t exponent = (float16 >> 10) & 0x1F;
                         uint16_t mantissa = float16 & 0x3FF;
@@ -169,6 +189,14 @@ namespace dots::serialization
                     value = static_cast<T>(readPunnedContingentBytes<float>());
                 }
             }
+        }
+
+        void readByteString(std::vector<uint8_t>& out)
+        {
+            auto size = readHead<size_t>(cbor_t::MajorType::ByteString);
+            assertInputAvailable(size);
+            out.resize(size);
+            readBytes(out.data(), size);
         }
 
         void skip()
@@ -276,7 +304,7 @@ namespace dots::serialization
 
         void assertInputAvailable(size_t size)
         {
-            if (size > static_cast<size_t>(inputDataEnd() - inputData()))
+            if (size > static_cast<size_t>(inputDataEnd() - inputData())) [[unlikely]]
             {
                 throw std::runtime_error{ "out of data" };
             }
@@ -293,17 +321,44 @@ namespace dots::serialization
             inputData() += size;
         }
 
+        template <size_t N>
+        uint64_t loadBigEndian()
+        {
+            uint64_t result;
+            if constexpr (N == 1)
+            {
+                result = *inputData();
+            }
+            else if constexpr (N == 2)
+            {
+                uint16_t v;
+                std::memcpy(&v, inputData(), 2);
+                if constexpr (std::endian::native == std::endian::little) v = __builtin_bswap16(v);
+                result = v;
+            }
+            else if constexpr (N == 4)
+            {
+                uint32_t v;
+                std::memcpy(&v, inputData(), 4);
+                if constexpr (std::endian::native == std::endian::little) v = __builtin_bswap32(v);
+                result = v;
+            }
+            else
+            {
+                static_assert(N == 8);
+                uint64_t v;
+                std::memcpy(&v, inputData(), 8);
+                if constexpr (std::endian::native == std::endian::little) v = __builtin_bswap64(v);
+                result = v;
+            }
+            inputData() += N;
+            return result;
+        }
+
         template <typename T, std::enable_if_t<std::is_unsigned_v<T> && sizeof(T) >= 1 && sizeof(T) <= 8, int> = 0>
         T readContingentBytes()
         {
-            T value = {};
-
-            for (auto i = static_cast<ptrdiff_t>(sizeof(T) - 1); i >= 0; --i)
-            {
-                value |= static_cast<T>(readByte()) << i * 8;
-            }
-
-            return value;
+            return static_cast<T>(loadBigEndian<sizeof(T)>());
         }
 
         template <typename T, std::enable_if_t<sizeof(T) >= 2 && sizeof(T) <= 8, int> = 0>
@@ -318,39 +373,63 @@ namespace dots::serialization
             return value;
         }
 
+        // Decodes an already-peeked initial byte: consumes it, validates the
+        // following-bytes count, and ensures the tail is available. The caller is
+        // responsible for validating the major type.
+        std::pair<uint8_t, uint8_t> consumeInitialByte(uint8_t initialByte, size_t valueSize)
+        {
+            ++inputData();
+            uint8_t additionalInformation = initialByte & cbor_t::AdditionalInformation::Mask;
+
+            if (additionalInformation <= cbor_t::AdditionalInformation::MaxInplaceValue) [[likely]]
+            {
+                return { uint8_t{ 0 }, additionalInformation };
+            }
+
+            if (additionalInformation > cbor_t::AdditionalInformation::FollowingBytes8) [[unlikely]]
+            {
+                throwException("encountered unsupported additional information", additionalInformation);
+            }
+
+            auto numBytes = static_cast<uint8_t>(1u << (additionalInformation - cbor_t::AdditionalInformation::FollowingBytes1));
+
+            if (numBytes > valueSize) [[unlikely]]
+            {
+                throwInvalidSize("encountered value exceeds value size", valueSize, numBytes);
+            }
+
+            assertInputAvailable(numBytes);
+            return { numBytes, additionalInformation };
+        }
+
         std::pair<uint8_t, uint8_t> readInitialByte(uint8_t expectedMajorType, size_t valueSize)
         {
             assertInputAvailable(1);
-            uint8_t initialByte = readByte();
+            uint8_t initialByte = *inputData();
             uint8_t majorType = initialByte & cbor_t::MajorType::Mask;
-            uint8_t additionalInformation = initialByte & cbor_t::AdditionalInformation::Mask;
 
-            if (majorType != expectedMajorType)
+            if (majorType != expectedMajorType) [[unlikely]]
             {
                 throwUnexpectedMajorTypeException(expectedMajorType, majorType);
             }
 
-            if (additionalInformation <= cbor_t::AdditionalInformation::MaxInplaceValue)
+            return consumeInitialByte(initialByte, valueSize);
+        }
+
+        template <typename T, std::enable_if_t<std::is_unsigned_v<T>, int> = 0>
+        T decodeHeadTail(uint8_t numBytes, uint8_t additionalInformation)
+        {
+            if (additionalInformation <= cbor_t::AdditionalInformation::MaxInplaceValue) [[likely]]
             {
-                return { uint8_t{ 0 }, additionalInformation };
+                return static_cast<T>(additionalInformation);
             }
-            else
+
+            switch (numBytes)
             {
-                if (additionalInformation > cbor_t::AdditionalInformation::FollowingBytes8)
-                {
-                    throwException("encountered unsupported additional information", additionalInformation);
-                }
-
-                uint8_t numBytes = 1  << (additionalInformation - cbor_t::AdditionalInformation::FollowingBytes1);
-
-                if (numBytes > valueSize)
-                {
-                    throwInvalidSize("encountered value exceeds value size", valueSize, numBytes);
-                }
-
-                assertInputAvailable(numBytes);
-
-                return { numBytes, additionalInformation };
+                case 1: return static_cast<T>(loadBigEndian<1>());
+                case 2: return static_cast<T>(loadBigEndian<2>());
+                case 4: return static_cast<T>(loadBigEndian<4>());
+                default: return static_cast<T>(loadBigEndian<8>());
             }
         }
 
@@ -359,7 +438,7 @@ namespace dots::serialization
             assertInputAvailable(1);
             uint8_t head = readByte();
 
-            if (head != expectedHead)
+            if (head != expectedHead) [[unlikely]]
             {
                 throwUnexpectedHeadException(expectedHead, head);
             }
@@ -370,24 +449,8 @@ namespace dots::serialization
         template <typename T, std::enable_if_t<std::is_unsigned_v<T>, int> = 0>
         T readHead(uint8_t expectedMajorType)
         {
-            T value;
             auto [numBytes, additionalInformation] = readInitialByte(expectedMajorType, sizeof(T));
-
-            if (additionalInformation <= cbor_t::AdditionalInformation::MaxInplaceValue)
-            {
-                value = additionalInformation;
-            }
-            else
-            {
-                value = 0;
-
-                for (int16_t i = numBytes - 1; i >= 0; --i)
-                {
-                    value |= static_cast<uint64_t>(readByte()) << i * 8;
-                }
-            }
-
-            return value;
+            return decodeHeadTail<T>(numBytes, additionalInformation);
         }
     };
 }

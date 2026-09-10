@@ -126,6 +126,14 @@ namespace dots::filter
     // -------------------------------------------------------------------------
     inline Predicate combine(DotsPredicateKind op, Predicate lhs, Predicate rhs)
     {
+        // An empty (default-constructed) predicate acts as the identity of the
+        // combinator, so the accumulator pattern `Predicate p; p = p | leaf;`
+        // works. Without this, the emitted head would count the empty side in
+        // its arity while appending zero nodes — a corrupt tree the host
+        // rejects as truncated.
+        if (lhs.nodes.empty()) return rhs;
+        if (rhs.nodes.empty()) return lhs;
+
         const bool lhsIsSame = detail::rootKind(lhs) == op;
         const bool rhsIsSame = detail::rootKind(rhs) == op;
 
@@ -164,6 +172,10 @@ namespace dots::filter
 
     inline Predicate operator!(Predicate p)
     {
+        // Negating an empty predicate stays empty (no constraint) instead of
+        // emitting a notOp head with no child.
+        if (p.nodes.empty()) return p;
+
         DotsPredicateNode head;
         head.kind = DotsPredicateKind::notOp;
         head.arity = 1u;
@@ -214,22 +226,25 @@ namespace dots::filter
     struct Attr
     {
         using value_t = typename P::value_t;
-        static constexpr uint32_t Tag = P::Metadata.tag();
+        // Not constexpr: with DOTS_PROPERTIES_NO_CONSTEXPR_OFFSETS (e.g. Clang)
+        // P::Metadata is not a constant expression. The tag is only ever needed
+        // at runtime (as a singleLeaf argument), so read it lazily.
+        static uint32_t tag() { return P::Metadata.tag(); }
 
-        Predicate eq      (const value_t& v) const { return detail::singleLeaf(Tag, DotsCompareOp::eq,  detail::makeValue(v)); }
-        Predicate neq     (const value_t& v) const { return detail::singleLeaf(Tag, DotsCompareOp::neq, detail::makeValue(v)); }
-        Predicate lt      (const value_t& v) const { return detail::singleLeaf(Tag, DotsCompareOp::lt,  detail::makeValue(v)); }
-        Predicate le      (const value_t& v) const { return detail::singleLeaf(Tag, DotsCompareOp::le,  detail::makeValue(v)); }
-        Predicate gt      (const value_t& v) const { return detail::singleLeaf(Tag, DotsCompareOp::gt,  detail::makeValue(v)); }
-        Predicate ge      (const value_t& v) const { return detail::singleLeaf(Tag, DotsCompareOp::ge,  detail::makeValue(v)); }
-        Predicate isNull  () const { return detail::singleLeaf(Tag, DotsCompareOp::isNull,  std::nullopt); }
-        Predicate notNull () const { return detail::singleLeaf(Tag, DotsCompareOp::notNull, std::nullopt); }
+        Predicate eq      (const value_t& v) const { return detail::singleLeaf(tag(), DotsCompareOp::eq,  detail::makeValue(v)); }
+        Predicate neq     (const value_t& v) const { return detail::singleLeaf(tag(), DotsCompareOp::neq, detail::makeValue(v)); }
+        Predicate lt      (const value_t& v) const { return detail::singleLeaf(tag(), DotsCompareOp::lt,  detail::makeValue(v)); }
+        Predicate le      (const value_t& v) const { return detail::singleLeaf(tag(), DotsCompareOp::le,  detail::makeValue(v)); }
+        Predicate gt      (const value_t& v) const { return detail::singleLeaf(tag(), DotsCompareOp::gt,  detail::makeValue(v)); }
+        Predicate ge      (const value_t& v) const { return detail::singleLeaf(tag(), DotsCompareOp::ge,  detail::makeValue(v)); }
+        Predicate isNull  () const { return detail::singleLeaf(tag(), DotsCompareOp::isNull,  std::nullopt); }
+        Predicate notNull () const { return detail::singleLeaf(tag(), DotsCompareOp::notNull, std::nullopt); }
 
         template <typename Range>
-        Predicate isIn(const Range& xs) const { return detail::singleLeaf(Tag, DotsCompareOp::isIn,  detail::makeListValue<value_t>(xs)); }
+        Predicate isIn(const Range& xs) const { return detail::singleLeaf(tag(), DotsCompareOp::isIn,  detail::makeListValue<value_t>(xs)); }
 
         template <typename Range>
-        Predicate notIn(const Range& xs) const { return detail::singleLeaf(Tag, DotsCompareOp::notIn, detail::makeListValue<value_t>(xs)); }
+        Predicate notIn(const Range& xs) const { return detail::singleLeaf(tag(), DotsCompareOp::notIn, detail::makeListValue<value_t>(xs)); }
 
         Predicate isIn(std::initializer_list<value_t> xs) const { return isIn<std::initializer_list<value_t>>(xs); }
         Predicate notIn(std::initializer_list<value_t> xs) const { return notIn<std::initializer_list<value_t>>(xs); }

@@ -302,7 +302,11 @@ namespace dots::io
 
     private:
 
-        static constexpr size_t ReadBufferMinSize = 16 * 128;
+        // Lower bound for the async_read_some scratch buffer. Small values
+        // cost one syscall plus one handler invocation per buffer-fill under
+        // sustained load, so this trades a little idle memory per connection
+        // for far fewer reads on busy ones.
+        static constexpr size_t ReadBufferMinSize = 64 * 1024;
         static constexpr size_t WriteBufferMaxSize = 10 * 1024 * 1024;
 
         using transmission_size_t = std::conditional_t<TransmissionFormat == TransmissionFormat::v1, dots::uint16_t, dots::uint32_t>;
@@ -507,7 +511,7 @@ namespace dots::io
         {
             if constexpr (TransmissionFormat == TransmissionFormat::v1)
             {
-                type::AnyStruct instance{ registry().getStructType(*m_transportHeader.dotsHeader->typeName) };
+                type::AnyStruct instance{ cachedGetStructType(*m_transportHeader.dotsHeader->typeName) };
                 m_serializer.deserialize(*instance);
 
                 return Transmission{ std::move(*m_transportHeader.dotsHeader), std::move(instance) };
@@ -515,7 +519,7 @@ namespace dots::io
             else
             {
                 auto header = m_serializer.template deserialize<DotsHeader>();
-                type::AnyStruct instance{registry().getStructType(*header.typeName)};
+                type::AnyStruct instance{ cachedGetStructType(*header.typeName) };
 
                 try
                 {
@@ -528,6 +532,18 @@ namespace dots::io
 
                 return Transmission{std::move(header), std::move(instance)};
             }
+        }
+
+        const type::StructDescriptor& cachedGetStructType(std::string_view typeName)
+        {
+            if (m_lastDescriptor != nullptr && m_lastDescriptor->name() == typeName) [[likely]]
+            {
+                return *m_lastDescriptor;
+            }
+
+            const type::StructDescriptor& descriptor = registry().getStructType(typeName);
+            m_lastDescriptor = &descriptor;
+            return descriptor;
         }
 
         /*!
@@ -677,5 +693,6 @@ namespace dots::io
         bool m_readDispatching;
         stream_t m_stream;
         payload_cache_t* m_payloadCache;
+        const type::StructDescriptor* m_lastDescriptor = nullptr;
     };
 }

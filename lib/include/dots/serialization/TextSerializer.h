@@ -185,6 +185,11 @@ namespace dots::serialization
             {
                 writer().writeEscapedString(value);
             }
+            else if constexpr (std::is_same_v<T, type::AnyObject>)
+            {
+                // opaque text representation: "typeName#<hex payload>"
+                writer().writeEscapedString(value.toString());
+            }
             else
             {
                 static_assert(!std::is_same_v<T, T>, "type not supported");
@@ -349,6 +354,11 @@ namespace dots::serialization
             else if constexpr (std::is_same_v<T, string_t>)
             {
                 value = reader().readEscapedString();
+            }
+            else if constexpr (std::is_same_v<T, type::AnyObject>)
+            {
+                // opaque text representation: "typeName#<hex payload>"
+                value = type::AnyObject::FromString(reader().readEscapedString());
             }
             else
             {

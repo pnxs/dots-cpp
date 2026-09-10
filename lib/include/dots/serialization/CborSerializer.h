@@ -5,6 +5,9 @@
 #include <dots/serialization/Serializer.h>
 #include <dots/serialization/formats/CborReader.h>
 #include <dots/serialization/formats/CborWriter.h>
+#include <dots/type/AnyObject.h>
+#include <dots/type/AnyStruct.h>
+#include <dots/type/Registry.h>
 
 namespace dots::serialization
 {
@@ -80,6 +83,13 @@ namespace dots::serialization
             {
                 writer().write(value);
             }
+            else if constexpr (std::is_same_v<T, type::AnyObject>)
+            {
+                // opaque envelope: [ typeName, payload-bytes ]
+                writer().writeArraySize(2);
+                writer().write(value.typeName());
+                writer().writeByteString(value.payload().data(), value.payload().size());
+            }
             else
             {
                 static_assert(!std::is_same_v<T, T>, "type not supported");
@@ -90,17 +100,11 @@ namespace dots::serialization
         bool visitStructBeginDerived(T& instance, property_set_t& includedProperties)
         {
             const type::StructDescriptor& descriptor = instance._descriptor();
-            const type::property_descriptor_container_t& propertyDescriptors = descriptor.propertyDescriptors();
 
             size_t numProperties = reader().readMapSize();
 
             for (size_t i = 0; i < numProperties; ++i)
             {
-                auto find_property = [&propertyDescriptors](uint32_t tag)
-                {
-                    return std::find_if(propertyDescriptors.begin(), propertyDescriptors.end(), [tag](const auto& p) { return p.tag() == tag; });
-                };
-
                 uint32_t tag = reader().read<uint32_t>();
 
                 if (visitingLevel<false>() > 0)
@@ -108,10 +112,10 @@ namespace dots::serialization
                     includedProperties = property_set_t::All;
                 }
 
-                if (auto it = find_property(tag); it != propertyDescriptors.end() && it->set() <= includedProperties)
+                if (const type::PropertyDescriptor* pd = descriptor.findPropertyByTag(tag);
+                    pd != nullptr && pd->set() <= includedProperties) [[likely]]
                 {
-                    const type::PropertyDescriptor& propertyDescriptor = *it;
-                    type::ProxyProperty<> property{ instance, propertyDescriptor };
+                    type::ProxyProperty<> property{ instance, *pd };
                     visit(property);
                 }
                 else
@@ -166,6 +170,20 @@ namespace dots::serialization
             {
                 reader().read(value);
             }
+            else if constexpr (std::is_same_v<T, type::AnyObject>)
+            {
+                // opaque envelope: [ typeName, payload-bytes ]
+                if (size_t arraySize = reader().readArraySize(); arraySize != 2)
+                {
+                    throw std::runtime_error{ "invalid any envelope: expected array of 2, got " + std::to_string(arraySize) };
+                }
+
+                string_t typeName;
+                reader().read(typeName);
+                std::vector<uint8_t> payload;
+                reader().readByteString(payload);
+                value = type::AnyObject{ std::move(typeName), std::move(payload) };
+            }
             else
             {
                 static_assert(!std::is_same_v<T, T>, "type not supported");
@@ -210,5 +228,28 @@ namespace dots
     T from_cbor(const std::vector<uint8_t>& data)
     {
         return serialization::CborSerializer::Deserialize<T>(data);
+    }
+
+    /*!
+     * @brief Wrap a live DOTS struct into an AnyObject by serializing it to
+     * canonical CBOR. The contained type's name is taken from its descriptor.
+     */
+    inline type::AnyObject to_any(const type::Struct& instance)
+    {
+        return type::AnyObject{ instance._descriptor().name(), to_cbor(instance, instance._validProperties()) };
+    }
+
+    /*!
+     * @brief Recover the DOTS struct stored in an AnyObject. The contained
+     * type is resolved by name against the given registry (throws if unknown,
+     * which by the DOTS descriptor contract indicates the contained type's
+     * descriptor was not published before the object).
+     */
+    inline type::AnyStruct from_any(const type::AnyObject& any, const type::Registry& registry)
+    {
+        const type::StructDescriptor& descriptor = registry.getStructType(any.typeName());
+        type::AnyStruct instance{ descriptor };
+        from_cbor(any.payload(), *instance);
+        return instance;
     }
 }

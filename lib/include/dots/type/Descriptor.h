@@ -20,7 +20,8 @@ namespace dots::type
         timepoint, steady_timepoint, duration,
         uuid, string,
         Vector,
-        Struct, Enum
+        Struct, Enum,
+        Any
     };
 
     template<typename TDescriptor, typename = void>
@@ -101,6 +102,8 @@ namespace dots::type
         bool greater(const Typeless& lhs, const Typeless& rhs) const;
         bool greaterEqual(const Typeless& lhs, const Typeless& rhs) const;
 
+        virtual size_t hash(const Typeless& value) const = 0;
+
         virtual bool usesDynamicMemory() const;
         virtual size_t dynamicMemoryUsage(const Typeless& value) const;
 
@@ -174,6 +177,12 @@ namespace dots::type
         static constexpr bool greaterEqual(const T& lhs, const U& rhs)
         {
             return !less(lhs, rhs);
+        }
+
+        template <typename T, std::enable_if_t<!std::is_same_v<T, Typeless>, int> = 0>
+        static size_t hash(const T& value)
+        {
+            return std::hash<T>{}(value);
         }
 
         template <typename T, std::enable_if_t<!std::is_same_v<T, Typeless>, int> = 0>

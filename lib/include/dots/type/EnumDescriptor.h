@@ -87,6 +87,7 @@ namespace dots::type
         using StaticDescriptor::lessEqual;
         using StaticDescriptor::greater;
         using StaticDescriptor::greaterEqual;
+        using StaticDescriptor::hash;
         using StaticDescriptor::dynamicMemoryUsage;
 
         EnumDescriptor& operator = (const EnumDescriptor& rhs) = delete;
@@ -109,6 +110,7 @@ namespace dots::type
 
         bool equal(const Typeless& lhs, const Typeless& rhs) const override;
         bool less(const Typeless& lhs, const Typeless& rhs) const override;
+        size_t hash(const Typeless& value) const override;
 
         size_t dynamicMemoryUsage(const Typeless& value) const override;
         bool usesDynamicMemory() const override;

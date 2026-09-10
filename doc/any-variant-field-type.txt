@@ -1,0 +1,235 @@
+DOTS "any" / "variant" field type
+==================================
+
+Status: design + initial implementation (open `any` runtime + CBOR).
+Author: design discussion 2026-06.
+
+Goal
+----
+Add an IDL field type that stores an arbitrary DOTS object inside a single
+property:
+
+    struct Envelope {
+        1: [key] uint32 id;
+        2: any payload;                      // open: any registered struct
+        3: variant { 1: Ping; 2: Pong } cmd; // closed: a fixed set of types
+    }
+
+A consumer (e.g. an object-trace client) must be able to recover the stored
+object. The two forms share one runtime representation and differ only in how
+the contained type is identified on the wire.
+
+
+Background: why this is new
+---------------------------
+Today a struct-typed property carries NO type identity on the wire. A nested
+struct is serialized as a bare tag-keyed CBOR map of its values; the
+deserializer always knows the concrete type up front because the *parent*
+StructDescriptor fully determines it (see TypeVisitor::visitTypeInternal,
+case Type::Struct, which recurses into property.descriptor().valueDescriptor()).
+The only place a type *name* appears is DotsHeader.typeName at the top level.
+
+An `any`/`variant` field breaks that assumption: the concrete type is not
+derivable from the static schema, so the type identity has to travel inside
+the field. That self-describing value is the actual new thing being added.
+Everything else already exists: AnyStruct to hold a decoded instance,
+Registry::getStructType to resolve a name, and TypeVisitor's Type::Struct
+switch to walk it.
+
+
+Decisions
+---------
+1. Encoding: OPAQUE BLOB + type identity. The stored object is carried as a
+   pre-serialized byte string, not inlined into the parent stream. This keeps
+   brokers transparent: dotsd routes the bytes without ever needing the inner
+   type's descriptor, and the inner object's lifecycle is decoupled from the
+   outer. (Trade-off: opaque payload is invisible to server-side filter
+   predicates; the type identity, however, IS in the clear, so predicates can
+   still filter on "what kind of object" without decoding.)
+
+2. Inner payload format: ALWAYS canonical CBOR, regardless of the container's
+   serialization format. A JSON container therefore base64-encodes the inner
+   CBOR for opaque storage (see JSON modes below).
+
+3. variant discriminant: TAG-BASED, not positional index. Reorder-proof and
+   DOTS-idiomatic. `variant { 1: Ping; 2: Pong }` writes the member tag (a
+   uint) as the identity; `any` writes the full type name (a text string).
+
+4. Unknown type on receipt: KEEP OPAQUE + REROUTE. A receiver that does not
+   know the contained type retains the raw bytes and passes them through;
+   decoding happens lazily, if and when the descriptor is available.
+
+
+Wire format (CBOR)
+------------------
+A 2-element array: [ type-identity, payload-bytes ]
+
+  any payload = Ping{ id: 42 }     ; Ping serializes to A1 01 18 2A
+      82                           # array(2)
+         64 50696E67               # text(4) "Ping"        <- type name (any)
+         44 A101182A               # bytes(4)              <- inner object (opaque)
+
+  variant{1:Ping;2:Pong} = Ping    ; Ping has member tag 1
+      82                           # array(2)
+         01                        # unsigned(1)           <- member tag (variant)
+         44 A101182A               # bytes(4)
+
+A broker reads the array, sees the identity, and forwards the byte string
+verbatim without touching the inner descriptor.
+
+
+Runtime representation
+----------------------
+type::AnyObject (lib/include/dots/type/AnyObject.h) is the C++ value type that
+IDL `any` maps to (types::any_t). It is serialization-agnostic pure storage:
+
+    class AnyObject {
+        std::string          m_typeName;   // contained type's name (always present)
+        std::vector<uint8_t> m_payload;    // canonical CBOR of the object
+    public:
+        std::string_view typeName() const;             // never needs a descriptor
+        const std::vector<uint8_t>& payload() const;   // raw bytes, for reroute
+        bool empty() const;
+        // value semantics: ==, <, std::hash over (typeName, payload)
+    };
+
+Encoding/decoding between AnyObject and a live Struct is done by free helpers
+in the serialization layer (where both AnyObject and CBOR are visible), NOT in
+the type layer, to avoid a layering inversion:
+
+    serialization: AnyObject  to_any(const type::Struct&)            // serialize
+    serialization: type::AnyStruct from_any(const AnyObject&,        // deserialize
+                                            const type::Registry&)
+
+This keeps AnyObject decode-free: the CBOR serializer never decodes when it
+(de)serializes an `any` field; it just moves typeName + bytes. Decode is an
+explicit, separate operation a consumer invokes against a registry.
+
+variant uses the same AnyObject storage. The difference is descriptor-level
+(an allowed-set + tag identity), see "variant" below.
+
+
+Type system integration
+------------------------
+- Type::Any added to the dots::type::Type enum (Descriptor.h), appended after
+  Enum so existing fundamental ranges are undisturbed.
+
+- Descriptor<types::any_t> (in AnyObject.h) derives from StaticDescriptor but
+  OVERRIDES all typeless operations (construct/destruct/assign/swap/equal/
+  less/hash) to operate on AnyObject directly. This is required because
+  StaticDescriptor's generic apply() only dispatches Type values <= string
+  (StaticDescriptor.cpp), and would otherwise misinterpret Type::Any as a
+  string. VectorDescriptor follows the same override pattern.
+  usesDynamicMemory() returns true.
+
+- TypeVisitor::visitTypeInternal gains a `case Type::Any:` in the Typeless
+  switch that routes to visitFundamentalTypeDerived(value.to<any_t>(), ...).
+  The non-typeless path already routes any non-struct/vector/enum leaf type
+  through visitFundamentalTypeDerived, so a statically-typed any_t property is
+  covered automatically.
+
+
+Serializer integration
+-----------------------
+CBOR (CborSerializer): visitFundamentalTypeDerived gains an
+`else if constexpr (std::is_same_v<T, any_t>)` branch:
+  - serialize:   writer().writeArraySize(2); write identity; write byte string
+  - deserialize: read array of 2; read identity; read byte string into payload
+CborWriter/CborReader gain public byteString helpers (writeByteString /
+readByteString); previously byte strings were only fixed-size arrays.
+
+JSON (RapidJsonSerializer): the mode is selected by which overload is called,
+NOT by injected serializer state.
+  - Plain Serialize/Deserialize (DEFAULT): Opaque. The any field is emitted as
+    a single string "typeName#<hex payload>". No registry needed, exactly like
+    CBOR. dots-trace and any registry-less caller get this for free.
+  - Serialize(value, registry) / Deserialize(data, registry): Expand. The
+    contained object is decoded inline as { "@type": <name>, "value": {<fields>} }.
+    Requires the registry; THROWS (std::logic_error from getStructType) if the
+    contained type is unknown -- a genuine descriptor-contract violation.
+  The registry is held only as a transient `const Registry* m_registry` for the
+  duration of a registry-taking call; absence of a registry simply means Opaque
+  (a well-defined behavior, not an error). The Expand path reuses the
+  to_any/from_any helpers, so RapidJsonSerializer.h includes CborSerializer.h.
+
+  Envelope member order: @type is written first and is REQUIRED first on read
+  (so the descriptor is known before "value" is parsed).
+
+
+The descriptor contract (why decode always succeeds)
+-----------------------------------------------------
+DOTS programs publish the descriptors they use in dependency order, so a peer
+always has a type's descriptor before it sees an instance. The mechanism is
+Channel::exportDependencies (lib/src/io/Channel.cpp):
+  - exportDependencies(descriptor) walks a struct's property valueDescriptors
+    and transmits each dependency's StructDescriptorData/EnumDescriptorData
+    before the owner's. (m_sharedTypeDescriptors dedupes per channel.)
+  - exportDependencies(instance) is an instance-time hook that already exists
+    for a late-resolution case (a dynamic subscriber receiving descriptors
+    mid-sequence).
+
+any and variant land on opposite sides of that split:
+
+  variant -- STATIC. Member types are fixed at codegen, so the variant
+  descriptor holds its allowed-member descriptors. Add a branch to
+  exportDependencies(descriptor) that recurses into each allowed member. A
+  struct with a variant field then exports its member descriptors before its
+  own, exactly like a plain sub-struct field. Trace always has them. Free.
+
+  any -- DYNAMIC. The contained type is not known until runtime, so the static
+  walk cannot see it. Use the instance-time hook: when transmitting an
+  instance, scan its `any`-typed fields and exportDependencies(containedType)
+  for each (resolving via registry().findStructType(value.typeName())). The
+  publisher constructed the object, so its descriptor is in the publisher's
+  registry by definition. The contained type's descriptor goes on the wire
+  before the container, in dependency order.
+
+Consequence: object-trace needs no special handling -- it relies on the same
+contract as every other type. A JSON Expand throw genuinely means a contract
+violation. The broker stays opaque and consistent: descriptors are normal
+routed objects, so the publisher's exportDependencies puts the inner
+descriptor on the wire and dotsd routes it without decoding the payload.
+
+
+Constraints / open points
+--------------------------
+- `any`/`variant` as a [key] property is DISALLOWED initially. Comparing
+  opaque heterogeneous blobs as keys is a footgun, even though hash()/equal()
+  are defined over (typeName, payload).
+- Partial-property merge treats an `any` field as an atomic whole-value: an
+  update replaces the field or not. The inner object's own validProperties
+  bitmask is preserved inside its serialized payload.
+- JSON Expand of an `any` whose payload was produced by a non-canonical
+  encoder still works (decode is format-defined by "always CBOR").
+
+
+Codegen
+-------
+- C++ type mapping: dots-cg-cpp/src/config_cpp.py maps `any` -> `any_t`. This
+  repo owns only the C++ mapping and templates.
+- IDL grammar: the `any` and `variant { N: Type; ... }` keywords require a
+  grammar change in the EXTERNAL dots-code-generator package (the Lark grammar
+  is shipped compiled in the installed `dots` python package, not in this
+  repo). Until that lands, `any`/`variant` cannot be written in a .dots file;
+  the C++ runtime and descriptor support are in place and usable directly.
+- variant additionally needs the generator to emit a per-field descriptor
+  carrying the allowed-set (member tag -> StructDescriptor), plus a typed C++
+  wrapper over AnyObject exposing get<T>()/index().
+
+
+Implementation status
+----------------------
+Implemented in this repo:
+  [x] Type::Any
+  [x] type::AnyObject + types::any_t + Descriptor<any_t>
+  [x] CBOR opaque envelope (writer/reader byte-string helpers, visit hook)
+  [x] to_any / from_any serialization helpers
+  [x] config_cpp.py mapping for `any`
+  [x] RapidJsonSerializer Opaque (default) + Expand (registry overload) modes
+  [x] unit tests: AnyObject value semantics + CBOR round-trip + opaque reroute
+      + JSON opaque/expand round-trip + expand-unknown-type throws
+
+Deferred (tracked here as the spec):
+  [ ] variant descriptor (allowed-set, tag identity) + typed C++ wrapper
+  [ ] exportDependencies hooks (instance scan for any; member recurse for variant)
+  [ ] IDL grammar keywords (upstream dots-code-generator) + StaticProperty codegen

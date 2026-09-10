@@ -31,6 +31,7 @@ target_compile_features(${TARGET_NAME}
 target_link_libraries(${TARGET_NAME}
     PRIVATE
         DOTS::DOTS
+        fmt::fmt-header-only
 )
 
 # install
