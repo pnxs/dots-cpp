@@ -311,6 +311,20 @@ namespace dots
     Subscription subscribe(const type::StructDescriptor& descriptor, Transceiver::event_handler_t<> handler);
 
     /*!
+     * @brief Subscribe to events with an explicit policy tag.
+     *
+     * Counterparts of the non-tagged subscribe() overloads that allow the
+     * caller to specify whether the initial cache replay happens
+     * synchronously (dots::sync, current default) or is posted to the IO
+     * context (dots::deferred). The deferred variant is the safe choice
+     * when calling subscribe() from a constructor.
+     *
+     * See dots/Subscription.h for the migration rationale.
+     */
+    Subscription subscribe(sync_t,     const type::StructDescriptor& descriptor, Transceiver::event_handler_t<> handler);
+    Subscription subscribe(deferred_t, const type::StructDescriptor& descriptor, Transceiver::event_handler_t<> handler);
+
+    /*!
      * @brief Subscribe to events of a specific type via the global
      * transceiver.
      *
@@ -357,8 +371,33 @@ namespace dots
     template<typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
     Subscription subscribe(Transceiver::event_handler_t<T> handler)
     {
+        return subscribe<T>(sync, std::move(handler));
+    }
+
+    /*!
+     * @brief Subscribe with an explicit policy tag (synchronous replay).
+     */
+    template<typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
+    Subscription subscribe(sync_t, Transceiver::event_handler_t<T> handler)
+    {
         io::register_global_subscribe_type<T>();
-        return global_transceiver().subscribe<T>(std::move(handler));
+        return global_transceiver().subscribe<T>(sync, std::move(handler));
+    }
+
+    /*!
+     * @brief Subscribe with deferred initial cache replay.
+     *
+     * The handler is registered immediately, but the initial replay of
+     * the local cache is posted to the IO context and only runs at the
+     * next event loop turn. Recommended when calling subscribe() from a
+     * constructor, where the surrounding object would not be fully
+     * constructed yet at the time of a synchronous replay.
+     */
+    template<typename T, std::enable_if_t<std::is_base_of_v<type::Struct, T>, int> = 0>
+    Subscription subscribe(deferred_t, Transceiver::event_handler_t<T> handler)
+    {
+        io::register_global_subscribe_type<T>();
+        return global_transceiver().subscribe<T>(deferred, std::move(handler));
     }
 
     /*!
@@ -405,7 +444,29 @@ namespace dots
     template <typename TDescriptor, std::enable_if_t<std::is_base_of_v<type::Descriptor<>, TDescriptor>, int> = 0>
     Subscription subscribe(Transceiver::new_type_handler_t<TDescriptor> handler)
     {
-        return global_transceiver().subscribe<TDescriptor>(std::move(handler));
+        return subscribe<TDescriptor>(sync, std::move(handler));
+    }
+
+    /*!
+     * @brief Subscribe to new types with an explicit policy tag
+     * (synchronous replay).
+     */
+    template <typename TDescriptor, std::enable_if_t<std::is_base_of_v<type::Descriptor<>, TDescriptor>, int> = 0>
+    Subscription subscribe(sync_t, Transceiver::new_type_handler_t<TDescriptor> handler)
+    {
+        return global_transceiver().subscribe<TDescriptor>(sync, std::move(handler));
+    }
+
+    /*!
+     * @brief Subscribe to new types with deferred initial replay.
+     *
+     * Both registration and the initial walk over currently known types
+     * are posted to the IO context and run at the next event loop turn.
+     */
+    template <typename TDescriptor, std::enable_if_t<std::is_base_of_v<type::Descriptor<>, TDescriptor>, int> = 0>
+    Subscription subscribe(deferred_t, Transceiver::new_type_handler_t<TDescriptor> handler)
+    {
+        return global_transceiver().subscribe<TDescriptor>(deferred, std::move(handler));
     }
 
     /*!

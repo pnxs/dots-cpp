@@ -452,6 +452,51 @@ TEST_F(TestDispatcher, dispatch_CreateEventFromCacheWhenAddedHandlerForCachedTyp
     ASSERT_EQ(i, 1);
 }
 
+TEST_F(TestDispatcher, addEventHandlerNoReplay_DoesNotInvokeHandlerForCachedInstances)
+{
+    DotsTestStruct dts{ .indKeyfField = 1 };
+    DotsHeader header = test_helpers::make_header(dts, 42);
+
+    // populate the cache
+    m_sut.addEventHandler<DotsTestStruct>([](const dots::Event<DotsTestStruct>&){});
+    m_sut.dispatch(dots::Transmission{ header, dts });
+
+    size_t invocations = 0;
+    m_sut.addEventHandlerNoReplay<DotsTestStruct>([&](const dots::Event<DotsTestStruct>&)
+    {
+        ++invocations;
+    });
+
+    // adding the no-replay handler must NOT trigger any create events
+    ASSERT_EQ(invocations, 0u);
+}
+
+TEST_F(TestDispatcher, replayCacheToHandler_InvokesCreateEventsForCachedInstances)
+{
+    DotsTestStruct dts{ .indKeyfField = 1 };
+    DotsHeader header = test_helpers::make_header(dts, 42);
+
+    m_sut.addEventHandler<DotsTestStruct>([](const dots::Event<DotsTestStruct>&){});
+    m_sut.dispatch(dots::Transmission{ header, dts });
+
+    size_t createEvents = 0;
+    auto id = m_sut.addEventHandlerNoReplay<DotsTestStruct>([&](const dots::Event<DotsTestStruct>& e)
+    {
+        if (e.isCreate()) ++createEvents;
+    });
+    ASSERT_EQ(createEvents, 0u);
+
+    m_sut.replayCacheToHandler(DotsTestStruct::_Descriptor(), id);
+    ASSERT_EQ(createEvents, 1u);
+}
+
+TEST_F(TestDispatcher, replayCacheToHandler_NoOpForUnknownId)
+{
+    // bogus id, no handler registered — must not throw or crash
+    m_sut.replayCacheToHandler(DotsTestStruct::_Descriptor(), /*id=*/12345);
+    SUCCEED();
+}
+
 TEST_F(TestDispatcher, dispatch_CreateEventWhenAddedHandlerForUncachedType)
 {
     DotsUncachedTestStruct dts1{

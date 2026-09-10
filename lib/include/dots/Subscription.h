@@ -7,6 +7,35 @@
 namespace dots
 {
     /*!
+     * @brief Subscribe-policy tag types.
+     *
+     * Tags that can be passed as the first argument to dots::subscribe (or
+     * the corresponding member functions on a Transceiver) to select how
+     * the initial cache replay is delivered:
+     *
+     * - dots::sync (current default): the handler is invoked synchronously
+     *   for every existing instance before subscribe() returns. This is
+     *   convenient but unsafe when calling subscribe() inside a constructor,
+     *   because the surrounding object is not fully constructed yet.
+     *
+     * - dots::deferred: the handler is registered immediately so that
+     *   future events are not lost, but the initial cache replay is posted
+     *   to the IO context and runs at the next event loop turn. This is
+     *   the safe choice for subscribe-from-constructor usage.
+     *
+     * The non-tagged subscribe() overloads currently default to sync. A
+     * future release may deprecate the non-tagged overloads to force every
+     * call site to pick a policy explicitly, after which the default may
+     * be flipped to deferred. New code is encouraged to specify the policy
+     * tag explicitly.
+     */
+    struct sync_t     { explicit constexpr sync_t()     = default; };
+    struct deferred_t { explicit constexpr deferred_t() = default; };
+
+    inline constexpr sync_t     sync{};
+    inline constexpr deferred_t deferred{};
+
+    /*!
      * @class Subscription Subscription.h <dots/Subscription.h>
      *
      * @brief Scoped resource for active DOTS subscriptions.
