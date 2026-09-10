@@ -9,6 +9,8 @@
 #include <dots/type/StaticStruct.h>
 #include <dots/type/StaticProperty.h>
 #include <dots/type/StaticPropertyOffset.h>
+namespace dots::types { struct {{name}}; }
+
 {% for imp in imports %}
 #include "{{imp}}.dots.h"
 {% endfor %}

@@ -60,40 +60,67 @@ namespace dots::io
             if (descriptor == nullptr)
             {
                 const std::string& typeName = *propertyData.type;
-                if (typeName.find("vector<") == std::string::npos)
+                auto resolveReference = [&](const std::string& name) -> type::Descriptor<>*
                 {
-                    throw std::logic_error{ "missing type dependency: " + typeName };
-                }
-
-                std::string valueTypeName = typeName.substr(7, typeName.size() - 8);
-                type::Descriptor<>* valueTypeDescriptor = m_registry.get().findType(valueTypeName);
-
-                if (valueTypeDescriptor == nullptr)
-                {
-                    throw std::logic_error{ "missing value type dependency: " + valueTypeName };
-                }
-
-                if (valueTypeDescriptor->type() == type::Type::Enum)
-                {
-                    auto& enumDescriptor = static_cast<type::Descriptor<type::DynamicEnum>&>(*valueTypeDescriptor);
-                    descriptor = &m_registry.get().registerType<type::Descriptor<vector_t<type::DynamicEnum>>>(enumDescriptor);
-                }
-                else if (valueTypeDescriptor->type() == type::Type::Struct)
-                {
-                    if (auto* dynStructDescriptor = valueTypeDescriptor->as<type::Descriptor<type::DynamicStruct>>(); dynStructDescriptor == nullptr)
+                    if (auto* known = m_registry.get().findType(name)) return known;
+                    if (name.size() > 14 && name.compare(0, 13, "instance_ref<") == 0 && name.back() == '>')
                     {
-                        const auto& staticStructDescriptor = valueTypeDescriptor->to<type::StructDescriptor>();
-                        auto dynStructDescriptor_ = type::make_descriptor<type::Descriptor<type::DynamicStruct>>(staticStructDescriptor.name(), staticStructDescriptor.flags(), staticStructDescriptor.propertyDescriptors(), staticStructDescriptor.size());
-                        descriptor = &m_registry.get().registerType<type::Descriptor<vector_t<type::DynamicStruct>>>(*dynStructDescriptor_, false);
+                        auto target = name.substr(13, name.size() - 14);
+                        if (target.find_first_of("<>") != std::string::npos)
+                            throw std::logic_error{"invalid instance_ref target: " + target};
+                        if (auto* targetDescriptor = m_registry.get().findType(target);
+                            targetDescriptor != nullptr && targetDescriptor->type() != type::Type::Struct)
+                            throw std::logic_error{"instance_ref target must be a struct: " + target};
+                        return &m_registry.get().registerType<type::Descriptor<type::InstanceRef>>(target);
+                    }
+                    return nullptr;
+                };
+                descriptor = resolveReference(typeName);
+                if (descriptor == nullptr)
+                {
+                    if (typeName.find("vector<") == std::string::npos)
+                    {
+                        throw std::logic_error{ "missing type dependency: " + typeName };
+                    }
+
+                    std::string valueTypeName = typeName.substr(7, typeName.size() - 8);
+                    type::Descriptor<>* valueTypeDescriptor = resolveReference(valueTypeName);
+
+                    if (valueTypeDescriptor == nullptr)
+                    {
+                        throw std::logic_error{ "missing value type dependency: " + valueTypeName };
+                    }
+
+                    if (valueTypeDescriptor->type() == type::Type::InstanceRef)
+                    {
+                        // Dynamic vectors store the generic runtime representation even
+                        // when a compiled typed reference descriptor is already known.
+                        auto valueDescriptor = type::make_descriptor<type::Descriptor<type::InstanceRef>>(
+                            static_cast<type::Descriptor<type::InstanceRef>&>(*valueTypeDescriptor).targetTypeName());
+                        descriptor = &m_registry.get().registerType<type::Descriptor<vector_t<type::InstanceRef>>>(*valueDescriptor);
+                    }
+                    else if (valueTypeDescriptor->type() == type::Type::Enum)
+                    {
+                        auto& enumDescriptor = static_cast<type::Descriptor<type::DynamicEnum>&>(*valueTypeDescriptor);
+                        descriptor = &m_registry.get().registerType<type::Descriptor<vector_t<type::DynamicEnum>>>(enumDescriptor);
+                    }
+                    else if (valueTypeDescriptor->type() == type::Type::Struct)
+                    {
+                        if (auto* dynStructDescriptor = valueTypeDescriptor->as<type::Descriptor<type::DynamicStruct>>(); dynStructDescriptor == nullptr)
+                        {
+                            const auto& staticStructDescriptor = valueTypeDescriptor->to<type::StructDescriptor>();
+                            auto dynStructDescriptor_ = type::make_descriptor<type::Descriptor<type::DynamicStruct>>(staticStructDescriptor.name(), staticStructDescriptor.flags(), staticStructDescriptor.propertyDescriptors(), staticStructDescriptor.size());
+                            descriptor = &m_registry.get().registerType<type::Descriptor<vector_t<type::DynamicStruct>>>(*dynStructDescriptor_, false);
+                        }
+                        else
+                        {
+                            descriptor = &m_registry.get().registerType<type::Descriptor<vector_t<type::DynamicStruct>>>(*dynStructDescriptor, false);
+                        }
                     }
                     else
                     {
-                        descriptor = &m_registry.get().registerType<type::Descriptor<vector_t<type::DynamicStruct>>>(*dynStructDescriptor, false);
+                        throw std::logic_error{ "unsupported dynamic vector type: " + valueTypeName };
                     }
-                }
-                else
-                {
-                    throw std::logic_error{ "unsupported dynamic vector type: " + valueTypeName };
                 }
             }
 
@@ -109,7 +136,8 @@ namespace dots::io
             alignment = std::max(last->valueDescriptor().alignment(), alignment);
         }
 
-        size_t size = type::PropertyOffset::Next(alignment, last->offset(), last->valueDescriptor().size());
+        size_t size = last == nullptr ? type::PropertyOffset::First(alignment, sizeof(type::PropertyArea)) :
+            type::PropertyOffset::Next(alignment, last->offset(), last->valueDescriptor().size());
 
         return m_registry.get().registerType<type::Descriptor<type::DynamicStruct>>(*structData.name, flags, propertyDescriptors, sizeof(type::DynamicStruct) + size);
     }

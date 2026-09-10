@@ -46,6 +46,7 @@ namespace dots::type
         // (e.g. ConfigChange, Status) failed DescriptorConverter with
         // "missing type dependency: any". Seed it like the other built-ins.
         ensureDescriptor<any_t>();
+        ensureDescriptor<instance_ref_t>();
 
         switch (staticTypePolicy)
         {

@@ -325,6 +325,9 @@ static void write_atomic_types_to_ascii(const type::Descriptor<>& td, const void
             break;
         case type::Type::Vector:
         case type::Type::Struct:
+        case type::Type::InstanceRef:
+            writer.String(static_cast<const type::Descriptor<type::InstanceRef>&>(td).reference(*static_cast<const type::Typeless*>(data)).toString());
+            break;
         case type::Type::Any:
 
             throw std::runtime_error("unknown type: " + td.name());
@@ -342,7 +345,7 @@ static void write_ascii(const type::Descriptor<>& td, const void* data, Printer&
     {
         write_any_to_ascii(*static_cast<const type::AnyObject*>(data), writer, registry);
     }
-    else if (td.isFundamentalType() || td.type() == type::Type::Enum)
+    else if (td.isFundamentalType() || td.type() == type::Type::Enum || td.type() == type::Type::InstanceRef)
     {
         write_atomic_types_to_ascii(td, data, writer);
     }

@@ -1,0 +1,36 @@
+struct ExampleType {
+    1: [key] string name;
+    2: bool enabled;
+}
+
+struct RouteType {
+    2: [key] string name;
+    3: string via;
+    1: [key] string parent;
+}
+
+struct TimeType {
+    1: string tz;
+}
+
+struct StatusType {
+    1: [key] instance_ref subject;
+    2: bool applied;
+}
+
+struct TypedStatusType {
+    1: [key] instance_ref<ExampleType> subject;
+    2: vector<instance_ref<ExampleType>> related;
+    3: vector<instance_ref> others;
+}
+
+struct RefScalarKeys {
+    7: [key] int64 signedKey;
+    2: [key] uint64 unsignedKey;
+    4: [key] bool boolKey;
+}
+
+struct RefTreeNode {
+    1: [key] string name;
+    2: instance_ref<RefTreeNode> parent;
+}

@@ -14,6 +14,7 @@ add_executable(${TARGET_NAME} src/TestContainer.cpp)
 target_dots_model(${TARGET_NAME}
     src/serialization/serialization.dots
     src/type/TestStaticStruct.dots
+    src/type/instance_ref.dots
 )
 target_sources(${TARGET_NAME}
     PRIVATE
@@ -31,6 +32,7 @@ target_sources(${TARGET_NAME}
 
         src/TestFilter.cpp
 
+        src/type/TestInstanceRef.cpp
         src/type/TestAnyObject.cpp
         src/type/TestChrono.cpp
         src/type/TestDescriptor.cpp
