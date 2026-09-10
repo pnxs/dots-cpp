@@ -180,6 +180,7 @@ target_link_libraries(${TARGET_NAME}
         $<BUILD_INTERFACE:date::date>
         $<BUILD_INTERFACE:date::date-tz>
         $<BUILD_INTERFACE:PicoSHA2::PicoSHA2>
+        $<BUILD_INTERFACE:RapidJSON::RapidJSON>
         $<BUILD_INTERFACE:fmt::fmt-header-only>
         )
 set_target_properties(${TARGET_NAME} PROPERTIES
