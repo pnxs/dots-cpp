@@ -125,7 +125,7 @@ TEST_F(TestIpNetwork, ctor_ipAddress)
 {
     for (const ParseData& parseInput : m_parseDataValid)
     {
-        IpNetwork network{ boost::asio::ip::address::from_string(parseInput.ipString) };
+        IpNetwork network{ boost::asio::ip::make_address(parseInput.ipString) };
         auto [address, prefixLength] = network.toPrefixAddress();
 
         EXPECT_EQ(address.to_string(), parseInput.ipString);

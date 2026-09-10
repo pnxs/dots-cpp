@@ -6,6 +6,8 @@
 
 namespace dots::type
 {
+    struct RawDeleter { void operator()(Struct* p) const noexcept { ::operator delete(p); } };
+
     struct AnyStruct
     {
         AnyStruct(const StructDescriptor& descriptor);
@@ -127,7 +129,7 @@ namespace dots::type
 
     private:
 
-        std::unique_ptr<Struct> _instance;
+        std::unique_ptr<Struct, RawDeleter> _instance;
     };
 
     inline property_iterator begin(AnyStruct& instance)

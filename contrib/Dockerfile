@@ -4,7 +4,7 @@
 # To build, call from top-level directory:
 # docker build -f contrib/Dockerfile .
 #
-FROM ubuntu:22.04 AS dots-cpp-build-env
+FROM ubuntu:24.04 AS dots-cpp-build-env
 
 ARG DEBIAN_FRONTEND="noninteractive"
 ENV TZ=Europe/Berlin
@@ -17,7 +17,7 @@ RUN apt-get update -y && apt-get install -y \
     ninja-build \
     python3-pip
 
-RUN pip3 install \
+RUN pip3 install --break-system-packages \
     dots-code-generator
 
 
