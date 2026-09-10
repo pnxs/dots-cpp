@@ -14,6 +14,7 @@
 #include <DotsMsgConnectResponse.dots.h>
 #include <DotsMsgConnect.dots.h>
 #include <DotsMsgError.dots.h>
+#include <DotsServerCapabilities.dots.h>
 
 namespace dots::type
 {
@@ -153,6 +154,18 @@ namespace dots
          * peer.
          */
         const std::string& peerName() const;
+
+        /*!
+         * @brief Get the capabilities advertised by the remote peer.
+         *
+         * For guest connections this is whatever the host announced in
+         * DotsMsgHello.capabilities; for host connections (or before the
+         * Hello has been received) it is a default-constructed object
+         * with all flags unset, meaning "no extended capabilities."
+         *
+         * @return const DotsServerCapabilities& Peer capabilities.
+         */
+        const DotsServerCapabilities& peerCapabilities() const;
 
         /*!
          * @brief Indicates whether the Connection is in the 'connected' state.
@@ -360,6 +373,7 @@ namespace dots
         id_t m_peerId;
         std::string m_selfName;
         std::string m_peerName;
+        DotsServerCapabilities m_peerCapabilities;
 
         io::channel_ptr_t m_channel;
         std::optional<std::string> m_authSecret;

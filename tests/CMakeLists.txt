@@ -29,6 +29,8 @@ target_sources(${TARGET_NAME}
         src/tools/TestHexdump.cpp
         src/tools/TestLogging.cpp
 
+        src/TestFilter.cpp
+
         src/type/TestChrono.cpp
         src/type/TestDescriptor.cpp
         src/type/TestDynamicStruct.cpp

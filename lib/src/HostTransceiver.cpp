@@ -2,6 +2,7 @@
 // Copyright 2015-2022 Thomas Schaetzlein <thomas@pnxs.de>, Christopher Gerlach <gerlachch@gmx.com>
 #include <dots/HostTransceiver.h>
 #include <vector>
+#include <dots/Filter.h>
 #include <dots/fmt/logging_fmt.h>
 #include <DotsCacheInfo.dots.h>
 #include <DotsClient.dots.h>
@@ -69,9 +70,20 @@ namespace dots
             .isFromMyself = true
         };
 
+        // Capture the pre-merge cache entry before dispatcher().dispatch() merges
+        // the delta — filtered subs need the prior pointer to compute wasVisible.
+        const type::Struct* preMergeEntry = nullptr;
+        if (instance._descriptor().cached())
+        {
+            if (const Container<>* container = pool().find(instance._descriptor()))
+            {
+                preMergeEntry = container->find(instance);
+            }
+        }
+
         io::Transmission transmission{ std::move(header), instance };
         dispatcher().dispatch(transmission);
-        transmit(transmission);
+        transmit(transmission, preMergeEntry);
     }
 
     void HostTransceiver::joinGroup(std::string_view/* name*/)
@@ -84,12 +96,15 @@ namespace dots
         /* do nothing */
     }
 
-    void HostTransceiver::transmit(const io::Transmission& transmission)
+    void HostTransceiver::transmit(const io::Transmission& transmission, const type::Struct* preMergeEntry)
     {
         using dirty_connection_t = std::pair<Connection*, std::exception_ptr>;
         std::vector<dirty_connection_t> dirtyConnections;
 
-        for (Connection* destinationConnection : m_groups[*transmission.header().typeName])
+        Group& group = m_groups[*transmission.header().typeName];
+
+        // ---- Hot path: unfiltered subscribers — byte-identical to legacy behavior. ----
+        for (Connection* destinationConnection : group.unfilteredSubs)
         {
             if (destinationConnection->state() != DotsConnectionState::closed)
             {
@@ -100,6 +115,96 @@ namespace dots
                 catch (...)
                 {
                     dirtyConnections.emplace_back(destinationConnection, std::current_exception());
+                }
+            }
+        }
+
+        // ---- Cold path: filtered subscribers (skipped entirely when none exist). ----
+        if (!group.filteredSubs.empty())
+        {
+            const type::StructDescriptor& descriptor = transmission.instance()->_descriptor();
+            const bool isRemove = (transmission.header().removeObj == true);
+
+            // Resolve the post-merge state used to evaluate the filter:
+            //   * cached non-remove publish: the merged cache entry.
+            //   * uncached publish: the in-flight instance (no cache to consult).
+            //   * remove publish: no current state (treated as "not matching").
+            const type::Struct* current = nullptr;
+            if (!isRemove)
+            {
+                if (descriptor.cached())
+                {
+                    if (const Container<>* c = pool().find(descriptor))
+                    {
+                        current = c->find(*transmission.instance());
+                    }
+                }
+                else
+                {
+                    current = &*transmission.instance();
+                }
+            }
+
+            const property_set_t keyProps = descriptor.keyProperties();
+
+            for (auto& [connection, subsByConn] : group.filteredSubs)
+            {
+                if (connection->state() == DotsConnectionState::closed) continue;
+
+                for (auto& [subId, sub] : subsByConn)
+                {
+                    const bool wasVisible = preMergeEntry != nullptr &&
+                                            sub.visible.count(preMergeEntry) > 0;
+
+                    bool nowMatches = false;
+                    if (current != nullptr)
+                    {
+                        nowMatches = sub.compiledPredicate.matches(*current);
+                    }
+
+                    const property_set_t effMask = sub.filter.propertyMask.isValid()
+                        ? (*sub.filter.propertyMask + keyProps)
+                        : property_set_t::All;
+
+                    try
+                    {
+                        if (nowMatches && wasVisible)
+                        {
+                            // Update — forward delta with projected attributes.
+                            DotsHeader h = transmission.header();
+                            h.attributes = transmission.header().attributes->intersection(effMask);
+                            h.subscriptionId = subId;
+                            connection->transmit(h, *transmission.instance());
+                        }
+                        else if (nowMatches && !wasVisible)
+                        {
+                            // Enter view — must send full merged state, not the delta.
+                            sub.visible.insert(current);
+                            DotsHeader h = transmission.header();
+                            h.attributes = current->_validProperties().intersection(effMask);
+                            h.serverSentTime = timepoint_t::Now();
+                            h.removeObj = false;
+                            h.subscriptionId = subId;
+                            connection->transmit(h, *current);
+                        }
+                        else if (!nowMatches && wasVisible)
+                        {
+                            // Leave view — synthesize key-only remove.
+                            sub.visible.erase(preMergeEntry);
+                            DotsHeader h = transmission.header();
+                            h.attributes = keyProps;
+                            h.serverSentTime = timepoint_t::Now();
+                            h.removeObj = true;
+                            h.subscriptionId = subId;
+                            connection->transmit(h, *preMergeEntry);
+                        }
+                        // else !nowMatches && !wasVisible: nothing to send.
+                    }
+                    catch (...)
+                    {
+                        dirtyConnections.emplace_back(connection, std::current_exception());
+                        break; // skip remaining subs for this dirty connection
+                    }
                 }
             }
         }
@@ -172,8 +277,19 @@ namespace dots
             }
         }
 
+        // Capture pre-merge cache pointer for filtered dispatch.
+        const type::StructDescriptor& descriptor = instance->_descriptor();
+        const type::Struct* preMergeEntry = nullptr;
+        if (descriptor.cached())
+        {
+            if (const Container<>* container = pool().find(descriptor))
+            {
+                preMergeEntry = container->find(*instance);
+            }
+        }
+
         dispatcher().dispatch(transmission);
-        transmit(transmission);
+        transmit(transmission, preMergeEntry);
 
         return !connection.closed();
     }
@@ -186,7 +302,8 @@ namespace dots
             {
                 for (auto& [groupName, group] : m_groups)
                 {
-                    group.erase(&connection);
+                    group.unfilteredSubs.erase(&connection);
+                    group.filteredSubs.erase(&connection);
                 }
 
                 std::vector<const type::Struct*> cleanupInstances;
@@ -224,43 +341,132 @@ namespace dots
         member._assertHasProperties(DotsMember::groupName_p + DotsMember::event_p);
         const std::string& groupName = *member.groupName;
 
+        const bool isFiltered = member.filter.isValid();
+        const uint32_t subId  = member.subscriptionId.isValid() ? *member.subscriptionId : 0;
+
         if (member.event == DotsMemberEvent::kill)
         {
             LOG_WARN_F("{} requested unsupported kill event", connection.peerDescription());
+            return;
         }
-        else if (member.event == DotsMemberEvent::leave)
+
+        if (member.event == DotsMemberEvent::leave)
         {
-            if (size_t removed = m_groups[groupName].erase(&connection); removed == 0)
+            Group& group = m_groups[groupName];
+            if (isFiltered || subId != 0)
             {
-                LOG_WARN_F("{} is not a member of group '{}'", connection.peerDescription(), groupName);
-            }
-        }
-        else if (member.event == DotsMemberEvent::join)
-        {
-            if (auto [it, emplaced] = m_groups[groupName].emplace(&connection); emplaced)
-            {
-                LOG_DEBUG_F("{} is now a member of group '{}'", connection.peerDescription(), groupName);
+                if (auto it = group.filteredSubs.find(&connection); it != group.filteredSubs.end())
+                {
+                    if (it->second.erase(subId) == 0)
+                    {
+                        LOG_WARN_F("{} has no filtered subscription {} on group '{}'",
+                                   connection.peerDescription(), subId, groupName);
+                    }
+                    if (it->second.empty()) group.filteredSubs.erase(it);
+                }
+                else
+                {
+                    LOG_WARN_F("{} has no filtered subscriptions on group '{}'",
+                               connection.peerDescription(), groupName);
+                }
             }
             else
             {
-                LOG_WARN_F("{} is already member of group '{}'", connection.peerDescription(), groupName);
+                if (group.unfilteredSubs.erase(&connection) == 0)
+                {
+                    LOG_WARN_F("{} is not a member of group '{}'", connection.peerDescription(), groupName);
+                }
+            }
+            return;
+        }
+
+        if (member.event != DotsMemberEvent::join) return;
+
+        // ---- join ----
+        auto structDescriptor = registry().findStructType(groupName);
+
+        if (isFiltered)
+        {
+            if (structDescriptor == nullptr)
+            {
+                LOG_ERROR_F("{} requested filtered subscription on unknown type '{}'",
+                            connection.peerDescription(), groupName);
+                return;
             }
 
-            // note: transmitting the container content even when the guest has already joined the group is currently
-            // necessary to retain backwards compatibility
-            auto structDescriptor = registry().findStructType(groupName);
-            if (structDescriptor && structDescriptor->cached())
+            // Compile the predicate against the target descriptor. Compilation
+            // performs the same validation as filter::validate() and additionally
+            // resolves leaves + narrows rhs values so per-publish eval is cheap.
+            // A failure here is a programming error on the guest side — we log
+            // and drop the join (the guest will time out waiting for preload).
+            filter::CompiledPredicate compiledPredicate;
+            if (member.filter->predicate.isValid())
             {
-                if (const Container<> *container = pool().find(*structDescriptor); container != nullptr)
+                try
                 {
-                    transmitContainer(connection, *container);
+                    compiledPredicate = filter::CompiledPredicate{
+                        *member.filter->predicate, *structDescriptor };
                 }
+                catch (const std::exception& e)
+                {
+                    LOG_ERROR_F("{} sent invalid filter on '{}' (subId={}): {}",
+                                connection.peerDescription(), groupName, subId, e.what());
+                    return;
+                }
+            }
 
+            Group& group = m_groups[groupName];
+            auto& subsByConn = group.filteredSubs[&connection];
+            auto [subIt, inserted] = subsByConn.try_emplace(subId,
+                FilteredSub{ subId, *member.filter, std::move(compiledPredicate), {} });
+
+            if (!inserted)
+            {
+                LOG_WARN_F("{} already has filtered subscription {} on '{}'",
+                           connection.peerDescription(), subId, groupName);
+                return;
+            }
+
+            LOG_DEBUG_F("{} created filtered subscription {} on group '{}'",
+                        connection.peerDescription(), subId, groupName);
+
+            if (structDescriptor->cached())
+            {
+                if (const Container<>* container = pool().find(*structDescriptor))
+                {
+                    transmitFilteredContainer(connection, *container, subIt->second);
+                }
                 connection.transmit(DotsCacheInfo{
                     .typeName = member.groupName,
                     .endTransmission = true
                 });
             }
+            return;
+        }
+
+        // Unfiltered join — existing behavior.
+        if (auto [it, emplaced] = m_groups[groupName].unfilteredSubs.emplace(&connection); emplaced)
+        {
+            LOG_DEBUG_F("{} is now a member of group '{}'", connection.peerDescription(), groupName);
+        }
+        else
+        {
+            LOG_WARN_F("{} is already member of group '{}'", connection.peerDescription(), groupName);
+        }
+
+        // note: transmitting the container content even when the guest has already joined the group is currently
+        // necessary to retain backwards compatibility
+        if (structDescriptor && structDescriptor->cached())
+        {
+            if (const Container<> *container = pool().find(*structDescriptor); container != nullptr)
+            {
+                transmitContainer(connection, *container);
+            }
+
+            connection.transmit(DotsCacheInfo{
+                .typeName = member.groupName,
+                .endTransmission = true
+            });
         }
     }
 
@@ -349,6 +555,51 @@ namespace dots
             --*header.fromCache;
 
             connection.transmit(header, instance);
+        }
+    }
+
+    void HostTransceiver::transmitFilteredContainer(Connection& connection, const Container<>& container, FilteredSub& sub)
+    {
+        if (container.empty()) return;
+
+        const auto& descriptor = container.descriptor();
+        const property_set_t keyProps = descriptor.keyProperties();
+        const property_set_t effMask = sub.filter.propertyMask.isValid()
+            ? (*sub.filter.propertyMask + keyProps)
+            : property_set_t::All;
+
+        // Pre-pass: count matches so DotsHeader.fromCache reports the actual
+        // number of instances that will be transmitted, not the unfiltered total.
+        uint32_t matchCount = 0;
+        for (const auto& [instance, cloneInfo] : container)
+        {
+            (void)cloneInfo;
+            if (sub.compiledPredicate.matches(*instance))
+            {
+                ++matchCount;
+            }
+        }
+        if (matchCount == 0) return;
+
+        DotsHeader header{
+            .typeName = descriptor.name(),
+            .fromCache = matchCount,
+            .removeObj = false,
+            .subscriptionId = sub.subscriptionId
+        };
+
+        for (const auto& [instance, cloneInfo] : container)
+        {
+            if (!sub.compiledPredicate.matches(*instance)) continue;
+
+            header.sentTime = *cloneInfo.modified;
+            header.serverSentTime = timepoint_t::Now();
+            header.attributes = instance->_validProperties().intersection(effMask);
+            header.sender = *cloneInfo.lastUpdateFrom;
+            --*header.fromCache;
+
+            connection.transmit(header, instance);
+            sub.visible.insert(&instance.get());
         }
     }
 }

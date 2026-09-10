@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 // Copyright 2015-2022 Thomas Schaetzlein <thomas@pnxs.de>, Christopher Gerlach <gerlachch@gmx.com>
 #include <dots/GuestTransceiver.h>
+#include <dots/View.h>
 #include <dots/fmt/logging_fmt.h>
 #include <dots/serialization/AsciiSerialization.h>
 #include <DotsMember.dots.h>
@@ -122,8 +123,46 @@ namespace dots
 
     bool GuestTransceiver::handleTransmission(Connection&/* connection*/, io::Transmission transmission)
     {
+        // Filtered-subscription demux: when the broker tags a transmission
+        // with subscriptionId, deliver only to the matching View. Untagged
+        // transmissions take the normal dispatcher path.
+        if (transmission.header().subscriptionId.isValid())
+        {
+            const uint32_t subId = *transmission.header().subscriptionId;
+            if (auto it = m_views.find(subId); it != m_views.end())
+            {
+                it->second->_dispatch(transmission);
+            }
+            // Unknown subscriptionId — silently drop. Can happen briefly after
+            // a View is destroyed while in-flight transmissions still arrive.
+            return true;
+        }
+
         dispatcher().dispatch(transmission);
         return true;
+    }
+
+    uint32_t GuestTransceiver::_allocateSubscriptionId()
+    {
+        return m_nextSubscriptionId++;
+    }
+
+    void GuestTransceiver::_registerView(uint32_t subscriptionId, details::ViewBase* view)
+    {
+        m_views[subscriptionId] = view;
+    }
+
+    void GuestTransceiver::_unregisterView(uint32_t subscriptionId)
+    {
+        m_views.erase(subscriptionId);
+    }
+
+    void GuestTransceiver::_ensureHostKnowsType(const type::StructDescriptor& descriptor)
+    {
+        if (m_hostConnection != nullptr)
+        {
+            m_hostConnection->transmit(descriptor);
+        }
     }
 
     void GuestTransceiver::handleTransitionImpl(Connection& connection, std::exception_ptr/* e*/) noexcept

@@ -30,6 +30,7 @@ add_library(${EXPORT_NAME}::${EXPORT_NAME} ALIAS ${TARGET_NAME})
 
 # properties
 target_dots_model(${TARGET_NAME}
+    ${CMAKE_CURRENT_LIST_DIR}/../external/dots/model/filter.dots
     ${CMAKE_CURRENT_LIST_DIR}/../external/dots/model/connection.dots
     ${CMAKE_CURRENT_LIST_DIR}/../external/dots/model/event.dots
     ${CMAKE_CURRENT_LIST_DIR}/../external/dots/model/user.dots
@@ -44,6 +45,7 @@ target_sources(${TARGET_NAME}
         src/Container.cpp
         src/ContainerPool.cpp
         src/dots.cpp
+        src/Filter.cpp
         src/Requirements.cpp
         src/Subscription.cpp
         src/Timer.cpp
